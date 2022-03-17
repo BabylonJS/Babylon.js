@@ -233,7 +233,7 @@ export interface IDracoCompressionConfiguration {
  *
  * To decode Draco compressed data, get the default DracoCompression object and call decodeMeshAsync:
  * ```javascript
- *     var vertexData = await DracoCompression.Default.decodeMeshAsync(data);
+ *     let vertexData = await DracoCompression.Default.decodeMeshAsync(data);
  * ```
  *
  * @see https://www.babylonjs-playground.com/#N3EK4B#0

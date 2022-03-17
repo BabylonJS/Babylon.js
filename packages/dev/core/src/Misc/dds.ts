@@ -26,7 +26,7 @@ const //DDSD_CAPS = 0x1,
 //DDSD_LINEARSIZE = 0x80000,
 //DDSD_DEPTH = 0x800000;
 
-// var DDSCAPS_COMPLEX = 0x8,
+// let DDSCAPS_COMPLEX = 0x8,
 //     DDSCAPS_MIPMAP = 0x400000,
 //     DDSCAPS_TEXTURE = 0x1000;
 
@@ -84,10 +84,10 @@ const off_RMask = 23;
 const off_GMask = 24;
 const off_BMask = 25;
 const off_AMask = 26;
-// var off_caps1 = 27;
+// let off_caps1 = 27;
 const off_caps2 = 28;
-// var off_caps3 = 29;
-// var off_caps4 = 30;
+// let off_caps3 = 29;
+// let off_caps4 = 30;
 const off_dxgiFormat = 32;
 
 /**

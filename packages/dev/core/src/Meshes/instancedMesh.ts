@@ -591,7 +591,7 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     if (!this.instancedBuffers) {
         this.instancedBuffers = {};
 
-        for (var instance of this.instances) {
+        for (const instance of this.instances) {
             instance.instancedBuffers = {};
         }
 
@@ -612,7 +612,7 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
     this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
 
-    for (var instance of this.instances) {
+    for (const instance of this.instances) {
         instance.instancedBuffers[kind] = null;
     }
 

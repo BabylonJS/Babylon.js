@@ -13,7 +13,7 @@ export default function webglSupport() {
         switch (ctxName) {
             case 'webgl':
             case 'experimental-webgl':
-                var ctx = new (<any>window).WebGLRenderingContext();
+                let ctx = new (<any>window).WebGLRenderingContext();
                 // tslint:disable-next-line:no-invalid-this
                 ctx.canvas = this;
                 // tslint:disable-next-line:no-invalid-this

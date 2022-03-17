@@ -194,7 +194,7 @@ export interface IAsciiArtPostProcessOptions {
  * AsciiArtPostProcess helps rendering everithing in Ascii Art.
  *
  * Simmply add it to your scene and let the nerd that lives in you have fun.
- * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
+ * Example usage: let pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
  */
 export class AsciiArtPostProcess extends PostProcess {
     /**

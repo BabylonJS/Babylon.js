@@ -78,7 +78,7 @@ export class AudioEngine implements IAudioEngine {
     public onAudioLockedObservable = new Observable<IAudioEngine>();
 
     /**
-     * Gets the current AudioContext if available.
+     * @returns the current AudioContext if available.
      */
     public get audioContext(): Nullable<AudioContext> {
         if (!this._audioContextInitialized) {

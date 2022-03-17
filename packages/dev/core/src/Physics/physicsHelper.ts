@@ -547,9 +547,9 @@ class PhysicsUpdraftEvent {
         const impostorObjectCenter = impostor.getObjectCenter();
 
         if (this._options.updraftMode === PhysicsUpdraftMode.Perpendicular) {
-            var direction = this._originDirection;
+            const direction = this._originDirection;
         } else {
-            var direction = impostorObjectCenter.subtract(this._originTop);
+            const direction = impostorObjectCenter.subtract(this._originTop);
         }
 
         const distanceFromOrigin = Vector3.Distance(this._origin, impostorObjectCenter);
@@ -700,15 +700,15 @@ class PhysicsVortexEvent {
         }
 
         if (absoluteDistanceFromOrigin > this._options.centripetalForceThreshold) {
-            var forceX = directionToOrigin.x * this._options.centripetalForceMultiplier;
-            var forceY = directionToOrigin.y * this._options.updraftForceMultiplier;
-            var forceZ = directionToOrigin.z * this._options.centripetalForceMultiplier;
+            const forceX = directionToOrigin.x * this._options.centripetalForceMultiplier;
+            const forceY = directionToOrigin.y * this._options.updraftForceMultiplier;
+            const forceZ = directionToOrigin.z * this._options.centripetalForceMultiplier;
         } else {
             const perpendicularDirection = Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
 
-            var forceX = (perpendicularDirection.x + directionToOrigin.x) * this._options.centrifugalForceMultiplier;
-            var forceY = this._originTop.y * this._options.updraftForceMultiplier;
-            var forceZ = (perpendicularDirection.z + directionToOrigin.z) * this._options.centrifugalForceMultiplier;
+            const forceX = (perpendicularDirection.x + directionToOrigin.x) * this._options.centrifugalForceMultiplier;
+            const forceY = this._originTop.y * this._options.updraftForceMultiplier;
+            const forceZ = (perpendicularDirection.z + directionToOrigin.z) * this._options.centrifugalForceMultiplier;
         }
 
         let force = new Vector3(forceX, forceY, forceZ);

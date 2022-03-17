@@ -12,7 +12,7 @@ import { Material } from "core/Materials/material";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 /** @hidden */
-export var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
+export const __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
 
 /**
  * Interface for a glTF exporter extension

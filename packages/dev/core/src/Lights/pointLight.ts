@@ -65,7 +65,7 @@ export class PointLight extends ShadowLight {
      * It can cast shadows.
      * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
      * ```javascript
-     * var pointLight = new PointLight("pl", camera.position, scene);
+     * let pointLight = new PointLight("pl", camera.position, scene);
      * ```
      * Documentation : https://doc.babylonjs.com/babylon101/lights
      * @param name The light friendly name

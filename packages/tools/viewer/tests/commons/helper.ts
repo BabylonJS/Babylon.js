@@ -54,17 +54,17 @@ export class Helper {
     }
 
     public static getRenderImg() {
-        var nodes = document.querySelectorAll(".renderImg");
+        let nodes = document.querySelectorAll(".renderImg");
         return nodes[nodes.length - 1] as HTMLImageElement;
     }
 
     public static getReferenceImg() {
-        var nodes = document.querySelectorAll(".referenceImg");
+        let nodes = document.querySelectorAll(".referenceImg");
         return nodes[nodes.length - 1] as HTMLImageElement;
     }
 
     public static getResultDisplay() {
-        var nodes = document.querySelectorAll(".resultDisplay");
+        let nodes = document.querySelectorAll(".resultDisplay");
         return nodes[nodes.length - 1] as HTMLDivElement;
     }
 
@@ -146,7 +146,7 @@ export class NullEngineAbstractViewer extends AbstractViewer {
         }
 
         if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
-            var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
+            let scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
 
@@ -185,7 +185,7 @@ export class NullEngineDefaultViewer extends DefaultViewer {
         }
 
         if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
-            var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
+            let scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
 

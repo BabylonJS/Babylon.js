@@ -253,14 +253,14 @@ export class PhysicsViewer {
                 break;
             case PhysicsImpostor.SphereImpostor:
                 mesh = this._getDebugSphereMesh(utilityLayerScene);
-                var radius = impostor.getRadius();
+                const radius = impostor.getRadius();
                 mesh.scaling.x = radius * 2;
                 mesh.scaling.y = radius * 2;
                 mesh.scaling.z = radius * 2;
                 break;
             case PhysicsImpostor.CapsuleImpostor:
                 mesh = this._getDebugCapsuleMesh(utilityLayerScene);
-                var bi = impostor.object.getBoundingInfo();
+                let bi = impostor.object.getBoundingInfo();
                 mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * 2 * impostor.object.scaling.x;
                 mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
                 mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * 2 * impostor.object.scaling.z;
@@ -311,7 +311,7 @@ export class PhysicsViewer {
                 break;
             case PhysicsImpostor.CylinderImpostor:
                 mesh = this._getDebugCylinderMesh(utilityLayerScene);
-                var bi = impostor.object.getBoundingInfo();
+                let bi = impostor.object.getBoundingInfo();
                 mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * impostor.object.scaling.x;
                 mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
                 mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * impostor.object.scaling.z;

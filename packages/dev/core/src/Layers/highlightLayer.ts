@@ -279,7 +279,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Warn on stencil
         if (!this._engine.isStencilEnable) {
-            Logger.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. var engine = new Engine(canvas, antialias, { stencil: true }");
+            Logger.Warn("Rendering the Highlight Layer requires the stencil to be active on the canvas. let engine = new Engine(canvas, antialias, { stencil: true }");
         }
 
         // Adapt options
@@ -880,7 +880,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Excluded meshes
         for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
-            var mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
+            const mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
             if (mesh) {
                 hl.addExcludedMesh(<Mesh>mesh);
             }
@@ -889,7 +889,7 @@ export class HighlightLayer extends EffectLayer {
         // Included meshes
         for (index = 0; index < parsedHightlightLayer.meshes.length; index++) {
             const highlightedMesh = parsedHightlightLayer.meshes[index];
-            var mesh = scene.getMeshById(highlightedMesh.meshId);
+            const mesh = scene.getMeshById(highlightedMesh.meshId);
 
             if (mesh) {
                 hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);

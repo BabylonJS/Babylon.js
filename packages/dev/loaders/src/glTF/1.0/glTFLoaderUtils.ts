@@ -185,7 +185,7 @@ export class GLTFUtils {
         byteLength: number,
         componentType: EComponentType
     ): ArrayBufferView {
-        var byteOffset = bufferView.byteOffset + byteOffset;
+        let byteOffset = bufferView.byteOffset + byteOffset;
 
         const loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
         if (byteOffset + byteLength > loadedBufferView.byteLength) {

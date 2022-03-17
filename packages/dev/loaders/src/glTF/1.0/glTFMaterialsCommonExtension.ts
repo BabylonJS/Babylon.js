@@ -90,28 +90,28 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
 
                 switch (light.type) {
                     case "ambient":
-                        var ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
-                        var ambient = light.ambient;
+                        const ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
+                        const ambient = light.ambient;
                         if (ambient) {
                             ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
                         }
                         break;
                     case "point":
-                        var pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
-                        var point = light.point;
+                        const pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
+                        const point = light.point;
                         if (point) {
                             pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
                         }
                         break;
                     case "directional":
-                        var dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
-                        var directional = light.directional;
+                        const dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
+                        const directional = light.directional;
                         if (directional) {
                             dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
                         }
                         break;
                     case "spot":
-                        var spot = light.spot;
+                        const spot = light.spot;
                         if (spot) {
                             const spotLight = new SpotLight(
                                 light.name,

@@ -147,13 +147,13 @@ export class GraphFrame {
     }
 
     private _createFramePorts() {
-        for (var node of this._nodes) {
+        for (const node of this._nodes) {
             node.isVisible = false;
         }
 
-        for (var i = 0; i < this._exposedOutPorts.length; ) {
+        for (let i = 0; i < this._exposedOutPorts.length; ) {
             // Output
-            var port = this._exposedOutPorts[i];
+            const port = this._exposedOutPorts[i];
             if (port.node === null || port.node.enclosingFrameId != this.id) {
                 if (this.removePortFromExposedWithNode(port, this._exposedOutPorts)) continue;
             } else {
@@ -164,9 +164,9 @@ export class GraphFrame {
             ++i;
         }
 
-        for (var i = 0; i < this._exposedInPorts.length; ) {
+        for (let i = 0; i < this._exposedInPorts.length; ) {
             // Input
-            var port = this._exposedInPorts[i];
+            const port = this._exposedInPorts[i];
             if (!port || port.node === null || port.node.enclosingFrameId != this.id) {
                 if (this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
@@ -179,7 +179,7 @@ export class GraphFrame {
             ++i;
         }
 
-        for (var node of this._nodes) {
+        for (const node of this._nodes) {
             for (const port of node.outputPorts) {
                 // Output
                 port.exposedPortPosition = this._exposedOutPorts.findIndex((nodePort) => nodePort === port);
@@ -191,7 +191,7 @@ export class GraphFrame {
                     }
                 }
             }
-            for (var port of node.inputPorts) {
+            for (const port of node.inputPorts) {
                 // Input
                 port.exposedPortPosition = this._exposedInPorts.findIndex((nodePort) => nodePort === port);
                 if (port.exposedPortPosition < 0) {

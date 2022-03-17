@@ -189,7 +189,7 @@ export class EnvironmentDeserializer {
         //specular
         switch (descriptor.specular.type) {
             case "cubemap_faces":
-                var specularDescriptor = <CubemapFaces>descriptor.specular;
+                const specularDescriptor = <CubemapFaces>descriptor.specular;
 
                 const specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
                 environment.textureIntensityScale = specularDescriptor.multiplier != null ? specularDescriptor.multiplier : 1.0;

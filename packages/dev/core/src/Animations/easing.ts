@@ -56,10 +56,10 @@ export class EasingFunction implements IEasingFunction {
     }
 
     /**
-     * @param gradient
+     * @param _gradient
      * @hidden
      */
-    public easeInCore(gradient: number): number {
+    public easeInCore(_gradient: number): number {
         throw new Error("You must implement this method");
     }
 
@@ -93,6 +93,7 @@ export class EasingFunction implements IEasingFunction {
 export class CircleEase extends EasingFunction implements IEasingFunction {
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -121,6 +122,7 @@ export class BackEase extends EasingFunction implements IEasingFunction {
 
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -152,6 +154,7 @@ export class BounceEase extends EasingFunction implements IEasingFunction {
 
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -184,6 +187,7 @@ export class BounceEase extends EasingFunction implements IEasingFunction {
 export class CubicEase extends EasingFunction implements IEasingFunction {
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -214,6 +218,7 @@ export class ElasticEase extends EasingFunction implements IEasingFunction {
 
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -250,6 +255,7 @@ export class ExponentialEase extends EasingFunction implements IEasingFunction {
 
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -281,6 +287,7 @@ export class PowerEase extends EasingFunction implements IEasingFunction {
 
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -297,6 +304,7 @@ export class PowerEase extends EasingFunction implements IEasingFunction {
 export class QuadraticEase extends EasingFunction implements IEasingFunction {
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -312,6 +320,7 @@ export class QuadraticEase extends EasingFunction implements IEasingFunction {
 export class QuarticEase extends EasingFunction implements IEasingFunction {
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -327,6 +336,7 @@ export class QuarticEase extends EasingFunction implements IEasingFunction {
 export class QuinticEase extends EasingFunction implements IEasingFunction {
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -342,6 +352,7 @@ export class QuinticEase extends EasingFunction implements IEasingFunction {
 export class SineEase extends EasingFunction implements IEasingFunction {
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {
@@ -378,6 +389,7 @@ export class BezierCurveEase extends EasingFunction implements IEasingFunction {
 
     /**
      * @param gradient
+     * @returns the easing value
      * @hidden
      */
     public easeInCore(gradient: number): number {

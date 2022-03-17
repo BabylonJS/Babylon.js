@@ -997,14 +997,14 @@ export abstract class EffectLayer {
     private _disposeTextureAndPostProcesses(): void {
         this._mainTexture.dispose();
 
-        for (var i = 0; i < this._postProcesses.length; i++) {
+        for (let i = 0; i < this._postProcesses.length; i++) {
             if (this._postProcesses[i]) {
                 this._postProcesses[i].dispose();
             }
         }
         this._postProcesses = [];
 
-        for (var i = 0; i < this._textures.length; i++) {
+        for (let i = 0; i < this._textures.length; i++) {
             if (this._textures[i]) {
                 this._textures[i].dispose();
             }

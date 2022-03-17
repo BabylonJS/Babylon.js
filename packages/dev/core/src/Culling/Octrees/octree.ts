@@ -45,8 +45,8 @@ export class Octree<T> {
     // Methods
     /**
      * Updates the octree by adding blocks for the passed in meshes within the min and max world parameters
-     * @param worldMin worldMin for the octree blocks var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
-     * @param worldMax worldMax for the octree blocks var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+     * @param worldMin worldMin for the octree blocks let blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+     * @param worldMax worldMax for the octree blocks let blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
      * @param entries meshes to be added to the octree blocks
      */
     public update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void {

@@ -292,7 +292,7 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
      * @hidden
      */
     public _setLaserPointerParent(mesh: AbstractMesh) {
-        var makeNotPick = (root: AbstractMesh) => {
+        const makeNotPick = (root: AbstractMesh) => {
             root.isPickable = false;
             root.getChildMeshes().forEach((c) => {
                 makeNotPick(c);

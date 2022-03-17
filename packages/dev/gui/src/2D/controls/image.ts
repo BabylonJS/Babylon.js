@@ -838,11 +838,11 @@ export class Image extends Control {
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_UNIFORM:
-                    var hRatio = this._currentMeasure.width / width;
-                    var vRatio = this._currentMeasure.height / height;
-                    var ratio = Math.min(hRatio, vRatio);
-                    var centerX = (this._currentMeasure.width - width * ratio) / 2;
-                    var centerY = (this._currentMeasure.height - height * ratio) / 2;
+                    const hRatio = this._currentMeasure.width / width;
+                    const vRatio = this._currentMeasure.height / height;
+                    const ratio = Math.min(hRatio, vRatio);
+                    const centerX = (this._currentMeasure.width - width * ratio) / 2;
+                    const centerY = (this._currentMeasure.height - height * ratio) / 2;
 
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                     break;

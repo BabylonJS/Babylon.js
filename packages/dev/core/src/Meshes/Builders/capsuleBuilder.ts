@@ -67,23 +67,23 @@ export function CreateCapsuleVertexData(
 
     let v = 0;
     for (y = 0; y <= capsTopSegments; y++) {
-        var indexRow = [];
+        const indexRow = [];
 
-        var a = pi2 - alpha * (y / capsTopSegments);
+        const a = pi2 - alpha * (y / capsTopSegments);
 
         v += (radiusTop * alpha) / capsTopSegments;
 
-        var cosA = Math.cos(a);
-        var sinA = Math.sin(a);
+        const cosA = Math.cos(a);
+        const sinA = Math.sin(a);
 
         // calculate the radius of the current row
-        var _radius = cosA * radiusTop;
+        const _radius = cosA * radiusTop;
 
         for (x = 0; x <= radialSegments; x++) {
-            var u = x / radialSegments;
-            var theta = u * thetaLength + thetaStart;
-            var sinTheta = Math.sin(theta);
-            var cosTheta = Math.cos(theta);
+            const u = x / radialSegments;
+            const theta = u * thetaLength + thetaStart;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = halfHeight + sinA * radiusTop;
@@ -107,15 +107,15 @@ export function CreateCapsuleVertexData(
     const slope = (sinAlpha * (radiusBottom - radiusTop)) / cone_height;
 
     for (y = 1; y <= heightSegments; y++) {
-        var indexRow = [];
+        const indexRow = [];
         v += cone_length / heightSegments;
         // calculate the radius of the current row
-        var _radius = sinAlpha * ((y * (radiusBottom - radiusTop)) / heightSegments + radiusTop);
+        const _radius = sinAlpha * ((y * (radiusBottom - radiusTop)) / heightSegments + radiusTop);
         for (x = 0; x <= radialSegments; x++) {
-            var u = x / radialSegments;
-            var theta = u * thetaLength + thetaStart;
-            var sinTheta = Math.sin(theta);
-            var cosTheta = Math.cos(theta);
+            const u = x / radialSegments;
+            const theta = u * thetaLength + thetaStart;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = halfHeight + cosAlpha * radiusTop - (y * cone_height) / heightSegments;
@@ -136,18 +136,18 @@ export function CreateCapsuleVertexData(
     }
 
     for (y = 1; y <= capsBottomSegments; y++) {
-        var indexRow = [];
-        var a = pi2 - alpha - (Math.PI - alpha) * (y / capsBottomSegments);
+        const indexRow = [];
+        const a = pi2 - alpha - (Math.PI - alpha) * (y / capsBottomSegments);
         v += (radiusBottom * alpha) / capsBottomSegments;
-        var cosA = Math.cos(a);
-        var sinA = Math.sin(a);
+        const cosA = Math.cos(a);
+        const sinA = Math.sin(a);
         // calculate the radius of the current row
-        var _radius = cosA * radiusBottom;
+        const _radius = cosA * radiusBottom;
         for (x = 0; x <= radialSegments; x++) {
-            var u = x / radialSegments;
-            var theta = u * thetaLength + thetaStart;
-            var sinTheta = Math.sin(theta);
-            var cosTheta = Math.cos(theta);
+            const u = x / radialSegments;
+            const theta = u * thetaLength + thetaStart;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = -halfHeight + sinA * radiusBottom;

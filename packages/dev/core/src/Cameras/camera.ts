@@ -1025,7 +1025,7 @@ export class Camera extends Node {
             this._rigPostProcess = null;
             this._postProcesses = [];
         } else {
-            var i = this._postProcesses.length;
+            let i = this._postProcesses.length;
             while (--i >= 0) {
                 const postProcess = this._postProcesses[i];
                 if (postProcess) {
@@ -1035,7 +1035,7 @@ export class Camera extends Node {
         }
 
         // Render targets
-        var i = this.customRenderTargets.length;
+        let i = this.customRenderTargets.length;
         while (--i >= 0) {
             this.customRenderTargets[i].dispose();
         }

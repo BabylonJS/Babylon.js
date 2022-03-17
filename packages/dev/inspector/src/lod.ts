@@ -23,4 +23,4 @@ void main(void)
 
 Effect.ShadersStore[name] = shader;
 /** @hidden */
-export var lodPixelShader = { name, shader };
+export const lodPixelShader = { name, shader };

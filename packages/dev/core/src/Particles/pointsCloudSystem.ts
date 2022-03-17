@@ -39,7 +39,7 @@ export enum PointColor {
 export class PointsCloudSystem implements IDisposable {
     /**
      *  The PCS array of cloud point objects. Just access each particle as with any classic array.
-     *  Example : var p = SPS.particles[i];
+     *  Example : let p = SPS.particles[i];
      */
     public particles: CloudPoint[] = new Array<CloudPoint>();
     /**
@@ -229,7 +229,7 @@ export class PointsCloudSystem implements IDisposable {
 
         let idxPoints: number = 0;
 
-        var index: number = 0;
+        const index: number = 0;
         let id0: number = 0;
         let id1: number = 0;
         let id2: number = 0;
@@ -298,7 +298,7 @@ export class PointsCloudSystem implements IDisposable {
         let pickInfo: PickingInfo;
         let direction = Vector3.Zero();
 
-        for (var index = 0; index < meshInd.length / 3; index++) {
+        for (let index = 0; index < meshInd.length / 3; index++) {
             id0 = meshInd[3 * index];
             id1 = meshInd[3 * index + 1];
             id2 = meshInd[3 * index + 2];
@@ -351,18 +351,18 @@ export class PointsCloudSystem implements IDisposable {
                 col2.subtractToRef(col1, colvec1);
             }
 
-            var width: number;
-            var height: number;
-            var deltaS: number;
-            var deltaV: number;
-            var h: number;
-            var s: number;
-            var v: number;
-            var hsvCol: Color3;
+            let width: number;
+            let height: number;
+            let deltaS: number;
+            let deltaV: number;
+            let h: number;
+            let s: number;
+            let v: number;
+            let hsvCol: Color3;
             const statedColor: Color3 = new Color3(0, 0, 0);
             const colPoint3: Color3 = new Color3(0, 0, 0);
-            var pointColors: Color4;
-            var particle: CloudPoint;
+            let pointColors: Color4;
+            let particle: CloudPoint;
 
             for (let i = 0; i < pointsGroup._groupDensity[index]; i++) {
                 idxPoints = this.particles.length;
@@ -511,7 +511,7 @@ export class PointsCloudSystem implements IDisposable {
     // calculates the point density per facet of a mesh for surface points
     private _calculateDensity(nbPoints: number, positions: FloatArray, indices: IndicesArray): number[] {
         let density: number[] = new Array<number>();
-        var index: number;
+        let index: number;
         let id0: number;
         let id1: number;
         let id2: number;
@@ -542,7 +542,7 @@ export class PointsCloudSystem implements IDisposable {
         const nbFacets = indices.length / 3;
 
         //surface area
-        for (var index = 0; index < nbFacets; index++) {
+        for (let index = 0; index < nbFacets; index++) {
             id0 = indices[3 * index];
             id1 = indices[3 * index + 1];
             id2 = indices[3 * index + 2];
@@ -570,7 +570,7 @@ export class PointsCloudSystem implements IDisposable {
             areas[index] = area;
         }
         let pointCount: number = 0;
-        for (var index = 0; index < nbFacets; index++) {
+        for (let index = 0; index < nbFacets; index++) {
             density[index] = Math.floor((nbPoints * areas[index]) / surfaceArea);
             pointCount += density[index];
         }
@@ -583,7 +583,7 @@ export class PointsCloudSystem implements IDisposable {
             density = density.map((x) => x + pointsPerFacet);
         }
 
-        for (var index = 0; index < extraPoints; index++) {
+        for (let index = 0; index < extraPoints; index++) {
             density[index] += 1;
         }
 
@@ -744,7 +744,7 @@ export class PointsCloudSystem implements IDisposable {
         const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
 
         Matrix.IdentityToRef(rotMatrix);
-        var idx = 0; // current index of the particle
+        let idx = 0; // current index of the particle
 
         if (this.mesh.isFacetDataEnabled) {
             this._computeBoundingBox = true;
@@ -762,7 +762,7 @@ export class PointsCloudSystem implements IDisposable {
             }
         }
 
-        var idx = 0; // particle index
+        let idx = 0; // particle index
         let pindex = 0; //index in positions array
         let cindex = 0; //index in color array
         let uindex = 0; //index in uv array

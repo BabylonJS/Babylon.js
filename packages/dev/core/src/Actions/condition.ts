@@ -198,7 +198,7 @@ export class ValueCondition extends Condition {
                 return this._effectiveTarget[this._property] < this.value;
             case ValueCondition.IsEqual:
             case ValueCondition.IsDifferent:
-                var check: boolean;
+                let check: boolean;
 
                 if (this.value.equals) {
                     check = this.value.equals(this._effectiveTarget[this._property]);

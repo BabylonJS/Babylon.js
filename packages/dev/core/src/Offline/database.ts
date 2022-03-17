@@ -339,7 +339,7 @@ export class Database implements IOfflineProvider {
 
             if (Database.IsUASupportingBlobStorage) {
                 // Create XHR
-                var xhr = new WebRequest(),
+                let xhr = new WebRequest(),
                     blob: Blob;
 
                 xhr.open("GET", url);

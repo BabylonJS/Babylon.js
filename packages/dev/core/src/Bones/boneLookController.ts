@@ -325,7 +325,7 @@ export class BoneLookController {
             } else if (this.upAxisSpace == Space.LOCAL && upAxis.y == 1 && !parentBone) {
                 spaceMat.copyFrom(mesh.getWorldMatrix());
             } else {
-                var forwardAxis = BoneLookController._tmpVecs[2];
+                let forwardAxis = BoneLookController._tmpVecs[2];
                 forwardAxis.copyFrom(this._fowardAxis);
 
                 if (this._transformYawPitch) {
@@ -340,7 +340,7 @@ export class BoneLookController {
 
                 const rightAxis = Vector3.Cross(upAxis, forwardAxis);
                 rightAxis.normalize();
-                var forwardAxis = Vector3.Cross(rightAxis, upAxis);
+                let forwardAxis = Vector3.Cross(rightAxis, upAxis);
 
                 Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, spaceMat);
             }
@@ -350,7 +350,7 @@ export class BoneLookController {
             let xzlen: Nullable<number> = null;
 
             if (checkPitch) {
-                var localTarget = BoneLookController._tmpVecs[3];
+                const localTarget = BoneLookController._tmpVecs[3];
                 target.subtractToRef(bonePos, localTarget);
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
@@ -374,7 +374,7 @@ export class BoneLookController {
             }
 
             if (checkYaw) {
-                var localTarget = BoneLookController._tmpVecs[4];
+                const localTarget = BoneLookController._tmpVecs[4];
                 target.subtractToRef(bonePos, localTarget);
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 

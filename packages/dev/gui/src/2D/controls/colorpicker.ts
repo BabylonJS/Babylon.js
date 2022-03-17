@@ -252,7 +252,7 @@ export class ColorPicker extends Control {
                 data[index] = color.r * 255;
                 data[index + 1] = color.g * 255;
                 data[index + 2] = color.b * 255;
-                var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                let alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
                 //apply less alpha to bigger color pickers
                 let alphaAmount = 0.2;
@@ -269,7 +269,7 @@ export class ColorPicker extends Control {
                     alphaAmount = ((minAlpha - maxAlpha) * (radius - lowerRadius)) / (upperRadius - lowerRadius) + maxAlpha;
                 }
 
-                var alphaRatio = (dist - innerRadius) / (radius - innerRadius);
+                let alphaRatio = (dist - innerRadius) / (radius - innerRadius);
 
                 if (alphaRatio < alphaAmount) {
                     data[index + 3] = 255 * (alphaRatio / alphaAmount);
@@ -687,9 +687,9 @@ export class ColorPicker extends Control {
             function createSwatch() {
                 if (options.savedColors && options.savedColors[swatchNumber]) {
                     if (editSwatchMode) {
-                        var icon: string = "b";
+                        const icon: string = "b";
                     } else {
-                        var icon: string = "";
+                        const icon: string = "";
                     }
                     const swatch: Button = Button.CreateSimpleButton("Swatch_" + swatchNumber, icon);
                     swatch.fontFamily = "coreglyphs";
@@ -742,16 +742,16 @@ export class ColorPicker extends Control {
                     editSwatchMode = mode;
                 }
                 if (editSwatchMode) {
-                    for (var i = 0; i < swatchDrawer.children.length; i++) {
-                        var thisButton: Button = swatchDrawer.children[i] as Button;
+                    for (let i = 0; i < swatchDrawer.children.length; i++) {
+                        const thisButton: Button = swatchDrawer.children[i] as Button;
                         thisButton.textBlock!.text = "b";
                     }
                     if (butEdit !== undefined) {
                         butEdit.textBlock!.text = "Done";
                     }
                 } else {
-                    for (var i = 0; i < swatchDrawer.children.length; i++) {
-                        var thisButton: Button = swatchDrawer.children[i] as Button;
+                    for (let i = 0; i < swatchDrawer.children.length; i++) {
+                        const thisButton: Button = swatchDrawer.children[i] as Button;
                         thisButton.textBlock!.text = "";
                     }
                     if (butEdit !== undefined) {
@@ -777,16 +777,16 @@ export class ColorPicker extends Control {
                     swatchDrawer.clearControls();
                     const rowCount: number = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
                     if (rowCount == 0) {
-                        var gutterCount: number = 0;
+                        const gutterCount: number = 0;
                     } else {
-                        var gutterCount: number = rowCount + 1;
+                        const gutterCount: number = rowCount + 1;
                     }
                     if (swatchDrawer.rowCount != rowCount + gutterCount) {
                         const currentRows: number = swatchDrawer.rowCount;
-                        for (var i = 0; i < currentRows; i++) {
+                        for (let i = 0; i < currentRows; i++) {
                             swatchDrawer.removeRowDefinition(0);
                         }
-                        for (var i = 0; i < rowCount + gutterCount; i++) {
+                        for (let i = 0; i < rowCount + gutterCount; i++) {
                             if (i % 2) {
                                 swatchDrawer.addRowDefinition(swatchSize, true);
                             } else {
@@ -799,9 +799,9 @@ export class ColorPicker extends Control {
                     for (let y = 1, thisRow = 1; y < rowCount + gutterCount; y += 2, thisRow++) {
                         // Determine number of buttons to create per row based on the button limit per row and number of saved colors
                         if (options.savedColors.length > thisRow * options.numSwatchesPerLine!) {
-                            var totalButtonsThisRow = options.numSwatchesPerLine!;
+                            const totalButtonsThisRow = options.numSwatchesPerLine!;
                         } else {
-                            var totalButtonsThisRow = options.savedColors.length - (thisRow - 1) * options.numSwatchesPerLine!;
+                            const totalButtonsThisRow = options.savedColors.length - (thisRow - 1) * options.numSwatchesPerLine!;
                         }
                         const buttonIterations: number = Math.min(Math.max(totalButtonsThisRow, 0), options.numSwatchesPerLine!);
                         for (let x = 0, w = 1; x < buttonIterations; x++) {
@@ -893,7 +893,7 @@ export class ColorPicker extends Control {
             }
 
             // Dialogue menu container which will contain both the main dialogue window and the swatch drawer which opens once a color is saved.
-            var dialogContainer: Grid = new Grid();
+            const dialogContainer: Grid = new Grid();
             dialogContainer.name = "Dialog Container";
             dialogContainer.width = options.pickerWidth;
             if (options.savedColors) {
@@ -916,20 +916,20 @@ export class ColorPicker extends Control {
                 swatchDrawer.width = options.pickerWidth!;
                 const initialRows: number = options.savedColors.length / options.numSwatchesPerLine;
                 if (initialRows == 0) {
-                    var gutterCount: number = 0;
+                    const gutterCount: number = 0;
                 } else {
-                    var gutterCount: number = initialRows + 1;
+                    const gutterCount: number = initialRows + 1;
                 }
                 swatchDrawer.height = (swatchSize * initialRows + gutterCount * gutterSize).toString() + "px";
                 swatchDrawer.top = Math.floor(swatchSize * 0.25).toString() + "px";
-                for (var i = 0; i < Math.ceil(options.savedColors.length / options.numSwatchesPerLine) * 2 + 1; i++) {
+                for (let i = 0; i < Math.ceil(options.savedColors.length / options.numSwatchesPerLine) * 2 + 1; i++) {
                     if (i % 2 != 0) {
                         swatchDrawer.addRowDefinition(swatchSize, true);
                     } else {
                         swatchDrawer.addRowDefinition(gutterSize, true);
                     }
                 }
-                for (var i = 0; i < options.numSwatchesPerLine! * 2 + 1; i++) {
+                for (let i = 0; i < options.numSwatchesPerLine! * 2 + 1; i++) {
                     if (i % 2 != 0) {
                         swatchDrawer.addColumnDefinition(swatchSize, true);
                     } else {
@@ -996,7 +996,7 @@ export class ColorPicker extends Control {
             pickerPanel.addControl(dialogBody, 1, 0);
 
             // Picker grid
-            var pickerGrid: Grid = new Grid();
+            const pickerGrid: Grid = new Grid();
             pickerGrid.name = "Picker Grid";
             pickerGrid.addRowDefinition(0.85, false);
             pickerGrid.addRowDefinition(0.15, false);
@@ -1066,9 +1066,9 @@ export class ColorPicker extends Control {
             const labelHeight: number = Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * pickeSwatchesRows[1] * 0.5);
 
             if (options.pickerWidth > options.pickerHeight) {
-                var labelTextSize: number = labelHeight;
+                const labelTextSize: number = labelHeight;
             } else {
-                var labelTextSize: number = labelWidth;
+                const labelTextSize: number = labelWidth;
             }
             // New color swatch and previous color button
             const newText: TextBlock = new TextBlock();
@@ -1084,7 +1084,7 @@ export class ColorPicker extends Control {
             newSwatch.thickness = 0;
             activeSwatches.addControl(newSwatch, 0, 0);
 
-            var currentSwatch: Button = Button.CreateSimpleButton("currentSwatch", "");
+            const currentSwatch: Button = Button.CreateSimpleButton("currentSwatch", "");
             currentSwatch.background = options.lastColor;
             currentSwatch.thickness = 0;
             currentSwatch.onPointerClickObservable.add(() => {
@@ -1191,7 +1191,7 @@ export class ColorPicker extends Control {
             buttonGrid.addControl(butCancel, 1, 0);
 
             if (options.savedColors) {
-                var butSave: Button = Button.CreateSimpleButton("butSave", "Save");
+                const butSave: Button = Button.CreateSimpleButton("butSave", "Save");
                 butSave.width = buttonWidth;
                 butSave.height = buttonHeight;
                 butSave.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
@@ -1271,8 +1271,8 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addColumnDefinition(0.7, false);
             pickerColorValues.addControl(rgbValuesQuadrant, 1, 0);
 
-            for (var i = 0; i < inputFieldLabels.length; i++) {
-                var labelText: TextBlock = new TextBlock();
+            for (let i = 0; i < inputFieldLabels.length; i++) {
+                const labelText: TextBlock = new TextBlock();
                 labelText.text = inputFieldLabels[i];
                 labelText.color = buttonColor;
                 labelText.fontSize = buttonFontSize;
@@ -1463,7 +1463,7 @@ export class ColorPicker extends Control {
             hexValueQuadrant.addColumnDefinition(0.9, false);
             pickerColorValues.addControl(hexValueQuadrant, 2, 0);
 
-            var labelText: TextBlock = new TextBlock();
+            const labelText: TextBlock = new TextBlock();
             labelText.text = "#";
             labelText.color = buttonColor;
             labelText.fontSize = buttonFontSize;

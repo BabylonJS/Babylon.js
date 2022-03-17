@@ -52,7 +52,7 @@ export class StackPanel3D extends Container3D {
         const currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
 
         // Measure
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (!child.mesh) {
                 continue;
             }
@@ -87,7 +87,7 @@ export class StackPanel3D extends Container3D {
         }
 
         let index = 0;
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (!child.mesh) {
                 continue;
             }

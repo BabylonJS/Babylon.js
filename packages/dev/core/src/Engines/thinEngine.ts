@@ -1025,18 +1025,19 @@ export class ThinEngine {
     /**
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
-     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
-     * @param audioEngine Defines if an audio engine should be created by default
+     * @param _doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param _audioEngine Defines if an audio engine should be created by default
      */
-    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+    protected _sharedInit(canvas: HTMLCanvasElement, _doNotHandleTouchAction: boolean, _audioEngine: boolean) {
         this._renderingCanvas = canvas;
     }
 
     /**
-     * @param shaderLanguage
+     * @param _shaderLanguage
+     * @returns the created shader processing context or null
      * @hidden
      */
-    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
+    public _getShaderProcessingContext(_shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return null;
     }
 
@@ -2952,7 +2953,7 @@ export class ThinEngine {
                 }
             }
 
-            var error = context.getProgramInfoLog(program);
+            const error = context.getProgramInfoLog(program);
             if (error) {
                 pipelineContext.programLinkError = error;
                 throw new Error(error);
@@ -2964,7 +2965,7 @@ export class ThinEngine {
             const validated = context.getProgramParameter(program, context.VALIDATE_STATUS);
 
             if (!validated) {
-                var error = context.getProgramInfoLog(program);
+                const error = context.getProgramInfoLog(program);
                 if (error) {
                     pipelineContext.programValidationError = error;
                     throw new Error(error);
@@ -2994,7 +2995,7 @@ export class ThinEngine {
      * @param rebuildRebind
      * @param defines
      * @param transformFeedbackVaryings
-     * @param key
+     * @param _key
      * @hidden
      */
     public _preparePipelineContext(
@@ -3007,7 +3008,7 @@ export class ThinEngine {
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        key: string
+        _key: string
     ) {
         const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
@@ -3021,6 +3022,7 @@ export class ThinEngine {
 
     /**
      * @param pipelineContext
+     * @returns whether or not the rendering state compiled
      * @hidden
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
@@ -5113,13 +5115,13 @@ export class ThinEngine {
         if (this._mustWipeVertexAttributes) {
             this._mustWipeVertexAttributes = false;
 
-            for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+            for (let i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this.disableAttributeByIndex(i);
             }
             return;
         }
 
-        for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+        for (let i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
             if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                 continue;
             }

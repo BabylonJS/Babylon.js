@@ -578,11 +578,11 @@ export class TransformNode extends Node {
         if (space === Space.WORLD && this.parent) {
             if (this.rotationQuaternion) {
                 // Get local rotation matrix of the looking object
-                var rotationMatrix = TmpVectors.Matrix[0];
+                const rotationMatrix = TmpVectors.Matrix[0];
                 this.rotationQuaternion.toRotationMatrix(rotationMatrix);
 
                 // Offset rotation by parent's inverted rotation matrix to correct in world space
-                var parentRotationMatrix = TmpVectors.Matrix[1];
+                const parentRotationMatrix = TmpVectors.Matrix[1];
                 this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
                 parentRotationMatrix.invert();
                 rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
@@ -591,11 +591,11 @@ export class TransformNode extends Node {
                 // Get local rotation matrix of the looking object
                 const quaternionRotation = TmpVectors.Quaternion[0];
                 Quaternion.FromEulerVectorToRef(this.rotation, quaternionRotation);
-                var rotationMatrix = TmpVectors.Matrix[0];
+                const rotationMatrix = TmpVectors.Matrix[0];
                 quaternionRotation.toRotationMatrix(rotationMatrix);
 
                 // Offset rotation by parent's inverted rotation matrix to correct in world space
-                var parentRotationMatrix = TmpVectors.Matrix[1];
+                const parentRotationMatrix = TmpVectors.Matrix[1];
                 this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
                 parentRotationMatrix.invert();
                 rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);

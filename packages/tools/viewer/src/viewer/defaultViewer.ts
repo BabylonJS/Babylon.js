@@ -249,8 +249,8 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 this._togglePlayPause();
                 break;
             case "label-option-button":
-                var value = element.dataset["value"];
-                var label = element.querySelector("span.animation-label");
+                const value = element.dataset["value"];
+                const label = element.querySelector("span.animation-label");
                 if (label && value) {
                     this._updateAnimationType({ value: value.trim(), label: label.innerHTML });
                 }
@@ -259,7 +259,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 if (!this._currentAnimation) {
                     return;
                 }
-                var speed = element.dataset["value"];
+                const speed = element.dataset["value"];
                 if (speed) {
                     this._updateAnimationSpeed(speed);
                 }
@@ -647,7 +647,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
         return template.show((template) => {
             const canvasRect = this.containerElement.getBoundingClientRect();
-            // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
+            // let canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
             template.parent.style.display = "flex";
             template.parent.style.width = canvasRect.width + "px";

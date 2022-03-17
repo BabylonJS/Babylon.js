@@ -74,7 +74,7 @@ export class SceneRecorder {
             if (original.length === 0) {
                 return true;
             }
-            for (var index = 0; index < original.length; index++) {
+            for (let index = 0; index < original.length; index++) {
                 if (original[index] !== current[index]) {
                     deltaJSON[key] = current;
                     return false;
@@ -85,7 +85,7 @@ export class SceneRecorder {
 
         // let's use uniqueId to find similar objects
         const originalUniqueIds: number[] = [];
-        for (var index = 0; index < original.length; index++) {
+        for (let index = 0; index < original.length; index++) {
             const originalObject = original[index];
             const originalUniqueId = originalObject.uniqueId;
 
@@ -118,7 +118,7 @@ export class SceneRecorder {
         }
 
         // Checking for new objects
-        for (var index = 0; index < current.length; index++) {
+        for (let index = 0; index < current.length; index++) {
             const currentObject = current[index];
             const currentUniqueId = currentObject.uniqueId;
 

@@ -71,9 +71,9 @@ export function CreateLathe(
     let p = 0;
     const step = (pi2 / tessellation) * arc;
     let rotated;
-    var path = new Array<Vector3>();
+    const path = new Array<Vector3>();
     for (i = 0; i <= tessellation - clip; i++) {
-        var path: Vector3[] = [];
+        const path: Vector3[] = [];
         if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
             path.push(new Vector3(0, shape[0].y, 0));
             path.push(new Vector3(Math.cos(i * step) * shape[0].x * radius, shape[0].y, Math.sin(i * step) * shape[0].x * radius));

@@ -30,7 +30,7 @@ import { Tools } from "../Misc/tools";
 export class SolidParticleSystem implements IDisposable {
     /**
      *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
-     *  Example : var p = SPS.particles[i];
+     *  Example : let p = SPS.particles[i];
      */
     public particles: SolidParticle[] = new Array<SolidParticle>();
     /**
@@ -400,7 +400,7 @@ export class SolidParticleSystem implements IDisposable {
 
             // compute the barycenter of the shape
             barycenter.copyFromFloats(0, 0, 0);
-            var v: number;
+            let v: number;
             for (v = 0; v < shape.length; v++) {
                 barycenter.addInPlace(shape[v]);
             }
@@ -415,7 +415,7 @@ export class SolidParticleSystem implements IDisposable {
                 minimum.minimizeInPlaceFromFloats(shape[v].x, shape[v].y, shape[v].z);
                 maximum.maximizeInPlaceFromFloats(shape[v].x, shape[v].y, shape[v].z);
             }
-            var bInfo;
+            let bInfo;
             if (this._particlesIntersect) {
                 bInfo = new BoundingInfo(minimum, maximum);
             }
@@ -1434,7 +1434,7 @@ export class SolidParticleSystem implements IDisposable {
                     // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
                     const params = mesh.isFacetDataEnabled ? mesh.getFacetDataParameters() : null;
                     VertexData.ComputeNormals(positions32, indices32, normals32, params);
-                    for (var i = 0; i < normals32.length; i++) {
+                    for (let i = 0; i < normals32.length; i++) {
                         fixedNormal32[i] = normals32[i];
                     }
                 }
@@ -1457,7 +1457,7 @@ export class SolidParticleSystem implements IDisposable {
                     const sortedParticle = depthSortedParticles[sorted];
                     const lind = sortedParticle.indicesLength;
                     const sind = sortedParticle.ind;
-                    for (var i = 0; i < lind; i++) {
+                    for (let i = 0; i < lind; i++) {
                         indices32[sid] = indices[sind + i];
                         sid++;
                         if (this._pickable) {

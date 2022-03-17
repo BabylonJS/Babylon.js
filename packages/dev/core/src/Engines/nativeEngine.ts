@@ -1154,9 +1154,9 @@ export class NativeEngine extends Engine {
         // TODO: Make this implementation more robust like core Engine version.
 
         // Render
-        //var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
+        //let indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
 
-        //var mult = this._uintIndicesCurrentlySet ? 4 : 2;
+        //let mult = this._uintIndicesCurrentlySet ? 4 : 2;
         // if (instancesCount) {
         //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
         // } else {

@@ -21,7 +21,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
 
 /** @hidden */
-export var _forceSceneHelpersToBundle = true;
+export const _forceSceneHelpersToBundle = true;
 
 declare module "../scene" {
     export interface Scene {

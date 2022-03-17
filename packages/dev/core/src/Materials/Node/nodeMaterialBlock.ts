@@ -574,7 +574,7 @@ export class NodeMaterialBlock {
 
         if (!this.isInput) {
             /** Prepare outputs */
-            for (var output of this._outputs) {
+            for (const output of this._outputs) {
                 if (!output.associatedVariableName) {
                     output.associatedVariableName = state._getFreeVariableName(output.name);
                 }
@@ -638,7 +638,7 @@ export class NodeMaterialBlock {
         this._buildTarget = state.target;
 
         // Compile connected blocks
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if ((output.target & state.target) === 0) {
                 continue;
             }
@@ -696,7 +696,7 @@ export class NodeMaterialBlock {
         if (this.comments) {
             codeString += `// ${this.comments}\r\n`;
         }
-        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+        codeString += `let ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
 
         // Properties
         codeString += this._dumpPropertiesCode();
@@ -708,7 +708,7 @@ export class NodeMaterialBlock {
             }
 
             const connectedOutput = input.connectedPoint!;
-            var connectedBlock = connectedOutput.ownerBlock;
+            const connectedBlock = connectedOutput.ownerBlock;
 
             if (alreadyDumped.indexOf(connectedBlock) === -1) {
                 codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
@@ -722,7 +722,7 @@ export class NodeMaterialBlock {
             }
 
             for (const endpoint of output.endpoints) {
-                var connectedBlock = endpoint.ownerBlock;
+                const connectedBlock = endpoint.ownerBlock;
                 if (connectedBlock && alreadyDumped.indexOf(connectedBlock) === -1) {
                     codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
                 }

@@ -112,7 +112,7 @@ export function CreateCylinderVertexData(options: {
     let j: number;
     let r: number;
     let ringIdx: number = 1;
-    var s: number = 1; // surface index
+    let s: number = 1; // surface index
     let cs: number = 0;
     let v: number = 0;
 
@@ -208,7 +208,7 @@ export function CreateCylinderVertexData(options: {
 
     // indices
     const e: number = arc !== 1 && enclose ? tessellation + 4 : tessellation; // correction of number of iteration if enclose
-    var s: number;
+    let s: number;
     i = 0;
     for (s = 0; s < subdivisions; s++) {
         let i0: number = 0;

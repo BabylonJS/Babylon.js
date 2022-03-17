@@ -93,7 +93,7 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
 
     let pixel_data;
 
-    // var numAlphaBits = header.flags & 0xf;
+    // let numAlphaBits = header.flags & 0xf;
     const pixel_size = header.pixel_size >> 3;
     const pixel_total = header.width * header.height * pixel_size;
 

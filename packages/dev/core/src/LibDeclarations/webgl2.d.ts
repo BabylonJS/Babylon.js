@@ -134,35 +134,35 @@ interface ImageBitmap {
 
 interface WebGLQuery {}
 
-declare var WebGLQuery: {
+declare let WebGLQuery: {
     prototype: WebGLQuery;
     new (): WebGLQuery;
 };
 
 interface WebGLSampler {}
 
-declare var WebGLSampler: {
+declare let WebGLSampler: {
     prototype: WebGLSampler;
     new (): WebGLSampler;
 };
 
 interface WebGLSync {}
 
-declare var WebGLSync: {
+declare let WebGLSync: {
     prototype: WebGLSync;
     new (): WebGLSync;
 };
 
 interface WebGLTransformFeedback {}
 
-declare var WebGLTransformFeedback: {
+declare let WebGLTransformFeedback: {
     prototype: WebGLTransformFeedback;
     new (): WebGLTransformFeedback;
 };
 
 interface WebGLVertexArrayObject {}
 
-declare var WebGLVertexArrayObject: {
+declare let WebGLVertexArrayObject: {
     prototype: WebGLVertexArrayObject;
     new (): WebGLVertexArrayObject;
 };

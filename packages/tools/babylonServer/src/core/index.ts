@@ -16,11 +16,11 @@ if (typeof globalObject !== "undefined") {
     BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
 
     const keys = [];
-    for (var key in DebugImport) {
+    for (const key in DebugImport) {
         BABYLONGLOBAL.Debug[key] = (<any>DebugImport)[key];
         keys.push(key);
     }
-    for (var key in BABYLON) {
+    for (const key in BABYLON) {
         BABYLONGLOBAL[key] = (<any>BABYLON)[key];
     }
 }

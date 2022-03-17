@@ -59,7 +59,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     public static WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
         return new Promise((res, rej) => {
             let gotValue = false;
-            var eventHandler = () => {
+            const eventHandler = () => {
                 window.removeEventListener("deviceorientation", eventHandler);
                 gotValue = true;
                 res();

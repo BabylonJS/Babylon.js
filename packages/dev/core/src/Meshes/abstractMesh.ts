@@ -1491,8 +1491,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 for (let index = 0; index < data.length; index += 3, matWeightIdx += 4) {
                     finalMatrix.reset();
 
-                    var inf: number;
-                    var weight: number;
+                    let inf: number;
+                    let weight: number;
                     for (inf = 0; inf < 4; inf++) {
                         weight = matricesWeightsData[matWeightIdx + inf];
                         if (weight > 0) {
@@ -1858,8 +1858,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
         // if no submesh can be picked that way, then fallback to BBox picking
         let anySubmeshSupportIntersect = false;
-        for (var index = 0; index < len; index++) {
-            var subMesh = subMeshes.data[index];
+        for (let index = 0; index < len; index++) {
+            const subMesh = subMeshes.data[index];
             const material = subMesh.getMaterial();
             if (!material) {
                 continue;
@@ -1886,8 +1886,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // at least 1 submesh supports intersection, keep going
-        for (var index = 0; index < len; index++) {
-            var subMesh = subMeshes.data[index];
+        for (let index = 0; index < len; index++) {
+            const subMesh = subMeshes.data[index];
 
             // Bounding test
             if (len > 1 && !subMesh.canIntersects(ray)) {
@@ -2189,7 +2189,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 data.facetDepthSortFrom = camera ? camera.position : Vector3.Zero();
             }
             data.depthSortedFacets = [];
-            for (var f = 0; f < data.facetNb; f++) {
+            for (let f = 0; f < data.facetNb; f++) {
                 const depthSortedFacet = { ind: f * 3, sqDistance: 0.0 };
                 data.depthSortedFacets.push(depthSortedFacet);
             }
@@ -2232,7 +2232,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (data.facetDepthSort && data.facetDepthSortEnabled) {
             data.depthSortedFacets.sort(data.facetDepthSortFunction);
             const l = (data.depthSortedIndices.length / 3) | 0;
-            for (var f = 0; f < l; f++) {
+            for (let f = 0; f < l; f++) {
                 const sind = data.depthSortedFacets[f].ind;
                 data.depthSortedIndices[f * 3] = indices![sind];
                 data.depthSortedIndices[f * 3 + 1] = indices![sind + 1];

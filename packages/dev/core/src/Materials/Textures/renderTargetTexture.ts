@@ -762,7 +762,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false, checkReadiness: boolean = false): boolean {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return checkReadiness;
@@ -776,7 +776,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         if (this._waitingRenderList) {
             this.renderList = [];
-            for (var index = 0; index < this._waitingRenderList.length; index++) {
+            for (let index = 0; index < this._waitingRenderList.length; index++) {
                 const id = this._waitingRenderList[index];
                 const mesh = scene.getMeshById(id);
                 if (mesh) {
@@ -795,7 +795,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 this.renderList = [];
             }
 
-            var scene = this.getScene();
+            const scene = this.getScene();
 
             if (!scene) {
                 return checkReadiness;
@@ -803,7 +803,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             const sceneMeshes = scene.meshes;
 
-            for (var index = 0; index < sceneMeshes.length; index++) {
+            for (let index = 0; index < sceneMeshes.length; index++) {
                 const mesh = sceneMeshes[index];
                 if (this.renderListPredicate(mesh)) {
                     this.renderList.push(mesh);

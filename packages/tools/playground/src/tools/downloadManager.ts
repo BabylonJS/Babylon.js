@@ -65,11 +65,11 @@ export class DownloadManager {
         if (textures[index].isCube) {
             if (textures[index].name.indexOf("dds") === -1 && textures[index].name.indexOf(".env") === -1) {
                 if (textures[index]._extensions) {
-                    for (var i = 0; i < 6; i++) {
+                    for (let i = 0; i < 6; i++) {
                         textures.push({ name: textures[index].name + textures[index]._extensions[i] });
                     }
                 } else if (textures[index]._files) {
-                    for (var i = 0; i < 6; i++) {
+                    for (let i = 0; i < 6; i++) {
                         textures.push({ name: textures[index]._files[i] });
                     }
                 }
@@ -91,7 +91,7 @@ export class DownloadManager {
         }
 
         const name = textures[index].name.replace("textures/", "");
-        // var name = url.substr(url.lastIndexOf("/") + 1);
+        // let name = url.substr(url.lastIndexOf("/") + 1);
 
         if (url != null) {
             return this._addContentToZipAsync(folder, name, url, null, true).then(() => {

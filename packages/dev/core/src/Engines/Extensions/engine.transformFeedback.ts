@@ -3,7 +3,7 @@ import { Engine } from "../../Engines/engine";
 import { DataBuffer } from "../../Buffers/dataBuffer";
 
 /** @hidden */
-export var _forceTransformFeedbackToBundle = true;
+export const _forceTransformFeedbackToBundle = true;
 
 declare module "../../Engines/engine" {
     export interface Engine {

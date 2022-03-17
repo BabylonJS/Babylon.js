@@ -101,7 +101,7 @@ export class CheckboxGroup extends SelectorGroup {
      * @param checked is true when Selector is checked
      */
     public addCheckbox(text: string, func = (s: boolean) => {}, checked: boolean = false): void {
-        var checked = checked || false;
+        let checked = checked || false;
         const button = new Checkbox();
         button.width = "20px";
         button.height = "20px";

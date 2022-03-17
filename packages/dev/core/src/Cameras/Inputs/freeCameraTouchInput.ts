@@ -99,7 +99,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                         evt.preventDefault();
                     }
 
-                    var index: number = this._pointerPressed.indexOf(evt.pointerId);
+                    const index: number = this._pointerPressed.indexOf(evt.pointerId);
 
                     if (index === -1) {
                         return;
@@ -121,7 +121,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                         return;
                     }
 
-                    var index: number = this._pointerPressed.indexOf(evt.pointerId);
+                    const index: number = this._pointerPressed.indexOf(evt.pointerId);
 
                     if (index != 0) {
                         return;

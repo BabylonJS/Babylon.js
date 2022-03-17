@@ -426,22 +426,22 @@ QUnit.test('Viewer typical case with dispose', function (assert) {
 });
 
 QUnit.test('Test getEnvironmentAssetUrl relative no root', function (assert) {
-    var viewer = Helper.createViewer();
+    let viewer = Helper.createViewer();
     assert.ok(viewer.getEnvironmentAssetUrl("foo.png") === "foo.png", "Relative url should be return unmodified without configuration.");
 });
 
 QUnit.test('Test getEnvironmentAssetUrl absolute no root', function (assert) {
-    var viewer = Helper.createViewer();
+    let viewer = Helper.createViewer();
     assert.ok(viewer.getEnvironmentAssetUrl("http://foo.png") === "http://foo.png", "Absolute url should not be undefined without configuration.");
 });
 
 QUnit.test('Test getEnvironmentAssetUrl relative root', function (assert) {
-    var viewer = Helper.createViewer({ environmentAssetsRootURL: "https://foo/" });
+    let viewer = Helper.createViewer({ environmentAssetsRootURL: "https://foo/" });
     assert.ok(viewer.getEnvironmentAssetUrl("foo.png") === "https://foo/foo.png", "Relative url should not be be undefined with configuration.");
 });
 
 QUnit.test('Test getEnvironmentAssetUrl absolute root', function (assert) {
-    var viewer = Helper.createViewer({ environmentAssetsRootURL: "https://foo/" });
+    let viewer = Helper.createViewer({ environmentAssetsRootURL: "https://foo/" });
     assert.ok(viewer.getEnvironmentAssetUrl("http://foo.png") === "http://foo.png", "Absolute url should not be undefined with configuration.");
 });
 

@@ -104,35 +104,35 @@ export class AnimationGroup implements IDisposable {
     public metadata: any = null;
 
     /**
-     * Gets the first frame
+     * @returns the first frame
      */
     public get from(): number {
         return this._from;
     }
 
     /**
-     * Gets the last frame
+     * @returns the last frame
      */
     public get to(): number {
         return this._to;
     }
 
     /**
-     * Define if the animations are started
+     * @returns if the animations are started
      */
     public get isStarted(): boolean {
         return this._isStarted;
     }
 
     /**
-     * Gets a value indicating that the current group is playing
+     * @returns a value indicating that the current group is playing
      */
     public get isPlaying(): boolean {
         return this._isStarted && !this._isPaused;
     }
 
     /**
-     * Gets or sets the speed ratio to use for all animations
+     * @returns or sets the speed ratio to use for all animations
      */
     public get speedRatio(): number {
         return this._speedRatio;
@@ -155,7 +155,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Gets or sets if all animations should loop or not
+     * @returns if all animations should loop or not
      */
     public get loopAnimation(): boolean {
         return this._loopAnimation;
@@ -175,7 +175,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Gets or sets if all animations should be evaluated additively
+     * @returns if all animations should be evaluated additively
      */
     public get isAdditive(): boolean {
         return this._isAdditive;
@@ -195,21 +195,21 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Gets the targeted animations for this animation group
+     * @returns the targeted animations for this animation group
      */
     public get targetedAnimations(): Array<TargetedAnimation> {
         return this._targetedAnimations;
     }
 
     /**
-     * returning the list of animatables controlled by this animation group.
+     * @returns the list of animatables controlled by this animation group.
      */
     public get animatables(): Array<Animatable> {
         return this._animatables;
     }
 
     /**
-     * Gets the list of target animations
+     * @returns the list of target animations
      */
     public get children() {
         return this._targetedAnimations;

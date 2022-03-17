@@ -38,4 +38,4 @@ void main(void)
 
 Effect.ShadersStore[name] = shader;
 /** @hidden */
-export var lodCubePixelShader = { name, shader };
+export const lodCubePixelShader = { name, shader };

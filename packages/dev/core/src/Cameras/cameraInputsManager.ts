@@ -7,7 +7,7 @@ import { Camera } from "./camera";
  * This is a list of all the different input types that are available in the application.
  * Fo instance: ArcRotateCameraGamepadInput...
  */
-export var CameraInputTypes = {};
+export const CameraInputTypes = {};
 
 /**
  * This is the contract to implement in order to create a new input class.
@@ -269,11 +269,11 @@ export class CameraInputsManager<TCamera extends Camera> {
         if (parsedInputs) {
             this.clear();
 
-            for (var n in parsedInputs) {
-                var construct = (<any>CameraInputTypes)[n];
+            for (const n in parsedInputs) {
+                const construct = (<any>CameraInputTypes)[n];
                 if (construct) {
                     const parsedinput = parsedInputs[n];
-                    var input = SerializationHelper.Parse(
+                    const input = SerializationHelper.Parse(
                         () => {
                             return new construct();
                         },
@@ -285,10 +285,10 @@ export class CameraInputsManager<TCamera extends Camera> {
             }
         } else {
             //2016-03-08 this part is for managing backward compatibility
-            for (var n in this.attached) {
-                var construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
+            for (const n in this.attached) {
+                const construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
                 if (construct) {
-                    var input = SerializationHelper.Parse(
+                    const input = SerializationHelper.Parse(
                         () => {
                             return new construct();
                         },

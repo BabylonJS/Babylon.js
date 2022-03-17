@@ -341,7 +341,7 @@ export class Collider {
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
-                var f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
+                const f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
 
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;

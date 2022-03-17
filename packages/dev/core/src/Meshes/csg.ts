@@ -177,7 +177,7 @@ class Plane {
                 back.push(polygon);
                 break;
             case SPANNING:
-                var f = [],
+                const f = [],
                     b = [];
                 for (i = 0; i < polygon.vertices.length; i++) {
                     const j = (i + 1) % polygon.vertices.length;
@@ -198,7 +198,7 @@ class Plane {
                         b.push(v.clone());
                     }
                 }
-                var poly: Polygon;
+                let poly: Polygon;
                 if (f.length >= 3) {
                     poly = new Polygon(f, polygon.shared);
                     if (poly.plane) {

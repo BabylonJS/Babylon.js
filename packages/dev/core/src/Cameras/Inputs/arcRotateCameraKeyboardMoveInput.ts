@@ -117,7 +117,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
@@ -137,7 +137,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
                             this._keys.splice(index, 1);

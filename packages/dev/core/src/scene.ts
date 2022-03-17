@@ -3704,14 +3704,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
-        for (var index = 0; index < this.meshes.length; index++) {
+        for (let index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
             if (mesh._internalAbstractMeshDataInfo) {
                 mesh._internalAbstractMeshDataInfo._isActive = false;
             }
         }
 
-        for (var index = 0; index < this._activeMeshes.length; index++) {
+        for (let index = 0; index < this._activeMeshes.length; index++) {
             this._activeMeshes.data[index]._unFreeze();
         }
 
@@ -4142,7 +4142,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                     const parameters = action.getTriggerParameter();
-                    var otherMesh = parameters.mesh ? parameters.mesh : parameters;
+                    const otherMesh = parameters.mesh ? parameters.mesh : parameters;
 
                     const areIntersecting = otherMesh.intersectsMesh(sourceMesh, parameters.usePreciseIntersection);
                     const currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
@@ -4201,7 +4201,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** Execute all animations (for a frame) */
     public animate() {
         if (this._engine.isDeterministicLockStep()) {
-            var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
+            let deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
             const defaultFrameTime = this._engine.getTimeStep();
             const defaultFPS = 1000.0 / defaultFrameTime / 1000.0;
@@ -4236,7 +4236,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
         } else {
             // Animations
-            var deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+            const deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
             this.onAfterAnimationsObservable.notifyObservers(this);
@@ -4333,12 +4333,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Update Cameras
         if (updateCameras) {
             if (this.activeCameras && this.activeCameras.length > 0) {
-                for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     const camera = this.activeCameras[cameraIndex];
                     camera.update();
                     if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                         // rig cameras
-                        for (var index = 0; index < camera._rigCameras.length; index++) {
+                        for (let index = 0; index < camera._rigCameras.length; index++) {
                             camera._rigCameras[index].update();
                         }
                     }
@@ -4347,7 +4347,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.activeCamera.update();
                 if (this.activeCamera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                     // rig cameras
-                    for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
+                    for (let index = 0; index < this.activeCamera._rigCameras.length; index++) {
                         this.activeCamera._rigCameras[index].update();
                     }
                 }
@@ -4414,7 +4414,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Multi-cameras?
         if (this.activeCameras && this.activeCameras.length > 0) {
-            for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+            for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
             }
         } else {
@@ -4442,7 +4442,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Cleaning
         if (this._toBeDisposed.length) {
-            for (var index = 0; index < this._toBeDisposed.length; index++) {
+            for (let index = 0; index < this._toBeDisposed.length; index++) {
                 const data = this._toBeDisposed[index];
                 if (data) {
                     data.dispose();
@@ -4609,7 +4609,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const canvas = this._engine.getInputElement();
 
         if (canvas) {
-            var index;
+            let index;
             for (index = 0; index < this.cameras.length; index++) {
                 this.cameras[index].detachControl();
             }

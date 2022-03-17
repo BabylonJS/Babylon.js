@@ -103,9 +103,9 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
         const result = new Array<PositionNormalTextureVertex>();
 
         for (let index = 0; index < vertices.length; index += 3) {
-            var v1Out: boolean;
-            var v2Out: boolean;
-            var v3Out: boolean;
+            let v1Out: boolean;
+            let v2Out: boolean;
+            let v3Out: boolean;
             let total = 0;
             let nV1: Nullable<PositionNormalTextureVertex> = null;
             let nV2: Nullable<PositionNormalTextureVertex> = null;

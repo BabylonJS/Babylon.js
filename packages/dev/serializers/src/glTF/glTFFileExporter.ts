@@ -1,5 +1,5 @@
 /** @hidden */
-export var __IGLTFExporterExtension = 0; // I am here to allow dts to be created
+export const __IGLTFExporterExtension = 0; // I am here to allow dts to be created
 
 /**
  * Interface for extending the exporter

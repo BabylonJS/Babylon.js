@@ -1185,19 +1185,19 @@ export class Material implements IAnimatable {
         }
 
         if (this.disableDepthWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedDepthWriteState = engine.getDepthWrite();
             engine.setDepthWrite(false);
         }
 
         if (this.disableColorWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedColorWriteState = engine.getColorWrite();
             engine.setColorWrite(false);
         }
 
         if (this.depthFunction !== 0) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedDepthFunctionState = engine.getDepthFunction() || 0;
             engine.setDepthFunction(this.depthFunction);
         }
@@ -1212,17 +1212,17 @@ export class Material implements IAnimatable {
         }
 
         if (this.depthFunction !== 0) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setDepthFunction(this._cachedDepthFunctionState);
         }
 
         if (this.disableDepthWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setDepthWrite(this._cachedDepthWriteState);
         }
 
         if (this.disableColorWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setColorWrite(this._cachedColorWriteState);
         }
     }
@@ -1311,7 +1311,7 @@ export class Material implements IAnimatable {
         const currentHotSwapingState = this.allowShaderHotSwapping;
         this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
-        var checkReady = () => {
+        const checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
             }

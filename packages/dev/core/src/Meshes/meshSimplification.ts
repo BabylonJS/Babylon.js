@@ -408,9 +408,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
                             }
 
                             const p = Vector3.Zero();
-                            // var n = Vector3.Zero();
-                            // var uv = Vector2.Zero();
-                            // var color = new Color4(0, 0, 0, 1);
+                            // let n = Vector3.Zero();
+                            // let uv = Vector2.Zero();
+                            // let color = new Color4(0, 0, 0, 1);
 
                             this.calculateError(v0, v1, p);
 
@@ -427,7 +427,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
                                 continue;
                             }
 
-                            var uniqueArray = new Array<DecimationTriangle>();
+                            const uniqueArray = new Array<DecimationTriangle>();
                             delTr.forEach((deletedT) => {
                                 if (uniqueArray.indexOf(deletedT) === -1) {
                                     deletedT.deletePending = true;
@@ -529,7 +529,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
             }
             vertexReferences.push(vertex.id);
         };
-        //var totalVertices = mesh.getTotalVertices();
+        //let totalVertices = mesh.getTotalVertices();
         const totalVertices = submesh.verticesCount;
         AsyncLoop.SyncAsyncForLoop(totalVertices, (this.syncIterations / 4) >> 0, vertexInit, () => {
             const indicesInit = (i: number) => {
@@ -606,7 +606,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
         let vertexCount = 0;
         for (i = 0; i < this.vertices.length; ++i) {
-            var vertex = this.vertices[i];
+            const vertex = this.vertices[i];
             vertex.id = vertexCount;
             if (vertex.triangleCount) {
                 vertex.originalOffsets.forEach((originalOffset) => {
@@ -765,7 +765,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
             const vCount: Array<number> = [];
             const vId: Array<number> = [];
             const v = this.vertices[i];
-            var j: number;
+            let j: number;
             for (j = 0; j < v.triangleCount; ++j) {
                 const triangle = this.triangles[this.references[v.triangleStart + j].triangleId];
                 for (let ii = 0; ii < 3; ii++) {
@@ -881,7 +881,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
             error = this.vertexError(q, pointResult);
         } else {
             const p3 = vertex1.position.add(vertex2.position).divide(new Vector3(2, 2, 2));
-            //var norm3 = (vertex1.normal.add(vertex2.normal)).divide(new Vector3(2, 2, 2)).normalize();
+            //let norm3 = (vertex1.normal.add(vertex2.normal)).divide(new Vector3(2, 2, 2)).normalize();
             const error1 = this.vertexError(q, vertex1.position);
             const error2 = this.vertexError(q, vertex2.position);
             const error3 = this.vertexError(q, p3);

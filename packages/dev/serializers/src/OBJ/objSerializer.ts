@@ -71,7 +71,7 @@ export class OBJExport {
                 continue;
             }
 
-            for (var i = 0; i < trunkVerts.length; i += 3) {
+            for (let i = 0; i < trunkVerts.length; i += 3) {
                 // Babylon.js default is left handed, while OBJ default is right handed
                 // Need to invert Z vertices unless Babylon is set to use a right handed system
                 if (mesh[0].getScene().useRightHandedSystem) {

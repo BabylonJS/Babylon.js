@@ -134,7 +134,7 @@ interface VRDisplay extends EventTarget {
     submitFrame(pose?: VRPose): void;
 }
 
-declare var VRDisplay: {
+declare let VRDisplay: {
     prototype: VRDisplay;
     new (): VRDisplay;
 };
@@ -211,4 +211,4 @@ interface Gamepad {
     readonly displayId: number;
 }
 
-declare var VRFrameData: any;
+declare let VRFrameData: any;

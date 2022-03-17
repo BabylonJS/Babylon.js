@@ -33,7 +33,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
-export var _BabylonLoaderRegistered = true;
+export const _BabylonLoaderRegistered = true;
 
 /**
  * Helps setting up some configuration for the babylon file loader.
@@ -145,11 +145,11 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
     // when SceneLoader.debugLogging = true (default), or exception encountered.
-    // Everything stored in var log instead of writing separate lines to support only writing in exception,
+    // Everything stored in let log instead of writing separate lines to support only writing in exception,
     // and avoid problems with multiple concurrent .babylon loads.
     let log = "importScene has failed JSON parse";
     try {
-        var parsedData = JSON.parse(data);
+        const parsedData = JSON.parse(data);
         log = "";
         const fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
 
@@ -261,7 +261,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     log += "\n\t\t" + mat.toString(fullDetails);
 
                     // Textures
-                    var textures = mat.getActiveTextures();
+                    const textures = mat.getActiveTextures();
                     textures.forEach((t) => {
                         if (container.textures.indexOf(t) == -1) {
                             container.textures.push(t);
@@ -284,7 +284,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 log += "\n\t\t" + mmat.toString(fullDetails);
 
                 // Textures
-                var textures = mmat.getActiveTextures();
+                const textures = mmat.getActiveTextures();
                 textures.forEach((t) => {
                     if (container.textures.indexOf(t) == -1) {
                         container.textures.push(t);
@@ -307,7 +307,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
             for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                 const parsedSkeleton = parsedData.skeletons[index];
-                var skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                const skeleton = Skeleton.Parse(parsedSkeleton, scene);
                 container.skeletons.push(skeleton);
                 skeleton._parentContainer = container;
                 log += index === 0 ? "\n\tSkeletons:" : "";
@@ -352,7 +352,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
             for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                 const parsedMesh = parsedData.meshes[index];
-                var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
+                const mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
                 tempIndexContainer[parsedMesh.uniqueId] = mesh;
                 container.meshes.push(mesh);
                 mesh._parentContainer = container;
@@ -371,7 +371,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.cameras !== undefined && parsedData.cameras !== null) {
             for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
                 const parsedCamera = parsedData.cameras[index];
-                var camera = Camera.Parse(parsedCamera, scene);
+                const camera = Camera.Parse(parsedCamera, scene);
                 tempIndexContainer[parsedCamera.uniqueId] = camera;
                 container.cameras.push(camera);
                 camera._parentContainer = container;
@@ -408,7 +408,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // Browsing all the graph to connect the dots
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
-            var camera = scene.cameras[index];
+            const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
                 camera.parent = findParent(camera._waitingParentId, scene);
                 camera._waitingParentId = null;
@@ -432,7 +432,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            var mesh = scene.meshes[index];
+            const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
                 mesh.parent = findParent(mesh._waitingParentId, scene);
                 mesh._waitingParentId = null;
@@ -460,7 +460,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // link skeleton transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
-            var skeleton = scene.skeletons[index];
+            const skeleton = scene.skeletons[index];
             if (skeleton._hasWaitingData) {
                 if (skeleton.bones != null) {
                     skeleton.bones.forEach((bone) => {
@@ -523,7 +523,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            var mesh = scene.meshes[index];
+            const mesh = scene.meshes[index];
             if (mesh._waitingData.actions) {
                 ActionManager.Parse(mesh._waitingData.actions, mesh, scene);
                 mesh._waitingData.actions = null;
@@ -577,11 +577,11 @@ SceneLoader.RegisterPlugin({
     ): boolean => {
         // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
         // when SceneLoader.debugLogging = true (default), or exception encountered.
-        // Everything stored in var log instead of writing separate lines to support only writing in exception,
+        // Everything stored in let log instead of writing separate lines to support only writing in exception,
         // and avoid problems with multiple concurrent .babylon loads.
         let log = "importMesh has failed JSON parse";
         try {
-            var parsedData = JSON.parse(data);
+            const parsedData = JSON.parse(data);
             log = "";
             const fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
             if (!meshesNames) {
@@ -606,10 +606,10 @@ SceneLoader.RegisterPlugin({
                 const loadedMaterialsIds: string[] = [];
                 const loadedMaterialsUniqueIds: string[] = [];
                 const loadedMorphTargetsIds = [];
-                var index: number;
-                var cache: number;
+                let index: number;
+                let cache: number;
                 for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                    var parsedMesh = parsedData.meshes[index];
+                    const parsedMesh = parsedData.meshes[index];
 
                     if (meshesNames === null || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames !== null) {
@@ -622,7 +622,7 @@ SceneLoader.RegisterPlugin({
                             //does the file contain geometries?
                             if (parsedData.geometries !== undefined && parsedData.geometries !== null) {
                                 //find the correct geometry and add it to the scene
-                                var found: boolean = false;
+                                let found: boolean = false;
                                 ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
                                     if (found === true || !parsedData.geometries[geometryType] || !Array.isArray(parsedData.geometries[geometryType])) {
                                         return;
@@ -712,7 +712,7 @@ SceneLoader.RegisterPlugin({
                                 for (let skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     const parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                        var skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                                        const skeleton = Skeleton.Parse(parsedSkeleton, scene);
                                         skeletons.push(skeleton);
                                         loadedSkeletonsIds.push(parsedSkeleton.id);
                                         log += "\n\tSkeleton " + skeleton.toString(fullDetails);
@@ -791,7 +791,7 @@ SceneLoader.RegisterPlugin({
 
                 // link skeleton transform nodes
                 for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
-                    var skeleton = scene.skeletons[index];
+                    const skeleton = scene.skeletons[index];
                     if (skeleton._hasWaitingData) {
                         if (skeleton.bones != null) {
                             skeleton.bones.forEach((bone) => {
@@ -854,11 +854,11 @@ SceneLoader.RegisterPlugin({
     load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean => {
         // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
         // when SceneLoader.debugLogging = true (default), or exception encountered.
-        // Everything stored in var log instead of writing separate lines to support only writing in exception,
+        // Everything stored in let log instead of writing separate lines to support only writing in exception,
         // and avoid problems with multiple concurrent .babylon loads.
         let log = "importScene has failed JSON parse";
         try {
-            var parsedData = JSON.parse(data);
+            const parsedData = JSON.parse(data);
             log = "";
 
             // Scene

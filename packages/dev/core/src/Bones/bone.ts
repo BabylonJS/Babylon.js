@@ -585,7 +585,7 @@ export class Bone extends Node {
         // Invert scaling matrix and apply the inverse to all children
         scaleMat.invert();
 
-        for (var child of this.children) {
+        for (const child of this.children) {
             const cm = child.getLocalMatrix();
             cm.multiplyToRef(scaleMat, cm);
             cm.multiplyAtIndex(12, x);
@@ -598,7 +598,7 @@ export class Bone extends Node {
         this._markAsDirtyAndDecompose();
 
         if (scaleChildren) {
-            for (var child of this.children) {
+            for (const child of this.children) {
                 child.scale(x, y, z, scaleChildren);
             }
         }

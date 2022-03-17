@@ -188,7 +188,7 @@ export interface IDigitalRainPostProcessOptions {
  * DigitalRainPostProcess helps rendering everithing in digital rain.
  *
  * Simmply add it to your scene and let the nerd that lives in you have fun.
- * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
+ * Example usage: let pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
  */
 export class DigitalRainPostProcess extends PostProcess {
     /**

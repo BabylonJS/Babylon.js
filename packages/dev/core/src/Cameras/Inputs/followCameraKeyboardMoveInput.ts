@@ -168,7 +168,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
@@ -189,7 +189,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
                             this._keys.splice(index, 1);

@@ -138,42 +138,42 @@ export class RuntimeAnimation {
     private _targetIsArray = false;
 
     /**
-     * Gets the current frame of the runtime animation
+     * @returns the current frame of the runtime animation
      */
     public get currentFrame(): number {
         return this._currentFrame;
     }
 
     /**
-     * Gets the weight of the runtime animation
+     * @returns the weight of the runtime animation
      */
     public get weight(): number {
         return this._weight;
     }
 
     /**
-     * Gets the current value of the runtime animation
+     * @returns the current value of the runtime animation
      */
     public get currentValue(): any {
         return this._currentValue;
     }
 
     /**
-     * Gets or sets the target path of the runtime animation
+     * @returns or sets the target path of the runtime animation
      */
     public get targetPath(): string {
         return this._targetPath;
     }
 
     /**
-     * Gets the actual target of the runtime animation
+     * @returns the actual target of the runtime animation
      */
     public get target(): any {
         return this._currentActiveTarget;
     }
 
     /**
-     * Gets the additive state of the runtime animation
+     * @returns the additive state of the runtime animation
      */
     public get isAdditive(): boolean {
         return this._host && this._host.isAdditive;
@@ -268,7 +268,7 @@ export class RuntimeAnimation {
     }
 
     /**
-     * Gets the animation from the runtime animation
+     * @returns the animation from the runtime animation
      */
     public get animation(): Animation {
         return this._animation;
@@ -281,7 +281,7 @@ export class RuntimeAnimation {
     public reset(restoreOriginal = false): void {
         if (restoreOriginal) {
             if (this._target instanceof Array) {
-                var index = 0;
+                let index = 0;
                 for (const target of this._target) {
                     if (this._originalValue[index] !== undefined) {
                         this._setValue(target, this._activeTargets[index], this._originalValue[index], -1, index);
@@ -301,7 +301,7 @@ export class RuntimeAnimation {
         this._blendingFactor = 0;
 
         // Events
-        for (var index = 0; index < this._events.length; index++) {
+        for (let index = 0; index < this._events.length; index++) {
             this._events[index].isDone = false;
         }
     }
@@ -482,7 +482,6 @@ export class RuntimeAnimation {
      * @param loop defines if the current animation must loop
      * @param speedRatio defines the current speed ratio
      * @param weight defines the weight of the animation (default is -1 so no weight)
-     * @param onLoop optional callback called when animation loops
      * @returns a boolean indicating if the animation is running
      */
     public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
@@ -616,7 +615,7 @@ export class RuntimeAnimation {
 
             // Need to reset animation events
             if (events.length) {
-                for (var index = 0; index < events.length; index++) {
+                for (let index = 0; index < events.length; index++) {
                     if (!events[index].onlyOnce) {
                         // reset event, the animation is looping
                         events[index].isDone = false;
@@ -636,7 +635,7 @@ export class RuntimeAnimation {
 
         // Check events
         if (events.length) {
-            for (var index = 0; index < events.length; index++) {
+            for (let index = 0; index < events.length; index++) {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
                 if (

@@ -166,7 +166,7 @@ export class SceneSerializer {
 
         // Morph targets
         serializationObject.morphTargetManagers = [];
-        for (var abstractMesh of scene.meshes) {
+        for (const abstractMesh of scene.meshes) {
             const manager = (<Mesh>abstractMesh).morphTargetManager;
 
             if (manager) {
@@ -292,7 +292,7 @@ export class SceneSerializer {
         // Meshes
         serializationObject.meshes = [];
         for (index = 0; index < scene.meshes.length; index++) {
-            var abstractMesh = scene.meshes[index];
+            const abstractMesh = scene.meshes[index];
 
             if (abstractMesh instanceof Mesh) {
                 const mesh = abstractMesh;

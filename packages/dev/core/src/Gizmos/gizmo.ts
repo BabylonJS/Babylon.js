@@ -260,7 +260,7 @@ export class Gizmo implements IDisposable {
             let worldMatrix;
             let worldMatrixUC;
             if (camera.parent) {
-                var parentInv = this._tempMatrix2;
+                const parentInv = this._tempMatrix2;
                 camera.parent._worldMatrix.invertToRef(parentInv);
                 this._attachedNode._worldMatrix.multiplyToRef(parentInv, this._tempMatrix1);
                 worldMatrix = this._tempMatrix1;
@@ -305,7 +305,7 @@ export class Gizmo implements IDisposable {
         ) {
             const transform = this._attachedNode as TransformNode;
             if (transform.parent) {
-                var parentInv = this._tempMatrix1;
+                const parentInv = this._tempMatrix1;
                 const localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
@@ -326,14 +326,14 @@ export class Gizmo implements IDisposable {
             const parent = bone.getParent();
 
             if (parent) {
-                var invParent = this._tempMatrix1;
+                const invParent = this._tempMatrix1;
                 const boneLocalMatrix = this._tempMatrix2;
                 parent.getWorldMatrix().invertToRef(invParent);
                 bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
-                var lmat = bone.getLocalMatrix();
+                const lmat = bone.getLocalMatrix();
                 lmat.copyFrom(boneLocalMatrix);
             } else {
-                var lmat = bone.getLocalMatrix();
+                const lmat = bone.getLocalMatrix();
                 lmat.copyFrom(bone.getWorldMatrix());
             }
             bone.markAsDirty();
@@ -345,7 +345,7 @@ export class Gizmo implements IDisposable {
                     const parent = light.parent;
 
                     if (parent) {
-                        var invParent = this._tempMatrix1;
+                        const invParent = this._tempMatrix1;
                         const nodeLocalMatrix = this._tempMatrix2;
                         parent.getWorldMatrix().invertToRef(invParent);
                         light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);

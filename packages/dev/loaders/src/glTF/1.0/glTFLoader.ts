@@ -379,9 +379,9 @@ const configureBoneTransformation = (node: IGLTFNode): Matrix => {
  * @param jointName
  * @param newSkeleton
  */
-var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
+const getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
     // Try to find
-    for (var i = 0; i < newSkeleton.bones.length; i++) {
+    for (let i = 0; i < newSkeleton.bones.length; i++) {
         if (newSkeleton.bones[i].name === jointName) {
             return newSkeleton.bones[i];
         }
@@ -397,7 +397,7 @@ var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: st
         }
 
         const children = node.children;
-        for (var i = 0; i < children.length; i++) {
+        for (let i = 0; i < children.length; i++) {
             const child: IGLTFNode = gltfRuntime.nodes[children[i]];
             if (!child.jointName) {
                 continue;
@@ -550,8 +550,8 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
     newSkeleton.bones = [];
 
     // Joints
-    for (var i = 0; i < skins.jointNames.length; i++) {
-        var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+    for (let i = 0; i < skins.jointNames.length; i++) {
+        const jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
 
         if (!jointNode) {
             continue;
@@ -564,7 +564,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
             continue;
         }
 
-        var id = jointNode.id;
+        const id = jointNode.id;
 
         // Optimize, if the bone already exists...
         const existingBone = gltfRuntime.scene.getBoneById(id);
@@ -577,7 +577,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
         let foundBone = false;
         let parentBone: Nullable<Bone> = null;
 
-        for (var j = 0; j < i; j++) {
+        for (let j = 0; j < i; j++) {
             const jointNode = getJointNode(gltfRuntime, skins.jointNames[j]);
 
             if (!jointNode) {
@@ -631,14 +631,14 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
     const bones = newSkeleton.bones;
     newSkeleton.bones = [];
 
-    for (var i = 0; i < skins.jointNames.length; i++) {
-        var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
+    for (let i = 0; i < skins.jointNames.length; i++) {
+        const jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
 
         if (!jointNode) {
             continue;
         }
 
-        for (var j = 0; j < bones.length; j++) {
+        for (let j = 0; j < bones.length; j++) {
             if (bones[j].id === jointNode.id) {
                 newSkeleton.bones.push(bones[j]);
                 break;
@@ -649,7 +649,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
     newSkeleton.prepare();
 
     // Finish
-    for (var i = 0; i < nodesToRootToAdd.length; i++) {
+    for (let i = 0; i < nodesToRootToAdd.length; i++) {
         newSkeleton.bones.push(nodesToRootToAdd[i]);
     }
 
@@ -685,16 +685,16 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
     const indexStarts = new Array<number>();
     const indexCounts = new Array<number>();
 
-    for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshId = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
+    for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+        const meshId = meshes[meshIndex];
+        const mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
         }
 
         // Positions, normals and UVs
-        for (var i = 0; i < mesh.primitives.length; i++) {
+        for (let i = 0; i < mesh.primitives.length; i++) {
             // Temporary vertex data
             const tempVertexData = new VertexData();
 
@@ -720,7 +720,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
                     if (GLTFFileLoader.HomogeneousCoordinates) {
                         tempVertexData.positions = new Float32Array(buffer.length - buffer.length / 4);
 
-                        for (var j = 0; j < buffer.length; j += 4) {
+                        for (let j = 0; j < buffer.length; j += 4) {
                             tempVertexData.positions[j] = buffer[j];
                             tempVertexData.positions[j + 1] = buffer[j + 1];
                             tempVertexData.positions[j + 2] = buffer[j + 2];
@@ -761,7 +761,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
             } else {
                 // Set indices on the fly
                 const indices: number[] = [];
-                for (var j = 0; j < (<FloatArray>tempVertexData.positions).length / 3; j++) {
+                for (let j = 0; j < (<FloatArray>tempVertexData.positions).length / 3; j++) {
                     indices.push(j);
                 }
 
@@ -813,15 +813,15 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
     // Apply submeshes
     newMesh.subMeshes = [];
     let index = 0;
-    for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-        var meshId = meshes[meshIndex];
-        var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
+    for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+        const meshId = meshes[meshIndex];
+        const mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
 
         if (!mesh) {
             continue;
         }
 
-        for (var i = 0; i < mesh.primitives.length; i++) {
+        for (let i = 0; i < mesh.primitives.length; i++) {
             if (mesh.primitives[i].mode !== 4) {
                 //continue;
             }
@@ -899,7 +899,7 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, pare
         if (node.meshes) {
             const skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
-            var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
+            const newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
             newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
 
             if (newMesh.skeleton === null) {
@@ -916,7 +916,7 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, pare
         /**
          * Improve meshes property
          */
-        var newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id, <Mesh>node.babylonNode);
+        const newMesh = importMesh(gltfRuntime, node, node.mesh ? [node.mesh] : node.meshes, id, <Mesh>node.babylonNode);
         lastNode = newMesh;
     }
     // Lights
@@ -1053,7 +1053,7 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, pare
  * @param parent
  * @param meshIncluded
  */
-var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Node>, meshIncluded: boolean = false) => {
+const traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Node>, meshIncluded: boolean = false) => {
     const node: IGLTFNode = gltfRuntime.nodes[id];
     let newNode: Nullable<Node> = null;
 
@@ -1092,14 +1092,14 @@ const postLoad = (gltfRuntime: IGLTFRuntime) => {
     let currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
 
     if (currentScene) {
-        for (var i = 0; i < currentScene.nodes.length; i++) {
+        for (let i = 0; i < currentScene.nodes.length; i++) {
             traverseNodes(gltfRuntime, currentScene.nodes[i], null);
         }
     } else {
         for (const thing in gltfRuntime.scenes) {
             currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
 
-            for (var i = 0; i < currentScene.nodes.length; i++) {
+            for (let i = 0; i < currentScene.nodes.length; i++) {
                 traverseNodes(gltfRuntime, currentScene.nodes[i], null);
             }
         }
@@ -1108,7 +1108,7 @@ const postLoad = (gltfRuntime: IGLTFRuntime) => {
     // Set animations
     loadAnimations(gltfRuntime);
 
-    for (var i = 0; i < gltfRuntime.scene.skeletons.length; i++) {
+    for (let i = 0; i < gltfRuntime.scene.skeletons.length; i++) {
         const skeleton = gltfRuntime.scene.skeletons[i];
         gltfRuntime.scene.beginAnimation(skeleton, 0, Number.MAX_VALUE, true, 1.0);
     }
@@ -1197,7 +1197,7 @@ const prepareShaderMaterialUniforms = (
      * Prepare values here (not matrices)
      */
     for (const unif in unTreatedUniforms) {
-        var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
+        const uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
         const type = uniform.type;
         let value = (<any>materialValues)[techniqueUniforms[unif]];
 
@@ -1210,7 +1210,7 @@ const prepareShaderMaterialUniforms = (
             continue;
         }
 
-        var onLoadTexture = (uniformName: Nullable<string>) => {
+        const onLoadTexture = (uniformName: Nullable<string>) => {
             return (texture: Texture) => {
                 if (uniform.value && uniformName) {
                     // Static uniform
@@ -1619,9 +1619,9 @@ export class GLTFLoaderBase {
             }
         }
 
-        for (var attr in technique.attributes) {
-            var attribute = technique.attributes[attr];
-            var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
+        for (const attr in technique.attributes) {
+            const attribute = technique.attributes[attr];
+            const attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
             if (attributeParameter.semantic) {
                 const name = getAttribute(attributeParameter);
@@ -1633,7 +1633,7 @@ export class GLTFLoaderBase {
 
         // Configure vertex shader
         while (!vertexTokenizer.isEnd() && vertexTokenizer.getNextToken()) {
-            var tokenType = vertexTokenizer.currentToken;
+            const tokenType = vertexTokenizer.currentToken;
 
             if (tokenType !== ETokenType.IDENTIFIER) {
                 newVertexShader += vertexTokenizer.currentString;
@@ -1642,9 +1642,9 @@ export class GLTFLoaderBase {
 
             let foundAttribute = false;
 
-            for (var attr in technique.attributes) {
-                var attribute = technique.attributes[attr];
-                var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
+            for (const attr in technique.attributes) {
+                const attribute = technique.attributes[attr];
+                const attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
                 if (vertexTokenizer.currentIdentifier === attr && attributeParameter.semantic) {
                     newVertexShader += getAttribute(attributeParameter);
@@ -1662,7 +1662,7 @@ export class GLTFLoaderBase {
 
         // Configure pixel shader
         while (!pixelTokenizer.isEnd() && pixelTokenizer.getNextToken()) {
-            var tokenType = pixelTokenizer.currentToken;
+            const tokenType = pixelTokenizer.currentToken;
 
             if (tokenType !== ETokenType.IDENTIFIER) {
                 newPixelShader += pixelTokenizer.currentString;
@@ -2056,7 +2056,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (currentScene) {
             // Only one scene even if multiple scenes are defined
-            for (var i = 0; i < currentScene.nodes.length; i++) {
+            for (let i = 0; i < currentScene.nodes.length; i++) {
                 traverseNodes(gltfRuntime, currentScene.nodes[i], null);
             }
         } else {
@@ -2064,7 +2064,7 @@ export class GLTFLoader implements IGLTFLoader {
             for (const thing in gltfRuntime.scenes) {
                 currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
 
-                for (var i = 0; i < currentScene.nodes.length; i++) {
+                for (let i = 0; i < currentScene.nodes.length; i++) {
                     traverseNodes(gltfRuntime, currentScene.nodes[i], null);
                 }
             }

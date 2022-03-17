@@ -73,7 +73,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         if (typeof data !== "string") {
             if (this._isBinary(data)) {
                 // binary .stl
-                var babylonMesh = new Mesh("stlmesh", scene);
+                const babylonMesh = new Mesh("stlmesh", scene);
                 this._parseBinary(babylonMesh, data);
                 if (meshes) {
                     meshes.push(babylonMesh);
@@ -118,7 +118,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             // stl mesh name can be empty as well
             meshName = meshName || "stlmesh";
 
-            var babylonMesh = new Mesh(meshName, scene);
+            const babylonMesh = new Mesh(meshName, scene);
             this._parseASCII(babylonMesh, matches[2]);
             if (meshes) {
                 meshes.push(babylonMesh);
@@ -258,7 +258,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             }
             const normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
 
-            var vertexMatch;
+            let vertexMatch;
             while ((vertexMatch = this.vertexPattern.exec(facet))) {
                 if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
                     positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));

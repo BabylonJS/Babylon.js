@@ -243,7 +243,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         `
                 : "";
 
-        // Add the group/binding info to the sampler declaration (var xxx: sampler|sampler_comparison)
+        // Add the group/binding info to the sampler declaration (let xxx: sampler|sampler_comparison)
         vertexCode = this._processSamplers(vertexCode, true);
         fragmentCode = this._processSamplers(fragmentCode, false);
 
@@ -280,7 +280,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         vertexCode = vertexBuiltinDecl + vertexInputs + vertexAttributesDecl + vertexFragmentInputs + varyingsDecl + vertexCode;
 
-        let vertexStartingCode = `  var output : FragmentInputs;\n  ${builtInName_vertex_index} = input.vertexIndex;\n  ${builtInName_instance_index} = input.instanceIndex;\n`;
+        let vertexStartingCode = `  let output : FragmentInputs;\n  ${builtInName_vertex_index} = input.vertexIndex;\n  ${builtInName_instance_index} = input.instanceIndex;\n`;
 
         for (let i = 0; i < this._attributeNamesWGSL.length; ++i) {
             const name = this._attributeNamesWGSL[i];
@@ -340,7 +340,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         fragmentCode = fragmentBuiltinDecl + fragmentFragmentInputs + varyingsDecl + fragmentOutputs + fragmentCode;
 
         let fragmentStartingCode =
-            `  var output : FragmentOutputs;\n  ${builtInName_position_frag} = input.position;\n  ${builtInName_front_facing} = input.frontFacing;\n` + fragCoordCode;
+            `  let output : FragmentOutputs;\n  ${builtInName_position_frag} = input.position;\n  ${builtInName_front_facing} = input.frontFacing;\n` + fragCoordCode;
 
         for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
             const name = this._varyingNamesWGSL[i];

@@ -561,7 +561,7 @@ export class ProceduralTexture extends Texture {
 
         if (!this.nodeMaterialSource) {
             // Texture
-            for (var name in this._textures) {
+            for (const name in this._textures) {
                 this._drawWrapper.effect!.setTexture(name, this._textures[name]);
             }
 

@@ -358,7 +358,7 @@ export class Animation {
         }
 
         // Find key bookends, create them if they don't exist
-        var index = 0;
+        let index = 0;
         while (!referenceFound || !fromKeyFound || (!toKeyFound && index < animation._keys.length - 1)) {
             const currentKey = animation._keys[index];
             const nextKey = animation._keys[index + 1];
@@ -447,7 +447,7 @@ export class Animation {
         }
 
         // Subtract the reference value from all of the key values
-        for (var index = startIndex; index <= endIndex; index++) {
+        for (let index = startIndex; index <= endIndex; index++) {
             const key = animation._keys[index];
 
             // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
@@ -966,7 +966,7 @@ export class Animation {
                 switch (this.dataType) {
                     // Float
                     case Animation.ANIMATIONTYPE_FLOAT:
-                        var floatValue = useTangent
+                        const floatValue = useTangent
                             ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
                             : this.floatInterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -979,7 +979,7 @@ export class Animation {
                         break;
                     // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
-                        var quatValue = useTangent
+                        const quatValue = useTangent
                             ? this.quaternionInterpolateFunctionWithTangents(
                                   startValue,
                                   startKey.outTangent.scale(frameDelta),
@@ -999,7 +999,7 @@ export class Animation {
                         return quatValue;
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
-                        var vec3Value = useTangent
+                        const vec3Value = useTangent
                             ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.vector3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1011,7 +1011,7 @@ export class Animation {
                         }
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
-                        var vec2Value = useTangent
+                        const vec2Value = useTangent
                             ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.vector2InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1032,7 +1032,7 @@ export class Animation {
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
-                        var color3Value = useTangent
+                        const color3Value = useTangent
                             ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.color3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1044,7 +1044,7 @@ export class Animation {
                         }
                     // Color4
                     case Animation.ANIMATIONTYPE_COLOR4:
-                        var color4Value = useTangent
+                        const color4Value = useTangent
                             ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.color4InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {

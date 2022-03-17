@@ -678,12 +678,12 @@ export class NodeMaterial extends PushMaterial {
         const vertexNodes: NodeMaterialBlock[] = [];
         const fragmentNodes: NodeMaterialBlock[] = [];
 
-        for (var vertexOutputNode of this._vertexOutputNodes) {
+        for (const vertexOutputNode of this._vertexOutputNodes) {
             vertexNodes.push(vertexOutputNode);
             this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes, autoConfigure);
         }
 
-        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+        for (const fragmentOutputNode of this._fragmentOutputNodes) {
             fragmentNodes.push(fragmentOutputNode);
             this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes, autoConfigure);
         }
@@ -692,7 +692,7 @@ export class NodeMaterial extends PushMaterial {
         this.optimize();
 
         // Vertex
-        for (var vertexOutputNode of vertexNodes) {
+        for (const vertexOutputNode of vertexNodes) {
             vertexOutputNode.build(this._vertexCompilationState, vertexNodes);
         }
 
@@ -702,11 +702,11 @@ export class NodeMaterial extends PushMaterial {
         this._fragmentCompilationState._constantDeclaration = this._vertexCompilationState._constantDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
-        for (var fragmentOutputNode of fragmentNodes) {
+        for (const fragmentOutputNode of fragmentNodes) {
             this._resetDualBlocks(fragmentOutputNode, this._buildId - 1);
         }
 
-        for (var fragmentOutputNode of fragmentNodes) {
+        for (const fragmentOutputNode of fragmentNodes) {
             fragmentOutputNode.build(this._fragmentCompilationState, fragmentNodes);
         }
 
@@ -1388,11 +1388,11 @@ export class NodeMaterial extends PushMaterial {
         if (mustRebind) {
             if (effect) {
                 // Bindable blocks
-                for (var block of sharedData.bindableBlocks) {
+                for (const block of sharedData.bindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);
                 }
 
-                for (var block of sharedData.forcedBindableBlocks) {
+                for (const block of sharedData.forcedBindableBlocks) {
                     block.bind(effect, this, mesh, subMesh);
                 }
 
@@ -1402,7 +1402,7 @@ export class NodeMaterial extends PushMaterial {
                 }
             }
         } else if (!this.isFrozen) {
-            for (var block of sharedData.forcedBindableBlocks) {
+            for (const block of sharedData.forcedBindableBlocks) {
                 block.bind(effect, this, mesh, subMesh);
             }
         }
@@ -1765,25 +1765,25 @@ export class NodeMaterial extends PushMaterial {
         const vertexBlocks: NodeMaterialBlock[] = [];
         const uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
-        for (var outputNode of this._vertexOutputNodes) {
+        for (const outputNode of this._vertexOutputNodes) {
             this._gatherBlocks(outputNode, vertexBlocks);
         }
 
         const fragmentBlocks: NodeMaterialBlock[] = [];
-        for (var outputNode of this._fragmentOutputNodes) {
+        for (const outputNode of this._fragmentOutputNodes) {
             this._gatherBlocks(outputNode, fragmentBlocks);
         }
 
         // Generate vertex shader
-        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
-        for (var node of vertexBlocks) {
+        let codeString = `let nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
+        for (const node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
             }
         }
 
         // Generate fragment shader
-        for (var node of fragmentBlocks) {
+        for (const node of fragmentBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
             }
@@ -1792,20 +1792,20 @@ export class NodeMaterial extends PushMaterial {
         // Connections
         alreadyDumped = [];
         codeString += "\r\n// Connections\r\n";
-        for (var node of this._vertexOutputNodes) {
+        for (const node of this._vertexOutputNodes) {
             codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
-        for (var node of this._fragmentOutputNodes) {
+        for (const node of this._fragmentOutputNodes) {
             codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
 
         // Output nodes
         codeString += "\r\n// Output nodes\r\n";
-        for (var node of this._vertexOutputNodes) {
+        for (const node of this._vertexOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
 
-        for (var node of this._fragmentOutputNodes) {
+        for (const node of this._fragmentOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
 
@@ -1832,12 +1832,12 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.outputNodes = [];
 
             // Outputs
-            for (var outputNode of this._vertexOutputNodes) {
+            for (const outputNode of this._vertexOutputNodes) {
                 this._gatherBlocks(outputNode, blocks);
                 serializationObject.outputNodes.push(outputNode.uniqueId);
             }
 
-            for (var outputNode of this._fragmentOutputNodes) {
+            for (const outputNode of this._fragmentOutputNodes) {
                 this._gatherBlocks(outputNode, blocks);
 
                 if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
@@ -1849,12 +1849,12 @@ export class NodeMaterial extends PushMaterial {
         // Blocks
         serializationObject.blocks = [];
 
-        for (var block of blocks) {
+        for (const block of blocks) {
             serializationObject.blocks.push(block.serialize());
         }
 
         if (!selectedBlocks) {
-            for (var block of this.attachedBlocks) {
+            for (const block of this.attachedBlocks) {
                 if (blocks.indexOf(block) !== -1) {
                     continue;
                 }

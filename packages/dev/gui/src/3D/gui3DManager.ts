@@ -247,7 +247,7 @@ export class GUI3DManager implements IDisposable {
     public dispose() {
         this._rootContainer.dispose();
 
-        for (var materialName in this._sharedMaterials) {
+        for (const materialName in this._sharedMaterials) {
             if (!this._sharedMaterials.hasOwnProperty(materialName)) {
                 continue;
             }
@@ -257,7 +257,7 @@ export class GUI3DManager implements IDisposable {
 
         this._sharedMaterials = {};
 
-        for (var materialName in this._touchSharedMaterials) {
+        for (const materialName in this._touchSharedMaterials) {
             if (!this._touchSharedMaterials.hasOwnProperty(materialName)) {
                 continue;
             }

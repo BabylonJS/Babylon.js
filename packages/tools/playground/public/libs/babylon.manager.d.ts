@@ -643,7 +643,7 @@ declare module BABYLON {
  * http://paulirish.com/2011/requestanimationframe-for-smart-animating/
  * @class TimerPlugin - All rights reserved (c) 2020 Mackey Kinard
  */
-declare var TimerPlugin: any;
+declare let TimerPlugin: any;
 
 declare module BABYLON {
     /**

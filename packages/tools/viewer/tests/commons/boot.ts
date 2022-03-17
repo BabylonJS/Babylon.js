@@ -26,7 +26,7 @@ export class Boot {
 			`;
 
             if (Boot.AppendResult) {
-                var newResult = document.createElement('div');
+                let newResult = document.createElement('div');
                 document.getElementById('result-div')!.appendChild(newResult);
 
                 newResult.innerHTML = `<div class="result">
@@ -53,7 +53,7 @@ export class Boot {
 
             viewerGlobals.disableInit = true;
 
-            var DOMContentLoaded_event = document.createEvent("Event");
+            let DOMContentLoaded_event = document.createEvent("Event");
             DOMContentLoaded_event.initEvent("DOMContentLoaded", true, true);
             window.document.dispatchEvent(DOMContentLoaded_event);
 
@@ -75,4 +75,4 @@ if (!useNullEngine) {
     console.log("mocking webgl");
     webglSupport();
 }
-export var main = Boot.main;
+export let main = Boot.main;

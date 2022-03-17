@@ -52,7 +52,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
     let totalLen = 0;
     const cumulate = [0];
     if (wrap) {
-        for (var idx = startIndex; idx < positions.length / 3; idx += 4) {
+        for (let idx = startIndex; idx < positions.length / 3; idx += 4) {
             distX = positions[3 * (idx + 2)] - positions[3 * idx];
             distZ = positions[3 * (idx + 2) + 2] - positions[3 * idx + 2];
             dist = Math.sqrt(distX * distX + distZ * distZ);
@@ -61,7 +61,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
         }
     }
     // set face colours and textures
-    var idx: number = 0;
+    let idx: number = 0;
     let face: number = 0;
     for (let index = 0; index < normals.length; index += 3) {
         //Edge Face  no. 1

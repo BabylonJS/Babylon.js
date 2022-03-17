@@ -76,7 +76,7 @@ interface OffscreenCanvas extends EventTarget {
     height: number;
 }
 
-declare var OffscreenCanvas: {
+declare let OffscreenCanvas: {
     prototype: OffscreenCanvas;
     new (width: number, height: number): OffscreenCanvas;
 };

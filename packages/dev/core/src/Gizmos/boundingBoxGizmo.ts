@@ -296,7 +296,7 @@ export class BoundingBoxGizmo extends Gizmo {
             sphere.isNearGrabbable = true;
 
             // Drag behavior
-            var _dragBehavior = new PointerDragBehavior({});
+            const _dragBehavior = new PointerDragBehavior({});
             _dragBehavior.moveAttached = false;
             _dragBehavior.updateDragPlane = false;
             sphere.addBehavior(_dragBehavior);
@@ -402,7 +402,7 @@ export class BoundingBoxGizmo extends Gizmo {
 
                     // Dragging logic
                     const dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
-                    var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
+                    const _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     _dragBehavior.updateDragPlane = false;
                     _dragBehavior.moveAttached = false;
                     box.addBehavior(_dragBehavior);
@@ -754,7 +754,7 @@ export class BoundingBoxGizmo extends Gizmo {
      * @returns the bounding box mesh with the passed in mesh as a child
      */
     public static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh {
-        var makeNotPickable = (root: AbstractMesh) => {
+        const makeNotPickable = (root: AbstractMesh) => {
             root.isPickable = false;
             root.getChildMeshes().forEach((c) => {
                 makeNotPickable(c);

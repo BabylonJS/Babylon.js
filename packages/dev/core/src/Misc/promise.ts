@@ -88,11 +88,11 @@ class InternalPromise<T> {
         });
 
         if (this._state === PromiseStates.Fulfilled) {
-            for (var child of this._children) {
+            for (const child of this._children) {
                 child._resolve(this._result);
             }
         } else if (this._state === PromiseStates.Rejected) {
-            for (var child of this._children) {
+            for (const child of this._children) {
                 child._reject(this._reason);
             }
         }

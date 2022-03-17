@@ -90,7 +90,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                     this.keysRight.indexOf(evt.keyCode) !== -1
                 ) {
-                    var index = this._keys.indexOf(evt.keyCode);
+                    const index = this._keys.indexOf(evt.keyCode);
 
                     if (index === -1) {
                         this._keys.push(evt.keyCode);
@@ -108,7 +108,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                     this.keysRight.indexOf(evt.keyCode) !== -1
                 ) {
-                    var index = this._keys.indexOf(evt.keyCode);
+                    const index = this._keys.indexOf(evt.keyCode);
 
                     if (index >= 0) {
                         this._keys.splice(index, 1);

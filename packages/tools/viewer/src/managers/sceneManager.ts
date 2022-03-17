@@ -420,7 +420,7 @@ export class SceneManager {
             if (typeof sceneConfiguration.glow === 'object') {
                 options = sceneConfiguration.glow
             }
-            var gl = new GlowLayer("glow", this.scene, options);
+            let gl = new GlowLayer("glow", this.scene, options);
         }*/
 
         return this.onSceneInitObservable.notifyObserversWithPromise(this.scene);

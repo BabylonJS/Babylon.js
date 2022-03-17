@@ -823,7 +823,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Random data
         const maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
         let d = [];
-        for (var i = 0; i < maxTextureSize; ++i) {
+        for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
             d.push(Math.random());
@@ -845,7 +845,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         d = [];
-        for (var i = 0; i < maxTextureSize; ++i) {
+        for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
             d.push(Math.random());
@@ -1415,7 +1415,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         const data = new Float32Array(this._rawTextureWidth);
 
-        for (var x = 0; x < this._rawTextureWidth; x++) {
+        for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
@@ -1454,7 +1454,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const data = new Uint8Array(this._rawTextureWidth * 4);
         const tmpColor = TmpColors.Color4[0];
 
-        for (var x = 0; x < this._rawTextureWidth; x++) {
+        for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {

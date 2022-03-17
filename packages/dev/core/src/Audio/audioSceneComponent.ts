@@ -555,7 +555,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
             let i: number;
             for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
-                var sound = scene.mainSoundTrack.soundCollection[i];
+                const sound = scene.mainSoundTrack.soundCollection[i];
                 if (sound.useCustomAttenuation) {
                     sound.updateDistanceFromListener();
                 }

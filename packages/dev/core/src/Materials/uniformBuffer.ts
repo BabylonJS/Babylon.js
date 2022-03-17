@@ -380,7 +380,7 @@ export class UniformBuffer {
 
             data = [];
             // Fill with zeros
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 data.push(0);
             }
         } else {
@@ -392,7 +392,7 @@ export class UniformBuffer {
                 data = [];
 
                 // Fill with zeros
-                for (var i = 0; i < size; i++) {
+                for (let i = 0; i < size; i++) {
                     data.push(0);
                 }
             }
@@ -403,7 +403,7 @@ export class UniformBuffer {
         this._uniformLocations[name] = this._uniformLocationPointer;
         this._uniformLocationPointer += <number>size;
 
-        for (var i = 0; i < size; i++) {
+        for (let i = 0; i < size; i++) {
             this._data.push(data[i]);
         }
 
@@ -652,7 +652,7 @@ export class UniformBuffer {
             // Cache for static uniform buffers
             let changed = false;
 
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
                 // Hence the test for size === 16 to simply commit the matrix values
                 if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Tools.FloatRound(data[i])) {
@@ -667,7 +667,7 @@ export class UniformBuffer {
             this._needSync = this._needSync || changed;
         } else {
             // No cache for dynamic
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
         }
@@ -699,7 +699,7 @@ export class UniformBuffer {
             let changed = false;
             let countToFour = 0;
             let baseStride = 0;
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 if (this._bufferData[location + baseStride * 4 + countToFour] !== Tools.FloatRound(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
@@ -720,7 +720,7 @@ export class UniformBuffer {
             this._needSync = this._needSync || changed;
         } else {
             // No cache for dynamic
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
         }

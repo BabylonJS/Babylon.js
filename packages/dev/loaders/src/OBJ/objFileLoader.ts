@@ -281,7 +281,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                     //Three variables to get all meshes with the same material
                                     let startIndex = 0;
                                     const _indices = [];
-                                    var _index;
+                                    let _index;
 
                                     //The material from MTL file is used in the meshes loaded
                                     //Push the indice in an array

@@ -1746,7 +1746,7 @@ export class VertexData {
                 if (distanceTo === undefined) {
                     distanceTo = Vector3.Zero();
                 }
-                var depthSortedFacets = options.depthSortedFacets;
+                const depthSortedFacets = options.depthSortedFacets;
             }
         }
 
@@ -1756,22 +1756,22 @@ export class VertexData {
         let zSubRatio = 0;
         let subSq = 0;
         if (computeFacetPartitioning && options && options.bbSize) {
-            var ox = 0; // X partitioning index for facet position
-            var oy = 0; // Y partitioning index for facet position
-            var oz = 0; // Z partitioning index for facet position
-            var b1x = 0; // X partitioning index for facet v1 vertex
-            var b1y = 0; // Y partitioning index for facet v1 vertex
-            var b1z = 0; // z partitioning index for facet v1 vertex
-            var b2x = 0; // X partitioning index for facet v2 vertex
-            var b2y = 0; // Y partitioning index for facet v2 vertex
-            var b2z = 0; // Z partitioning index for facet v2 vertex
-            var b3x = 0; // X partitioning index for facet v3 vertex
-            var b3y = 0; // Y partitioning index for facet v3 vertex
-            var b3z = 0; // Z partitioning index for facet v3 vertex
-            var block_idx_o = 0; // facet barycenter block index
-            var block_idx_v1 = 0; // v1 vertex block index
-            var block_idx_v2 = 0; // v2 vertex block index
-            var block_idx_v3 = 0; // v3 vertex block index
+            const ox = 0; // X partitioning index for facet position
+            const oy = 0; // Y partitioning index for facet position
+            const oz = 0; // Z partitioning index for facet position
+            const b1x = 0; // X partitioning index for facet v1 vertex
+            const b1y = 0; // Y partitioning index for facet v1 vertex
+            const b1z = 0; // z partitioning index for facet v1 vertex
+            const b2x = 0; // X partitioning index for facet v2 vertex
+            const b2y = 0; // Y partitioning index for facet v2 vertex
+            const b2z = 0; // Z partitioning index for facet v2 vertex
+            const b3x = 0; // X partitioning index for facet v3 vertex
+            const b3y = 0; // Y partitioning index for facet v3 vertex
+            const b3z = 0; // Z partitioning index for facet v3 vertex
+            const block_idx_o = 0; // facet barycenter block index
+            const block_idx_v1 = 0; // v1 vertex block index
+            const block_idx_v2 = 0; // v2 vertex block index
+            const block_idx_v3 = 0; // v3 vertex block index
 
             let bbSizeMax = options.bbSize.x > options.bbSize.y ? options.bbSize.x : options.bbSize.y;
             bbSizeMax = bbSizeMax > options.bbSize.z ? bbSizeMax : options.bbSize.z;
@@ -1938,7 +1938,7 @@ export class VertexData {
                 break;
 
             case VertexData.BACKSIDE:
-                var tmp: number;
+                let tmp: number;
                 // indices
                 for (i = 0; i < li; i += 3) {
                     tmp = indices[i];
@@ -1953,8 +1953,8 @@ export class VertexData {
 
             case VertexData.DOUBLESIDE:
                 // positions
-                var lp: number = positions.length;
-                var l: number = lp / 3;
+                const lp: number = positions.length;
+                const l: number = lp / 3;
                 for (let p = 0; p < lp; p++) {
                     positions[lp + p] = positions[p];
                 }
@@ -1970,8 +1970,8 @@ export class VertexData {
                 }
 
                 // uvs
-                var lu: number = uvs.length;
-                var u: number = 0;
+                const lu: number = uvs.length;
+                let u: number = 0;
                 for (u = 0; u < lu; u++) {
                     uvs[u + lu] = uvs[u];
                 }

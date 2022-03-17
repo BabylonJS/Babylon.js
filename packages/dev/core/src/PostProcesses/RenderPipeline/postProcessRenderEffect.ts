@@ -93,12 +93,12 @@ export class PostProcessRenderEffect {
         }
 
         for (let i = 0; i < cams.length; i++) {
-            var camera = cams[i];
+            const camera = cams[i];
             if (!camera) {
                 continue;
             }
 
-            var cameraName = camera.name;
+            const cameraName = camera.name;
 
             if (this._singleInstance) {
                 cameraKey = 0;
@@ -154,7 +154,7 @@ export class PostProcessRenderEffect {
         }
 
         for (let i = 0; i < cams.length; i++) {
-            var camera: Camera = cams[i];
+            const camera: Camera = cams[i];
             const cameraName: string = camera.name;
             const postProcesses = this._postProcesses[this._singleInstance ? 0 : cameraName];
 
@@ -194,11 +194,11 @@ export class PostProcessRenderEffect {
             return;
         }
 
-        for (var i = 0; i < cams.length; i++) {
+        for (let i = 0; i < cams.length; i++) {
             const camera = cams[i];
-            var cameraName = camera.name;
+            const cameraName = camera.name;
 
-            for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
+            for (let j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                 if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined || camera._postProcesses[this._indicesForCamera[cameraName][j]] === null) {
                     this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                         cams![i].attachPostProcess(postProcess, this._indicesForCamera[cameraName][j]);
@@ -233,7 +233,7 @@ export class PostProcessRenderEffect {
         }
 
         for (let i = 0; i < cams.length; i++) {
-            var camera = cams[i];
+            const camera = cams[i];
             const cameraName = camera.name;
             this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                 camera.detachPostProcess(postProcess);

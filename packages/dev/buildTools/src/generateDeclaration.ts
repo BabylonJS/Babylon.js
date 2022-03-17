@@ -31,7 +31,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             const regexTypeImport = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
             let match = regexTypeImport.exec(line);
             if (match) {
-                // var spaces = match[1];
+                // let spaces = match[1];
                 const module = match[3];
                 const type = match[4];
                 line = `import { ${type} } from "${module}";`;
@@ -85,7 +85,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             }
 
             // Replace Static Readonly declaration for UMD/ES6 TS Version compat
-            const regexVar = /(.*)readonly (.*) = (.*);/g;
+            const regexlet = /(.*)readonly (.*) = (.*);/g;
             match = regexVar.exec(line);
             if (match) {
                 const spaces = match[1];

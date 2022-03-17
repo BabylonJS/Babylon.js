@@ -14,7 +14,7 @@ import { debounce } from "ts-debounce";
 declare type IStandaloneCodeEditor = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneCodeEditor;
 declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneEditorConstructionOptions;
 
-//declare var monaco: any;
+//declare let monaco: any;
 
 export class MonacoManager {
     private _editor: IStandaloneCodeEditor;
@@ -130,11 +130,11 @@ export class MonacoManager {
 // You can reference the following variables: engine, canvas
 // You must at least define a camera
 
-var createScene = function() {
-    var scene = new BABYLON.Scene(engine);
+let createScene = function() {
+    let scene = new BABYLON.Scene(engine);
 
-    //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+    //let camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+    let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
     // This targets the camera to scene origin
     camera.setTarget(BABYLON.Vector3.Zero());
@@ -151,10 +151,10 @@ var createScene = function() {
 
 class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
-        var scene = new BABYLON.Scene(engine);
+        let scene = new BABYLON.Scene(engine);
 
-        //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+        //let camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+        let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
         // This targets the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
@@ -297,12 +297,12 @@ class Playground {
 
     private _setDefaultContent() {
         if (this.globalState.language === "JS") {
-            this._editor.setValue(`var createScene = function () {
+            this._editor.setValue(`let createScene = function () {
     // This creates a basic Babylon Scene object (non-mesh)
-    var scene = new BABYLON.Scene(engine);
+    let scene = new BABYLON.Scene(engine);
 
     // This creates and positions a free camera (non-mesh)
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+    let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
     // This targets the camera to scene origin
     camera.setTarget(BABYLON.Vector3.Zero());
@@ -311,19 +311,19 @@ class Playground {
     camera.attachControl(canvas, true);
 
     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    let light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
     // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0.7;
 
     // Our built-in 'sphere' shape.
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+    let sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
 
     // Move the sphere upward 1/2 its height
     sphere.position.y = 1;
 
     // Our built-in 'ground' shape.
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+    let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
 
     return scene;
 };`);
@@ -331,10 +331,10 @@ class Playground {
             this._editor.setValue(`class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
         // This creates a basic Babylon Scene object (non-mesh)
-        var scene = new BABYLON.Scene(engine);
+        let scene = new BABYLON.Scene(engine);
 
         // This creates and positions a free camera (non-mesh)
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+        let camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
         // This targets the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
@@ -343,19 +343,19 @@ class Playground {
         camera.attachControl(canvas, true);
 
         // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-        var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+        let light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
 
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
 
         // Our built-in 'sphere' shape. Params: name, options, scene
-        var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+        let sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
 
         // Move the sphere upward 1/2 its height
         sphere.position.y = 1;
 
         // Our built-in 'ground' shape. Params: name, options, scene
-        var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+        let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
 
         return scene;
     }
@@ -664,7 +664,7 @@ class Playground {
             });
 
             const output = result.outputFiles[0].text;
-            const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+            const stub = "let createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
 
             return output + stub;
         }

@@ -1341,7 +1341,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         let currentIndex = 0;
 
-        var checkReady = () => {
+        const checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
             }

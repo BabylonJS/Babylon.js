@@ -262,7 +262,7 @@ export class SolidParser {
         //Get the indices of triangles for each polygon
         this._getTriangles(face, v);
         //For each element in the triangles array.
-        //This var could contains 1 to an infinity of triangles
+        //This let could contains 1 to an infinity of triangles
         for (let k = 0; k < this._triangles.length; k++) {
             // Set position indice
             const indicePositionFromObj = parseInt(this._triangles[k]) - 1;
@@ -427,7 +427,7 @@ export class SolidParser {
             // Reverse tab. Otherwise face are displayed in the wrong sens
             this._indicesForBabylon.reverse();
             //Set the information for the mesh
-            //Slice the array to avoid rewriting because of the fact this is the same var which be rewrited
+            //Slice the array to avoid rewriting because of the fact this is the same let which be rewrited
             this._handledMesh.indices = this._indicesForBabylon.slice();
             this._handledMesh.positions = this._unwrappedPositionsForBabylon.slice();
             this._handledMesh.normals = this._unwrappedNormalsForBabylon.slice();
@@ -511,7 +511,7 @@ export class SolidParser {
         // Look at each line
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim().replace(/\s\s/g, " ");
-            var result;
+            let result;
 
             // Comment or newLine
             if (line.length === 0 || line.charAt(0) === "#") {
@@ -606,7 +606,7 @@ export class SolidParser {
             } else if (SolidParser.GroupDescriptor.test(line) || SolidParser.ObjectDescriptor.test(line)) {
                 // Create a new mesh corresponding to the name of the group.
                 // Definition of the mesh
-                var objMesh: MeshObject = {
+                const objMesh: MeshObject = {
                     name: line.substring(2).trim(), //Set the name of the current obj mesh
                     indices: undefined,
                     positions: undefined,
@@ -635,7 +635,7 @@ export class SolidParser {
                     //Set the data for the previous mesh
                     this._addPreviousObjMesh();
                     //Create a new mesh
-                    var objMesh: MeshObject =
+                    const objMesh: MeshObject =
                         //Set the name of the current obj mesh
                         {
                             name: (this._objMeshName || "mesh") + "_mm" + this._increment.toString(), //Set the name of the current obj mesh

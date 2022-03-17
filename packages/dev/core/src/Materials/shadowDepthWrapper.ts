@@ -19,7 +19,7 @@ export interface IIOptionShadowDepthMaterial {
      * The format is: ["var_name", "var_remapped_name", "var_name", "var_remapped_name", ...]
      * "var_name" should be either: worldPos or vNormalW
      * So, if the variable holding the world position in your vertex shader is not named worldPos, you must tell the system
-     * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPosVar in your code.
+     * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPoslet in your code.
      * If the normal must also be remapped: ["worldPos", "myWorldPosVar", "vNormalW", "myWorldNormal"]
      */
     remappedVariables?: string[];

@@ -1143,7 +1143,7 @@ export class AssetsManager {
                 }
 
                 // Let's remove successfull tasks
-                for (var task of currentTasks) {
+                for (const task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
                         const index = this._tasks.indexOf(task);
 

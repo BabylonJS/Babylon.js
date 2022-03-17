@@ -45,7 +45,7 @@ interface MediaRecorderConstructor {
 /**
  * MediaRecorder object available in some browsers.
  */
-declare var MediaRecorder: MediaRecorderConstructor;
+declare let MediaRecorder: MediaRecorderConstructor;
 
 /**
  * This represents the different options available for the video capture.

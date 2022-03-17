@@ -154,10 +154,10 @@ export class TriPlanarMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (MaterialFlags.DiffuseTextureEnabled) {
-                    var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
-                    var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
+                    const textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
+                    const textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
 
-                    for (var i = 0; i < textures.length; i++) {
+                    for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
                             if (!textures[i].isReady()) {
                                 return false;
@@ -168,10 +168,10 @@ export class TriPlanarMaterial extends PushMaterial {
                     }
                 }
                 if (MaterialFlags.BumpTextureEnabled) {
-                    var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
-                    var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
+                    const textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
+                    const textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
 
-                    for (var i = 0; i < textures.length; i++) {
+                    for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
                             if (!textures[i].isReady()) {
                                 return false;

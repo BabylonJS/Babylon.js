@@ -141,7 +141,7 @@ const _CreateWorkerAsync = () => {
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
                         _Worker = new Worker(workerBlobUrl);
 
-                        var initHandler = (msg: any) => {
+                        const initHandler = (msg: any) => {
                             if (msg.data.action === "init") {
                                 _Worker!.removeEventListener("message", initHandler);
                                 res(_Worker!);
@@ -172,7 +172,7 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
         _CreateWorkerAsync().then(
             () => {
                 const actionId = _actionId++;
-                var messageHandler = (msg: any) => {
+                const messageHandler = (msg: any) => {
                     if (msg.data.action === "transcode" && msg.data.id === actionId) {
                         _Worker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
@@ -204,7 +204,7 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
  */
 export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transcodeResult: TranscodeResult) => {
     const engine = texture.getEngine() as Engine;
-    for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
+    for (let i = 0; i < transcodeResult.fileInfo.images.length; i++) {
         const rootImage = transcodeResult.fileInfo.images[i].levels[0];
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1) {

@@ -285,7 +285,7 @@ export class Sound {
                             }
                             // If we found a supported format, we load it immediately and stop the loop
                             for (let i = 0; i < urls.length; i++) {
-                                var url = urls[i];
+                                const url = urls[i];
                                 codecSupportedFound =
                                     (options && options.skipCodecCheck) ||
                                     (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
@@ -767,7 +767,7 @@ export class Sound {
                         // When the option 'streaming: true' is used, we need first to wait for
                         // the audio engine to be unlocked by a user gesture before trying to play
                         // an HTML Audio element
-                        var tryToPlay = () => {
+                        const tryToPlay = () => {
                             if (Engine.audioEngine?.unlocked) {
                                 const playPromise = this._htmlAudioElement.play();
 
@@ -796,7 +796,7 @@ export class Sound {
                         tryToPlay();
                     }
                 } else {
-                    var tryToPlay = () => {
+                    const tryToPlay = () => {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
                             offset = offset || this._offset;
@@ -1018,7 +1018,7 @@ export class Sound {
      */
     public clone(): Nullable<Sound> {
         if (!this._streaming) {
-            var setBufferAndRun = () => {
+            const setBufferAndRun = () => {
                 if (this._isReadyToPlay) {
                     clonedSound._audioBuffer = this.getAudioBuffer();
                     clonedSound._isReadyToPlay = true;
@@ -1042,7 +1042,7 @@ export class Sound {
                 distanceModel: this.distanceModel,
             };
 
-            var clonedSound = new Sound(this.name + "_cloned", new ArrayBuffer(0), this._scene, null, currentOptions);
+            const clonedSound = new Sound(this.name + "_cloned", new ArrayBuffer(0), this._scene, null, currentOptions);
             if (this.useCustomAttenuation) {
                 clonedSound.setAttenuationFunction(this._customAttenuationFunction);
             }
@@ -1167,7 +1167,7 @@ export class Sound {
             );
             scene._addPendingData(newSound);
         } else {
-            var setBufferAndRun = () => {
+            const setBufferAndRun = () => {
                 if (sourceSound._isReadyToPlay) {
                     newSound._audioBuffer = sourceSound.getAudioBuffer();
                     newSound._isReadyToPlay = true;

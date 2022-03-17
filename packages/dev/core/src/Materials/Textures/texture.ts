@@ -948,7 +948,7 @@ export class Texture extends BaseTexture {
             }
         };
 
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => {
                 let generateMipMaps: boolean = true;
                 if (parsedTexture.noMipmap) {

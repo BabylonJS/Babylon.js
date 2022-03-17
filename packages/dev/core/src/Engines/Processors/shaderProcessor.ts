@@ -367,7 +367,7 @@ export class ShaderProcessor {
         let keepProcessing = false;
 
         while (match != null) {
-            var includeFile = match[1];
+            let includeFile = match[1];
 
             // Uniform declaration
             if (includeFile.indexOf("__decl__") !== -1) {
