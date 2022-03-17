@@ -148,10 +148,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Factory used to create the default material.
      * @param name The name of the material to create
-     * @param scene The scene to create the material for
+     * @param _scene The scene to create the material for
      * @returns The default material
      */
-    public static DefaultMaterialFactory(scene: Scene): Material {
+    public static DefaultMaterialFactory(_scene: Scene): Material {
         throw _WarnImport("StandardMaterial");
     }
 
@@ -2450,11 +2450,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Will stop the animation of the given target
-     * @param target - the target
-     * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-     * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+     * @param _target - the target
+     * @param _animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+     * @param _targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
      */
-    public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
+    public stopAnimation(_target: any, _animationName?: string, _targetMask?: (target: any) => boolean): void {
         // Do nothing as code will be provided by animation component
     }
 
@@ -4179,10 +4179,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param step
+     * @param _step
      * @hidden
      */
-    public _advancePhysicsEngineStep(step: number) {
+    public _advancePhysicsEngineStep(_step: number) {
         // Do nothing. Code will be replaced if physics engine component is referenced
     }
 
@@ -4685,7 +4685,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Remove from engine
-        index = this._engine.scenes.indexOf(this);
+        let index = this._engine.scenes.indexOf(this);
 
         if (index > -1) {
             this._engine.scenes.splice(index, 1);
@@ -4781,79 +4781,79 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Creates a ray that can be used to pick in the scene
-     * @param x defines the x coordinate of the origin (on-screen)
-     * @param y defines the y coordinate of the origin (on-screen)
-     * @param world defines the world matrix to use if you want to pick in object space (instead of world space)
-     * @param camera defines the camera to use for the picking
-     * @param cameraViewSpace defines if picking will be done in view space (false by default)
+     * @param _x defines the x coordinate of the origin (on-screen)
+     * @param _y defines the y coordinate of the origin (on-screen)
+     * @param _world defines the world matrix to use if you want to pick in object space (instead of world space)
+     * @param _camera defines the camera to use for the picking
+     * @param _cameraViewSpace defines if picking will be done in view space (false by default)
      * @returns a Ray
      */
-    public createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+    public createPickingRay(_x: number, _y: number, _world: Nullable<Matrix>, _camera: Nullable<Camera>, _cameraViewSpace = false): Ray {
         throw _WarnImport("Ray");
     }
 
     /**
      * Creates a ray that can be used to pick in the scene
-     * @param x defines the x coordinate of the origin (on-screen)
-     * @param y defines the y coordinate of the origin (on-screen)
-     * @param world defines the world matrix to use if you want to pick in object space (instead of world space)
-     * @param result defines the ray where to store the picking ray
-     * @param camera defines the camera to use for the picking
-     * @param cameraViewSpace defines if picking will be done in view space (false by default)
-     * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
+     * @param _x defines the x coordinate of the origin (on-screen)
+     * @param _y defines the y coordinate of the origin (on-screen)
+     * @param _world defines the world matrix to use if you want to pick in object space (instead of world space)
+     * @param _result defines the ray where to store the picking ray
+     * @param _camera defines the camera to use for the picking
+     * @param _cameraViewSpace defines if picking will be done in view space (false by default)
+     * @param _enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
      * @returns the current scene
      */
     public createPickingRayToRef(
-        x: number,
-        y: number,
-        world: Nullable<Matrix>,
-        result: Ray,
-        camera: Nullable<Camera>,
-        cameraViewSpace = false,
-        enableDistantPicking = false
+        _x: number,
+        _y: number,
+        _world: Nullable<Matrix>,
+        _result: Ray,
+        _camera: Nullable<Camera>,
+        _cameraViewSpace = false,
+        _enableDistantPicking = false
     ): Scene {
         throw _WarnImport("Ray");
     }
 
     /**
      * Creates a ray that can be used to pick in the scene
-     * @param x defines the x coordinate of the origin (on-screen)
-     * @param y defines the y coordinate of the origin (on-screen)
-     * @param camera defines the camera to use for the picking
+     * @param _x defines the x coordinate of the origin (on-screen)
+     * @param _y defines the y coordinate of the origin (on-screen)
+     * @param _camera defines the camera to use for the picking
      * @returns a Ray
      */
-    public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
+    public createPickingRayInCameraSpace(_x: number, _y: number, _camera?: Camera): Ray {
         throw _WarnImport("Ray");
     }
 
     /**
      * Creates a ray that can be used to pick in the scene
-     * @param x defines the x coordinate of the origin (on-screen)
-     * @param y defines the y coordinate of the origin (on-screen)
-     * @param result defines the ray where to store the picking ray
-     * @param camera defines the camera to use for the picking
+     * @param _x defines the x coordinate of the origin (on-screen)
+     * @param _y defines the y coordinate of the origin (on-screen)
+     * @param _result defines the ray where to store the picking ray
+     * @param _camera defines the camera to use for the picking
      * @returns the current scene
      */
-    public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
+    public createPickingRayInCameraSpaceToRef(_x: number, _y: number, _result: Ray, _camera?: Camera): Scene {
         throw _WarnImport("Ray");
     }
 
     /** Launch a ray to try to pick a mesh in the scene
-     * @param x position on screen
-     * @param y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param fastCheck defines if the first intersection will be used (and not the closest)
-     * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
-     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+     * @param _x position on screen
+     * @param _y position on screen
+     * @param _predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param _fastCheck defines if the first intersection will be used (and not the closest)
+     * @param _camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param _trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
     public pick(
-        x: number,
-        y: number,
-        predicate?: (mesh: AbstractMesh) => boolean,
-        fastCheck?: boolean,
-        camera?: Nullable<Camera>,
-        trianglePredicate?: TrianglePickingPredicate
+        _x: number,
+        _y: number,
+        _predicate?: (mesh: AbstractMesh) => boolean,
+        _fastCheck?: boolean,
+        _camera?: Nullable<Camera>,
+        _trianglePredicate?: TrianglePickingPredicate
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
@@ -4862,14 +4862,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
-     * @param x position on screen
-     * @param y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param fastCheck defines if the first intersection will be used (and not the closest)
-     * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param _x position on screen
+     * @param _y position on screen
+     * @param _predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param _fastCheck defines if the first intersection will be used (and not the closest)
+     * @param _camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
-    public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    public pickWithBoundingInfo(_x: number, _y: number, _predicate?: (mesh: AbstractMesh) => boolean, _fastCheck?: boolean, _camera?: Nullable<Camera>): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
         pi._pickingUnavailable = true;
@@ -4877,37 +4877,37 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** Use the given ray to pick a mesh in the scene
-     * @param ray The ray to use to pick meshes
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
-     * @param fastCheck defines if the first intersection will be used (and not the closest)
-     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+     * @param _ray The ray to use to pick meshes
+     * @param _predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
+     * @param _fastCheck defines if the first intersection will be used (and not the closest)
+     * @param _trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
+    public pickWithRay(_ray: Ray, _predicate?: (mesh: AbstractMesh) => boolean, _fastCheck?: boolean, _trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
         throw _WarnImport("Ray");
     }
 
     /**
      * Launch a ray to try to pick a mesh in the scene
-     * @param x X position on screen
-     * @param y Y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
-     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+     * @param _x X position on screen
+     * @param _y Y position on screen
+     * @param _predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param _camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @param _trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPick(_x: number, _y: number, _predicate?: (mesh: AbstractMesh) => boolean, _camera?: Camera, _trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
     /**
      * Launch a ray to try to pick a mesh in the scene
-     * @param ray Ray to use
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+     * @param _ray Ray to use
+     * @param _predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param _trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(_ray: Ray, _predicate: (mesh: AbstractMesh) => boolean, _trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
@@ -4922,7 +4922,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @returns the mesh under the pointer
      * @returns a Mesh or null if no mesh is under the pointer
      */
     public getPointerOverMesh(): Nullable<AbstractMesh> {
@@ -4979,7 +4978,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         forEach =
             forEach ||
-            ((item: any) => {
+            ((_item: any) => {
                 return;
             });
 
@@ -5075,7 +5074,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @returns the current auto clear configuration for one rendering group of the rendering
+     * Gets the current auto clear configuration for one rendering group of the rendering
      * manager.
      * @param index the rendering group index to get the information for
      * @returns The auto clear setup for the requested rendering group
@@ -5173,7 +5172,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 onProgress,
                 useOfflineSupport,
                 useArrayBuffer,
-                (request, exception) => {
+                (_request, exception) => {
                     reject(exception);
                 },
                 onOpened

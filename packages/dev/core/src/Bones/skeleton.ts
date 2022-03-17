@@ -115,7 +115,7 @@ export class Skeleton implements IAnimatable {
     public onBeforeComputeObservable = new Observable<Skeleton>();
 
     /**
-     * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
+     * @returns a boolean indicating that the skeleton effectively stores matrices into a texture
      */
     public get isUsingTextureForMatrices() {
         return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones;
@@ -296,7 +296,6 @@ export class Skeleton implements IAnimatable {
 
     /**
      * @returns the list of all animation ranges defined on this skeleton
-     * @returns an array
      */
     public getAnimationRanges(): Nullable<AnimationRange>[] {
         const animationRanges: Nullable<AnimationRange>[] = [];

@@ -249,7 +249,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
+     * @returns a matrix used to store world matrix (ie. the matrix sent to shaders)
      */
     public getWorldMatrix(): Matrix {
         return this._worldTransform;

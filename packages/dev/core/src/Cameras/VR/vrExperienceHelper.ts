@@ -1096,7 +1096,7 @@ export class VRExperienceHelper {
     };
 
     /**
-     * Gets a value indicating if we are currently in VR mode.
+     * @returns a value indicating if we are currently in VR mode.
      */
     public get isInVRMode(): boolean {
         return (this.xr && this.webVROptions.useXR && this.xr.baseExperience.state === WebXRState.IN_XR) || this._webVRpresenting || this._fullscreenVRpresenting;

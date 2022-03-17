@@ -48,7 +48,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     private _autoTransitionRange = false;
 
     /**
-     * Gets a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
+     * @returns a value indicating if the lowerRadiusTransitionRange and upperRadiusTransitionRange are defined automatically
      */
     public get autoTransitionRange(): boolean {
         return this._autoTransitionRange;

@@ -257,7 +257,7 @@ export class Engine extends ThinEngine {
     public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;
 
     /**
-     * Returns the current npm package of the sdk
+     * @returns the current npm package of the sdk
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
@@ -265,7 +265,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Returns the current version of the framework
+     * @returns the current version of the framework
      */
     public static get Version(): string {
         return ThinEngine.Version;
@@ -368,10 +368,10 @@ export class Engine extends ThinEngine {
     /**
      * Method called to create the default loading screen.
      * This can be overridden in your own app.
-     * @param canvas The rendering canvas element
+     * @param _canvas The rendering canvas element
      * @returns The loading screen
      */
-    public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
+    public static DefaultLoadingScreenFactory(_canvas: HTMLCanvasElement): ILoadingScreen {
         throw _WarnImport("LoadingScreen");
     }
 
@@ -543,7 +543,7 @@ export class Engine extends ThinEngine {
         return this._compatibilityMode;
     }
 
-    public set compatibilityMode(mode: boolean) {
+    public set compatibilityMode(_mode: boolean) {
         // not supported in WebGL
         this._compatibilityMode = true;
     }
@@ -552,7 +552,6 @@ export class Engine extends ThinEngine {
 
     /**
      * @returns the HTML element used to attach event listeners
-     * @returns a HTML element
      */
     public getInputElement(): Nullable<HTMLElement> {
         return this._renderingCanvas;
@@ -733,7 +732,6 @@ export class Engine extends ThinEngine {
 
     /**
      * @returns the client rect of the HTML canvas attached with the current webGL context
-     * @returns a client rectangle
      */
     public getRenderingCanvasClientRect(): Nullable<ClientRect> {
         if (!this._renderingCanvas) {
@@ -744,7 +742,6 @@ export class Engine extends ThinEngine {
 
     /**
      * @returns the client rect of the HTML element used for events
-     * @returns a client rectangle
      */
     public getInputElementClientRect(): Nullable<ClientRect> {
         if (!this._renderingCanvas) {
@@ -765,7 +762,6 @@ export class Engine extends ThinEngine {
     /**
      * @returns the max steps when engine is running in deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
-     * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
         return this._lockstepMaxSteps;
@@ -846,7 +842,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil mask
+     * Gets the current stencil mask
      * @returns a number defining the new stencil mask to use
      */
     public getStencilMask(): number {
@@ -862,7 +858,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil function
+     * Gets the current stencil function
      * @returns a number defining the stencil function to use
      */
     public getStencilFunction(): number {
@@ -870,7 +866,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil reference value
+     * Gets the current stencil reference value
      * @returns a number defining the stencil reference value to use
      */
     public getStencilFunctionReference(): number {
@@ -878,7 +874,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil mask
+     * Gets the current stencil mask
      * @returns a number defining the stencil mask to use
      */
     public getStencilFunctionMask(): number {
@@ -910,7 +906,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil operation when stencil fails
+     * Gets the current stencil operation when stencil fails
      * @returns a number defining stencil operation to use when stencil fails
      */
     public getStencilOperationFail(): number {
@@ -918,7 +914,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil operation when depth fails
+     * Gets the current stencil operation when depth fails
      * @returns a number defining stencil operation to use when depth fails
      */
     public getStencilOperationDepthFail(): number {
@@ -926,7 +922,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current stencil operation when stencil passes
+     * Gets the current stencil operation when stencil passes
      * @returns a number defining stencil operation to use when stencil passes
      */
     public getStencilOperationPass(): number {
@@ -982,7 +978,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the current depth function
+     * Gets the current depth function
      * @returns a number defining the depth function
      */
     public getDepthFunction(): Nullable<number> {
@@ -1137,11 +1133,11 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param canvas
-     * @param document
+     * @param _canvas
+     * @param _document
      * @hidden
      */
-    public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
+    public _connectVREvents(_canvas?: HTMLCanvasElement, _document?: any) {
         // Do nothing as the engine side effect will overload it
     }
 
@@ -1187,7 +1183,7 @@ export class Engine extends ThinEngine {
                 undefined,
                 offlineProvider,
                 useArrayBuffer,
-                (request, exception) => {
+                (_request, exception) => {
                     reject(exception);
                 }
             );
@@ -1195,7 +1191,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the source code of the vertex shader associated with a specific webGL program
+     * Gets the source code of the vertex shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the vertex shader associated with the program
      */
@@ -1210,7 +1206,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @returns the source code of the fragment shader associated with a specific webGL program
+     * Gets the source code of the fragment shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the fragment shader associated with the program
      */
@@ -1579,7 +1575,6 @@ export class Engine extends ThinEngine {
     private _renderPassNames: string[] = ["main"];
     /**
      * @returns the names of the render passes that are currently created
-     * @returns list of the render pass names
      */
     public getRenderPassNames(): string[] {
         return this._renderPassNames;
@@ -1587,7 +1582,6 @@ export class Engine extends ThinEngine {
 
     /**
      * @returns the name of the current render pass
-     * @returns name of the current render pass
      */
     public getCurrentRenderPassName(): string {
         return this._renderPassNames[this.currentRenderPassId];
@@ -1687,7 +1681,6 @@ export class Engine extends ThinEngine {
     // FPS
 
     /**
-     * @returns the current framerate
      * @returns a number representing the framerate
      */
     public getFps(): number {
@@ -1696,7 +1689,6 @@ export class Engine extends ThinEngine {
 
     /**
      * @returns the time spent between current and previous frame
-     * @returns a number representing the delta time in ms
      */
     public getDeltaTime(): number {
         return this._deltaTime;
@@ -2023,10 +2015,10 @@ export class Engine extends ThinEngine {
 
     /**
      * creates and returns a new video element
-     * @param constraints video constraints
+     * @param _constraints video constraints
      * @returns video element
      */
-    public createVideoElement(constraints: MediaTrackConstraints): any {
+    public createVideoElement(_constraints: MediaTrackConstraints): any {
         return document.createElement("video");
     }
 

@@ -30,11 +30,11 @@ declare type Ray = import("../Culling/ray").Ray;
  */
 export class Camera extends Node {
     /**
-     * @param name
-     * @param scene
+     * @param _name
+     * @param _scene
      * @hidden
      */
-    public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
+    public static _createDefaultParsedCamera = (_name: string, _scene: Scene): Camera => {
         throw _WarnImport("UniversalCamera");
     };
 
@@ -421,7 +421,6 @@ export class Camera extends Node {
 
     /**
      * @returns the class name of the camera.
-     * @returns the class name
      */
     public getClassName(): string {
         return "Camera";
@@ -444,6 +443,7 @@ export class Camera extends Node {
             }
         }
         if (fullDetails) {
+            // no-op
         }
         return ret;
     }
@@ -590,10 +590,10 @@ export class Camera extends Node {
     public attachControl(ignored: any, noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
+     * @param _noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
+    public attachControl(_ignored?: any, _noPreventDefault?: boolean): void {}
 
     /**
      * Detach the current controls from the specified dom element.
@@ -606,9 +606,9 @@ export class Camera extends Node {
     public detachControl(ignored: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {}
+    public detachControl(_ignored?: any): void {}
 
     /**
      * Update the camera state according to the different inputs gathered during the frame.
@@ -958,24 +958,24 @@ export class Camera extends Node {
 
     /**
      * Gets a ray in the forward direction from the camera.
-     * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
-     * @param origin Defines the start point of the ray which defaults to the camera position
+     * @param _length Defines the length of the ray to create
+     * @param _transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
+     * @param _origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
-    public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
+    public getForwardRay(_length = 100, _transform?: Matrix, _origin?: Vector3): Ray {
         throw _WarnImport("Ray");
     }
 
     /**
      * Gets a ray in the forward direction from the camera.
-     * @param refRay the ray to (re)use when setting the values
-     * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
-     * @param origin Defines the start point of the ray which defaults to the camera position
+     * @param _refRay the ray to (re)use when setting the values
+     * @param _length Defines the length of the ray to create
+     * @param _transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param _origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
-    public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
+    public getForwardRayToRef(_refRay: Ray, _length = 100, _transform?: Matrix, _origin?: Vector3): Ray {
         throw _WarnImport("Ray");
     }
 
@@ -1155,7 +1155,7 @@ export class Camera extends Node {
         this.update();
     }
 
-    protected _setRigMode(rigParams: any) {
+    protected _setRigMode(_rigParams: any) {
         // no-op
     }
 
@@ -1218,11 +1218,11 @@ export class Camera extends Node {
 
     /**
      * needs to be overridden by children so sub has required properties to be copied
-     * @param name
-     * @param cameraIndex
+     * @param _name
+     * @param _cameraIndex
      * @hidden
      */
-    public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
+    public createRigCamera(_name: string, _cameraIndex: number): Nullable<Camera> {
         return null;
     }
 

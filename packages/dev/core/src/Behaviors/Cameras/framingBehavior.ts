@@ -532,7 +532,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets a value indicating if the user is moving the camera
+     * @returns a value indicating if the user is moving the camera
      */
     public get isUserIsMoving(): boolean {
         if (!this._attachedCamera) {

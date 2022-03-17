@@ -140,7 +140,7 @@ export abstract class AbstractScene {
     public particleSystems = new Array<IParticleSystem>();
 
     /**
-     * Gets a list of Animations associated with the scene
+     * @returns a list of Animations associated with the scene
      */
     public animations: Animation[] = [];
 

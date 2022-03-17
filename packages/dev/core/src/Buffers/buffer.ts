@@ -336,7 +336,7 @@ export class VertexBuffer {
     public readonly uniqueId: number;
 
     /**
-     * Gets a hash code representing the format (type, normalized, size, instanced, stride) of this buffer
+     * @returns a hash code representing the format (type, normalized, size, instanced, stride) of this buffer
      * All buffers with the same format will have the same hash code
      */
     public readonly hashCode: number;

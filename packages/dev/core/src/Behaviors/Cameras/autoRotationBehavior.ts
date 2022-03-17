@@ -80,7 +80,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets a value indicating if the camera is currently rotating because of this behavior
+     * @returns a value indicating if the camera is currently rotating because of this behavior
      */
     public get rotationInProgress(): boolean {
         return Math.abs(this._cameraRotationSpeed) > 0;

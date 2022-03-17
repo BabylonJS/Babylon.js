@@ -145,7 +145,7 @@ export class Node implements IBehaviorAware<Node> {
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
-     * Gets a list of Animations associated with the node
+     * @returns a list of Animations associated with the node
      */
     public animations = new Array<Animation>();
     protected _ranges: { [name: string]: Nullable<AnimationRange> } = {};
