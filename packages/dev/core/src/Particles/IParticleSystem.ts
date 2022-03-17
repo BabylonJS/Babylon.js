@@ -357,7 +357,7 @@ export interface IParticleSystem {
 
     /**
      * Is this system ready to be used/rendered
-     * @return true if the system is ready
+     * @returns true if the system is ready
      */
     isReady(): boolean;
     /**

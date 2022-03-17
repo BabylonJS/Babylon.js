@@ -703,7 +703,7 @@ export class ViewerModel implements IDisposable {
     /**
      * Creates and returns a Babylon easing funtion object based on a string representing the Easing function
      * @param easingFunctionID The enum of the easing funtion to create
-     * @return The newly created Babylon easing function object
+     * @returns The newly created Babylon easing function object
      */
     private _createEasingFunction(easingFunctionID?: number): any {
         let easingFunction;

@@ -62,7 +62,7 @@ export class PrePassRenderer {
     /**
      * Returns the index of a texture in the multi render target texture array.
      * @param type Texture type
-     * @return The index
+     * @returns The index
      */
     public getIndex(type: number): number {
         return this._textureIndices[type];
@@ -135,7 +135,7 @@ export class PrePassRenderer {
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
-     * @return the prepass render target for the rendering pass.
+     * @returns the prepass render target for the rendering pass.
      * If we are currently rendering a render target, it returns the PrePassRenderTarget
      * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
      */
@@ -489,7 +489,7 @@ export class PrePassRenderer {
      * If an effect has already been added, it won't add it twice and will return the configuration
      * already present.
      * @param cfg the effect configuration
-     * @return the effect configuration now used by the prepass
+     * @returns the effect configuration now used by the prepass
      */
     public addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration {
         // Do not add twice

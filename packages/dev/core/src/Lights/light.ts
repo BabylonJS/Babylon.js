@@ -485,7 +485,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Returns the Light associated shadow generator if any.
-     * @return the associated shadow generator.
+     * @returns the associated shadow generator.
      */
     public getShadowGenerator(): Nullable<IShadowGenerator> {
         return this._shadowGenerator;
@@ -502,7 +502,7 @@ export abstract class Light extends Node implements ISortableLight {
     /**
      * Specifies if the light will affect the passed mesh.
      * @param mesh The mesh to test against the light
-     * @return true the mesh is affected otherwise, false.
+     * @returns true the mesh is affected otherwise, false.
      */
     public canAffectMesh(mesh: AbstractMesh): boolean {
         if (!mesh) {

@@ -269,7 +269,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     /**
      * Returns the light position for light scattering effect
-     * @return Vector3 The custom light position
+     * @returns Vector3 The custom light position
      */
     public getCustomMeshPosition(): Vector3 {
         return this.customMeshPosition;
@@ -291,7 +291,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     /**
      * Returns the render target texture used by the post-process
-     * @return the render target texture used by the post-process
+     * @returns the render target texture used by the post-process
      */
     public getPass(): RenderTargetTexture {
         return this._volumetricLightScatteringRTT;
@@ -542,7 +542,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * Creates a default mesh for the Volumeric Light Scattering post-process
      * @param name The mesh name
      * @param scene The scene where to create the mesh
-     * @return the default mesh
+     * @returns the default mesh
      */
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
         const mesh = CreatePlane(name, { size: 1 }, scene);

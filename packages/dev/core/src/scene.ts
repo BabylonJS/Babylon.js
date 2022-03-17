@@ -780,7 +780,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param scene The scene the eyes position is used from
      * @param variableName name of the shader variable that will hold the eye position
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @return the computed eye position
+     * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
         const eyePosition = this._forcedViewPosition
@@ -1819,7 +1819,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
      * Delay loaded resources are not taking in account
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
-     * @return true if all required resources are ready
+     * @returns true if all required resources are ready
      */
     public isReady(checkRenderTargets = true): boolean {
         if (this._isDisposed) {
@@ -2732,7 +2732,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * sets the active camera of the scene using its Id
      * @param id defines the camera's Id
-     * @return the new active camera or null if none found.
+     * @returns the new active camera or null if none found.
      */
     public setActiveCameraById(id: string): Nullable<Camera> {
         const camera = this.getCameraById(id);
@@ -2764,7 +2764,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * get an animation group using its name
      * @param name defines the material's name
-     * @return the animation group or null if none found.
+     * @returns the animation group or null if none found.
      */
     public getAnimationGroupByName(name: string): Nullable<AnimationGroup> {
         for (let index = 0; index < this.animationGroups.length; index++) {
@@ -2779,7 +2779,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get a material using its unique id
      * @param uniqueId defines the material's unique id
-     * @return the material or null if none found.
+     * @returns the material or null if none found.
      */
     public getMaterialByUniqueID(uniqueId: number): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
@@ -2794,7 +2794,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * get a material using its id
      * @param id defines the material's Id
-     * @return the material or null if none found.
+     * @returns the material or null if none found.
      */
     public getMaterialById(id: string): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
@@ -2810,7 +2810,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets a the last added material using a given id
      * @param id defines the material's Id
      * @param allowMultiMaterials determines whether multimaterials should be considered
-     * @return the last material with the given id or null if none found.
+     * @returns the last material with the given id or null if none found.
      */
     public getLastMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
         for (let index = this.materials.length - 1; index >= 0; index--) {
@@ -2832,7 +2832,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a material using its name
      * @param name defines the material's name
-     * @return the material or null if none found.
+     * @returns the material or null if none found.
      */
     public getMaterialByName(name: string): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
@@ -2847,7 +2847,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get a texture using its unique id
      * @param uniqueId defines the texture's unique id
-     * @return the texture or null if none found.
+     * @returns the texture or null if none found.
      */
     public getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture> {
         for (let index = 0; index < this.textures.length; index++) {
@@ -2862,7 +2862,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a texture using its name
      * @param name defines the texture's name
-     * @return the texture or null if none found.
+     * @returns the texture or null if none found.
      */
     public getTextureByName(name: string): Nullable<BaseTexture> {
         for (let index = 0; index < this.textures.length; index++) {
@@ -2907,7 +2907,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a camera using its name
      * @param name defines the camera's name
-     * @return the camera or null if none found.
+     * @returns the camera or null if none found.
      */
     public getCameraByName(name: string): Nullable<Camera> {
         for (let index = 0; index < this.cameras.length; index++) {
@@ -2922,7 +2922,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a bone using its Id
      * @param id defines the bone's Id
-     * @return the bone or null if not found
+     * @returns the bone or null if not found
      */
     public getBoneById(id: string): Nullable<Bone> {
         for (let skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
@@ -2940,7 +2940,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a bone using its id
      * @param name defines the bone's name
-     * @return the bone or null if not found
+     * @returns the bone or null if not found
      */
     public getBoneByName(name: string): Nullable<Bone> {
         for (let skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
@@ -2958,7 +2958,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a light node using its name
      * @param name defines the the light's name
-     * @return the light or null if none found.
+     * @returns the light or null if none found.
      */
     public getLightByName(name: string): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
@@ -2973,7 +2973,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a light node using its Id
      * @param id defines the light's Id
-     * @return the light or null if none found.
+     * @returns the light or null if none found.
      */
     public getLightById(id: string): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
@@ -2988,7 +2988,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a light node using its scene-generated unique Id
      * @param uniqueId defines the light's unique Id
-     * @return the light or null if none found.
+     * @returns the light or null if none found.
      */
     public getLightByUniqueId(uniqueId: number): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
@@ -3003,7 +3003,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a particle system by Id
      * @param id defines the particle system Id
-     * @return the corresponding system or null if none found
+     * @returns the corresponding system or null if none found
      */
     public getParticleSystemById(id: string): Nullable<IParticleSystem> {
         for (let index = 0; index < this.particleSystems.length; index++) {
@@ -3018,7 +3018,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a geometry using its Id
      * @param id defines the geometry's Id
-     * @return the geometry or null if none found.
+     * @returns the geometry or null if none found.
      */
     public getGeometryById(id: string): Nullable<Geometry> {
         for (let index = 0; index < this.geometries.length; index++) {
@@ -3051,7 +3051,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Add a new geometry to this scene
      * @param geometry defines the geometry to be added to the scene.
      * @param force defines if the geometry must be pushed even if a geometry with this id already exists
-     * @return a boolean defining if the geometry was added or not
+     * @returns a boolean defining if the geometry was added or not
      */
     public pushGeometry(geometry: Geometry, force?: boolean): boolean {
         if (!force && this._getGeometryByUniqueId(geometry.uniqueId)) {
@@ -3068,7 +3068,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Removes an existing geometry
      * @param geometry defines the geometry to be removed from the scene
-     * @return a boolean defining if the geometry was removed or not
+     * @returns a boolean defining if the geometry was removed or not
      */
     public removeGeometry(geometry: Geometry): boolean {
         let index;
@@ -3112,7 +3112,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the first added mesh found of a given Id
      * @param id defines the Id to search for
-     * @return the mesh found or null if not found at all
+     * @returns the mesh found or null if not found at all
      */
     public getMeshById(id: string): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
@@ -3138,7 +3138,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the first added transform node found of a given Id
      * @param id defines the Id to search for
-     * @return the found transform node or null if not found at all.
+     * @returns the found transform node or null if not found at all.
      */
     public getTransformNodeById(id: string): Nullable<TransformNode> {
         for (let index = 0; index < this.transformNodes.length; index++) {
@@ -3153,7 +3153,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a transform node with its auto-generated unique Id
      * @param uniqueId efines the unique Id to search for
-     * @return the found transform node or null if not found at all.
+     * @returns the found transform node or null if not found at all.
      */
     public getTransformNodeByUniqueId(uniqueId: number): Nullable<TransformNode> {
         for (let index = 0; index < this.transformNodes.length; index++) {
@@ -3179,7 +3179,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a mesh with its auto-generated unique Id
      * @param uniqueId defines the unique Id to search for
-     * @return the found mesh or null if not found at all.
+     * @returns the found mesh or null if not found at all.
      */
     public getMeshByUniqueId(uniqueId: number): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
@@ -3194,7 +3194,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added mesh using a given Id
      * @param id defines the Id to search for
-     * @return the found mesh or null if not found at all.
+     * @returns the found mesh or null if not found at all.
      */
     public getLastMeshById(id: string): Nullable<AbstractMesh> {
         for (let index = this.meshes.length - 1; index >= 0; index--) {
@@ -3209,7 +3209,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added node (Mesh, Camera, Light) using a given Id
      * @param id defines the Id to search for
-     * @return the found node or null if not found at all
+     * @returns the found node or null if not found at all
      */
     public getLastEntryById(id: string): Nullable<Node> {
         let index: number;
@@ -3243,7 +3243,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a node (Mesh, Camera, Light) using a given Id
      * @param id defines the Id to search for
-     * @return the found node or null if not found at all
+     * @returns the found node or null if not found at all
      */
     public getNodeById(id: string): Nullable<Node> {
         const mesh = this.getMeshById(id);
@@ -3277,7 +3277,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a node (Mesh, Camera, Light) using a given name
      * @param name defines the name to search for
-     * @return the found node or null if not found at all.
+     * @returns the found node or null if not found at all.
      */
     public getNodeByName(name: string): Nullable<Node> {
         const mesh = this.getMeshByName(name);
@@ -3311,7 +3311,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a mesh using a given name
      * @param name defines the name to search for
-     * @return the found mesh or null if not found at all.
+     * @returns the found mesh or null if not found at all.
      */
     public getMeshByName(name: string): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
@@ -3326,7 +3326,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a transform node using a given name
      * @param name defines the name to search for
-     * @return the found transform node or null if not found at all.
+     * @returns the found transform node or null if not found at all.
      */
     public getTransformNodeByName(name: string): Nullable<TransformNode> {
         for (let index = 0; index < this.transformNodes.length; index++) {
@@ -3341,7 +3341,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
      * @param id defines the Id to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getLastSkeletonById(id: string): Nullable<Skeleton> {
         for (let index = this.skeletons.length - 1; index >= 0; index--) {
@@ -3356,7 +3356,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given auto generated unique id
      * @param  uniqueId defines the unique id to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getSkeletonByUniqueId(uniqueId: number): Nullable<Skeleton> {
         for (let index = 0; index < this.skeletons.length; index++) {
@@ -3371,7 +3371,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given id (if many are found, this function will pick the first one)
      * @param id defines the id to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getSkeletonById(id: string): Nullable<Skeleton> {
         for (let index = 0; index < this.skeletons.length; index++) {
@@ -3386,7 +3386,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given name
      * @param name defines the name to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getSkeletonByName(name: string): Nullable<Skeleton> {
         for (let index = 0; index < this.skeletons.length; index++) {
@@ -3401,7 +3401,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a morph target manager  using a given id (if many are found, this function will pick the last one)
      * @param id defines the id to search for
-     * @return the found morph target manager or null if not found at all.
+     * @returns the found morph target manager or null if not found at all.
      */
     public getMorphTargetManagerById(id: number): Nullable<MorphTargetManager> {
         for (let index = 0; index < this.morphTargetManagers.length; index++) {
@@ -3416,7 +3416,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a morph target using a given id (if many are found, this function will pick the first one)
      * @param id defines the id to search for
-     * @return the found morph target or null if not found at all.
+     * @returns the found morph target or null if not found at all.
      */
     public getMorphTargetById(id: string): Nullable<MorphTarget> {
         for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
@@ -3434,7 +3434,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a morph target using a given name (if many are found, this function will pick the first one)
      * @param name defines the name to search for
-     * @return the found morph target or null if not found at all.
+     * @returns the found morph target or null if not found at all.
      */
     public getMorphTargetByName(name: string): Nullable<MorphTarget> {
         for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
@@ -3452,7 +3452,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a post process using a given name (if many are found, this function will pick the first one)
      * @param name defines the name to search for
-     * @return the found post process or null if not found at all.
+     * @returns the found post process or null if not found at all.
      */
     public getPostProcessByName(name: string): Nullable<PostProcess> {
         for (let postProcessIndex = 0; postProcessIndex < this.postProcesses.length; ++postProcessIndex) {
@@ -3489,7 +3489,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
      * @param key the unique key that identifies the data
      * @param data the data object to associate to the key for this Engine instance
-     * @return true if no such key were already present and the data was added successfully, false otherwise
+     * @returns true if no such key were already present and the data was added successfully, false otherwise
      */
     public addExternalData<T>(key: string, data: T): boolean {
         if (!this._externalData) {
@@ -3501,7 +3501,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get an externaly attached data from its key
      * @param key the unique key that identifies the data
-     * @return the associated data, if present (can be null), or undefined if not present
+     * @returns the associated data, if present (can be null), or undefined if not present
      */
     public getExternalData<T>(key: string): Nullable<T> {
         if (!this._externalData) {
@@ -3514,7 +3514,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Get an externaly attached data from its key, create it using a factory if it's not already present
      * @param key the unique key that identifies the data
      * @param factory the factory that will be called to create the instance if and only if it doesn't exists
-     * @return the associated data, can be null if the factory returned null.
+     * @returns the associated data, can be null if the factory returned null.
      */
     public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
         if (!this._externalData) {
@@ -3526,7 +3526,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Remove an externaly attached data from the Engine instance
      * @param key the unique key that identifies the data
-     * @return true if the data was successfully removed, false if it doesn't exist
+     * @returns true if the data was successfully removed, false if it doesn't exist
      */
     public removeExternalData(key: string): boolean {
         return this._externalData.remove(key);

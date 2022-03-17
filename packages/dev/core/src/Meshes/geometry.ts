@@ -477,7 +477,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Returns all vertex buffers
-     * @return an object holding all vertex buffers indexed by kind
+     * @returns an object holding all vertex buffers indexed by kind
      */
     public getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer }> {
         if (!this.isReady()) {
@@ -610,7 +610,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Gets the index buffer
-     * @return the index buffer
+     * @returns the index buffer
      */
     public getIndexBuffer(): Nullable<DataBuffer> {
         if (!this.isReady()) {
@@ -1016,7 +1016,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Serialize the current geometry info (and not the vertices data) into a JSON object
-     * @return a JSON representation of the current geometry data (without the vertices data)
+     * @returns a JSON representation of the current geometry data (without the vertices data)
      */
     public serialize(): any {
         const serializationObject: any = {};

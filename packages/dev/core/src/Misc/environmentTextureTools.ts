@@ -216,7 +216,7 @@ export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextu
  * @param options options for the conversion process
  * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
  * @param options.imageQuality the image quality of encoded WebP images.
- * @return a promise containing the environment data if successful.
+ * @returns a promise containing the environment data if successful.
  */
 export async function CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
     const internalTexture = texture.getInternalTexture();
@@ -366,7 +366,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 /**
  * Creates a JSON representation of the spherical data.
  * @param texture defines the texture containing the polynomials
- * @return the JSON representation of the spherical info
+ * @returns the JSON representation of the spherical info
  */
 function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
     const polynmials = texture.sphericalPolynomial;
@@ -393,7 +393,7 @@ function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<Environment
  * Creates the ArrayBufferViews used for initializing environment texture image data.
  * @param data the image data
  * @param info parameters that determine what views will be created for accessing the underlying buffer
- * @return the views described by info providing access to the underlying buffer
+ * @returns the views described by info providing access to the underlying buffer
  */
 export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
     info = normalizeEnvInfo(info);
@@ -814,7 +814,7 @@ export const EnvironmentTextureTools = {
      * @param options options for the conversion process
      * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
      * @param options.imageQuality the image quality of encoded WebP images.
-     * @return a promise containing the environment data if successful.
+     * @returns a promise containing the environment data if successful.
      */
     CreateEnvTextureAsync,
 
@@ -822,7 +822,7 @@ export const EnvironmentTextureTools = {
      * Creates the ArrayBufferViews used for initializing environment texture image data.
      * @param data the image data
      * @param info parameters that determine what views will be created for accessing the underlying buffer
-     * @return the views described by info providing access to the underlying buffer
+     * @returns the views described by info providing access to the underlying buffer
      */
     CreateImageDataArrayBufferViews,
 

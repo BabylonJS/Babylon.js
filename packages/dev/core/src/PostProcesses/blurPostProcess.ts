@@ -270,7 +270,7 @@ export class BlurPostProcess extends PostProcess {
      * want to minimize kernel changes, having gaps between physical kernels is helpful in that regard.
      * The gaps between physical kernels are compensated for in the weighting of the samples
      * @param idealKernel Ideal blur kernel.
-     * @return Nearest best kernel.
+     * @returns Nearest best kernel.
      */
     protected _nearestBestKernel(idealKernel: number): number {
         const v = Math.round(idealKernel);
@@ -285,7 +285,7 @@ export class BlurPostProcess extends PostProcess {
     /**
      * Calculates the value of a Gaussian distribution with sigma 3 at a given point.
      * @param x The point on the Gaussian distribution to sample.
-     * @return the value of the Gaussian function at x.
+     * @returns the value of the Gaussian function at x.
      */
     protected _gaussianWeight(x: number): number {
         //reference: Engines/ImageProcessingBlur.cpp #dcc760
@@ -306,7 +306,7 @@ export class BlurPostProcess extends PostProcess {
      * Generates a string that can be used as a floating point number in GLSL.
      * @param x Value to print.
      * @param decimalFigures Number of decimal places to print the number to (excluding trailing 0s).
-     * @return GLSL float string.
+     * @returns GLSL float string.
      */
     protected _glslFloat(x: number, decimalFigures = 8) {
         return x.toFixed(decimalFigures).replace(/0+$/, "");

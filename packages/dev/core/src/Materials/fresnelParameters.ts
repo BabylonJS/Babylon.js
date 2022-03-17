@@ -151,7 +151,7 @@ export class FresnelParameters {
 
     /**
      * Serializes the current fresnel parameters to a JSON representation.
-     * @return the JSON serialization
+     * @returns the JSON serialization
      */
     public serialize(): IFresnelParametersSerialized {
         return {

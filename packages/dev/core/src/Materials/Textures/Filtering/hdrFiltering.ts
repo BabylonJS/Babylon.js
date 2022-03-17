@@ -187,7 +187,7 @@ export class HDRFiltering {
      * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
      * @param texture Texture to filter
      * @param onFinished Callback when filtering is done
-     * @return Promise called when prefiltering is done
+     * @returns Promise called when prefiltering is done
      */
     public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null): Promise<void> {
         if (!this._engine._features.allowTexturePrefiltering) {

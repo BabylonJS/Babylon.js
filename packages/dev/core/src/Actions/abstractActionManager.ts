@@ -49,7 +49,7 @@ export abstract class AbstractActionManager implements IDisposable {
     /**
      * Does this action manager handles actions of any of the given triggers
      * @param triggers defines the triggers to be tested
-     * @return a boolean indicating whether one (or more) of the triggers is handled
+     * @returns a boolean indicating whether one (or more) of the triggers is handled
      */
     public abstract hasSpecificTriggers(triggers: number[]): boolean;
 
@@ -58,7 +58,7 @@ export abstract class AbstractActionManager implements IDisposable {
      * speed.
      * @param triggerA defines the trigger to be tested
      * @param triggerB defines the trigger to be tested
-     * @return a boolean indicating whether one (or more) of the triggers is handled
+     * @returns a boolean indicating whether one (or more) of the triggers is handled
      */
     public abstract hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
 
@@ -66,7 +66,7 @@ export abstract class AbstractActionManager implements IDisposable {
      * Does this action manager handles actions of a given trigger
      * @param trigger defines the trigger to be tested
      * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-     * @return whether the trigger is handled
+     * @returns whether the trigger is handled
      */
     public abstract hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
 
@@ -80,14 +80,14 @@ export abstract class AbstractActionManager implements IDisposable {
     /**
      * Registers an action to this action manager
      * @param action defines the action to be registered
-     * @return the action amended (prepared) after registration
+     * @returns the action amended (prepared) after registration
      */
     public abstract registerAction(action: IAction): Nullable<IAction>;
 
     /**
      * Unregisters an action to this action manager
      * @param action defines the action to be unregistered
-     * @return a boolean indicating whether the action has been unregistered
+     * @returns a boolean indicating whether the action has been unregistered
      */
     public abstract unregisterAction(action: IAction): Boolean;
 
@@ -121,7 +121,7 @@ export abstract class AbstractActionManager implements IDisposable {
     /**
      * Does exist one action manager that handles actions of a given trigger
      * @param trigger defines the trigger to be tested
-     * @return a boolean indicating whether the trigger is handled by at least one action manager
+     * @returns a boolean indicating whether the trigger is handled by at least one action manager
      **/
     public static HasSpecificTrigger(trigger: number): boolean {
         for (const t in AbstractActionManager.Triggers) {

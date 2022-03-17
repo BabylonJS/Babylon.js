@@ -844,7 +844,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets the mesh uniform buffer.
-     * @return the uniform buffer of the mesh.
+     * @returns the uniform buffer of the mesh.
      */
     public getMeshUniformBuffer(): UniformBuffer {
         return this._uniformBuffer;

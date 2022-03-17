@@ -19,7 +19,7 @@ export class StringDictionary<T> {
     /**
      * Get a value based from its key
      * @param key the given key to get the matching value from
-     * @return the value if found, otherwise undefined is returned
+     * @returns the value if found, otherwise undefined is returned
      */
     public get(key: string): T | undefined {
         const val = this._data[key];
@@ -35,7 +35,7 @@ export class StringDictionary<T> {
      * @param key the given key to get the matching value from
      * @param factory the factory that will create the value if the key is not present in the dictionary.
      * The factory will only be invoked if there's no data for the given key.
-     * @return the value corresponding to the key.
+     * @returns the value corresponding to the key.
      */
     public getOrAddWithFactory(key: string, factory: (key: string) => T): T {
         let val = this.get(key);
@@ -55,7 +55,7 @@ export class StringDictionary<T> {
      * Get a value from its key if present in the dictionary otherwise add it
      * @param key the key to get the value from
      * @param val if there's no such key/value pair in the dictionary add it with this value
-     * @return the value corresponding to the key
+     * @returns the value corresponding to the key
      */
     public getOrAdd(key: string, val: T): T {
         const curVal = this.get(key);
@@ -70,7 +70,7 @@ export class StringDictionary<T> {
     /**
      * Check if there's a given key in the dictionary
      * @param key the key to check for
-     * @return true if the key is present, false otherwise
+     * @returns true if the key is present, false otherwise
      */
     public contains(key: string): boolean {
         return this._data[key] !== undefined;
@@ -80,7 +80,7 @@ export class StringDictionary<T> {
      * Add a new key and its corresponding value
      * @param key the key to add
      * @param value the value corresponding to the key
-     * @return true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
+     * @returns true if the operation completed successfully, false if we couldn't insert the key/value because there was already this key in the dictionary
      */
     public add(key: string, value: T): boolean {
         if (this._data[key] !== undefined) {
@@ -123,7 +123,7 @@ export class StringDictionary<T> {
     /**
      * Remove a key/value from the dictionary.
      * @param key the key to remove
-     * @return true if the item was successfully deleted, false if no item with such key exist in the dictionary
+     * @returns true if the item was successfully deleted, false if no item with such key exist in the dictionary
      */
     public remove(key: string): boolean {
         if (this.contains(key)) {

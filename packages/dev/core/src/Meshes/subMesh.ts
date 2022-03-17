@@ -260,7 +260,7 @@ export class SubMesh implements ICullable {
 
     /**
      * Returns the mesh of the current submesh
-     * @return the parent mesh
+     * @returns the parent mesh
      */
     public getMesh(): AbstractMesh {
         return this._mesh;

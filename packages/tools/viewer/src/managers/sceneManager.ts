@@ -1434,7 +1434,7 @@ export class SceneManager {
      * Gets the shadow map blur kernel according to the light configuration.
      * @param light The light used to generate the shadows
      * @param bufferSize The size of the shadow map
-     * @return the kernel blur size
+     * @returns the kernel blur size
      */
     public getBlurKernel(light: IShadowLight, bufferSize: number): number {
         let normalizedBlurKernel = 0.05; // TODO Should come from the config.

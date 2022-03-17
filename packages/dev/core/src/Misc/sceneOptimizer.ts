@@ -115,7 +115,7 @@ export class HardwareScalingOptimization extends SceneOptimization {
 
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Setting hardware scaling level to " + this._currentScale;
@@ -173,7 +173,7 @@ export class HardwareScalingOptimization extends SceneOptimization {
 export class ShadowsOptimization extends SceneOptimization {
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Turning shadows on/off";
@@ -198,7 +198,7 @@ export class ShadowsOptimization extends SceneOptimization {
 export class PostProcessesOptimization extends SceneOptimization {
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Turning post-processes on/off";
@@ -223,7 +223,7 @@ export class PostProcessesOptimization extends SceneOptimization {
 export class LensFlaresOptimization extends SceneOptimization {
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Turning lens flares on/off";
@@ -289,7 +289,7 @@ export class CustomOptimization extends SceneOptimization {
 export class ParticlesOptimization extends SceneOptimization {
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Turning particles on/off";
@@ -314,7 +314,7 @@ export class ParticlesOptimization extends SceneOptimization {
 export class RenderTargetsOptimization extends SceneOptimization {
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Turning render targets off";
@@ -355,7 +355,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
 
     /**
      * Gets a string describing the action executed by the current optimization
-     * @return description string
+     * @returns description string
      */
     public getDescription(): string {
         return "Merging similar meshes together";

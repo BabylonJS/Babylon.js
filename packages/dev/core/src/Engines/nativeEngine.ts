@@ -2886,7 +2886,7 @@ export class NativeEngine extends Engine {
      * Create a canvas
      * @param width width
      * @param height height
-     * @return ICanvas interface
+     * @returns ICanvas interface
      */
     public createCanvas(width: number, height: number): ICanvas {
         if (!_native.Canvas) {
@@ -2900,7 +2900,7 @@ export class NativeEngine extends Engine {
 
     /**
      * Create an image to use with canvas
-     * @return IImage interface
+     * @returns IImage interface
      */
     public createCanvasImage(): IImage {
         if (!_native.Canvas) {

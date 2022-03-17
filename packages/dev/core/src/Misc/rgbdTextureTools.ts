@@ -116,7 +116,7 @@ export class RGBDTextureTools {
      * @param internalTexture the texture to encode
      * @param scene the scene hosting the texture
      * @param outputTextureType type of the texture in which the encoding is performed
-     * @return a promise with the internalTexture having its texture replaced by the result of the processing
+     * @returns a promise with the internalTexture having its texture replaced by the result of the processing
      */
     public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
         return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);

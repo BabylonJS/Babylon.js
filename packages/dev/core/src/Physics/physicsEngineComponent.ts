@@ -30,7 +30,7 @@ declare module "../scene" {
          * Enables physics to the current scene
          * @param gravity defines the scene's gravity for the physics engine. defaults to real earth gravity : (0, -9.81, 0)
          * @param plugin defines the physics engine to be used. defaults to CannonJS.
-         * @return a boolean indicating if the physics engine was initialized
+         * @returns a boolean indicating if the physics engine was initialized
          */
         enablePhysics(gravity?: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
 
@@ -75,7 +75,7 @@ Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
  * Enables physics to the current scene
  * @param gravity defines the scene's gravity for the physics engine
  * @param plugin defines the physics engine to be used. defaults to CannonJS.
- * @return a boolean indicating if the physics engine was initialized
+ * @returns a boolean indicating if the physics engine was initialized
  */
 Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
     if (this._physicsEngine) {

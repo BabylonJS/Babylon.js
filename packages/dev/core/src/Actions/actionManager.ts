@@ -172,7 +172,7 @@ export class ActionManager extends AbstractActionManager {
     /**
      * Does this action manager handles actions of any of the given triggers
      * @param triggers defines the triggers to be tested
-     * @return a boolean indicating whether one (or more) of the triggers is handled
+     * @returns a boolean indicating whether one (or more) of the triggers is handled
      */
     public hasSpecificTriggers(triggers: number[]): boolean {
         for (let index = 0; index < this.actions.length; index++) {
@@ -191,7 +191,7 @@ export class ActionManager extends AbstractActionManager {
      * speed.
      * @param triggerA defines the trigger to be tested
      * @param triggerB defines the trigger to be tested
-     * @return a boolean indicating whether one (or more) of the triggers is handled
+     * @returns a boolean indicating whether one (or more) of the triggers is handled
      */
     public hasSpecificTriggers2(triggerA: number, triggerB: number): boolean {
         for (let index = 0; index < this.actions.length; index++) {
@@ -209,7 +209,7 @@ export class ActionManager extends AbstractActionManager {
      * Does this action manager handles actions of a given trigger
      * @param trigger defines the trigger to be tested
      * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-     * @return whether the trigger is handled
+     * @returns whether the trigger is handled
      */
     public hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean {
         for (let index = 0; index < this.actions.length; index++) {
@@ -262,7 +262,7 @@ export class ActionManager extends AbstractActionManager {
     /**
      * Registers an action to this action manager
      * @param action defines the action to be registered
-     * @return the action amended (prepared) after registration
+     * @returns the action amended (prepared) after registration
      */
     public registerAction(action: IAction): Nullable<IAction> {
         if (action.trigger === ActionManager.OnEveryFrameTrigger) {
@@ -289,7 +289,7 @@ export class ActionManager extends AbstractActionManager {
     /**
      * Unregisters an action to this action manager
      * @param action defines the action to be unregistered
-     * @return a boolean indicating whether the action has been unregistered
+     * @returns a boolean indicating whether the action has been unregistered
      */
     public unregisterAction(action: IAction): Boolean {
         const index = this.actions.indexOf(action);

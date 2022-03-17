@@ -137,7 +137,7 @@ export class CubeTexture extends BaseTexture {
      * @param scene defines the scene the texture is attached to
      * @param forcedExtension defines the extension of the file if different from the url
      * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
-     * @return the prefiltered texture
+     * @returns the prefiltered texture
      */
     public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
         const oldValue = scene.useDelayedTextureLoading;
@@ -169,7 +169,7 @@ export class CubeTexture extends BaseTexture {
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @param loaderOptions options to be passed to the loader
      * @param useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false)
-     * @return the cube texture
+     * @returns the cube texture
      */
     constructor(
         rootUrl: string,

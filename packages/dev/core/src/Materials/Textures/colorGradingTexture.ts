@@ -280,7 +280,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @param parsedTexture The texture information being parsedTexture
      * @param scene The scene to load the texture in
      * @param rootUrl The root url of the data assets to load
-     * @return A color grading texture
+     * @returns A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
         let texture = null;

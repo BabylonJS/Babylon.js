@@ -30,7 +30,7 @@ declare module "../abstractScene" {
         /**
          * Return a the first highlight layer of the scene with a given name.
          * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null.
+         * @returns The highlight layer if found otherwise null.
          */
         getGlowLayerByName(name: string): Nullable<GlowLayer>;
     }
@@ -210,7 +210,7 @@ export class GlowLayer extends EffectLayer {
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public getEffectName(): string {
         return GlowLayer.EffectName;
@@ -386,7 +386,7 @@ export class GlowLayer extends EffectLayer {
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial();

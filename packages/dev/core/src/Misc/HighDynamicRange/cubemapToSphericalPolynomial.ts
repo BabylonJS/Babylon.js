@@ -41,7 +41,7 @@ export class CubeMapToSphericalPolynomialTools {
      * This extracts the first 3 orders only as they are the only one used in the lighting.
      *
      * @param texture The texture to extract the information from.
-     * @return The Spherical Polynomial data.
+     * @returns The Spherical Polynomial data.
      */
     public static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<Promise<SphericalPolynomial>> {
         if (!texture.isCube) {
@@ -111,7 +111,7 @@ export class CubeMapToSphericalPolynomialTools {
      * This extracts the first 3 orders only as they are the only one used in the lighting.
      *
      * @param cubeInfo The Cube map to extract the information from.
-     * @return The Spherical Polynomial data.
+     * @returns The Spherical Polynomial data.
      */
     public static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial {
         const sphericalHarmonics = new SphericalHarmonics();

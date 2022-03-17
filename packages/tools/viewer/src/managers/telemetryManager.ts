@@ -103,7 +103,7 @@ export class TelemetryManager {
 
     /**
      * Returns the current session ID or creates one if it doesn't exixt
-     * @return The current session ID
+     * @returns The current session ID
      */
     public get session(): string {
         if (!this._currentSessionId) {

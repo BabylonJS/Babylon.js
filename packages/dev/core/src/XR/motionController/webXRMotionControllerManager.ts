@@ -87,7 +87,7 @@ export class WebXRMotionControllerManager {
     /**
      * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
      * @param profileId the profile to which a fallback needs to be found
-     * @return an array with corresponding fallback profiles
+     * @returns an array with corresponding fallback profiles
      */
     public static FindFallbackWithProfileId(profileId: string): string[] {
         const returnArray = this._Fallbacks[profileId] || [];
@@ -108,7 +108,7 @@ export class WebXRMotionControllerManager {
      * @param xrInput the xrInput to which a new controller is initialized
      * @param scene the scene to which the model will be added
      * @param forceProfile force a certain profile for this controller
-     * @return A promise that fulfils with the motion controller class for this profile id or the generic standard class if none was found
+     * @returns A promise that fulfils with the motion controller class for this profile id or the generic standard class if none was found
      */
     public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): Promise<WebXRAbstractMotionController> {
         const profileArray: string[] = [];
@@ -183,7 +183,7 @@ export class WebXRMotionControllerManager {
 
     /**
      * Will update the list of profiles available in the repository
-     * @return a promise that resolves to a map of profiles available online
+     * @returns a promise that resolves to a map of profiles available online
      */
     public static UpdateProfilesList() {
         this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + "/profiles/profilesList.json", false).then((data) => {

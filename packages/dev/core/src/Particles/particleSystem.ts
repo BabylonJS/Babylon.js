@@ -2007,7 +2007,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /**
      * Is this system ready to be used/rendered
-     * @return true if the system is ready
+     * @returns true if the system is ready
      */
     public isReady(): boolean {
         if (!this.emitter || (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady()) || !this.particleTexture || !this.particleTexture.isReady()) {
