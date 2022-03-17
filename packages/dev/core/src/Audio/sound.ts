@@ -28,7 +28,7 @@ export class Sound {
 
     private _loop = false;
     /**
-     * Does the sound loop after it finishes playing once.
+     * @returns if the sound loop after it finishes playing once.
      */
     public get loop(): boolean {
         return this._loop;
@@ -97,7 +97,7 @@ export class Sound {
     public onEndedObservable = new Observable<Sound>();
 
     /**
-     * Gets the current time for the sound.
+     * @returns the current time for the sound.
      */
     public get currentTime(): number {
         if (this._htmlAudioElement) {
@@ -112,7 +112,7 @@ export class Sound {
     }
 
     /**
-     * Does this sound enables spatial sound.
+     * @returns Does this sound enables spatial sound.
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public get spatialSound(): boolean {
@@ -189,7 +189,7 @@ export class Sound {
 
         this._readyToPlayCallback = readyToPlayCallback;
         // Default custom attenuation function is a linear attenuation
-        this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
+        this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, _refDistance: number, _rolloffFactor: number) => {
             if (currentDistance < maxDistance) {
                 return currentVolume * (1 - currentDistance / maxDistance);
             } else {
@@ -279,6 +279,7 @@ export class Sound {
                             break;
                         case "String":
                             urls.push(urlOrArrayBuffer);
+                            break;
                         case "Array":
                             if (urls.length === 0) {
                                 urls = urlOrArrayBuffer;
@@ -611,15 +612,12 @@ export class Sound {
     }
 
     /**
-     * Gets or sets the inner angle for the directional cone.
+     * @returns the inner angle for the directional cone.
      */
     public get directionalConeInnerAngle(): number {
         return this._coneInnerAngle;
     }
 
-    /**
-     * Gets or sets the inner angle for the directional cone.
-     */
     public set directionalConeInnerAngle(value: number) {
         if (value != this._coneInnerAngle) {
             if (this._coneOuterAngle < value) {
@@ -635,15 +633,12 @@ export class Sound {
     }
 
     /**
-     * Gets or sets the outer angle for the directional cone.
+     * @returns or sets the outer angle for the directional cone.
      */
     public get directionalConeOuterAngle(): number {
         return this._coneOuterAngle;
     }
 
-    /**
-     * Gets or sets the outer angle for the directional cone.
-     */
     public set directionalConeOuterAngle(value: number) {
         if (value != this._coneOuterAngle) {
             if (value < this._coneInnerAngle) {
@@ -774,7 +769,7 @@ export class Sound {
                                 // In browsers that don’t yet support this functionality,
                                 // playPromise won’t be defined.
                                 if (playPromise !== undefined) {
-                                    playPromise.catch((error) => {
+                                    playPromise.catch((_error) => {
                                         // Automatic playback failed.
                                         // Waiting for the audio engine to be unlocked by user click on unmute
                                         Engine.audioEngine?.lock();

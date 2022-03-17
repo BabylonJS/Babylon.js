@@ -50,7 +50,7 @@ export class WeightedSound {
     }
 
     /**
-     * The size of cone in degrees for a directional sound in which there will be no attenuation.
+     * @returns size of cone in degrees for a directional sound in which there will be no attenuation.
      */
     public get directionalConeInnerAngle(): number {
         return this._coneInnerAngle;
@@ -74,7 +74,7 @@ export class WeightedSound {
     }
 
     /**
-     * Size of cone in degrees for a directional sound outside of which there will be no sound.
+     * @returns of cone in degrees for a directional sound outside of which there will be no sound.
      * Listener angles between innerAngle and outerAngle will falloff linearly.
      */
     public get directionalConeOuterAngle(): number {
@@ -100,7 +100,7 @@ export class WeightedSound {
     }
 
     /**
-     * Playback volume.
+     * @returns Playback volume.
      */
     public get volume(): number {
         return this._volume;

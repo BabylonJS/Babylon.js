@@ -263,8 +263,8 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     private _audioEnabled = true;
     /**
-     * Gets whether audio is enabled or not.
      * Please use related enable/disable method to switch state.
+     * @returns whether audio is enabled or not.
      */
     public get audioEnabled(): boolean {
         return this._audioEnabled;
@@ -272,7 +272,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     private _headphone = false;
     /**
-     * Gets whether audio is outputting to headphone or not.
+     * @returns whether audio is outputting to headphone or not.
      * Please use the according Switch methods to change output.
      */
     public get headphone(): boolean {
@@ -286,7 +286,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     private _audioListenerPositionProvider: Nullable<() => Vector3> = null;
     /**
-     * Gets the current audio listener position provider
+     * @returns the current audio listener position provider
      */
     public get audioListenerPositionProvider(): Nullable<() => Vector3> {
         return this._audioListenerPositionProvider;
@@ -301,7 +301,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
     /**
      * Creates a new instance of the component for the given scene
-     * @param scene Defines the scene to register the component in
+     * @param scene - Defines the scene to register the component in
      */
     constructor(scene?: Nullable<Scene>) {
         scene = scene || EngineStore.LastCreatedScene;
@@ -563,7 +563,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             if (scene.soundTracks) {
                 for (i = 0; i < scene.soundTracks.length; i++) {
                     for (let j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
-                        sound = scene.soundTracks[i].soundCollection[j];
+                        const sound = scene.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
