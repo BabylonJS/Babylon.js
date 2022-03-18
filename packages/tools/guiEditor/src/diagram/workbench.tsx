@@ -641,7 +641,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         let totalRotation = 0;
-        let currentControl: Nullable<Control> = guiControl;
+        let currentControl: Nullable<Control> = guiControl.parent;
         while (currentControl) {
             totalRotation += currentControl.rotation;
 
