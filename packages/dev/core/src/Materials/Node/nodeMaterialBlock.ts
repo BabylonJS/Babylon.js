@@ -493,7 +493,7 @@ export class NodeMaterialBlock {
      * @param defines defines the material defines to update
      * @param useInstances specifies that instances should be used
      * @returns true if the block is ready
-     */    
+     */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
         return true;

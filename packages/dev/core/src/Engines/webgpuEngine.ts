@@ -1638,9 +1638,7 @@ export class WebGPUEngine extends Engine {
 
         const shaderVersion = "#version 450\n";
         const vertexShader =
-            shaderLanguage === ShaderLanguage.GLSL
-                ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion)
-                : this._getWGSLShader(vertexCode, "vertex", defines);
+            shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion) : this._getWGSLShader(vertexCode, "vertex", defines);
         const fragmentShader =
             shaderLanguage === ShaderLanguage.GLSL
                 ? this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion)
@@ -1656,16 +1654,14 @@ export class WebGPUEngine extends Engine {
     /**
      * @hidden
      */
-    public createRawShaderProgram(
-    ): WebGLProgram {
+    public createRawShaderProgram(): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
     /**
      * @hidden
      */
-    public createShaderProgram(
-    ): WebGLProgram {
+    public createShaderProgram(): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
@@ -2226,7 +2222,7 @@ export class WebGPUEngine extends Engine {
         isPartOfTextureArray = false,
         depthStencilTexture = false,
         name = "",
-        baseName?: string,
+        baseName?: string
     ): boolean {
         // name == baseName for a texture that is not part of a texture array
         // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
@@ -2666,7 +2662,13 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(renderTargetWrapper: RenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
+    private _startRenderTargetRenderPass(
+        renderTargetWrapper: RenderTargetWrapper,
+        setClearStates: boolean,
+        clearColor: Nullable<IColor4Like>,
+        clearDepth: boolean,
+        clearStencil: boolean
+    ) {
         const rtWrapper = renderTargetWrapper as WebGPURenderTargetWrapper;
 
         const depthStencilTexture = rtWrapper._depthStencilTexture;

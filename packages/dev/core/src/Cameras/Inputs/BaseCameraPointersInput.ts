@@ -303,8 +303,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @param offsetX
      * @param offsetY
      */
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
 
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
@@ -316,15 +316,22 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @param previousMultiTouchPanPosition
      * @param multiTouchPanPosition
      */
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onMultiTouch(_pointA: Nullable<PointerTouch>, _pointB: Nullable<PointerTouch>, previousPinchSquaredDistance: number, pinchSquaredDistance: number, previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onMultiTouch(
+        _pointA: Nullable<PointerTouch>,
+        _pointB: Nullable<PointerTouch>,
+        previousPinchSquaredDistance: number,
+        pinchSquaredDistance: number,
+        previousMultiTouchPanPosition: Nullable<PointerTouch>,
+        multiTouchPanPosition: Nullable<PointerTouch>
+    ): void {}
 
     /**
      * Called on JS contextmenu event.
      * Override this method to provide functionality.
      * @param evt
      */
-     public onContextMenu(evt: PointerEvent): void {
+    public onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();
     }
 
@@ -334,8 +341,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality.
      * @param evt
      */
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     public onButtonDown(evt: IPointerEvent): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onButtonDown(evt: IPointerEvent): void {}
 
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
@@ -343,14 +350,14 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality.
      * @param evt
      */
-     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-     public onButtonUp(evt: IPointerEvent): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onButtonUp(evt: IPointerEvent): void {}
 
     /**
      * Called when window becomes inactive.
      * Override this method to provide functionality.
      */
-     public onLostFocus(): void {}
+    public onLostFocus(): void {}
 
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;

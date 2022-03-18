@@ -36,12 +36,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
      * @param createPolynomials will be true if polynomials have been requested
      * @param onLoad defines the callback to trigger once the texture is ready
      */
-    public loadCubeData(
-        data: ArrayBufferView | ArrayBufferView[],
-        texture: InternalTexture,
-        createPolynomials: boolean,
-        onLoad: Nullable<(data?: any) => void>
-    ): void {
+    public loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>): void {
         if (Array.isArray(data)) {
             return;
         }

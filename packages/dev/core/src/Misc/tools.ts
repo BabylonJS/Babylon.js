@@ -962,7 +962,16 @@ export class Tools {
      * @param fileName A name for for the downloaded file.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+    public static CreateScreenshotUsingRenderTarget(
+        engine: Engine,
+        camera: Camera,
+        size: IScreenshotSize | number,
+        successCallback?: (data: string) => void,
+        mimeType: string = "image/png",
+        samples: number = 1,
+        antialiasing: boolean = false,
+        fileName?: string
+    ): void {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -985,7 +994,15 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
+    public static CreateScreenshotUsingRenderTargetAsync(
+        engine: Engine,
+        camera: Camera,
+        size: IScreenshotSize | number,
+        mimeType: string = "image/png",
+        samples: number = 1,
+        antialiasing: boolean = false,
+        fileName?: string
+    ): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -1020,7 +1037,7 @@ export class Tools {
     }
 
     /**
-     * Function used to get the absolute url. 
+     * Function used to get the absolute url.
      * Override for custom implementation.
      * @param url
      */

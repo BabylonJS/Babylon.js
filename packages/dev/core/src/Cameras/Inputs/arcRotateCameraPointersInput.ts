@@ -158,7 +158,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Called on pointer POINTERDOUBLETAP event.
      */
-     public onDoubleTap() {
+    public onDoubleTap() {
         if (this.camera.useInputToRestoreState) {
             this.camera.restoreState();
         }
@@ -173,7 +173,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * @param previousMultiTouchPanPosition
      * @param multiTouchPanPosition
      */
-     public onMultiTouch(
+    public onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,
@@ -239,7 +239,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * release.
      * @param evt
      */
-     public onButtonUp(): void {
+    public onButtonUp(): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }
@@ -247,7 +247,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Called when window becomes inactive.
      */
-     public onLostFocus(): void {
+    public onLostFocus(): void {
         this._isPanClick = false;
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
