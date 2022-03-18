@@ -472,7 +472,7 @@ export class HighlightLayer extends EffectLayer {
     /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
-     * @param useInstances specify wether or not to use instances to render the mesh
+     * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
      * @return true if ready otherwise, false
      */

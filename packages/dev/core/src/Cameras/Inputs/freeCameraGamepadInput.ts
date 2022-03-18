@@ -22,14 +22,14 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     public gamepad: Nullable<Gamepad>;
 
     /**
-     * Defines the gamepad rotation sensiblity.
+     * Defines the gamepad rotation sensibility.
      * This is the threshold from when rotation starts to be accounted for to prevent jittering.
      */
     @serialize()
     public gamepadAngularSensibility = 200;
 
     /**
-     * Defines the gamepad move sensiblity.
+     * Defines the gamepad move sensibility.
      * This is the threshold from when moving starts to be accounted for for to prevent jittering.
      */
     @serialize()

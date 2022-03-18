@@ -31,7 +31,7 @@ export class FluentMaterialDefines extends MaterialDefines {
 }
 
 /**
- * Class used to render controls with fluent desgin
+ * Class used to render controls with fluent design
  */
 export class FluentMaterial extends PushMaterial {
     /**

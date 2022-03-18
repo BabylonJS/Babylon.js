@@ -154,8 +154,8 @@ export class LightGizmo extends Gizmo {
             this._attachedMeshParent.freezeWorldMatrix(this._light.parent.getWorldMatrix());
         }
 
-        // For light positon and direction, a dirty flag is set to true in the setter
-        // It means setting values individualy or copying values willl not call setter and
+        // For light position and direction, a dirty flag is set to true in the setter
+        // It means setting values individually or copying values will not call setter and
         // dirty flag will not be set to true. Hence creating a new Vector3.
         if ((this._light as any).position) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light

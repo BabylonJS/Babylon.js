@@ -227,7 +227,7 @@ export class BlurPostProcess extends PostProcess {
         let defines = "";
         defines += this._staticDefines;
 
-        // The DOF fragment should ignore the center pixel when looping as it is handled manualy in the fragment shader.
+        // The DOF fragment should ignore the center pixel when looping as it is handled manually in the fragment shader.
         if (this._staticDefines.indexOf("DOF") != -1) {
             defines += `#define CENTER_WEIGHT ${this._glslFloat(weights[varyingCount - 1])}\r\n`;
             varyingCount--;

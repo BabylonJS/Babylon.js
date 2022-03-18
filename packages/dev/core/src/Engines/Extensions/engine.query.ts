@@ -361,7 +361,7 @@ declare module "../../Meshes/abstractMesh" {
         _occlusionDataStorage: _OcclusionDataStorage;
 
         /**
-         * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retireved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decides to show or hide the object.
+         * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retrieved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decides to show or hide the object.
          * The default value is -1 which means don't break the query and wait till the result
          * @see https://doc.babylonjs.com/features/occlusionquery
          */

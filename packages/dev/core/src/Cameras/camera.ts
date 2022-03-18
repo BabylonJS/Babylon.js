@@ -432,7 +432,7 @@ export class Camera extends Node {
 
     /**
      * Gets a string representation of the camera useful for debug purpose.
-     * @param fullDetails Defines that a more verboe level of logging is required
+     * @param fullDetails Defines that a more verbose level of logging is required
      * @returns the string representation
      */
     public toString(fullDetails?: boolean): string {

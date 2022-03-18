@@ -288,7 +288,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      * Node creation.
      * Can be overriden by children
      * @param scene defines the scene where the node must be attached
-     * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an atttached visible object
+     * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an attached visible object
      */
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         // Do nothing by default
