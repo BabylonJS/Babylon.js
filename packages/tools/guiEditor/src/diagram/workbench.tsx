@@ -44,7 +44,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
     public _scene: Scene;
-    private _ctrlKeyIsPressed = false;
     private _constraintDirection = ConstraintDirection.NONE;
     private _panning: boolean;
     private _responsive: boolean;
@@ -229,8 +228,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     keyEvent = (evt: KeyboardEvent) => {
-        if ((evt.target as HTMLElement).localName === "input") return;
-        this._ctrlKeyIsPressed = evt.ctrlKey;
+        if ((evt.target as HTMLElement).nodeName === "INPUT") return;
         if (evt.shiftKey) {
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
@@ -244,8 +242,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
 
-        if (this._ctrlKeyIsPressed && !this.props.globalState.lockObject.lock) {
+        if (this.props.globalState.keys.isKeyDown("control") && !this.props.globalState.lockObject.lock) {
             if (evt.key === "a") {
+                evt.preventDefault();
                 this.props.globalState.setSelection(this.trueRootContainer.children);
             }
         }
@@ -328,7 +327,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     blurEvent = () => {
-        this._ctrlKeyIsPressed = false;
         this._constraintDirection = ConstraintDirection.NONE;
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
     };

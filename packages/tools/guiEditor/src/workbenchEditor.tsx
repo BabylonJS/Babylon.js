@@ -51,25 +51,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             showPreviewPopUp: false,
         };
 
-        this.props.globalState.hostDocument!.addEventListener(
-            "keydown",
-            (evt) => {
-                if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) {
-                    // Delete
-                }
-
-                if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
-                    return;
-                }
-
-                if (evt.key === "a") {
-                    //all
-                    evt.preventDefault();
-                }
-            },
-            false
-        );
-
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
         this.props.globalState.onDropObservable.add(() => {
             if (this._draggedItem != null) {
