@@ -194,46 +194,50 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 37: // LEFT
-                this._cursorOffset++;
-                if (this._cursorOffset > this._lines[this._selectedLineIndex].text.length) {
-                    this._selectedLineIndex--;
-                    if (typeof this._lines[this._selectedLineIndex] === 'undefined') { //if we are in first line + pos 0
-                        this._selectedLineIndex++;
-                        this._cursorOffset = this._lines[this._selectedLineIndex].text.length;
-                    }else { // if we decrease to upper line
-                        this._cursorOffset = 0;
-                        this.lastClickedCoordinateY -= this._fontOffset.height;
-                    }
-                }
                 if (evt && evt.shiftKey) {
                     // update the cursor
                     this._blinkIsEven = false;
                     // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
-                        this._cursorOffset = this._lines[this._selectedLineIndex].text.length;
+                        // Go to line's start by substract the relativeStartIndex to the globalStartIndex
+                        this._cursorInfo.globalStartIndex -= this._cursorInfo.relativeStartIndex;
+                        this._cursorInfo.globalEndIndex = this._highlightCursorInfo.initialStartIndex;
                     }
                     // store the starting point
                     if (!this._isTextHighlightOn) {
+                        this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
+                        this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+
+                        this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                        this._cursorInfo.globalStartIndex--;
                         this._isTextHighlightOn = true;
-                        this._cursorIndex = this._lines[this._selectedLineIndex].text.length - this._cursorOffset + 1;
-                        this._lastClickedLineIndex = this._selectedLineIndex;
+                    } else {
+                        if(this._cursorInfo.globalStartIndex < this._highlightCursorInfo.initialStartIndex) {
+                            this._cursorInfo.globalStartIndex--;
+                        } else {
+                            this._cursorInfo.globalEndIndex--;
                     }
-                    this._updateValueFromCursorIndex(this._cursorOffset);
+                    }
                     evt.preventDefault();
                     return;
                 }
+
+                if (this._cursorInfo.globalStartIndex > 0) {
+                    this._cursorInfo.globalStartIndex--;
+                }
+
                 if (this._isTextHighlightOn) {
-                    this._cursorOffset = this._lines[this._selectedLineIndex].text.length - this._startHighlightIndex;
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                     this._isTextHighlightOn = false;
                 }
                 // ctr + <-
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    this._cursorOffset = this._lines[this._selectedLineIndex].text.length;
+                    this._cursorInfo.globalStartIndex -= this._cursorInfo.relativeStartIndex;
                     evt.preventDefault();
                 }
+
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
-                this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
