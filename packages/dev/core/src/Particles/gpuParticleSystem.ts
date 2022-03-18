@@ -823,7 +823,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Random data
         const maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
         let d = [];
-        for (var i = 0; i < maxTextureSize; ++i) {
+        for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
             d.push(Math.random());
@@ -845,7 +845,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         d = [];
-        for (var i = 0; i < maxTextureSize; ++i) {
+        for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
             d.push(Math.random());

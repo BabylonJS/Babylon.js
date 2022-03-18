@@ -5110,7 +5110,7 @@ export class ThinEngine {
         if (this._mustWipeVertexAttributes) {
             this._mustWipeVertexAttributes = false;
 
-            for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+            for (let i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this.disableAttributeByIndex(i);
             }
             return;

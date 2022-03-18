@@ -71,7 +71,7 @@ export class OBJExport {
                 continue;
             }
 
-            for (var i = 0; i < trunkVerts.length; i += 3) {
+            for (let i = 0; i < trunkVerts.length; i += 3) {
                 // Babylon.js default is left handed, while OBJ default is right handed
                 // Need to invert Z vertices unless Babylon is set to use a right handed system
                 if (mesh[0].getScene().useRightHandedSystem) {
@@ -83,18 +83,18 @@ export class OBJExport {
             }
 
             if (trunkNormals != null) {
-                for (i = 0; i < trunkNormals.length; i += 3) {
+                for (let i = 0; i < trunkNormals.length; i += 3) {
                     output.push("vn " + trunkNormals[i] + " " + trunkNormals[i + 1] + " " + trunkNormals[i + 2]);
                 }
             }
             if (trunkUV != null) {
-                for (i = 0; i < trunkUV.length; i += 2) {
+                for (let i = 0; i < trunkUV.length; i += 2) {
                     output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
                     currentTextureV++;
                 }
             }
 
-            for (i = 0; i < trunkFaces.length; i += 3) {
+            for (let i = 0; i < trunkFaces.length; i += 3) {
                 const indices = [String(trunkFaces[i + 2] + v), String(trunkFaces[i + 1] + v), String(trunkFaces[i] + v)];
                 const textureIndices = [String(trunkFaces[i + 2] + textureV), String(trunkFaces[i + 1] + textureV), String(trunkFaces[i] + textureV)];
                 const blanks: string[] = ["", "", ""];

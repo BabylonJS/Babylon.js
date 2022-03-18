@@ -470,7 +470,7 @@ export class Grid extends Container {
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Columns
-            for (var index = 0; index < lefts.length; index++) {
+            for (let index = 0; index < lefts.length; index++) {
                 const left = this._currentMeasure.left + lefts[index] + widths[index];
                 context.beginPath();
                 context.moveTo(left, this._currentMeasure.top);
@@ -479,7 +479,7 @@ export class Grid extends Container {
             }
 
             // Rows
-            for (var index = 0; index < tops.length; index++) {
+            for (let index = 0; index < tops.length; index++) {
                 const top = this._currentMeasure.top + tops[index] + heights[index];
                 context.beginPath();
                 context.moveTo(this._currentMeasure.left, top);
@@ -498,10 +498,10 @@ export class Grid extends Container {
         for (const control of this._childControls) {
             control.dispose();
         }
-        for (var index = 0; index < this._rowDefinitions.length; index++) {
+        for (let index = 0; index < this._rowDefinitions.length; index++) {
             this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         }
-        for (var index = 0; index < this._columnDefinitions.length; index++) {
+        for (let index = 0; index < this._columnDefinitions.length; index++) {
             this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         }
         this._rowDefinitionObservers = [];

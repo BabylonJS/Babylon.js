@@ -345,7 +345,7 @@ export class Animatable {
                 this._scene._activeAnimatables.splice(index, 1);
                 var runtimeAnimations = this._runtimeAnimations;
 
-                for (var index = 0; index < runtimeAnimations.length; index++) {
+                for (let index = 0; index < runtimeAnimations.length; index++) {
                     runtimeAnimations[index].dispose();
                 }
 

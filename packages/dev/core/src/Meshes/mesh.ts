@@ -3212,7 +3212,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             const segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             const tempIndices: Array<Array<number>> = new Array();
-            for (var i = 0; i < segments + 1; i++) {
+            for (let i = 0; i < segments + 1; i++) {
                 tempIndices[i] = new Array();
             }
             let a: number; //vertex index of one end of a side
@@ -3227,7 +3227,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             let positionPtr: number = positions.length;
             let uvPtr: number = uvs.length;
 
-            for (var i = 0; i < currentIndices.length; i += 3) {
+            for (let i = 0; i < currentIndices.length; i += 3) {
                 vertexIndex[0] = currentIndices[i];
                 vertexIndex[1] = currentIndices[i + 1];
                 vertexIndex[2] = currentIndices[i + 2];
@@ -3738,7 +3738,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return;
             }
 
-            for (var index = 0; index < morphTargetManager.numInfluencers; index++) {
+            for (let index = 0; index < morphTargetManager.numInfluencers; index++) {
                 const morphTarget = morphTargetManager.getActiveTarget(index);
 
                 const positions = morphTarget.getPositions();

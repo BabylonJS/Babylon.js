@@ -8,6 +8,7 @@ import { _IsoVector } from "../Maths/math.isovector";
  * When O is the isovector (0, 0), A is isovector (m, n)
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _PrimaryIsoTriangle {
     //properties
     public m: number;
@@ -16,7 +17,7 @@ export class _PrimaryIsoTriangle {
     public vertices: _IsoVector[] = [];
     public max: number[] = [];
     public min: number[] = [];
-    public vecToIdx: { [key: string]: number };
+    public vecToidx: { [key: string]: number };
     public vertByDist: { [key: string]: number[] };
     public closestTo: number[][] = [];
 
@@ -31,6 +32,7 @@ export class _PrimaryIsoTriangle {
     public coav: number;
     public cobv: number;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public IDATA: PolyhedronData = new PolyhedronData(
         "icosahedron",
         "Regular",
@@ -81,7 +83,7 @@ export class _PrimaryIsoTriangle {
     //operators
     public setIndices() {
         let indexCount = 12; // 12 vertices already assigned
-        const vecToIdx: { [key: string]: number } = {}; //maps iso-vectors to indexCount;
+        const vecToidx: { [key: string]: number } = {}; //maps iso-vectors to indexCount;
         const m = this.m;
         const n = this.n;
         let g = m; // hcf of m, n when n != 0
@@ -98,12 +100,12 @@ export class _PrimaryIsoTriangle {
         let O: number;
         let A: number;
         let B: number;
-        const Ovec: _IsoVector = _IsoVector.Zero();
-        const Avec = new _IsoVector(m, n);
-        const Bvec = new _IsoVector(-n, m + n);
-        const OAvec: _IsoVector = _IsoVector.Zero();
-        const ABvec: _IsoVector = _IsoVector.Zero();
-        const OBvec: _IsoVector = _IsoVector.Zero();
+        const oVec: _IsoVector = _IsoVector.Zero();
+        const aVec = new _IsoVector(m, n);
+        const bVec = new _IsoVector(-n, m + n);
+        const oaVec: _IsoVector = _IsoVector.Zero();
+        const abVec: _IsoVector = _IsoVector.Zero();
+        const obVec: _IsoVector = _IsoVector.Zero();
         let verts: number[] = [];
         let idx: string;
         let idxR: string;
@@ -145,24 +147,24 @@ export class _PrimaryIsoTriangle {
             A = verts[1];
             B = verts[0];
 
-            isoId = Ovec.x + "|" + Ovec.y;
+            isoId = oVec.x + "|" + oVec.y;
             idx = f + "|" + isoId;
-            if (!(idx in vecToIdx)) {
-                vecToIdx[idx] = O;
+            if (!(idx in vecToidx)) {
+                vecToidx[idx] = O;
                 closestTo[O] = [verts[vDist[isoId][0]], vDist[isoId][1]];
             }
 
-            isoId = Avec.x + "|" + Avec.y;
+            isoId = aVec.x + "|" + aVec.y;
             idx = f + "|" + isoId;
-            if (!(idx in vecToIdx)) {
-                vecToIdx[idx] = A;
+            if (!(idx in vecToidx)) {
+                vecToidx[idx] = A;
                 closestTo[A] = [verts[vDist[isoId][0]], vDist[isoId][1]];
             }
 
-            isoId = Bvec.x + "|" + Bvec.y;
+            isoId = bVec.x + "|" + bVec.y;
             idx = f + "|" + isoId;
-            if (!(idx in vecToIdx)) {
-                vecToIdx[idx] = B;
+            if (!(idx in vecToidx)) {
+                vecToidx[idx] = B;
                 closestTo[B] = [verts[vDist[isoId][0]], vDist[isoId][1]];
             }
 
@@ -171,24 +173,24 @@ export class _PrimaryIsoTriangle {
             rot = <string>this.IDATA.edgematch[f][1];
             if (rot === "B") {
                 for (let i = 1; i < g; i++) {
-                    ABvec.x = m - i * (m1 + n1);
-                    ABvec.y = n + i * m1;
-                    OBvec.x = -i * n1;
-                    OBvec.y = i * (m1 + n1);
-                    isoId = ABvec.x + "|" + ABvec.y;
-                    isoIdR = OBvec.x + "|" + OBvec.y;
+                    abVec.x = m - i * (m1 + n1);
+                    abVec.y = n + i * m1;
+                    obVec.x = -i * n1;
+                    obVec.y = i * (m1 + n1);
+                    isoId = abVec.x + "|" + abVec.y;
+                    isoIdR = obVec.x + "|" + obVec.y;
                     matchIdx(f, fr, isoId, isoIdR);
                 }
             }
 
             if (rot === "O") {
                 for (let i = 1; i < g; i++) {
-                    OBvec.x = -i * n1;
-                    OBvec.y = i * (m1 + n1);
-                    OAvec.x = i * m1;
-                    OAvec.y = i * n1;
-                    isoId = OBvec.x + "|" + OBvec.y;
-                    isoIdR = OAvec.x + "|" + OAvec.y;
+                    obVec.x = -i * n1;
+                    obVec.y = i * (m1 + n1);
+                    oaVec.x = i * m1;
+                    oaVec.y = i * n1;
+                    isoId = obVec.x + "|" + obVec.y;
+                    isoIdR = oaVec.x + "|" + oaVec.y;
                     matchIdx(f, fr, isoId, isoIdR);
                 }
             }
@@ -197,12 +199,12 @@ export class _PrimaryIsoTriangle {
             rot = <string>this.IDATA.edgematch[f][3];
             if (rot && rot === "A") {
                 for (let i = 1; i < g; i++) {
-                    OAvec.x = i * m1;
-                    OAvec.y = i * n1;
-                    ABvec.x = m - (g - i) * (m1 + n1); //reversed for BA
-                    ABvec.y = n + (g - i) * m1; //reversed for BA
-                    isoId = OAvec.x + "|" + OAvec.y;
-                    isoIdR = ABvec.x + "|" + ABvec.y;
+                    oaVec.x = i * m1;
+                    oaVec.y = i * n1;
+                    abVec.x = m - (g - i) * (m1 + n1); //reversed for BA
+                    abVec.y = n + (g - i) * m1; //reversed for BA
+                    isoId = oaVec.x + "|" + oaVec.y;
+                    isoIdR = abVec.x + "|" + abVec.y;
                     matchIdx(f, fr, isoId, isoIdR);
                 }
             }
@@ -210,12 +212,12 @@ export class _PrimaryIsoTriangle {
             for (let i = 0; i < this.vertices.length; i++) {
                 isoId = this.vertices[i].x + "|" + this.vertices[i].y;
                 idx = f + "|" + isoId;
-                if (!(idx in vecToIdx)) {
-                    vecToIdx[idx] = indexCount++;
+                if (!(idx in vecToidx)) {
+                    vecToidx[idx] = indexCount++;
                     if (vDist[isoId][0] > 2) {
-                        closestTo[vecToIdx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToIdx[idx]];
+                        closestTo[vecToidx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToidx[idx]];
                     } else {
-                        closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToIdx[idx]];
+                        closestTo[vecToidx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToidx[idx]];
                     }
                 }
             }
@@ -224,23 +226,23 @@ export class _PrimaryIsoTriangle {
         function matchIdx(f: number, fr: number, isoId: string, isoIdR: string) {
             idx = f + "|" + isoId;
             idxR = fr + "|" + isoIdR;
-            if (!(idx in vecToIdx || idxR in vecToIdx)) {
-                vecToIdx[idx] = indexCount;
-                vecToIdx[idxR] = indexCount;
+            if (!(idx in vecToidx || idxR in vecToidx)) {
+                vecToidx[idx] = indexCount;
+                vecToidx[idxR] = indexCount;
                 indexCount++;
-            } else if (idx in vecToIdx && !(idxR in vecToIdx)) {
-                vecToIdx[idxR] = vecToIdx[idx];
-            } else if (idxR in vecToIdx && !(idx in vecToIdx)) {
-                vecToIdx[idx] = vecToIdx[idxR];
+            } else if (idx in vecToidx && !(idxR in vecToidx)) {
+                vecToidx[idxR] = vecToidx[idx];
+            } else if (idxR in vecToidx && !(idx in vecToidx)) {
+                vecToidx[idx] = vecToidx[idxR];
             }
             if (vDist[isoId][0] > 2) {
-                closestTo[vecToIdx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToIdx[idx]];
+                closestTo[vecToidx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToidx[idx]];
             } else {
-                closestTo[vecToIdx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToIdx[idx]];
+                closestTo[vecToidx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToidx[idx]];
             }
         }
         this.closestTo = closestTo;
-        this.vecToIdx = vecToIdx;
+        this.vecToidx = vecToidx;
     }
 
     public calcCoeffs() {
@@ -355,15 +357,16 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public MapToFace(faceNb: number, geodesicData: PolyhedronData) {
         const F = this.IDATA.face[faceNb];
-        const Oidx = F[2];
-        const Aidx = F[1];
-        const Bidx = F[0];
+        const oidx = F[2];
+        const aidx = F[1];
+        const bidx = F[0];
 
-        const O = Vector3.FromArray(this.IDATA.vertex[Oidx]);
-        const A = Vector3.FromArray(this.IDATA.vertex[Aidx]);
-        const B = Vector3.FromArray(this.IDATA.vertex[Bidx]);
+        const O = Vector3.FromArray(this.IDATA.vertex[oidx]);
+        const A = Vector3.FromArray(this.IDATA.vertex[aidx]);
+        const B = Vector3.FromArray(this.IDATA.vertex[bidx]);
 
         const OA = A.subtract(O);
         const OB = B.subtract(O);
@@ -379,7 +382,7 @@ export class _PrimaryIsoTriangle {
             tempVec = x.scale(this.cartesian[i].x).add(y.scale(this.cartesian[i].y)).add(O);
             mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
             idx = faceNb + "|" + this.vertices[i].x + "|" + this.vertices[i].y;
-            geodesicData.vertex[this.vecToIdx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
+            geodesicData.vertex[this.vecToidx[idx]] = [tempVec.x, tempVec.y, tempVec.z];
         }
     }
 
@@ -577,7 +580,7 @@ export class GeodesicData extends PolyhedronData {
      */
     public innerToData(face: number, primTri: _PrimaryIsoTriangle) {
         for (let i = 0; i < primTri.innerFacets.length; i++) {
-            this.face.push(primTri.innerFacets[i].map((el) => primTri.vecToIdx[face + el]));
+            this.face.push(primTri.innerFacets[i].map((el) => primTri.vecToidx[face + el]));
         }
     }
     /**
@@ -596,7 +599,7 @@ export class GeodesicData extends PolyhedronData {
                     temp.push(fr + "|" + primTri.isoVecsABOB[i][j].x + "|" + primTri.isoVecsABOB[i][j].y);
                 }
             }
-            this.face.push([primTri.vecToIdx[temp[0]], primTri.vecToIdx[temp[1]], primTri.vecToIdx[temp[2]]]);
+            this.face.push([primTri.vecToidx[temp[0]], primTri.vecToidx[temp[1]], primTri.vecToidx[temp[2]]]);
         }
     }
     /**
@@ -615,7 +618,7 @@ export class GeodesicData extends PolyhedronData {
                     temp.push(fr + "|" + primTri.isoVecsOBOA[i][j].x + "|" + primTri.isoVecsOBOA[i][j].y);
                 }
             }
-            this.face.push([primTri.vecToIdx[temp[0]], primTri.vecToIdx[temp[1]], primTri.vecToIdx[temp[2]]]);
+            this.face.push([primTri.vecToidx[temp[0]], primTri.vecToidx[temp[1]], primTri.vecToidx[temp[2]]]);
         }
     }
     /**
@@ -634,7 +637,7 @@ export class GeodesicData extends PolyhedronData {
                     temp.push(fr + "|" + primTri.isoVecsBAOA[i][j].x + "|" + primTri.isoVecsBAOA[i][j].y);
                 }
             }
-            this.face.push([primTri.vecToIdx[temp[0]], primTri.vecToIdx[temp[1]], primTri.vecToIdx[temp[2]]]);
+            this.face.push([primTri.vecToidx[temp[0]], primTri.vecToidx[temp[1]], primTri.vecToidx[temp[2]]]);
         }
     }
     /**

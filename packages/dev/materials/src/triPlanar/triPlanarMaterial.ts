@@ -157,7 +157,7 @@ export class TriPlanarMaterial extends PushMaterial {
                     var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
                     var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
 
-                    for (var i = 0; i < textures.length; i++) {
+                    for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
                             if (!textures[i].isReady()) {
                                 return false;
@@ -171,7 +171,7 @@ export class TriPlanarMaterial extends PushMaterial {
                     var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
                     var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
 
-                    for (var i = 0; i < textures.length; i++) {
+                    for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
                             if (!textures[i].isReady()) {
                                 return false;

@@ -124,7 +124,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             if (!texture.isCube) {
                 if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
+                    for (let i = 0; i < width * height * 4; i += 4) {
                         if (!options.displayRed) {
                             data[i] = 0;
                         }
@@ -150,7 +150,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             //To flip image on Y axis.
             if ((texture as Texture).invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
+                for (let i = 0; i < halfHeight; i++) {
                     for (let j = 0; j < numberOfChannelsByLine; j++) {
                         const currentCell = j + i * numberOfChannelsByLine;
                         const targetLine = height - i - 1;

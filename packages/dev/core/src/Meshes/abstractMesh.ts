@@ -1858,7 +1858,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
         // if no submesh can be picked that way, then fallback to BBox picking
         let anySubmeshSupportIntersect = false;
-        for (var index = 0; index < len; index++) {
+        for (let index = 0; index < len; index++) {
             var subMesh = subMeshes.data[index];
             const material = subMesh.getMaterial();
             if (!material) {
@@ -1886,7 +1886,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // at least 1 submesh supports intersection, keep going
-        for (var index = 0; index < len; index++) {
+        for (let index = 0; index < len; index++) {
             var subMesh = subMeshes.data[index];
 
             // Bounding test

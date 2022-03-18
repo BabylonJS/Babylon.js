@@ -12,7 +12,6 @@ import { ReflectionBlock } from "./reflectionBlock";
 import { Scene } from "../../../../scene";
 import { Nullable } from "../../../../types";
 import { Mesh } from "../../../../Meshes/mesh";
-import { SubMesh } from "../../../../Meshes/subMesh";
 import { Effect } from "../../../effect";
 import { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
 import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
@@ -148,7 +147,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure() {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("ClearCoat intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
@@ -172,7 +171,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         // Clear Coat Refraction params

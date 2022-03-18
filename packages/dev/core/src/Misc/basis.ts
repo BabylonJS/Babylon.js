@@ -204,7 +204,7 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
  */
 export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transcodeResult: TranscodeResult) => {
     const engine = texture.getEngine() as Engine;
-    for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
+    for (let i = 0; i < transcodeResult.fileInfo.images.length; i++) {
         const rootImage = transcodeResult.fileInfo.images[i].levels[0];
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
@@ -43,7 +44,6 @@ import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
 
-declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -832,7 +832,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * It helps with side by side comparison against the final render
      * This defaults to -1
      */
-    private debugLimit = -1;
+    private _debugLimit = -1;
 
     /**
      * @hidden
@@ -840,7 +840,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * As the default viewing range might not be enough (if the ambient is really small for instance)
      * You can use the factor to better multiply the final value.
      */
-    private debugFactor = 1;
+    private _debugFactor = 1;
 
     /**
      * Defines the clear coat layer parameters for the material.
@@ -2123,12 +2123,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
                     const ior = this.subSurface?._indexOfRefraction ?? 1.5;
-                    const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
+                    const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model
                     // for dielectrics.
-                    const f0 = Math.pow((ior - outside_ior) / (ior + outside_ior), 2);
+                    const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
 
                     // Tweak the default F0 and F90 based on our given setup
                     this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
@@ -2160,7 +2160,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
 
-                ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
+                ubo.updateFloat2("vDebugMode", this._debugLimit, this._debugFactor);
             }
 
             // Textures
@@ -2452,9 +2452,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Sets the required values to the prepass renderer.
-     * @param prePassRenderer defines the prepass renderer to setup
      */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+    public setPrePassRenderer(): boolean {
         if (this.subSurface?.isScatteringEnabled) {
             const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
             if (subSurfaceConfiguration) {

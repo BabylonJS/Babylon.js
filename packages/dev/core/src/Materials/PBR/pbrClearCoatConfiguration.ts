@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../../types";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math.color";
@@ -14,7 +15,6 @@ import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
-declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
@@ -220,7 +220,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;

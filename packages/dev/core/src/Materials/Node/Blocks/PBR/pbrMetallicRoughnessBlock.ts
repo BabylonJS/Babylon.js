@@ -799,13 +799,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * this._scene.environmentIntensity, this.specularIntensity);
 
         // reflectivity bindings
-        const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
+        const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
         const ior = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
 
         // We are here deriving our default reflectance from a common value for none metallic surface.
         // Based of the schlick fresnel approximation model
         // for dielectrics.
-        const f0 = Math.pow((ior - outside_ior) / (ior + outside_ior), 2);
+        const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
 
         // Tweak the default F0 and F90 based on our given setup
         this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);

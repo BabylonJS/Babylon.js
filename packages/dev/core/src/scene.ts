@@ -3704,14 +3704,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the current scene
      */
     public unfreezeActiveMeshes(): Scene {
-        for (var index = 0; index < this.meshes.length; index++) {
+        for (let index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
             if (mesh._internalAbstractMeshDataInfo) {
                 mesh._internalAbstractMeshDataInfo._isActive = false;
             }
         }
 
-        for (var index = 0; index < this._activeMeshes.length; index++) {
+        for (let index = 0; index < this._activeMeshes.length; index++) {
             this._activeMeshes.data[index]._unFreeze();
         }
 
@@ -4338,7 +4338,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     camera.update();
                     if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                         // rig cameras
-                        for (var index = 0; index < camera._rigCameras.length; index++) {
+                        for (let index = 0; index < camera._rigCameras.length; index++) {
                             camera._rigCameras[index].update();
                         }
                     }
@@ -4347,7 +4347,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.activeCamera.update();
                 if (this.activeCamera.cameraRigMode !== Constants.RIG_MODE_NONE) {
                     // rig cameras
-                    for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
+                    for (let index = 0; index < this.activeCamera._rigCameras.length; index++) {
                         this.activeCamera._rigCameras[index].update();
                     }
                 }
@@ -4442,7 +4442,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Cleaning
         if (this._toBeDisposed.length) {
-            for (var index = 0; index < this._toBeDisposed.length; index++) {
+            for (let index = 0; index < this._toBeDisposed.length; index++) {
                 const data = this._toBeDisposed[index];
                 if (data) {
                     data.dispose();

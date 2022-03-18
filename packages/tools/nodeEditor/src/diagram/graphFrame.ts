@@ -151,7 +151,7 @@ export class GraphFrame {
             node.isVisible = false;
         }
 
-        for (var i = 0; i < this._exposedOutPorts.length; ) {
+        for (let i = 0; i < this._exposedOutPorts.length; ) {
             // Output
             var port = this._exposedOutPorts[i];
             if (port.node === null || port.node.enclosingFrameId != this.id) {
@@ -164,7 +164,7 @@ export class GraphFrame {
             ++i;
         }
 
-        for (var i = 0; i < this._exposedInPorts.length; ) {
+        for (let i = 0; i < this._exposedInPorts.length; ) {
             // Input
             var port = this._exposedInPorts[i];
             if (!port || port.node === null || port.node.enclosingFrameId != this.id) {

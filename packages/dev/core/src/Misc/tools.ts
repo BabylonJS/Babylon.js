@@ -116,10 +116,12 @@ export class Tools {
      * Texture content used if a texture cannot loaded
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static get fallbackTexture() {
         return EngineStore.FallbackTexture;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static set fallbackTexture(value: string) {
         EngineStore.FallbackTexture = value;
     }
@@ -210,7 +212,7 @@ export class Tools {
         return count === value;
     }
 
-    private static _tmpFloatArray = new Float32Array(1);
+    private static _TmpFloatArray = new Float32Array(1);
 
     /**
      * Returns the nearest 32-bit single precision float representation of a Number
@@ -223,7 +225,7 @@ export class Tools {
             return Math.fround(value);
         }
 
-        return (Tools._tmpFloatArray[0] = value), Tools._tmpFloatArray[0];
+        return (Tools._TmpFloatArray[0] = value), Tools._TmpFloatArray[0];
     }
 
     /**
@@ -459,10 +461,9 @@ export class Tools {
      * Load an asynchronous script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
      * @param scriptUrl defines the url of the script to laod
-     * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
+    public static LoadScriptAsync(scriptUrl: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.LoadScript(
                 scriptUrl,
@@ -491,7 +492,7 @@ export class Tools {
             abort: () => reader.abort(),
         };
 
-        reader.onloadend = (e) => {
+        reader.onloadend = () => {
             request.onCompleteObservable.notifyObservers(request);
         };
 
@@ -566,7 +567,7 @@ export class Tools {
      */
     public static IsEmpty(obj: any): boolean {
         for (const i in obj) {
-            if (obj.hasOwnProperty(i)) {
+            if (Object.prototype.hasOwnProperty.call(obj, i)) {
                 return false;
             }
         }
@@ -916,6 +917,7 @@ export class Tools {
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
         throw _WarnImport("ScreenshotTools");
     }
@@ -935,6 +937,7 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
@@ -958,16 +961,8 @@ export class Tools {
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
      */
-    public static CreateScreenshotUsingRenderTarget(
-        engine: Engine,
-        camera: Camera,
-        size: IScreenshotSize | number,
-        successCallback?: (data: string) => void,
-        mimeType: string = "image/png",
-        samples: number = 1,
-        antialiasing: boolean = false,
-        fileName?: string
-    ): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -989,15 +984,8 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotUsingRenderTargetAsync(
-        engine: Engine,
-        camera: Camera,
-        size: IScreenshotSize | number,
-        mimeType: string = "image/png",
-        samples: number = 1,
-        antialiasing: boolean = false,
-        fileName?: string
-    ): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -1032,7 +1020,8 @@ export class Tools {
     }
 
     /**
-     * Function used to get the absolute url. Override for custom implementation.
+     * Function used to get the absolute url. 
+     * Override for custom implementation.
      * @param url
      */
     public static GetAbsoluteUrl: (url: string) => string =
@@ -1044,7 +1033,7 @@ export class Tools {
               }
             : typeof URL === "function" && typeof location === "object"
             ? (url) => new URL(url, location.origin).href
-            : (url) => {
+            : () => {
                   throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context.");
               };
 
@@ -1074,6 +1063,7 @@ export class Tools {
      * Gets a value indicating the number of loading errors
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static get errorsCount(): number {
         return Logger.errorsCount;
     }
@@ -1149,7 +1139,7 @@ export class Tools {
      */
     public static readonly PerformanceConsoleLogLevel = 2;
 
-    private static _performance: Performance;
+    private static _Performance: Performance;
 
     /**
      * Sets the current performance log level
@@ -1171,30 +1161,32 @@ export class Tools {
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
 
     private static _StartUserMark(counterName: string, condition = true): void {
-        if (!Tools._performance) {
+        if (!Tools._Performance) {
             if (!IsWindowObjectExist()) {
                 return;
             }
-            Tools._performance = window.performance;
+            Tools._Performance = window.performance;
         }
 
-        if (!condition || !Tools._performance.mark) {
+        if (!condition || !Tools._Performance.mark) {
             return;
         }
-        Tools._performance.mark(counterName + "-Begin");
+        Tools._Performance.mark(counterName + "-Begin");
     }
 
     private static _EndUserMark(counterName: string, condition = true): void {
-        if (!condition || !Tools._performance.mark) {
+        if (!condition || !Tools._Performance.mark) {
             return;
         }
-        Tools._performance.mark(counterName + "-End");
-        Tools._performance.measure(counterName, counterName + "-Begin", counterName + "-End");
+        Tools._Performance.mark(counterName + "-End");
+        Tools._Performance.measure(counterName, counterName + "-Begin", counterName + "-End");
     }
 
     private static _StartPerformanceConsole(counterName: string, condition = true): void {
@@ -1284,6 +1276,7 @@ export class Tools {
      * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static getFullClassName(object: any, isType: boolean = false): Nullable<string> {
         let className = null;
         let moduleName = null;

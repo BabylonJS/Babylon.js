@@ -1434,7 +1434,7 @@ export class SolidParticleSystem implements IDisposable {
                     // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
                     const params = mesh.isFacetDataEnabled ? mesh.getFacetDataParameters() : null;
                     VertexData.ComputeNormals(positions32, indices32, normals32, params);
-                    for (var i = 0; i < normals32.length; i++) {
+                    for (let i = 0; i < normals32.length; i++) {
                         fixedNormal32[i] = normals32[i];
                     }
                 }
@@ -1457,7 +1457,7 @@ export class SolidParticleSystem implements IDisposable {
                     const sortedParticle = depthSortedParticles[sorted];
                     const lind = sortedParticle.indicesLength;
                     const sind = sortedParticle.ind;
-                    for (var i = 0; i < lind; i++) {
+                    for (let i = 0; i < lind; i++) {
                         indices32[sid] = indices[sind + i];
                         sid++;
                         if (this._pickable) {

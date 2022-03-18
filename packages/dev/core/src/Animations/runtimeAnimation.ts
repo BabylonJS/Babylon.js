@@ -301,7 +301,7 @@ export class RuntimeAnimation {
         this._blendingFactor = 0;
 
         // Events
-        for (var index = 0; index < this._events.length; index++) {
+        for (let index = 0; index < this._events.length; index++) {
             this._events[index].isDone = false;
         }
     }
@@ -616,7 +616,7 @@ export class RuntimeAnimation {
 
             // Need to reset animation events
             if (events.length) {
-                for (var index = 0; index < events.length; index++) {
+                for (let index = 0; index < events.length; index++) {
                     if (!events[index].onlyOnce) {
                         // reset event, the animation is looping
                         events[index].isDone = false;
@@ -636,7 +636,7 @@ export class RuntimeAnimation {
 
         // Check events
         if (events.length) {
-            for (var index = 0; index < events.length; index++) {
+            for (let index = 0; index < events.length; index++) {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
                 if (

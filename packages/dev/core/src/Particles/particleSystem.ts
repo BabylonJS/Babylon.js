@@ -2204,7 +2204,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._subEmitters && this._subEmitters.length) {
-            for (var index = 0; index < this._subEmitters.length; index++) {
+            for (let index = 0; index < this._subEmitters.length; index++) {
                 for (const subEmitter of this._subEmitters[index]) {
                     subEmitter.dispose();
                 }

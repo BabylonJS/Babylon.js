@@ -742,7 +742,7 @@ export class ColorPicker extends Control {
                     editSwatchMode = mode;
                 }
                 if (editSwatchMode) {
-                    for (var i = 0; i < swatchDrawer.children.length; i++) {
+                    for (let i = 0; i < swatchDrawer.children.length; i++) {
                         var thisButton: Button = swatchDrawer.children[i] as Button;
                         thisButton.textBlock!.text = "b";
                     }
@@ -750,7 +750,7 @@ export class ColorPicker extends Control {
                         butEdit.textBlock!.text = "Done";
                     }
                 } else {
-                    for (var i = 0; i < swatchDrawer.children.length; i++) {
+                    for (let i = 0; i < swatchDrawer.children.length; i++) {
                         var thisButton: Button = swatchDrawer.children[i] as Button;
                         thisButton.textBlock!.text = "";
                     }
@@ -783,10 +783,10 @@ export class ColorPicker extends Control {
                     }
                     if (swatchDrawer.rowCount != rowCount + gutterCount) {
                         const currentRows: number = swatchDrawer.rowCount;
-                        for (var i = 0; i < currentRows; i++) {
+                        for (let i = 0; i < currentRows; i++) {
                             swatchDrawer.removeRowDefinition(0);
                         }
-                        for (var i = 0; i < rowCount + gutterCount; i++) {
+                        for (let i = 0; i < rowCount + gutterCount; i++) {
                             if (i % 2) {
                                 swatchDrawer.addRowDefinition(swatchSize, true);
                             } else {
@@ -922,14 +922,14 @@ export class ColorPicker extends Control {
                 }
                 swatchDrawer.height = (swatchSize * initialRows + gutterCount * gutterSize).toString() + "px";
                 swatchDrawer.top = Math.floor(swatchSize * 0.25).toString() + "px";
-                for (var i = 0; i < Math.ceil(options.savedColors.length / options.numSwatchesPerLine) * 2 + 1; i++) {
+                for (let i = 0; i < Math.ceil(options.savedColors.length / options.numSwatchesPerLine) * 2 + 1; i++) {
                     if (i % 2 != 0) {
                         swatchDrawer.addRowDefinition(swatchSize, true);
                     } else {
                         swatchDrawer.addRowDefinition(gutterSize, true);
                     }
                 }
-                for (var i = 0; i < options.numSwatchesPerLine! * 2 + 1; i++) {
+                for (let i = 0; i < options.numSwatchesPerLine! * 2 + 1; i++) {
                     if (i % 2 != 0) {
                         swatchDrawer.addColumnDefinition(swatchSize, true);
                     } else {
@@ -1271,7 +1271,7 @@ export class ColorPicker extends Control {
             rgbValuesQuadrant.addColumnDefinition(0.7, false);
             pickerColorValues.addControl(rgbValuesQuadrant, 1, 0);
 
-            for (var i = 0; i < inputFieldLabels.length; i++) {
+            for (let i = 0; i < inputFieldLabels.length; i++) {
                 var labelText: TextBlock = new TextBlock();
                 labelText.text = inputFieldLabels[i];
                 labelText.color = buttonColor;

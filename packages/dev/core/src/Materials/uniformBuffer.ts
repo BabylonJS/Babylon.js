@@ -21,7 +21,7 @@ import "../Engines/Extensions/engine.uniformBuffer";
  */
 export class UniformBuffer {
     /** @hidden */
-    public static _updatedUbosInFrame: { [name: string]: number } = {};
+    public static _UpdatedUbosInFrame: { [name: string]: number } = {};
 
     private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
@@ -44,8 +44,8 @@ export class UniformBuffer {
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
-    private static _tempBuffer = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
-    private static _tempBufferInt32View = new Uint32Array(UniformBuffer._tempBuffer.buffer);
+    private static _TempBuffer = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
+    private static _TempBufferInt32View = new Uint32Array(UniformBuffer._TempBuffer.buffer);
 
     /**
      * Lambda to Update a 3x3 Matrix in a uniform buffer.
@@ -380,7 +380,7 @@ export class UniformBuffer {
 
             data = [];
             // Fill with zeros
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 data.push(0);
             }
         } else {
@@ -392,7 +392,7 @@ export class UniformBuffer {
                 data = [];
 
                 // Fill with zeros
-                for (var i = 0; i < size; i++) {
+                for (let i = 0; i < size; i++) {
                     data.push(0);
                 }
             }
@@ -403,7 +403,7 @@ export class UniformBuffer {
         this._uniformLocations[name] = this._uniformLocationPointer;
         this._uniformLocationPointer += <number>size;
 
-        for (var i = 0; i < size; i++) {
+        for (let i = 0; i < size; i++) {
             this._data.push(data[i]);
         }
 
@@ -589,10 +589,10 @@ export class UniformBuffer {
         this._engine.updateUniformBuffer(this._buffer, this._bufferData);
 
         if (this._engine._features._collectUbosUpdatedInFrame) {
-            if (!UniformBuffer._updatedUbosInFrame[this._name]) {
-                UniformBuffer._updatedUbosInFrame[this._name] = 0;
+            if (!UniformBuffer._UpdatedUbosInFrame[this._name]) {
+                UniformBuffer._UpdatedUbosInFrame[this._name] = 0;
             }
-            UniformBuffer._updatedUbosInFrame[this._name]++;
+            UniformBuffer._UpdatedUbosInFrame[this._name]++;
         }
 
         this._needSync = false;
@@ -652,7 +652,7 @@ export class UniformBuffer {
             // Cache for static uniform buffers
             let changed = false;
 
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
                 // Hence the test for size === 16 to simply commit the matrix values
                 if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Tools.FloatRound(data[i])) {
@@ -667,7 +667,7 @@ export class UniformBuffer {
             this._needSync = this._needSync || changed;
         } else {
             // No cache for dynamic
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
         }
@@ -699,7 +699,7 @@ export class UniformBuffer {
             let changed = false;
             let countToFour = 0;
             let baseStride = 0;
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 if (this._bufferData[location + baseStride * 4 + countToFour] !== Tools.FloatRound(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
@@ -720,7 +720,7 @@ export class UniformBuffer {
             this._needSync = this._needSync || changed;
         } else {
             // No cache for dynamic
-            for (var i = 0; i < size; i++) {
+            for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
         }
@@ -746,13 +746,13 @@ export class UniformBuffer {
     private _updateMatrix3x3ForUniform(name: string, matrix: Float32Array): void {
         // To match std140, matrix must be realigned
         for (let i = 0; i < 3; i++) {
-            UniformBuffer._tempBuffer[i * 4] = matrix[i * 3];
-            UniformBuffer._tempBuffer[i * 4 + 1] = matrix[i * 3 + 1];
-            UniformBuffer._tempBuffer[i * 4 + 2] = matrix[i * 3 + 2];
-            UniformBuffer._tempBuffer[i * 4 + 3] = 0.0;
+            UniformBuffer._TempBuffer[i * 4] = matrix[i * 3];
+            UniformBuffer._TempBuffer[i * 4 + 1] = matrix[i * 3 + 1];
+            UniformBuffer._TempBuffer[i * 4 + 2] = matrix[i * 3 + 2];
+            UniformBuffer._TempBuffer[i * 4 + 3] = 0.0;
         }
 
-        this.updateUniform(name, UniformBuffer._tempBuffer, 12);
+        this.updateUniform(name, UniformBuffer._TempBuffer, 12);
     }
 
     private _updateMatrix3x3ForEffect(name: string, matrix: Float32Array): void {
@@ -766,13 +766,13 @@ export class UniformBuffer {
     private _updateMatrix2x2ForUniform(name: string, matrix: Float32Array): void {
         // To match std140, matrix must be realigned
         for (let i = 0; i < 2; i++) {
-            UniformBuffer._tempBuffer[i * 4] = matrix[i * 2];
-            UniformBuffer._tempBuffer[i * 4 + 1] = matrix[i * 2 + 1];
-            UniformBuffer._tempBuffer[i * 4 + 2] = 0.0;
-            UniformBuffer._tempBuffer[i * 4 + 3] = 0.0;
+            UniformBuffer._TempBuffer[i * 4] = matrix[i * 2];
+            UniformBuffer._TempBuffer[i * 4 + 1] = matrix[i * 2 + 1];
+            UniformBuffer._TempBuffer[i * 4 + 2] = 0.0;
+            UniformBuffer._TempBuffer[i * 4 + 3] = 0.0;
         }
 
-        this.updateUniform(name, UniformBuffer._tempBuffer, 8);
+        this.updateUniform(name, UniformBuffer._TempBuffer, 8);
     }
 
     private _updateFloatForEffect(name: string, x: number) {
@@ -780,8 +780,8 @@ export class UniformBuffer {
     }
 
     private _updateFloatForUniform(name: string, x: number) {
-        UniformBuffer._tempBuffer[0] = x;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 1);
+        UniformBuffer._TempBuffer[0] = x;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 1);
     }
 
     private _updateFloat2ForEffect(name: string, x: number, y: number, suffix = "") {
@@ -789,9 +789,9 @@ export class UniformBuffer {
     }
 
     private _updateFloat2ForUniform(name: string, x: number, y: number) {
-        UniformBuffer._tempBuffer[0] = x;
-        UniformBuffer._tempBuffer[1] = y;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 2);
+        UniformBuffer._TempBuffer[0] = x;
+        UniformBuffer._TempBuffer[1] = y;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 2);
     }
 
     private _updateFloat3ForEffect(name: string, x: number, y: number, z: number, suffix = "") {
@@ -799,10 +799,10 @@ export class UniformBuffer {
     }
 
     private _updateFloat3ForUniform(name: string, x: number, y: number, z: number) {
-        UniformBuffer._tempBuffer[0] = x;
-        UniformBuffer._tempBuffer[1] = y;
-        UniformBuffer._tempBuffer[2] = z;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 3);
+        UniformBuffer._TempBuffer[0] = x;
+        UniformBuffer._TempBuffer[1] = y;
+        UniformBuffer._TempBuffer[2] = z;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 3);
     }
 
     private _updateFloat4ForEffect(name: string, x: number, y: number, z: number, w: number, suffix = "") {
@@ -810,11 +810,11 @@ export class UniformBuffer {
     }
 
     private _updateFloat4ForUniform(name: string, x: number, y: number, z: number, w: number) {
-        UniformBuffer._tempBuffer[0] = x;
-        UniformBuffer._tempBuffer[1] = y;
-        UniformBuffer._tempBuffer[2] = z;
-        UniformBuffer._tempBuffer[3] = w;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+        UniformBuffer._TempBuffer[0] = x;
+        UniformBuffer._TempBuffer[1] = y;
+        UniformBuffer._TempBuffer[2] = z;
+        UniformBuffer._TempBuffer[3] = w;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
     private _updateFloatArrayForEffect(name: string, array: Float32Array) {
@@ -838,8 +838,8 @@ export class UniformBuffer {
     }
 
     private _updateIntArrayForUniform(name: string, array: Int32Array) {
-        UniformBuffer._tempBufferInt32View.set(array);
-        this.updateUniformArray(name, UniformBuffer._tempBuffer, array.length);
+        UniformBuffer._TempBufferInt32View.set(array);
+        this.updateUniformArray(name, UniformBuffer._TempBuffer, array.length);
     }
 
     private _updateMatrixForEffect(name: string, mat: IMatrixLike) {
@@ -865,10 +865,10 @@ export class UniformBuffer {
     }
 
     private _updateVector3ForUniform(name: string, vector: IVector3Like) {
-        UniformBuffer._tempBuffer[0] = vector.x;
-        UniformBuffer._tempBuffer[1] = vector.y;
-        UniformBuffer._tempBuffer[2] = vector.z;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 3);
+        UniformBuffer._TempBuffer[0] = vector.x;
+        UniformBuffer._TempBuffer[1] = vector.y;
+        UniformBuffer._TempBuffer[2] = vector.z;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 3);
     }
 
     private _updateVector4ForEffect(name: string, vector: IVector4Like) {
@@ -876,11 +876,11 @@ export class UniformBuffer {
     }
 
     private _updateVector4ForUniform(name: string, vector: IVector4Like) {
-        UniformBuffer._tempBuffer[0] = vector.x;
-        UniformBuffer._tempBuffer[1] = vector.y;
-        UniformBuffer._tempBuffer[2] = vector.z;
-        UniformBuffer._tempBuffer[3] = vector.w;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+        UniformBuffer._TempBuffer[0] = vector.x;
+        UniformBuffer._TempBuffer[1] = vector.y;
+        UniformBuffer._TempBuffer[2] = vector.z;
+        UniformBuffer._TempBuffer[3] = vector.w;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
     private _updateColor3ForEffect(name: string, color: IColor3Like, suffix = "") {
@@ -888,10 +888,10 @@ export class UniformBuffer {
     }
 
     private _updateColor3ForUniform(name: string, color: IColor3Like) {
-        UniformBuffer._tempBuffer[0] = color.r;
-        UniformBuffer._tempBuffer[1] = color.g;
-        UniformBuffer._tempBuffer[2] = color.b;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 3);
+        UniformBuffer._TempBuffer[0] = color.r;
+        UniformBuffer._TempBuffer[1] = color.g;
+        UniformBuffer._TempBuffer[2] = color.b;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 3);
     }
 
     private _updateColor4ForEffect(name: string, color: IColor3Like, alpha: number, suffix = "") {
@@ -903,19 +903,19 @@ export class UniformBuffer {
     }
 
     private _updateColor4ForUniform(name: string, color: IColor3Like, alpha: number) {
-        UniformBuffer._tempBuffer[0] = color.r;
-        UniformBuffer._tempBuffer[1] = color.g;
-        UniformBuffer._tempBuffer[2] = color.b;
-        UniformBuffer._tempBuffer[3] = alpha;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+        UniformBuffer._TempBuffer[0] = color.r;
+        UniformBuffer._TempBuffer[1] = color.g;
+        UniformBuffer._TempBuffer[2] = color.b;
+        UniformBuffer._TempBuffer[3] = alpha;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
     private _updateDirectColor4ForUniform(name: string, color: IColor4Like) {
-        UniformBuffer._tempBuffer[0] = color.r;
-        UniformBuffer._tempBuffer[1] = color.g;
-        UniformBuffer._tempBuffer[2] = color.b;
-        UniformBuffer._tempBuffer[3] = color.a;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+        UniformBuffer._TempBuffer[0] = color.r;
+        UniformBuffer._TempBuffer[1] = color.g;
+        UniformBuffer._TempBuffer[2] = color.b;
+        UniformBuffer._TempBuffer[3] = color.a;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
     private _updateIntForEffect(name: string, x: number, suffix = "") {
@@ -923,8 +923,8 @@ export class UniformBuffer {
     }
 
     private _updateIntForUniform(name: string, x: number) {
-        UniformBuffer._tempBufferInt32View[0] = x;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 1);
+        UniformBuffer._TempBufferInt32View[0] = x;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 1);
     }
 
     private _updateInt2ForEffect(name: string, x: number, y: number, suffix = "") {
@@ -932,9 +932,9 @@ export class UniformBuffer {
     }
 
     private _updateInt2ForUniform(name: string, x: number, y: number) {
-        UniformBuffer._tempBufferInt32View[0] = x;
-        UniformBuffer._tempBufferInt32View[1] = y;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 2);
+        UniformBuffer._TempBufferInt32View[0] = x;
+        UniformBuffer._TempBufferInt32View[1] = y;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 2);
     }
 
     private _updateInt3ForEffect(name: string, x: number, y: number, z: number, suffix = "") {
@@ -942,10 +942,10 @@ export class UniformBuffer {
     }
 
     private _updateInt3ForUniform(name: string, x: number, y: number, z: number) {
-        UniformBuffer._tempBufferInt32View[0] = x;
-        UniformBuffer._tempBufferInt32View[1] = y;
-        UniformBuffer._tempBufferInt32View[2] = z;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 3);
+        UniformBuffer._TempBufferInt32View[0] = x;
+        UniformBuffer._TempBufferInt32View[1] = y;
+        UniformBuffer._TempBufferInt32View[2] = z;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 3);
     }
 
     private _updateInt4ForEffect(name: string, x: number, y: number, z: number, w: number, suffix = "") {
@@ -953,11 +953,11 @@ export class UniformBuffer {
     }
 
     private _updateInt4ForUniform(name: string, x: number, y: number, z: number, w: number) {
-        UniformBuffer._tempBufferInt32View[0] = x;
-        UniformBuffer._tempBufferInt32View[1] = y;
-        UniformBuffer._tempBufferInt32View[2] = z;
-        UniformBuffer._tempBufferInt32View[3] = w;
-        this.updateUniform(name, UniformBuffer._tempBuffer, 4);
+        UniformBuffer._TempBufferInt32View[0] = x;
+        UniformBuffer._TempBufferInt32View[1] = y;
+        UniformBuffer._TempBufferInt32View[2] = z;
+        UniformBuffer._TempBufferInt32View[3] = w;
+        this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
     /**

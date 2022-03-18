@@ -194,7 +194,7 @@ export class PostProcessRenderEffect {
             return;
         }
 
-        for (var i = 0; i < cams.length; i++) {
+        for (let i = 0; i < cams.length; i++) {
             const camera = cams[i];
             var cameraName = camera.name;
 

@@ -1296,7 +1296,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
                 var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
                 var floatIndices = [];
-                for (var i = 0; i < matricesIndicesData.length; i++) {
+                for (let i = 0; i < matricesIndicesData.length; i++) {
                     var index = matricesIndicesData[i];
                     floatIndices.push(index & 0x000000ff);
                     floatIndices.push((index & 0x0000ff00) >> 8);
@@ -1309,7 +1309,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.matricesIndicesExtraAttrDesc && binaryInfo.matricesIndicesExtraAttrDesc.count > 0) {
                 var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesExtraAttrDesc.offset, binaryInfo.matricesIndicesExtraAttrDesc.count);
                 var floatIndices = [];
-                for (var i = 0; i < matricesIndicesData.length; i++) {
+                for (let i = 0; i < matricesIndicesData.length; i++) {
                     var index = matricesIndicesData[i];
                     floatIndices.push(index & 0x000000ff);
                     floatIndices.push((index & 0x0000ff00) >> 8);
@@ -1333,7 +1333,7 @@ export class Geometry implements IGetSetVerticesData {
                 const subMeshesData = new Int32Array(parsedGeometry, binaryInfo.subMeshesAttrDesc.offset, binaryInfo.subMeshesAttrDesc.count * 5);
 
                 mesh.subMeshes = [];
-                for (var i = 0; i < binaryInfo.subMeshesAttrDesc.count; i++) {
+                for (let i = 0; i < binaryInfo.subMeshesAttrDesc.count; i++) {
                     const materialIndex = subMeshesData[i * 5 + 0];
                     const verticesStart = subMeshesData[i * 5 + 1];
                     const verticesCount = subMeshesData[i * 5 + 2];
@@ -1384,7 +1384,7 @@ export class Geometry implements IGetSetVerticesData {
                 if (!parsedGeometry.matricesIndices._isExpanded) {
                     var floatIndices = [];
 
-                    for (var i = 0; i < parsedGeometry.matricesIndices.length; i++) {
+                    for (let i = 0; i < parsedGeometry.matricesIndices.length; i++) {
                         var matricesIndex = parsedGeometry.matricesIndices[i];
 
                         floatIndices.push(matricesIndex & 0x000000ff);
@@ -1404,7 +1404,7 @@ export class Geometry implements IGetSetVerticesData {
                 if (!parsedGeometry.matricesIndicesExtra._isExpanded) {
                     var floatIndices = [];
 
-                    for (var i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
+                    for (let i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
                         var matricesIndex = parsedGeometry.matricesIndicesExtra[i];
 
                         floatIndices.push(matricesIndex & 0x000000ff);

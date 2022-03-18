@@ -222,7 +222,7 @@ export class LightGizmo extends Gizmo {
         if (levels < 2) {
             return linePivot;
         }
-        for (var i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) {
             var l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
             l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
@@ -235,7 +235,7 @@ export class LightGizmo extends Gizmo {
         if (levels < 3) {
             return root;
         }
-        for (var i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) {
             var l = linePivot.clone("linePivotClone");
             l.rotation.z = Math.PI / 2;
             l.rotation.y = (Math.PI / 2) * i;
@@ -244,7 +244,7 @@ export class LightGizmo extends Gizmo {
         if (levels < 4) {
             return root;
         }
-        for (var i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) {
             var l = linePivot.clone("linePivotClone");
             l.rotation.z = Math.PI + Math.PI / 4;
             l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Color3 } from "../../Maths/math.color";
@@ -14,7 +15,6 @@ import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
-declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
@@ -130,7 +130,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    public isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene, engine: Engine): boolean {
+    public isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -154,7 +154,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialSheenDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefines(defines: MaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.SHEEN = true;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;

@@ -747,7 +747,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             } else {
                 const triPoints = [];
                 const triNorms = [];
-                for (var i = 0; i < vertexPositions.length; i += 3) {
+                for (let i = 0; i < vertexPositions.length; i += 3) {
                     const v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
                     const n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
                     triPoints.push(v.x, v.y, -v.z);
@@ -759,7 +759,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 const bodyVertices = softBody.get_m_nodes();
                 let node: any;
                 var nodeNormals: any;
-                for (var i = 0; i < nbVertices; i++) {
+                for (let i = 0; i < nbVertices; i++) {
                     node = bodyVertices.at(i);
                     var nodeNormals = node.get_m_n();
                     nodeNormals.setX(triNorms[3 * i]);
