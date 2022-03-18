@@ -21,12 +21,10 @@ export class InputTextArea extends InputText {
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
     private _lines: any[];
-    private _oldlines: string[] = [];
-    private _clicked: boolean;
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
-
+    
     private _clipTextTop: number;
     private _clipTextLeft: number;
     
@@ -131,8 +129,6 @@ export class InputTextArea extends InputText {
             return;
         }
 
-        this._oldlines = this._lines.map((l) => l.text);
-
         // Specific cases
         switch (keyCode) {
             case 65: // A - select all
@@ -165,11 +161,11 @@ export class InputTextArea extends InputText {
             case 46: // DELETE
                 this._cursorInfo.globalEndIndex++;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
-
+                
                 if (evt) {
                     evt.preventDefault();
                 }
-
+                
                 this._isTextHighlightOn = false;
 
                 this._markAsDirty();
@@ -216,7 +212,7 @@ export class InputTextArea extends InputText {
                             this._cursorInfo.globalStartIndex--;
                         } else {
                             this._cursorInfo.globalEndIndex--;
-                    }
+                        }
                     }
                     evt.preventDefault();
                     return;
@@ -263,7 +259,7 @@ export class InputTextArea extends InputText {
                             this._cursorInfo.globalStartIndex++;
                         } else {
                             this._cursorInfo.globalEndIndex++;
-                    }
+                        }
                     }
                     evt.preventDefault();
                     return;
@@ -301,12 +297,12 @@ export class InputTextArea extends InputText {
                         }
                     }
                     evt.preventDefault();
-                    }
+                }
 
                 if (this._cursorInfo.globalStartIndex < this._lines[this._cursorInfo.currentLineIndex].text.length) {
                     // First line
                     this._cursorInfo.globalStartIndex = 0;
-                    } else {
+                } else {
                     const currentLine = this._lines[this._cursorInfo.currentLineIndex];
                     const upperLine = this._lines[this._cursorInfo.currentLineIndex - 1];
 
@@ -325,7 +321,7 @@ export class InputTextArea extends InputText {
                         upperLineRelativeIndex++;
                         previousWidth = Math.abs(currentWidth - upperWidth);
                         upperWidth = this._contextForBreakLines.measureText(upperLine.text.substr(0, upperLineRelativeIndex)).width;
-                        }
+                    }
 
                     // Find closest move
                     if (Math.abs(currentWidth - upperWidth) > previousWidth && upperLineRelativeIndex > 0) {
@@ -349,7 +345,7 @@ export class InputTextArea extends InputText {
                         }
                     }
                     evt.preventDefault();
-                    }
+                }
 
                 if (this._cursorInfo.globalStartIndex >= this.text.length - this._lines[this._lines.length - 1].text.length
                 && this._cursorInfo.globalStartIndex < this.text.length) {
@@ -374,7 +370,7 @@ export class InputTextArea extends InputText {
                         underLineRelativeIndex++;
                         previousWidth = Math.abs(currentWidth - upperWidth);
                         upperWidth = this._contextForBreakLines.measureText(underLine.text.substr(0, underLineRelativeIndex)).width;
-                        }
+                    }
 
                     // Find closest move
                     if (Math.abs(currentWidth - upperWidth) > previousWidth && underLineRelativeIndex > 0) {
@@ -430,11 +426,8 @@ export class InputTextArea extends InputText {
                 this._cursorInfo.globalStartIndex += key.length;
 
                 this._markAsDirty();
-                }
             }
         }
-
-        this._oldlines = this._lines.map((l) => l.text);
     }
 
     protected _parseLineWordWrap(line: string = '', width: number,
@@ -746,16 +739,14 @@ export class InputTextArea extends InputText {
 
                 if (this._lineSpacing.isPixel) {
                     rootY += this._lineSpacing.getValue(this._host);
-        } else {
+                } else {
                     rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
                 }
-        }
+            }
 
             this._drawText(line.text, line.width, rootY, context);
             rootY += this._fontOffset.height;
         }
-        // filltext (<text>, x,y) Startcoordinates;
-        //context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
 
         // Cursor
         if (this._isFocused) {
@@ -847,79 +838,12 @@ export class InputTextArea extends InputText {
         context.restore();
     }
 
-    protected _renderLines(context: ICanvasRenderingContext): void {
-        var height = this._currentMeasure.height;
-        var rootY = 0;
-        switch (this._textVerticalAlignment) {
-            case Control.VERTICAL_ALIGNMENT_TOP:
-                rootY = this._fontOffset.ascent;
-                break;
-            case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                rootY = height - this._fontOffset.height * (this._lines.length - 1) - this._fontOffset.descent;
-                break;
-            case Control.VERTICAL_ALIGNMENT_CENTER:
-                rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) / 2;
-                break;
-        }
-
-        rootY += this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
-
-        for (let i = 0; i < this._lines.length; i++) {
-            const line = this._lines[i];
-
-            if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-
-                if (this._lineSpacing.isPixel) {
-                    rootY += this._lineSpacing.getValue(this._host);
-                } else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                }
-            }
-
-            this._drawText(line.text, line.width, rootY, context);
-            rootY += this._fontOffset.height;
-        }
-    }
-
     protected _applyStates(context: ICanvasRenderingContext): void {
         super._applyStates(context);
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
             context.strokeStyle = this.outlineColor;
         }
-    }
-
-    /**
-     * Given a width constraint applied on the text block, find the expected height
-     * @returns expected height
-     */
-    public computeExpectedHeight(): number {
-        if (this.text && this.widthInPixels) {
-            const context = document.createElement('canvas').getContext('2d') as ICanvasRenderingContext;
-            if (context) {
-                this._applyStates(context);
-                if (!this._fontOffset) {
-                    this._fontOffset = Control._GetFontOffset(context.font);
-                }
-                const lines = this._lines ? this._lines : this._breakLines(this._availableWidth, this._currentMeasure.height, context);
-
-                let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
-
-                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                    let lineSpacing = 0;
-                    if (this._lineSpacing.isPixel) {
-                        lineSpacing = this._lineSpacing.getValue(this._host);
-                    } else {
-                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                    }
-
-                    newHeight += (lines.length - 1) * lineSpacing;
-                }
-
-                return newHeight;
-            }
-        }
-        return 0;
     }
 
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
@@ -956,46 +880,8 @@ export class InputTextArea extends InputText {
             this._clickedCoordinateY = coordinates.y;
 
             this._markAsDirty();
-
-            this._updateValueFromCursorIndex(this._cursorOffset);
         }
         super._onPointerMove(target, coordinates, pointerId, pi);
-    }
-
-    /** @hidden */
-    protected  _updateValueFromCursorIndex(offset: number) {
-        //update the cursor
-        this._blinkIsEven = false;
-
-        if (this._cursorIndex === -1) {
-            this._cursorIndex = this._lines[this._selectedLineIndex].text.length - offset;
-            this._lastClickedLineIndex = this._selectedLineIndex;
-        } else {
-            const lineLength = this._lines[this._selectedLineIndex].text.length;
-
-            if (this._selectedLineIndex < this._lastClickedLineIndex) {
-                this._startHighlightIndex = lineLength - this._cursorOffset;
-                this._endHighlightIndex = this._cursorIndex;
-            } else if (this._selectedLineIndex > this._lastClickedLineIndex) {
-                this._startHighlightIndex = this._cursorIndex;
-                this._endHighlightIndex = lineLength - this._cursorOffset;
-            } else {
-                if (this._cursorIndex < lineLength - this._cursorOffset) {
-                    this._startHighlightIndex = this._cursorIndex;
-                    this._endHighlightIndex = lineLength - this._cursorOffset;
-                }
-                else if (this._cursorIndex > lineLength - this._cursorOffset) {
-                    this._startHighlightIndex = lineLength - this._cursorOffset;
-                    this._endHighlightIndex = this._cursorIndex;
-                } else {
-                    this._isTextHighlightOn = false;
-                    this._markAsDirty();
-                    return;
-                }
-            }
-        }
-        this._isTextHighlightOn = true;
-        this._markAsDirty();
     }
 
     /**
