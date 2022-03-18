@@ -36,7 +36,7 @@ class FluentBackplateMaterialDefines extends MaterialDefines {
 }
 
 /**
- * Class used to render square buttons with fluent desgin
+ * Class used to render square buttons with fluent design
  */
 export class FluentBackplateMaterial extends PushMaterial {
     /**

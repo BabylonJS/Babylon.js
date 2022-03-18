@@ -462,7 +462,7 @@ export class TextFileAssetTask extends AbstractAssetTask {
  */
 export class BinaryFileAssetTask extends AbstractAssetTask {
     /**
-     * Gets the lodaded data (as an array buffer)
+     * Gets the loaded data (as an array buffer)
      */
     public data: ArrayBuffer;
 
@@ -1142,7 +1142,7 @@ export class AssetsManager {
                     this.onFinish(currentTasks);
                 }
 
-                // Let's remove successfull tasks
+                // Let's remove successful tasks
                 for (var task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
                         const index = this._tasks.indexOf(task);

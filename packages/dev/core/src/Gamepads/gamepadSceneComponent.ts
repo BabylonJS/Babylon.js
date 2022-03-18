@@ -118,7 +118,7 @@ export class GamepadSystemSceneComponent implements ISceneComponent {
     }
 
     /**
-     * Disposes the component and the associated ressources
+     * Disposes the component and the associated resources
      */
     public dispose(): void {
         const gamepadManager = this.scene._gamepadManager;

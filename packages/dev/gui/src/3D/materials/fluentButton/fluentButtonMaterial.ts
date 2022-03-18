@@ -35,7 +35,7 @@ class FluentButtonMaterialDefines extends MaterialDefines {
 }
 
 /**
- * Class used to render square buttons with fluent desgin
+ * Class used to render square buttons with fluent design
  * @since 5.0.0
  */
 export class FluentButtonMaterial extends PushMaterial {
