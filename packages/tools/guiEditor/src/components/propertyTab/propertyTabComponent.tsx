@@ -416,12 +416,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     renderControlIcon(nodes: Control[]) {
         const node = nodes[0];
         const className = node.getClassName();
-        for(const node of nodes) {
+        for (const node of nodes) {
             if (node.getClassName() !== className) {
                 return adtIcon;
             }
         }
-        const type = ControlTypes.find(control => control.className === className);
+        const type = ControlTypes.find((control) => control.className === className);
         return type ? type.icon : adtIcon;
     }
 
