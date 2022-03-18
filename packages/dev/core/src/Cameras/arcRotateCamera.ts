@@ -233,7 +233,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the value of the inertia used during panning.
-     * 0 would mean stop inertia and one would mean no decelleration at all.
+     * 0 would mean stop inertia and one would mean no deceleration at all.
      */
     @serialize()
     public panningInertia = 0.9;

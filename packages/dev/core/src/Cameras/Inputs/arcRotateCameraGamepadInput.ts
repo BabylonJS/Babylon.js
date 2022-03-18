@@ -20,14 +20,14 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
     public gamepad: Nullable<Gamepad>;
 
     /**
-     * Defines the gamepad rotation sensiblity.
+     * Defines the gamepad rotation sensibility.
      * This is the threshold from when rotation starts to be accounted for to prevent jittering.
      */
     @serialize()
     public gamepadRotationSensibility = 80;
 
     /**
-     * Defines the gamepad move sensiblity.
+     * Defines the gamepad move sensibility.
      * This is the threshold from when moving starts to be accounted for for to prevent jittering.
      */
     @serialize()

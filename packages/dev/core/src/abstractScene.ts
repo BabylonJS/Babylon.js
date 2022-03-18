@@ -57,7 +57,7 @@ export abstract class AbstractScene {
     }
 
     /**
-     * Gets a general parser from the list of avaialble ones
+     * Gets a general parser from the list of available ones
      * @param name Defines the name of the parser
      * @returns the requested parser or null
      */
@@ -79,7 +79,7 @@ export abstract class AbstractScene {
     }
 
     /**
-     * Gets an individual parser from the list of avaialble ones
+     * Gets an individual parser from the list of available ones
      * @param name Defines the name of the parser
      * @returns the requested parser or null
      */
@@ -177,10 +177,10 @@ export abstract class AbstractScene {
     public geometries = new Array<Geometry>();
 
     /**
-     * All of the tranform nodes added to this scene
+     * All of the transform nodes added to this scene
      * In the context of a Scene, it is not supposed to be modified manually.
      * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
-     * Note also that the order of the TransformNode wihin the array is not significant and might change.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
      * @see https://doc.babylonjs.com/how_to/transformnode
      */
     public transformNodes = new Array<TransformNode>();
