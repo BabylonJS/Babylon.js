@@ -468,7 +468,6 @@ export const RequestFile = (
                 request.removeEventListener("readystatechange", onReadyStateChange);
             }
             request.removeEventListener("loadend", onLoadEnd!);
-            console.log("Removed");
         };
 
         let onLoadEnd: Nullable<() => void> = () => {
@@ -538,7 +537,6 @@ export const RequestFile = (
 
             if (onLoadEnd) {
                 request.addEventListener("loadend", onLoadEnd);
-                console.log("Added");
             }
 
             onReadyStateChange = () => {
