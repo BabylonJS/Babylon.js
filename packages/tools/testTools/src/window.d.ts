@@ -23,6 +23,7 @@ declare global {
             [eventName: string]: {
                 numberAdded: number;
                 numberRemoved: number;
+                registeredFunctions: [{ eventListener: EventListenerOrEventListenerObject | null; timesAdded: number } | null];
                 stackTraces: string[];
             };
         };
