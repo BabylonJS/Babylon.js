@@ -63,7 +63,7 @@ export class BoundingInfo implements ICullable {
 
     private _isLocked = false;
 
-    private static readonly TmpVector3 = ArrayTools.BuildArray(2, Vector3.Zero);
+    private static readonly _TmpVector3 = ArrayTools.BuildArray(2, Vector3.Zero);
 
     /**
      * Constructs bounding info
@@ -132,8 +132,8 @@ export class BoundingInfo implements ICullable {
      * @returns the current bounding info
      */
     public centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo {
-        const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
-        const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
+        const minimum = BoundingInfo._TmpVector3[0].copyFrom(center).subtractInPlace(extend);
+        const maximum = BoundingInfo._TmpVector3[1].copyFrom(center).addInPlace(extend);
 
         this.boundingBox.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
         this.boundingSphere.reConstruct(minimum, maximum, this.boundingBox.getWorldMatrix());
@@ -211,7 +211,7 @@ export class BoundingInfo implements ICullable {
      */
     public get diagonalLength(): number {
         const boundingBox = this.boundingBox;
-        const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, BoundingInfo.TmpVector3[0]);
+        const diag = boundingBox.maximumWorld.subtractToRef(boundingBox.minimumWorld, BoundingInfo._TmpVector3[0]);
         return diag.length();
     }
 

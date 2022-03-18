@@ -654,7 +654,7 @@ export class SkeletonViewer {
 
                 boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
-                bone.children.forEach((bc, i) => {
+                bone.children.forEach((bc) => {
                     const childAbsoluteBindPoseTransform: Matrix = new Matrix();
                     bc.getBaseMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     const childPoint = new Vector3();
