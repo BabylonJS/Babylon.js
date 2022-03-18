@@ -11,12 +11,19 @@ import { Control } from "gui/2D/controls/control";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
+import { KeyboardManager } from "./keyboardManager";
 
 export enum DragOverLocation {
     ABOVE = 0,
     BELOW = 1,
     CENTER = 2,
     NONE = 3,
+}
+
+export enum Tool {
+    SELECT = 0,
+    PAN = 1,
+    ZOOM = 2
 }
 
 export class GlobalState {
@@ -40,7 +47,7 @@ export class GlobalState {
     onPopupClosedObservable = new Observable<void>();
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
-    isMultiSelecting: boolean = false;
+    public keys: KeyboardManager;
     onOutlineChangedObservable = new Observable<void>();
     blockKeyboardEvents = false;
     controlCamera: boolean;
@@ -48,10 +55,23 @@ export class GlobalState {
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
-    onZoomObservable = new Observable<void>();
+    private _tool: Tool = Tool.SELECT;
+    onToolChangeObservable = new Observable<void>();
+    public get tool(): Tool {
+        if (this._tool === Tool.ZOOM) {
+            return Tool.ZOOM;
+        } else if (this._tool === Tool.PAN || this.keys.isKeyDown("space")) {
+            return Tool.PAN;
+        } else {
+            return Tool.SELECT
+        }
+    }
+    public set tool(newTool: Tool) {
+        if (this._tool === newTool) return;
+        this._tool = newTool;
+        this.onToolChangeObservable.notifyObservers();
+    }
     onFitToWindowObservable = new Observable<void>();
-    onPanObservable = new Observable<void>();
-    onSelectionButtonObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
@@ -115,13 +135,12 @@ export class GlobalState {
                 event.preventDefault();
             }
         });
-        this.hostDocument.addEventListener("keydown", (evt) => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keyup", (evt) => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keypress", (evt) => this._updateKeys(evt));
-    }
-
-    private _updateKeys(event: KeyboardEvent) {
-        this.isMultiSelecting = event.ctrlKey;
+        this.keys = new KeyboardManager(this.hostDocument);
+        this.keys.onKeyPressedObservable.add(() => {
+            // trigger a tool update (in case space is now pressed)
+            // we should really have a state management system to handle this for us
+            this.onToolChangeObservable.notifyObservers();
+        })
     }
 
     public get backgroundColor() {
@@ -146,7 +165,7 @@ export class GlobalState {
     }
 
     public select(control: Control) {
-        if (this.isMultiSelecting && this.isMultiSelectable(control)) {
+        if (this.keys.isKeyDown("control") && this.isMultiSelectable(control)) {
             const index = this.selectedControls.indexOf(control);
             if (index === -1) {
                 this.setSelection([...this.selectedControls, control]);
