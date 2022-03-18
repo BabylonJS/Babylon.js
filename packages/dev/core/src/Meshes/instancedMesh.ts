@@ -152,7 +152,7 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Returns a positive integer : the total number of indices in this mesh geometry.
-     * @returns the numner of indices or zero if the mesh has no geometry.
+     * @returns the number of indices or zero if the mesh has no geometry.
      */
     public getTotalIndices(): number {
         return this._sourceMesh.getTotalIndices();

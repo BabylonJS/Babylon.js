@@ -149,7 +149,7 @@ export abstract class GizmoHandle {
 
     /**
      * Creates the meshes and parent node of the handle
-     * Should be overriden by child classes
+     * Should be overridden by child classes
      * @returns created node
      */
     public abstract createNode(): TransformNode;

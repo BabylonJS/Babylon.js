@@ -19,7 +19,7 @@ export interface IComputeEffectCreationOptions {
      */
     defines: any;
     /**
-     * The name of the entry point in the shader source (defaut: "main")
+     * The name of the entry point in the shader source (default: "main")
      */
     entryPoint?: string;
     /**

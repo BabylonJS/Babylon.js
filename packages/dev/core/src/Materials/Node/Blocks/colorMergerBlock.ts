@@ -11,19 +11,19 @@ import { Scene } from "../../../scene";
  */
 export class ColorMergerBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the swizzle for r (meaning which compoent to affect to the output.r)
+     * Gets or sets the swizzle for r (meaning which component to affect to the output.r)
      */
     public rSwizzle: "r" | "g" | "b" | "a" = "r";
     /**
-     * Gets or sets the swizzle for g (meaning which compoent to affect to the output.g)
+     * Gets or sets the swizzle for g (meaning which component to affect to the output.g)
      */
     public gSwizzle: "r" | "g" | "b" | "a" = "g";
     /**
-     * Gets or sets the swizzle for b (meaning which compoent to affect to the output.b)
+     * Gets or sets the swizzle for b (meaning which component to affect to the output.b)
      */
     public bSwizzle: "r" | "g" | "b" | "a" = "b";
     /**
-     * Gets or sets the swizzle for a (meaning which compoent to affect to the output.a)
+     * Gets or sets the swizzle for a (meaning which component to affect to the output.a)
      */
     public aSwizzle: "r" | "g" | "b" | "a" = "a";
 
