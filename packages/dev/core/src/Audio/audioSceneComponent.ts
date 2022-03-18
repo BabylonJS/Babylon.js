@@ -555,7 +555,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
             let i: number;
             for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
-                var sound = scene.mainSoundTrack.soundCollection[i];
+                const sound = scene.mainSoundTrack.soundCollection[i];
                 if (sound.useCustomAttenuation) {
                     sound.updateDistanceFromListener();
                 }
@@ -563,7 +563,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             if (scene.soundTracks) {
                 for (i = 0; i < scene.soundTracks.length; i++) {
                     for (let j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
-                        sound = scene.soundTracks[i].soundCollection[j];
+                        const sound = scene.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }
