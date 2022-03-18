@@ -171,20 +171,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (globalState.selectedControls.length) {
                 let minX = Number.MAX_SAFE_INTEGER;
                 let minY = Number.MAX_SAFE_INTEGER;
-                
+
                 let maxX = -Number.MAX_SAFE_INTEGER;
                 let maxY = -Number.MAX_SAFE_INTEGER;
 
                 // Find bounding box of selected controls
                 for (let selectedControl of globalState.selectedControls) {
-                    let left : number, top : number, right : number, bottom : number;
-                    
+                    let left: number, top: number, right: number, bottom: number;
+
                     left = -selectedControl.widthInPixels / 2;
                     top = -selectedControl.heightInPixels / 2;
 
                     right = left! + selectedControl.widthInPixels;
                     bottom = top! + selectedControl.heightInPixels;
-                    
+
                     // Compute all four corners of the control in root space
                     const leftTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, top, new Vector2(), undefined, this.trueRootContainer);
                     const rightBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, bottom, new Vector2(), undefined, this.trueRootContainer);
@@ -212,7 +212,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 const xFactor = this._engine.getRenderWidth() / width;
                 const yFactor = this._engine.getRenderHeight() / height;
                 this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
-
             } else {
                 this._panningOffset = new Vector2(0, 0);
                 const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
