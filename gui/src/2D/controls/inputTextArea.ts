@@ -852,8 +852,7 @@ export class InputTextArea extends InputText {
         context.fillStyle = this.fontStyle;
 
         // here we define the visible reactangle to clip it in next line
-        //context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
-        context.rect(clipTextLeft, clipTextTop , this._availableWidth + 2, this._availableHeight + 2);
+        context.rect(this._clipTextLeft,this._clipTextTop , this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
 
         //if (this._isFocused && this._textWidth > availableWidth) {
@@ -920,31 +919,27 @@ export class InputTextArea extends InputText {
 
             // Render cursor
             if (!this._blinkIsEven) {
-                //Cursoroffset text is counted from left to right increasing
-                const cursorOffsetText = this._lines[this._selectedLineIndex].text.substr(this._lines[this._selectedLineIndex].text.length - this._cursorOffset);
-                const cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                let cursorLeft = this._scrollLeft + context.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, this._cursorInfo.relativeStartIndex)).width;
 
-                let cursorLeft = this._scrollLeft + this._lines[this._selectedLineIndex].width - cursorOffsetWidth;
-
-                if (cursorLeft < clipTextLeft) {
-                    this._scrollLeft += (clipTextLeft - cursorLeft);
-                    cursorLeft = clipTextLeft;
+                if (cursorLeft < this._clipTextLeft) {
+                    this._scrollLeft += (this._clipTextLeft - cursorLeft);
+                    cursorLeft = this._clipTextLeft;
                     this._markAsDirty();
-                } else if (cursorLeft > clipTextLeft + this._availableWidth) {
-                    this._scrollLeft += (clipTextLeft + this._availableWidth - cursorLeft);
-                    cursorLeft = clipTextLeft + this._availableWidth;
+                } else if (cursorLeft > this._clipTextLeft + this._availableWidth) {
+                    this._scrollLeft += (this._clipTextLeft + this._availableWidth - cursorLeft);
+                    cursorLeft = this._clipTextLeft + this._availableWidth;
                     this._markAsDirty();
                 }
 
-                let cursorTop = this._scrollTop + this._selectedLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
+                let cursorTop = this._scrollTop + this._cursorInfo.currentLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
 
-                if (cursorTop < clipTextTop) {
-                    this._scrollTop += (clipTextTop - cursorTop);
-                    cursorTop = clipTextTop;
+                if (cursorTop <this._clipTextTop) {
+                    this._scrollTop += (this._clipTextTop - cursorTop);
+                    cursorTop = this._clipTextTop;
                     this._markAsDirty();
-                } else if (cursorTop + this._fontOffset.height > clipTextTop + this._availableHeight) {
-                    this._scrollTop += (clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height);
-                    cursorTop = clipTextTop + this._availableHeight - this._fontOffset.height;
+                } else if (cursorTop + this._fontOffset.height > this._clipTextTop + this._availableHeight) {
+                    this._scrollTop += (this._clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height);
+                    cursorTop = this._clipTextTop + this._availableHeight - this._fontOffset.height;
                     this._markAsDirty();
                 }
 
