@@ -433,6 +433,7 @@ export class ActionManager extends AbstractActionManager {
             const internalClassType = GetClass("BABYLON." + name);
             if (internalClassType) {
                 const newInstance: Object = Object.create(internalClassType.prototype);
+                // eslint-disable-next-line prefer-spread
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             }
@@ -493,7 +494,7 @@ export class ActionManager extends AbstractActionManager {
         };
 
         // traverse graph per trigger
-        var traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
+        const traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
             if (parsedAction.detached) {
                 return;
             }
@@ -600,7 +601,7 @@ export class ActionManager extends AbstractActionManager {
 
         // triggers
         for (let i = 0; i < parsedActions.children.length; i++) {
-            var triggerParams: any;
+            let triggerParams: any;
             const trigger = parsedActions.children[i];
 
             if (trigger.properties.length > 0) {

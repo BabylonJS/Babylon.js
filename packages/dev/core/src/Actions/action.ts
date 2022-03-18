@@ -179,6 +179,7 @@ export class Action implements IAction {
      * Execute placeholder for child classes
      * @param evt optional action event
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public execute(evt?: ActionEvent): void {}
 
     /**
@@ -235,6 +236,7 @@ export class Action implements IAction {
      * @param parent of child
      * @returns the serialized object
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public serialize(parent: any): any {}
 
     /**

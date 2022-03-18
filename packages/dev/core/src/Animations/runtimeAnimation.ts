@@ -281,7 +281,7 @@ export class RuntimeAnimation {
     public reset(restoreOriginal = false): void {
         if (restoreOriginal) {
             if (this._target instanceof Array) {
-                var index = 0;
+                let index = 0;
                 for (const target of this._target) {
                     if (this._originalValue[index] !== undefined) {
                         this._setValue(target, this._activeTargets[index], this._originalValue[index], -1, index);
@@ -482,7 +482,6 @@ export class RuntimeAnimation {
      * @param loop defines if the current animation must loop
      * @param speedRatio defines the current speed ratio
      * @param weight defines the weight of the animation (default is -1 so no weight)
-     * @param onLoop optional callback called when animation loops
      * @returns a boolean indicating if the animation is running
      */
     public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {

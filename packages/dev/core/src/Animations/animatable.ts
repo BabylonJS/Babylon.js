@@ -318,9 +318,9 @@ export class Animatable {
             const idx = this._scene._activeAnimatables.indexOf(this);
 
             if (idx > -1) {
-                var runtimeAnimations = this._runtimeAnimations;
+                const runtimeAnimations = this._runtimeAnimations;
 
-                for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
+                for (let index = runtimeAnimations.length - 1; index >= 0; index--) {
                     const runtimeAnimation = runtimeAnimations[index];
                     if (animationName && runtimeAnimation.animation.name != animationName) {
                         continue;
@@ -339,11 +339,11 @@ export class Animatable {
                 }
             }
         } else {
-            var index = this._scene._activeAnimatables.indexOf(this);
+            const index = this._scene._activeAnimatables.indexOf(this);
 
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
-                var runtimeAnimations = this._runtimeAnimations;
+                const runtimeAnimations = this._runtimeAnimations;
 
                 for (let index = 0; index < runtimeAnimations.length; index++) {
                     runtimeAnimations[index].dispose();
@@ -359,7 +359,7 @@ export class Animatable {
      * @returns a promise which will be fulfilled when the animation ends
      */
     public waitAsync(): Promise<Animatable> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.onAnimationEndObservable.add(
                 () => {
                     resolve(this);
@@ -912,7 +912,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
     const originalAnimation = holder.animations[0];
     const originalValue = holder.originalValue;
 
-    var scale = 1;
+    let scale = 1;
     let skipOverride = false;
     if (holder.totalWeight < 1.0) {
         // We need to mix the original value in
@@ -941,12 +941,12 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
         finalQuaternion.scaleInPlace(scale);
 
         for (let animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
-            var runtimeAnimation = holder.animations[animIndex];
+            const runtimeAnimation = holder.animations[animIndex];
             if (runtimeAnimation.weight === 0) {
                 continue;
             }
 
-            var scale = runtimeAnimation.weight / normalizer;
+            scale = runtimeAnimation.weight / normalizer;
             const currentPosition = TmpVectors.Vector3[2];
             const currentScaling = TmpVectors.Vector3[3];
             const currentQuaternion = TmpVectors.Quaternion[1];
@@ -960,7 +960,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
 
     // Add up the additive animations
     for (let animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
-        var runtimeAnimation = holder.additiveAnimations[animIndex];
+        const runtimeAnimation = holder.additiveAnimations[animIndex];
         if (runtimeAnimation.weight === 0) {
             continue;
         }
@@ -1129,8 +1129,8 @@ Scene.prototype._processLateAnimationBindings = function (): void {
 
                     // Add up the override animations
                     for (let animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
-                        var runtimeAnimation = holder.animations[animIndex];
-                        var scale = runtimeAnimation.weight / normalizer;
+                        const runtimeAnimation = holder.animations[animIndex];
+                        const scale = runtimeAnimation.weight / normalizer;
 
                         if (!scale) {
                             continue;
@@ -1143,8 +1143,8 @@ Scene.prototype._processLateAnimationBindings = function (): void {
 
                     // Add up the additive animations
                     for (let animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
-                        var runtimeAnimation = holder.additiveAnimations[animIndex];
-                        var scale: number = runtimeAnimation.weight;
+                        const runtimeAnimation = holder.additiveAnimations[animIndex];
+                        const scale: number = runtimeAnimation.weight;
 
                         if (!scale) {
                             continue;
