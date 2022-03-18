@@ -300,7 +300,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     <div
                                         className={"toolbar-label"}
                                         key={type.className}
-                                        onDragStart={(evt) => {
+                                        onDragStart={() => {
                                             this._draggedItem = type.className;
                                         }}
                                         onClick={() => {

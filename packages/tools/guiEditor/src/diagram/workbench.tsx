@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DragOverLocation, GlobalState } from "../globalState";
+import { DragOverLocation, GlobalState, Tool } from "../globalState";
 import { Nullable } from "core/types";
 import { Control } from "gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
@@ -45,13 +45,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _mouseStartPoint: Nullable<Vector2> = null;
     public _scene: Scene;
     private _ctrlKeyIsPressed = false;
-    private _altKeyIsPressed = false;
     private _constraintDirection = ConstraintDirection.NONE;
-    private _forcePanning = false;
-    private _forceZooming = false;
-    private _forceSelecting = true;
     private _panning: boolean;
-    private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
     private _isOverGUINode: Control[] = [];
     private _engine: Engine;
@@ -138,34 +133,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         globalState.onSelectionChangedObservable.add(() => this.updateNodeOutlines());
 
-        globalState.onPanObservable.add(() => {
-            this._forcePanning = !this._forcePanning;
-            this._forceSelecting = false;
-            this._forceZooming = false;
-            if (!this._forcePanning) {
-                this.props.globalState.onSelectionButtonObservable.notifyObservers();
-            } else {
-                this._canvas.style.cursor = "grab";
-            }
-        });
-
-        globalState.onSelectionButtonObservable.add(() => {
-            this._forceSelecting = !this._forceSelecting;
-            this._forcePanning = false;
-            this._forceZooming = false;
-            this._canvas.style.cursor = "default";
-        });
-
-        globalState.onZoomObservable.add(() => {
-            this._forceZooming = !this._forceZooming;
-            this._forcePanning = false;
-            this._forceSelecting = false;
-            if (!this._forceZooming) {
-                this.props.globalState.onSelectionButtonObservable.notifyObservers();
-            } else {
-                this._canvas.style.cursor = "zoom-in";
-            }
-        });
+        globalState.onToolChangeObservable.add(() => {
+            this.forceUpdate();
+        })
+        // Get the canvas element from the DOM.
 
         globalState.onFitToWindowObservable.add(() => {
             if (globalState.selectedControls.length) {
@@ -176,7 +147,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 let maxY = -Number.MAX_SAFE_INTEGER;
 
                 // Find bounding box of selected controls
-                for (let selectedControl of globalState.selectedControls) {
+                for (const selectedControl of globalState.selectedControls) {
                     let left : number, top : number, right : number, bottom : number;
                     
                     left = -selectedControl.widthInPixels / 2;
@@ -260,7 +231,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     keyEvent = (evt: KeyboardEvent) => {
         if ((evt.target as HTMLElement).localName === "input") return;
         this._ctrlKeyIsPressed = evt.ctrlKey;
-        this._altKeyIsPressed = evt.altKey;
         if (evt.shiftKey) {
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
@@ -278,10 +248,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (evt.key === "a") {
                 this.props.globalState.setSelection(this.trueRootContainer.children);
             }
-        }
-
-        if (this._forceZooming) {
-            this._canvas.style.cursor = this._altKeyIsPressed ? "zoom-out" : "zoom-in";
         }
     };
 
@@ -457,7 +423,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
-            if (evt.buttonIndex > 0 || !this._forceSelecting) return;
+            if (evt.buttonIndex > 0 || this.props.globalState.tool !== Tool.SELECT) return;
             this._controlsHit.push(guiControl);
         });
 
@@ -748,15 +714,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._pointerTravelDistance = 0;
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
 
-        if (this._forceSelecting) {
+        if (this.props.globalState.tool === Tool.SELECT) {
             this._mouseStartPoint = this.getScaledPointerPosition();
         }
-
-        if (evt.button !== 0 || this._forcePanning) {
+        if (evt.buttons & 4 || this.props.globalState.tool === Tool.PAN ) {
             this.startPanning();
         } else {
-            if (this._forceZooming) {
-                this.zooming(1.0 + (this._altKeyIsPressed ? -this._zoomModeIncrement : this._zoomModeIncrement));
+            if (this.props.globalState.tool === Tool.ZOOM) {
+                this.zooming(1.0 + (this.props.globalState.keys.isKeyDown("alt") ? -this._zoomModeIncrement : this._zoomModeIncrement));
             }
             this.endPanning();
             // process selection
@@ -789,7 +754,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public createGUICanvas() {
         // Get the canvas element from the DOM.
         const canvas = this._rootContainer.current as HTMLCanvasElement;
-        this._canvas = canvas;
         // Associate a Babylon Engine to it.
         this._engine = new Engine(canvas);
 
@@ -899,15 +863,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             switch (k.event.key) {
                 case "s": //select
                 case "S":
-                    if (!this._forceSelecting) this.props.globalState.onSelectionButtonObservable.notifyObservers();
+                    this.props.globalState.tool = Tool.SELECT;
                     break;
                 case "p": //pan
                 case "P":
-                    if (!this._forcePanning) this.props.globalState.onPanObservable.notifyObservers();
+                    this.props.globalState.tool = Tool.PAN;
                     break;
                 case "z": //zoom
                 case "Z":
-                    if (!this._forceZooming) this.props.globalState.onZoomObservable.notifyObservers();
+                    this.props.globalState.tool = Tool.ZOOM;
                     break;
                 case "g": //outlines
                 case "G":
@@ -1019,6 +983,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     render() {
+        let cursor = "default";
+        if (this.props.globalState.tool === Tool.PAN) {
+            cursor = "grab";
+        } else if (this.props.globalState.tool === Tool.ZOOM) {
+            cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
+        }
         return (
             <canvas
                 id="workbench-canvas"
@@ -1036,6 +1006,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onWheel={(evt) => this.zoomWheel(evt)}
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
+                style={{cursor}}
             ></canvas>
         );
     }
