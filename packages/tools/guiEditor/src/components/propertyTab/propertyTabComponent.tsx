@@ -48,23 +48,7 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 import "./propertyTab.scss";
 import adtIcon from "../../imgs/adtIcon.svg";
-import rectangleIcon from "../../imgs/rectangleIconDark.svg";
-import ellipseIcon from "../../imgs/ellipseIconDark.svg";
-import gridIcon from "../../imgs/gridIconDark.svg";
-import stackPanelIcon from "../../imgs/stackPanelIconDark.svg";
-import textBoxIcon from "../../imgs/textBoxIconDark.svg";
-import sliderIcon from "../../imgs/sliderIconDark.svg";
-import buttonIcon from "../../imgs/buttonIconDark.svg";
-import checkboxIcon from "../../imgs/checkboxIconDark.svg";
-import imageIcon from "../../imgs/imageIconDark.svg";
-import keyboardIcon from "../../imgs/keyboardIconDark.svg";
-import inputFieldIcon from "../../imgs/inputFieldIconDark.svg";
-import lineIcon from "../../imgs/lineIconDark.svg";
-import displaygridIcon from "../../imgs/displaygridIconDark.svg";
-import colorPickerIcon from "../../imgs/colorPickerIconDark.svg";
-import scrollbarIcon from "../../imgs/scrollbarIconDark.svg";
-import imageSliderIcon from "../../imgs/imageSliderIconDark.svg";
-import radioButtonIcon from "../../imgs/radioButtonIconDark.svg";
+import { ControlTypes } from "../../controlTypes";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -432,63 +416,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     renderControlIcon(nodes: Control[]) {
         const node = nodes[0];
         const className = node.getClassName();
-        switch (className) {
-            case "TextBlock": {
-                return textBoxIcon;
-            }
-            case "InputText": {
-                return inputFieldIcon;
-            }
-            case "ColorPicker": {
-                return colorPickerIcon;
-            }
-            case "Image": {
-                return imageIcon;
-            }
-            case "Slider": {
-                return sliderIcon;
-            }
-            case "ImageBasedSlider": {
-                return imageSliderIcon;
-            }
-            case "Rectangle": {
-                return rectangleIcon;
-            }
-            case "StackPanel": {
-                return stackPanelIcon;
-            }
-            case "Grid": {
-                return gridIcon;
-            }
-            case "ScrollViewer": {
-                return scrollbarIcon;
-            }
-            case "Ellipse": {
-                return ellipseIcon;
-            }
-            case "Checkbox": {
-                return checkboxIcon;
-            }
-            case "RadioButton": {
-                return radioButtonIcon;
-            }
-            case "Line": {
-                return lineIcon;
-            }
-            case "DisplayGrid": {
-                return displaygridIcon;
-            }
-            case "VirtualKeyboard": {
-                return keyboardIcon;
-            }
-            case "Button": {
-                return buttonIcon;
-            }
-            case "Container": {
-                return rectangleIcon;
+        for(const node of nodes) {
+            if (node.getClassName() !== className) {
+                return adtIcon;
             }
         }
-        return adtIcon;
+        const type = ControlTypes.find(control => control.className === className);
+        return type ? type.icon : adtIcon;
     }
 
     render() {
