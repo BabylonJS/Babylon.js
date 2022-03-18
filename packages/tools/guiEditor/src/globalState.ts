@@ -95,8 +95,8 @@ export class GlobalState {
     /** adds copy, cut and paste listeners to the host window */
     public registerEventListeners() {
         const isElementEditable = (element: HTMLElement) => {
-            return (element.isContentEditable || element.tagName === "INPUT" || element.tagName === "TEXTAREA");
-        }
+            return element.isContentEditable || element.tagName === "INPUT" || element.tagName === "TEXTAREA";
+        };
         this.hostDocument.addEventListener("copy", (event) => {
             if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCopyObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
