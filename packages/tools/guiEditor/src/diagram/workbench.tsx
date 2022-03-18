@@ -668,7 +668,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    onMove() {
+    onMove(evt: React.PointerEvent) {
         const pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPoint != null && !this._panning) {
@@ -1024,7 +1024,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 id="workbench-canvas"
                 onPointerMove={(evt) => {
                     if (this.props.globalState.guiTexture) {
-                        this.onMove();
+                        this.onMove(evt);
                     }
                     this.props.globalState.onPointerMoveObservable.notifyObservers(evt);
                 }}
