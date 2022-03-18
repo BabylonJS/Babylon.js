@@ -144,13 +144,15 @@
         "template-tag-spacing": "error",
         "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["afterEach"] }],
         "jest/valid-expect": "off",
-        "tsdoc/syntax": "warn",
+        // "tsdoc/syntax": "warn",
         "jsdoc/check-param-names": "warn",
         "jsdoc/check-property-names": "error",
         "jsdoc/require-param": "error",
         "jsdoc/require-param-name": "error",
-        "jsdoc/require-returns": "warn",
-        "import/export": "warn"
+        // "jsdoc/require-returns": "warn",
+        "import/export": "warn",
+        "no-useless-escape": "warn",
+        "no-case-declarations": "warn"
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     }
 }

@@ -971,7 +971,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     processEditorData(editorData: IEditorData) {
         const frames = this._frames.splice(0);
-        for (var frame of frames) {
+        for (const frame of frames) {
             frame.dispose();
         }
 
@@ -983,7 +983,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Frames
         if (editorData.frames) {
             for (const frameData of editorData.frames) {
-                var frame = GraphFrame.Parse(frameData, this, editorData.map);
+                const frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }

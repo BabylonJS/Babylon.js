@@ -529,6 +529,8 @@ export class _GLTFMaterialExporter {
      * @returns base64 image string
      */
     private _createBase64FromCanvasAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<string> {
+        // TODO - async functions are not supported in promise callback. Is this working as expected?
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise<string>(async (resolve, reject) => {
             const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
 

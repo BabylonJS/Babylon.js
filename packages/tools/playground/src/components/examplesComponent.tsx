@@ -63,7 +63,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
 
         const list = await response.json();
 
-        for (var value of list.value) {
+        for (const value of list.value) {
             const newSample = {
                 title: value.title,
                 doc: this._documentationRoot + value.documentationPage,

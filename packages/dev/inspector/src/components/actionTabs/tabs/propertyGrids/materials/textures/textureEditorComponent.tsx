@@ -112,7 +112,7 @@ export interface IMetadata {
 }
 
 declare global {
-    var _TOOL_DATA_: IToolData;
+    let _TOOL_DATA_: IToolData;
 }
 
 export class TextureEditorComponent extends React.Component<ITextureEditorComponentProps, ITextureEditorComponentState> {

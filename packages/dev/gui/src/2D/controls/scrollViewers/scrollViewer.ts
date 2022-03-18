@@ -525,6 +525,7 @@ export class ScrollViewer extends Rectangle {
 
     public set barImage(value: Image) {
         if (this._barBackgroundImage === value) {
+            // Nothing changed
         }
 
         this._barBackgroundImage = value;
@@ -541,6 +542,7 @@ export class ScrollViewer extends Rectangle {
 
     public set horizontalBarImage(value: Image) {
         if (this._horizontalBarBackgroundImage === value) {
+            // Nothing changed
         }
 
         this._horizontalBarBackgroundImage = value;
@@ -555,6 +557,7 @@ export class ScrollViewer extends Rectangle {
 
     public set verticalBarImage(value: Image) {
         if (this._verticalBarBackgroundImage === value) {
+            // Nothing changed
         }
 
         this._verticalBarBackgroundImage = value;

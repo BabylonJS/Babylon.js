@@ -140,6 +140,7 @@ export class DownloadManager {
             }
 
             textures.push({ name: match[1] });
+        // eslint-disable-next-line no-constant-condition
         } while (true);
 
         this._addContentToZipAsync(zip, "index.html", "/zipContent/index.html", zipCode)

@@ -91,7 +91,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Connections
         if (block.inputs.length) {
-            for (var input of block.inputs) {
+            for (const input of block.inputs) {
                 if (input.isConnected && recursion) {
                     this.createNodeFromObject(input.sourceBlock!);
                 }
@@ -103,7 +103,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Links
         if (block.inputs.length && recursion) {
-            for (var input of block.inputs) {
+            for (const input of block.inputs) {
                 if (input.isConnected) {
                     this._graphCanvas.connectPorts(input.connectedPoint!, input);
                 }
@@ -537,7 +537,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else {
                 // Locations
                 for (const location of editorData.locations) {
-                    for (var node of this._graphCanvas.nodes) {
+                    for (const node of this._graphCanvas.nodes) {
                         if (node.block && node.block.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
@@ -553,7 +553,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             this._graphCanvas._isLoading = false;
-            for (var node of this._graphCanvas.nodes) {
+            for (const node of this._graphCanvas.nodes) {
                 node._refreshLinks();
             }
             this.hideWaitScreen();

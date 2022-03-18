@@ -64,7 +64,7 @@ export class GLTFUtils {
         } else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
             mat = Matrix.Transpose(source.getWorldMatrix().invert());
         } else {
-            debugger;
+            // debugger;
         }
 
         if (mat) {
@@ -185,32 +185,32 @@ export class GLTFUtils {
         byteLength: number,
         componentType: EComponentType
     ): ArrayBufferView {
-        let byteOffset = bufferView.byteOffset + byteOffset;
+        let byteOffsetCalculated = bufferView.byteOffset + byteOffset;
 
         const loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
-        if (byteOffset + byteLength > loadedBufferView.byteLength) {
+        if (byteOffsetCalculated + byteLength > loadedBufferView.byteLength) {
             throw new Error("Buffer access is out of range");
         }
 
         const buffer = loadedBufferView.buffer;
-        byteOffset += loadedBufferView.byteOffset;
+        byteOffsetCalculated += loadedBufferView.byteOffset;
 
         switch (componentType) {
             case EComponentType.BYTE:
-                return new Int8Array(buffer, byteOffset, byteLength);
+                return new Int8Array(buffer, byteOffsetCalculated, byteLength);
             case EComponentType.UNSIGNED_BYTE:
-                return new Uint8Array(buffer, byteOffset, byteLength);
+                return new Uint8Array(buffer, byteOffsetCalculated, byteLength);
             case EComponentType.SHORT:
-                return new Int16Array(buffer, byteOffset, byteLength);
+                return new Int16Array(buffer, byteOffsetCalculated, byteLength);
             case EComponentType.UNSIGNED_SHORT:
-                return new Uint16Array(buffer, byteOffset, byteLength);
+                return new Uint16Array(buffer, byteOffsetCalculated, byteLength);
             default:
-                return new Float32Array(buffer, byteOffset, byteLength);
+                return new Float32Array(buffer, byteOffsetCalculated, byteLength);
         }
     }
 
     /**
-     * Returns a buffer from its accessor
+     * @returns a buffer from its accessor
      * @param gltfRuntime: the GLTF runtime
      * @param accessor: the GLTF accessor
      * @param gltfRuntime
@@ -226,6 +226,7 @@ export class GLTFUtils {
      * Decodes a buffer view into a string
      * @param view: the buffer view
      * @param view
+     * @returns the decoded buffer as text
      */
     public static DecodeBufferToText(view: ArrayBufferView): string {
         let result = "";
@@ -239,10 +240,9 @@ export class GLTFUtils {
     }
 
     /**
-     * Returns the default material of gltf. Related to
+     * @returns the default material of gltf. Related to
      * https://github.com/KhronosGroup/glTF/tree/master/specification/1.0#appendix-a-default-material
-     * @param scene: the Babylon.js scene
-     * @param scene
+     * @param scene - the Babylon.js scene
      */
     public static GetDefaultMaterial(scene: Scene): ShaderMaterial {
         if (!GLTFUtils._DefaultMaterial) {

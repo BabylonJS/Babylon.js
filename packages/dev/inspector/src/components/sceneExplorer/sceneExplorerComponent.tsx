@@ -218,7 +218,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             search = true;
         } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) {
             // enter or right
-            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            const reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(true);
             }
@@ -226,7 +226,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return;
         } else if (keyEvent.keyCode === 37) {
             // left
-            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            const reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(false);
             }

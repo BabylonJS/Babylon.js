@@ -48,6 +48,9 @@ import { Scene } from "core/scene";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Constants } from "core/Engines/constants";
 
+import "core/Helpers/sceneHelpers";
+import "core/Audio/audioSceneComponent";
+
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
  * O - the type of object we are dealing with (Light, ArcRotateCamera, Scene, etc')
@@ -795,6 +798,9 @@ export class SceneManager {
         );
 
         this._vrHelper = this.scene.createDefaultVRExperience(vrOptions);
+        if (!this._vrHelper) {
+            return;
+        }
         if (!vrConfig.disableInteractions) {
             this._vrHelper.enableInteractions();
         }
@@ -919,7 +925,6 @@ export class SceneManager {
                 const worldSize = worldExtends.max.subtract(worldExtends.min);
                 const worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-                let camera: ArcRotateCamera;
                 let radius = worldSize.length() * 1.5;
                 // empty scene scenario!
                 if (!isFinite(radius)) {
@@ -930,7 +935,7 @@ export class SceneManager {
                 const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
                 arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                 arcRotateCamera.wheelPrecision = 100 / radius;
-                camera = arcRotateCamera;
+                const camera: ArcRotateCamera = arcRotateCamera;
 
                 camera.minZ = radius * 0.01;
                 camera.maxZ = radius * 1000;

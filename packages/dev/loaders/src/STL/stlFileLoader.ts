@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -52,10 +53,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
      * @param scene The scene to import into
      * @param data The data to import
-     * @param rootUrl The root url for scene and resources
+     * @param _rootUrl The root url for scene and resources
      * @param meshes The meshes array to import into
-     * @param particleSystems The particle systems array to import into
-     * @param skeletons The skeletons array to import into
+     * @param _particleSystems The particle systems array to import into
+     * @param _skeletons The skeletons array to import into
      * @param onError The callback when import fails
      * @returns True if successful or false otherwise
      */
@@ -63,10 +64,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         meshesNames: any,
         scene: Scene,
         data: any,
-        rootUrl: string,
+        _rootUrl: string,
         meshes: Nullable<AbstractMesh[]>,
-        particleSystems: Nullable<IParticleSystem[]>,
-        skeletons: Nullable<Skeleton[]>
+        _particleSystems: Nullable<IParticleSystem[]>,
+        _skeletons: Nullable<Skeleton[]>
     ): boolean {
         let matches;
 
@@ -84,10 +85,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             // ASCII .stl
 
             // convert to string
-            const array_buffer = new Uint8Array(data);
+            const arrayBuffer = new Uint8Array(data);
             let str = "";
             for (let i = 0; i < data.byteLength; i++) {
-                str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
+                str += String.fromCharCode(arrayBuffer[i]); // implicitly assumes little-endian
             }
             data = str;
         }
@@ -146,10 +147,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @param scene The scene to load into
      * @param data The data to import
      * @param rootUrl The root url for scene and resources
-     * @param onError The callback when import fails
+     * @param _onError The callback when import fails
      * @returns The loaded asset container
      */
-    public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+    public loadAssetContainer(scene: Scene, data: string, rootUrl: string, _onError?: (message: string, exception?: any) => void): AssetContainer {
         const container = new AssetContainer(scene);
         scene._blockEntityCollection = true;
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
@@ -159,8 +160,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
     private _isBinary(data: any) {
         // check if file size is correct for binary stl
-        let faceSize, nFaces, reader;
-        reader = new DataView(data);
+        const reader = new DataView(data);
 
         // A Binary STL header is 80 bytes, if the data size is not great than
         // that then it's not a binary STL.
@@ -168,8 +168,8 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             return false;
         }
 
-        faceSize = (32 / 8) * 3 + (32 / 8) * 3 * 3 + 16 / 8;
-        nFaces = reader.getUint32(80, true);
+        const faceSize = (32 / 8) * 3 + (32 / 8) * 3 * 3 + 16 / 8;
+        const nFaces = reader.getUint32(80, true);
 
         if (80 + 32 / 8 + nFaces * faceSize === reader.byteLength) {
             return true;

@@ -15,6 +15,7 @@ import { PrintButtonPlugin } from "../templating/plugins/printButton";
 import { ViewerConfiguration } from "../configuration/configuration";
 import { ISceneConfiguration } from "../configuration/interfaces/sceneConfiguration";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import { Nullable } from "core/types";
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -249,19 +250,23 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 this._togglePlayPause();
                 break;
             case "label-option-button":
-                const value = element.dataset["value"];
-                const label = element.querySelector("span.animation-label");
-                if (label && value) {
-                    this._updateAnimationType({ value: value.trim(), label: label.innerHTML });
+                {
+                    const value = element.dataset["value"];
+                    const label = element.querySelector("span.animation-label");
+                    if (label && value) {
+                        this._updateAnimationType({ value: value.trim(), label: label.innerHTML });
+                    }
                 }
                 break;
             case "speed-option-button":
-                if (!this._currentAnimation) {
-                    return;
-                }
-                const speed = element.dataset["value"];
-                if (speed) {
-                    this._updateAnimationSpeed(speed);
+                {
+                    if (!this._currentAnimation) {
+                        return;
+                    }
+                    const speed = element.dataset["value"];
+                    if (speed) {
+                        this._updateAnimationSpeed(speed);
+                    }
                 }
                 break;
             case "progress-wrapper":
@@ -715,7 +720,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     private _configureLights() {
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
-            let lightTarget;
+            let lightTarget: Nullable<Vector3>;
             let angle = 0.5;
             let exponent = Math.PI / 2;
             if (typeof this.configuration.lab.flashlight === "object") {
@@ -741,7 +746,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 if (eventData.type === 4 && eventData.pickInfo) {
                     lightTarget = eventData.pickInfo.pickedPoint;
                 } else {
-                    lightTarget = undefined;
+                    lightTarget = null;
                 }
             });
             const updateFlashlightFunction = () => {

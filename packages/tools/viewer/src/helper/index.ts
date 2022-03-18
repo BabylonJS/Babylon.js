@@ -19,8 +19,8 @@ export function isUrl(urlToCheck: string): boolean {
  * Convert a string from kebab-case to camelCase
  * @param s string to convert
  */
-export function kebabToCamel(s) {
-    return s.replace(/(\-\w)/g, function (m) {
+export function kebabToCamel(s: string) {
+    return s.replace(/(-\w)/g, function (m) {
         return m[1].toUpperCase();
     });
 }
@@ -30,7 +30,7 @@ export function kebabToCamel(s) {
  * Convert a string from camelCase to kebab-case
  * @param str string to convert
  */
-export function camelToKebab(str) {
+export function camelToKebab(str: string) {
     return !str
         ? null
         : str.replace(/([A-Z])/g, function (g) {

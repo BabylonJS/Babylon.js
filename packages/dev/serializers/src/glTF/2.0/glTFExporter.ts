@@ -901,6 +901,7 @@ export class _Exporter {
             }
             case AccessorComponentType.UNSIGNED_INT: {
                 writeBinaryFunc = binaryWriter.setUInt32.bind(binaryWriter);
+                break;
             }
             case AccessorComponentType.FLOAT: {
                 writeBinaryFunc = binaryWriter.setFloat32.bind(binaryWriter);
@@ -1017,6 +1018,7 @@ export class _Exporter {
             }
             case AccessorComponentType.UNSIGNED_INT: {
                 writeBinaryFunc = binaryWriter.setUInt32.bind(binaryWriter);
+                break;
             }
             case AccessorComponentType.FLOAT: {
                 writeBinaryFunc = binaryWriter.setFloat32.bind(binaryWriter);
@@ -1559,6 +1561,7 @@ export class _Exporter {
             }
             case Material.PointListDrawMode: {
                 meshPrimitive.mode = MeshPrimitiveMode.POINTS;
+                break;
             }
             case Material.PointFillMode: {
                 meshPrimitive.mode = MeshPrimitiveMode.POINTS;

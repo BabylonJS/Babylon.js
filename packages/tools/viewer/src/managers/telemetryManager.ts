@@ -90,8 +90,8 @@ export class TelemetryManager {
 
         if (typeof details === "object") {
             for (const attr in details) {
-                if (details.hasOwnProperty(attr)) {
-                    telemetryData[attr] = details[attr];
+                if (Object.prototype.hasOwnProperty.call(details, attr)) {
+                    (telemetryData as any)[attr] = details[attr];
                 }
             }
         } else if (details) {

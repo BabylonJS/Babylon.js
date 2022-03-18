@@ -174,13 +174,15 @@ export class EnvironmentDeserializer {
         //irradiance
         switch (descriptor.irradiance.type) {
             case "irradiance_sh_coefficients_9":
-                //irradiance
-                const harmonics = <IrradianceSHCoefficients9>descriptor.irradiance;
+                {
+                    //irradiance
+                    const harmonics = <IrradianceSHCoefficients9>descriptor.irradiance;
 
-                EnvironmentDeserializer._ConvertSHIrradianceToLambertianRadiance(harmonics);
+                    EnvironmentDeserializer._ConvertSHIrradianceToLambertianRadiance(harmonics);
 
-                //harmonics now represent radiance
-                EnvironmentDeserializer._ConvertSHToSP(harmonics, environment.irradiancePolynomialCoefficients);
+                    //harmonics now represent radiance
+                    EnvironmentDeserializer._ConvertSHToSP(harmonics, environment.irradiancePolynomialCoefficients);
+                }
                 break;
             default:
                 Tools.Error("Unhandled MapType descriptor.irradiance.type (" + descriptor.irradiance.type + ")");
@@ -189,34 +191,37 @@ export class EnvironmentDeserializer {
         //specular
         switch (descriptor.specular.type) {
             case "cubemap_faces":
-                const specularDescriptor = <CubemapFaces>descriptor.specular;
+                {
+                    const specularDescriptor = <CubemapFaces>descriptor.specular;
 
-                const specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
-                environment.textureIntensityScale = specularDescriptor.multiplier != null ? specularDescriptor.multiplier : 1.0;
+                    const specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
+                    environment.textureIntensityScale = specularDescriptor.multiplier != null ? specularDescriptor.multiplier : 1.0;
 
-                const mipmaps = specularDescriptor.mipmaps;
-                const imageType = specularDescriptor.imageType;
+                    const mipmaps = specularDescriptor.mipmaps;
+                    const imageType = specularDescriptor.imageType;
 
-                for (let l = 0; l < mipmaps.length; l++) {
-                    const faceRanges = mipmaps[l];
+                    for (let l = 0; l < mipmaps.length; l++) {
+                        const faceRanges = mipmaps[l];
 
-                    specularTexture.source[l] = [];
+                        specularTexture.source[l] = [];
 
-                    for (let i = 0; i < 6; i++) {
-                        const range = faceRanges[i];
-                        const bytes = new Uint8Array(arrayBuffer, payloadPos + range.pos, range.length);
+                        for (let i = 0; i < 6; i++) {
+                            const range = faceRanges[i];
+                            const bytes = new Uint8Array(arrayBuffer, payloadPos + range.pos, range.length);
 
-                        switch (imageType) {
-                            case "png":
-                                //construct image element from bytes
-                                const image = new Image();
-                                const src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
-                                image.src = src;
-                                specularTexture.source[l][i] = image;
-
-                                break;
-                            default:
-                                Tools.Error("Unhandled ImageType descriptor.specular.imageType (" + imageType + ")");
+                            switch (imageType) {
+                                case "png":
+                                    {
+                                        //construct image element from bytes
+                                        const image = new Image();
+                                        const src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
+                                        image.src = src;
+                                        specularTexture.source[l][i] = image;
+                                    }
+                                    break;
+                                default:
+                                    Tools.Error("Unhandled ImageType descriptor.specular.imageType (" + imageType + ")");
+                            }
                         }
                     }
                 }

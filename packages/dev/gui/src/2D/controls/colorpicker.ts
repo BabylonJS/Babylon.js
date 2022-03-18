@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Observable } from "core/Misc/observable";
 import { Vector2 } from "core/Maths/math.vector";
 
@@ -546,6 +547,7 @@ export class ColorPicker extends Control {
             let editSwatchMode: boolean = false;
 
             // Color InputText fields that will be updated upon value change
+            // TODO this entire feel needs an architectural change.
             let picker: ColorPicker;
             let rValInt: InputText;
             let gValInt: InputText;

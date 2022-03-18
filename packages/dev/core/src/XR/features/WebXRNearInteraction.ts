@@ -372,6 +372,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         break;
                     }
                 }
+                // eslint-disable-next-line no-fallthrough
                 case ControllerOrbAnimationState.HOVER: {
                     controllerData.touchCollisionMeshFunction(true);
                     if (newState === ControllerOrbAnimationState.TOUCH) {
@@ -387,6 +388,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         break;
                     }
                 }
+                // eslint-disable-next-line no-fallthrough
                 case ControllerOrbAnimationState.HOVER: {
                     controllerData.hydrateCollisionMeshFunction(false);
                     if (newState === ControllerOrbAnimationState.DEHYDRATED) {

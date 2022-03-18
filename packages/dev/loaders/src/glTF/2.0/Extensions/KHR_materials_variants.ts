@@ -264,7 +264,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                                     });
                                                 }
                                                 for (const key in metadata.variants) {
-                                                    if (metadata.variants.hasOwnProperty(key)) {
+                                                    if (Object.prototype.hasOwnProperty.call(metadata.variants, key)) {
                                                         newRoot.metadata.gltf[NAME].variants[key] = [];
                                                         for (const variantEntry of metadata.variants[key]) {
                                                             newRoot.metadata.gltf[NAME].variants[key].push({
