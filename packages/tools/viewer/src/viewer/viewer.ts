@@ -175,7 +175,7 @@ export abstract class AbstractViewer {
         return this._configurationContainer;
     }
 
-    protected getConfigurationLoader() {
+    protected _getConfigurationLoader() {
         return new RenderOnlyConfigurationLoader();
     }
 
@@ -198,7 +198,7 @@ export abstract class AbstractViewer {
         RenderingManager.AUTOCLEAR = false;
 
         // extend the configuration
-        this._configurationLoader = this.getConfigurationLoader();
+        this._configurationLoader = this._getConfigurationLoader();
         this._configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
             this._onConfigurationLoaded(configuration);
         });
@@ -592,7 +592,7 @@ export abstract class AbstractViewer {
     /**
      * This will prepare the container element for the viewer
      */
-    protected abstract _prepareContainerElement();
+    protected abstract _prepareContainerElement(): void;
 
     /**
      * This function will execute when the HTML templates finished initializing.

@@ -2,11 +2,11 @@ import { IDisplayManager } from "./displayManager";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export class DiscardDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass(_block: NodeMaterialBlock) {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(_block: NodeMaterialBlock): boolean {
         return true;
     }
 
@@ -14,11 +14,11 @@ export class DiscardDisplayManager implements IDisplayManager {
         return block.name;
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(_block: NodeMaterialBlock): string {
         return "#540b0b";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(_block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         contentArea.classList.add("discard-block");
     }
 }

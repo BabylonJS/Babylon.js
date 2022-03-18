@@ -22,11 +22,11 @@
             "rules": {
                 "@typescript-eslint/ban-ts-comment": "off",
                 "@typescript-eslint/explicit-function-return-type": "off",
-                "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+                "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
                 // All the @typescript-eslint/* rules here...
                 "@typescript-eslint/no-unnecessary-type-arguments": "error",
                 "@typescript-eslint/prefer-nullish-coalescing": "error",
-                "@typescript-eslint/prefer-optional-chain": "error",
+                "@typescript-eslint/prefer-optional-chain": "error"
             },
             "parser": "@typescript-eslint/parser",
             "parserOptions": {
@@ -73,7 +73,70 @@
         //   "react/self-closing-comp": "error",
         "import/no-unresolved": "off",
         // should be error, no?
-        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "@typescript-eslint/naming-convention": [
+            "warn",
+            {
+                "selector": "default",
+                "format": ["camelCase"]
+            },
+            {
+                "selector": "variable",
+                "format": ["camelCase", "UPPER_CASE"],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "parameter",
+                "format": ["camelCase"],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "enumMember",
+                "format": ["PascalCase", "UPPER_CASE"]
+            },
+            {
+                "selector": "memberLike",
+                "modifiers": ["public", "static"],
+                "format": ["PascalCase", "UPPER_CASE"],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "memberLike",
+                "modifiers": ["private", "static"],
+                "format": ["PascalCase", "UPPER_CASE"],
+                "leadingUnderscore": "require"
+            },
+            {
+                "selector": "memberLike",
+                "modifiers": ["public"],
+                "format": ["camelCase"],
+                "leadingUnderscore": "allow"
+            },
+            {
+                "selector": "memberLike",
+                "modifiers": ["private"],
+                "format": ["camelCase"],
+                "leadingUnderscore": "require"
+            },
+            {
+                "selector": "memberLike",
+                "modifiers": ["protected"],
+                "format": ["camelCase"],
+                "leadingUnderscore": "require"
+            },
+            {
+                "selector": "typeLike",
+                "format": ["PascalCase"]
+            },
+            {
+                "selector": "variable",
+                "format": ["camelCase", "UPPER_CASE"]
+            },
+            {
+                "selector": "interface",
+                "format": ["PascalCase"]
+            }
+        ],
         "no-unused-vars": "off",
         "no-empty": ["error", { "allowEmptyCatch": true }],
         "space-infix-ops": "error",
@@ -86,7 +149,8 @@
         "jsdoc/check-property-names": "error",
         "jsdoc/require-param": "error",
         "jsdoc/require-param-name": "error",
-        "jsdoc/require-returns": "warn"
+        "jsdoc/require-returns": "warn",
+        "import/export": "warn"
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     }
 }

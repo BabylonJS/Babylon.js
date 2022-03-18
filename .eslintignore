@@ -1,2 +1,4 @@
-dist/*
-.snapshot/*
+dist/**/*.*
+.snapshot/**/*.*
+# temp
+**/tests/**/*.*

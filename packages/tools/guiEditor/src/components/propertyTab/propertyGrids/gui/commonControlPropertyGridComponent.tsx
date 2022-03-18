@@ -128,7 +128,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 percentage = false;
             }
 
-            let newValue = value.match(/([\d\.\,]+)/g)?.[0];
+            let newValue = value.match(/([\d.,]+)/g)?.[0];
             if (!newValue) {
                 newValue = "0";
             }

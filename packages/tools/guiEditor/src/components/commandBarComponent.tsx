@@ -19,8 +19,6 @@ import betaFlag from "../imgs/betaFlag.svg";
 
 import "../scss/commandBar.scss";
 
-declare let Versions: any;
-
 interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
@@ -90,7 +88,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.forceUpdate();
         });
 
-        props.globalState.onResizeObservable.add((newSize) => {
+        props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
     }

@@ -39,7 +39,7 @@ export class InputDisplayManager implements IDisplayManager {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(_block: NodeMaterialBlock): boolean {
         return false;
     }
 
@@ -67,8 +67,10 @@ export class InputDisplayManager implements IDisplayManager {
             case NodeMaterialBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
                     color = (inputBlock.value as Color3).toHexString();
-                    break;
+                } else {
+                    color = BlockTools.GetColorFromConnectionNodeType(inputBlock.type);
                 }
+                break;
             }
             default:
                 color = BlockTools.GetColorFromConnectionNodeType(inputBlock.type);
@@ -132,16 +134,22 @@ export class InputDisplayManager implements IDisplayManager {
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    const vec2Value = inputBlock.value as Vector2;
-                    value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
+                    {
+                        const vec2Value = inputBlock.value as Vector2;
+                        value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
+                    }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
-                    const vec3Value = inputBlock.value as Vector3;
-                    value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
+                    {
+                        const vec3Value = inputBlock.value as Vector3;
+                        value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
+                    }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    const vec4Value = inputBlock.value as Vector4;
-                    value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                    {
+                        const vec4Value = inputBlock.value as Vector4;
+                        value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                    }
                     break;
             }
         }

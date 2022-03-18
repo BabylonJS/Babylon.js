@@ -220,7 +220,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         globalState.onParentingChangeObservable.add((control) => {
-            this.parent(control);
+            this._parent(control);
         });
 
         globalState.onResponsiveChangeObservable.add((value) => {
@@ -340,7 +340,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return false;
     }
 
-    public CopyGUIControl(original: Control) {
+    public copyGUIControl(original: Control) {
         const serializationObject = {};
         original.serialize(serializationObject);
         const newControl = Control.Parse(serializationObject, this.props.globalState.guiTexture);
@@ -369,11 +369,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    private selectAllGUI(node: Control) {
+    private _selectAllGUI(node: Control) {
         this.globalState.select(node);
         if (node instanceof Container) {
             (node as Container).children.forEach((child) => {
-                this.selectAllGUI(child);
+                this._selectAllGUI(child);
             });
         }
     }
@@ -435,7 +435,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.guiSize = this.globalState.guiTexture.getSize();
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
-            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
+            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(() => {
                 alert("Unable to load your GUI");
             });
         }
@@ -483,7 +483,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     createNewGuiNode(guiControl: Control) {
-        const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
+        const onPointerUp = guiControl.onPointerUpObservable.add((_evt) => {
             this.clicked = false;
         });
 
@@ -506,20 +506,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        const onPointerEnter = guiControl.onPointerEnterObservable.add((evt) => {
+        const onPointerEnter = guiControl.onPointerEnterObservable.add((_evt) => {
             if (this._isOverGUINode.indexOf(guiControl) === -1) {
                 this._isOverGUINode.push(guiControl);
             }
         });
 
-        const onPointerOut = guiControl.onPointerOutObservable.add((evt) => {
+        const onPointerOut = guiControl.onPointerOutObservable.add((_evt) => {
             const index = this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 this._isOverGUINode.splice(index, 1);
             }
         });
 
-        const onDispose = guiControl.onDisposeObservable.add((evt) => {
+        const onDispose = guiControl.onDisposeObservable.add((_evt) => {
             const index = this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 this._isOverGUINode.splice(index, 1);
@@ -550,7 +550,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return guiControl;
     }
 
-    private parent(dropLocationControl: Nullable<Control>) {
+    private _parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
 
@@ -608,7 +608,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
-    private _convertToPixels(draggedControl: Control, parent: Container) {
+    private _convertToPixels(draggedControl: Control, _parent: Container) {
         const width = draggedControl.widthInPixels + "px";
         const height = draggedControl.heightInPixels + "px";
         if (draggedControl.width !== width || draggedControl.height !== height) {
@@ -649,13 +649,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return index;
     }
 
-    public isSelected(value: boolean, guiNode: Control) {
+    public isSelected(_value: boolean, guiNode: Control) {
         this.globalState.select(guiNode);
     }
 
     public clicked: boolean;
 
-    public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
+    public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, _ignorClick: boolean = false) {
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -711,8 +711,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    onMove(evt: React.PointerEvent) {
-        const pos = this.getScaledPointerPosition();
+    onMove(_evt: React.PointerEvent) {
+        const pos = this._getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
             const x = this._mouseStartPointX;
@@ -734,7 +734,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return screenPos.divideInPlace(zoomVector).add(this._panningOffset);
     }
 
-    private getScaledPointerPosition() {
+    private _getScaledPointerPosition() {
         return this._screenToTexturePosition(new Vector2(this._scene.pointerX, this._scene.pointerY));
     }
 
@@ -747,7 +747,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return;
         }
 
-        const pos = this.getScaledPointerPosition();
+        const pos = this._getScaledPointerPosition();
         if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
@@ -882,7 +882,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const startPanning = () => {
             this._scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
             this._panning = true;
-            this._initialPanningOffset = this.getScaledPointerPosition();
+            this._initialPanningOffset = this._getScaledPointerPosition();
             this._panAndZoomContainer.getDescendants().forEach((desc) => {
                 if (!desc.metadata) desc.metadata = {};
                 desc.metadata.isPointerBlocker = desc.isPointerBlocker;
@@ -929,7 +929,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.props.globalState.onPointerUpObservable.notifyObservers(event);
         });
 
-        scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
+        scene.onKeyboardObservable.add((k: KeyboardInfo, _e: KeyboardEventTypes) => {
             switch (k.event.key) {
                 case "s": //select
                 case "S":
@@ -962,6 +962,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     break;
                 case "ArrowRight": // move right
                     this.moveControls(true, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
+                    break;
                 default:
                     break;
             }
@@ -995,9 +996,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     //Return offsets for inertial panning given initial and current pointer positions
     panning() {
-        const panningDelta = this.getScaledPointerPosition().subtract(this._initialPanningOffset).multiplyByFloats(1, -1);
+        const panningDelta = this._getScaledPointerPosition().subtract(this._initialPanningOffset).multiplyByFloats(1, -1);
         this._panningOffset = this._panningOffset.add(panningDelta);
-        this._initialPanningOffset = this.getScaledPointerPosition();
+        this._initialPanningOffset = this._getScaledPointerPosition();
         this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }

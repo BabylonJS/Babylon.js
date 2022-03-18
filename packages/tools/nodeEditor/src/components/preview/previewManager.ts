@@ -316,10 +316,12 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Plane:
-                        const plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
-                        plane.scaling.y = -1;
-                        plane.rotation.x = Math.PI;
-                        this._meshes.push(plane);
+                        {
+                            const plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
+                            plane.scaling.y = -1;
+                            plane.rotation.x = Math.PI;
+                            this._meshes.push(plane);
+                        }
                         break;
                     case PreviewType.ShaderBall:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {

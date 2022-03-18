@@ -1453,7 +1453,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * an optional map from Geometry Id to Geometry index in the 'geometries' array
      */
-    private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
+    private _geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
 
     /**
      * Creates a new Scene
@@ -1502,7 +1502,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.setDefaultCandidateProviders();
 
         if (fullOptions.useGeometryUniqueIdsMap) {
-            this.geometriesByUniqueId = {};
+            this._geometriesByUniqueId = {};
         }
 
         this.useMaterialMeshMap = fullOptions.useMaterialMeshMap;
@@ -2681,8 +2681,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (this.geometriesByUniqueId) {
-            this.geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
+        if (this._geometriesByUniqueId) {
+            this._geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
         }
 
         this.geometries.push(newGeometry);
@@ -3031,8 +3031,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _getGeometryByUniqueId(uniqueId: number): Nullable<Geometry> {
-        if (this.geometriesByUniqueId) {
-            const index = this.geometriesByUniqueId[uniqueId];
+        if (this._geometriesByUniqueId) {
+            const index = this._geometriesByUniqueId[uniqueId];
             if (index !== undefined) {
                 return this.geometries[index];
             }
@@ -3072,8 +3072,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public removeGeometry(geometry: Geometry): boolean {
         let index;
-        if (this.geometriesByUniqueId) {
-            index = this.geometriesByUniqueId[geometry.uniqueId];
+        if (this._geometriesByUniqueId) {
+            index = this._geometriesByUniqueId[geometry.uniqueId];
             if (index === undefined) {
                 return false;
             }
@@ -3088,9 +3088,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             const lastGeometry = this.geometries[this.geometries.length - 1];
             if (lastGeometry) {
                 this.geometries[index] = lastGeometry;
-                if (this.geometriesByUniqueId) {
-                    this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                    this.geometriesByUniqueId[geometry.uniqueId] = undefined;
+                if (this._geometriesByUniqueId) {
+                    this._geometriesByUniqueId[lastGeometry.uniqueId] = index;
+                    this._geometriesByUniqueId[geometry.uniqueId] = undefined;
                 }
             }
         }
@@ -4254,7 +4254,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    private checkCameraRenderTarget(camera: Nullable<Camera>) {
+    private _checkCameraRenderTarget(camera: Nullable<Camera>) {
         if (camera?.outputRenderTarget && !camera?.isRigCamera) {
             camera.outputRenderTarget._cleared = false;
         }
@@ -4298,9 +4298,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._frameId++;
         this._defaultFrameBufferCleared = false;
-        this.checkCameraRenderTarget(this.activeCamera);
+        this._checkCameraRenderTarget(this.activeCamera);
         if (this.activeCameras?.length) {
-            this.activeCameras.forEach(this.checkCameraRenderTarget);
+            this.activeCameras.forEach(this._checkCameraRenderTarget);
         }
 
         // Register components that have been associated lately to the scene.

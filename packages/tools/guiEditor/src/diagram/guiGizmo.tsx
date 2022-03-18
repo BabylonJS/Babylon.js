@@ -151,9 +151,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     /**
      * Update the gizmo's positions
-     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+     * @param _force - should the update be forced. otherwise it will be updated only when the pointer is down
      */
-    updateGizmo(force?: boolean) {
+    updateGizmo(_force?: boolean) {
         const node = this.props.control;
         // Calculating the offsets for each scale point.
         const half = 1 / 2;
@@ -398,12 +398,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _beginRotate = () => {
         const scene = this.props.globalState.workbench._scene;
-        let pivot: Vector2;
         const node = this.props.control;
         const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
         const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
         const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
-        pivot = new Vector2(canvas.x, canvas.y);
+        const pivot = new Vector2(canvas.x, canvas.y);
         const initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
         this._rotation = {
             pivot,

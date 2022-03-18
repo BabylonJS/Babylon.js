@@ -28,7 +28,7 @@ export enum transcodeTarget {
  * @hidden
  */
 export class Transcoder {
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
+    public static CanTranscode(_src: sourceTextureFormat, _dst: transcodeTarget, _isInGammaSpace: boolean): boolean {
         return false;
     }
 
@@ -44,18 +44,18 @@ export class Transcoder {
         return false;
     }
 
-    public setMemoryManager(memoryMgr: WASMMemoryManager): void {}
+    public setMemoryManager(_memoryMgr: WASMMemoryManager): void {}
 
     public transcode(
-        src: sourceTextureFormat,
-        dst: transcodeTarget,
-        level: number,
-        width: number,
-        height: number,
-        uncompressedByteLength: number,
-        ktx2Reader: KTX2FileReader,
-        imageDesc: IKTX2_ImageDesc | null,
-        encodedData: Uint8Array
+        _src: sourceTextureFormat,
+        _dst: transcodeTarget,
+        _level: number,
+        _width: number,
+        _height: number,
+        _uncompressedByteLength: number,
+        _ktx2Reader: KTX2FileReader,
+        _imageDesc: IKTX2_ImageDesc | null,
+        _encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
         return Promise.resolve(null);
     }

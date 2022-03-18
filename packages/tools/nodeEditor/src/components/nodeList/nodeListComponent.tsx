@@ -460,11 +460,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
         // Create node menu
         const blockMenu = [];
-        for (var key in allBlocks) {
+        for (const key in allBlocks) {
             const blockList = (allBlocks as any)[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
-                .map((block: any, i: number) => {
+                .map((block: any) => {
                     if (key === "Custom_Frames") {
                         return (
                             <DraggableLineWithButtonComponent
@@ -543,7 +543,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                                 type="text"
                                 placeholder="Filter"
                                 onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
-                                onBlur={(evt) => {
+                                onBlur={() => {
                                     this.props.globalState.blockKeyboardEvents = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)}

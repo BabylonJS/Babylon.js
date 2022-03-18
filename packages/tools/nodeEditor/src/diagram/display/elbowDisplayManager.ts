@@ -4,11 +4,11 @@ import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { BlockTools } from "../../blockTools";
 
 export class ElbowDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass(_block: NodeMaterialBlock) {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(_block: NodeMaterialBlock): boolean {
         return false;
     }
 
@@ -22,7 +22,7 @@ export class ElbowDisplayManager implements IDisplayManager {
         return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(_block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         contentArea.parentElement!.classList.add("elbow-block");
     }
 }

@@ -46,6 +46,7 @@ interface ILoaderAnimationEvents {
 /**
  * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

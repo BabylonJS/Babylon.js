@@ -28,6 +28,7 @@ function createObservableScheduler<T>(observable: Observable<any>): { scheduler:
 }
 
 declare module "./observable" {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export interface Observable<T> {
         /**
          * Internal observable-based coroutine scheduler instance.

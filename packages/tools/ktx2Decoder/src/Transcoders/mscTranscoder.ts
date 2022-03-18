@@ -75,7 +75,7 @@ export class MSCTranscoder extends Transcoder {
         return this._mscBasisTranscoderPromise;
     }
 
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
+    public static CanTranscode(_src: sourceTextureFormat, _dst: transcodeTarget, _isInGammaSpace: boolean): boolean {
         return true;
     }
 

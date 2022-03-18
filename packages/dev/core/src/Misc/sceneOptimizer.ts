@@ -20,11 +20,11 @@ export class SceneOptimization {
 
     /**
      * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
-     * @param scene defines the current scene where to apply this optimization
-     * @param optimizer defines the current optimizer
+     * @param _scene defines the current scene where to apply this optimization
+     * @param _optimizer defines the current optimizer
      * @returns true if everything that can be done was applied
      */
-    public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+    public apply(_scene: Scene, _optimizer: SceneOptimizer): boolean {
         return true;
     }
 
@@ -80,10 +80,10 @@ export class TextureOptimization extends SceneOptimization {
     /**
      * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
      * @param scene defines the current scene where to apply this optimization
-     * @param optimizer defines the current optimizer
+     * @param _optimizer defines the current optimizer
      * @returns true if everything that can be done was applied
      */
-    public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+    public apply(scene: Scene, _optimizer: SceneOptimizer): boolean {
         let allDone = true;
         for (let index = 0; index < scene.textures.length; index++) {
             const texture = scene.textures[index];
@@ -147,10 +147,10 @@ export class HardwareScalingOptimization extends SceneOptimization {
     /**
      * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
      * @param scene defines the current scene where to apply this optimization
-     * @param optimizer defines the current optimizer
+     * @param _optimizer defines the current optimizer
      * @returns true if everything that can be done was applied
      */
-    public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+    public apply(scene: Scene, _optimizer: SceneOptimizer): boolean {
         if (this._currentScale === -1) {
             this._currentScale = scene.getEngine().getHardwareScalingLevel();
             if (this._currentScale > this.maximumScale) {
@@ -390,11 +390,11 @@ export class MergeMeshesOptimization extends SceneOptimization {
     /**
      * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
      * @param scene defines the current scene where to apply this optimization
-     * @param optimizer defines the current optimizer
+     * @param _optimizer defines the current optimizer
      * @param updateSelectionTree defines that the selection octree has to be updated (false by default)
      * @returns true if everything that can be done was applied
      */
-    public apply(scene: Scene, optimizer: SceneOptimizer, updateSelectionTree?: boolean): boolean {
+    public apply(scene: Scene, _optimizer: SceneOptimizer, updateSelectionTree?: boolean): boolean {
         const globalPool = scene.meshes.slice(0);
         let globalLength = globalPool.length;
 
@@ -459,7 +459,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
 
 /**
  * Defines a list of options used by SceneOptimizer
- * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @see More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class SceneOptimizerOptions {
     /**

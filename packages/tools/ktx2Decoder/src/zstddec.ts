@@ -16,7 +16,7 @@ let heap: Uint8Array;
 
 const IMPORT_OBJECT = {
     env: {
-        emscripten_notify_memory_growth: function (index: number): void {
+        emscripten_notify_memory_growth: function (_index: number): void {
             heap = new Uint8Array(instance.exports.memory.buffer);
         },
     },

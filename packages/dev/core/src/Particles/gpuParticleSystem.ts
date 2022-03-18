@@ -83,7 +83,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _platform: IGPUParticleSystemPlatform;
 
     /**
-     * Gets a boolean indicating if the GPU particles can be rendered on current browser
+     * @returns a boolean indicating if the GPU particles can be rendered on current browser
      */
     public static get IsSupported(): boolean {
         if (!EngineStore.LastCreatedEngine) {
@@ -785,9 +785,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._platform = new (GetClass("BABYLON.WebGL2ParticleSystem") as any)(this, this._engine);
         }
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this._drawWrappers = { 0: new DrawWrapper(this._engine) };
         if (this._drawWrappers[0].drawContext) {
             this._drawWrappers[0].drawContext.useInstancing = true;

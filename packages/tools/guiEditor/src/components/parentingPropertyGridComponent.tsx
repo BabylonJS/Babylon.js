@@ -56,7 +56,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         isInteger={true}
                         min={0}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
+                        onChange={() => {
                             this.updateGridPosition();
                         }}
                     />
@@ -68,7 +68,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         isInteger={true}
                         min={0}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
+                        onChange={() => {
                             this.updateGridPosition();
                         }}
                     />
