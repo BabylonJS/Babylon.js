@@ -887,61 +887,6 @@ export class InputTextArea extends InputText {
 
         // Cursor
         if (this._isFocused) {
-
-            // Need to move cursor
-            // <- what does this mean? Why is there no method like getCursorPos?
-            if (this._clickedCoordinateX && this._clickedCoordinateY) {
-                this._clicked = true;
-
-                this.lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top - this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
-
-                if (this.lastClickedCoordinateY <= this._fontOffset.height) {
-                    this._selectedLineIndex = 0;
-                } else if (this.lastClickedCoordinateY > this._fontOffset.height * (this._lines.length - 1)) {
-                    this._selectedLineIndex = this._lines.length - 1;
-                } else {
-                    this._selectedLineIndex = Math.floor(this.lastClickedCoordinateY / this._fontOffset.height);
-                }
-
-                // measure line width
-                //var selectedLineText = this._lines[this._selectedLineIndex];
-                //var clickedLineWidth = context.measureText(selectedLineText).width;
-                var clickedLineWidth = this._lines[this._selectedLineIndex].width;
-
-                // scrollLeft is CliptextLeft
-                // rightPosition is textlength and AreaBorder left
-                var rightPosition = this._scrollLeft + clickedLineWidth;
-
-                // why is this called absolute cursorPosition? It is not absolute?!?!?
-                 var absoluteCursorPositionX = rightPosition - this._clickedCoordinateX;
-                //var absoluteCursorPositionX = this._clickedCoordinateX;
-                var currentSize = 0;
-
-                // cursoroffset decides where the text is updated
-                // cursor is 0 if it is at the end of the line
-                this._cursorOffset = 0;
-                var previousDist = 0;
-                do {
-                    if (this._cursorOffset) {
-                        // Why do we need this condition? cursoroffset is always set to 0 before
-                        previousDist = Math.abs(absoluteCursorPositionX - currentSize);
-                    }
-                    this._cursorOffset++;
-                    //currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
-                    currentSize = context.measureText(this._lines[this._selectedLineIndex].text.substr(this._lines[this._selectedLineIndex].text.length - this._cursorOffset, this._cursorOffset)).width;
-
-                } while ((currentSize < absoluteCursorPositionX) && (this._lines[this._selectedLineIndex].text.length >= this._cursorOffset));
-
-                // Find closest move
-                if (Math.abs(absoluteCursorPositionX - currentSize) > previousDist) {
-                    this._cursorOffset--;
-                }
-
-                this._blinkIsEven = false;
-                this._clickedCoordinateX = null;
-                this._clickedCoordinateY = null;
-            }
-
             //show the highlighted text
             if (this._isTextHighlightOn) {
                 let highlightCursorLeft = 0;
@@ -1183,6 +1128,97 @@ export class InputTextArea extends InputText {
         }
         this._isTextHighlightOn = true;
         this._markAsDirty();
+    }
+
+    /**
+     * Apply the correct position of cursor according to current modification
+     */
+    private _updateCursorPosition() {
+        if (!this._isFocused) {
+            return;
+        }
+
+        if (this._clickedCoordinateX && this._clickedCoordinateY) {
+            this._cursorInfo = {
+                globalStartIndex:0,
+                globalEndIndex: 0,
+                relativeStartIndex: 0,
+                relativeEndIndex: 0,
+                currentLineIndex : 0
+            }
+
+            this.lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top - this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+  
+            const relativeCoordinateY = Math.floor(this.lastClickedCoordinateY / this._fontOffset.height);
+            this._cursorInfo.currentLineIndex = Math.min(Math.max(relativeCoordinateY, 0), this._lines.length - 1);
+
+            var currentSize = 0;
+
+            const relativeXPosition = this._clickedCoordinateX - (this._scrollLeft??0);
+
+            var previousDist = 0;
+
+            for (let index = 0; index < this._cursorInfo.currentLineIndex; index++) {
+                const line = this._lines[index];
+                this._cursorInfo.globalStartIndex += line.text.length + line.lineEnding.length;
+            }
+
+            while(currentSize < relativeXPosition && this._lines[this._cursorInfo.currentLineIndex].text.length > this._cursorInfo.relativeStartIndex) {
+                this._cursorInfo.relativeStartIndex++;
+                previousDist = Math.abs(relativeXPosition - currentSize);
+                currentSize = this._contextForBreakLines.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, this._cursorInfo.relativeStartIndex)).width;
+            }
+    
+            // Find closest move
+            if (Math.abs(relativeXPosition - currentSize) > previousDist && this._cursorInfo.relativeStartIndex > 0) {
+                this._cursorInfo.relativeStartIndex--;
+            }
+
+            this._cursorInfo.globalStartIndex += this._cursorInfo.relativeStartIndex;
+
+            this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+            this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
+
+            this._blinkIsEven = false;
+            this._clickedCoordinateX = null;
+            this._clickedCoordinateY = null;
+        } else if (this._isTextHighlightOn) {
+            const startLine = Math.min(this._lastClickedLineIndex, this._selectedLineIndex);
+            const endLine = Math.max(this._lastClickedLineIndex, this._selectedLineIndex);
+
+            for (let index = 0; index < endLine; index++) {
+                const line = this._lines[index];
+
+                if (index < startLine) {
+                    this._cursorInfo.globalStartIndex += line.text.length + line.lineEnding.length;
+                } else if (index === startLine) {
+                    this._cursorInfo.globalStartIndex += this._startHighlightIndex;
+                }
+
+                this._cursorInfo.globalEndIndex += line.text.length + line.lineEnding.length;
+            }
+            
+            this._cursorInfo.globalEndIndex += this._endHighlightIndex;
+        } else {
+            this._cursorInfo.relativeStartIndex = 0;
+            this._cursorInfo.currentLineIndex = 0;
+
+            let lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
+            let tmpLength = 0;
+
+            while (tmpLength + lineLength <= this._cursorInfo.globalStartIndex) {
+                tmpLength += lineLength;
+                
+                if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
+                    this._cursorInfo.currentLineIndex++;
+                    lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
+                }
+            }
+
+            this._cursorInfo.relativeStartIndex = this._cursorInfo.globalStartIndex - tmpLength;
+
+            this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
+        }
     }
 
     /**
