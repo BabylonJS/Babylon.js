@@ -163,7 +163,7 @@ export class CoordinateHelper {
      * @param stopAt stop looking when this node is found
      * @returns the world matrix for this node
      */
-     public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect, stopAt?: Control): Matrix2D {
+    public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect, stopAt?: Control): Matrix2D {
         const listOfNodes = [node];
         let parent = node.parent;
         let child = node;
