@@ -306,9 +306,9 @@ export const ReadFile = (
         abort: () => reader.abort(),
     };
 
-    reader.onloadend = (e) => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+    reader.onloadend = () => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
     if (onError) {
-        reader.onerror = (e) => {
+        reader.onerror = () => {
             onError(new ReadFileError(`Unable to read ${file.name}`, file));
         };
     }

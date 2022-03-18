@@ -27,7 +27,6 @@
                 "@typescript-eslint/no-unnecessary-type-arguments": "error",
                 "@typescript-eslint/prefer-nullish-coalescing": "error",
                 "@typescript-eslint/prefer-optional-chain": "error",
-                "tsdoc/syntax": "error"
             },
             "parser": "@typescript-eslint/parser",
             "parserOptions": {
@@ -83,11 +82,11 @@
         "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["afterEach"] }],
         "jest/valid-expect": "off",
         "tsdoc/syntax": "warn",
-        "jsdoc/check-param-names": "error",
+        "jsdoc/check-param-names": "warn",
         "jsdoc/check-property-names": "error",
         "jsdoc/require-param": "error",
         "jsdoc/require-param-name": "error",
-        "jsdoc/require-returns": "error"
+        "jsdoc/require-returns": "warn"
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     }
 }

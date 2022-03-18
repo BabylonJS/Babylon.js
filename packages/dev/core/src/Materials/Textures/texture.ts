@@ -83,33 +83,33 @@ export class Texture extends BaseTexture {
     public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
 
     /**
-     * @param jsonTexture
-     * @param scene
-     * @param rootUrl
+     * @param _jsonTexture
+     * @param _scene
+     * @param _rootUrl
      * @hidden
      */
-    public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
+    public static _CubeTextureParser = (_jsonTexture: any, _scene: Scene, _rootUrl: string): CubeTexture => {
         throw _WarnImport("CubeTexture");
     };
     /**
-     * @param name
-     * @param renderTargetSize
-     * @param scene
-     * @param generateMipMaps
+     * @param _name
+     * @param _renderTargetSize
+     * @param _scene
+     * @param _generateMipMaps
      * @hidden
      */
-    public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
+    public static _CreateMirror = (_name: string, _renderTargetSize: number, _scene: Scene, _generateMipMaps: boolean): MirrorTexture => {
         throw _WarnImport("MirrorTexture");
     };
     /**
-     * @param name
-     * @param renderTargetSize
-     * @param scene
-     * @param generateMipMaps
-     * @param creationFlags
+     * @param _name
+     * @param _renderTargetSize
+     * @param _scene
+     * @param _generateMipMaps
+     * @param _creationFlags
      * @hidden
      */
-    public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
+    public static _CreateRenderTargetTexture = (_name: string, _renderTargetSize: number, _scene: Scene, _generateMipMaps: boolean, _creationFlags?: number): RenderTargetTexture => {
         throw _WarnImport("RenderTargetTexture");
     };
 
@@ -772,6 +772,7 @@ export class Texture extends BaseTexture {
         this._cachedVScale = this.vScale;
         this._cachedCoordinatesMode = this.coordinatesMode;
 
+        const projectionMatrix = scene.getProjectionMatrix();
         switch (this.coordinatesMode) {
             case Texture.PLANAR_MODE:
                 Matrix.IdentityToRef(this._cachedTextureMatrix);
@@ -782,8 +783,6 @@ export class Texture extends BaseTexture {
                 break;
             case Texture.PROJECTION_MODE:
                 Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, this._projectionModeMatrix);
-
-                const projectionMatrix = scene.getProjectionMatrix();
                 this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
                 projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                 break;
