@@ -657,6 +657,59 @@ export class InputTextArea extends InputText {
         }
     }
 
+    /** @hidden */
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+
+        let text = this._beforeRenderText(this._textWrapper).text;
+
+        // placeholder conditions and color setting
+        if (!this._isFocused && !this.text && this._placeholderText) {
+            text = this._placeholderText;
+
+            if (this._placeholderColor) {
+                context.fillStyle = this._placeholderColor;
+            }
+        }
+
+        // measures the textlength -> this.measure.width
+        this._textWidth = context.measureText(text).width;
+        // we double up the margin width
+        let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
+
+        if (this._autoStretchWidth) {
+            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+        }
+
+        this._availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+        this._availableHeight = this._height.getValueInPixel(this._host, this._tempParentMeasure.height) - marginWidth;
+
+        this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+
+        if (this._isFocused && this._lines[this._selectedLineIndex].width > this._availableWidth) {
+
+            let textLeft = this._clipTextLeft - this._lines[this._selectedLineIndex].width + this._availableWidth;
+
+            if (!this._scrollLeft) {
+                this._scrollLeft = textLeft;
+            }
+        } else {
+            this._scrollLeft = this._clipTextLeft;
+        }
+
+        let selectedHeight = (this._selectedLineIndex + 1)   * this._fontOffset.height;
+
+        if (this._isFocused) {
+            let textTop = this._clipTextTop - selectedHeight + this._availableHeight;
+
+            if (!this._scrollTop) {
+                this._scrollTop = textTop;
+            }
+        } else {
+            this._scrollTop = this._clipTextTop;
+        }
+    }
+
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
         var x = this._scrollLeft as number;
@@ -772,36 +825,13 @@ export class InputTextArea extends InputText {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
-        // Text
-        // clipTextLeft is the start of the InputTextPosition + margin
-        // _currentMeasure := left, top, width, height
-        let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
-        let clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
         // sets the color of the rectangle (border if background available)
         if (this.color) {
             context.fillStyle = this.color;
         }
         // before render just returns the same string
         // TODO: why do we need this method?
-        let text = this._beforeRenderText(this._textWrapper).text;
 
-        // placeholder conditions and color setting
-        if (!this._isFocused && !this.text && this._placeholderText) {
-            text = this._placeholderText;
-
-            if (this._placeholderColor) {
-                context.fillStyle = this._placeholderColor;
-            }
-        }
-
-        // measures the textlength -> this.measure.width
-        this._textWidth = context.measureText(text).width;
-        // we double up the margin width
-        let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
-
-        if (this._autoStretchWidth) {
-            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
-        }
         var height = this._currentMeasure.height;
         var rootY = 0;
 
@@ -816,10 +846,6 @@ export class InputTextArea extends InputText {
                 rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) / 2;
                 break;
         }
-        // OLD let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-        // availableWidth is basically the width of our inputField
-        this._availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
-        this._availableHeight = this._height.getValueInPixel(this._host, this._tempParentMeasure.height) - marginWidth;
 
         context.save();
         context.beginPath();
@@ -840,31 +866,6 @@ export class InputTextArea extends InputText {
             if (this._selectedLineIndex <= 0) {
                 break;
             }
-        }
-
-        if (this._isFocused && this._lines[this._selectedLineIndex].width > this._availableWidth) {
-
-            // var naming is confusing?: text(WhichIs)Left vs clipTextLeft, but let's deal with it.
-            //let textLeft = clipTextLeft - this._textWidth + availableWidth;
-            let textLeft = clipTextLeft - this._lines[this._selectedLineIndex].width + this._availableWidth;
-            //let textLeft = clipTextLeft;
-            if (!this._scrollLeft) {
-                this._scrollLeft = textLeft;
-            }
-        } else {
-            this._scrollLeft = clipTextLeft;
-        }
-
-        let selectedHeight = (this._selectedLineIndex + 1)   * this._fontOffset.height;
-
-        if (this._isFocused) {
-            let textTop = clipTextTop - selectedHeight + this._availableHeight;
-
-            if (!this._scrollTop) {
-                this._scrollTop = textTop;
-            }
-        } else {
-            this._scrollTop = clipTextTop;
         }
 
         // Text
