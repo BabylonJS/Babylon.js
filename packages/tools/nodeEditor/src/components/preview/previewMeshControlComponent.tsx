@@ -162,7 +162,13 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                         </div>
                         <div id="color-picker-button" title="Background color" className={"button align"} onClick={(_) => this.changeBackgroundClick()}>
                             <img src={colorPicker} alt="" id="color-picker-image" />
-                            <input ref={this.colorInputRef} id="color-picker" type="color" value={this.props.globalState.backgroundColor.toHexString().slice(0,7)} onChange={(evt) => this.changeBackground(evt.target.value)} />
+                            <input
+                                ref={this.colorInputRef}
+                                id="color-picker"
+                                type="color"
+                                value={this.props.globalState.backgroundColor.toHexString().slice(0, 7)}
+                                onChange={(evt) => this.changeBackground(evt.target.value)}
+                            />
                         </div>
                     </>
                 )}
