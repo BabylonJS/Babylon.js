@@ -1226,7 +1226,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
-     * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
+     * @param materialSetupCallback defines a custom way of creating and setting up the material on the mesh
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMesh(
