@@ -241,42 +241,46 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
-                this._cursorOffset--;
-                if (this._cursorOffset < 0) {
-                    this._selectedLineIndex++;
-                    if (typeof this._lines[this._selectedLineIndex] === 'undefined') { //if we are in first line + pos 0
-                        this._selectedLineIndex--;
-                        this._cursorOffset = 0;
-                    } else { // if we decrease to upper line
-                        this._cursorOffset = this._lines[this._selectedLineIndex].text.length;
-                        this.lastClickedCoordinateY += this._fontOffset.height;
-                    }
-                }
                 if (evt && evt.shiftKey) {
                     // update the cursor
                     this._blinkIsEven = false;
                     // shift + ctrl/cmd + ->
                     if (evt.ctrlKey || evt.metaKey) {
-                        this._cursorOffset = 0;
+                        const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex - 1;
+                        this._cursorInfo.globalEndIndex += rightDelta;
+                        this._cursorInfo.globalStartIndex = this._highlightCursorInfo.initialLineIndex;
                     }
                     // store the starting point
                     if (!this._isTextHighlightOn) {
+                        this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
+                        this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+
+                        this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                        this._cursorInfo.globalEndIndex++;
                         this._isTextHighlightOn = true;
-                        this._cursorIndex = this._lines[this._selectedLineIndex].text.length - this._cursorOffset - 1;
-                        this._lastClickedLineIndex = this._selectedLineIndex;
+                    } else {
+                        if(this._cursorInfo.globalStartIndex < this._highlightCursorInfo.initialStartIndex) {
+                            this._cursorInfo.globalStartIndex++;
+                        } else {
+                            this._cursorInfo.globalEndIndex++;
                     }
-                    this._updateValueFromCursorIndex(this._cursorOffset);
+                    }
                     evt.preventDefault();
                     return;
                 }
                 if (this._isTextHighlightOn) {
-                    this._cursorOffset = this._lines[this._selectedLineIndex].text.length - this._endHighlightIndex;
+                    this._cursorInfo.globalStartIndex = this._cursorInfo.globalEndIndex;
                     this._isTextHighlightOn = false;
                 }
+
+                if (this._cursorInfo.globalStartIndex < this.text.length) {
+                    this._cursorInfo.globalStartIndex++;
+                }
+
                 //ctr + ->
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    this._cursorOffset = 0;
-                    evt.preventDefault();
+                    const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex - 1;
+                    this._cursorInfo.globalStartIndex += rightDelta;
                 }
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
