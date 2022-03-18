@@ -413,8 +413,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"}>
                 <div className="sceneNode">
                     <div className="sceneTitle" onClick={() => this.onSelect()}>
-                        <FontAwesomeIcon icon={faImage} />
-                        &nbsp;Scene
+                        <FontAwesomeIcon icon={faImage} />&nbsp;Scene
                     </div>
                     <div
                         className={this.state.gizmoMode === 1 ? "translation selected icon" : "translation icon"}
