@@ -1599,15 +1599,13 @@ export class Vector3 {
         slerp = Scalar.Clamp(slerp, 0, 1);
         const vector0Dir = MathTmp.Vector3[0];
         const vector1Dir = MathTmp.Vector3[1];
-        let vector0Length;
-        let vector1Length;
 
         vector0Dir.copyFrom(vector0);
-        vector0Length = vector0Dir.length();
+        const vector0Length = vector0Dir.length();
         vector0Dir.normalizeFromLength(vector0Length);
 
         vector1Dir.copyFrom(vector1);
-        vector1Length = vector1Dir.length();
+        const vector1Length = vector1Dir.length();
         vector1Dir.normalizeFromLength(vector1Length);
 
         const dot = Vector3.Dot(vector0Dir, vector1Dir);
@@ -2430,21 +2428,20 @@ export class Vector3 {
         // Determines which edge of the triangle is closest to "proj"
         const projP = MathTmp.Vector3[9];
         let dot;
-        let s0, s1, s2;
         projP.copyFrom(proj).subtractInPlace(p0);
         Vector3.CrossToRef(v0, projP, tmp);
         dot = Vector3.Dot(tmp, normal);
-        s0 = dot;
+        const s0 = dot;
 
         projP.copyFrom(proj).subtractInPlace(p1);
         Vector3.CrossToRef(v1, projP, tmp);
         dot = Vector3.Dot(tmp, normal);
-        s1 = dot;
+        const s1 = dot;
 
         projP.copyFrom(proj).subtractInPlace(p2);
         Vector3.CrossToRef(v2, projP, tmp);
         dot = Vector3.Dot(tmp, normal);
-        s2 = dot;
+        const s2 = dot;
 
         const edge = MathTmp.Vector3[10];
         let e0, e1;

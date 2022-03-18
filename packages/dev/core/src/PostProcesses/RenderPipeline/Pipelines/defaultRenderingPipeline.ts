@@ -490,7 +490,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             this._hardwareScaleLevel = engine.getHardwareScalingLevel();
-            this.bloomKernel = this.bloomKernel;
+            // this.bloomKernel = this.bloomKernel;
         });
 
         this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {

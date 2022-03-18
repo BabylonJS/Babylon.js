@@ -152,7 +152,12 @@
         // "jsdoc/require-returns": "warn",
         "import/export": "warn",
         "no-useless-escape": "warn",
-        "no-case-declarations": "warn"
+        "no-case-declarations": "warn",
+        "no-prototype-builtins": "warn",
+        "no-loss-of-precision": "warn",
+        "prefer-spread": "warn",
+        "prefer-rest-params": "warn",
+        "no-fallthrough": "warn"
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     }
 }

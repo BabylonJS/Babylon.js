@@ -778,10 +778,11 @@ export class ColorPicker extends Control {
                     swatchNumber = 0;
                     swatchDrawer.clearControls();
                     const rowCount: number = Math.ceil(options.savedColors.length / options.numSwatchesPerLine!);
+                    let gutterCount: number;
                     if (rowCount == 0) {
-                        const gutterCount: number = 0;
+                        gutterCount = 0;
                     } else {
-                        const gutterCount: number = rowCount + 1;
+                        gutterCount = rowCount + 1;
                     }
                     if (swatchDrawer.rowCount != rowCount + gutterCount) {
                         const currentRows: number = swatchDrawer.rowCount;

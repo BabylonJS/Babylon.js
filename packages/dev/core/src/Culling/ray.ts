@@ -376,11 +376,9 @@ export class Ray {
         const d = Vector3.Dot(u, w);
         const e = Vector3.Dot(v, w);
         const D = a * c - b * b; // always >= 0
-        let sc: number,
-            sN: number,
+        let sN: number,
             sD = D; // sc = sN / sD, default sD = D >= 0
-        let tc: number,
-            tN: number,
+        let tN: number,
             tD = D; // tc = tN / tD, default tD = D >= 0
 
         // compute the line parameters of the two closest points
@@ -433,8 +431,8 @@ export class Ray {
             }
         }
         // finally do the division to get sc and tc
-        sc = Math.abs(sN) < Ray.smallnum ? 0.0 : sN / sD;
-        tc = Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD;
+        const sc = Math.abs(sN) < Ray.smallnum ? 0.0 : sN / sD;
+        const tc = Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD;
 
         // get the difference of the two closest points
         const qtc = TmpVectors.Vector3[4];

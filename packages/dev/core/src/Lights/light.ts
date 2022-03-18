@@ -460,8 +460,6 @@ export abstract class Light extends Node implements ISortableLight {
                 ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
             }
         }
-        if (fullDetails) {
-        }
         return ret;
     }
 

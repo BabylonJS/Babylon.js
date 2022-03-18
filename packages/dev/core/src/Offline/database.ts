@@ -317,6 +317,7 @@ export class Database implements IOfflineProvider {
     }
 
     private _saveImageIntoDBAsync(url: string, image: HTMLImageElement) {
+        let blob: Blob;
         if (this._isSupported) {
             // In case of error (type not supported or quota exceeded), we're at least sending back XHR data to allow texture loading later on
             const generateBlobUrl = () => {
@@ -339,8 +340,7 @@ export class Database implements IOfflineProvider {
 
             if (Database.IsUASupportingBlobStorage) {
                 // Create XHR
-                let xhr = new WebRequest(),
-                    blob: Blob;
+                const xhr = new WebRequest();
 
                 xhr.open("GET", url);
                 xhr.responseType = "blob";

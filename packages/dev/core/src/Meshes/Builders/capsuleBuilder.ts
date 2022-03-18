@@ -46,9 +46,9 @@ export function CreateCapsuleVertexData(
     const normals = [];
     const uvs = [];
 
-    let index = 0,
-        indexArray = [],
-        halfHeight = heightMinusCaps * 0.5;
+    let index = 0;
+    const indexArray = [];
+    const halfHeight = heightMinusCaps * 0.5;
     const pi2 = Math.PI * 0.5;
 
     let x, y;

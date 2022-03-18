@@ -526,6 +526,7 @@ export class DDSTools {
                     if (supported) {
                         break;
                     }
+                // eslint-disable-next-line no-fallthrough
                 default:
                     console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
                     return;

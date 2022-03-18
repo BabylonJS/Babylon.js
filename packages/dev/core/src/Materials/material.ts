@@ -857,6 +857,7 @@ export class Material implements IAnimatable {
     public toString(fullDetails?: boolean): string {
         const ret = "Name: " + this.name;
         if (fullDetails) {
+            // no-op
         }
         return ret;
     }

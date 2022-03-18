@@ -91,6 +91,7 @@ declare module "../Meshes/linesMesh" {
 }
 
 InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
+    // eslint-disable-next-line prefer-rest-params
     LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
     return this;
 };

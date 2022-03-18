@@ -1,3 +1,4 @@
+/* eslint-disable no-fallthrough */
 import { IEasingFunction, EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";

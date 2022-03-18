@@ -182,45 +182,52 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 switch (i.type) {
                     case PhysicsImpostor.ParticleImpostor:
                         Logger.Warn("No Particle support in OIMO.js. using SphereImpostor instead");
+                    // eslint-disable-next-line no-fallthrough
                     case PhysicsImpostor.SphereImpostor:
-                        const radiusX = extendSize.x;
-                        const radiusY = extendSize.y;
-                        const radiusZ = extendSize.z;
+                        {
+                            const radiusX = extendSize.x;
+                            const radiusY = extendSize.y;
+                            const radiusZ = extendSize.z;
 
-                        const size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
+                            const size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
 
-                        bodyConfig.type.push("sphere");
-                        //due to the way oimo works with compounds, add 3 times
-                        bodyConfig.size.push(size);
-                        bodyConfig.size.push(size);
-                        bodyConfig.size.push(size);
+                            bodyConfig.type.push("sphere");
+                            //due to the way oimo works with compounds, add 3 times
+                            bodyConfig.size.push(size);
+                            bodyConfig.size.push(size);
+                            bodyConfig.size.push(size);
+                        }
                         break;
 
                     case PhysicsImpostor.CylinderImpostor:
-                        let sizeX = checkWithEpsilon(extendSize.x) / 2;
-                        let sizeY = checkWithEpsilon(extendSize.y);
-                        bodyConfig.type.push("cylinder");
-                        bodyConfig.size.push(sizeX);
-                        bodyConfig.size.push(sizeY);
-                        //due to the way oimo works with compounds, add one more value.
-                        bodyConfig.size.push(sizeY);
+                        {
+                            const sizeX = checkWithEpsilon(extendSize.x) / 2;
+                            const sizeY = checkWithEpsilon(extendSize.y);
+                            bodyConfig.type.push("cylinder");
+                            bodyConfig.size.push(sizeX);
+                            bodyConfig.size.push(sizeY);
+                            //due to the way oimo works with compounds, add one more value.
+                            bodyConfig.size.push(sizeY);
+                        }
                         break;
 
                     case PhysicsImpostor.PlaneImpostor:
                     case PhysicsImpostor.BoxImpostor:
                     default:
-                        let sizeX = checkWithEpsilon(extendSize.x);
-                        let sizeY = checkWithEpsilon(extendSize.y);
-                        const sizeZ = checkWithEpsilon(extendSize.z);
+                        {
+                            const sizeX = checkWithEpsilon(extendSize.x);
+                            const sizeY = checkWithEpsilon(extendSize.y);
+                            const sizeZ = checkWithEpsilon(extendSize.z);
 
-                        bodyConfig.type.push("box");
-                        //if (i === impostor) {
-                        bodyConfig.size.push(sizeX);
-                        bodyConfig.size.push(sizeY);
-                        bodyConfig.size.push(sizeZ);
-                        //} else {
-                        //    bodyConfig.size.push(0,0,0);
-                        //}
+                            bodyConfig.type.push("box");
+                            //if (i === impostor) {
+                            bodyConfig.size.push(sizeX);
+                            bodyConfig.size.push(sizeY);
+                            bodyConfig.size.push(sizeZ);
+                            //} else {
+                            //    bodyConfig.size.push(0,0,0);
+                            //}
+                        }
                         break;
                 }
 
