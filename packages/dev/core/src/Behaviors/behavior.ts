@@ -4,7 +4,7 @@ import { Nullable } from "../types";
  * Interface used to define a behavior
  */
 export interface Behavior<T> {
-    /** @returns behavior's name */
+    /** The behavior's name */
     name: string;
 
     /**

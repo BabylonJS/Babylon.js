@@ -20,15 +20,15 @@ export class Bone extends Node {
     private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
 
     /**
-     * @returns the list of child bones
+     * Gets the list of child bones
      */
     public children = new Array<Bone>();
 
-    /** @returns the animations associated with this bone */
+    /** Gets the animations associated with this bone */
     public animations = new Array<Animation>();
 
     /**
-     * @returns bone length
+     * Gets bone length
      */
     public length: number;
 
@@ -119,7 +119,6 @@ export class Bone extends Node {
 
     /**
      * @returns the current object class name.
-     * @returns the class name
      */
     public getClassName(): string {
         return "Bone";
@@ -128,7 +127,6 @@ export class Bone extends Node {
     // Members
 
     /**
-     * @returns the parent skeleton
      * @returns a skeleton
      */
     public getSkeleton(): Skeleton {
@@ -148,7 +146,6 @@ export class Bone extends Node {
     }
 
     /**
-     * Returns an array containing the root bones
      * @returns an array containing the root bones
      */
     public getChildren(): Array<Bone> {
@@ -157,7 +154,6 @@ export class Bone extends Node {
 
     /**
      * @returns the node index in matrix array generated for rendering
-     * @returns the node index
      */
     public getIndex(): number {
         return this._index === null ? this.getSkeleton().bones.indexOf(this) : this._index;
@@ -199,7 +195,6 @@ export class Bone extends Node {
 
     /**
      * @returns the local matrix
-     * @returns a matrix
      */
     public getLocalMatrix(): Matrix {
         this._compose();
@@ -208,7 +203,6 @@ export class Bone extends Node {
 
     /**
      * @returns the base matrix (initial matrix which remains unchanged)
-     * @returns the base matrix (as known as bind pose matrix)
      */
     public getBaseMatrix(): Matrix {
         return this._baseMatrix;
@@ -216,7 +210,6 @@ export class Bone extends Node {
 
     /**
      * @returns the rest pose matrix
-     * @returns a matrix
      */
     public getRestPose(): Matrix {
         return this._restPose;
@@ -231,7 +224,6 @@ export class Bone extends Node {
     }
 
     /**
-     * @returns the bind pose matrix
      * @returns the bind pose matrix
      * @deprecated Please use getBaseMatrix instead
      */
@@ -278,7 +270,6 @@ export class Bone extends Node {
     /**
      * @returns the inverse of the absolute transform matrix.
      * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
-     * @returns a matrix
      */
     public getInvertedAbsoluteTransform(): Matrix {
         return this._invertedAbsoluteTransform;
@@ -286,7 +277,6 @@ export class Bone extends Node {
 
     /**
      * @returns the absolute transform matrix (ie base matrix * parent world matrix)
-     * @returns a matrix
      */
     public getAbsoluteTransform(): Matrix {
         return this._absoluteTransform;
@@ -313,7 +303,6 @@ export class Bone extends Node {
 
     /**
      * @returns the node used to drive the bone's transformation
-     * @returns a transform node or null
      */
     public getTransformNode() {
         return this._linkedTransformNode;
@@ -616,7 +605,6 @@ export class Bone extends Node {
 
     /**
      * @returns the current scaling in local space
-     * @returns the current scaling vector
      */
     public getScale(): Vector3 {
         this._decompose();
