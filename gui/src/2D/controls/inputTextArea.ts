@@ -423,51 +423,14 @@ export class InputTextArea extends InputText {
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
             if (this._addKey) {
-                this._clicked = false;
 
-                this._deleteSelection();
-                this._cursorIndex = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
+                this._isTextHighlightOn = false;
 
-                this._lines[this._selectedLineIndex].text = this._lines[this._selectedLineIndex].text.substring(0, this._cursorIndex) + key + this._lines[this._selectedLineIndex].text.substring(this._cursorIndex);
-                this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
+                this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, key);
+                this._cursorInfo.globalStartIndex += key.length;
 
-                this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
-
-                this._cursorIndex += key.length;
-
-                if (this._selectedLineIndex > 0) {
-                    if (this._oldlines[this._selectedLineIndex - 1].length !== this._lines[this._selectedLineIndex - 1].text.length) {
-                        // The word was enough tiny to fill in previous line
-                        this._cursorIndex = 0;
-                    }
+                this._markAsDirty();
                 }
-
-                if (this._selectedLineIndex < this._oldlines.length - 1
-                    && this._selectedLineIndex < this._lines.length - 1) {
-                    const breakWord = this._lines[this._selectedLineIndex + 1].text.split(" ");
-                    const oldBreakWord = this._oldlines[this._selectedLineIndex + 1].split(" ");
-
-                    if (breakWord[0] !== oldBreakWord[0]) {
-                        if (this._cursorOffset < breakWord[0].length) { // cursor is within breakWord
-                            this.lastClickedCoordinateY += this._fontOffset.height;
-
-                            this._selectedLineIndex++;
-
-                            this._cursorIndex = (breakWord[0].length - this._cursorOffset);
-                        }
-                    }
-                }
-
-                if (this._selectedLineIndex === this._oldlines.length - 1
-                    && this._lines.length > this._oldlines.length) {
-                    this._cursorIndex -= this._lines[this._selectedLineIndex].text.length;
-
-                    this.lastClickedCoordinateY += this._fontOffset.height;
-
-                    this._selectedLineIndex++;
-                }
-
-                this._cursorOffset = this._lines[this._selectedLineIndex].text.length - this._cursorIndex;
             }
         }
 
