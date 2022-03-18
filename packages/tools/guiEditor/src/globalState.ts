@@ -187,4 +187,8 @@ export class GlobalState {
         if (this.selectedControls[0].parent === control.parent) return true;
         return false;
     }
+
+    public dispose() {
+        this.keys.dispose();
+    }
 }
