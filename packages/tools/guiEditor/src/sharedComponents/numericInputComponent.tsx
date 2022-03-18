@@ -59,10 +59,6 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                 {this.props.label && <div className="numeric-label">{`${this.props.label}: `}</div>}
                 <input
                     type="number"
-                    onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
-                    onBlur={(evt) => {
-                        this.props.globalState.blockKeyboardEvents = false;
-                    }}
                     step={this.props.step}
                     className="numeric-input"
                     value={this.state.value}

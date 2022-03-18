@@ -208,7 +208,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {
                             return;
                         }
-                        this.props.globalState.blockKeyboardEvents = false;
                     }}
                     ref={this._rootRef}
                 >

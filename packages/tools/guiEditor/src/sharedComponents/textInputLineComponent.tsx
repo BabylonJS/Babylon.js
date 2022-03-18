@@ -86,7 +86,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         <>
                             <textarea
                                 value={this.state.value}
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
                                 onChange={(evt) => this.updateValue(evt.target.value, false)}
                                 onKeyDown={(evt) => {
                                     if (evt.keyCode !== 13) {
@@ -96,7 +95,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                                 }}
                                 onBlur={(evt) => {
                                     this.updateValue(evt.target.value, true);
-                                    this.props.globalState.blockKeyboardEvents = false;
                                 }}
                             />
                         </>
@@ -105,7 +103,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         <>
                             <input
                                 value={this.state.value}
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
                                 onChange={(evt) => this.updateValue(evt.target.value, false)}
                                 onKeyDown={(evt) => {
                                     if (evt.keyCode !== 13) {
@@ -115,7 +112,6 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                                 }}
                                 onBlur={(evt) => {
                                     this.updateValue(evt.target.value, true);
-                                    this.props.globalState.blockKeyboardEvents = false;
                                 }}
                             />
                         </>
