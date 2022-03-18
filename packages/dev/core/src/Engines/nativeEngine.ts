@@ -1737,10 +1737,10 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        mode = this._getNativeAlphaMode(mode);
+        const nativeMode = this._getNativeAlphaMode(mode);
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(mode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeMode);
         this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
