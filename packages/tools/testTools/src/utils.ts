@@ -121,14 +121,14 @@ export const evaluateEventListenerAugmentation = async () => {
         };
         window.eventsRegistered[a].numberAdded++;
         // find if this function was registered already
-        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f.eventListener === b);
-        if (registered === 1) {
+        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f && f.eventListener === b);
+        if (registered === -1) {
             window.eventsRegistered[a].registeredFunctions.push({
                 eventListener: b,
                 timesAdded: 1,
             });
         } else {
-            window.eventsRegistered[a].registeredFunctions[registered].timesAdded++;
+            window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded++;
         }
         try {
             throw new Error();
@@ -168,9 +168,12 @@ export const evaluateEventListenerAugmentation = async () => {
             registeredFunctions: [],
         };
         // find the registered
-        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f.eventListener === b);
-        if (registered === -1) {
-            window.eventsRegistered[a].numberRemoved += window.eventsRegistered[a].registeredFunctions[registered].timesAdded;
+        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f && f.eventListener === b);
+        if (registered !== -1) {
+            window.eventsRegistered[a].numberRemoved += window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded;
+            window.eventsRegistered[a].registeredFunctions[registered] = null;
+        } else {
+            console.error("could not find registered function");
         }
     };
 };
