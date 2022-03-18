@@ -151,36 +151,8 @@ export class InputTextArea extends InputText {
                 }
                 break;
             case 8: // BACKSPACE
-                this._clicked = false;
-                let line = this._lines[this._selectedLineIndex];
-
-                if (this._isTextHighlightOn) {
-                    this._deleteSelection();
-                } else if (line && line.text.length > 0) {
-                    if (this._cursorOffset < line.text.length) { // Delete single character in current line
-                        this._cursorIndex = line.text.length - this._cursorOffset - 1;
-                        line.text = line.text.substring(0, this._cursorIndex) + line.text.substring(this._cursorIndex + 1);
-
-                    } else if (this._selectedLineIndex > 0) { // Delete at the start of the line (concatenation with previous word)
-                        // Find the last word to adapt cursor index of current line
-                        const prevLine = this._lines[this._selectedLineIndex - 1];
-                        const words = prevLine.text.split(" ");
-                        this._cursorIndex = words[words.length - 1].length;
-
-                        prevLine.text += line.text;
-
-                        // Empty string to force the line breaking to recompute
-                        line.text = "";
-                    } else { // Nothing to do at the beginning of the text
-                        break;
-                    }
-                } else { // Beginning of a empty line
-                    this._selectedLineIndex--;
-                    this.lastClickedCoordinateY -= this._fontOffset.height;
-
-                    line.text = "";
-                    this._cursorIndex = this._lines[this._selectedLineIndex].text.length;
-                }
+                this._cursorInfo.globalStartIndex--;
+                this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
                 if (evt) {
                     evt.preventDefault();
@@ -188,22 +160,7 @@ export class InputTextArea extends InputText {
 
                 this._isTextHighlightOn = false;
 
-                this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
-
-                this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
-
-                if (this._selectedLineIndex > 0) {
-                    const lengthDiff = this._oldlines[this._selectedLineIndex - 1].length - this._lines[this._selectedLineIndex - 1].text.length;
-                    if (lengthDiff < 0) {
-                        // The word was enough tiny to fill in previous line
-                        this._cursorIndex += this._oldlines[this._selectedLineIndex - 1].length + 1 ;
-                        this.lastClickedCoordinateY -= this._fontOffset.height;
-                        this._selectedLineIndex--;
-                    }
-                }
-
-                this._cursorOffset = this._lines[this._selectedLineIndex].text.length - this._cursorIndex;
-
+                this._markAsDirty();
                 break;
             case 46: // DELETE
                 this._clicked = false;
