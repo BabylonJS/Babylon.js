@@ -73,10 +73,6 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
                             <input
                                 type="text"
                                 placeholder="Filter"
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
-                                onBlur={(evt) => {
-                                    this.props.globalState.blockKeyboardEvents = false;
-                                }}
                                 onChange={(evt) => this.filterContent(evt.target.value)}
                             />
                         </div>

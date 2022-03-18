@@ -123,8 +123,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 type="number"
                                 step={this.props.step || "0.01"}
                                 className="numeric-input"
-                                onBlur={(evt) => {
-                                    this.props.globalState.blockKeyboardEvents = false;
+                                onBlur={() => {
                                     if (this.props.onEnter) {
                                         this.props.onEnter(this._store);
                                     }
@@ -137,7 +136,6 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                         this.props.onEnter(this._store);
                                     }
                                 }}
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
                                 value={this.state.value}
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />

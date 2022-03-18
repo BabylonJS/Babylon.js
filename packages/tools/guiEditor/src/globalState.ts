@@ -49,7 +49,6 @@ export class GlobalState {
     private _outlines: boolean = false;
     public keys: KeyboardManager;
     onOutlineChangedObservable = new Observable<void>();
-    blockKeyboardEvents = false;
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
