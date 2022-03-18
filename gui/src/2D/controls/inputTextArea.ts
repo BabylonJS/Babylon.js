@@ -100,6 +100,9 @@ export class InputTextArea extends InputText {
         this.text = text;
 
         this.isPointerBlocker = true;
+
+        this.onLinesReadyObservable.add((inputTextArea)=> this._updateCursorPosition());
+
         this._scrollTop = 0;
         this._scrollLeft = 0;
 
