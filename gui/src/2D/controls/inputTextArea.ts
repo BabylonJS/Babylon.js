@@ -338,61 +338,51 @@ export class InputTextArea extends InputText {
             case 40: // DOWN
                 // update the cursor
                 this._blinkIsEven = false;
+                this._isTextHighlightOn = false;
 
-                previousLineCursorIndex = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
-
-                this._selectedLineIndex++;
-                if (typeof this._lines[this._selectedLineIndex] === 'undefined') {
-                    this._selectedLineIndex--;
-                }else {
-                    if (this._clicked) {
-                        this.lastClickedCoordinateY += this._fontOffset.height + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
-                    }else {
-                        this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + this._selectedLineIndex * this._fontOffset.height + 1;
-                    }
-
-                    this._cursorOffset = this._lines[this._selectedLineIndex].text.length - previousLineCursorIndex;
-
-                    const curLine = this._lines[this._selectedLineIndex].text;
-                    const prevLine = this._lines[this._selectedLineIndex - 1].text;
-                    const subCurLine = curLine.substring(0, previousLineCursorIndex);
-                    const subPrevLine = prevLine.substring(0, previousLineCursorIndex);
-                    const currentCursorIndexWidth = this._contextForBreakLines.measureText(subCurLine).width;
-                    const prevCursorIndexWidth = this._contextForBreakLines.measureText(subPrevLine).width;
-                    const direction = currentCursorIndexWidth - prevCursorIndexWidth < 0 ? -1 : +1;
-
-                    if (this._lines[this._selectedLineIndex].text.length < previousLineCursorIndex) {
-                        this._cursorOffset = 0;
-                    } else {
-                        const averageFontWidth = this._contextForBreakLines.measureText(curLine).width / curLine.length;
-                        const diff = Math.abs(prevCursorIndexWidth - currentCursorIndexWidth);
-
-                        const nbChar = Math.round(diff / averageFontWidth) * direction;
-
-                        this._cursorOffset += nbChar;
-                    }
-                }
                 if (evt) {
                     if (evt.shiftKey) {
+                        this._isTextHighlightOn = true;
                         if (!this._isTextHighlightOn) {
-                            this._isTextHighlightOn = true;
-                            this._lastClickedLineIndex = this._selectedLineIndex - 1;
-                            this._cursorIndex = previousLineCursorIndex; // this._lines[this._lastClickedLineIndex].text.length - this._cursorOffset - 1;
+                            this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
+                            this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
                         }
-
-                        this._updateValueFromCursorIndex(this._cursorOffset);
-                        return;
                     }
                     evt.preventDefault();
+                    }
+
+                if (this._cursorInfo.globalStartIndex >= this.text.length - this._lines[this._lines.length - 1].text.length
+                && this._cursorInfo.globalStartIndex < this.text.length) {
+                    // Last line
+                    this._cursorInfo.globalStartIndex = this.text.length;
+                } else {
+                    const currentLine = this._lines[this._cursorInfo.currentLineIndex];
+                    const underLine = this._lines[this._cursorInfo.currentLineIndex + 1];
+
+                    const currentText = currentLine.text.substr(0, this._cursorInfo.relativeStartIndex);
+
+                    const currentWidth = this._contextForBreakLines.measureText(currentText).width;
+                    let upperWidth = 0;
+                    let previousWidth = 0;
+
+                    this._cursorInfo.globalStartIndex += (currentLine.text.length - this._cursorInfo.relativeStartIndex + currentLine.lineEnding.length); // Start of current line
+                //  this._cursorInfo.globalStartIndex += (underLine.text.length + underLine.lineEnding.length); // Start of under line
+                    let underLineRelativeIndex = 0;
+
+                    while(upperWidth < currentWidth && underLineRelativeIndex < underLine.text.length) {
+                        this._cursorInfo.globalStartIndex++;
+                        underLineRelativeIndex++;
+                        previousWidth = Math.abs(currentWidth - upperWidth);
+                        upperWidth = this._contextForBreakLines.measureText(underLine.text.substr(0, underLineRelativeIndex)).width;
+                        }
+
+                    // Find closest move
+                    if (Math.abs(currentWidth - upperWidth) > previousWidth && underLineRelativeIndex > 0) {
+                        this._cursorInfo.globalStartIndex--;
+                    }
                 }
 
-                this._cursorIndex = previousLineCursorIndex;
-                this._lastClickedLineIndex = this._selectedLineIndex;
-
-                this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
                 this._markAsDirty();
-                this._clicked = false;
                 return;
             case 222: // Dead
             if (evt) {
