@@ -469,7 +469,7 @@ export const RequestFile = (
             }
             request.removeEventListener("loadend", onLoadEnd!);
             console.log("Removed");
-        }
+        };
 
         let onLoadEnd: Nullable<() => void> = () => {
             unbindEvents();
