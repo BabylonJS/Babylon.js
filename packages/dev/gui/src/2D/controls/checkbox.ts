@@ -133,13 +133,13 @@ export class Checkbox extends Control {
         if (this._isChecked) {
             context.fillStyle = this._isEnabled ? this.color : this._disabledColorItem;
             const offsetWidth = actualWidth * this._checkSizeRatio;
-            const offseHeight = actualHeight * this._checkSizeRatio;
+            const offsetHeight = actualHeight * this._checkSizeRatio;
 
             context.fillRect(
                 this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2,
-                this._currentMeasure.top + this._thickness / 2 + (actualHeight - offseHeight) / 2,
+                this._currentMeasure.top + this._thickness / 2 + (actualHeight - offsetHeight) / 2,
                 offsetWidth,
-                offseHeight
+                offsetHeight
             );
         }
 
