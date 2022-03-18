@@ -4545,7 +4545,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._toBeDisposed = [];
 
         // Abort active requests
-        for (const request of this._activeRequests) {
+        const activeRequests = this._activeRequests.slice();
+        for (const request of activeRequests) {
             request.abort();
         }
         this._activeRequests = [];
