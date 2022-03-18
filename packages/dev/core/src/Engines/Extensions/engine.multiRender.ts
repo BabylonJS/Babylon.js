@@ -119,7 +119,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
 
         for (let i = 0; i < count; i++) {
-            var texture = rtWrapper.textures![i];
+            const texture = rtWrapper.textures![i];
 
             for (let j = 0; j < count; j++) {
                 attachments[j] = gl.NONE;
@@ -139,7 +139,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     }
 
     for (let i = 0; i < count; i++) {
-        var texture = rtWrapper.textures![i];
+        const texture = rtWrapper.textures![i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
             gl.generateMipmap(gl.TEXTURE_2D);

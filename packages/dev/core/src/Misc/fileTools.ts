@@ -341,6 +341,7 @@ export const ReadFile = (
  * @returns a file request object
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
     fileOrUrl: File | string,
     onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -35,7 +37,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
-if (typeof self !== "undefined" && !self.hasOwnProperty("_native")) {
+if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self,"_native")) {
     let __native: INative;
     Object.defineProperty(self, "_native", {
         get: () => __native,
@@ -301,8 +303,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param x First int in int3.
      * @param y Second int in int3.
-     * @param y Third int in int3.
-     * @param z
+     * @param z Third int in int3.
      */
     public setInt3(uniformName: string, x: number, y: number, z: number): void {
         if (this._cacheFloat3(uniformName, x, y, z)) {
@@ -317,8 +318,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param x First int in int4.
      * @param y Second int in int4.
-     * @param y Third int in int4.
-     * @param z
+     * @param z Third int in int4.
      * @param w Fourth int in int4.
      */
     public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
@@ -1002,10 +1002,6 @@ export class NativeEngine extends Engine {
 
     /**
      * Override default engine behavior.
-     * @param color
-     * @param backBuffer
-     * @param depth
-     * @param stencil
      * @param framebuffer
      */
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
@@ -2045,7 +2041,6 @@ export class NativeEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param premulAlpha defines if alpha is stored as premultiplied
      * @param format defines the format of the data
-     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
         if (premulAlpha === void 0) {
