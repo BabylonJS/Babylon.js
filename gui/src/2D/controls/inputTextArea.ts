@@ -175,8 +175,11 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 break;
             case 13: // RETURN
-                this._host.focusedControl = null;
+                this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
+
                 this._isTextHighlightOn = false;
+
+                this._markAsDirty();
                 return;
             case 35: // END
                 this._cursorOffset = 0;
