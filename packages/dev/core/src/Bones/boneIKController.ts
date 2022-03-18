@@ -15,7 +15,7 @@ export class BoneIKController {
 
     /**
      * Gets or sets the target TransformNode
-     * Name kept as mesh for back compability
+     * Name kept as mesh for back compatibility
      */
     public targetMesh: TransformNode;
 
@@ -49,7 +49,7 @@ export class BoneIKController {
 
     /**
      * Gets or sets the TransformNode associated with the controller
-     * Name kept as mesh for back compability
+     * Name kept as mesh for back compatibility
      */
     public mesh: TransformNode;
 

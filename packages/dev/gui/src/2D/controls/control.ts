@@ -1373,7 +1373,7 @@ export class Control {
     }
 
     /**
-     * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+     * Shorthand function to set the top, right, bottom, and left padding values on the control.
      * @param { string | number} paddingTop - The value of the top padding.
      * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
      * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.

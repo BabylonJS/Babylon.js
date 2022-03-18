@@ -67,7 +67,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
-     * Beware using this as this will comsume more memory as the image has to be stored twice
+     * Beware using this as this will consume more memory as the image has to be stored twice
      */
     @serialize()
     public get detectPointerOnOpaqueOnly(): boolean {
@@ -291,7 +291,7 @@ export class Image extends Control {
         }
     }
 
-    /** Gets or sets the streching mode used by the image */
+    /** Gets or sets the stretching mode used by the image */
     @serialize()
     public get stretch(): number {
         return this._stretch;

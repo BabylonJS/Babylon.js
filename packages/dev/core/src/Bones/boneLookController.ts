@@ -21,7 +21,7 @@ export class BoneLookController {
 
     /**
      * The TransformNode that the bone is attached to
-     * Name kept as mesh for back compability
+     * Name kept as mesh for back compatibility
      */
     public mesh: TransformNode;
 

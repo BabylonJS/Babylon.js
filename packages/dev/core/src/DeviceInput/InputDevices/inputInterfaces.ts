@@ -7,7 +7,7 @@ import { DeviceType } from "./deviceEnums";
 export interface IDeviceInputSystem extends IDisposable {
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      * @returns Current value of input
