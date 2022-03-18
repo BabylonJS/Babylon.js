@@ -188,7 +188,7 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 36: // HOME
-                this._cursorOffset = this._lines[this._selectedLineIndex].text.length;
+                this._cursorInfo.globalStartIndex = 0;
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._markAsDirty();
