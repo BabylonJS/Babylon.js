@@ -1,3 +1,5 @@
+import { PointerInput } from "../DeviceInput";
+
 /**
  * Event Types
  */
@@ -28,7 +30,7 @@ export interface IUIEvent {
 
     /**
      * Alias for target
-     * @deprecated
+     * @deprecated Use target instead
      */
     srcElement?: any;
 
@@ -61,7 +63,7 @@ export interface IKeyboardEvent extends IUIEvent {
 
     /**
      * Unicode value of character pressed
-     * @deprecated
+     * @deprecated Required for event, use keyCode instead.
      */
     charCode?: number;
 
@@ -81,7 +83,7 @@ export interface IKeyboardEvent extends IUIEvent {
     key: string;
     /**
      * ASCII value of key
-     * @deprecated
+     * @deprecated Used with DeviceSourceManager
      */
     keyCode: number;
 
@@ -101,6 +103,11 @@ export interface IKeyboardEvent extends IUIEvent {
  */
 export interface IMouseEvent extends IUIEvent {
     // Properties
+    /**
+     * Subset of possible PointerInput values for events, excluding ones that CANNOT be in events organically
+     */
+     inputIndex: Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical>;
+     
     /**
      * Status of Alt key being pressed
      */
@@ -222,6 +229,7 @@ export interface IMouseEvent extends IUIEvent {
  */
 export interface IPointerEvent extends IMouseEvent {
     // Properties
+    inputIndex: Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical | PointerInput.MouseWheelX | PointerInput.MouseWheelY | PointerInput.MouseWheelZ>;
     /**
      * Pointer Event ID
      */
@@ -238,6 +246,7 @@ export interface IPointerEvent extends IMouseEvent {
  */
 export interface IWheelEvent extends IMouseEvent {
     // Properties
+    inputIndex: PointerInput.MouseWheelX | PointerInput.MouseWheelY | PointerInput.MouseWheelZ;
     /**
      * Units for delta value
      */

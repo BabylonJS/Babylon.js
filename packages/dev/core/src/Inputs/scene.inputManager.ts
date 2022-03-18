@@ -12,6 +12,7 @@ import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnum
 import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
+import { devices } from "puppeteer";
 
 declare type Scene = import("../scene").Scene;
 
@@ -125,6 +126,7 @@ export class InputManager {
 
     /**
      * Gets the mesh that is currently under the pointer
+     * @returns Mesh that the pointer is pointer is hovering over
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
         return this._pointerOverMesh;
@@ -141,6 +143,7 @@ export class InputManager {
 
     /**
      * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
+     * @returns Vector with X/Y values directly from pointer event
      */
     public get unTranslatedPointer(): Vector2 {
         return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -148,6 +151,7 @@ export class InputManager {
 
     /**
      * Gets or sets the current on-screen X position of the pointer
+     * @returns Translated X with respect to screen
      */
     public get pointerX(): number {
         return this._pointerX;
@@ -159,6 +163,7 @@ export class InputManager {
 
     /**
      * Gets or sets the current on-screen Y position of the pointer
+     * @returns Translated Y with respect to screen
      */
     public get pointerY(): number {
         return this._pointerY;
@@ -362,7 +367,10 @@ export class InputManager {
         }
     }
 
-    /** @hidden */
+    /** 
+     * @hidden
+     * @returns Boolean if delta for pointer exceeds drag movement threshold
+     */
     public _isPointerSwiping(): boolean {
         return (
             Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
@@ -500,6 +508,7 @@ export class InputManager {
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
@@ -864,33 +873,38 @@ export class InputManager {
         // If a device connects that we can handle, wire up the observable
         this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
+                //deviceSource.getInput()
+                //const deviceSource = this._deviceSourceManager!.getDeviceSource(device.deviceType, device.deviceSlot)!;
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    if (eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick) {
-                        const evt = eventData as IPointerEvent;
-                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
-                            this._onPointerDown(evt);
-                        } else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
-                            this._onPointerUp(evt);
+                    if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
+                        //const evt = eventData as IPointerEvent; 
+                        if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
+                            this._onPointerDown(eventData);
+
                         }
-                    } else if (attachMove) {
+                        else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
+                            this._onPointerUp(eventData);
+                        }
+                    }
+
+                    else if (attachMove) {
                         if (eventData.inputIndex === PointerInput.Move) {
-                            this._onPointerMove(eventData as IPointerEvent);
-                        } else if (
-                            eventData.inputIndex === PointerInput.MouseWheelX ||
-                            eventData.inputIndex === PointerInput.MouseWheelY ||
-                            eventData.inputIndex === PointerInput.MouseWheelZ
-                        ) {
-                            this._onPointerMove(eventData as IWheelEvent);
+                            this._onPointerMove(eventData);
+                        } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
+                            this._onPointerMove(eventData);
                         }
                     }
                 });
-            } else if (deviceSource.deviceType === DeviceType.Touch) {
+            }
+            else if (device.deviceType === DeviceType.Touch) {
+                const deviceSource = this._deviceSourceManager!.getDeviceSource(device.deviceType, device.deviceSlot)!;
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    const evt = eventData as IPointerEvent;
-                    if (eventData.inputIndex === PointerInput.LeftClick) {
-                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
+                    if ((eventData.inputIndex === PointerInput.LeftClick)) {
+                        if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData as IPointerEvent);
-                        } else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
+
+                        }
+                        else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData as IPointerEvent);
                         }
                     }
@@ -899,12 +913,15 @@ export class InputManager {
                         this._onPointerMove(eventData as IPointerEvent);
                     }
                 });
-            } else if (deviceSource.deviceType === DeviceType.Keyboard) {
+            }
+            else if (device.deviceType === DeviceType.Keyboard) {
+                const deviceSource = this._deviceSourceManager!.getDeviceSource(device.deviceType, device.deviceSlot)!;
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     const evt = eventData as IKeyboardEvent;
                     if (evt.type === "keydown") {
                         this._onKeyDown(evt);
-                    } else if (evt.type === "keyup") {
+                    }
+                    else if (evt.type === "keyup") {
                         this._onKeyUp(evt);
                     }
                 });
