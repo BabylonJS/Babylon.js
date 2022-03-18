@@ -80,6 +80,6 @@ export class UniversalCamera extends TouchCamera {
     }
 }
 
-Camera._createDefaultParsedCamera = (name: string, scene: Scene) => {
+Camera._CreateDefaultParsedCamera = (name: string, scene: Scene) => {
     return new UniversalCamera(name, Vector3.Zero(), scene);
 };
