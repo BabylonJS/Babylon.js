@@ -27,6 +27,12 @@ export class InputTextArea extends InputText {
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
 
+    private _clipTextTop: number;
+    private _clipTextLeft: number;
+    
+    private _cursorInfo: { globalStartIndex: number, globalEndIndex: number, relativeStartIndex: number, relativeEndIndex: number, currentLineIndex: number };
+    private _highlightCursorInfo: { initialStartIndex: number, initialLineIndex: number };
+
     /**
     * An event triggered after the text was broken up into lines
     */
@@ -94,6 +100,13 @@ export class InputTextArea extends InputText {
         this.text = text;
 
         this.isPointerBlocker = true;
+        this._scrollTop = 0;
+        this._scrollLeft = 0;
+
+        this._highlightCursorInfo = {
+            initialStartIndex: -1,
+            initialLineIndex: -1,
+        };
     }
 
     protected _getTypeName(): string {
@@ -720,6 +733,9 @@ export class InputTextArea extends InputText {
     }
 
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+        this._scrollLeft = this._scrollLeft ?? 0;
+        this._scrollTop = this._scrollTop ?? 0;
+
         context.save();
 
         this._applyStates(context);
