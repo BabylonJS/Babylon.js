@@ -269,7 +269,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onChange={(newValue) => {
                                         const number = parseInt(newValue, 10);
                                         if (!isNaN(number)) {
-                                            this.props.globalState.workbench.guiSize = {width: number, height: size.height};
+                                            this.props.globalState.workbench.guiSize = { width: number, height: size.height };
                                         }
                                     }}
                                     numeric={true}
@@ -285,7 +285,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onChange={(newValue) => {
                                         const number = parseInt(newValue, 10);
                                         if (!isNaN(number)) {
-                                            this.props.globalState.workbench.guiSize = {width: size.width, height: number};
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: number };
                                         }
                                     }}
                                     numeric={true}

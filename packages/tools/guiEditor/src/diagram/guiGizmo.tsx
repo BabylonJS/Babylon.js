@@ -83,7 +83,9 @@ const scalePointCursors = [
     cursorScaleHorizontal,
     cursorScaleDiagonaLeft,
 ];
-const rotateCursors = [cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7].map(cursor => `url("${cursor}") 12 12, pointer`);
+const rotateCursors = [cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7].map(
+    (cursor) => `url("${cursor}") 12 12, pointer`
+);
 // used to calculate which cursor icon we should display for the scalepoints
 const defaultScalePointRotations = [315, 0, 45, 270, 0, 90, 225, 180, 135];
 

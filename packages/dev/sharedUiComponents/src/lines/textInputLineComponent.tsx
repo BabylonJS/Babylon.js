@@ -24,8 +24,8 @@ interface ITextInputLineComponentProps {
     arrows?: boolean;
     arrowsIncrement?: (amount: number) => void;
     step?: number;
-    numeric?: boolean
-    roundValues?: boolean
+    numeric?: boolean;
+    roundValues?: boolean;
     min?: number;
     max?: number;
     placeholder?: string;
@@ -154,7 +154,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     render() {
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
-        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : (this.props.placeholder || "");
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         return (
             <div className={this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
