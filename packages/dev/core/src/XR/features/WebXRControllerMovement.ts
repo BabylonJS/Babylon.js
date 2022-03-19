@@ -169,8 +169,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                 axisChangedHandler: (
                     axes: IWebXRMotionControllerAxesValue,
                     movementState: WebXRControllerMovementState,
-                    featureContext: WebXRControllerMovementFeatureContext,
-                    xrInput: WebXRInput
+                    featureContext: WebXRControllerMovementFeatureContext
                 ) => {
                     movementState.rotateX = Math.abs(axes.x) > featureContext.rotationThreshold ? axes.x : 0;
                     movementState.rotateY = Math.abs(axes.y) > featureContext.rotationThreshold ? axes.y : 0;
@@ -182,8 +181,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                 axisChangedHandler: (
                     axes: IWebXRMotionControllerAxesValue,
                     movementState: WebXRControllerMovementState,
-                    featureContext: WebXRControllerMovementFeatureContext,
-                    xrInput: WebXRInput
+                    featureContext: WebXRControllerMovementFeatureContext
                 ) => {
                     movementState.moveX = Math.abs(axes.x) > featureContext.movementThreshold ? axes.x : 0;
                     movementState.moveY = Math.abs(axes.y) > featureContext.movementThreshold ? axes.y : 0;

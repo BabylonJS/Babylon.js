@@ -8,5 +8,6 @@
         "**/@babylonjs/**/*.{js|ts|map}": true,
         "**/.rollup.cache": true,
         "**/packages/dev/core/src/Shaders/**/*.ts": true,
+        "**/packages/dev/core/src/ShadersWGSL/**/*.ts": true,
     },
 }
