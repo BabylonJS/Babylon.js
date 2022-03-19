@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Nullable } from "core/types";
 import { Observable, Observer } from "core/Misc/observable";
 import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
@@ -1513,6 +1515,7 @@ export class Control {
     }
 
     /** @hidden */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {

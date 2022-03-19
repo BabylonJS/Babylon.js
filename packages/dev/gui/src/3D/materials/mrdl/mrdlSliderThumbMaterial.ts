@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
 import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
@@ -498,7 +499,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;

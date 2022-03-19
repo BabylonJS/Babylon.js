@@ -3,7 +3,6 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
-import { Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Vector3 } from "core/Maths/math.vector";
 import { serialize } from "core/Misc/decorators";
@@ -178,7 +177,7 @@ export class MultiLine extends Control {
         return "MultiLine";
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -223,13 +222,13 @@ export class MultiLine extends Control {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected _additionalProcessing(): void {
         this._minX = null;
         this._minY = null;
         this._maxX = null;
         this._maxY = null;
 
-        this._points.forEach((point, index) => {
+        this._points.forEach((point) => {
             if (!point) {
                 return;
             }
@@ -273,7 +272,7 @@ export class MultiLine extends Control {
         this._currentMeasure.height = Math.abs(this._maxY - this._minY) + this._lineWidth;
     }
 
-    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected _computeAlignment(): void {
         if (this._minX == null || this._minY == null) {
             return;
         }

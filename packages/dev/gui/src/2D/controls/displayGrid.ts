@@ -1,7 +1,5 @@
 import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
-import { Measure } from "../measure";
 import { serialize } from "core/Misc/decorators";
 import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
@@ -160,7 +158,7 @@ export class DisplayGrid extends Control {
         super(name);
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -192,7 +190,7 @@ export class DisplayGrid extends Control {
                     context.stroke();
                 }
 
-                for (var y = -cellCountY / 2 + 1; y < cellCountY / 2; y++) {
+                for (let y = -cellCountY / 2 + 1; y < cellCountY / 2; y++) {
                     const cellY = top + y * this.cellHeight;
 
                     context.beginPath();
@@ -216,7 +214,7 @@ export class DisplayGrid extends Control {
                     context.stroke();
                 }
 
-                for (var y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
+                for (let y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
                     const cellY = top + y * this.cellHeight;
                     context.moveTo(this._currentMeasure.left, cellY);
                     context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);

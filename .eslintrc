@@ -139,9 +139,9 @@
             },       
             {
                 "selector": "function",
-                "format": ["PascalCase"],
+                "format": ["PascalCase", "camelCase"],
                 "leadingUnderscore": "allow"
-            },         
+            },        
             {
                 "selector": "function",
                 "modifiers": ["exported", "global"],

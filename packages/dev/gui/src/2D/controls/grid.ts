@@ -253,14 +253,14 @@ export class Grid extends Container {
             return this;
         }
 
-        for (var y = 0; y < this._columnDefinitions.length; y++) {
+        for (let y = 0; y < this._columnDefinitions.length; y++) {
             const key = `${index}:${y}`;
             const cell = this._cells[key];
 
             this._removeCell(cell, key);
         }
 
-        for (var y = 0; y < this._columnDefinitions.length; y++) {
+        for (let y = 0; y < this._columnDefinitions.length; y++) {
             for (let x = index + 1; x < this._rowDefinitions.length; x++) {
                 const previousKey = `${x - 1}:${y}`;
                 const key = `${x}:${y}`;
@@ -372,7 +372,7 @@ export class Grid extends Container {
 
         // Heights
         let index = 0;
-        for (var rowDefinition of this._rowDefinitions) {
+        for (const rowDefinition of this._rowDefinitions) {
             if (rowDefinition.isPixel) {
                 const height = rowDefinition.getValue(this._host);
                 availableHeight -= height;
@@ -385,7 +385,7 @@ export class Grid extends Container {
 
         let top = 0;
         index = 0;
-        for (var rowDefinition of this._rowDefinitions) {
+        for (const rowDefinition of this._rowDefinitions) {
             tops.push(top);
 
             if (!rowDefinition.isPixel) {
@@ -400,7 +400,7 @@ export class Grid extends Container {
 
         // Widths
         index = 0;
-        for (var columnDefinition of this._columnDefinitions) {
+        for (const columnDefinition of this._columnDefinitions) {
             if (columnDefinition.isPixel) {
                 const width = columnDefinition.getValue(this._host);
                 availableWidth -= width;
@@ -413,7 +413,7 @@ export class Grid extends Container {
 
         let left = 0;
         index = 0;
-        for (var columnDefinition of this._columnDefinitions) {
+        for (const columnDefinition of this._columnDefinitions) {
             lefts.push(left);
             if (!columnDefinition.isPixel) {
                 const width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
@@ -432,7 +432,7 @@ export class Grid extends Container {
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Setting child sizes
             for (const key in this._cells) {
-                if (!this._cells.hasOwnProperty(key)) {
+                if (!Object.prototype.hasOwnProperty.call(this._cells, key)) {
                     continue;
                 }
                 const split = key.split(":");
@@ -456,7 +456,7 @@ export class Grid extends Container {
 
     public _flagDescendantsAsMatrixDirty(): void {
         for (const key in this._cells) {
-            if (!this._cells.hasOwnProperty(key)) {
+            if (!Object.prototype.hasOwnProperty.call(this._cells, key)) {
                 continue;
             }
 
