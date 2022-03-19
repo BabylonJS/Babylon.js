@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";

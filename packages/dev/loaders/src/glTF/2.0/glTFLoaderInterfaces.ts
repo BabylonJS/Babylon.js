@@ -35,6 +35,7 @@ export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
 export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {}
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationSamplerData {
     input: Float32Array;
     interpolation: GLTF2.AnimationSamplerInterpolation;
@@ -170,6 +171,7 @@ export interface INode extends GLTF2.INode, IArrayItem {
 }
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _ISamplerData {
     noMipMaps: boolean;
     samplingMode: number;

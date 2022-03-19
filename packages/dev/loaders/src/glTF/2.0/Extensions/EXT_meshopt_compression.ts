@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
