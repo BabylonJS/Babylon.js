@@ -1828,12 +1828,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         let index: number;
         const engine = this.getEngine();
-
-        // Effects
-        if (!engine.areAllEffectsReady()) {
-            return false;
-        }
-
+        
         // Pending data
         if (this._pendingData.length > 0) {
             return false;
@@ -1844,6 +1839,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._processedMaterials.reset();
             this._renderTargets.reset();
         }
+
+        let isReady = true;
+
         for (index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
 
@@ -1856,7 +1854,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             if (!mesh.isReady(true)) {
-                return false;
+               isReady = false;
+               continue;
             }
 
             const hardwareInstancedRendering =
@@ -1867,7 +1866,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Is Ready For Mesh
             for (const step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
-                    return false;
+                    isReady = false;
                 }
             }
 
@@ -1897,8 +1896,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                         }
                     }
                 }
-            }
+            }      
         }
+
+        if (!isReady) {
+            return false;
+        }
+
+        // Effects
+        if (!engine.areAllEffectsReady()) {
+            return false;
+        }    
 
         // Render targets
         if (checkRenderTargets) {
@@ -2101,7 +2109,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             this._checkIsReady(checkRenderTargets);
-        }, 150);
+        }, 100);
     }
 
     /**
