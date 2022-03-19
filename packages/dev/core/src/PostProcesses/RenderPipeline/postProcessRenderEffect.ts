@@ -198,7 +198,7 @@ export class PostProcessRenderEffect {
             const camera = cams[i];
             var cameraName = camera.name;
 
-            for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
+            for (let j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                 if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined || camera._postProcesses[this._indicesForCamera[cameraName][j]] === null) {
                     this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                         cams![i].attachPostProcess(postProcess, this._indicesForCamera[cameraName][j]);

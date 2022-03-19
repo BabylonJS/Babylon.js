@@ -115,6 +115,25 @@ export class _PrimaryIsoTriangle {
         const closestTo: number[][] = [];
         const vDist = this.vertByDist;
 
+        const matchIdx = (f: number, fr: number, isoId: string, isoIdR: string) => {
+            idx = f + "|" + isoId;
+            idxR = fr + "|" + isoIdR;
+            if (!(idx in vecToidx || idxR in vecToidx)) {
+                vecToidx[idx] = indexCount;
+                vecToidx[idxR] = indexCount;
+                indexCount++;
+            } else if (idx in vecToidx && !(idxR in vecToidx)) {
+                vecToidx[idxR] = vecToidx[idx];
+            } else if (idxR in vecToidx && !(idx in vecToidx)) {
+                vecToidx[idx] = vecToidx[idxR];
+            }
+            if (vDist[isoId][0] > 2) {
+                closestTo[vecToidx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToidx[idx]];
+            } else {
+                closestTo[vecToidx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToidx[idx]];
+            }
+        };
+
         this.IDATA.edgematch = [
             [1, "B"],
             [2, "B"],
@@ -223,24 +242,6 @@ export class _PrimaryIsoTriangle {
             }
         }
 
-        function matchIdx(f: number, fr: number, isoId: string, isoIdR: string) {
-            idx = f + "|" + isoId;
-            idxR = fr + "|" + isoIdR;
-            if (!(idx in vecToidx || idxR in vecToidx)) {
-                vecToidx[idx] = indexCount;
-                vecToidx[idxR] = indexCount;
-                indexCount++;
-            } else if (idx in vecToidx && !(idxR in vecToidx)) {
-                vecToidx[idxR] = vecToidx[idx];
-            } else if (idxR in vecToidx && !(idx in vecToidx)) {
-                vecToidx[idx] = vecToidx[idxR];
-            }
-            if (vDist[isoId][0] > 2) {
-                closestTo[vecToidx[idx]] = [-vDist[isoId][0], vDist[isoId][1], vecToidx[idx]];
-            } else {
-                closestTo[vecToidx[idx]] = [verts[vDist[isoId][0]], vDist[isoId][1], vecToidx[idx]];
-            }
-        }
         this.closestTo = closestTo;
         this.vecToidx = vecToidx;
     }

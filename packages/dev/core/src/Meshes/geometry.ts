@@ -236,7 +236,7 @@ export class Geometry implements IGetSetVerticesData {
      */
     public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
         vertexData.applyToGeometry(this, updatable);
-        this.notifyUpdate();
+        this._notifyUpdate();
     }
 
     /**
@@ -312,7 +312,7 @@ export class Geometry implements IGetSetVerticesData {
             }
         }
 
-        this.notifyUpdate(kind);
+        this._notifyUpdate(kind);
     }
 
     /**
@@ -332,7 +332,7 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         vertexBuffer.updateDirectly(data, offset, useBytes);
-        this.notifyUpdate(kind);
+        this._notifyUpdate(kind);
     }
 
     /**
@@ -354,7 +354,7 @@ export class Geometry implements IGetSetVerticesData {
         if (kind === VertexBuffer.PositionKind) {
             this._updateBoundingInfo(updateExtends, data);
         }
-        this.notifyUpdate(kind);
+        this._notifyUpdate(kind);
     }
 
     private _updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>) {
@@ -576,7 +576,7 @@ export class Geometry implements IGetSetVerticesData {
             mesh.synchronizeInstances();
         }
 
-        this.notifyUpdate();
+        this._notifyUpdate();
     }
 
     /**
@@ -749,7 +749,7 @@ export class Geometry implements IGetSetVerticesData {
         mesh.synchronizeInstances();
     }
 
-    private notifyUpdate(kind?: string) {
+    private _notifyUpdate(kind?: string) {
         if (this.onGeometryUpdated) {
             this.onGeometryUpdated(this, kind);
         }
@@ -1032,7 +1032,7 @@ export class Geometry implements IGetSetVerticesData {
         return serializationObject;
     }
 
-    private toNumberArray(origin: Nullable<Float32Array | IndicesArray>): number[] {
+    private _toNumberArray(origin: Nullable<Float32Array | IndicesArray>): number[] {
         if (Array.isArray(origin)) {
             return origin;
         } else {
@@ -1051,7 +1051,7 @@ export class Geometry implements IGetSetVerticesData {
         this._resetPointsArrayCache();
 
         for (const vbName in this._vertexBuffers) {
-            if (!this._vertexBuffers.hasOwnProperty(vbName)) {
+            if (!Object.prototype.hasOwnProperty.call(this._vertexBuffers, vbName)) {
                 continue;
             }
             this._vertexBuffers[vbName]._buffer._data = null;
@@ -1066,77 +1066,77 @@ export class Geometry implements IGetSetVerticesData {
         const serializationObject = this.serialize();
 
         if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-            serializationObject.positions = this.toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
+            serializationObject.positions = this._toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.PositionKind)) {
                 serializationObject.positions._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            serializationObject.normals = this.toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
+            serializationObject.normals = this._toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.NormalKind)) {
                 serializationObject.normals._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-            serializationObject.tangents = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
+            serializationObject.tangents = this._toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
                 serializationObject.tangents._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-            serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
+            serializationObject.uvs = this._toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UVKind)) {
                 serializationObject.uvs._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-            serializationObject.uv2s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
+            serializationObject.uv2s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV2Kind)) {
                 serializationObject.uv2s._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-            serializationObject.uv3s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
+            serializationObject.uv3s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV3Kind)) {
                 serializationObject.uv3s._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-            serializationObject.uv4s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
+            serializationObject.uv4s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV4Kind)) {
                 serializationObject.uv4s._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-            serializationObject.uv5s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
+            serializationObject.uv5s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV5Kind)) {
                 serializationObject.uv5s._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-            serializationObject.uv6s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
+            serializationObject.uv6s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV6Kind)) {
                 serializationObject.uv6s._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            serializationObject.colors = this.toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
+            serializationObject.colors = this._toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.ColorKind)) {
                 serializationObject.colors._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-            serializationObject.matricesIndices = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
+            serializationObject.matricesIndices = this._toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
             serializationObject.matricesIndices._isExpanded = true;
             if (this.isVertexBufferUpdatable(VertexBuffer.MatricesIndicesKind)) {
                 serializationObject.matricesIndices._updatable = true;
@@ -1144,13 +1144,13 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-            serializationObject.matricesWeights = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
+            serializationObject.matricesWeights = this._toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.MatricesWeightsKind)) {
                 serializationObject.matricesWeights._updatable = true;
             }
         }
 
-        serializationObject.indices = this.toNumberArray(this.getIndices());
+        serializationObject.indices = this._toNumberArray(this.getIndices());
 
         return serializationObject;
     }
@@ -1231,7 +1231,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.uvsAttrDesc && binaryInfo.uvsAttrDesc.count > 0) {
                 const uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
-                    for (var index = 1; index < uvsData.length; index += 2) {
+                    for (let index = 1; index < uvsData.length; index += 2) {
                         uvsData[index] = 1 - uvsData[index];
                     }
                 }
@@ -1241,7 +1241,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.uvs2AttrDesc && binaryInfo.uvs2AttrDesc.count > 0) {
                 const uvs2Data = new Float32Array(parsedGeometry, binaryInfo.uvs2AttrDesc.offset, binaryInfo.uvs2AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
-                    for (var index = 1; index < uvs2Data.length; index += 2) {
+                    for (let index = 1; index < uvs2Data.length; index += 2) {
                         uvs2Data[index] = 1 - uvs2Data[index];
                     }
                 }
@@ -1251,7 +1251,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.uvs3AttrDesc && binaryInfo.uvs3AttrDesc.count > 0) {
                 const uvs3Data = new Float32Array(parsedGeometry, binaryInfo.uvs3AttrDesc.offset, binaryInfo.uvs3AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
-                    for (var index = 1; index < uvs3Data.length; index += 2) {
+                    for (let index = 1; index < uvs3Data.length; index += 2) {
                         uvs3Data[index] = 1 - uvs3Data[index];
                     }
                 }
@@ -1261,7 +1261,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.uvs4AttrDesc && binaryInfo.uvs4AttrDesc.count > 0) {
                 const uvs4Data = new Float32Array(parsedGeometry, binaryInfo.uvs4AttrDesc.offset, binaryInfo.uvs4AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
-                    for (var index = 1; index < uvs4Data.length; index += 2) {
+                    for (let index = 1; index < uvs4Data.length; index += 2) {
                         uvs4Data[index] = 1 - uvs4Data[index];
                     }
                 }
@@ -1271,7 +1271,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.uvs5AttrDesc && binaryInfo.uvs5AttrDesc.count > 0) {
                 const uvs5Data = new Float32Array(parsedGeometry, binaryInfo.uvs5AttrDesc.offset, binaryInfo.uvs5AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
-                    for (var index = 1; index < uvs5Data.length; index += 2) {
+                    for (let index = 1; index < uvs5Data.length; index += 2) {
                         uvs5Data[index] = 1 - uvs5Data[index];
                     }
                 }
@@ -1281,7 +1281,7 @@ export class Geometry implements IGetSetVerticesData {
             if (binaryInfo.uvs6AttrDesc && binaryInfo.uvs6AttrDesc.count > 0) {
                 const uvs6Data = new Float32Array(parsedGeometry, binaryInfo.uvs6AttrDesc.offset, binaryInfo.uvs6AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
-                    for (var index = 1; index < uvs6Data.length; index += 2) {
+                    for (let index = 1; index < uvs6Data.length; index += 2) {
                         uvs6Data[index] = 1 - uvs6Data[index];
                     }
                 }
@@ -1294,10 +1294,10 @@ export class Geometry implements IGetSetVerticesData {
             }
 
             if (binaryInfo.matricesIndicesAttrDesc && binaryInfo.matricesIndicesAttrDesc.count > 0) {
-                var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
-                var floatIndices = [];
+                const matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesAttrDesc.offset, binaryInfo.matricesIndicesAttrDesc.count);
+                const floatIndices = [];
                 for (let i = 0; i < matricesIndicesData.length; i++) {
-                    var index = matricesIndicesData[i];
+                    const index = matricesIndicesData[i];
                     floatIndices.push(index & 0x000000ff);
                     floatIndices.push((index & 0x0000ff00) >> 8);
                     floatIndices.push((index & 0x00ff0000) >> 16);
@@ -1307,10 +1307,10 @@ export class Geometry implements IGetSetVerticesData {
             }
 
             if (binaryInfo.matricesIndicesExtraAttrDesc && binaryInfo.matricesIndicesExtraAttrDesc.count > 0) {
-                var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesExtraAttrDesc.offset, binaryInfo.matricesIndicesExtraAttrDesc.count);
-                var floatIndices = [];
+                const matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesExtraAttrDesc.offset, binaryInfo.matricesIndicesExtraAttrDesc.count);
+                const floatIndices = [];
                 for (let i = 0; i < matricesIndicesData.length; i++) {
-                    var index = matricesIndicesData[i];
+                    const index = matricesIndicesData[i];
                     floatIndices.push(index & 0x000000ff);
                     floatIndices.push((index & 0x0000ff00) >> 8);
                     floatIndices.push((index & 0x00ff0000) >> 16);
@@ -1382,10 +1382,10 @@ export class Geometry implements IGetSetVerticesData {
 
             if (parsedGeometry.matricesIndices) {
                 if (!parsedGeometry.matricesIndices._isExpanded) {
-                    var floatIndices = [];
+                    const floatIndices = [];
 
                     for (let i = 0; i < parsedGeometry.matricesIndices.length; i++) {
-                        var matricesIndex = parsedGeometry.matricesIndices[i];
+                        const matricesIndex = parsedGeometry.matricesIndices[i];
 
                         floatIndices.push(matricesIndex & 0x000000ff);
                         floatIndices.push((matricesIndex & 0x0000ff00) >> 8);
@@ -1402,10 +1402,10 @@ export class Geometry implements IGetSetVerticesData {
 
             if (parsedGeometry.matricesIndicesExtra) {
                 if (!parsedGeometry.matricesIndicesExtra._isExpanded) {
-                    var floatIndices = [];
+                    const floatIndices = [];
 
                     for (let i = 0; i < parsedGeometry.matricesIndicesExtra.length; i++) {
-                        var matricesIndex = parsedGeometry.matricesIndicesExtra[i];
+                        const matricesIndex = parsedGeometry.matricesIndicesExtra[i];
 
                         floatIndices.push(matricesIndex & 0x000000ff);
                         floatIndices.push((matricesIndex & 0x0000ff00) >> 8);
@@ -1487,7 +1487,7 @@ export class Geometry implements IGetSetVerticesData {
         for (let i = 0; i < size; i += 4) {
             let weight = 0.0;
             let firstZeroWeight = -1;
-            for (var j = 0; j < 4; j++) {
+            for (let j = 0; j < 4; j++) {
                 const w = matricesWeights[i + j];
                 weight += w;
                 if (w < epsilon && firstZeroWeight < 0) {
@@ -1495,7 +1495,7 @@ export class Geometry implements IGetSetVerticesData {
                 }
             }
             if (matricesWeightsExtra) {
-                for (var j = 0; j < 4; j++) {
+                for (let j = 0; j < 4; j++) {
                     const w = matricesWeightsExtra[i + j];
                     weight += w;
                     if (w < epsilon && firstZeroWeight < 0) {
@@ -1508,11 +1508,11 @@ export class Geometry implements IGetSetVerticesData {
             }
             if (weight > epsilon) {
                 const mweight = 1.0 / weight;
-                for (var j = 0; j < 4; j++) {
+                for (let j = 0; j < 4; j++) {
                     matricesWeights[i + j] *= mweight;
                 }
                 if (matricesWeightsExtra) {
-                    for (var j = 0; j < 4; j++) {
+                    for (let j = 0; j < 4; j++) {
                         matricesWeightsExtra[i + j] *= mweight;
                     }
                 }

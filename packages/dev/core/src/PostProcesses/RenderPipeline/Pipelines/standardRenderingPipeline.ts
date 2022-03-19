@@ -1563,7 +1563,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 this.lensFlareComposePostProcess.dispose(camera);
             }
 
-            for (var j = 0; j < this.luminanceDownSamplePostProcesses.length; j++) {
+            for (let j = 0; j < this.luminanceDownSamplePostProcesses.length; j++) {
                 this.luminanceDownSamplePostProcesses[j].dispose(camera);
             }
 
@@ -1589,11 +1589,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 this.fxaaPostProcess.dispose(camera);
             }
 
-            for (var j = 0; j < this.blurHPostProcesses.length; j++) {
+            for (let j = 0; j < this.blurHPostProcesses.length; j++) {
                 this.blurHPostProcesses[j].dispose(camera);
             }
 
-            for (var j = 0; j < this.blurVPostProcesses.length; j++) {
+            for (let j = 0; j < this.blurVPostProcesses.length; j++) {
                 this.blurVPostProcesses[j].dispose(camera);
             }
         }

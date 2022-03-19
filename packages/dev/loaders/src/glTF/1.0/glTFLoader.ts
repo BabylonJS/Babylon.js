@@ -577,7 +577,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
         let foundBone = false;
         let parentBone: Nullable<Bone> = null;
 
-        for (var j = 0; j < i; j++) {
+        for (let j = 0; j < i; j++) {
             const jointNode = getJointNode(gltfRuntime, skins.jointNames[j]);
 
             if (!jointNode) {
@@ -638,7 +638,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
             continue;
         }
 
-        for (var j = 0; j < bones.length; j++) {
+        for (let j = 0; j < bones.length; j++) {
             if (bones[j].id === jointNode.id) {
                 newSkeleton.bones.push(bones[j]);
                 break;
@@ -720,7 +720,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
                     if (GLTFFileLoader.HomogeneousCoordinates) {
                         tempVertexData.positions = new Float32Array(buffer.length - buffer.length / 4);
 
-                        for (var j = 0; j < buffer.length; j += 4) {
+                        for (let j = 0; j < buffer.length; j += 4) {
                             tempVertexData.positions[j] = buffer[j];
                             tempVertexData.positions[j + 1] = buffer[j + 1];
                             tempVertexData.positions[j + 2] = buffer[j + 2];
@@ -761,7 +761,7 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
             } else {
                 // Set indices on the fly
                 const indices: number[] = [];
-                for (var j = 0; j < (<FloatArray>tempVertexData.positions).length / 3; j++) {
+                for (let j = 0; j < (<FloatArray>tempVertexData.positions).length / 3; j++) {
                     indices.push(j);
                 }
 

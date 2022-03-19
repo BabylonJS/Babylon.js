@@ -232,6 +232,7 @@ export class SubMesh implements ICullable {
      * Returns true if this submesh covers the entire parent mesh
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get IsGlobal(): boolean {
         return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices();
     }
@@ -301,7 +302,7 @@ export class SubMesh implements ICullable {
 
         if (rootMaterial === null || rootMaterial === undefined) {
             return this._mesh.getScene().defaultMaterial;
-        } else if (this._IsMultiMaterial(rootMaterial)) {
+        } else if (this._isMultiMaterial(rootMaterial)) {
             const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 
             if (this._currentMaterial !== effectiveMaterial) {
@@ -315,7 +316,7 @@ export class SubMesh implements ICullable {
         return rootMaterial;
     }
 
-    private _IsMultiMaterial(material: Material): material is MultiMaterial {
+    private _isMultiMaterial(material: Material): material is MultiMaterial {
         return (material as MultiMaterial).getSubMaterial !== undefined;
     }
 

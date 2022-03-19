@@ -1,5 +1,5 @@
 import { Vector4, Vector3 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
@@ -144,7 +144,6 @@ export function CreateTorusKnotVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.radius
- * @param scene defines the hosting scene
  * @param options.tube
  * @param options.radialSegments
  * @param options.tubularSegments
@@ -154,6 +153,7 @@ export function CreateTorusKnotVertexData(options: {
  * @param options.sideOrientation
  * @param options.frontUVs
  * @param options.backUVs
+ * @param scene defines the hosting scene
  * @returns the torus knot mesh
  * @see  https://doc.babylonjs.com/how_to/set_shapes#torus-knot
  */
@@ -189,6 +189,7 @@ export function CreateTorusKnot(
  * @deprecated use CreateTorusKnot instead
  */
 export const TorusKnotBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTorusKnot,
 };
 
