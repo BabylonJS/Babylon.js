@@ -1,4 +1,6 @@
 export * from "./baseTexture";
+// eslint-disable-next-line import/export
+export * from "./baseTexture.polynomial";
 export * from "./colorGradingTexture";
 export * from "./cubeTexture";
 export * from "./dynamicTexture";

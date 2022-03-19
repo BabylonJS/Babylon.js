@@ -59,3 +59,5 @@ export * from "./PerformanceViewer/index";
 export * from "./coroutine";
 export * from "./guid";
 export * from "./error";
+// eslint-disable-next-line import/export
+export * from "./observableCoroutine";

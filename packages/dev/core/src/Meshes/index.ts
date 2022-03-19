@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 export * from "./abstractMesh";
 export * from "./Compression/index";
 export * from "./csg";
@@ -15,9 +16,11 @@ export * from "./meshSimplificationSceneComponent";
 export * from "./polygonMesh";
 export * from "./geodesicMesh";
 export * from "./subMesh";
+export * from "./subMesh.project";
 export * from "./meshLODLevel";
 export * from "./transformNode";
 export * from "./Builders/index";
 export * from "./WebGL/webGLDataBuffer";
 export * from "./WebGPU/webgpuDataBuffer";
 import "./thinInstanceMesh";
+export * from "./thinInstanceMesh";
