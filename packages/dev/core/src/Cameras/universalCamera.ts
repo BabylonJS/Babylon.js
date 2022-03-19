@@ -19,7 +19,7 @@ Node.AddNodeConstructor("FreeCamera", (name, scene) => {
  */
 export class UniversalCamera extends TouchCamera {
     /**
-     * Defines the gamepad rotation sensiblity.
+     * Defines the gamepad rotation sensibility.
      * This is the threshold from when rotation starts to be accounted for to prevent jittering.
      */
     public get gamepadAngularSensibility(): number {
@@ -39,8 +39,8 @@ export class UniversalCamera extends TouchCamera {
     }
 
     /**
-     * Defines the gamepad move sensiblity.
-     * This is the threshold from when moving starts to be accounted for for to prevent jittering.
+     * Defines the gamepad move sensibility.
+     * This is the threshold from when moving starts to be accounted for to prevent jittering.
      */
     public get gamepadMoveSensibility(): number {
         const gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];

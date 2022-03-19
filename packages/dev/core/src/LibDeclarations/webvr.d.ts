@@ -47,7 +47,7 @@ interface VRDisplay extends EventTarget {
     /**
      * Passing the value returned by `requestAnimationFrame` to
      * `cancelAnimationFrame` will unregister the callback.
-     * @param handle Define the hanle of the request to cancel
+     * @param handle Define the handle of the request to cancel
      */
     cancelAnimationFrame(handle: number): void;
 

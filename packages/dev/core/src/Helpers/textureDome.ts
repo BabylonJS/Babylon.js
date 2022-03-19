@@ -137,6 +137,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     public set halfDome(enabled: boolean) {
         this._halfDome = enabled;
         this._halfDomeMask.setEnabled(enabled);
+        this._changeTextureMode(this._textureMode);
     }
 
     /**
@@ -144,6 +145,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
      */
     public set crossEye(enabled: boolean) {
         this._crossEye = enabled;
+        this._changeTextureMode(this._textureMode);
     }
 
     /**

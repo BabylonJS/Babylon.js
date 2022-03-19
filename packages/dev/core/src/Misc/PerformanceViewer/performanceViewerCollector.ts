@@ -384,7 +384,7 @@ export class PerformanceViewerCollector {
             startingIndices: new DynamicFloat32Array(InitialArraySize),
         };
 
-        // parse first line seperately to populate ids!
+        // parse first line separately to populate ids!
         const [firstLine, ...dataLines] = lines;
         // make sure we have the correct beginning headers
         if (firstLine.length < 2 || firstLine[timestampIndex] !== TimestampColHeader || firstLine[numPointsIndex] !== NumPointsColHeader) {

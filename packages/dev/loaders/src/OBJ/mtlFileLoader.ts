@@ -191,7 +191,7 @@ export class MTLFileLoader {
      * Gets the texture for the material.
      *
      * If the material is imported from input file,
-     * We sanitize the url to ensure it takes the textre from aside the material.
+     * We sanitize the url to ensure it takes the texture from aside the material.
      *
      * @param rootUrl The root url to load from
      * @param value The value stored in the mtl

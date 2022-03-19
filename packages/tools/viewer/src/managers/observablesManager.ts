@@ -17,7 +17,7 @@ export class ObservablesManager {
 
     /**
      * Will notify when a new model was added to the scene.
-     * Note that added does not neccessarily mean loaded!
+     * Note that added does not necessarily mean loaded!
      */
     public onModelAddedObservable: Observable<ViewerModel>;
     /**

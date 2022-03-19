@@ -272,7 +272,7 @@ export class TextBlock extends Control {
     /**
      * Creates a new TextBlock object
      * @param name defines the name of the control
-     * @param text defines the text to display (emptry string by default)
+     * @param text defines the text to display (empty string by default)
      */
     constructor(
         /**

@@ -229,7 +229,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
 
     private _workingMatrix = Matrix.Identity();
     /**
-     * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
+     * Updates the state of the pose enabled controller and mesh based on the current position and rotation of the controller
      */
     public update() {
         super.update();

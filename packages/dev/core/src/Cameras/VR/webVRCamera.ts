@@ -404,7 +404,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     /**
      * Gets a vrController by name.
-     * @param name The name of the controller to retreive
+     * @param name The name of the controller to retrieve
      * @returns the controller matching the name specified or null if not found
      */
     public getControllerByName(name: string): Nullable<WebVRController> {

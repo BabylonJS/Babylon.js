@@ -95,7 +95,7 @@ export interface IToolType {
     onReset?: () => void;
 }
 
-/** For constructable types, TS requires that you define a seperate interface which constructs your actual interface */
+/** For constructable types, TS requires that you define a separate interface which constructs your actual interface */
 interface IToolConstructable {
     new (getParameters: () => IToolParameters): IToolType;
 }

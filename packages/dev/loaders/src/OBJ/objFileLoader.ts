@@ -148,7 +148,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene the scene the meshes should be added to
      * @param data the OBJ data to load
      * @param rootUrl root url to load from
-     * @returns a promise containg the loaded meshes, particles, skeletons and animations
+     * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
     public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file

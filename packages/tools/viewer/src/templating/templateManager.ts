@@ -461,7 +461,7 @@ export class Template {
 
     /**
      * Show the template using the provided visibilityFunction, or natively using display: flex.
-     * The provided function returns a promise that should be fullfilled when the element is shown.
+     * The provided function returns a promise that should be fulfilled when the element is shown.
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
      * @param visibilityFunction The function to execute to show the template.
@@ -495,7 +495,7 @@ export class Template {
 
     /**
      * Hide the template using the provided visibilityFunction, or natively using display: none.
-     * The provided function returns a promise that should be fullfilled when the element is hidden.
+     * The provided function returns a promise that should be fulfilled when the element is hidden.
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
      * @param visibilityFunction The function to execute to show the template.

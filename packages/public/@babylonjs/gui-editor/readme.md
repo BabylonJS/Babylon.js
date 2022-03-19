@@ -5,7 +5,7 @@ Gui Editor es6
 An extension to easily allow users to create and modify GUI for scenes.
 
 ## Usage
-Currently avalible for local development by selecting "Launch GUI Editor (Chrome)"
+Currently available for local development by selecting "Launch GUI Editor (Chrome)"
 
 ## Current Supported Features
 

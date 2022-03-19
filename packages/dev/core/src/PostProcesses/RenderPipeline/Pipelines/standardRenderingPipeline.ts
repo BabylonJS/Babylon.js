@@ -239,7 +239,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     @serializeAsTexture("lensColorTexture")
     public lensColorTexture: Nullable<Texture> = null;
     /**
-     * The overall strengh for the lens flare effect
+     * The overall strength for the lens flare effect
      */
     @serialize()
     public lensFlareStrength: number = 20.0;
@@ -824,7 +824,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         }
     }
 
-    // Down Sample X4 Post-Processs
+    // Down Sample X4 Post-Process
     private _createDownSampleX4PostProcess(scene: Scene, ratio: number): void {
         const downSampleX4Offsets = new Array<number>(32);
         this.downSampleX4PostProcess = new PostProcess(

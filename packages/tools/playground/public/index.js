@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // Version
 var Versions = {
     Latest: [
@@ -11,20 +12,6 @@ var Versions = {
         "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js",
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
         "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
-        "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js",
-        "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js",
-    ],
-    local: [
-        "//localhost:1337/babylon.js",
-        "//localhost:1337/gui/babylon.gui.min.js",
-        "//localhost:1337/inspector/babylon.inspector.bundle.js",
-        "//localhost:1337/nodeEditor/babylon.nodeEditor.js",
-        "//localhost:1337/guiEditor/babylon.guiEditor.js",
-        "//localhost:1337/materialsLibrary/babylonjs.materials.min.js",
-        "//localhost:1337/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
-        "//localhost:1337/postProcessesLibrary/babylonjs.postProcess.min.js",
-        "//localhost:1337/loaders/babylonjs.loaders.min.js",
-        "//localhost:1337/serializers/babylonjs.serializers.min.js",
         "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js",
         "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js",
     ],

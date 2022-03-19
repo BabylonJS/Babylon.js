@@ -33,7 +33,7 @@ export interface ITextureCreationOptions {
     /** Defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...) (default: Texture.TRILINEAR_SAMPLINGMODE) */
     samplingMode?: number;
 
-    /** Ddefines a callback triggered when the texture has been loaded (default: null) */
+    /** Defines a callback triggered when the texture has been loaded (default: null) */
     onLoad?: Nullable<() => void>;
 
     /** Defines a callback triggered when an error occurred during the loading session (default: null) */

@@ -600,7 +600,7 @@ export class NullEngine extends Engine {
      * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
@@ -609,7 +609,7 @@ export class NullEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
@@ -618,7 +618,7 @@ export class NullEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
 

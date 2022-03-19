@@ -96,7 +96,7 @@ export class SkyMaterial extends PushMaterial {
 
     /**
      * Defines the sun position in the sky on (x,y,z). If the property .useSunPosition is set to false, then
-     * the property is overriden by the inclination and the azimuth and can be read at any moment.
+     * the property is overridden by the inclination and the azimuth and can be read at any moment.
      */
     @serializeAsVector3()
     public sunPosition: Vector3 = new Vector3(0, 100, 0);

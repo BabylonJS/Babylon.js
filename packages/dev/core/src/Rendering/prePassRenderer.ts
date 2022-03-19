@@ -221,7 +221,7 @@ export class PrePassRenderer {
     public disableGammaTransform = false;
 
     /**
-     * Instanciates a prepass renderer
+     * Instantiates a prepass renderer
      * @param scene The scene
      */
     constructor(scene: Scene) {
@@ -235,7 +235,7 @@ export class PrePassRenderer {
 
     /**
      * Creates a new PrePassRenderTarget
-     * This should be the only way to instanciate a `PrePassRenderTarget`
+     * This should be the only way to instantiate a `PrePassRenderTarget`
      * @param name Name of the `PrePassRenderTarget`
      * @param renderTargetTexture RenderTarget the `PrePassRenderTarget` will be attached to.
      * Can be `null` if the created `PrePassRenderTarget` is attached to the scene (default framebuffer).
