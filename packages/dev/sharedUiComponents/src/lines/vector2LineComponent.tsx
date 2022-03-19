@@ -19,6 +19,7 @@ interface IVector2LineComponentProps {
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean; value: Vector2 }> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static defaultProps = {
         step: 0.001, // cm
     };

@@ -14,7 +14,7 @@ export class ColorComponentEntry extends React.Component<IColorComponentEntryPro
     }
 
     updateValue(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
