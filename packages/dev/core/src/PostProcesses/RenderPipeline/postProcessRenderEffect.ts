@@ -48,7 +48,7 @@ export class PostProcessRenderEffect {
      */
     public get isSupported(): boolean {
         for (const index in this._postProcesses) {
-            if (this._postProcesses.hasOwnProperty(index)) {
+            if (Object.prototype.hasOwnProperty.call(this._postProcesses, index)) {
                 const pps = this._postProcesses[index];
                 for (let ppIndex = 0; ppIndex < pps.length; ppIndex++) {
                     if (!pps[ppIndex].isSupported) {
@@ -93,12 +93,12 @@ export class PostProcessRenderEffect {
         }
 
         for (let i = 0; i < cams.length; i++) {
-            var camera = cams[i];
+            const camera = cams[i];
             if (!camera) {
                 continue;
             }
 
-            var cameraName = camera.name;
+            const cameraName = camera.name;
 
             if (this._singleInstance) {
                 cameraKey = 0;
@@ -154,7 +154,7 @@ export class PostProcessRenderEffect {
         }
 
         for (let i = 0; i < cams.length; i++) {
-            var camera: Camera = cams[i];
+            const camera: Camera = cams[i];
             const cameraName: string = camera.name;
             const postProcesses = this._postProcesses[this._singleInstance ? 0 : cameraName];
 
@@ -196,7 +196,7 @@ export class PostProcessRenderEffect {
 
         for (let i = 0; i < cams.length; i++) {
             const camera = cams[i];
-            var cameraName = camera.name;
+            const cameraName = camera.name;
 
             for (let j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                 if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined || camera._postProcesses[this._indicesForCamera[cameraName][j]] === null) {
@@ -233,7 +233,7 @@ export class PostProcessRenderEffect {
         }
 
         for (let i = 0; i < cams.length; i++) {
-            var camera = cams[i];
+            const camera = cams[i];
             const cameraName = camera.name;
             this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                 camera.detachPostProcess(postProcess);

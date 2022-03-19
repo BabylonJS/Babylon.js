@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../../../types";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Observable, Observer } from "../../../Misc/observable";
@@ -490,7 +491,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             this._hardwareScaleLevel = engine.getHardwareScalingLevel();
-            this.bloomKernel = this.bloomKernel;
+            this.bloomKernel = this._bloomKernel;
         });
 
         this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {

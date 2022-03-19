@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 import { serialize } from "../Misc/decorators";
