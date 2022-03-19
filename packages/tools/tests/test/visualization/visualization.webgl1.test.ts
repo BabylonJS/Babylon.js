@@ -12,7 +12,7 @@ import {
 
 // nested BBG, Chibi Rex, DDS2D, Glow layer and LODs
 
-// jest doesn't support cutstom CLI variables
+// jest doesn't support custom CLI variables
 // const engineType = buildTools.checkArgs("--engine", false, true) || "webgl2";
 // const debug = buildTools.checkArgs("--debug", true);
 // const configPath = buildTools.checkArgs("--config", false, true) || "../config.json";

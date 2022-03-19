@@ -87,7 +87,7 @@ export class SceneManager {
      */
     onModelsConfiguredObservable: Observable<IPostConfigurationCallback<Array<ViewerModel>, IModelConfiguration>>;
     /**
-     * Will notify after the envirnoment was configured. Can be used to further configure the environment
+     * Will notify after the environment was configured. Can be used to further configure the environment
      */
     onEnvironmentConfiguredObservable: Observable<
         IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean; ground?: IGroundConfiguration | boolean }>
@@ -127,7 +127,7 @@ export class SceneManager {
     protected _defaultPipelineTextureType: number;
 
     /**
-     * The maximum number of shadows supported by the curent viewer
+     * The maximum number of shadows supported by the current viewer
      */
     protected _maxShadows: number;
     /**
@@ -318,13 +318,13 @@ export class SceneManager {
 
     private _groundMirrorEnabled = true;
     /**
-     * gets wether the reflection is disabled.
+     * gets whether the reflection is disabled.
      */
     public get groundMirrorEnabled(): boolean {
         return this._groundMirrorEnabled;
     }
     /**
-     * sets wether the reflection is disabled.
+     * sets whether the reflection is disabled.
      */
     public set groundMirrorEnabled(value: boolean) {
         if (this._groundMirrorEnabled === value) {
@@ -386,7 +386,7 @@ export class SceneManager {
      * @param optimizerConfiguration
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
-        // if the scen exists, dispose it.
+        // if the scene exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
         }
@@ -485,7 +485,7 @@ export class SceneManager {
         }
 
         if (newConfiguration.lab) {
-            // rendering piplines
+            // rendering pipelines
             if (newConfiguration.lab.defaultRenderingPipelines) {
                 const pipelineConfig = newConfiguration.lab.defaultRenderingPipelines;
                 if (typeof pipelineConfig === "boolean") {
@@ -1332,7 +1332,7 @@ export class SceneManager {
                         //override defaults
                         extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
 
-                        // add the focues meshes to the shadow list
+                        // add the focus meshes to the shadow list
                         this._observablesManager &&
                             this._observablesManager.onModelLoadedObservable.add((model) => {
                                 this._updateShadowRenderList(shadowGenerator, model);
@@ -1373,7 +1373,7 @@ export class SceneManager {
 
     private _updateShadowRenderList(shadowGenerator: ShadowGenerator, model?: ViewerModel, resetList?: boolean) {
         const focusMeshes = model ? model.meshes : this.scene.meshes;
-        // add the focues meshes to the shadow list
+        // add the focus meshes to the shadow list
         const shadownMap = shadowGenerator.getShadowMap();
         if (!shadownMap) {
             return;
@@ -1490,7 +1490,7 @@ export class SceneManager {
     }
 
     /**
-     * Dispoe the entire viewer including the scene and the engine
+     * Dispose the entire viewer including the scene and the engine
      */
     public dispose() {
         // this.onCameraConfiguredObservable.clear();

@@ -35,7 +35,7 @@ declare module "./observable" {
         _coroutineScheduler?: CoroutineScheduler<void>;
 
         /**
-         * Internal disposal method for observable-bsaed coroutine scheduler instance.
+         * Internal disposal method for observable-based coroutine scheduler instance.
          */
         _coroutineSchedulerDispose?: () => void;
 

@@ -11,19 +11,19 @@ import { Scene } from "../../../scene";
  */
 export class VectorMergerBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the swizzle for x (meaning which compoent to affect to the output.x)
+     * Gets or sets the swizzle for x (meaning which component to affect to the output.x)
      */
     public xSwizzle: "x" | "y" | "z" | "w" = "x";
     /**
-     * Gets or sets the swizzle for y (meaning which compoent to affect to the output.y)
+     * Gets or sets the swizzle for y (meaning which component to affect to the output.y)
      */
     public ySwizzle: "x" | "y" | "z" | "w" = "y";
     /**
-     * Gets or sets the swizzle for z (meaning which compoent to affect to the output.z)
+     * Gets or sets the swizzle for z (meaning which component to affect to the output.z)
      */
     public zSwizzle: "x" | "y" | "z" | "w" = "z";
     /**
-     * Gets or sets the swizzle for w (meaning which compoent to affect to the output.w)
+     * Gets or sets the swizzle for w (meaning which component to affect to the output.w)
      */
     public wSwizzle: "x" | "y" | "z" | "w" = "w";
 

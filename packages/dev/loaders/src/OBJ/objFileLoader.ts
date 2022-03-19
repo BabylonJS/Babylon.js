@@ -149,9 +149,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene the scene the meshes should be added to
      * @param data the OBJ data to load
      * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
+     * @param onProgress event that fires when loading progress has occurred
      * @param fileName Defines the name of the file to load
-     * @returns a promise containg the loaded meshes, particles, skeletons and animations
+     * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
     public importMeshAsync(
         meshesNames: any,
@@ -180,7 +180,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene the scene the objects should be added to
      * @param data the OBJ data to load
      * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
+     * @param onProgress event that fires when loading progress has occurred
      * @param fileName Defines the name of the file to load
      * @returns a promise which completes when objects have been loaded to the scene
      */

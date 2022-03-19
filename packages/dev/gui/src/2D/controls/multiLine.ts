@@ -73,7 +73,7 @@ export class MultiLine extends Control {
 
     /**
      * Adds new points to the point collection
-     * @param items defines the list of items (mesh, control or 2d coordiantes) to add
+     * @param items defines the list of items (mesh, control or 2d coordinates) to add
      * @returns the list of created MultiLinePoint
      */
     public add(...items: (AbstractMesh | Control | { x: string | number; y: string | number })[]): MultiLinePoint[] {
@@ -82,7 +82,7 @@ export class MultiLine extends Control {
 
     /**
      * Adds a new point to the point collection
-     * @param item defines the item (mesh, control or 2d coordiantes) to add
+     * @param item defines the item (mesh, control or 2d coordinates) to add
      * @returns the created MultiLinePoint
      */
     public push(item?: AbstractMesh | Control | { x: string | number; y: string | number }): MultiLinePoint {

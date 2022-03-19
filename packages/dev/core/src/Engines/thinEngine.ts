@@ -278,7 +278,7 @@ export class ThinEngine {
     public cullBackFaces: Nullable<boolean> = null;
 
     /**
-     * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
+     * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foreground
      */
     public renderEvenInBackground = true;
 
@@ -657,7 +657,7 @@ export class ThinEngine {
     /** @hidden */
     protected _shaderPlatformName: string;
     /**
-     * Gets the shader platfrom name used by the effects.
+     * Gets the shader platform name used by the effects.
      */
     public get shaderPlatformName(): string {
         return this._shaderPlatformName;
@@ -707,7 +707,7 @@ export class ThinEngine {
     }
 
     /**
-     * Create a canvas. This method is overiden by other engines
+     * Create a canvas. This method is overridden by other engines
      * @param width width
      * @param height height
      * @return ICanvas interface
@@ -726,7 +726,7 @@ export class ThinEngine {
 
     /**
      * Creates a new engine
-     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
+     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
      * @param antialias defines enable antialiasing (default: false)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)

@@ -666,7 +666,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors
+     * Gets a new Vector2 set with the maximal coordinate values from the "left" and "right" vectors
      * @param left defines 1st vector
      * @param right defines 2nd vector
      * @returns a new Vector2
@@ -709,7 +709,7 @@ export class Vector2 {
      * @param p0 defines 1st triangle point
      * @param p1 defines 2nd triangle point
      * @param p2 defines 3rd triangle point
-     * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
+     * @returns true if the point "p" is in the triangle defined by the vectors "p0", "p1", "p2"
      */
     public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>) {
         const a = (1 / 2) * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
@@ -785,7 +785,7 @@ export class Vector2 {
 /**
  * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
- * It can represent etiher the coordinates of a point the space, either a direction
+ * It can represent either the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
  */
 export class Vector3 {
@@ -1196,7 +1196,7 @@ export class Vector3 {
     }
 
     /**
-     * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the given floats
+     * Returns a new Vector3 set with the result of the multiplication of the current Vector3 coordinates by the given floats
      * @param x defines the x coordinate of the operand
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
@@ -1803,7 +1803,7 @@ export class Vector3 {
 
     /**
      * Returns a new Vector3 set with the result of the transformation by the given matrix of the given vector.
-     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @returns the transformed Vector3
@@ -1816,7 +1816,7 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
-     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
@@ -1827,7 +1827,7 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
-     * This method computes tranformed coordinates only, not transformed direction vectors
+     * This method computes transformed coordinates only, not transformed direction vectors
      * @param x define the x coordinate of the source vector
      * @param y define the y coordinate of the source vector
      * @param z define the z coordinate of the source vector
