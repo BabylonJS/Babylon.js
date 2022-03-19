@@ -281,7 +281,7 @@ export class Sound {
                         case "String":
                             urls.push(urlOrArrayBuffer);
                         // eslint-disable-next-line no-fallthrough
-                        case "Array": 
+                        case "Array":
                             if (urls.length === 0) {
                                 urls = urlOrArrayBuffer;
                             }

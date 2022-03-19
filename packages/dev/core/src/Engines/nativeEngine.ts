@@ -37,7 +37,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
-if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self,"_native")) {
+if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self, "_native")) {
     let __native: INative;
     Object.defineProperty(self, "_native", {
         get: () => __native,

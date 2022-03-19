@@ -1023,7 +1023,7 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return vec2Value;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:                            
+                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return vec2Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                         break;

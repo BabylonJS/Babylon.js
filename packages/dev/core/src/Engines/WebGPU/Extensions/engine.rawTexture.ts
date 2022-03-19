@@ -138,7 +138,7 @@ WebGPUEngine.prototype.updateRawCubeTexture = function (
     format: number,
     type: number,
     invertY: boolean,
-    compression: Nullable<string> = null,
+    compression: Nullable<string> = null
 ): void {
     texture._bufferViewArray = bufferView;
     texture.invertY = invertY;

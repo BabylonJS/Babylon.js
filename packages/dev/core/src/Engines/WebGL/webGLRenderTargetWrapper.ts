@@ -13,7 +13,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     public _depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public _MSAAFramebuffer: Nullable<WebGLFramebuffer> = null;
-    
+
     // Multiview
     public _colorTextureArray: Nullable<WebGLTexture> = null;
     public _depthStencilTextureArray: Nullable<WebGLTexture> = null;

@@ -331,7 +331,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
         this._mrtEnabledMask = 0xffff; // all textures are enabled at start (meaning we can write to them). Calls to setMRTAttachments may disable some
 
-        const bits: number[] = [0, 0];            
+        const bits: number[] = [0, 0];
         let indexBits = 0,
             mask = 0,
             numRT = 0;

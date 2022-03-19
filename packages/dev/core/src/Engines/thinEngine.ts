@@ -4157,7 +4157,14 @@ export class ThinEngine {
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
+    public static _FileToolsLoadImage(
+        input: string | ArrayBuffer | ArrayBufferView | Blob,
+        onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+        onError: (message?: string, exception?: any) => void,
+        offlineProvider: Nullable<IOfflineProvider>,
+        mimeType?: string,
+        imageBitmapOptions?: ImageBitmapOptions
+    ): Nullable<HTMLImageElement> {
         throw _WarnImport("FileTools");
     }
 
@@ -4186,7 +4193,17 @@ export class ThinEngine {
      * @returns the raw texture inside an InternalTexture
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+    public createRawTexture(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
@@ -4203,7 +4220,16 @@ export class ThinEngine {
      * @returns the cube texture as an InternalTexture
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number,type: number, generateMipMaps: boolean, invertY: boolean,samplingMode: number, compression: Nullable<string> = null): InternalTexture {
+    public createRawCubeTexture(
+        data: Nullable<ArrayBufferView[]>,
+        size: number,
+        format: number,
+        type: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null
+    ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
@@ -4222,7 +4248,18 @@ export class ThinEngine {
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+    public createRawTexture3D(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
@@ -4241,7 +4278,18 @@ export class ThinEngine {
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null,textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+    public createRawTexture2DArray(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
@@ -5606,7 +5654,14 @@ export class ThinEngine {
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+    public static _FileToolsLoadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (ev: ProgressEvent) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+    ): IFileRequest {
         throw _WarnImport("FileTools");
     }
 
