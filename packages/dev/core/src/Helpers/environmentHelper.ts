@@ -193,26 +193,26 @@ export class EnvironmentHelper {
     /**
      * Default ground texture URL.
      */
-    private static _groundTextureCDNUrl = "https://assets.babylonjs.com/environments/backgroundGround.png";
+    private static _GroundTextureCDNUrl = "https://assets.babylonjs.com/environments/backgroundGround.png";
 
     /**
      * Default skybox texture URL.
      */
-    private static _skyboxTextureCDNUrl = "https://assets.babylonjs.com/environments/backgroundSkybox.dds";
+    private static _SkyboxTextureCDNUrl = "https://assets.babylonjs.com/environments/backgroundSkybox.dds";
 
     /**
      * Default environment texture URL.
      */
-    private static _environmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.env";
+    private static _EnvironmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.env";
 
     /**
      * Creates the default options for the helper.
      */
-    private static _getDefaultOptions(): IEnvironmentHelperOptions {
+    private static _GetDefaultOptions(): IEnvironmentHelperOptions {
         return {
             createGround: true,
             groundSize: 15,
-            groundTexture: this._groundTextureCDNUrl,
+            groundTexture: this._GroundTextureCDNUrl,
             groundColor: new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
             groundOpacity: 0.9,
             enableGroundShadow: true,
@@ -230,7 +230,7 @@ export class EnvironmentHelper {
 
             createSkybox: true,
             skyboxSize: 20,
-            skyboxTexture: this._skyboxTextureCDNUrl,
+            skyboxTexture: this._SkyboxTextureCDNUrl,
             skyboxColor: new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
 
             backgroundYRotation: 0,
@@ -238,7 +238,7 @@ export class EnvironmentHelper {
             rootPosition: Vector3.Zero(),
 
             setupImageProcessing: true,
-            environmentTexture: this._environmentTextureCDNUrl,
+            environmentTexture: this._EnvironmentTextureCDNUrl,
             cameraExposure: 0.8,
             cameraContrast: 1.2,
             toneMappingEnabled: true,
@@ -339,7 +339,7 @@ export class EnvironmentHelper {
      */
     constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {
         this._options = {
-            ...EnvironmentHelper._getDefaultOptions(),
+            ...EnvironmentHelper._GetDefaultOptions(),
             ...options,
         };
         this._scene = scene;

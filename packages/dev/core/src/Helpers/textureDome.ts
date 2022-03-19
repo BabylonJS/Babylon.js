@@ -211,6 +211,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             mesh?: Mesh;
         },
         scene: Scene,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         protected onError: Nullable<(message?: string, exception?: any) => void> = null
     ) {
         super(name, scene);
@@ -304,7 +305,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
                     this._texture.uOffset = -1;
                 }
                 break;
-            case TextureDome.MODE_SIDEBYSIDE:
+            case TextureDome.MODE_SIDEBYSIDE: {
                 // in half-dome mode the uScale should be double of 360 texture
                 // Use 0.99999 to boost perf by not switching program
                 this._texture.uScale = this._halfDome ? 0.99999 : 0.5;
@@ -322,6 +323,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
                     }
                 });
                 break;
+            }
             case TextureDome.MODE_TOPBOTTOM:
                 // in half-dome mode the vScale should be double of 360 texture
                 // Use 0.99999 to boost perf by not switching program
