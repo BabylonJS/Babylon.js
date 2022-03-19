@@ -189,11 +189,11 @@ export abstract class EffectLayer {
         this._mainTexture.setMaterialForRendering(mesh, material);
         if (Array.isArray(mesh)) {
             for (let i = 0; i < mesh.length; ++i) {
-                const mesh_ = mesh[i];
+                const currentMesh = mesh[i];
                 if (!material) {
-                    delete this._materialForRendering[mesh_.uniqueId];
+                    delete this._materialForRendering[currentMesh.uniqueId];
                 } else {
-                    this._materialForRendering[mesh_.uniqueId] = [mesh_, material];
+                    this._materialForRendering[currentMesh.uniqueId] = [currentMesh, material];
                 }
             }
         } else {
@@ -489,6 +489,7 @@ export abstract class EffectLayer {
      * Adds specific effects defines.
      * @param defines The defines to add specifics to.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _addCustomEffectDefines(defines: string[]): void {
         // Nothing to add by default.
     }
@@ -781,6 +782,7 @@ export abstract class EffectLayer {
      * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _shouldRenderMesh(mesh: AbstractMesh): boolean {
         return true;
     }
@@ -797,7 +799,6 @@ export abstract class EffectLayer {
 
     /**
      * Returns true if the mesh should render, otherwise false.
-     * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
     protected _shouldRenderEmissiveTextureForMesh(): boolean {
@@ -973,6 +974,7 @@ export abstract class EffectLayer {
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         return false;
     }
