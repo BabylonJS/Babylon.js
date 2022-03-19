@@ -1828,7 +1828,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         let index: number;
         const engine = this.getEngine();
-        
+
         // Pending data
         if (this._pendingData.length > 0) {
             return false;
@@ -1854,8 +1854,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             if (!mesh.isReady(true)) {
-               isReady = false;
-               continue;
+                isReady = false;
+                continue;
             }
 
             const hardwareInstancedRendering =
@@ -1896,7 +1896,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                         }
                     }
                 }
-            }      
+            }
         }
 
         if (!isReady) {
@@ -1906,7 +1906,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Effects
         if (!engine.areAllEffectsReady()) {
             return false;
-        }    
+        }
 
         // Render targets
         if (checkRenderTargets) {
