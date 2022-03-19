@@ -6,6 +6,7 @@
         "**/node_modules": true,
         "**/dist": false,
         "**/@babylonjs/**/*.{js|ts|map}": true,
-        "**/.rollup.cache": true
+        "**/.rollup.cache": true,
+        "**/packages/dev/core/src/Shaders/**/*.ts": true,
     },
 }

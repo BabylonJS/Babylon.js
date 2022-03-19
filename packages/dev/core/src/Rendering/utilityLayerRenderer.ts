@@ -167,7 +167,7 @@ export class UtilityLayerRenderer implements IDisposable {
         this.utilityLayerScene.detachControl();
 
         if (handleEvents) {
-            this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo, eventState) => {
+            this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo) => {
                 if (!this.utilityLayerScene.activeCamera) {
                     return;
                 }
