@@ -56,7 +56,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
             }
             case GradientGridMode.Color4: {
                 const newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
-                gradients.push(newStepColor);                
+                gradients.push(newStepColor);
                 break;
             }
             case GradientGridMode.Color3: {
