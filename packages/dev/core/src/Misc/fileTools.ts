@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { WebRequest } from "./webRequest";
 import { IsWindowObjectExist } from "./domManagement";
 import { Nullable } from "../types";
@@ -14,7 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 
-const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
+const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
 /** @ignore */
 export class LoadFileError extends RuntimeError {
@@ -24,8 +25,7 @@ export class LoadFileError extends RuntimeError {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
-     * @param request defines the optional web request
-     * @param file defines the optional file
+     * @param object defines the optional web request
      */
     constructor(message: string, object?: WebRequest | File) {
         super(message, ErrorCodes.LoadFileError);
@@ -306,9 +306,9 @@ export const ReadFile = (
         abort: () => reader.abort(),
     };
 
-    reader.onloadend = (e) => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+    reader.onloadend = () => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
     if (onError) {
-        reader.onerror = (e) => {
+        reader.onerror = () => {
             onError(new ReadFileError(`Unable to read ${file.name}`, file));
         };
     }
@@ -653,7 +653,7 @@ export const IsFileURL = (): boolean => {
  * @hidden
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
-    return base64DataUrlRegEx.test(uri);
+    return Base64DataUrlRegEx.test(uri);
 };
 
 /**

@@ -135,7 +135,7 @@
             {
                 "selector": "variable",
                 "modifiers": ["const", "global"],
-                "format": ["PascalCase"]
+                "format": ["PascalCase", "camelCase"]
             },       
             {
                 "selector": "function",
@@ -145,7 +145,8 @@
             {
                 "selector": "function",
                 "modifiers": ["exported", "global"],
-                "format": ["PascalCase"]
+                "format": ["PascalCase", "camelCase"],
+                "leadingUnderscore": "allow"
             },
             {
                 "selector": "interface",

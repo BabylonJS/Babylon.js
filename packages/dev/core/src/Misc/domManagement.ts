@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Checks if the window object exists
  * @returns true if the window object exists

@@ -1,7 +1,7 @@
 import { Observable } from "./observable";
 import { AsyncCoroutine, CoroutineStep, CoroutineScheduler, runCoroutineAsync, inlineScheduler } from "./coroutine";
 
-function createObservableScheduler<T>(observable: Observable<any>): { scheduler: CoroutineScheduler<T>; dispose: () => void } {
+function CreateObservableScheduler<T>(observable: Observable<any>): { scheduler: CoroutineScheduler<T>; dispose: () => void } {
     const coroutines = new Array<AsyncCoroutine<T>>();
     const onSteps = new Array<(stepResult: CoroutineStep<T>) => void>();
     const onErrors = new Array<(stepError: any) => void>();
@@ -28,6 +28,7 @@ function createObservableScheduler<T>(observable: Observable<any>): { scheduler:
 }
 
 declare module "./observable" {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export interface Observable<T> {
         /**
          * Internal observable-based coroutine scheduler instance.
@@ -55,7 +56,7 @@ declare module "./observable" {
 
 Observable.prototype.runCoroutineAsync = function (coroutine: AsyncCoroutine<void>) {
     if (!this._coroutineScheduler) {
-        const schedulerAndDispose = createObservableScheduler<void>(this);
+        const schedulerAndDispose = CreateObservableScheduler<void>(this);
         this._coroutineScheduler = schedulerAndDispose.scheduler;
         this._coroutineSchedulerDispose = schedulerAndDispose.dispose;
     }

@@ -49,7 +49,7 @@ export class MeshExploder {
         let shortestToCenter = Number.MAX_VALUE;
         for (let index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
-                var mesh = this._meshes[index];
+                const mesh = this._meshes[index];
                 const boundingInfo = mesh.getBoundingInfo();
                 if (boundingInfo) {
                     totalCenters.addInPlace(boundingInfo.boundingBox.centerWorld);
@@ -59,7 +59,7 @@ export class MeshExploder {
         averageCenter = totalCenters.scale(1 / this._meshes.length);
         for (let index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
-                var mesh = this._meshes[index];
+                const mesh = this._meshes[index];
                 const boundingInfo = mesh.getBoundingInfo();
                 if (boundingInfo) {
                     const distanceToCenter = boundingInfo.boundingBox.centerWorld.subtract(averageCenter).lengthSquared();

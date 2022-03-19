@@ -36,6 +36,7 @@ export class Logger {
      * Gets a value indicating the number of loading errors
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static errorsCount = 0;
 
     /**
@@ -89,6 +90,7 @@ export class Logger {
         return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _LogDisabled(message: string, limit?: number): void {
         // nothing to do
     }
@@ -106,6 +108,7 @@ export class Logger {
         Logger._GenerateLimitMessage(message, 0);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _WarnDisabled(message: string, limit?: number): void {
         // nothing to do
     }
@@ -123,6 +126,7 @@ export class Logger {
         Logger._GenerateLimitMessage(message, 1);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _ErrorDisabled(message: string, limit?: number): void {
         // nothing to do
     }

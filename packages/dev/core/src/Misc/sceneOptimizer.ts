@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Scene, IDisposable } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -31,7 +32,6 @@ export class SceneOptimization {
     /**
      * Creates the SceneOptimization object
      * @param priority defines the priority of this optimization (0 by default which means first in the list)
-     * @param desc defines the description associated with the optimization
      */
     constructor(
         /**

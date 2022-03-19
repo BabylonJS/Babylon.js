@@ -10,7 +10,6 @@ export * from "./filesInput";
 export * from "./HighDynamicRange/index";
 export * from "./khronosTextureContainer";
 export * from "./observable";
-export * from "./observableCoroutine";
 export * from "./performanceMonitor";
 export * from "./promise";
 export * from "./sceneOptimizer";

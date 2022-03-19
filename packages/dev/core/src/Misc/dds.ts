@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { Constants } from "../Engines/constants";
@@ -499,7 +500,7 @@ export class DDSTools {
                     computeFormats = true;
                     bpp = 128;
                     break;
-                case FOURCC_DX10:
+                case FOURCC_DX10: {
                     // There is an additionnal header so dataOffset need to be changed
                     dataOffset += 5 * 4; // 5 uints
 
@@ -526,6 +527,8 @@ export class DDSTools {
                     if (supported) {
                         break;
                     }
+                }
+                // eslint-disable-next-line no-fallthrough
                 default:
                     console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
                     return;

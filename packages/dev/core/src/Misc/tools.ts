@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Nullable, float } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
@@ -1036,11 +1037,6 @@ export class Tools {
         return DecodeBase64UrlToBinary(uri);
     }
 
-    /**
-     * Function used to get the absolute url.
-     * Override for custom implementation.
-     * @param url
-     */
     public static GetAbsoluteUrl: (url: string) => string =
         typeof document === "object"
             ? (url) => {
