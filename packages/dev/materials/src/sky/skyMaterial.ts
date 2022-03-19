@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
 import { Vector3, Matrix, Quaternion } from "core/Maths/math.vector";
@@ -165,10 +166,9 @@ export class SkyMaterial extends PushMaterial {
      * Child classes can use it to update shaders
      * @param mesh defines the mesh to check
      * @param subMesh defines which submesh to check
-     * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;

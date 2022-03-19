@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
 import { Matrix } from "core/Maths/math.vector";
@@ -154,8 +155,8 @@ export class TriPlanarMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (MaterialFlags.DiffuseTextureEnabled) {
-                    var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
-                    var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
+                    const textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
+                    const textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
 
                     for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
@@ -168,8 +169,8 @@ export class TriPlanarMaterial extends PushMaterial {
                     }
                 }
                 if (MaterialFlags.BumpTextureEnabled) {
-                    var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
-                    var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
+                    const textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
+                    const textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
 
                     for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
