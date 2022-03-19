@@ -9,7 +9,6 @@ export * from "./particleHelper";
 export * from "./particleSystem";
 
 import "./particleSystemComponent";
-export * from "./particleSystemComponent";
 export * from "./particleSystemSet";
 export * from "./solidParticle";
 export * from "./solidParticleSystem";

@@ -400,7 +400,7 @@ export class SolidParticleSystem implements IDisposable {
 
             // compute the barycenter of the shape
             barycenter.copyFromFloats(0, 0, 0);
-            var v: number;
+            let v: number;
             for (v = 0; v < shape.length; v++) {
                 barycenter.addInPlace(shape[v]);
             }
@@ -415,7 +415,7 @@ export class SolidParticleSystem implements IDisposable {
                 minimum.minimizeInPlaceFromFloats(shape[v].x, shape[v].y, shape[v].z);
                 maximum.maximizeInPlaceFromFloats(shape[v].x, shape[v].y, shape[v].z);
             }
-            var bInfo;
+            let bInfo;
             if (this._particlesIntersect) {
                 bInfo = new BoundingInfo(minimum, maximum);
             }
@@ -567,7 +567,7 @@ export class SolidParticleSystem implements IDisposable {
         if (this._useModelMaterial) {
             const materialId = model._material!.uniqueId;
             const materialIndexesById = this._materialIndexesById;
-            if (!materialIndexesById.hasOwnProperty(materialId)) {
+            if (!Object.prototype.hasOwnProperty.call(materialIndexesById, materialId)) {
                 materialIndexesById[materialId] = this._materials.length;
                 this._materials.push(model._material!);
             }
@@ -1985,6 +1985,7 @@ export class SolidParticleSystem implements IDisposable {
      * @example : just set a vertex particle position or color
      * @returns the sps
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateParticleVertex(particle: SolidParticle, vertex: SolidParticleVertex, pt: number): SolidParticleSystem {
         return this;
     }
@@ -1996,6 +1997,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {}
     /**
      * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
@@ -2005,5 +2007,6 @@ export class SolidParticleSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {}
 }

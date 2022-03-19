@@ -218,14 +218,14 @@ export class Grid extends Container {
             return this;
         }
 
-        for (var x = 0; x < this._rowDefinitions.length; x++) {
+        for (let x = 0; x < this._rowDefinitions.length; x++) {
             const key = `${x}:${index}`;
             const cell = this._cells[key];
 
             this._removeCell(cell, key);
         }
 
-        for (var x = 0; x < this._rowDefinitions.length; x++) {
+        for (let x = 0; x < this._rowDefinitions.length; x++) {
             for (let y = index + 1; y < this._columnDefinitions.length; y++) {
                 const previousKey = `${x}:${y - 1}`;
                 const key = `${x}:${y}`;
