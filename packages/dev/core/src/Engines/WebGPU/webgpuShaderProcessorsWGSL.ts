@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../../types";
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
-import { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { RemoveComments } from "../../Misc/codeStringParsingTools";
 
@@ -105,14 +105,14 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         this._varyingNamesWGSL = [];
     }
 
-    public preProcessShaderCode(code: string, isFragment: boolean): string {
+    public preProcessShaderCode(code: string): string {
         return (
             `struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
             RemoveComments(code)
         );
     }
 
-    public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
+    public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }) {
         const varyingRegex = /\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm;
         const match = varyingRegex.exec(varying);
         if (match !== null) {
@@ -137,7 +137,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return varying;
     }
 
-    public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) {
+    public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }) {
         const attribRegex = /\s*attribute\s+(\S+)\s*:\s*(.+)\s*;/gm;
         const match = attribRegex.exec(attribute);
         if (match !== null) {
@@ -156,7 +156,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return attribute;
     }
 
-    public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
+    public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }): string {
         const match = this.uniformRegexp.exec(uniform);
         if (match !== null) {
             const uniformType = match[2];
@@ -169,7 +169,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return uniform;
     }
 
-    public textureProcessor(texture: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
+    public textureProcessor(texture: string, isFragment: boolean, preProcessors: { [key: string]: string }): string {
         const match = this.textureRegexp.exec(texture);
         if (match !== null) {
             const name = match[1]; // name of the variable
@@ -229,11 +229,11 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return texture;
     }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
+    public postProcessor(code: string) {
         return code;
     }
 
-    public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string; fragmentCode: string } {
+    public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
         const fragCoordCode =
             fragmentCode.indexOf("gl_FragCoord") >= 0
                 ? `

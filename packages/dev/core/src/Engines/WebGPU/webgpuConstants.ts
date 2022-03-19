@@ -1,9 +1,11 @@
 /** @hidden */
+// eslint-disable-next-line import/export
 export enum PowerPreference {
     SRGB = "srgb",
 }
 
 /** @hidden */
+// eslint-disable-next-line import/export
 export enum PowerPreference {
     LowPower = "low-power",
     HighPerformance = "high-performance",

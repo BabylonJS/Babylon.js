@@ -62,7 +62,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.engine = engine;
     }
 
-    public _handlesSpectorRebuildCallback(onCompiled: (program: any) => void): void {
+    public _handlesSpectorRebuildCallback(): void {
         // Nothing to do yet for spector.
     }
 
