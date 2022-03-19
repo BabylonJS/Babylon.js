@@ -13,7 +13,7 @@ npm install --save @babylonjs/core @babylonjs/gui
 
 # How to use
 
-Afterwards it can be imported to the your project using:
+Afterwards it can be imported to your project using:
 
 ```
 import { AdvancedDynamicTexture } from '@babylonjs/gui/2D';
@@ -28,4 +28,4 @@ let postProcess = new AdvancedDynamicTexture("adt", 128, 128, scene);
 // Some more awesome code
 ```
 
-For more information you can have a look at our [our ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
