@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { PostProcess } from "core/PostProcesses/postProcess";
 import { Texture } from "core/Materials/Textures/texture";
 import { GlobalState } from "./components/globalState";
