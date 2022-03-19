@@ -5,7 +5,7 @@ import { ViewerModel } from "../../model/viewerModel";
 import { ILoaderPlugin } from "./loaderPlugin";
 
 /**
- * A loder plugin to use MSFT_lod extension correctly (glTF)
+ * A loader plugin to use MSFT_lod extension correctly (glTF)
  */
 export class MSFTLodLoaderPlugin implements ILoaderPlugin {
     private _model: ViewerModel;

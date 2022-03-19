@@ -67,7 +67,7 @@ export class ViewerManager {
     }
 
     /**
-     * Get a promise that will fullfil when this viewer was initialized.
+     * Get a promise that will fulfill when this viewer was initialized.
      * Since viewer initialization and template injection is asynchronous, using the promise will guaranty that
      * you will get the viewer after everything was already configured.
      * @param id the viewer id to find

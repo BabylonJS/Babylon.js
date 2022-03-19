@@ -23,7 +23,7 @@ export class Frustum {
     /**
      * Gets the near frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
-     * @param frustumPlane the resuling frustum plane
+     * @param frustumPlane the resulting frustum plane
      */
     public static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
         const m = transform.m;
@@ -37,7 +37,7 @@ export class Frustum {
     /**
      * Gets the far frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
-     * @param frustumPlane the resuling frustum plane
+     * @param frustumPlane the resulting frustum plane
      */
     public static GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
         const m = transform.m;
@@ -51,7 +51,7 @@ export class Frustum {
     /**
      * Gets the left frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
-     * @param frustumPlane the resuling frustum plane
+     * @param frustumPlane the resulting frustum plane
      */
     public static GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
         const m = transform.m;
@@ -65,7 +65,7 @@ export class Frustum {
     /**
      * Gets the right frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
-     * @param frustumPlane the resuling frustum plane
+     * @param frustumPlane the resulting frustum plane
      */
     public static GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
         const m = transform.m;
@@ -79,7 +79,7 @@ export class Frustum {
     /**
      * Gets the top frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
-     * @param frustumPlane the resuling frustum plane
+     * @param frustumPlane the resulting frustum plane
      */
     public static GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
         const m = transform.m;
@@ -93,7 +93,7 @@ export class Frustum {
     /**
      * Gets the bottom frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
-     * @param frustumPlane the resuling frustum plane
+     * @param frustumPlane the resulting frustum plane
      */
     public static GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
         const m = transform.m;
@@ -107,7 +107,7 @@ export class Frustum {
     /**
      * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
      * @param transform transformation matrix to be applied to the resulting frustum planes
-     * @param frustumPlanes the resuling frustum planes
+     * @param frustumPlanes the resulting frustum planes
      */
     public static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void {
         // Near
