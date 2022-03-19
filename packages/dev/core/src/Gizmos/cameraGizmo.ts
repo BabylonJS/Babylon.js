@@ -196,15 +196,15 @@ export class CameraGizmo extends Gizmo {
 
         for (let y = 0; y < 4; y += 2) {
             for (let x = 0; x < 4; x += 2) {
-                var line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
+                let line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                var line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
+                line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                var line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)] }, scene);
+                line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
