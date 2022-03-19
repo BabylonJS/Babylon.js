@@ -200,10 +200,11 @@ export class UniformBuffer {
      * @param data Define the data contained in the buffer
      * @param dynamic Define if the buffer is updatable
      * @param name to assign to the buffer (debugging purpose)
+     * @param forceNoUniformBuffer define that this object must not rely on UBO objects
      */
-    constructor(engine: ThinEngine, data?: number[], dynamic?: boolean, name?: string) {
+    constructor(engine: ThinEngine, data?: number[], dynamic?: boolean, name?: string, forceNoUniformBuffer = false) {
         this._engine = engine;
-        this._noUBO = !engine.supportsUniformBuffers;
+        this._noUBO = !engine.supportsUniformBuffers || forceNoUniformBuffer;
         this._dynamic = dynamic;
         this._name = name ?? "no-name";
 

@@ -819,7 +819,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._resyncLightSources();
 
         // Mesh Uniform Buffer.
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name, this.getScene().getEngine().isWebGPU);
         this._buildUniformLayout();
     }
 
