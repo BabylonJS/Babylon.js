@@ -72,7 +72,7 @@ export abstract class AbstractViewer {
 
     /**
      * Will notify when a new model was added to the scene.
-     * Note that added does not neccessarily mean loaded!
+     * Note that added does not necessarily mean loaded!
      */
     public get onModelAddedObservable(): Observable<ViewerModel> {
         return this.observablesManager.onModelAddedObservable;
@@ -233,7 +233,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Is the engine currently set to rende even when the page is in background
+     * Is the engine currently set to render even when the page is in background
      */
     public get renderInBackground() {
         return this.engine && this.engine.renderEvenInBackground;
@@ -380,7 +380,7 @@ export abstract class AbstractViewer {
                         this.sceneManager.defaultRenderingPipeline.prepare();
                     }
 
-                    // clear set height and eidth
+                    // clear set height and width
                     this.canvas.removeAttribute("height");
                     this.canvas.removeAttribute("width");
                     this.engine.resize();
@@ -643,7 +643,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Initialize the engine. Retruns a promise in case async calls are needed.
+     * Initialize the engine. Returns a promise in case async calls are needed.
      *
      * @protected
      * @returns {Promise<Engine>}
@@ -770,7 +770,7 @@ export abstract class AbstractViewer {
     /**
      * load a model using the provided configuration.
      * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
-     * If you want to attach to the observables of the model, use initModle instead.
+     * If you want to attach to the observables of the model, use initModel instead.
      *
      * @param modelConfig the model configuration or URL to load.
      * @param clearScene Should the scene be cleared before loading the model
