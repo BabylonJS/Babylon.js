@@ -28,24 +28,25 @@ const createScene = function (engine) {
        scene.createDefaultCameraOrLight(true, true, true);
    
 
-       var test = () => {
-        console.log("Go!");
-        let begin = performance.now();
-    for (var toto = 0; toto < 1000; toto++) {
-        scene.render();
-    }
-    let end = performance.now();
+//        var test = () => {
+//         console.log("Go!");
+//         let begin = performance.now();
+//     for (var toto = 0; toto < 1000; toto++) {
+//         scene.render();
+//     }
+//     let end = performance.now();
     
-    console.log("Diff: " + (end - begin) + " ms");
-    setTimeout(() => {
-        test();
-    }, 500);
-       }
+//     console.log("Diff: " + (end - begin) + " ms");
+//     setTimeout(() => {
+//         test();
+//     }, 500);
+//        }
 
-   setTimeout(() => {
-    test();
-   }, 500)
+//    setTimeout(() => {
+//     test();
+//    }, 500)
    
+console.log("yo")
        return scene;
 };
 let engine;
@@ -66,11 +67,11 @@ const runScene = async () => {
     }
 
     // Register a render loop to repeatedly render the scene
-    // engine.runRenderLoop(function () {
-    //     if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
-    //         scene.render();
-    //     }
-    // });
+    engine.runRenderLoop(function () {
+        if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+            scene.render();
+        }
+    });
 
     // Watch for browser/canvas resize events
     window.addEventListener("resize", function () {

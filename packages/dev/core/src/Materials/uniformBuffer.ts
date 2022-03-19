@@ -565,6 +565,10 @@ export class UniformBuffer {
      * Otherwise, the buffer will be updated only if the cache differs.
      */
     public update(): void {
+        if (this._noUBO) {
+            return;
+        }
+
         this.bindUniformBuffer();
 
         if (!this._buffer) {
