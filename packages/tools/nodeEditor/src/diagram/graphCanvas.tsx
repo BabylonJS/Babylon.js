@@ -41,8 +41,8 @@ export const isFramePortData = (variableToCheck: any): variableToCheck is FrameP
 };
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
-    private readonly MinZoom = 0.1;
-    private readonly MaxZoom = 4;
+    private readonly _minZoom = 0.1;
+    private readonly _maxZoom = 4;
 
     private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
@@ -595,7 +595,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             const zoomDelta = (evt.pageY - this._oldY) / 10;
             if (Math.abs(zoomDelta) > 5) {
                 const oldZoom = this.zoom;
-                this.zoom = Math.max(Math.min(this.MaxZoom, this.zoom + zoomDelta / 100), this.MinZoom);
+                this.zoom = Math.max(Math.min(this._maxZoom, this.zoom + zoomDelta / 100), this._minZoom);
 
                 const boundingRect = evt.currentTarget.getBoundingClientRect();
                 const clientWidth = boundingRect.width;
@@ -726,7 +726,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
         const oldZoom = this.zoom;
-        this.zoom = Math.min(Math.max(this.MinZoom, this.zoom + delta * this.zoom), this.MaxZoom);
+        this.zoom = Math.min(Math.max(this._minZoom, this.zoom + delta * this.zoom), this._maxZoom);
 
         const boundingRect = evt.currentTarget.getBoundingClientRect();
         const clientWidth = boundingRect.width;
@@ -971,7 +971,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     processEditorData(editorData: IEditorData) {
         const frames = this._frames.splice(0);
-        for (var frame of frames) {
+        for (const frame of frames) {
             frame.dispose();
         }
 
@@ -983,7 +983,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Frames
         if (editorData.frames) {
             for (const frameData of editorData.frames) {
-                var frame = GraphFrame.Parse(frameData, this, editorData.map);
+                const frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }
