@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Effect, IEffectCreationOptions } from "../Materials/effect";
@@ -257,7 +258,6 @@ export class ThinEngine {
      * @param shaderLanguage
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
         return this._shaderProcessor;
     }
@@ -1026,7 +1026,6 @@ export class ThinEngine {
      * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
      * @param audioEngine Defines if an audio engine should be created by default
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
         this._renderingCanvas = canvas;
     }
@@ -1035,7 +1034,6 @@ export class ThinEngine {
      * @param shaderLanguage
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return null;
     }
@@ -2872,7 +2870,6 @@ export class ThinEngine {
      * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         const pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
@@ -2905,7 +2902,6 @@ export class ThinEngine {
         vertexShader: WebGLShader,
         fragmentShader: WebGLShader,
         context: WebGLRenderingContext,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
         const shaderProgram = context.createProgram();
@@ -3013,7 +3009,6 @@ export class ThinEngine {
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         key: string
     ) {
         const webGLRenderingState = pipelineContext as WebGLPipelineContext;
@@ -3690,7 +3685,6 @@ export class ThinEngine {
     public _createInternalTexture(
         size: TextureSize,
         options: boolean | InternalTextureCreationOptions,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         delayGPUTextureCreation = true,
         source = InternalTextureSource.Unknown
     ): InternalTexture {
@@ -4156,7 +4150,6 @@ export class ThinEngine {
      * @returns the HTMLImageElement of the loaded image
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _FileToolsLoadImage(
         input: string | ArrayBuffer | ArrayBufferView | Blob,
         onLoad: (img: HTMLImageElement | ImageBitmap) => void,
@@ -4176,7 +4169,6 @@ export class ThinEngine {
      * @param onComplete
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
 
     /**
@@ -4192,7 +4184,6 @@ export class ThinEngine {
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @returns the raw texture inside an InternalTexture
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRawTexture(
         data: Nullable<ArrayBufferView>,
         width: number,
@@ -4219,7 +4210,6 @@ export class ThinEngine {
      * @param compression defines the compression used (null by default)
      * @returns the cube texture as an InternalTexture
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRawCubeTexture(
         data: Nullable<ArrayBufferView[]>,
         size: number,
@@ -4247,7 +4237,6 @@ export class ThinEngine {
      * @param textureType defines the compressed used (can be null)
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRawTexture3D(
         data: Nullable<ArrayBufferView>,
         width: number,
@@ -4277,7 +4266,6 @@ export class ThinEngine {
      * @param textureType defines the compressed used (can be null)
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRawTexture2DArray(
         data: Nullable<ArrayBufferView>,
         width: number,
@@ -4362,7 +4350,6 @@ export class ThinEngine {
      * @param height new height of the texture
      * @param depth new depth of the texture
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {}
 
     /**
@@ -4888,7 +4875,6 @@ export class ThinEngine {
      * @param name
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _bindTexture(channel: number, texture: Nullable<InternalTexture>, name: string): void {
         if (channel === undefined) {
             return;
@@ -4925,7 +4911,6 @@ export class ThinEngine {
      * @param texture The texture to apply
      * @param name The name of the uniform in the effect
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void {
         if (channel === undefined) {
             return;
@@ -4959,7 +4944,6 @@ export class ThinEngine {
         return this._gl.REPEAT;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
         // Not ready?
         if (!texture) {
@@ -5060,7 +5044,6 @@ export class ThinEngine {
      * @param textures defines the array of textures to bind
      * @param name name of the channel
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], name: string): void {
         if (channel === undefined || !uniform) {
             return;
@@ -5653,7 +5636,6 @@ export class ThinEngine {
      * @returns a file request object
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _FileToolsLoadFile(
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,

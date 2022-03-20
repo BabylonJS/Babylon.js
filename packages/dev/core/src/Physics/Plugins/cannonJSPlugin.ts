@@ -693,7 +693,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _extendNamespace() {
         //this will force cannon to execute at least one step when using interpolation
         const step_tmp1 = new this.BJSCANNON.Vec3();
-        const Engine = this.BJSCANNON;
+        const engine = this.BJSCANNON;
         this.BJSCANNON.World.prototype.step = function (dt: number, timeSinceLastCalled: number, maxSubSteps: number) {
             maxSubSteps = maxSubSteps || 10;
             timeSinceLastCalled = timeSinceLastCalled || 0;
@@ -717,7 +717,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 const bodies = this.bodies;
                 for (let j = 0; j !== bodies.length; j++) {
                     const b = bodies[j];
-                    if (b.type !== Engine.Body.STATIC && b.sleepState !== Engine.Body.SLEEPING) {
+                    if (b.type !== engine.Body.STATIC && b.sleepState !== engine.Body.SLEEPING) {
                         b.position.vsub(b.previousPosition, interpvelo);
                         interpvelo.scale(h_div_dt, interpvelo);
                         b.position.vadd(interpvelo, b.interpolatedPosition);

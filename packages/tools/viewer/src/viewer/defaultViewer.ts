@@ -15,6 +15,7 @@ import { PrintButtonPlugin } from "../templating/plugins/printButton";
 import { ViewerConfiguration } from "../configuration/configuration";
 import { ISceneConfiguration } from "../configuration/interfaces/sceneConfiguration";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import { Nullable } from "core/types";
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -42,7 +43,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         });
 
         this.onEngineInitObservable.add(() => {
-            this.sceneManager.onLightsConfiguredObservable.add((data) => {
+            this.sceneManager.onLightsConfiguredObservable.add(() => {
                 this._configureLights();
             });
         });
@@ -248,22 +249,24 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             case "play-pause-button":
                 this._togglePlayPause();
                 break;
-            case "label-option-button":
-                var value = element.dataset["value"];
-                var label = element.querySelector("span.animation-label");
+            case "label-option-button": {
+                const value = element.dataset["value"];
+                const label = element.querySelector("span.animation-label");
                 if (label && value) {
                     this._updateAnimationType({ value: value.trim(), label: label.innerHTML });
                 }
                 break;
-            case "speed-option-button":
+            }
+            case "speed-option-button": {
                 if (!this._currentAnimation) {
                     return;
                 }
-                var speed = element.dataset["value"];
+                const speed = element.dataset["value"];
                 if (speed) {
                     this._updateAnimationSpeed(speed);
                 }
                 break;
+            }
             case "progress-wrapper":
                 this._resumePlay = !this._isAnimationPaused;
                 if (this._resumePlay) {
@@ -709,13 +712,11 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * An extension of the light configuration of the abstract viewer.
-     * @param lightsConfiguration the light configuration to use
-     * @param model the model that will be used to configure the lights (if the lights are model-dependant)
      */
     private _configureLights() {
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
-            let lightTarget;
+            let lightTarget: Nullable<Vector3> | undefined;
             let angle = 0.5;
             let exponent = Math.PI / 2;
             if (typeof this.configuration.lab.flashlight === "object") {

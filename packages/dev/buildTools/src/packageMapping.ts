@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { kebabize } from "./utils";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";

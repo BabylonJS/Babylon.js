@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
 import { EventState, Observer } from "../../Misc/observable";

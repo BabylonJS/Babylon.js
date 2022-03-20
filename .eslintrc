@@ -178,7 +178,7 @@
         "no-case-declarations": "warn",
         "no-prototype-builtins": "warn",
         "no-loss-of-precision": "warn",
-        "prefer-spread": "warn",
+        "prefer-spread": "off",
         "prefer-rest-params": "off",
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn"

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { SceneSerializer } from "./sceneSerializer";
@@ -139,7 +140,7 @@ export class SceneRecorder {
         let aDifferenceWasFound = false;
 
         for (const prop in originalObjet) {
-            if (!originalObjet.hasOwnProperty(prop)) {
+            if (!Object.prototype.hasOwnProperty.call(originalObjet, prop)) {
                 continue;
             }
             const originalValue = originalObjet[prop];

@@ -237,7 +237,6 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
-     * @param evt
      */
     public onButtonUp(): void {
         this._twoFingerActivityCount = 0;

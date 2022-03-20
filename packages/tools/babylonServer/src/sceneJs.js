@@ -65,12 +65,12 @@ const createScene = function (engine) {
 
         // UI
         const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        const UiPanel = new BABYLON.GUI.StackPanel();
-        UiPanel.width = "220px";
-        UiPanel.fontSize = "14px";
-        UiPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        UiPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        advancedTexture.addControl(UiPanel);
+        const uiPanel = new BABYLON.GUI.StackPanel();
+        uiPanel.width = "220px";
+        uiPanel.fontSize = "14px";
+        uiPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        uiPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        advancedTexture.addControl(uiPanel);
         // ..
         const button = BABYLON.GUI.Button.CreateSimpleButton("but1", "Play Idle");
         button.paddingTop = "10px";
@@ -81,7 +81,7 @@ const createScene = function (engine) {
         button.onPointerDownObservable.add(() => {
             if (idleRange) scene.beginAnimation(skeleton, idleRange.from, idleRange.to, true);
         });
-        UiPanel.addControl(button);
+        uiPanel.addControl(button);
         // ..
         let button1 = BABYLON.GUI.Button.CreateSimpleButton("but2", "Play Walk");
         button1.paddingTop = "10px";
@@ -92,7 +92,7 @@ const createScene = function (engine) {
         button1.onPointerDownObservable.add(() => {
             if (walkRange) scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
         });
-        UiPanel.addControl(button1);
+        uiPanel.addControl(button1);
         // ..
         button1 = BABYLON.GUI.Button.CreateSimpleButton("but3", "Play Run");
         button1.paddingTop = "10px";
@@ -103,7 +103,7 @@ const createScene = function (engine) {
         button1.onPointerDownObservable.add(() => {
             if (runRange) scene.beginAnimation(skeleton, runRange.from, runRange.to, true);
         });
-        UiPanel.addControl(button1);
+        uiPanel.addControl(button1);
         // ..
         button1 = BABYLON.GUI.Button.CreateSimpleButton("but4", "Play Left");
         button1.paddingTop = "10px";
@@ -114,7 +114,7 @@ const createScene = function (engine) {
         button1.onPointerDownObservable.add(() => {
             if (leftRange) scene.beginAnimation(skeleton, leftRange.from, leftRange.to, true);
         });
-        UiPanel.addControl(button1);
+        uiPanel.addControl(button1);
         // ..
         button1 = BABYLON.GUI.Button.CreateSimpleButton("but5", "Play Right");
         button1.paddingTop = "10px";
@@ -125,7 +125,7 @@ const createScene = function (engine) {
         button1.onPointerDownObservable.add(() => {
             if (rightRange) scene.beginAnimation(skeleton, rightRange.from, rightRange.to, true);
         });
-        UiPanel.addControl(button1);
+        uiPanel.addControl(button1);
         // ..
         button1 = BABYLON.GUI.Button.CreateSimpleButton("but6", "Play Blend");
         button1.paddingTop = "10px";
@@ -144,7 +144,7 @@ const createScene = function (engine) {
                 leftAnim.syncWith(walkAnim);
             }
         });
-        UiPanel.addControl(button1);
+        uiPanel.addControl(button1);
 
         engine.hideLoadingUI();
     });

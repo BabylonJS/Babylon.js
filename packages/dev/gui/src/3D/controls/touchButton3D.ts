@@ -56,7 +56,7 @@ export class TouchButton3D extends Button3D {
 
     /**
      * Sets the front-facing direction of the button. Pass in Vector3.Zero to allow interactions from any direction
-     * @param frontDir the forward direction of the button
+     * @param frontWorldDir the forward direction of the button
      */
     public set collidableFrontDirection(frontWorldDir: Vector3) {
         this._collidableFrontDirection = frontWorldDir.normalize();

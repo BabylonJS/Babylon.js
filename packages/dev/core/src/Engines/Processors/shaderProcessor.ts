@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ShaderCodeNode } from "./shaderCodeNode";
 import { ShaderCodeCursor } from "./shaderCodeCursor";
 import { ShaderCodeConditionNode } from "./shaderCodeConditionNode";
@@ -462,7 +463,6 @@ export class ShaderProcessor {
      * @returns a file request object
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _FileToolsLoadFile(
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
