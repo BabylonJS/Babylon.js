@@ -135,8 +135,9 @@
             {
                 "selector": "variable",
                 "modifiers": ["const", "global"],
-                "format": ["PascalCase", "camelCase"]
-            },       
+                "format": ["PascalCase", "camelCase"],
+                "leadingUnderscore": "allow"
+            },    
             {
                 "selector": "function",
                 "format": ["PascalCase", "camelCase"],

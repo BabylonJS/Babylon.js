@@ -89,7 +89,7 @@ export class GlobalState {
         this.backgroundColor = new Color3(r, g, b);
         this.onBackgroundColorChangeObservable.notifyObservers();
 
-        CoordinateHelper.globalState = this;
+        CoordinateHelper.GlobalState = this;
     }
 
     /** adds copy, cut and paste listeners to the host window */

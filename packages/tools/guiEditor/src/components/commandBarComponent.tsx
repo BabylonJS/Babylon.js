@@ -19,8 +19,6 @@ import betaFlag from "../imgs/betaFlag.svg";
 
 import "../scss/commandBar.scss";
 
-declare let Versions: any;
-
 interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
@@ -55,6 +53,7 @@ const _sizeOptions = [
     { label: "Square (2048)", value: 11 },
 ];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
@@ -90,7 +89,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.forceUpdate();
         });
 
-        props.globalState.onResizeObservable.add((newSize) => {
+        props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
     }
