@@ -139,7 +139,7 @@ export class Arc2 {
     /**
      * Creates an Arc object from the three given points : start, middle and end.
      * @param startPoint Defines the start point of the arc
-     * @param midPoint Defines the midlle point of the arc
+     * @param midPoint Defines the middle point of the arc
      * @param endPoint Defines the end point of the arc
      */
     constructor(
@@ -291,7 +291,7 @@ export class Path2 {
 
     /**
      * Retreives the point at the distance aways from the starting point
-     * @param normalizedLengthPosition the length along the path to retreive the point from
+     * @param normalizedLengthPosition the length along the path to retrieve the point from
      * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
      */
     public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
@@ -719,7 +719,7 @@ export class Path3D {
      * Updates the point at data for an interpolated point along this curve
      * @param position the position of the point along this curve, from 0.0 to 1.0
      * @param interpolateTNB
-     * @interpolateTNB wether to compute the interpolated tangent, normal and binormal
+     * @interpolateTNB whether to compute the interpolated tangent, normal and binormal
      * @returns the (updated) point at data
      */
     private _updatePointAtData(position: number, interpolateTNB: boolean = false) {

@@ -55,7 +55,7 @@ export class TelemetryManager {
 
     /**
      * Enable or disable telemetry events
-     * @param enabled Boolan, true if events are enabled
+     * @param enabled Boolean, true if events are enabled
      */
     public set enable(enabled: boolean) {
         if (enabled) {
@@ -102,7 +102,7 @@ export class TelemetryManager {
     }
 
     /**
-     * Returns the current session ID or creates one if it doesn't exixt
+     * Returns the current session ID or creates one if it doesn't exist
      * @return The current session ID
      */
     public get session(): string {

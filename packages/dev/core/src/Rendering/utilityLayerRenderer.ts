@@ -230,7 +230,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     prePointerInfo.ray = utilityScenePick.ray;
                 }
 
-                // always fire the prepointer oversvable
+                // always fire the prepointer observable
                 this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
 
                 // allow every non pointer down event to flow to the utility layer

@@ -94,23 +94,23 @@ export class GlobalState {
 
     /** adds copy, cut and paste listeners to the host window */
     public registerEventListeners() {
+        const isElementEditable = (element: HTMLElement) => {
+            return element.isContentEditable || element.tagName === "INPUT" || element.tagName === "TEXTAREA";
+        };
         this.hostDocument.addEventListener("copy", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCopyObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("cut", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCutObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("paste", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "");
                 event.preventDefault();
             }

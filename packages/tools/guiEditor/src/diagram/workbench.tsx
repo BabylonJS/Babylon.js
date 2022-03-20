@@ -93,7 +93,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public get guiSize() {
         return this._guiSize;
     }
-    // sets the size of the GUI and makes all neccessary adjustments
+    // sets the size of the GUI and makes all necessary adjustments
     public set guiSize(value: ISize) {
         this._guiSize = { ...value };
         this._visibleRegionContainer.widthInPixels = this._guiSize.width;
@@ -517,7 +517,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 if (dropLocationControl != null) {
                     //the control you are dragging onto top
                     if (
-                        dropLocationControl instanceof Container && //dropping inside a contrainer control
+                        dropLocationControl instanceof Container && //dropping inside a container control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER
                     ) {
                         draggedControlParent.removeControl(draggedControl);
@@ -848,7 +848,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
-        // to prevent an infite loop, we flip a boolean flag
+        // to prevent an infinite loop, we flip a boolean flag
         if (this.props.globalState.liveGuiTexture) {
             this._guiRenderObserver = this.props.globalState.guiTexture.onBeginRenderObservable.add(() => {
                 if (this._liveGuiTextureRerender) {

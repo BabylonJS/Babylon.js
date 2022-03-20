@@ -44,7 +44,7 @@ export class PlaneRotationGizmo extends Gizmo {
     public static MaxDragAngle: number = (Math.PI * 9) / 20;
 
     /**
-     * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+     * Accumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
      */
     public angle: number = 0;
 

@@ -386,7 +386,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     public rightIndexMiddlePosition = new Vector3(0, 0, 0);
 
     /**
-     * Gets or sets the Decal Scle for XY.
+     * Gets or sets the Decal Scale for XY.
      */
     @serialize()
     public decalScaleXY = new Vector2(1.5, 1.5);

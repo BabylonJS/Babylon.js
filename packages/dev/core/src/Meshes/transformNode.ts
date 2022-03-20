@@ -411,7 +411,7 @@ export class TransformNode extends Node {
      * @param options defines options to configure how copy is done
      * @param options.doNotInstantiate
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
-     * @returns an instance (or a clone) of the current node with its hiearchy
+     * @returns an instance (or a clone) of the current node with its hierarchy
      */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,

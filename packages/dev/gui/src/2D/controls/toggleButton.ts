@@ -78,7 +78,7 @@ export class ToggleButton extends Rectangle {
     }
 
     private _isActive = false;
-    /** Gets or sets a boolean indicating if the toogle button is active or not */
+    /** Gets or sets a boolean indicating if the toggle button is active or not */
     public get isActive(): boolean {
         return this._isActive;
     }

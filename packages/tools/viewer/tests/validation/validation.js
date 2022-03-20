@@ -218,13 +218,13 @@ function runTest(index, done) {
     configuration.engine.engineOptions.preserveDrawingBuffer = true;
     // configuration.engine.engineOptions.disableWebGL2Support = true;
 
-    //cancel camera behvaviors for the tests
+    //cancel camera behaviors for the tests
     configuration.camera = configuration.camera || {};
     configuration.camera.behaviors = null;
 
     // make sure we use only local assets
 
-    //envirnonment directory
+    //environment directory
     configuration.scene = configuration.scene || {};
     configuration.scene.assetsRootURL = "https://viewer.babylonjs.com/assets/environment/";
     if (!test.enableEnvironment) {
