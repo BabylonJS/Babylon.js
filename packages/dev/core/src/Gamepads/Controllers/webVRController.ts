@@ -38,7 +38,7 @@ export abstract class WebVRController extends PoseEnabledController {
     public onPadValuesChangedObservable = new Observable<StickValues>();
 
     /**
-     * Array of button availible on the controller
+     * Array of button available on the controller
      */
     protected _buttons: Array<MutableGamepadButton>;
 
@@ -151,7 +151,7 @@ export abstract class WebVRController extends PoseEnabledController {
     }
 
     /**
-     * Disposes of th webVRCOntroller
+     * Disposes of th webVRController
      */
     public dispose(): void {
         super.dispose();

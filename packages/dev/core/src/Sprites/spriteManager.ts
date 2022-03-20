@@ -304,7 +304,7 @@ export class SpriteManager implements ISpriteManager {
     private _makePacked(imgUrl: string, spriteJSON: any) {
         if (spriteJSON !== null) {
             try {
-                //Get the JSON and Check its stucture.  If its an array parse it if its a JSON sring etc...
+                //Get the JSON and Check its structure.  If its an array parse it if its a JSON string etc...
                 let celldata: any;
                 if (typeof spriteJSON === "string") {
                     celldata = JSON.parse(spriteJSON);

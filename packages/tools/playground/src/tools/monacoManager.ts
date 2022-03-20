@@ -281,7 +281,7 @@ class Playground {
         // Definition worker
         this._setupDefinitionWorker(libContent);
 
-        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
+        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scripting needs
         this._setupMonacoCompilationPipeline(libContent);
 
         // This is used for a vscode-like color preview for ColorX types

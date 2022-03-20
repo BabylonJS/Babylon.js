@@ -105,13 +105,13 @@ export interface SceneOptions {
     useGeometryUniqueIdsMap?: boolean;
 
     /**
-     * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
+     * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast disposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
     useMaterialMeshMap?: boolean;
 
     /**
-     * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
+     * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast disposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
     useClonedMeshMap?: boolean;
@@ -648,14 +648,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
-     * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+     * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
      */
     public onBeforeRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
     /**
      * This Observable will be triggered after rendering each renderingGroup of each rendered camera.
-     * The RenderinGroupInfo class contains all the information about the context in which the observable is called
+     * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
      */
     public onAfterRenderingGroupObservable = new Observable<RenderingGroupInfo>();
@@ -1829,11 +1829,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
-        // Effects
-        if (!engine.areAllEffectsReady()) {
-            return false;
-        }
-
         // Pending data
         if (this._pendingData.length > 0) {
             return false;
@@ -1844,6 +1839,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._processedMaterials.reset();
             this._renderTargets.reset();
         }
+
+        let isReady = true;
+
         for (index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
 
@@ -1856,7 +1854,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             if (!mesh.isReady(true)) {
-                return false;
+                isReady = false;
+                continue;
             }
 
             const hardwareInstancedRendering =
@@ -1867,7 +1866,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Is Ready For Mesh
             for (const step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
-                    return false;
+                    isReady = false;
                 }
             }
 
@@ -1898,6 +1897,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     }
                 }
             }
+        }
+
+        if (!isReady) {
+            return false;
+        }
+
+        // Effects
+        if (!engine.areAllEffectsReady()) {
+            return false;
         }
 
         // Render targets
@@ -2101,7 +2109,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             this._checkIsReady(checkRenderTargets);
-        }, 150);
+        }, 100);
     }
 
     /**
@@ -3152,7 +3160,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets a transform node with its auto-generated unique Id
-     * @param uniqueId efines the unique Id to search for
+     * @param uniqueId defines the unique Id to search for
      * @return the found transform node or null if not found at all.
      */
     public getTransformNodeByUniqueId(uniqueId: number): Nullable<TransformNode> {
@@ -3484,7 +3492,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Add an externaly attached data from its key.
+     * Add an externally attached data from its key.
      * This method call will fail and return false, if such key already exists.
      * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
      * @param key the unique key that identifies the data
@@ -3499,7 +3507,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Get an externaly attached data from its key
+     * Get an externally attached data from its key
      * @param key the unique key that identifies the data
      * @return the associated data, if present (can be null), or undefined if not present
      */
@@ -3511,7 +3519,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Get an externaly attached data from its key, create it using a factory if it's not already present
+     * Get an externally attached data from its key, create it using a factory if it's not already present
      * @param key the unique key that identifies the data
      * @param factory the factory that will be called to create the instance if and only if it doesn't exists
      * @return the associated data, can be null if the factory returned null.
@@ -3524,7 +3532,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Remove an externaly attached data from the Engine instance
+     * Remove an externally attached data from the Engine instance
      * @param key the unique key that identifies the data
      * @return true if the data was successfully removed, false if it doesn't exist
      */
@@ -3575,7 +3583,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** Gets or sets a boolean blocking all the calls to freeActiveMeshes and freeRenderingGroups
      * It can be used in order to prevent going through methods freeRenderingGroups and freeActiveMeshes several times to improve performance
      * when disposing several meshes in a row or a hierarchy of meshes.
-     * When used, it is the responsability of the user to blockfreeActiveMeshesAndRenderingGroups back to false.
+     * When used, it is the responsibility of the user to blockfreeActiveMeshesAndRenderingGroups back to false.
      */
     public get blockfreeActiveMeshesAndRenderingGroups(): boolean {
         return this._preventFreeActiveMeshesAndRenderingGroups;
@@ -4484,7 +4492,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Releases all held ressources
+     * Releases all held resources
      */
     public dispose(): void {
         if (this.isDisposed) {
@@ -5046,7 +5054,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Overrides the default sort function applied in the renderging group to prepare the meshes.
+     * Overrides the default sort function applied in the rendering group to prepare the meshes.
      * This allowed control for front to back rendering or reversly depending of the special needs.
      *
      * @param renderingGroupId The rendering group id corresponding to its index
@@ -5108,7 +5116,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Will flag all materials as dirty to trigger new shader compilation
      * @param flag defines the flag used to specify which material part must be marked as dirty
-     * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
+     * @param predicate If not null, it will be used to specify if a material has to be marked as dirty
      */
     public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
         if (this._blockMaterialDirtyMechanism) {
