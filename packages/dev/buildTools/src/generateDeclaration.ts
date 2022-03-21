@@ -197,7 +197,7 @@ function getPackageDeclaration(
             line = line.replace(/import\((.*)\)./, "");
         }
 
-        if (!line.includes("const enum")) {
+        if (!line.includes("const enum") && !line.includes("=")) {
             line = line.replace("const ", "var ");
         }
 
