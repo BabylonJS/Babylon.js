@@ -81,6 +81,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
                             });
                         }
                     }
+                    line = line.replace("declare ", "");
                 });
             }
 
@@ -196,6 +197,7 @@ function getPackageDeclaration(
             line = line.replace(/import\((.*)\)./, "");
         }
 
+        line = line.replace("const ", "var ");
 
         //Exclude empty lines
         let excludeLine /*:boolean */ = line === "";
