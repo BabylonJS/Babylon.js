@@ -2053,15 +2053,11 @@ export class _Exporter {
 
                 if (babylonNode.getClassName() === "Mesh") {
                     const mesh = babylonNode as Mesh;
-                    if (mesh.material) {
-                        exportMaterials.add(mesh.material);
-                    }
+                    exportMaterials.add(mesh.material || mesh.getScene().defaultMaterial);
                 } else {
                     const meshes: AbstractMesh[] = babylonNode.getChildMeshes(false);
                     for (const mesh of meshes) {
-                        if (mesh.material) {
-                            exportMaterials.add(mesh.material);
-                        }
+                        exportMaterials.add(mesh.material || mesh.getScene().defaultMaterial);
                     }
                 }
             } else {

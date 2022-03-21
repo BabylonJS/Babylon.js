@@ -417,6 +417,7 @@
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
 - Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
+- Fix glTF exporter when exporting meshes with no material specified. ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
 
