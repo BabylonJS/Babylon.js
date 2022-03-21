@@ -351,8 +351,6 @@ export function generateDeclaration() {
             return glob.sync(p);
         });
 
-        console.log(files);
-
         // check if there are .d.ts files in LibDeclaration in the source directory
         const decFiles = config.declarationLibs.map((lib: string) => {
             // load the declarations from the root directory of the requested lib
