@@ -2,6 +2,7 @@
 import { kebabize } from "./utils";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";
+export type PrivateDevPackageName = "shared-ui-components";
 export type DevPackageName =
     | "core"
     | "gui"
@@ -50,6 +51,10 @@ export type ES6PackageName =
     | "@babylonjs/gui-editor"
     | "@babylonjs/post-processes"
     | "@babylonjs/ktx2decoder";
+
+export const PrivateDevPackagesDirectoryMapping: { [key in PrivateDevPackageName]: string } = {
+    "shared-ui-components": "sharedUiComponents",
+};
 
 export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; baseFilename: string; isBundle?: boolean } } = {
     babylonjs: {
@@ -238,7 +243,24 @@ export function getDevPackagesByBuildType(buildType: BuildType): { [key in DevPa
     return packageMapping[buildType];
 }
 
-export function getPublicPackageName(publicVariable: PublicPackageVariable, data?: any): PublicPackageName {
+export function getPublicPackageName(publicVariable: PublicPackageVariable, data?: any, sourceFile?: string): PublicPackageName | PrivateDevPackageName {
+    // check if it's a package that is not in the mapping
+    if (sourceFile && sourceFile.includes("/packages/")) {
+        // a different sourcefile was provided, check if it's in the right package
+        const packageDirectoryArray = sourceFile.split("/packages/")[1].split("/");
+        packageDirectoryArray.shift();
+        const packageDirectory = packageDirectoryArray[0];
+        let privatePackage: PrivateDevPackageName | null = null;
+        Object.keys(PrivateDevPackagesDirectoryMapping).forEach((packageName) => {
+            if (packageDirectory === PrivateDevPackagesDirectoryMapping[packageName as PrivateDevPackageName]) {
+                privatePackage = packageName as PrivateDevPackageName;
+            }
+        });
+        if (privatePackage !== null) {
+            return privatePackage;
+        }
+        // TODO - should we also support public dev packages here?
+    }
     if (typeof publicVariable === "string") {
         return publicVariable;
     } else if (typeof publicVariable === "function") {

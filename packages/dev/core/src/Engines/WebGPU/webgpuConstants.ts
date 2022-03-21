@@ -1,6 +1,6 @@
 /** @hidden */
 // eslint-disable-next-line import/export
-export enum PowerPreference {
+export enum PredefinedColorSpace {
     SRGB = "srgb",
 }
 
