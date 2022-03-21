@@ -1,4 +1,3 @@
-
 .commands {
     grid-row: 1;
     grid-column: 3;
@@ -15,38 +14,42 @@
     }
 
     &.background-ts {
-        .command-button, .command-dropdown  {
+        .command-button,
+        .command-dropdown {
             img {
                 filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
             }
 
             .command-dropdown-active {
-                color: #F78951;
+                color: #f78951;
             }
 
-            &:hover, &.activated {
+            &:hover,
+            &.activated {
                 img {
                     filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;
                 }
-            } 
+            }
         }
     }
 
     &.background-js {
-        .command-button, .command-dropdown  {
+        .command-button,
+        .command-dropdown {
             img {
                 filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
             }
 
             .command-dropdown-active {
-                color: #9B86FF;
+                color: #9b86ff;
             }
 
-            &:hover, &.activated {
+            &:hover,
+            &.activated {
                 img {
                     filter: invert(17%) !important;
                 }
-            } 
+            }
         }
     }
 
@@ -56,7 +59,7 @@
 
         .command-label {
             display: none;
-        }        
+        }
 
         .command-button-icon {
             height: 100%;
@@ -68,8 +71,8 @@
 
         &:hover {
             background-color: white;
-        } 
-        
+        }
+
         &:active {
             transform-origin: center;
             transform: scale(0.95);
@@ -88,7 +91,7 @@
         z-index: 1;
     }
 
-    .command-dropdown {        
+    .command-dropdown {
         cursor: pointer;
         width: 55px;
         height: 55px;
@@ -110,11 +113,12 @@
             font-size: 14px;
         }
 
-        &:hover, &.activated {
+        &:hover,
+        &.activated {
             background-color: white;
             color: black;
-        } 
-        
+        }
+
         &:active {
             transform-origin: center;
             transform: scale(0.95);
@@ -122,9 +126,9 @@
     }
 
     .command-dropdown-blocker {
-        position: absolute;    
-        top:0;
-        left:0;
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         transform: scale(1);
@@ -160,11 +164,11 @@
 
         &.toRight {
             width: 120px;
-            right:0;
-        }        
+            right: 0;
+        }
 
         .command-dropdown-label {
-            color:white;
+            color: white;
             padding: 5px;
             padding-left: 10px;
             height: 35px;
@@ -186,7 +190,7 @@
                 .sub-items {
                     display: block;
                 }
-            } 
+            }
 
             .command-dropdown-label-text {
                 grid-column: 1;
@@ -200,7 +204,7 @@
 
             .command-dropdown-arrow {
                 grid-column: 2;
-                grid-row: 1;    
+                grid-row: 1;
                 font-size: 20px;
                 font-weight: bold;
                 padding-bottom: 10px;
@@ -212,29 +216,29 @@
                 left: 200px;
                 top: 0;
                 width: 150px;
-                display: none;        
-    
+                display: none;
+
                 &.background-js {
                     background: #bfabff;
-                    .sub-item {                      
+                    .sub-item {
                         &:hover {
                             background-color: #9379e6;
                             color: white;
                         }
                     }
-                }   
+                }
 
                 &.background-ts {
                     background: #ff7656;
-                    .sub-item {                      
+                    .sub-item {
                         &:hover {
                             background-color: #e0684b;
                             color: white;
                         }
                     }
-                }   
-                                    
-                .sub-item {                      
+                }
+
+                .sub-item {
                     color: white;
                     padding: 5px;
                     padding-left: 10px;
@@ -246,8 +250,7 @@
                         color: black;
                     }
                 }
-            }            
+            }
         }
     }
-
 }
