@@ -10,12 +10,12 @@
     background: #333333;
 
     .command-bar {
-        padding-left: 15px;   
+        padding-left: 15px;
         grid-row: 1;
         grid-column: 2;
         width: 100%;
 
-        .language-button {        
+        .language-button {
             grid-row: 1;
             grid-column: 2;
             color: white;
@@ -30,7 +30,7 @@
 
             &.active {
                 width: 74px;
-                cursor: pointer;            
+                cursor: pointer;
                 grid-column: 1;
                 margin-right: -5px;
                 transform: translateX(10px);
