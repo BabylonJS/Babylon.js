@@ -27,7 +27,7 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
 
             texture.isReady = true;
         })
-        .catch((msg) => {
+        .catch(() => {
             // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
             // Just keep going on
             texture.isReady = true;

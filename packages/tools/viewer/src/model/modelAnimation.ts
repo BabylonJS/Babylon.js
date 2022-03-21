@@ -105,34 +105,34 @@ export interface IModelAnimation {
     /**
      * Start the animation
      */
-    start();
+    start(): void;
     /**
      * Stop the animation.
      * This will fail silently if the animation group is already stopped.
      */
-    stop();
+    stop(): void;
     /**
      * Pause the animation
      * This will fail silently if the animation is not currently playing
      */
-    pause();
+    pause(): void;
     /**
      * Reset this animation
      */
-    reset();
+    reset(): void;
     /**
      * Restart the animation
      */
-    restart();
+    restart(): void;
     /**
      * Go to a specific
      * @param frameNumber the frame number to go to
      */
-    goToFrame(frameNumber: number);
+    goToFrame(frameNumber: number): void;
     /**
      * Dispose this animation
      */
-    dispose();
+    dispose(): void;
 }
 
 /**

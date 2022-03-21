@@ -106,7 +106,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure() {
         if (!this.thickness.isConnected) {
             const thicknessInput = new InputBlock("SubSurface thickness", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             thicknessInput.value = 0;

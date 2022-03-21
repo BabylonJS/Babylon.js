@@ -854,10 +854,9 @@ export class Material implements IAnimatable {
      * @param fullDetails defines a boolean indicating which levels of logging is desired
      * @returns a string with material information
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public toString(fullDetails?: boolean): string {
         const ret = "Name: " + this.name;
-        if (fullDetails) {
-        }
         return ret;
     }
 
@@ -898,6 +897,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies if instances should be used
      * @returns a boolean indicating if the material is ready to be used
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         return true;
     }
@@ -909,6 +909,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const defines = subMesh.materialDefines;
         if (!defines) {
@@ -1084,6 +1085,7 @@ export class Material implements IAnimatable {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh to bind the material to
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bind(world: Matrix, mesh?: Mesh): void {}
 
     /**
@@ -1120,6 +1122,7 @@ export class Material implements IAnimatable {
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bindOnlyWorldMatrix(world: Matrix): void {}
 
     /**
@@ -1185,19 +1188,19 @@ export class Material implements IAnimatable {
         }
 
         if (this.disableDepthWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedDepthWriteState = engine.getDepthWrite();
             engine.setDepthWrite(false);
         }
 
         if (this.disableColorWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedColorWriteState = engine.getColorWrite();
             engine.setColorWrite(false);
         }
 
         if (this.depthFunction !== 0) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedDepthFunctionState = engine.getDepthFunction() || 0;
             engine.setDepthFunction(this.depthFunction);
         }
@@ -1212,17 +1215,17 @@ export class Material implements IAnimatable {
         }
 
         if (this.depthFunction !== 0) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setDepthFunction(this._cachedDepthFunctionState);
         }
 
         if (this.disableDepthWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setDepthWrite(this._cachedDepthWriteState);
         }
 
         if (this.disableColorWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setColorWrite(this._cachedColorWriteState);
         }
     }
@@ -1264,6 +1267,7 @@ export class Material implements IAnimatable {
      * @param name defines the new name for the duplicated material
      * @returns the cloned material
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public clone(name: string): Nullable<Material> {
         return null;
     }
@@ -1311,7 +1315,7 @@ export class Material implements IAnimatable {
         const currentHotSwapingState = this.allowShaderHotSwapping;
         this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
-        var checkReady = () => {
+        const checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
             }
@@ -1598,6 +1602,7 @@ export class Material implements IAnimatable {
      * @param prePassRenderer defines the prepass renderer to setup.
      * @returns true if the pre pass is needed.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         // Do Nothing by default
         return false;
@@ -1685,6 +1690,7 @@ export class Material implements IAnimatable {
      * @param forceDisposeEffect
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
         if ((<Mesh>mesh).geometry) {
             const geometry = <Geometry>(<Mesh>mesh).geometry;

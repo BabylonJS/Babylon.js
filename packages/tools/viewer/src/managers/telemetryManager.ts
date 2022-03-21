@@ -25,8 +25,6 @@ export class TelemetryManager {
 
     /**
      * Receives a telemetry event
-     * @param event The name of the Telemetry event
-     * @param details An additional value, or an object containing a list of property/value pairs
      */
     public get broadcast() {
         return this._event;
@@ -90,7 +88,7 @@ export class TelemetryManager {
 
         if (typeof details === "object") {
             for (const attr in details) {
-                if (details.hasOwnProperty(attr)) {
+                if (Object.prototype.hasOwnProperty.call(details, attr)) {
                     telemetryData[attr] = details[attr];
                 }
             }

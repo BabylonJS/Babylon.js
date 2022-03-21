@@ -22,16 +22,16 @@ export class PathCursor {
 
     /**
      * Initializes the path cursor
-     * @param path The path to track
+     * @param _path The path to track
      */
-    constructor(private path: Path2) {}
+    constructor(private _path: Path2) {}
 
     /**
      * Gets the cursor point on the path
      * @returns A point on the path cursor at the cursor location
      */
     public getPoint(): Vector3 {
-        const point = this.path.getPointAtLengthPosition(this.value);
+        const point = this._path.getPointAtLengthPosition(this.value);
         return new Vector3(point.x, 0, point.y);
     }
 
@@ -69,8 +69,8 @@ export class PathCursor {
         }
 
         this.value += step;
-        this.ensureLimits();
-        this.raiseOnChange();
+        this._ensureLimits();
+        this._raiseOnChange();
 
         return this;
     }
@@ -79,7 +79,7 @@ export class PathCursor {
      * Ensures that the value is limited between zero and one
      * @returns This path cursor
      */
-    private ensureLimits(): PathCursor {
+    private _ensureLimits(): PathCursor {
         while (this.value > 1) {
             this.value -= 1;
         }
@@ -94,7 +94,7 @@ export class PathCursor {
      * Runs onchange callbacks on change (used by the animation engine)
      * @returns This path cursor
      */
-    private raiseOnChange(): PathCursor {
+    private _raiseOnChange(): PathCursor {
         this._onchange.forEach((f) => f(this));
 
         return this;

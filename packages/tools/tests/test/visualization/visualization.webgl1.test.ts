@@ -38,9 +38,9 @@ beforeAll(async () => {
         // serialize my args the way I want
         const args = await Promise.all(
             msg.args().map((arg) =>
-                arg.executionContext().evaluate((arg) => {
+                arg.executionContext().evaluate((arg2: any) => {
                     // I'm in a page context now. If my arg is an error - get me its message.
-                    if (arg instanceof Error) return arg.message;
+                    if (arg2 instanceof Error) return arg2.message;
                     //Return null if the arg is not a error
                     return null;
                 }, arg)

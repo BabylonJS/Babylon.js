@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // License for the mipmap generation code:
 //
 // Copyright 2020 Brandon Jones
@@ -164,7 +165,7 @@ enum PipelineType {
     InvertYPremultiplyAlphaWithOfst = 3,
 }
 
-interface pipelineParameters {
+interface IPipelineParameters {
     invertY?: boolean;
     premultiplyAlpha?: boolean;
 }
@@ -262,7 +263,7 @@ export class WebGPUTextureHelper {
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
 
-    private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: pipelineParameters): [GPURenderPipeline, GPUBindGroupLayout] {
+    private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: IPipelineParameters): [GPURenderPipeline, GPUBindGroupLayout] {
         const index =
             type === PipelineType.MipMap
                 ? 1 << 0
@@ -643,7 +644,6 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
-
             case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
             case WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB:
             case WebGPUConstants.TextureFormat.ETC2RGB8A1Unorm:
@@ -654,7 +654,6 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.EACR11Snorm:
             case WebGPUConstants.TextureFormat.EACRG11Unorm:
             case WebGPUConstants.TextureFormat.EACRG11Snorm:
-
             case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
             case WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB:
             case WebGPUConstants.TextureFormat.ASTC5x4Unorm:
@@ -1006,6 +1005,7 @@ export class WebGPUTextureHelper {
         rectWidth = 0,
         rectHeight = 0,
         commandEncoder?: GPUCommandEncoder,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         allowGPUOptimization?: boolean
     ): void {
         const useRect = rectWidth !== 0;

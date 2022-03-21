@@ -175,6 +175,7 @@ export abstract class AbstractViewer {
         return this._configurationContainer;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected getConfigurationLoader() {
         return new RenderOnlyConfigurationLoader();
     }

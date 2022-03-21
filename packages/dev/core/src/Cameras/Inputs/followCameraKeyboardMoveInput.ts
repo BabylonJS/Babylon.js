@@ -140,6 +140,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         if (this._onCanvasBlurObserver) {
             return;
@@ -168,7 +169,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
@@ -189,7 +190,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
                             this._keys.splice(index, 1);
@@ -213,9 +214,8 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);

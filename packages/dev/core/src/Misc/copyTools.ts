@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { ISize } from "../Maths/math.size";
 import { Nullable } from "../types";
 

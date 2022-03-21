@@ -30,7 +30,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     }
 
     getCellInfo() {
-        const cellInfo = Tools.getCellInfo(this.props.control.parent as Grid, this.props.control);
+        const cellInfo = Tools.GetCellInfo(this.props.control.parent as Grid, this.props.control);
         this._rowNumber = cellInfo.x;
         this._columnNumber = cellInfo.y;
     }
@@ -38,7 +38,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     private _changeCell(grid: Grid, draggedControl: Control, newCell: Vector2) {
         const index = grid.children.indexOf(draggedControl);
         grid.removeControl(draggedControl);
-        Tools.reorderGrid(grid, index, draggedControl, newCell);
+        Tools.ReorderGrid(grid, index, draggedControl, newCell);
     }
 
     render() {
@@ -56,7 +56,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         isInteger={true}
                         min={0}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
+                        onChange={() => {
                             this.updateGridPosition();
                         }}
                     />
@@ -68,7 +68,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         isInteger={true}
                         min={0}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
+                        onChange={() => {
                             this.updateGridPosition();
                         }}
                     />

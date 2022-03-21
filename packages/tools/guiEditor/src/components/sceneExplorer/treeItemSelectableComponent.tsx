@@ -11,6 +11,7 @@ import { Container } from "gui/2D/controls/container";
 
 import expandedIcon from "../../imgs/expandedIcon.svg";
 import collapsedIcon from "../../imgs/collapsedIcon.svg";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CONTROL_HEIGHT = 32;
 
 export interface ITreeItemSelectableComponentProps {

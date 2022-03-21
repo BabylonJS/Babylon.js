@@ -790,12 +790,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._manageFocus();
     }
     /**
+     * @param list
      * @param control
      * @hidden
      */
     public _cleanControlAfterRemovalFromList(list: { [pointerId: number]: Control }, control: Control) {
         for (const pointerId in list) {
-            if (!list.hasOwnProperty(pointerId)) {
+            if (!Object.prototype.hasOwnProperty.call(list, pointerId)) {
                 continue;
             }
             const lastControlOver = list[pointerId];
@@ -877,7 +878,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const tempViewport = new Viewport(0, 0, 0, 0);
 
-        this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
+        this._pointerMoveObserver = scene.onPrePointerObservable.add((pi) => {
             if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
                 return;
             }
@@ -905,7 +906,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param rawEvt
      * @hidden
      */
-    private onClipboardCopy = (rawEvt: Event) => {
+    private _onClipboardCopy = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         const ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -915,7 +916,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param rawEvt
      * @hidden
      */
-    private onClipboardCut = (rawEvt: Event) => {
+    private _onClipboardCut = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         const ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -925,7 +926,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param rawEvt
      * @hidden
      */
-    private onClipboardPaste = (rawEvt: Event) => {
+    private _onClipboardPaste = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         const ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -935,17 +936,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Register the clipboard Events onto the canvas
      */
     public registerClipboardEvents(): void {
-        self.addEventListener("copy", this.onClipboardCopy, false);
-        self.addEventListener("cut", this.onClipboardCut, false);
-        self.addEventListener("paste", this.onClipboardPaste, false);
+        self.addEventListener("copy", this._onClipboardCopy, false);
+        self.addEventListener("cut", this._onClipboardCut, false);
+        self.addEventListener("paste", this._onClipboardPaste, false);
     }
     /**
      * Unregister the clipboard Events from the canvas
      */
     public unRegisterClipboardEvents(): void {
-        self.removeEventListener("copy", this.onClipboardCopy);
-        self.removeEventListener("cut", this.onClipboardCut);
-        self.removeEventListener("paste", this.onClipboardPaste);
+        self.removeEventListener("copy", this._onClipboardCopy);
+        self.removeEventListener("cut", this._onClipboardCut);
+        self.removeEventListener("paste", this._onClipboardPaste);
     }
     /**
      * Connect the texture to a hosting mesh to enable interactions
@@ -957,7 +958,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
-        this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
+        this._pointerObserver = scene.onPointerObservable.add((pi) => {
             if (
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
@@ -1092,8 +1093,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
     }
     private _attachToOnBlur(scene: Scene): void {
-        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add((pointerEvent) => {
-            Object.entries(this._lastControlDown).forEach(([key, value]) => {
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
+            Object.entries(this._lastControlDown).forEach(([, value]) => {
                 value._onCanvasBlur();
             });
             this.focusedControl = null;

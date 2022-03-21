@@ -16,7 +16,7 @@ interface IFrameBarComponentProps {
 interface IFrameBarComponentState {}
 
 export class FrameBarComponent extends React.Component<IFrameBarComponentProps, IFrameBarComponentState> {
-    private readonly _GraphAbsoluteWidth = 788;
+    private readonly _graphAbsoluteWidth = 788;
     private _svgHost: React.RefObject<SVGSVGElement>;
     private _viewWidth = 748;
     private _viewScale = 1;
@@ -75,7 +75,7 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
         const maxFrame = this.props.context.referenceMaxFrame;
 
         const range = maxFrame - minFrame;
-        const convertRatio = range / this._GraphAbsoluteWidth;
+        const convertRatio = range / this._graphAbsoluteWidth;
         const dist = Math.max(baseTickDistance * this._viewScale, minTickDistance); // x distance between consecutive ticks
         let offset = Math.floor(dist * convertRatio);
 
@@ -93,7 +93,7 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
             steps.push(step);
         }
 
-        return steps.map((s, i) => {
+        return steps.map((s) => {
             const x = (s - minFrame) / convertRatio;
             return (
                 <g key={"axis" + s}>

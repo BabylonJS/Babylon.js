@@ -5,8 +5,6 @@ import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
-import { Measure } from "../measure";
 import { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
 import { ICanvasRenderingContext } from "core/Engines/ICanvas";
@@ -104,10 +102,9 @@ export class Checkbox extends Control {
 
     /**
      * @param context
-     * @param invalidatedRectangle
      * @hidden
      */
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

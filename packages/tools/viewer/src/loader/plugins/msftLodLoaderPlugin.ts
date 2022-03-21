@@ -16,6 +16,7 @@ export class MSFTLodLoaderPlugin implements ILoaderPlugin {
 
     public onExtensionLoaded(extension: IGLTFLoaderExtension) {
         if (extension.name === "MSFT_lod" && this._model.configuration.loaderConfiguration) {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             const MSFT_lod = extension as GLTF2.MSFT_lod;
             MSFT_lod.enabled = !!this._model.configuration.loaderConfiguration.progressiveLoading;
             MSFT_lod.maxLODsToLoad = this._model.configuration.loaderConfiguration.maxLODsToLoad || Number.MAX_VALUE;

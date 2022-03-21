@@ -140,6 +140,7 @@ export class TextureCube {
     /**
      * Returns the width of a face of the texture or 0 if not available
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get Width(): number {
         return this.source && this.source[0] && this.source[0][0] ? this.source[0][0].width : 0;
     }
@@ -147,6 +148,7 @@ export class TextureCube {
     /**
      * Returns the height of a face of the texture or 0 if not available
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get Height(): number {
         return this.source && this.source[0] && this.source[0][0] ? this.source[0][0].height : 0;
     }
@@ -180,7 +182,6 @@ export class TextureUtils {
      * The advantage of this is to enable working with texture objects without the need to initialize on the GPU until desired.
      * @param scene A Babylon Scene instance
      * @param textureCube A Spectre TextureCube object
-     * @param parameters WebGL texture sampling parameters
      * @param automaticMipmaps Pass true to enable automatic mipmap generation where possible (requires power of images)
      * @param environment Specifies that the texture will be used as an environment
      * @param singleLod Specifies that the texture will be a singleLod (for environment)

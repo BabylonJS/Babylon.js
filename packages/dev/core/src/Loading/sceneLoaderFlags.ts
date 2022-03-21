@@ -8,7 +8,7 @@ export class SceneLoaderFlags {
     private static _ForceFullSceneLoadingForIncremental = false;
     private static _ShowLoadingScreen = true;
     private static _CleanBoneMatrixWeights = false;
-    private static _loggingLevel = Constants.SCENELOADER_NO_LOGGING;
+    private static _LoggingLevel = Constants.SCENELOADER_NO_LOGGING;
 
     /**
      * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
@@ -36,12 +36,14 @@ export class SceneLoaderFlags {
      * Defines the current logging level (while loading the scene)
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static get loggingLevel(): number {
-        return SceneLoaderFlags._loggingLevel;
+        return SceneLoaderFlags._LoggingLevel;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static set loggingLevel(value: number) {
-        SceneLoaderFlags._loggingLevel = value;
+        SceneLoaderFlags._LoggingLevel = value;
     }
 
     /**

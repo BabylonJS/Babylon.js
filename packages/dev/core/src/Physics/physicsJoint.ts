@@ -255,10 +255,9 @@ export class Hinge2Joint extends MotorEnabledJoint {
     /**
      * Set the motor values.
      * Attention, this function is plugin specific. Engines won't react 100% the same.
-     * @param {number} targetSpeed the speed the motor is to reach
-     * @param {number} maxForce max force for this motor.
-     * @param {motorIndex} the motor's index, 0 or 1.
-     * @param motorIndex
+     * @param targetSpeed the speed the motor is to reach
+     * @param maxForce max force for this motor.
+     * @param motorIndex motor's index, 0 or 1.
      */
     public setMotor(targetSpeed?: number, maxForce?: number, motorIndex: number = 0) {
         this._physicsPlugin.setMotor(this, targetSpeed || 0, maxForce, motorIndex);
@@ -267,10 +266,9 @@ export class Hinge2Joint extends MotorEnabledJoint {
     /**
      * Set the motor limits.
      * Attention, this function is plugin specific. Engines won't react 100% the same.
-     * @param {number} upperLimit the upper limit
-     * @param {number} lowerLimit lower limit
-     * @param {motorIndex} the motor's index, 0 or 1.
-     * @param motorIndex
+     * @param upperLimit the upper limit
+     * @param lowerLimit lower limit
+     * @param motorIndex the motor's index, 0 or 1.
      */
     public setLimit(upperLimit: number, lowerLimit?: number, motorIndex: number = 0) {
         this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);

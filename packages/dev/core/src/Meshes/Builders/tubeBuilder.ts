@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Vector3, TmpVectors, Vector4, Matrix } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
 import { Path3D } from "../../Maths/math.path";
 
@@ -23,7 +23,6 @@ import { Path3D } from "../../Maths/math.path";
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.path
- * @param scene defines the hosting scene
  * @param options.radius
  * @param options.tessellation
  * @param options.radiusFunction
@@ -35,6 +34,7 @@ import { Path3D } from "../../Maths/math.path";
  * @param options.backUVs
  * @param options.instance
  * @param options.invertUV
+ * @param scene defines the hosting scene
  * @returns the tube mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
  * @see https://doc.babylonjs.com/how_to/set_shapes#tube
@@ -197,6 +197,7 @@ export function CreateTube(
  * @deprecated use CreateTube directly
  */
 export const TubeBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTube,
 };
 

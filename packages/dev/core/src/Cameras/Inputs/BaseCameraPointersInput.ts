@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
 import { EventState, Observer } from "../../Misc/observable";
@@ -43,18 +44,18 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         const engine = this.camera.getEngine();
         const element = engine.getInputElement();
         let previousPinchSquaredDistance = 0;
         let previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
 
-        this.pointA = null;
-        this.pointB = null;
+        this._pointA = null;
+        this._pointB = null;
 
         this._altKey = false;
         this._ctrlKey = false;
@@ -62,7 +63,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._shiftKey = false;
         this._buttonsPressed = 0;
 
-        this._pointerInput = (p, s) => {
+        this._pointerInput = (p) => {
             const evt = <IPointerEvent>p.event;
             const isTouch = evt.pointerType === "touch";
 
@@ -87,8 +88,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
                 this.onTouch(null, offsetX, offsetY);
-                this.pointA = null;
-                this.pointB = null;
+                this._pointA = null;
+                this._pointB = null;
             } else if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                 try {
                     srcElement?.setPointerCapture(evt.pointerId);
@@ -96,15 +97,15 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     //Nothing to do with the error. Execution will continue.
                 }
 
-                if (this.pointA === null) {
-                    this.pointA = {
+                if (this._pointA === null) {
+                    this._pointA = {
                         x: evt.clientX,
                         y: evt.clientY,
                         pointerId: evt.pointerId,
                         type: evt.pointerType,
                     };
-                } else if (this.pointB === null) {
-                    this.pointB = {
+                } else if (this._pointB === null) {
+                    this._pointB = {
                         x: evt.clientX,
                         y: evt.clientY,
                         pointerId: evt.pointerId,
@@ -131,7 +132,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
 
                 if (!isTouch) {
-                    this.pointB = null; // Mouse and pen are mono pointer
+                    this._pointB = null; // Mouse and pen are mono pointer
                 }
 
                 //would be better to use pointers.remove(evt.pointerId) for multitouch gestures,
@@ -140,17 +141,17 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 //one pointer stay pressed forever if we don't release all pointers
                 //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
                 if (engine._badOS) {
-                    this.pointA = this.pointB = null;
+                    this._pointA = this._pointB = null;
                 } else {
                     //only remove the impacted pointer in case of multitouch allowing on most
                     //platforms switching from rotate to zoom and pan seamlessly.
-                    if (this.pointB && this.pointA && this.pointA.pointerId == evt.pointerId) {
-                        this.pointA = this.pointB;
-                        this.pointB = null;
-                    } else if (this.pointA && this.pointB && this.pointB.pointerId == evt.pointerId) {
-                        this.pointB = null;
+                    if (this._pointB && this._pointA && this._pointA.pointerId == evt.pointerId) {
+                        this._pointA = this._pointB;
+                        this._pointB = null;
+                    } else if (this._pointA && this._pointB && this._pointB.pointerId == evt.pointerId) {
+                        this._pointB = null;
                     } else {
-                        this.pointA = this.pointB = null;
+                        this._pointA = this._pointB = null;
                     }
                 }
 
@@ -158,8 +159,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     // Previous pinch data is populated but a button has been lifted
                     // so pinch has ended.
                     this.onMultiTouch(
-                        this.pointA,
-                        this.pointB,
+                        this._pointA,
+                        this._pointB,
                         previousPinchSquaredDistance,
                         0, // pinchSquaredDistance
                         previousMultiTouchPanPosition,
@@ -181,30 +182,30 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
 
                 // One button down
-                if (this.pointA && this.pointB === null) {
-                    const offsetX = evt.clientX - this.pointA.x;
-                    const offsetY = evt.clientY - this.pointA.y;
-                    this.onTouch(this.pointA, offsetX, offsetY);
+                if (this._pointA && this._pointB === null) {
+                    const offsetX = evt.clientX - this._pointA.x;
+                    const offsetY = evt.clientY - this._pointA.y;
+                    this.onTouch(this._pointA, offsetX, offsetY);
 
-                    this.pointA.x = evt.clientX;
-                    this.pointA.y = evt.clientY;
+                    this._pointA.x = evt.clientX;
+                    this._pointA.y = evt.clientY;
                 }
                 // Two buttons down: pinch
-                else if (this.pointA && this.pointB) {
-                    const ed = this.pointA.pointerId === evt.pointerId ? this.pointA : this.pointB;
+                else if (this._pointA && this._pointB) {
+                    const ed = this._pointA.pointerId === evt.pointerId ? this._pointA : this._pointB;
                     ed.x = evt.clientX;
                     ed.y = evt.clientY;
-                    const distX = this.pointA.x - this.pointB.x;
-                    const distY = this.pointA.y - this.pointB.y;
+                    const distX = this._pointA.x - this._pointB.x;
+                    const distY = this._pointA.y - this._pointB.y;
                     const pinchSquaredDistance = distX * distX + distY * distY;
                     const multiTouchPanPosition = {
-                        x: (this.pointA.x + this.pointB.x) / 2,
-                        y: (this.pointA.y + this.pointB.y) / 2,
+                        x: (this._pointA.x + this._pointB.x) / 2,
+                        y: (this._pointA.y + this._pointB.y) / 2,
                         pointerId: evt.pointerId,
                         type: p.type,
                     };
 
-                    this.onMultiTouch(this.pointA, this.pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
+                    this.onMultiTouch(this._pointA, this._pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
 
                     previousMultiTouchPanPosition = multiTouchPanPosition;
                     previousPinchSquaredDistance = pinchSquaredDistance;
@@ -220,7 +221,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             );
 
         this._onLostFocus = () => {
-            this.pointA = this.pointB = null;
+            this._pointA = this._pointB = null;
             previousPinchSquaredDistance = 0;
             previousMultiTouchPanPosition = null;
             this.onLostFocus();
@@ -244,9 +245,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._onLostFocus) {
             const hostWindow = this.camera.getScene().getEngine().getHostWindow();
             if (hostWindow) {
@@ -294,7 +294,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality on POINTERDOUBLETAP event.
      * @param type
      */
-    protected onDoubleTap(type: string) {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onDoubleTap(type: string) {}
 
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
@@ -303,21 +304,23 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * @param offsetX
      * @param offsetY
      */
-    protected onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
 
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
      * Override this method to provide functionality.
-     * @param pointA
-     * @param pointB
+     * @param _pointA
+     * @param _pointB
      * @param previousPinchSquaredDistance
      * @param pinchSquaredDistance
      * @param previousMultiTouchPanPosition
      * @param multiTouchPanPosition
      */
-    protected onMultiTouch(
-        pointA: Nullable<PointerTouch>,
-        pointB: Nullable<PointerTouch>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onMultiTouch(
+        _pointA: Nullable<PointerTouch>,
+        _pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,
         pinchSquaredDistance: number,
         previousMultiTouchPanPosition: Nullable<PointerTouch>,
@@ -329,7 +332,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality.
      * @param evt
      */
-    protected onContextMenu(evt: PointerEvent): void {
+    public onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();
     }
 
@@ -339,7 +342,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality.
      * @param evt
      */
-    protected onButtonDown(evt: IPointerEvent): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onButtonDown(evt: IPointerEvent): void {}
 
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
@@ -347,17 +351,18 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Override this method to provide functionality.
      * @param evt
      */
-    protected onButtonUp(evt: IPointerEvent): void {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onButtonUp(evt: IPointerEvent): void {}
 
     /**
      * Called when window becomes inactive.
      * Override this method to provide functionality.
      */
-    protected onLostFocus(): void {}
+    public onLostFocus(): void {}
 
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
-    private pointA: Nullable<PointerTouch>;
-    private pointB: Nullable<PointerTouch>;
+    private _pointA: Nullable<PointerTouch>;
+    private _pointB: Nullable<PointerTouch>;
 }

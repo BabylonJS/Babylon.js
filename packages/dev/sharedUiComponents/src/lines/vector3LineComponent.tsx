@@ -23,6 +23,7 @@ interface IVector3LineComponentProps {
 }
 
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean; value: Vector3 }> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static defaultProps = {
         step: 0.001, // cm
     };
