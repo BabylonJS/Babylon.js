@@ -19,13 +19,13 @@ hr.ge {
     $line-padding-bottom: 0px;
     $line-padding-top: 0px;
     $line-padding-right: 18px;
-    color:black;
+    color: black;
     background: #e2e2e2;
-      * {
+    * {
         font-family: "acumin-pro-semicondensed";
         font-size: 12px;
-      }
-      #header {
+    }
+    #header {
         height: 30px;
         font-size: 16px;
         color: white;
@@ -33,30 +33,30 @@ hr.ge {
         grid-row: 1;
         text-align: center;
         display: grid;
-        grid-template-columns: 30px 1fr;        
-        -webkit-user-select: none; 
-        -moz-user-select: none;   
-        -ms-user-select: none;    
-        user-select: none;                
+        grid-template-columns: 30px 1fr;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
 
         #logo {
             position: relative;
             background: white;
-            grid-column: 1; 
+            grid-column: 1;
             width: 32px;
             height: 32px;
-            left:0;
+            left: 0;
             display: flex;
-            align-self: center;   
+            align-self: center;
             justify-self: center;
-        }        
+        }
 
         #title {
             background: white;
             color: black;
-            grid-column: 2; 
+            grid-column: 2;
             display: grid;
-            align-items: center;   
+            align-items: center;
             text-align: center;
         }
     }
@@ -69,14 +69,14 @@ hr.ge {
         border-radius: 5px;
         outline: none;
         opacity: 0.7;
-        -webkit-transition: .2s;
-        transition: opacity .2s;
+        -webkit-transition: 0.2s;
+        transition: opacity 0.2s;
     }
-    
+
     .range:hover {
         opacity: 1;
     }
-    
+
     .range::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
@@ -88,7 +88,7 @@ hr.ge {
         border-width: thin;
         cursor: pointer;
     }
-    
+
     .range::-moz-range-thumb {
         width: 14px;
         height: 14px;
@@ -136,7 +136,7 @@ hr.ge {
     }
 
     .sliderLine {
-        height: var(--spacingHeight);;
+        height: var(--spacingHeight);
         display: grid;
         grid-template-rows: 100%;
         grid-template-columns: auto auto auto 1fr;
@@ -169,7 +169,7 @@ hr.ge {
         .floatLine {
             grid-column: 3;
             padding-left: 0px;
-            
+
             .label {
                 grid-column: 1;
                 display: none;
@@ -177,37 +177,39 @@ hr.ge {
                 font-family: var(--labelFamily);
                 font-weight: 600;
             }
-        
+
             .short {
-                grid-column: 1; 
+                grid-column: 1;
                 display: flex;
                 align-items: center;
-                
+
                 input {
                     width: 60px;
                     background-color: white;
                     outline-color: transparent;
                     border: transparent;
                     height: 26px;
-                    outline-width: 0px
+                    outline-width: 0px;
                 }
-                
+
                 input::-webkit-outer-spin-button,
                 input::-webkit-inner-spin-button {
-                  -webkit-appearance: none;
-                  margin: 0;
+                    -webkit-appearance: none;
+                    margin: 0;
                 }
-    
-                input[type=number] {
+
+                input[type="number"] {
                     -webkit-appearance: textfield;
                     -moz-appearance: textfield;
                     appearance: textfield;
                 }
             }
-        }  
-    }     
+        }
+    }
 
-    .ge-divider, .ge-divider-short, .ge-divider-single {
+    .ge-divider,
+    .ge-divider-short,
+    .ge-divider-single {
         display: flex;
         flex-direction: row;
         padding-right: $line-padding-right;
@@ -217,10 +219,9 @@ hr.ge {
     .ge-grid-divider {
         display: grid;
         grid-template-columns: 150px 1fr auto;
-        
+
         .textLine {
             grid-column: auto;
-           
         }
     }
 
@@ -241,14 +242,12 @@ hr.ge {
         background-color: #878787;
         margin-bottom: 5px;
         filter: invert(1);
-
     }
-  
+
     .ge-grid {
         display: grid;
         margin-bottom: 5px;
     }
-
 
     .textInputLine {
         user-select: none;
@@ -271,14 +270,14 @@ hr.ge {
         img {
             width: 30px;
         }
-        
+
         .img {
             grid-column: 1;
             display: flex;
             align-items: center;
         }
 
-        .value {                        
+        .value {
             display: flex;
             align-items: center;
             grid-column: 3;
@@ -302,21 +301,25 @@ hr.ge {
             .arrows {
                 display: none;
             }
-            &:hover .arrows, &:focus .arrows, &.dragging .arrows {
+            &:hover .arrows,
+            &:focus .arrows,
+            &.dragging .arrows {
                 position: absolute;
                 right: 0;
                 display: flex;
                 flex-direction: column;
                 background-color: white;
                 cursor: grab;
-                .downArrowIcon, .upArrowIcon {
+                .downArrowIcon,
+                .upArrowIcon {
                     width: 15px;
                     height: 15px;
                 }
             }
             &.dragging .arrows {
                 background-color: var(--buttonPressedBackground);
-                .downArrowIcon, .upArrowIcon {
+                .downArrowIcon,
+                .upArrowIcon {
                     filter: brightness(10);
                 }
             }
@@ -326,7 +329,7 @@ hr.ge {
     .textInputLine.withUnits {
         grid-template-columns: auto auto 1fr auto;
     }
-    
+
     .textInputArea {
         padding-left: $line-padding-left;
         height: 100%;
@@ -339,11 +342,11 @@ hr.ge {
             align-items: center;
         }
 
-        .value {                        
+        .value {
             display: flex;
             align-items: center;
             grid-column: 2;
-            
+
             textarea {
                 width: calc(150% - 5px);
                 margin-left: -50%;
@@ -351,31 +354,31 @@ hr.ge {
             }
         }
     }
-    
+
     .paneContainer {
         margin-top: 3px;
-        display:grid;
+        display: grid;
         grid-template-rows: 100%;
         grid-template-columns: 100%;
-        
+
         .paneList {
             border-left: 3px solid transparent;
         }
 
-        &:hover {  
-            .paneList {                      
+        &:hover {
+            .paneList {
                 border-left: 3px solid rgba(51, 122, 183, 0.8);
             }
 
             .paneContainer-content {
                 .header {
-                    .title {   
+                    .title {
                         border-left: 3px solid rgb(51, 122, 183);
                     }
                 }
             }
         }
-        
+
         .paneContainer-highlight-border {
             grid-row: 1;
             grid-column: 1;
@@ -383,7 +386,7 @@ hr.ge {
             border: 3px solid red;
             transition: opacity 250ms;
             pointer-events: none;
-            
+
             &.transparent {
                 opacity: 0;
             }
@@ -396,14 +399,14 @@ hr.ge {
             .header {
                 display: grid;
                 grid-template-columns: 1fr auto;
-                background: #cccccc;    
+                background: #cccccc;
                 height: var(--spacingHeight);
                 padding-bottom: $line-padding-bottom;
                 padding-top: $line-padding-top;
-                padding-right: 5px;                        
+                padding-right: 5px;
                 cursor: pointer;
-                
-                .title {                                
+
+                .title {
                     border-left: 3px solid transparent;
                     padding-left: 5px;
                     grid-column: 1;
@@ -414,21 +417,21 @@ hr.ge {
                 .collapse {
                     grid-column: 2;
                     display: flex;
-                    align-items: center;  
+                    align-items: center;
                     justify-items: center;
                     transform-origin: center;
 
                     &.closed {
                         transform: rotate(180deg);
                     }
-                }                        
+                }
             }
 
             .paneList > div:not(:last-child) {
                 border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
             }
 
-            .fragment > div:not(:last-child)  {
+            .fragment > div:not(:last-child) {
                 border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
             }
         }
@@ -443,7 +446,7 @@ hr.ge {
             height: calc(100% - 2px);
             border: 1px black solid;
             cursor: pointer;
-            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 100% 100%;
+            background: repeating-conic-gradient(#e2e2e2 0% 25%, white 0% 50%) 50% / 100% 100%;
             .color-rect {
                 height: 100%;
             }
@@ -460,7 +463,7 @@ hr.ge {
 
         .color-picker-float {
             position: absolute;
-        }                
+        }
     }
 
     .gradient-step {
@@ -475,22 +478,22 @@ hr.ge {
             grid-row: 1;
             grid-column: 1;
         }
-            
+
         .color {
             grid-row: 1;
             grid-column: 2;
             cursor: pointer;
         }
 
-        .step-value {       
-            margin-left: 5px;     
+        .step-value {
+            margin-left: 5px;
             grid-row: 1;
             grid-column: 3;
             text-align: right;
             margin-right: 5px;
         }
 
-        .step-slider {            
+        .step-slider {
             grid-row: 1;
             grid-column: 4;
             display: grid;
@@ -504,13 +507,13 @@ hr.ge {
             }
         }
 
-        .gradient-copy {            
+        .gradient-copy {
             grid-row: 1;
             grid-column: 5;
             display: grid;
             align-content: center;
             justify-content: center;
- 
+
             .img {
                 height: 20px;
                 width: 20px;
@@ -518,9 +521,8 @@ hr.ge {
             .img:hover {
                 cursor: pointer;
             }
-
         }
-        .gradient-delete {            
+        .gradient-delete {
             grid-row: 1;
             grid-column: 6;
             display: grid;
@@ -533,9 +535,7 @@ hr.ge {
             .img:hover {
                 cursor: pointer;
             }
-
         }
-
     }
 
     .alignment-bar {
@@ -550,7 +550,7 @@ hr.ge {
 
         .command-label {
             display: none;
-        }        
+        }
 
         .command-button-icon {
             height: 100%;
@@ -563,8 +563,8 @@ hr.ge {
 
         &:hover {
             background-color: white;
-        } 
-        
+        }
+
         .active {
             transform-origin: center;
             background-color: white;
@@ -584,7 +584,7 @@ hr.ge {
         margin-right: 5px;
         .command-label {
             display: none;
-        }        
+        }
 
         background-color: white;
         .command-button-icon {
@@ -597,7 +597,7 @@ hr.ge {
         &:hover {
             background-color: #c2c2c2;
             filter: invert(1);
-        } 
+        }
     }
 
     .command-button-alt-disabled {
@@ -608,7 +608,7 @@ hr.ge {
         margin-right: 5px;
         .command-label {
             display: none;
-        }        
+        }
 
         background-color: white;
         .command-button-icon {
@@ -624,7 +624,6 @@ hr.ge {
         }
     }
 
-    
     .command-button-alt-active {
         cursor: pointer;
         pointer-events: none;
@@ -633,7 +632,7 @@ hr.ge {
         margin-right: 5px;
         .command-label {
             display: none;
-        }        
+        }
 
         background-color: #c2c2c2;
         filter: invert(1);
@@ -674,7 +673,7 @@ hr.ge {
             align-items: center;
         }
 
-        .value {                        
+        .value {
             display: flex;
             align-items: center;
             grid-column: 3;
@@ -693,21 +692,21 @@ hr.ge {
 
         .short {
             grid-column: 2;
-            
+
             display: flex;
             align-items: center;
-            
+
             input {
                 width: 27px;
             }
-            
+
             input::-webkit-outer-spin-button,
             input::-webkit-inner-spin-button {
-              -webkit-appearance: none;
-              margin: 0;
+                -webkit-appearance: none;
+                margin: 0;
             }
 
-            input[type=number] {
+            input[type="number"] {
                 -moz-appearance: textfield;
             }
         }
@@ -715,7 +714,7 @@ hr.ge {
 
     .vector3Line {
         padding-bottom: $line-padding-bottom;
-        padding-top: $line-padding-top;      
+        padding-top: $line-padding-top;
         display: grid;
         .firstLine {
             display: grid;
@@ -747,7 +746,7 @@ hr.ge {
 
         .secondLine {
             display: grid;
-            padding-right: 5px;  
+            padding-right: 5px;
             border-left: 1px solid rgb(51, 122, 183);
 
             .no-right-margin {
@@ -763,18 +762,18 @@ hr.ge {
                 text-align: right;
                 grid-column: 1;
                 display: flex;
-                align-items: center;                            
+                align-items: center;
                 justify-self: right;
-                margin-right: 10px;                          
+                margin-right: 10px;
             }
 
             .numeric-value {
                 width: 120px;
                 grid-column: 2;
                 display: flex;
-                align-items: center;  
-                border: 1px solid  rgb(51, 122, 183);
-            }                        
+                align-items: center;
+                border: 1px solid rgb(51, 122, 183);
+            }
         }
     }
 
@@ -790,11 +789,11 @@ hr.ge {
             display: none;
         }
 
-        .file-upload {            
+        .file-upload {
             background: var(--backgroundGrey);
             border: 1px solid #424242;
             margin: 5px 10px;
-            color:white;
+            color: white;
             padding: 4px 5px;
             opacity: 0.9;
             cursor: pointer;
@@ -803,7 +802,7 @@ hr.ge {
         }
 
         .file-upload:hover {
-            opacity: 1.0;
+            opacity: 1;
         }
 
         .file-upload:active {
@@ -815,30 +814,30 @@ hr.ge {
             background: var(--backgroundGrey);
             border: 1px solid #424242;
             margin: 5px 10px 5px 10px;
-            color:white;
+            color: white;
             padding: 4px 5px;
             opacity: 0.9;
             border-radius: 4px;
         }
 
         button:hover {
-            opacity: 1.0;
+            opacity: 1;
         }
 
         button:active {
             background: #282828;
-        }   
-        
+        }
+
         button:focus {
             border: 1px solid #424242;
             outline: 0px;
-        }  
+        }
     }
 
     .numeric {
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        height: var(--spacingHeight);;
+        height: var(--spacingHeight);
         display: grid;
         grid-template-columns: 1fr 120px auto;
 
@@ -848,7 +847,7 @@ hr.ge {
             align-items: center;
         }
 
-        .number {                        
+        .number {
             display: flex;
             align-items: center;
             grid-column: 2;
@@ -859,13 +858,13 @@ hr.ge {
             }
         }
     }
-    
+
     .checkBoxLine {
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto 1fr auto ;
+        grid-template-columns: auto 1fr auto;
         flex-grow: 1;
 
         .label {
@@ -880,7 +879,7 @@ hr.ge {
         img {
             width: 30px;
         }
-        
+
         .img {
             grid-column: 1;
             display: flex;
@@ -894,9 +893,8 @@ hr.ge {
             margin-left: auto;
             margin-right: 0px;
 
-            .cbx:checked ~ label { 
+            .cbx:checked ~ label {
                 background: transparent;
-                
             }
 
             .cbx:checked ~ label:after {
@@ -911,7 +909,7 @@ hr.ge {
                 background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px);
             }
 
-            .cbx:checked ~ label.disabled { 
+            .cbx:checked ~ label.disabled {
                 background: rgb(0, 0, 0);
                 cursor: pointer;
             }
@@ -927,18 +925,18 @@ hr.ge {
                 cursor: pointer;
             }
 
-            .hidden { 
-                display: none; 
-            }               
-        }                    
-    }  
+            .hidden {
+                display: none;
+            }
+        }
+    }
 
     .listLine {
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto 1fr auto ;
+        grid-template-columns: auto 1fr auto;
         flex-grow: 1;
 
         .label {
@@ -961,7 +959,7 @@ hr.ge {
             grid-column: 2;
             padding-left: 15px;
             display: flex;
-            align-items: center;   
+            align-items: center;
             margin-right: 5px;
 
             select {
@@ -970,9 +968,9 @@ hr.ge {
                 border: transparent;
                 border-radius: 4px;
             }
-        }                    
-    }  
-                    
+        }
+    }
+
     .color3Line {
         padding-left: 15px;
         padding-bottom: $line-padding-bottom;
@@ -992,7 +990,7 @@ hr.ge {
                 align-items: center;
                 min-width: 15px;
             }
-    
+
             .img {
                 grid-column: 1;
                 display: flex;
@@ -1003,17 +1001,17 @@ hr.ge {
                 width: 30px;
                 height: 30px;
             }
-    
+
             .textInputLine {
                 grid-column: 3;
                 padding-left: 2px;
                 flex-grow: 1;
             }
-    
+
             .color3 {
                 display: flex;
                 align-items: center;
-                
+
                 input {
                     margin-right: 5px;
                 }
@@ -1050,11 +1048,11 @@ hr.ge {
                     width: 20px;
                 }
             }
-        }   
+        }
 
         .secondLine {
             display: grid;
-            padding-right: 5px;  
+            padding-right: 5px;
             border-left: 1px solid rgb(51, 122, 183);
 
             .numeric {
@@ -1066,21 +1064,21 @@ hr.ge {
                 text-align: right;
                 grid-column: 1;
                 display: flex;
-                align-items: center;                            
+                align-items: center;
                 justify-self: right;
-                margin-right: 10px;                          
+                margin-right: 10px;
             }
 
             .numeric-value {
                 width: 120px;
                 grid-column: 2;
                 display: flex;
-                align-items: center;  
-                border: 1px solid  rgb(51, 122, 183);
-            }                        
-        }                  
-    }     
-    
+                align-items: center;
+                border: 1px solid rgb(51, 122, 183);
+            }
+        }
+    }
+
     .textLine {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
@@ -1118,7 +1116,7 @@ hr.ge {
             overflow: hidden;
             text-align: end;
             opacity: 0.8;
-            margin:5px;
+            margin: 5px;
             margin-top: 6px;
             max-width: 140px;
             text-decoration: underline;
@@ -1133,13 +1131,13 @@ hr.ge {
             overflow: hidden;
             text-align: end;
             opacity: 0.8;
-            margin:5px;
+            margin: 5px;
             margin-top: 6px;
             max-width: 200px;
-            -webkit-user-select: text; 
-            -moz-user-select: text;   
-            -ms-user-select: text;    
-            user-select: text;                
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
 
             &.check {
                 color: green;
@@ -1147,8 +1145,7 @@ hr.ge {
 
             &.uncheck {
                 color: red;
-            }  
+            }
         }
-    }    
-
+    }
 }

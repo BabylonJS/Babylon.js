@@ -5,9 +5,7 @@
     height: 100%;
     z-index: 1;
 
-
     #metadata-editor {
-
         position: absolute;
         top: 80px;
         left: calc(50% - 205px);
@@ -28,7 +26,8 @@
             margin-bottom: 10px;
         }
 
-        textarea, input {
+        textarea,
+        input {
             display: block;
             width: 350px;
             margin: auto;
@@ -43,7 +42,7 @@
             height: 65px;
         }
 
-        .editor-buttons{
+        .editor-buttons {
             user-select: none;
             div {
                 cursor: pointer;

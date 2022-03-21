@@ -30,7 +30,8 @@
     }
 
     &.background-ts {
-        .command-button, .command-dropdown  {
+        .command-button,
+        .command-dropdown {
             img {
                 filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
             }
@@ -39,16 +40,18 @@
                 color: #333333;
             }
 
-            &:hover, &.activated {
+            &:hover,
+            &.activated {
                 img {
                     filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;
                 }
-            } 
+            }
         }
     }
 
     &.background-js {
-        .command-button, .command-dropdown  {
+        .command-button,
+        .command-dropdown {
             img {
                 filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
             }
@@ -57,11 +60,12 @@
                 color: #333333;
             }
 
-            &:hover, &.activated {
+            &:hover,
+            &.activated {
                 img {
                     filter: invert(17%) !important;
                 }
-            } 
+            }
         }
     }
 
@@ -72,7 +76,7 @@
 
         .command-label {
             display: none;
-        }        
+        }
 
         .command-button-icon {
             height: 100%;
@@ -85,8 +89,8 @@
 
         &:hover {
             background-color: var(--selectionGrey);
-        } 
-        
+        }
+
         .active {
             transform-origin: center;
             background-color: var(--selectionGrey);
@@ -105,7 +109,7 @@
         z-index: 1;
     }
 
-    .command-dropdown {        
+    .command-dropdown {
         cursor: pointer;
         width: 55px;
         height: 40px;
@@ -127,11 +131,12 @@
             font-size: 14px;
         }
 
-        &:hover, &.activated {
-            background-color:#666666;
+        &:hover,
+        &.activated {
+            background-color: #666666;
             color: black;
-        } 
-        
+        }
+
         &:active {
             transform-origin: center;
             transform: scale(0.95);
@@ -139,9 +144,9 @@
     }
 
     .command-dropdown-blocker {
-        position: absolute;    
-        top:0;
-        left:0;
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         transform: scale(1);
@@ -168,7 +173,7 @@
             }
         }
     }
-        
+
     .command-dropdown-content {
         background: #333333;
         position: absolute;
@@ -177,10 +182,10 @@
 
         &.toRight {
             width: 120px;
-        } 
-        
+        }
+
         .command-dropdown-label {
-            color:white;
+            color: white;
             padding: 5px;
             padding-left: 7px;
             height: 35px;
@@ -203,7 +208,7 @@
                 .sub-items {
                     display: block;
                 }
-            } 
+            }
 
             .command-dropdown-label-text {
                 font-size: 12px;
@@ -218,7 +223,7 @@
 
             .command-dropdown-arrow {
                 grid-column: 2;
-                grid-row: 1;    
+                grid-row: 1;
                 font-size: 20px;
                 font-weight: bold;
                 padding-bottom: 10px;
@@ -230,29 +235,29 @@
                 left: 200px;
                 top: 0;
                 width: 150px;
-                display: none;        
-    
+                display: none;
+
                 &.background-js {
                     background: #bfabff;
-                    .sub-item {                      
+                    .sub-item {
                         &:hover {
                             background-color: #333333;
                             color: white;
                         }
                     }
-                }   
+                }
 
                 &.background-ts {
                     background: #333333;
-                    .sub-item {                      
+                    .sub-item {
                         &:hover {
                             background-color: #333333;
                             color: white;
                         }
                     }
-                }   
-                                    
-                .sub-item {                      
+                }
+
+                .sub-item {
                     color: white;
                     padding: 5px;
                     padding-left: 10px;
@@ -264,11 +269,11 @@
                         color: black;
                     }
                 }
-            }            
+            }
         }
 
         .buttonLine {
-            color:white;
+            color: white;
             padding: 5px;
             padding-left: 7px;
             height: 35px;
@@ -299,14 +304,14 @@
                     display: block;
                 }
                 cursor: pointer;
-            } 
+            }
 
-            .file-upload{
+            .file-upload {
                 cursor: pointer;
             }
         }
     }
-    
+
     .divider {
         display: flex;
         align-items: center;
@@ -321,7 +326,8 @@
         }
     }
 
-    .floatLine, .checkBoxLine {
+    .floatLine,
+    .checkBoxLine {
         display: flex;
         align-items: center;
     }
@@ -364,11 +370,11 @@
             .expand {
                 display: none;
             }
-        }   
+        }
 
         .secondLine {
             display: grid;
-            padding-right: 5px;  
+            padding-right: 5px;
             border-left: 1px solid rgb(51, 122, 183);
 
             .numeric {
@@ -380,19 +386,19 @@
                 text-align: right;
                 grid-column: 1;
                 display: flex;
-                align-items: center;                            
+                align-items: center;
                 justify-self: right;
-                margin-right: 10px;                          
+                margin-right: 10px;
             }
 
             .numeric-value {
                 width: 120px;
                 grid-column: 2;
                 display: flex;
-                align-items: center;  
-                border: 1px solid  rgb(51, 122, 183);
-            }                        
-        }                  
+                align-items: center;
+                border: 1px solid rgb(51, 122, 183);
+            }
+        }
     }
 
     .color-picker {
@@ -404,7 +410,7 @@
             height: calc(100% - 2px);
             border: 1px solid white;
             cursor: pointer;
-            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 100% 100%;
+            background: repeating-conic-gradient(#e2e2e2 0% 25%, white 0% 50%) 50% / 100% 100%;
             .color-rect {
                 height: 100%;
             }
@@ -420,11 +426,12 @@
         }
 
         .color-picker-float {
-            position: absolute;  
-        }                
+            position: absolute;
+        }
     }
 
-    .floatLine input, .listLine select {
+    .floatLine input,
+    .listLine select {
         background-color: #000000;
         color: white;
         margin: 5px;
