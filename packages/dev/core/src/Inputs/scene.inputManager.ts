@@ -9,10 +9,9 @@ import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
-import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
-import { devices } from "puppeteer";
 
 declare type Scene = import("../scene").Scene;
 
@@ -873,8 +872,6 @@ export class InputManager {
         // If a device connects that we can handle, wire up the observable
         this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
-                //deviceSource.getInput()
-                //const deviceSource = this._deviceSourceManager!.getDeviceSource(device.deviceType, device.deviceSlot)!;
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
                         //const evt = eventData as IPointerEvent; 
@@ -896,33 +893,30 @@ export class InputManager {
                     }
                 });
             }
-            else if (device.deviceType === DeviceType.Touch) {
-                const deviceSource = this._deviceSourceManager!.getDeviceSource(device.deviceType, device.deviceSlot)!;
+            else if (deviceSource.deviceType === DeviceType.Touch) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     if ((eventData.inputIndex === PointerInput.LeftClick)) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
-                            this._onPointerDown(eventData as IPointerEvent);
+                            this._onPointerDown(eventData);
 
                         }
                         else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
-                            this._onPointerUp(eventData as IPointerEvent);
+                            this._onPointerUp(eventData);
                         }
                     }
 
                     if (attachMove && eventData.inputIndex === PointerInput.Move) {
-                        this._onPointerMove(eventData as IPointerEvent);
+                        this._onPointerMove(eventData);
                     }
                 });
             }
-            else if (device.deviceType === DeviceType.Keyboard) {
-                const deviceSource = this._deviceSourceManager!.getDeviceSource(device.deviceType, device.deviceSlot)!;
+            else if (deviceSource.deviceType === DeviceType.Keyboard) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    const evt = eventData as IKeyboardEvent;
-                    if (evt.type === "keydown") {
-                        this._onKeyDown(evt);
+                    if (eventData.type === "keydown") {
+                        this._onKeyDown(eventData);
                     }
-                    else if (evt.type === "keyup") {
-                        this._onKeyUp(evt);
+                    else if (eventData.type === "keyup") {
+                        this._onKeyUp(eventData);
                     }
                 });
             }

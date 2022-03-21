@@ -2,11 +2,11 @@ import { Engine } from "../../Engines/engine";
 import { DeviceType } from "./deviceEnums";
 import { Nullable } from "../../types";
 import { Observable, Observer } from "../../Misc/observable";
-import { DeviceSource, DeviceSourceEvent } from "./deviceSource";
+import { DeviceSource } from "./deviceSource";
 import { DeviceSourceType, InternalDeviceSourceManager, IObservableManager } from "./internalDeviceSourceManager";
 import { IDisposable } from "../../scene";
 import { ThinEngine } from "../../Engines/thinEngine";
-import { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "core/Events/deviceInputEvents";
+import { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Class to keep track of devices
@@ -26,7 +26,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Private Members
     private _engine: Engine;
     private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
-    private readonly _devices: Array<Array<DeviceSourceType>>;
+    private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
 
     // Public Functions
@@ -83,7 +83,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
                 if (devices) {
                     for (const device of devices) {
                         if (device) {
-                            this.onDeviceConnectedObservable.notifyObserver(observer, device);
+                            this.onDeviceConnectedObservable.notifyObserver(observer, device as DeviceSourceType);
                         }
                     }
                 }
@@ -141,7 +141,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
         const deviceSource = this._devices[deviceType]?.[deviceSlot]; // Grab local reference to use before removing from devices
-        this.onDeviceDisconnectedObservable.notifyObservers(deviceSource);
+        this.onDeviceDisconnectedObservable.notifyObservers(deviceSource as DeviceSourceType);
         if (this._devices[deviceType]?.[deviceSlot]) {
             delete this._devices[deviceType][deviceSlot];
         }
@@ -155,8 +155,8 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @param eventData
      * @hidden
      */
-    public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: DeviceSourceEvent<T>): void {
-        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
+    public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {
+        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData as (IKeyboardEvent | IWheelEvent | IPointerEvent));
     }
 
     // Private Functions
