@@ -269,7 +269,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (evt.key === "Delete" || evt.key === "Backspace") {
             if (!this.props.globalState.lockObject.lock) {
-                this._deleteSelectedNodes();
+                this.props.globalState.deleteSelectedNodes();
             }
         }
 
@@ -283,15 +283,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._canvas.style.cursor = this._altKeyIsPressed ? "zoom-out" : "zoom-in";
         }
     };
-
-    private _deleteSelectedNodes() {
-        for (const control of this.props.globalState.selectedControls) {
-            this.props.globalState.guiTexture.removeControl(control);
-            this.props.globalState.liveGuiTexture?.removeControl(control);
-            control.dispose();
-        }
-        this.props.globalState.setSelection([]);
-    }
 
     public copyToClipboard(copyFn: (content: string) => void) {
         const controlList: any[] = [];
@@ -310,7 +301,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public cutToClipboard(copyFn: (content: string) => void) {
         this.copyToClipboard(copyFn);
-        this._deleteSelectedNodes();
+        this.props.globalState.deleteSelectedNodes();
     }
 
     public pasteFromClipboard(clipboardContents: string) {
