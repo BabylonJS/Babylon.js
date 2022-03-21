@@ -224,7 +224,6 @@ export class InputTextArea extends InputText {
 
                 if (this._isTextHighlightOn) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                    this._isTextHighlightOn = false;
                 }
                 // ctr + <-
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
@@ -232,7 +231,6 @@ export class InputTextArea extends InputText {
                     evt.preventDefault();
                 }
 
-                this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
@@ -266,7 +264,6 @@ export class InputTextArea extends InputText {
                 }
                 if (this._isTextHighlightOn) {
                     this._cursorInfo.globalStartIndex = this._cursorInfo.globalEndIndex;
-                    this._isTextHighlightOn = false;
                 }
 
                 if (this._cursorInfo.globalStartIndex < this.text.length) {
@@ -278,7 +275,7 @@ export class InputTextArea extends InputText {
                     const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex - 1;
                     this._cursorInfo.globalStartIndex += rightDelta;
                 }
-                this._blinkIsEven = false;
+
                 this._isTextHighlightOn = false;
                 this._cursorIndex = -1;
                 this._markAsDirty();
