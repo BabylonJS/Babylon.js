@@ -190,9 +190,9 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 37: // LEFT
+                // update the cursor
+                this._blinkIsEven = false;
                 if (evt && evt.shiftKey) {
-                    // update the cursor
-                    this._blinkIsEven = false;
                     // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
                         // Go to line's start by substract the relativeStartIndex to the globalStartIndex
@@ -237,9 +237,9 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 39: // RIGHT
+                // update the cursor
+                this._blinkIsEven = false;
                 if (evt && evt.shiftKey) {
-                    // update the cursor
-                    this._blinkIsEven = false;
                     // shift + ctrl/cmd + ->
                     if (evt.ctrlKey || evt.metaKey) {
                         const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex - 1;
