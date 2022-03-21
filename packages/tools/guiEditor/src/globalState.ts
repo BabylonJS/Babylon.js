@@ -163,6 +163,15 @@ export class GlobalState {
         this.onSelectionChangedObservable.notifyObservers();
     }
 
+    public deleteSelectedNodes() {
+        for (const control of this.selectedControls) {
+            this.guiTexture.removeControl(control);
+            this.liveGuiTexture?.removeControl(control);
+            control.dispose();
+        }
+        this.setSelection([]);
+    }
+
     public isMultiSelectable(control: Control): boolean {
         if (this.selectedControls.length === 0) return true;
         if (this.selectedControls[0].parent === control.parent) return true;
