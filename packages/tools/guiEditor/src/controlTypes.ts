@@ -43,7 +43,7 @@ export const ControlTypes = [
         icon: lineIcon,
     },
     {
-        className: "Text",
+        className: "TextBlock",
         icon: textBoxIcon,
     },
     {
@@ -63,7 +63,7 @@ export const ControlTypes = [
         icon: displaygridIcon,
     },
     {
-        className: "TextButton",
+        className: "Button",
         icon: buttonIcon,
     },
     {

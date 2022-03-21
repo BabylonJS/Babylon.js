@@ -8,10 +8,9 @@
         font-weight: 600;
         font-size: 12px;
     }
+    grid-row: 1;
+    grid-column: 1;
     user-select: none;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
 
     .commands-left {
         float: left;
@@ -21,12 +20,6 @@
     .commands-right {
         float: right;
         display: flex;
-
-        .beta-flag {
-            width: 110px;
-            height: 30px;
-            display: none;
-        }
     }
 
     &.background-ts {
@@ -72,7 +65,7 @@
     .command-button {
         cursor: pointer;
         width: 55px;
-        height: 40px;
+        height: 55px;
 
         .command-label {
             display: none;
@@ -112,7 +105,7 @@
     .command-dropdown {
         cursor: pointer;
         width: 55px;
-        height: 40px;
+        height: 55px;
 
         .command-dropdown-icon {
             height: 100%;
@@ -177,6 +170,7 @@
     .command-dropdown-content {
         background: #333333;
         position: absolute;
+        top: 55px;
         width: 55px;
         transform: scale(1);
 
@@ -326,7 +320,7 @@
         }
     }
 
-    .floatLine,
+    .textInputLine,
     .checkBoxLine {
         display: flex;
         align-items: center;
@@ -427,20 +421,88 @@
 
         .color-picker-float {
             position: absolute;
+            outline: 1px solid black;
+        }
+
+        .color-picker-container {
+            background-color: #e2e2e2;
+        }
+
+        input:focus {
+            outline-color: black;
         }
     }
 
-    .floatLine input,
+    .textInputLine input,
     .listLine select {
         background-color: #000000;
         color: white;
-        margin: 5px;
-        outline: none;
         padding: 5px;
         border: none;
     }
 
+    input,
+    .listLine select {
+        outline-color: transparent;
+        outline-width: 1px;
+        outline-offset: -1px;
+        outline-style: solid;
+        transition: 0.2s outline;
+        border: none;
+    }
+
+    .textInputLine .value {
+        position: relative;
+        margin: 5px;
+    }
+
+    .textInputLine input:focus {
+        outline-color: white;
+    }
+
     .listLine select {
         width: 150px;
+    }
+
+    .hasArrows {
+        .arrows {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            flex-direction: column;
+            cursor: grab;
+            .downArrowIcon,
+            .upArrowIcon {
+                width: 13px;
+                height: 13px;
+            }
+            filter: brightness(10);
+        }
+        &:hover .arrows,
+        &:focus .arrows,
+        &.dragging .arrows {
+            display: flex;
+        }
+        .arrows:hover {
+            background-color: var(--buttonHoverBackground);
+            filter: none;
+        }
+        &.dragging .arrows {
+            background-color: var(--buttonPressedBackground);
+            .downArrowIcon,
+            .upArrowIcon {
+                filter: none;
+            }
+        }
+    }
+    .hasArrows input::-webkit-outer-spin-button,
+    .hasArrows input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .hasArrows input[type="number"] {
+        -moz-appearance: textfield;
     }
 }

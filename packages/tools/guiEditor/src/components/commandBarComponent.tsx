@@ -1,12 +1,12 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
 import pointerIcon from "../imgs/pointerIcon.svg";
@@ -18,8 +18,6 @@ import canvasFitIcon from "../imgs/canvasFitIcon.svg";
 import betaFlag from "../imgs/betaFlag.svg";
 
 import "../scss/commandBar.scss";
-
-declare let Versions: any;
 
 interface ICommandBarComponentProps {
     globalState: GlobalState;
@@ -90,7 +88,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.forceUpdate();
         });
 
-        props.globalState.onResizeObservable.add((newSize) => {
+        props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
     }
@@ -262,32 +260,38 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         )}
                         {!DataStorage.ReadBoolean("Responsive", true) && (
                             <>
-                                <FloatLineComponent
+                                <TextInputLineComponent
                                     label="W"
                                     target={size}
                                     propertyName="width"
-                                    isInteger={true}
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
-                                    onChange={(newvalue) => {
-                                        if (!isNaN(newvalue)) {
-                                            this.props.globalState.workbench.guiSize = { width: newvalue, height: size.height };
+                                    onChange={(newValue) => {
+                                        const number = parseInt(newValue, 10);
+                                        if (!isNaN(number)) {
+                                            this.props.globalState.workbench.guiSize = { width: number, height: size.height };
                                         }
                                     }}
-                                ></FloatLineComponent>
-                                <FloatLineComponent
+                                    numeric={true}
+                                    arrows={true}
+                                    roundValues={true}
+                                ></TextInputLineComponent>
+                                <TextInputLineComponent
                                     label="H"
                                     target={size}
                                     propertyName="height"
-                                    isInteger={true}
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
-                                    onChange={(newvalue) => {
-                                        if (!isNaN(newvalue)) {
-                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newvalue };
+                                    onChange={(newValue) => {
+                                        const number = parseInt(newValue, 10);
+                                        if (!isNaN(number)) {
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: number };
                                         }
                                     }}
-                                ></FloatLineComponent>
+                                    numeric={true}
+                                    arrows={true}
+                                    roundValues={true}
+                                ></TextInputLineComponent>
                             </>
                         )}
                     </div>

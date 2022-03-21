@@ -138,5 +138,7 @@ ThinEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineCont
 
     const uniformLocation = this._gl.getUniformBlockIndex(program, blockName);
 
-    this._gl.uniformBlockBinding(program, uniformLocation, index);
+    if (uniformLocation !== 0xffffffff) {
+        this._gl.uniformBlockBinding(program, uniformLocation, index);
+    }
 };
