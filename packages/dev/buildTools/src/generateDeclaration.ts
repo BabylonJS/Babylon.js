@@ -194,7 +194,6 @@ function getPackageDeclaration(
 
         if (/import\("\.(.*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
             line = line.replace(/import\((.*)\)./, "");
-            console.log(line);
         }
 
 
@@ -209,9 +208,6 @@ function getPackageDeclaration(
         excludeLine = excludeLine || /export \{/.test(line);
         excludeLine = excludeLine || /export \* from "/.test(line);
         excludeLine = excludeLine || /^declare type (.*) import/.test(line);
-        if(excludeLine) {
-            // console.log(line);
-        }
 
         const match = line.match(/(\s*)declare module "(.*)" \{/);
         if (match) {
