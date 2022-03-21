@@ -1,5 +1,5 @@
 /** @hidden */
-export enum PowerPreference {
+export enum PredefinedColorSpace {
     SRGB = "srgb",
 }
 
