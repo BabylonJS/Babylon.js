@@ -32,8 +32,8 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Public Functions
     /**
      * Gets a DeviceSource, given a type and slot
-     * @param deviceType Type of Device
-     * @param deviceSlot Slot or ID of device
+     * @param deviceType - Type of Device
+     * @param deviceSlot - Slot or ID of device
      * @returns DeviceSource
      */
     public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> {
@@ -53,7 +53,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
     /**
      * Gets an array of DeviceSource objects for a given device type
-     * @param deviceType Type of Device
+     * @param deviceType - Type of Device
      * @returns All available DeviceSources of a given type
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
@@ -64,7 +64,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
 
     /**
      * Default constructor
-     * @param engine Used to get canvas (if applicable)
+     * @param engine - Used to get canvas (if applicable)
      */
     constructor(engine: Engine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
@@ -118,7 +118,8 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
 
     // Hidden Functions
     /**
-     * @param deviceSource
+     * @param deviceSource - Source to add
+     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _addDevice(deviceSource: DeviceSourceType): void {
@@ -135,8 +136,9 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
 
     /**
-     * @param deviceType
-     * @param deviceSlot
+     * @param deviceType - DeviceType
+     * @param deviceSlot - DeviceSlot
+     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
@@ -150,9 +152,10 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
 
     /**
-     * @param deviceType
-     * @param deviceSlot
-     * @param eventData
+     * @param deviceType - DeviceType
+     * @param deviceSlot - DeviceSlot
+     * @param eventData - Event
+     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {

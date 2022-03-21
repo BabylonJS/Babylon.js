@@ -15,6 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 
+// eslint-disable-next-line tsdoc/syntax
 /** @hidden */
 class _ClickInfo {
     private _singleClick = false;
@@ -114,7 +115,7 @@ export class InputManager {
 
     /**
      * Creates a new InputManager
-     * @param scene defines the hosting scene
+     * @param scene - defines the hosting scene
      */
     constructor(scene?: Scene) {
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
@@ -133,7 +134,7 @@ export class InputManager {
 
     /**
      * When using more than one pointer (for example in XR) you can get the mesh under the specific pointer
-     * @param pointerId the pointer id to use
+     * @param pointerId - the pointer id to use
      * @returns The mesh under this pointer id or null if not found
      */
     public getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh> {
@@ -267,8 +268,8 @@ export class InputManager {
     /**
      * Use this method to simulate a pointer move on a mesh
      * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
-     * @param pickResult pickingInfo of the object wished to simulate pointer event on
-     * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+     * @param pickResult - pickingInfo of the object wished to simulate pointer event on
+     * @param pointerEventInit - pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
         const evt = new PointerEvent("pointermove", pointerEventInit);
@@ -283,8 +284,8 @@ export class InputManager {
     /**
      * Use this method to simulate a pointer down on a mesh
      * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
-     * @param pickResult pickingInfo of the object wished to simulate pointer event on
-     * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+     * @param pickResult - pickingInfo of the object wished to simulate pointer event on
+     * @param pointerEventInit - pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
         const evt = new PointerEvent("pointerdown", pointerEventInit);
@@ -367,6 +368,7 @@ export class InputManager {
     }
 
     /** 
+     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      * @returns Boolean if delta for pointer exceeds drag movement threshold
      */
@@ -380,9 +382,9 @@ export class InputManager {
     /**
      * Use this method to simulate a pointer up on a mesh
      * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
-     * @param pickResult pickingInfo of the object wished to simulate pointer event on
-     * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
-     * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
+     * @param pickResult - pickingInfo of the object wished to simulate pointer event on
+     * @param pointerEventInit - pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+     * @param doubleTap - indicates that the pointer up event should be considered as part of a double click (false by default)
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
         const evt = new PointerEvent("pointerup", pointerEventInit);
@@ -476,7 +478,7 @@ export class InputManager {
 
     /**
      * Gets a boolean indicating if the current pointer event is captured (meaning that the scene has already handled the pointer down)
-     * @param pointerId defines the pointer id to use in a multi-touch scenario (0 by default)
+     * @param pointerId - defines the pointer id to use in a multi-touch scenario (0 by default)
      * @returns true if the pointer was captured
      */
     public isPointerCaptured(pointerId = 0): boolean {
@@ -485,10 +487,10 @@ export class InputManager {
 
     /**
      * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
-     * @param attachUp defines if you want to attach events to pointerup
-     * @param attachDown defines if you want to attach events to pointerdown
-     * @param attachMove defines if you want to attach events to pointermove
-     * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
+     * @param attachUp - defines if you want to attach events to pointerup
+     * @param attachDown - defines if you want to attach events to pointerdown
+     * @param attachMove - defines if you want to attach events to pointermove
+     * @param elementToAttachTo - defines the target DOM element to attach to (will use the canvas by default)
      */
     public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
         const scene = this._scene;
@@ -874,7 +876,6 @@ export class InputManager {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
-                        //const evt = eventData as IPointerEvent; 
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
 
@@ -945,9 +946,9 @@ export class InputManager {
 
     /**
      * Force the value of meshUnderPointer
-     * @param mesh defines the mesh to use
-     * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
-     * @param pickResult optional pickingInfo data used to find mesh
+     * @param mesh - defines the mesh to use
+     * @param pointerId - optional pointer id when using more than one pointer. Defaults to 0
+     * @param pickResult - optional pickingInfo data used to find mesh
      */
     public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
         if (this._meshUnderPointerId[pointerId] === mesh) {
@@ -987,7 +988,8 @@ export class InputManager {
     }
 
     /**
-     * @param mesh
+     * @param mesh - Mesh to invalidate
+     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _invalidateMesh(mesh: AbstractMesh) {

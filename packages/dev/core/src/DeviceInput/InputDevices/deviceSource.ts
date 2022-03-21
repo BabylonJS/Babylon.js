@@ -28,9 +28,9 @@ export class DeviceSource<T extends DeviceType> {
 
     /**
      * Default Constructor
-     * @param deviceInputSystem Reference to DeviceInputSystem
-     * @param deviceType Type of device
-     * @param deviceSlot "Slot" or index that device is referenced in
+     * @param deviceInputSystem - Reference to DeviceInputSystem
+     * @param deviceType - Type of device
+     * @param deviceSlot - "Slot" or index that device is referenced in
      */
     constructor(
         deviceInputSystem: IDeviceInputSystem,
@@ -44,7 +44,7 @@ export class DeviceSource<T extends DeviceType> {
 
     /**
      * Get input for specific input
-     * @param inputIndex index of specific input on device
+     * @param inputIndex - index of specific input on device
      * @returns Input value from DeviceInputSystem
      */
     public getInput(inputIndex: DeviceInput<T>): number {
