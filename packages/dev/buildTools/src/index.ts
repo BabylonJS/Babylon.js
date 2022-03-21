@@ -70,5 +70,4 @@ function runCommand() {
     }
 }
 
-
 export { transformer, webpackTools, checkArgs, umdPackageMapping, populateEnvironment };
