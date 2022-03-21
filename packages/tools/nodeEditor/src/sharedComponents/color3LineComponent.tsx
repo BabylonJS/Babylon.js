@@ -75,7 +75,9 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     copyToClipboard() {
-        navigator.clipboard.writeText(this.getCurrentColor().toHexString());
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(this.getCurrentColor().toHexString());
+        }
     }
 
     render() {
