@@ -14,7 +14,7 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
         "compile": "tsc -b tsconfig.build.json --verbose",
-        "postcompile": "build-tools -c add-js-to-es6 --path ./dist/**/*.js",
+        "postcompile": "build-tools -c declarations-es6 -r ../../../lts/core/generated/LibDeclarations -atf ./dist/Engines/Engine.d.ts && build-tools -c add-js-to-es6 --path ./dist/**/*.js",
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {

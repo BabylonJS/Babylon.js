@@ -118,6 +118,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             }
         }
     }
+    processedLines = processedLines.replace(/export declare /g, "export ");
     return `declare module "${moduleName}" {
 ${processedLines}
 }
@@ -275,7 +276,7 @@ declare module ${defaultModuleName} {
 `;
 }
 
-export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
+export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, loseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
     for (const fileName in declarationFiles) {
@@ -288,6 +289,10 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
         }
         declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), config.devPackageName);
     }
+    const loseDeclarationsString = loseDeclarations.map((declarationFile) => {
+        const data = fs.readFileSync(declarationFile, "utf8");
+        return `\n${data}`;
+    }).join("\n");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const defaultModuleName = getPublicPackageName(packageVariables.namespace);
     const packageName = getPublicPackageName(packageVariables[buildType]);
@@ -309,6 +314,7 @@ declare module ${defaultModuleName} {
 `
         : ""
 }
+${loseDeclarationsString}
 `;
     return output;
 }
@@ -345,8 +351,15 @@ export function generateDeclaration() {
             return glob.sync(p);
         });
 
+        // check if there are .d.ts files in LibDeclaration in the source directory
+        const decFiles = config.declarationLibs.map((lib: string) => {
+            // load the declarations from the root directory of the requested lib
+            const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`);
+            return glob.sync(p);
+        });
+
         const debounced = debounce(() => {
-            const output = generateCombinedDeclaration(files.flat(), config, config.buildType);
+            const output = generateCombinedDeclaration(files.flat(), config, decFiles.flat(), config.buildType);
             fs.writeFileSync(`${outputDir}/${config.filename || "index.d.ts"}`, output);
             console.log("declaration file generated", config.declarationLibs);
         }, 200);
