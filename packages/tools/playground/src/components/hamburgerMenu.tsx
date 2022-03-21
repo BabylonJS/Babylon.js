@@ -86,18 +86,20 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
         const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
-        const versionOptions = Object.keys(Versions).map((key) => {
-            return {
-                label: key,
-                tooltip: `Use Babylon.js version: ${key}`,
-                storeKey: "version",
-                isActive: activeVersion === key,
-                onClick: () => {
-                    Utilities.StoreStringToStore("version", key, true);
-                    window.location.reload();
-                },
-            };
-        });
+        const versionOptions = Object.keys(Versions)
+            .filter((key) => key !== "local")
+            .map((key) => {
+                return {
+                    label: key,
+                    tooltip: `Use Babylon.js version: ${key}`,
+                    storeKey: "version",
+                    isActive: activeVersion === key,
+                    onClick: () => {
+                        Utilities.StoreStringToStore("version", key, true);
+                        window.location.reload();
+                    },
+                };
+            });
 
         const engineOptions = [
             {

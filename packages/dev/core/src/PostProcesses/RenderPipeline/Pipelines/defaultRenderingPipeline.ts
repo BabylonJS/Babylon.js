@@ -609,7 +609,16 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         }
 
         if (this._imageProcessingEnabled) {
-            this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            this.imageProcessing = new ImageProcessingPostProcess(
+                "imageProcessing",
+                1.0,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                engine,
+                false,
+                this._defaultPipelineTextureType,
+                this.scene.imageProcessingConfiguration
+            );
             if (this._hdr) {
                 this.addEffect(
                     new PostProcessRenderEffect(

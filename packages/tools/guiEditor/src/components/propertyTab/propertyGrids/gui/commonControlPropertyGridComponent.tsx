@@ -4,7 +4,6 @@ import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent"
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
@@ -37,7 +36,6 @@ import shadowBlurIcon from "shared-ui-components/imgs/shadowBlurIcon.svg";
 import horizontalMarginIcon from "shared-ui-components/imgs/horizontalMarginIcon.svg";
 import shadowColorIcon from "shared-ui-components/imgs/shadowColorIcon.svg";
 import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
-import shadowOffsetYIcon from "shared-ui-components/imgs/shadowOffsetYIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 
@@ -299,7 +297,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={positionIcon} label={"Position"} />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -327,7 +325,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         arrowsIncrement={(amount) => increment("top", amount)}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={sizeIcon} label={"Size"} />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -382,7 +380,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         arrowsIncrement={(amount) => increment("height", amount)}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={verticalMarginIcon} label={"Vertical Padding"} />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -417,7 +415,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         arrowsIncrement={(amount) => increment("paddingBottom", amount, 0)}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={horizontalMarginIcon} label={"Horizontal Padding"} />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -458,7 +456,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -481,7 +479,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={pivotIcon} label={"Transform Center"} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -559,9 +557,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         disableAlpha={true}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset X"} />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="X"
                         target={proxy}
@@ -569,9 +567,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
+                        numeric={true}
+                        arrows={true}
+                        placeholder={"0"}
+                        step={0.1}
                     />
-                    <IconComponent icon={shadowOffsetYIcon} label={"Shadow Offset Y"} />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={proxy}
@@ -579,16 +580,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
+                        numeric={true}
+                        arrows={true}
+                        placeholder={"0"}
+                        step={0.1}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={shadowBlurIcon} label={"Shadow Blur"} />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label=" "
                         target={proxy}
                         propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        numbersOnly={true}
+                        placeholder={"0"}
                     />
                 </div>
                 {showTextProperties && (
@@ -637,7 +645,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 }}
                             />
                         </div>
-                        <div className="ge-divider">
+                        <div className="ge-divider double">
                             <IconComponent icon={fontSizeIcon} label={"Font Size"} />
                             <TextInputLineComponent
                                 lockObject={this.props.lockObject}

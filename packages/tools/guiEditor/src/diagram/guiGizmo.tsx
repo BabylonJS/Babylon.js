@@ -83,19 +83,9 @@ const scalePointCursors = [
     cursorScaleHorizontal,
     cursorScaleDiagonaLeft,
 ];
-const rotateCursors: string[] = [];
-for (let idx = 0; idx < 8; idx++) {
-    rotateCursors.push(
-        `url("${cursor_rotate0}") 12 12, pointer`,
-        `url("${cursor_rotate1}") 12 12, pointer`,
-        `url("${cursor_rotate2}") 12 12, pointer`,
-        `url("${cursor_rotate3}") 12 12, pointer`,
-        `url("${cursor_rotate4}") 12 12, pointer`,
-        `url("${cursor_rotate5}") 12 12, pointer`,
-        `url("${cursor_rotate6}") 12 12, pointer`,
-        `url("${cursor_rotate7}") 12 12, pointer`
-    );
-}
+const rotateCursors = [cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7].map(
+    (cursor) => `url("${cursor}") 12 12, pointer`
+);
 // used to calculate which cursor icon we should display for the scalepoints
 const defaultScalePointRotations = [315, 0, 45, 270, 0, 90, 225, 180, 135];
 
@@ -134,13 +124,13 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         };
 
         this._gizmoUpdateObserver = this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
-            this.updateGizmo(true);
+            this.updateGizmo();
         });
 
         this._pointerUpObserver = this.props.globalState.onPointerUpObservable.add((evt) => this._onUp(evt));
         this._pointerMoveObserver = this.props.globalState.onPointerMoveObservable.add(() => this._onMove());
 
-        this.updateGizmo(true);
+        this.updateGizmo();
     }
 
     componentWillUnmount() {
@@ -151,10 +141,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     /**
      * Update the gizmo's positions
-     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    updateGizmo(force?: boolean) {
+    updateGizmo() {
         const node = this.props.control;
         // Calculating the offsets for each scale point.
         const half = 1 / 2;

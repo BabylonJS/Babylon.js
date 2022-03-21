@@ -1232,6 +1232,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _activeMeshes = new SmartArray<AbstractMesh>(256);
     private _processedMaterials = new SmartArray<Material>(256);
     private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
+    private _materialsRenderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
     /** @hidden */
     public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
     private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
@@ -1827,11 +1828,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
-        // Effects
-        if (!engine.areAllEffectsReady()) {
-            return false;
-        }
-
         // Pending data
         if (this._pendingData.length > 0) {
             return false;
@@ -1840,8 +1836,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Meshes
         if (checkRenderTargets) {
             this._processedMaterials.reset();
-            this._renderTargets.reset();
+            this._materialsRenderTargets.reset();
         }
+
+        let isReady = true;
+
         for (index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
 
@@ -1854,7 +1853,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             if (!mesh.isReady(true)) {
-                return false;
+                isReady = false;
+                continue;
             }
 
             const hardwareInstancedRendering =
@@ -1865,7 +1865,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Is Ready For Mesh
             for (const step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
-                    return false;
+                    isReady = false;
                 }
             }
 
@@ -1882,7 +1882,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                             if (this._processedMaterials.indexOf(material) === -1) {
                                 this._processedMaterials.push(material);
 
-                                this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
+                                this._materialsRenderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
                             }
                         }
                     }
@@ -1891,17 +1891,26 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                         if (this._processedMaterials.indexOf(mat) === -1) {
                             this._processedMaterials.push(mat);
 
-                            this._renderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures!());
+                            this._materialsRenderTargets.concatWithNoDuplicate(mat.getRenderTargetTextures!());
                         }
                     }
                 }
             }
         }
 
+        if (!isReady) {
+            return false;
+        }
+
+        // Effects
+        if (!engine.areAllEffectsReady()) {
+            return false;
+        }
+
         // Render targets
         if (checkRenderTargets) {
-            for (index = 0; index < this._renderTargets.length; ++index) {
-                const rtt = this._renderTargets.data[index];
+            for (index = 0; index < this._materialsRenderTargets.length; ++index) {
+                const rtt = this._materialsRenderTargets.data[index];
                 if (!rtt.isReadyForRendering()) {
                     return false;
                 }
@@ -2099,7 +2108,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
             this._checkIsReady(checkRenderTargets);
-        }, 150);
+        }, 100);
     }
 
     /**
@@ -3551,7 +3560,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     if (this._processedMaterials.indexOf(material) === -1) {
                         this._processedMaterials.push(material);
 
-                        this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
+                        this._materialsRenderTargets.concatWithNoDuplicate(material.getRenderTargetTextures!());
                     }
                 }
 
@@ -3774,6 +3783,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._activeParticleSystems.reset();
         this._activeSkeletons.reset();
         this._softwareSkinnedMeshes.reset();
+        this._materialsRenderTargets.reset();
+
         for (const step of this._beforeEvaluateActiveMeshStage) {
             step.action();
         }
@@ -4010,6 +4021,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+        this._renderTargets.concatWithNoDuplicate(this._materialsRenderTargets);
 
         if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
             this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
@@ -4538,6 +4551,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._activeSkeletons.dispose();
         this._softwareSkinnedMeshes.dispose();
         this._renderTargets.dispose();
+        this._materialsRenderTargets.dispose();
         this._registeredForLateAnimationBindings.dispose();
         this._meshesForIntersections.dispose();
         this._toBeDisposed = [];

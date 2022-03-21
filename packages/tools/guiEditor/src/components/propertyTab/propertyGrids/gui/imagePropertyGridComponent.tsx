@@ -232,7 +232,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 />
                 {animationSheet && (
                     <>
-                        <div className="ge-divider-short">
+                        <div className="ge-divider double">
                             <FloatLineComponent
                                 iconLabel={"Cell Id"}
                                 icon={cellIDIcon}
