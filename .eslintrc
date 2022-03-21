@@ -71,7 +71,15 @@
         //   "react/no-adjacent-inline-elements": "error",
         //   "react/react-in-jsx-scope": "error",
         //   "react/self-closing-comp": "error",
-        "import/no-unresolved": "off",
+        "import/no-unresolved": "error",
+        "import/named": "error",
+        "import/no-cycle": [2, { "maxDepth": 1 }],
+        "import/no-internal-modules": [
+            "error",{
+            // {   "allow": ["**/*.ts", "**/*.tsx"]
+                "forbid": [ "**/index", "**/" ]
+            }
+        ],
         // should be error, no?
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/naming-convention": [
