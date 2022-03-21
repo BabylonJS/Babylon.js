@@ -188,9 +188,15 @@ function getPackageDeclaration(
     let removeNext = false;
     const packageMapping = getPackageMappingByDevName(devPackageName);
     const defaultModuleName = getPublicPackageName(packageMapping.namespace);
-    const thisFileModuleName = getPublicPackageName(packageMapping.namespace/*, undefined, sourceFilePath*/);
+    const thisFileModuleName = getPublicPackageName(packageMapping.namespace /*, undefined, sourceFilePath*/);
     while (i < lines.length) {
         let line = lines[i];
+
+        if (/import\("\.(.*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
+            line = line.replace(/import\((.*)\)./, "");
+            console.log(line);
+        }
+
 
         //Exclude empty lines
         let excludeLine /*:boolean */ = line === "";
@@ -199,9 +205,13 @@ function getPackageDeclaration(
         excludeLine = excludeLine || line.indexOf("export =") !== -1;
 
         //Exclude import statements
-        excludeLine = excludeLine || /import[ (]/.test(line);
+        excludeLine = excludeLine || /^import[ (]/.test(line);
         excludeLine = excludeLine || /export \{/.test(line);
         excludeLine = excludeLine || /export \* from "/.test(line);
+        excludeLine = excludeLine || /^declare type (.*) import/.test(line);
+        if(excludeLine) {
+            // console.log(line);
+        }
 
         const match = line.match(/(\s*)declare module "(.*)" \{/);
         if (match) {
@@ -289,10 +299,12 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
         }
         declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), config.devPackageName);
     }
-    const loseDeclarationsString = loseDeclarations.map((declarationFile) => {
-        const data = fs.readFileSync(declarationFile, "utf8");
-        return `\n${data}`;
-    }).join("\n");
+    const loseDeclarationsString = loseDeclarations
+        .map((declarationFile) => {
+            const data = fs.readFileSync(declarationFile, "utf8");
+            return `\n${data}`;
+        })
+        .join("\n");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const defaultModuleName = getPublicPackageName(packageVariables.namespace);
     const packageName = getPublicPackageName(packageVariables[buildType]);
