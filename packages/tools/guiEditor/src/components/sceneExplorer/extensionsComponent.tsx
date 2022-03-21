@@ -11,13 +11,13 @@ interface IExtensionsComponentProps {
 
 export class ExtensionsComponent extends React.Component<IExtensionsComponentProps, { popupVisible: boolean }> {
     private _popup: Nullable<HTMLDivElement>;
-    private extensionRef: React.RefObject<HTMLDivElement>;
+    private _extensionRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IExtensionsComponentProps) {
         super(props);
 
         this.state = { popupVisible: false };
-        this.extensionRef = React.createRef();
+        this._extensionRef = React.createRef();
     }
 
     showPopup() {
@@ -56,7 +56,7 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
         }
 
         return (
-            <div ref={this.extensionRef} className="extensions" onClick={() => this.showPopup()}>
+            <div ref={this._extensionRef} className="extensions" onClick={() => this.showPopup()}>
                 <div title="Additional options" className="icon">
                     <FontAwesomeIcon icon={faEllipsisH} />
                 </div>

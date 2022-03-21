@@ -49,18 +49,21 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
         const gradients = this.props.gradients as Array<IValueGradient>;
 
         switch (this.props.mode) {
-            case GradientGridMode.Factor:
+            case GradientGridMode.Factor: {
                 const newStep = new FactorGradient(1, 1, 1);
                 gradients.push(newStep);
                 break;
-            case GradientGridMode.Color4:
+            }
+            case GradientGridMode.Color4: {
                 const newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                 gradients.push(newStepColor);
                 break;
-            case GradientGridMode.Color3:
+            }
+            case GradientGridMode.Color3: {
                 const newStepColor3 = new Color3Gradient(1, Color3.White());
                 gradients.push(newStepColor3);
                 break;
+            }
         }
 
         this.props.host.forceRefreshGradients();

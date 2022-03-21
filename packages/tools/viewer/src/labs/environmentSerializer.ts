@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3 } from "core/Maths/math";
 import { Tools } from "core/Misc/tools";
 import { TextureCube, PixelFormat, PixelType } from "./texture";
@@ -173,7 +174,7 @@ export class EnvironmentDeserializer {
 
         //irradiance
         switch (descriptor.irradiance.type) {
-            case "irradiance_sh_coefficients_9":
+            case "irradiance_sh_coefficients_9": {
                 //irradiance
                 const harmonics = <IrradianceSHCoefficients9>descriptor.irradiance;
 
@@ -182,14 +183,15 @@ export class EnvironmentDeserializer {
                 //harmonics now represent radiance
                 EnvironmentDeserializer._ConvertSHToSP(harmonics, environment.irradiancePolynomialCoefficients);
                 break;
+            }
             default:
                 Tools.Error("Unhandled MapType descriptor.irradiance.type (" + descriptor.irradiance.type + ")");
         }
 
         //specular
         switch (descriptor.specular.type) {
-            case "cubemap_faces":
-                var specularDescriptor = <CubemapFaces>descriptor.specular;
+            case "cubemap_faces": {
+                const specularDescriptor = <CubemapFaces>descriptor.specular;
 
                 const specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
                 environment.textureIntensityScale = specularDescriptor.multiplier != null ? specularDescriptor.multiplier : 1.0;
@@ -207,7 +209,7 @@ export class EnvironmentDeserializer {
                         const bytes = new Uint8Array(arrayBuffer, payloadPos + range.pos, range.length);
 
                         switch (imageType) {
-                            case "png":
+                            case "png": {
                                 //construct image element from bytes
                                 const image = new Image();
                                 const src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
@@ -215,6 +217,7 @@ export class EnvironmentDeserializer {
                                 specularTexture.source[l][i] = image;
 
                                 break;
+                            }
                             default:
                                 Tools.Error("Unhandled ImageType descriptor.specular.imageType (" + imageType + ")");
                         }
@@ -222,6 +225,7 @@ export class EnvironmentDeserializer {
                 }
 
                 break;
+            }
             default:
                 Tools.Error("Unhandled MapType descriptor.specular.type (" + descriptor.specular.type + ")");
         }

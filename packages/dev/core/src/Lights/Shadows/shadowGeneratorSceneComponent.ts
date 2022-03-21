@@ -79,6 +79,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
      * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public addFromContainer(container: AbstractScene): void {
         // Nothing To Do Here. (directly attached to a light)
     }
@@ -88,6 +89,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
      * @param container contains the elements to remove
      * @param dispose if the removed element should be disposed (default: false)
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
         // Nothing To Do Here. (directly attached to a light)
     }

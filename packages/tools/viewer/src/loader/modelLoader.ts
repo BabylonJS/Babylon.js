@@ -32,7 +32,6 @@ export class ModelLoader {
 
     /**
      * Create a new Model loader
-     * @param _viewer the viewer using this model loader
      * @param _observablesManager
      * @param _configurationContainer
      */

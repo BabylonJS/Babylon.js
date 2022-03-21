@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
@@ -325,7 +326,7 @@ function workerFunc(): void {
             return;
         }
         switch (event.data.action) {
-            case "init":
+            case "init": {
                 const urls = event.data.urls;
                 importScripts(urls.jsDecoderModule);
                 if (urls.wasmUASTCToASTC !== null) {
@@ -352,6 +353,7 @@ function workerFunc(): void {
                 ktx2Decoder = new KTX2DECODER.KTX2Decoder();
                 postMessage({ action: "init" });
                 break;
+            }
             case "decode":
                 ktx2Decoder
                     .decode(event.data.data, event.data.caps, event.data.options)

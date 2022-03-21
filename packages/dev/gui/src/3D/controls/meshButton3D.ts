@@ -59,6 +59,7 @@ export class MeshButton3D extends Button3D {
     }
 
     // Mesh association
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _createNode(scene: Scene): TransformNode {
         this._currentMesh.getChildMeshes().forEach((mesh) => {
             this._injectGUI3DReservedDataStore(mesh).control = this;
@@ -66,5 +67,6 @@ export class MeshButton3D extends Button3D {
         return this._currentMesh;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _affectMaterial(mesh: AbstractMesh) {}
 }

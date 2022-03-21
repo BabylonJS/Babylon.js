@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Matrix, Vector3, Vector2, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -255,8 +256,6 @@ export class VertexData {
     /**
      * Updates the associated mesh
      * @param mesh the mesh to be updated
-     * @param updateExtends when true the mesh BoundingInfo will be renewed when and if position kind is updated, optional with default false
-     * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be  created from these positions and set to the mesh, optional with default false
      * @returns VertexData
      */
     public updateMesh(mesh: Mesh): VertexData {
@@ -267,8 +266,6 @@ export class VertexData {
     /**
      * Updates the associated geometry
      * @param geometry the geometry to be updated
-     * @param updateExtends when true BoundingInfo will be renewed when and if position kind is updated, optional with default false
-     * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be created from these positions and set to the mesh, optional with default false
      * @returns VertexData.
      */
     public updateGeometry(geometry: Geometry): VertexData {
@@ -634,7 +631,7 @@ export class VertexData {
 
         this.indices = indices!;
 
-        this.positions = VertexData._mergeElement(
+        this.positions = VertexData._MergeElement(
             VertexBuffer.PositionKind,
             this.positions,
             transform,
@@ -643,7 +640,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.normals = VertexData._mergeElement(
+        this.normals = VertexData._MergeElement(
             VertexBuffer.NormalKind,
             this.normals,
             transform,
@@ -652,7 +649,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.tangents = VertexData._mergeElement(
+        this.tangents = VertexData._MergeElement(
             VertexBuffer.TangentKind,
             this.tangents,
             transform,
@@ -661,7 +658,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.uvs = VertexData._mergeElement(
+        this.uvs = VertexData._MergeElement(
             VertexBuffer.UVKind,
             this.uvs,
             transform,
@@ -670,7 +667,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.uvs2 = VertexData._mergeElement(
+        this.uvs2 = VertexData._MergeElement(
             VertexBuffer.UV2Kind,
             this.uvs2,
             transform,
@@ -679,7 +676,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.uvs3 = VertexData._mergeElement(
+        this.uvs3 = VertexData._MergeElement(
             VertexBuffer.UV3Kind,
             this.uvs3,
             transform,
@@ -688,7 +685,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.uvs4 = VertexData._mergeElement(
+        this.uvs4 = VertexData._MergeElement(
             VertexBuffer.UV4Kind,
             this.uvs4,
             transform,
@@ -697,7 +694,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.uvs5 = VertexData._mergeElement(
+        this.uvs5 = VertexData._MergeElement(
             VertexBuffer.UV5Kind,
             this.uvs5,
             transform,
@@ -706,7 +703,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.uvs6 = VertexData._mergeElement(
+        this.uvs6 = VertexData._MergeElement(
             VertexBuffer.UV6Kind,
             this.uvs6,
             transform,
@@ -715,7 +712,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.colors = VertexData._mergeElement(
+        this.colors = VertexData._MergeElement(
             VertexBuffer.ColorKind,
             this.colors,
             transform,
@@ -724,7 +721,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.matricesIndices = VertexData._mergeElement(
+        this.matricesIndices = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesKind,
             this.matricesIndices,
             transform,
@@ -733,7 +730,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.matricesWeights = VertexData._mergeElement(
+        this.matricesWeights = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsKind,
             this.matricesWeights,
             transform,
@@ -742,7 +739,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.matricesIndicesExtra = VertexData._mergeElement(
+        this.matricesIndicesExtra = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesExtraKind,
             this.matricesIndicesExtra,
             transform,
@@ -751,7 +748,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.matricesWeightsExtra = VertexData._mergeElement(
+        this.matricesWeightsExtra = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsExtraKind,
             this.matricesWeightsExtra,
             transform,
@@ -761,7 +758,7 @@ export class VertexData {
         return this;
     }
 
-    private static _mergeElement(
+    private static _MergeElement(
         kind: string,
         source: Nullable<FloatArray>,
         transform: Matrix | undefined,
@@ -774,7 +771,7 @@ export class VertexData {
         }
 
         if (!source) {
-            return this._mergeElement(kind, nonNullOthers[0][0], nonNullOthers[0][1], nonNullOthers.slice(1));
+            return this._MergeElement(kind, nonNullOthers[0][0], nonNullOthers[0][1], nonNullOthers.slice(1));
         }
 
         const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements[0].length, source.length);
@@ -1746,7 +1743,6 @@ export class VertexData {
                 if (distanceTo === undefined) {
                     distanceTo = Vector3.Zero();
                 }
-                var depthSortedFacets = options.depthSortedFacets;
             }
         }
 
@@ -1756,25 +1752,8 @@ export class VertexData {
         let zSubRatio = 0;
         let subSq = 0;
         if (computeFacetPartitioning && options && options.bbSize) {
-            var ox = 0; // X partitioning index for facet position
-            var oy = 0; // Y partitioning index for facet position
-            var oz = 0; // Z partitioning index for facet position
-            var b1x = 0; // X partitioning index for facet v1 vertex
-            var b1y = 0; // Y partitioning index for facet v1 vertex
-            var b1z = 0; // z partitioning index for facet v1 vertex
-            var b2x = 0; // X partitioning index for facet v2 vertex
-            var b2y = 0; // Y partitioning index for facet v2 vertex
-            var b2z = 0; // Z partitioning index for facet v2 vertex
-            var b3x = 0; // X partitioning index for facet v3 vertex
-            var b3y = 0; // Y partitioning index for facet v3 vertex
-            var b3z = 0; // Z partitioning index for facet v3 vertex
-            var block_idx_o = 0; // facet barycenter block index
-            var block_idx_v1 = 0; // v1 vertex block index
-            var block_idx_v2 = 0; // v2 vertex block index
-            var block_idx_v3 = 0; // v3 vertex block index
-
-            let bbSizeMax = options.bbSize.x > options.bbSize.y ? options.bbSize.x : options.bbSize.y;
-            bbSizeMax = bbSizeMax > options.bbSize.z ? bbSizeMax : options.bbSize.z;
+            //let bbSizeMax = options.bbSize.x > options.bbSize.y ? options.bbSize.x : options.bbSize.y;
+            //bbSizeMax = bbSizeMax > options.bbSize.z ? bbSizeMax : options.bbSize.z;
             xSubRatio = (options.subDiv.X * ratio) / options.bbSize.x;
             ySubRatio = (options.subDiv.Y * ratio) / options.bbSize.y;
             zSubRatio = (options.subDiv.Z * ratio) / options.bbSize.z;
@@ -1836,23 +1815,23 @@ export class VertexData {
             if (computeFacetPartitioning && options) {
                 // store the facet indexes in arrays in the main facetPartitioning array :
                 // compute each facet vertex (+ facet barycenter) index in the partiniong array
-                ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * ratio) * xSubRatio);
-                oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * ratio) * ySubRatio);
-                oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * ratio) * zSubRatio);
-                b1x = Math.floor((positions[v1x] - options.bInfo.minimum.x * ratio) * xSubRatio);
-                b1y = Math.floor((positions[v1y] - options.bInfo.minimum.y * ratio) * ySubRatio);
-                b1z = Math.floor((positions[v1z] - options.bInfo.minimum.z * ratio) * zSubRatio);
-                b2x = Math.floor((positions[v2x] - options.bInfo.minimum.x * ratio) * xSubRatio);
-                b2y = Math.floor((positions[v2y] - options.bInfo.minimum.y * ratio) * ySubRatio);
-                b2z = Math.floor((positions[v2z] - options.bInfo.minimum.z * ratio) * zSubRatio);
-                b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * ratio) * xSubRatio);
-                b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * ratio) * ySubRatio);
-                b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * ratio) * zSubRatio);
+                const ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * ratio) * xSubRatio);
+                const oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * ratio) * ySubRatio);
+                const oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * ratio) * zSubRatio);
+                const b1x = Math.floor((positions[v1x] - options.bInfo.minimum.x * ratio) * xSubRatio);
+                const b1y = Math.floor((positions[v1y] - options.bInfo.minimum.y * ratio) * ySubRatio);
+                const b1z = Math.floor((positions[v1z] - options.bInfo.minimum.z * ratio) * zSubRatio);
+                const b2x = Math.floor((positions[v2x] - options.bInfo.minimum.x * ratio) * xSubRatio);
+                const b2y = Math.floor((positions[v2y] - options.bInfo.minimum.y * ratio) * ySubRatio);
+                const b2z = Math.floor((positions[v2z] - options.bInfo.minimum.z * ratio) * zSubRatio);
+                const b3x = Math.floor((positions[v3x] - options.bInfo.minimum.x * ratio) * xSubRatio);
+                const b3y = Math.floor((positions[v3y] - options.bInfo.minimum.y * ratio) * ySubRatio);
+                const b3z = Math.floor((positions[v3z] - options.bInfo.minimum.z * ratio) * zSubRatio);
 
-                block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
-                block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
-                block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
-                block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
+                const block_idx_v1 = b1x + options.subDiv.max * b1y + subSq * b1z;
+                const block_idx_v2 = b2x + options.subDiv.max * b2y + subSq * b2z;
+                const block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
+                const block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
 
                 options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] : new Array();
                 options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] : new Array();
@@ -1873,7 +1852,7 @@ export class VertexData {
             }
 
             if (computeDepthSort && options && options.facetPositions) {
-                const dsf = depthSortedFacets[index];
+                const dsf = options.depthSortedFacets[index];
                 dsf.ind = index * 3;
                 dsf.sqDistance = Vector3.DistanceSquared(options.facetPositions[index], distanceTo!);
             }
@@ -1938,10 +1917,9 @@ export class VertexData {
                 break;
 
             case VertexData.BACKSIDE:
-                var tmp: number;
                 // indices
                 for (i = 0; i < li; i += 3) {
-                    tmp = indices[i];
+                    const tmp = indices[i];
                     indices[i] = indices[i + 2];
                     indices[i + 2] = tmp;
                 }
@@ -1951,10 +1929,10 @@ export class VertexData {
                 }
                 break;
 
-            case VertexData.DOUBLESIDE:
+            case VertexData.DOUBLESIDE: {
                 // positions
-                var lp: number = positions.length;
-                var l: number = lp / 3;
+                const lp: number = positions.length;
+                const l: number = lp / 3;
                 for (let p = 0; p < lp; p++) {
                     positions[lp + p] = positions[p];
                 }
@@ -1970,8 +1948,8 @@ export class VertexData {
                 }
 
                 // uvs
-                var lu: number = uvs.length;
-                var u: number = 0;
+                const lu: number = uvs.length;
+                let u: number = 0;
                 for (u = 0; u < lu; u++) {
                     uvs[u + lu] = uvs[u];
                 }
@@ -1986,6 +1964,7 @@ export class VertexData {
                     u += 2;
                 }
                 break;
+            }
         }
     }
 

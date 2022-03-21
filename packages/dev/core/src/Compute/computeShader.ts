@@ -234,12 +234,13 @@ export class ComputeShader {
             switch (type) {
                 case ComputeBindingType.Texture:
                 case ComputeBindingType.TextureWithoutSampler:
-                case ComputeBindingType.StorageTexture:
+                case ComputeBindingType.StorageTexture: {
                     const texture = object as BaseTexture;
                     if (!texture.isReady()) {
                         return false;
                     }
                     break;
+                }
             }
         }
 

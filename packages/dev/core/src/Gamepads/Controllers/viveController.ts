@@ -3,7 +3,6 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
-import { GamepadButtonChanges } from "../../Gamepads/gamepad";
 import { Observable } from "../../Misc/observable";
 
 /**
@@ -85,9 +84,8 @@ export class ViveController extends WebVRController {
      * 3: menu button
      * @param buttonIdx Which button index changed
      * @param state New state of the button
-     * @param changes Which properties on the state changed since last frame
      */
-    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton) {
         const notifyObject = state; //{ state: state, changes: changes };
         switch (buttonIdx) {
             case 0:

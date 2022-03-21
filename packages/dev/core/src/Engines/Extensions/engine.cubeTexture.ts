@@ -470,7 +470,7 @@ ThinEngine.prototype.createCubeTexture = function (
         lodScale,
         lodOffset,
         fallback,
-        (texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true),
+        (texture: InternalTexture) => this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true),
         (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
             const width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             const height = width;

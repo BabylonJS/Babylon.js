@@ -87,9 +87,9 @@ export class AxisDragGizmo extends Gizmo {
 
     /**
      * Creates an AxisDragGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param parent
      * @param thickness display gizmo axis thickness
      */

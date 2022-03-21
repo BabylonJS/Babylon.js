@@ -371,6 +371,7 @@ export class Engine extends ThinEngine {
      * @param canvas The rendering canvas element
      * @returns The loading screen
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
         throw _WarnImport("LoadingScreen");
     }
@@ -467,6 +468,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static audioEngine: Nullable<IAudioEngine>;
 
     /**
@@ -1141,6 +1143,7 @@ export class Engine extends ThinEngine {
      * @param document
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
         // Do nothing as the engine side effect will overload it
     }
@@ -1278,13 +1281,13 @@ export class Engine extends ThinEngine {
 
     protected _rebuildBuffers(): void {
         // Index / Vertex
-        for (var scene of this.scenes) {
+        for (const scene of this.scenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
             scene._rebuildTextures();
         }
 
-        for (var scene of this._virtualScenes) {
+        for (const scene of this._virtualScenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
             scene._rebuildTextures();
@@ -1570,6 +1573,7 @@ export class Engine extends ThinEngine {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _RenderPassIdCounter = 0;
     /**
      * Gets or sets the current render pass id
@@ -1811,7 +1815,7 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
         const gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             const check = () => {
@@ -1821,7 +1825,7 @@ export class Engine extends ThinEngine {
                     return;
                 }
                 if (res == gl.TIMEOUT_EXPIRED) {
-                    setTimeout(check, interval_ms);
+                    setTimeout(check, intervalms);
                     return;
                 }
                 resolve();
@@ -2026,6 +2030,7 @@ export class Engine extends ThinEngine {
      * @param constraints video constraints
      * @returns video element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createVideoElement(constraints: MediaTrackConstraints): any {
         return document.createElement("video");
     }

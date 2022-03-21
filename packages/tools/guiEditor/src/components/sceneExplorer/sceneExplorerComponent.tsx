@@ -214,14 +214,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return (
             <div
                 id="tree"
-                onDrop={(event) => {
+                onDrop={() => {
                     this.props.globalState.onDropObservable.notifyObservers();
                     this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                 }}
                 onDragOver={(event) => {
                     event.preventDefault();
                 }}
-                onClick={(event) => {
+                onClick={() => {
                     if (!this.props.globalState.selectionLock) {
                         this.props.globalState.setSelection([]);
                     } else {

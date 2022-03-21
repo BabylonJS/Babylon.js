@@ -1,5 +1,4 @@
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import { EventState } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Material } from "./material";
 import {
@@ -347,28 +346,29 @@ export class MaterialPluginManager {
  */
 export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPluginBase>;
 
-const _Plugins: Array<[string, PluginMaterialFactory]> = [];
-let _Inited = false;
+const plugins: Array<[string, PluginMaterialFactory]> = [];
+let inited = false;
 
 /**
  * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
  * @param pluginName The plugin name
  * @param factory The factory function which allows to create the plugin
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
-    if (!_Inited) {
-        Material.OnEventObservable.add((material: Material, eventState: EventState) => {
-            for (const [_name, factory] of _Plugins) {
+    if (!inited) {
+        Material.OnEventObservable.add((material: Material) => {
+            for (const [, factory] of plugins) {
                 factory(material);
             }
         }, MaterialPluginEvent.Created);
-        _Inited = true;
+        inited = true;
     }
-    const existing = _Plugins.filter(([name, _factory]) => name === pluginName);
+    const existing = plugins.filter(([name, _factory]) => name === pluginName);
     if (existing.length > 0) {
         existing[0][1] = factory;
     } else {
-        _Plugins.push([pluginName, factory]);
+        plugins.push([pluginName, factory]);
     }
 }
 
@@ -377,10 +377,11 @@ export function RegisterMaterialPlugin(pluginName: string, factory: PluginMateri
  * @param pluginName The plugin name
  * @returns true if the plugin has been removed, else false
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterMaterialPlugin(pluginName: string): boolean {
-    for (let i = 0; i < _Plugins.length; ++i) {
-        if (_Plugins[i][0] === pluginName) {
-            _Plugins.splice(i, 1);
+    for (let i = 0; i < plugins.length; ++i) {
+        if (plugins[i][0] === pluginName) {
+            plugins.splice(i, 1);
             return true;
         }
     }
@@ -390,6 +391,7 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
 /**
  * Clear the list of global material plugins
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterAllMaterialPlugins(): void {
-    _Plugins.length = 0;
+    plugins.length = 0;
 }

@@ -20,10 +20,10 @@ interface IGraphComponentProps {
 interface IGraphComponentState {}
 
 export class GraphComponent extends React.Component<IGraphComponentProps, IGraphComponentState> {
-    private readonly _MinScale = 0.5;
-    private readonly _MaxScale = 5;
-    private readonly _GraphAbsoluteWidth = 788;
-    private readonly _GraphAbsoluteHeight = 357;
+    private readonly _minScale = 0.5;
+    private readonly _maxScale = 5;
+    private readonly _graphAbsoluteWidth = 788;
+    private readonly _graphAbsoluteHeight = 357;
 
     private _viewWidth = 788;
     private _viewCurveWidth = 788;
@@ -765,11 +765,11 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             diff = 1;
         }
 
-        return ((x - this._minFrame) / diff) * this._GraphAbsoluteWidth;
+        return ((x - this._minFrame) / diff) * this._graphAbsoluteWidth;
     }
 
     private _invertX(x: number) {
-        return (x / this._GraphAbsoluteWidth) * (this._maxFrame - this._minFrame) + this._minFrame;
+        return (x / this._graphAbsoluteWidth) * (this._maxFrame - this._minFrame) + this._minFrame;
     }
 
     private _convertY(y: number) {
@@ -779,7 +779,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             diff = 1;
         }
 
-        return this._GraphAbsoluteHeight - ((y - this._minValue) / diff) * this._GraphAbsoluteHeight;
+        return this._graphAbsoluteHeight - ((y - this._minValue) / diff) * this._graphAbsoluteHeight;
     }
 
     private _invertY(y: number) {
@@ -789,7 +789,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             diff = 1;
         }
 
-        return ((this._GraphAbsoluteHeight - y) / this._GraphAbsoluteHeight) * diff + this._minValue;
+        return ((this._graphAbsoluteHeight - y) / this._graphAbsoluteHeight) * diff + this._minValue;
     }
 
     private _buildFrameIntervalAxis() {
@@ -801,7 +801,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
         const range = maxFrame;
         let offset = this.props.context.activeAnimations[0].framePerSecond;
-        const convertRatio = range / this._GraphAbsoluteWidth;
+        const convertRatio = range / this._graphAbsoluteWidth;
 
         const steps = [];
 
@@ -817,7 +817,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             steps.push(step);
         }
 
-        return steps.map((s, i) => {
+        return steps.map((s) => {
             const x = s / convertRatio;
             return (
                 <g key={"axis" + s}>
@@ -845,7 +845,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         const stepCounts = 10;
         const range = this._maxValue !== this._minValue ? this._maxValue - this._minValue : 1;
         let offset = (range / stepCounts) * this._viewScale;
-        const convertRatio = range / this._GraphAbsoluteHeight;
+        const convertRatio = range / this._graphAbsoluteHeight;
         const steps = [];
 
         // Get precision
@@ -867,7 +867,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         offset /= pow;
 
         // Evaluate limits
-        const startPosition = (this._viewHeight * this._viewScale - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
+        const startPosition = (this._viewHeight * this._viewScale - this._graphAbsoluteHeight - this._offsetY) * convertRatio;
         const start = Math.ceil((this._minValue - ((startPosition / offset) | 0) * offset) / offset) * offset;
         const end = Math.round((start + this._viewHeight * this._viewScale * convertRatio) / offset) * offset;
 
@@ -875,8 +875,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             steps.push(step);
         }
 
-        return steps.map((s, i) => {
-            const y = this._GraphAbsoluteHeight - (s - this._minValue) / convertRatio;
+        return steps.map((s) => {
+            const y = this._graphAbsoluteHeight - (s - this._minValue) / convertRatio;
             let text = s.toFixed(precision);
 
             text = parseFloat(text).toFixed(precision); // Avoid -0.00 (negative zero)
@@ -1123,7 +1123,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         const delta = evt.deltaY < 0 ? -0.05 : 0.05;
 
         const oldScale = this._viewScale;
-        this._viewScale = Math.min(Math.max(this._MinScale, this._viewScale + delta * this._viewScale), this._MaxScale);
+        this._viewScale = Math.min(Math.max(this._minScale, this._viewScale + delta * this._viewScale), this._maxScale);
 
         const clientX = evt.nativeEvent.offsetX;
         const clientY = evt.nativeEvent.offsetY;
@@ -1154,8 +1154,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             const minFrame = this.props.context.referenceMinFrame;
             const maxFrame = this.props.context.referenceMaxFrame;
 
-            activeBoxLeft = (((this.props.context.fromKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
-            activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
+            activeBoxLeft = (((this.props.context.fromKey - minFrame) / (maxFrame - minFrame)) * this._graphAbsoluteWidth + this._offsetX) / this._viewScale;
+            activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._graphAbsoluteWidth + this._offsetX) / this._viewScale;
         }
 
         return (
