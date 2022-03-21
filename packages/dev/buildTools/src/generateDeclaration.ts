@@ -20,7 +20,7 @@ export interface IGenerateDeclarationConfig {
 function getModuleDeclaration(source: string, filename: string, config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
     const distPosition = filename.indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
-    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
+    const moduleName = getPublicPackageName(packageVariables[buildType], undefined, filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
@@ -75,7 +75,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
                                 if (match[1].startsWith(devPackageName)) {
                                     line = line.replace(
                                         match[1],
-                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], match[1]) + match[1].substr(devPackageName.length)
+                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], undefined, match[1]) + match[1].substr(devPackageName.length)
                                     );
                                 }
                             });
@@ -188,7 +188,7 @@ function getPackageDeclaration(
     let removeNext = false;
     const packageMapping = getPackageMappingByDevName(devPackageName);
     const defaultModuleName = getPublicPackageName(packageMapping.namespace);
-    const thisFileModuleName = getPublicPackageName(packageMapping.namespace, sourceFilePath);
+    const thisFileModuleName = getPublicPackageName(packageMapping.namespace/*, undefined, sourceFilePath*/);
     while (i < lines.length) {
         let line = lines[i];
 
@@ -240,7 +240,7 @@ function getPackageDeclaration(
     // replaces classes definitions with namespace definitions
     classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName: DevPackageName; fullPath: string }) => {
         const { alias, realClassName, devPackageName, fullPath } = classMapping;
-        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, fullPath);
+        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, undefined, fullPath);
         const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
         processedSource = processedSource.replace(matchRegex, `$1${namespace}.${realClassName}$3`);
     });
@@ -258,23 +258,23 @@ declare module ${defaultModuleName} {
     return processedSource;
 }
 
-export function generateDefaultModuleDeclaration(declarationFiles: string[], devPackageName: DevPackageName) {
-    let declarations = "";
-    for (const fileName in declarationFiles) {
-        const declarationFile = declarationFiles[fileName];
-        // The lines of the files now come as a Function inside declaration file.
-        const data = fs.readFileSync(declarationFile, "utf8");
-        declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), devPackageName);
-    }
-    const packageVariables = getPackageMappingByDevName(devPackageName);
-    const defaultModuleName = getPublicPackageName(packageVariables.namespace);
+// export function generateDefaultModuleDeclaration(declarationFiles: string[], devPackageName: DevPackageName) {
+//     let declarations = "";
+//     for (const fileName in declarationFiles) {
+//         const declarationFile = declarationFiles[fileName];
+//         // The lines of the files now come as a Function inside declaration file.
+//         const data = fs.readFileSync(declarationFile, "utf8");
+//         declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), devPackageName);
+//     }
+//     const packageVariables = getPackageMappingByDevName(devPackageName);
+//     const defaultModuleName = getPublicPackageName(packageVariables.namespace);
 
-    return `
-declare module ${defaultModuleName} {
-    ${declarations}
-}
-`;
-}
+//     return `
+// declare module ${defaultModuleName} {
+//     ${declarations}
+// }
+// `;
+// }
 
 export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, loseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
@@ -350,6 +350,8 @@ export function generateDeclaration() {
             const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
             return glob.sync(p);
         });
+
+        console.log(files);
 
         // check if there are .d.ts files in LibDeclaration in the source directory
         const decFiles = config.declarationLibs.map((lib: string) => {

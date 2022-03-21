@@ -1,5 +1,5 @@
 {
-    "declarationLibs": ["@dev/inspector"],
+    "declarationLibs": ["@dev/inspector", "@dev/shared-ui-components"],
     "devPackageName": "inspector",
     "filename": "babylon.inspector.module.d.ts",
     "buildType": "es6"
