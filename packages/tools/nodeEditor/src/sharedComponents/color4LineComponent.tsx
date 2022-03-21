@@ -69,6 +69,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     copyToClipboard() {
+        const { navigator } = this.props.globalState.hostWindow;
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(this.getCurrentColor().toHexString());
         }
