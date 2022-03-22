@@ -1,6 +1,6 @@
-import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { DataArray } from "../types";
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataArray } from "../types";
 import { Constants } from "../Engines/constants";
 
 /**

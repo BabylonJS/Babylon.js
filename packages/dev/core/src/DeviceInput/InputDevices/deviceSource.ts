@@ -1,8 +1,8 @@
-import { DeviceType, PointerInput } from "./deviceEnums";
+import type { DeviceType, PointerInput } from "./deviceEnums";
 import { Observable } from "../../Misc/observable";
-import { DeviceInput } from "./deviceTypes";
-import { IDeviceInputSystem } from "./inputInterfaces";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { DeviceInput } from "./deviceTypes";
+import type { IDeviceInputSystem } from "./inputInterfaces";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Subset of DeviceInput that only handles pointers and keyboard

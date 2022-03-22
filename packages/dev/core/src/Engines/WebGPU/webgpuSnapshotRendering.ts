@@ -1,8 +1,8 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Constants } from "../constants";
-import { WebGPUEngine } from "../webgpuEngine";
-import { WebGPUBundleList } from "./webgpuBundleList";
-import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import type { WebGPUEngine } from "../webgpuEngine";
+import type { WebGPUBundleList } from "./webgpuBundleList";
+import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
 /** @hidden */
 export class WebGPUSnapshotRendering {

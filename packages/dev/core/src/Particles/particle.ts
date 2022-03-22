@@ -1,10 +1,10 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
-import { ParticleSystem } from "./particleSystem";
-import { SubEmitter } from "./subEmitter";
-import { ColorGradient, FactorGradient } from "../Misc/gradients";
+import type { ParticleSystem } from "./particleSystem";
+import type { SubEmitter } from "./subEmitter";
+import type { ColorGradient, FactorGradient } from "../Misc/gradients";
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 

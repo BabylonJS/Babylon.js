@@ -1,6 +1,6 @@
-import { IColor3Like, IColor4Like, IMatrixLike, IVector3Like, IVector4Like } from "../Maths/math.like";
-import { Effect } from "./effect";
-import { UniformBuffer } from "./uniformBuffer";
+import type { IColor3Like, IColor4Like, IMatrixLike, IVector3Like, IVector4Like } from "../Maths/math.like";
+import type { Effect } from "./effect";
+import type { UniformBuffer } from "./uniformBuffer";
 
 /** @hidden */
 export class UniformBufferEffectCommonAccessor {

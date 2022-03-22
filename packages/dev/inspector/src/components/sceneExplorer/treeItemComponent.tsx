@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 interface ITreeItemExpandableHeaderComponentProps {

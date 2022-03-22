@@ -1,28 +1,19 @@
-import {
-    AnimationSamplerInterpolation,
-    AnimationChannelTargetPath,
-    AccessorType,
-    IAnimation,
-    INode,
-    IBufferView,
-    IAccessor,
-    IAnimationSampler,
-    IAnimationChannel,
-    AccessorComponentType,
-} from "babylonjs-gltf2interface";
-import { Node } from "core/node";
-import { Nullable } from "core/types";
+import type { IAnimation, INode, IBufferView, IAccessor, IAnimationSampler, IAnimationChannel } from "babylonjs-gltf2interface";
+import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
+import type { Node } from "core/node";
+import type { Nullable } from "core/types";
 import { Vector3, Quaternion } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { Animation } from "core/Animations/animation";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { Mesh } from "core/Meshes/mesh";
 
-import { _BinaryWriter } from "./glTFExporter";
+import type { _BinaryWriter } from "./glTFExporter";
 import { _GLTFUtilities } from "./glTFUtilities";
-import { IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animationKey";
+import type { IAnimationKey } from "core/Animations/animationKey";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 
 /**
  * @hidden

@@ -1,10 +1,10 @@
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
-import { IComputePipelineContext } from "./IComputePipelineContext";
+import type { IComputePipelineContext } from "./IComputePipelineContext";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
-import { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
+import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 

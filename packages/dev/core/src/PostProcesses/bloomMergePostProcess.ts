@@ -1,8 +1,9 @@
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Nullable } from "../types";
-import { Engine } from "../Engines/engine";
-import { Effect } from "../Materials/effect";
-import { Camera } from "../Cameras/camera";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Nullable } from "../types";
+import type { Engine } from "../Engines/engine";
+import type { Effect } from "../Materials/effect";
+import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/bloomMerge.fragment";

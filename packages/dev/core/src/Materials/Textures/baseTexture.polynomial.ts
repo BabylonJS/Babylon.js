@@ -1,6 +1,6 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
+import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "./baseTexture";
 
 declare module "./baseTexture" {

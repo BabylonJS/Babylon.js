@@ -1,14 +1,15 @@
-import { TransformNode } from "../../Meshes/transformNode";
-import { Nullable } from "../../types";
+import type { TransformNode } from "../../Meshes/transformNode";
+import type { Nullable } from "../../types";
 import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
-import { WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
-import { WebXRHandTracking, XRHandJoint } from "../../XR/features/WebXRHandTracking";
-import { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
-import { Behavior } from "../behavior";
-import { Observer } from "../../Misc/observable";
-import { Scene } from "../../scene";
+import type { WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
+import type { WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
+import { XRHandJoint } from "../../XR/features/WebXRHandTracking";
+import type { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
+import type { Behavior } from "../behavior";
+import type { Observer } from "../../Misc/observable";
+import type { Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import { Ray } from "../../Culling/ray";
+import type { Ray } from "../../Culling/ray";
 
 /**
  * Zones around the hand

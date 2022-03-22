@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
-import { Matrix, Vector3, Vector2, Vector4, TmpVectors } from "../Maths/math.vector";
+import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import type { Matrix, Vector2 } from "../Maths/math.vector";
+import { Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _WarnImport } from "../Misc/devTools";
-import { Color4, Color3 } from "../Maths/math.color";
+import type { Color3 } from "../Maths/math.color";
+import { Color4 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
 import { nativeOverride } from "../Misc/decorators";
-import { Coroutine, makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
-import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import type { Coroutine } from "../Misc/coroutine";
+import { makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
+import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 declare type Geometry = import("../Meshes/geometry").Geometry;

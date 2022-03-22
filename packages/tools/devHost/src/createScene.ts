@@ -4,7 +4,8 @@ import "@dev/loaders";
 import "@tools/node-editor";
 import * as GUIEditor from "@tools/gui-editor";
 import { Inspector, InjectGUIEditor } from "@dev/inspector";
-import { ArcRotateCamera, CubeTexture, Scene, SceneLoader } from "@dev/core";
+import type { ArcRotateCamera } from "@dev/core";
+import { CubeTexture, Scene, SceneLoader } from "@dev/core";
 import { AdvancedDynamicTexture, Button } from "@dev/gui";
 
 export const createScene = async function () {

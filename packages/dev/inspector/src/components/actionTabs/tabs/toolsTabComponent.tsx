@@ -1,28 +1,30 @@
-import { PaneComponent, IPaneComponentProps } from "../paneComponent";
+/* eslint-disable import/no-internal-modules */
+import type { IPaneComponentProps } from "../paneComponent";
+import { PaneComponent } from "../paneComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { Node } from "core/node";
-import { Nullable } from "core/types";
+import type { Node } from "core/node";
+import type { Nullable } from "core/types";
 import { VideoRecorder } from "core/Misc/videoRecorder";
 import { Tools } from "core/Misc/tools";
 import { EnvironmentTextureTools } from "core/Misc/environmentTextureTools";
-import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import type { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import type { StandardMaterial } from "core/Materials/standardMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Mesh } from "core/Meshes/mesh";
 import { FilesInput } from "core/Misc/filesInput";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
 // TODO - does it still work if loading the modules from the correct files?
-// eslint-disable-next-line import/no-internal-modules
-import { GLTFData, GLTF2Export } from "serializers/glTF/2.0/index";
+import type { GLTFData } from "serializers/glTF/2.0/index";
+import { GLTF2Export } from "serializers/glTF/2.0/index";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
+import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { NumericInputComponent } from "shared-ui-components/lines/numericInputComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";

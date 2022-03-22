@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 import CoreLogo from "../imgs/coreLogo.svg";
 import Spinner from "../imgs/spinner.svg";

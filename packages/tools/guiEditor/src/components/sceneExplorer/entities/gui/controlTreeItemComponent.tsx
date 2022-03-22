@@ -1,10 +1,11 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { Control } from "gui/2D/controls/control";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Control } from "gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";
-import { DragOverLocation, GlobalState } from "../../../../globalState";
-import { Grid } from "gui/2D/controls/grid";
+import type { GlobalState } from "../../../../globalState";
+import { DragOverLocation } from "../../../../globalState";
+import type { Grid } from "gui/2D/controls/grid";
 import { Container } from "gui/2D/controls/container";
 import { ControlTypes } from "../../../../controlTypes";
 

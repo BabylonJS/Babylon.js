@@ -1,19 +1,19 @@
 import { AbstractScene } from "./abstractScene";
-import { Scene } from "./scene";
+import type { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
-import { TransformNode } from "./Meshes/transformNode";
-import { Skeleton } from "./Bones/skeleton";
-import { AnimationGroup } from "./Animations/animationGroup";
-import { Animatable } from "./Animations/animatable";
-import { AbstractMesh } from "./Meshes/abstractMesh";
-import { MultiMaterial } from "./Materials/multiMaterial";
-import { Material } from "./Materials/material";
+import type { TransformNode } from "./Meshes/transformNode";
+import type { Skeleton } from "./Bones/skeleton";
+import type { AnimationGroup } from "./Animations/animationGroup";
+import type { Animatable } from "./Animations/animatable";
+import type { AbstractMesh } from "./Meshes/abstractMesh";
+import type { MultiMaterial } from "./Materials/multiMaterial";
+import type { Material } from "./Materials/material";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
-import { Nullable } from "./types";
-import { Node } from "./node";
-import { Observer } from "./Misc/observable";
-import { ThinEngine } from "./Engines/thinEngine";
+import type { Nullable } from "./types";
+import type { Node } from "./node";
+import type { Observer } from "./Misc/observable";
+import type { ThinEngine } from "./Engines/thinEngine";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.

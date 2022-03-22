@@ -1,5 +1,5 @@
 import { AbstractViewerNavbarButton } from "../viewerTemplatePlugin";
-import { DefaultViewer } from "../../viewer/defaultViewer";
+import type { DefaultViewer } from "../../viewer/defaultViewer";
 import { Tools } from "core/Misc/tools";
 
 export class PrintButtonPlugin extends AbstractViewerNavbarButton {

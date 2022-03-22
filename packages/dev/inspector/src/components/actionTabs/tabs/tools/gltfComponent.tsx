@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { GlobalState } from "../../../globalState";
+import type { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
@@ -11,9 +11,9 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 // TODO - does it still work if loading the modules from the correct files?
 // eslint-disable-next-line import/no-internal-modules
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "loaders/glTF/index";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { IGLTFValidationResults } from "babylonjs-gltf2interface";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 interface IGLTFComponentProps {
     scene: Scene;

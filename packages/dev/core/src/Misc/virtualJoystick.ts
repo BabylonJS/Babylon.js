@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector3, Vector2 } from "../Maths/math.vector";
 import { StringDictionary } from "./stringDictionary";
 

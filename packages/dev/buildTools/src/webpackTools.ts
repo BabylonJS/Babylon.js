@@ -1,9 +1,10 @@
-import ts from "typescript";
+import type ts from "typescript";
 import transformer from "./pathTransform";
-import { BuildType, DevPackageName, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, UMDPackageName, umdPackageMapping } from "./packageMapping";
+import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping";
+import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping";
 import * as path from "path";
 import { camelize } from "./utils";
-import { RuleSetRule, Configuration } from "webpack";
+import type { RuleSetRule, Configuration } from "webpack";
 
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
     return function ({ request }: { request: string }, callback: (err: Error | null, result?: any) => void) {

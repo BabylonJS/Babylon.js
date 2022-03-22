@@ -1,9 +1,10 @@
 import { Engine } from "core/Engines/engine";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from "core/Loading/sceneLoader";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import type { Observable } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 import { RenderingManager } from "core/Rendering/renderingManager";
-import { TargetCamera } from "core/Cameras/targetCamera";
+import type { TargetCamera } from "core/Cameras/targetCamera";
 import { Tools } from "core/Misc/tools";
 import { Effect } from "core/Materials/effect";
 import { processConfigurationCompatibility } from "../configuration/configurationCompatibility";
@@ -16,12 +17,12 @@ import { ModelLoader } from "../loader/modelLoader";
 import { ObservablesManager } from "../managers/observablesManager";
 import { SceneManager } from "../managers/sceneManager";
 import { telemetryManager } from "../managers/telemetryManager";
-import { ViewerModel } from "../model/viewerModel";
+import type { ViewerModel } from "../model/viewerModel";
 import { viewerManager } from "./viewerManager";
-import { ViewerConfiguration } from "../configuration/configuration";
-import { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import type { ViewerConfiguration } from "../configuration/configuration";
+import type { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.

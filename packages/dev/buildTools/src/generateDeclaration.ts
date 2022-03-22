@@ -4,7 +4,8 @@ import * as path from "path";
 import * as chokidar from "chokidar";
 
 import { camelize, checkArgs, checkDirectorySync, debounce } from "./utils";
-import { BuildType, DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
+import type { BuildType, DevPackageName } from "./packageMapping";
+import { getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
 
 export interface IGenerateDeclarationConfig {
     devPackageName: DevPackageName;

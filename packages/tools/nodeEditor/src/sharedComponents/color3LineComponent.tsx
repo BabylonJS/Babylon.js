@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 
 import copyIcon from "./copy.svg";

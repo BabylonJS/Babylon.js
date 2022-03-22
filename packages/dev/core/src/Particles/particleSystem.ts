@@ -1,18 +1,20 @@
-import { Immutable, Nullable } from "../types";
+/* eslint-disable import/no-internal-modules */
+import type { Immutable, Nullable } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
-import { Observable, Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
-import { Effect } from "../Materials/effect";
+import type { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { EngineStore } from "../Engines/engineStore";
-import { IDisposable } from "../scene";
+import type { IDisposable } from "../scene";
+import type { IParticleEmitterType } from "../Particles/EmitterTypes/index";
 import {
     BoxParticleEmitter,
-    IParticleEmitterType,
     HemisphericParticleEmitter,
     SphereParticleEmitter,
     SphereDirectedParticleEmitter,
@@ -21,24 +23,23 @@ import {
     PointParticleEmitter,
     MeshParticleEmitter,
     CylinderDirectedParticleEmitter,
-    // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
-import { IParticleSystem } from "./IParticleSystem";
+import type { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { GetClass } from "../Misc/typeStore";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Color4, Color3, TmpColors } from "../Maths/math.color";
-import { ISize } from "../Maths/math.size";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { ISize } from "../Maths/math.size";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 import { ThinMaterialHelper } from "../Materials/thinMaterialHelper";
 

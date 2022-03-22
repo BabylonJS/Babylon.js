@@ -1,7 +1,7 @@
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { MaterialPluginManager } from "./materialPluginManager";
-import { SmartArray } from "../Misc/smartArray";
+import type { SmartArray } from "../Misc/smartArray";
 import { Constants } from "../Engines/constants";
 
 declare type Engine = import("../Engines/engine").Engine;

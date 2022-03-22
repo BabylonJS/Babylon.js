@@ -1,8 +1,9 @@
-import { Nullable } from "../types";
-import { Engine } from "../Engines/engine";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Nullable } from "../types";
+import type { Engine } from "../Engines/engine";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 
 import "../Shaders/anaglyph.fragment";
 import { RegisterClass } from "../Misc/typeStore";

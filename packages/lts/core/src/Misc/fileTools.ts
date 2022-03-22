@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { IFileRequest } from "core/Misc/fileRequest";
+import type { IFileRequest } from "core/Misc/fileRequest";
 import {
     DecodeBase64UrlToBinary,
     DecodeBase64UrlToString,
@@ -12,9 +12,9 @@ import {
     RequestFile,
     SetCorsBehavior,
 } from "core/Misc/fileTools";
-import { WebRequest } from "core/Misc/webRequest";
-import { IOfflineProvider } from "core/Offline/IOfflineProvider";
-import { Nullable } from "core/types";
+import type { WebRequest } from "core/Misc/webRequest";
+import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
+import type { Nullable } from "core/types";
 
 declare type LoadFileError = import("core/Misc/fileTools").LoadFileError;
 declare type ReadFileError = import("core/Misc/fileTools").ReadFileError;

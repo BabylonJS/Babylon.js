@@ -29,7 +29,7 @@ export const prepareES6Build = async () => {
             }
 
             for (const constant of constantList) {
-                const regex = new RegExp(`(?<![_0-9a-zA-Z])Constants\.${constant}(?![_0-9a-zA-Z])`, "g");
+                const regex = new RegExp(`(?<![_0-9a-zA-Z])Constants.${constant}(?![_0-9a-zA-Z])`, "g");
                 const value = Constants[constant];
                 if (typeof value === "string") {
                     sourceCode = sourceCode.replace(regex, "`" + value + "`");

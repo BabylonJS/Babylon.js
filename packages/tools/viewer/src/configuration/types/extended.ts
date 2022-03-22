@@ -1,4 +1,4 @@
-import { ViewerConfiguration } from "./../configuration";
+import type { ViewerConfiguration } from "./../configuration";
 import { Tools } from "core/Misc/tools";
 
 /**

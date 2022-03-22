@@ -1,15 +1,15 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../Culling/ray";
-import { Scene } from "../scene";
-import { IPhysicsEngine } from "./IPhysicsEngine";
-import { PhysicsEngine } from "./physicsEngine";
-import { PhysicsImpostor } from "./physicsImpostor";
+import type { Scene } from "../scene";
+import type { IPhysicsEngine } from "./IPhysicsEngine";
+import type { PhysicsEngine } from "./physicsEngine";
+import type { PhysicsImpostor } from "./physicsImpostor";
 
 /**
  * A helper for physics simulations

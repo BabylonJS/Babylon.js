@@ -1,10 +1,11 @@
-import { Nullable } from "../../types";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Nullable } from "../../types";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 
-import { ISize, Size } from "../../Maths/math.size";
+import type { ISize } from "../../Maths/math.size";
+import { Size } from "../../Maths/math.size";
 
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 /**
  * Base class of all the textures in babylon.

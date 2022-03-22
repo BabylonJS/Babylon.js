@@ -1,9 +1,10 @@
-import { Behavior } from "../../Behaviors/behavior";
-import { Camera } from "../../Cameras/camera";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
+import type { Behavior } from "../../Behaviors/behavior";
+import type { Camera } from "../../Cameras/camera";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { PointerInfoPre } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 
 /**

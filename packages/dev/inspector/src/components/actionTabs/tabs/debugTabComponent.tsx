@@ -1,11 +1,12 @@
-import { PaneComponent, IPaneComponentProps } from "../paneComponent";
+import type { IPaneComponentProps } from "../paneComponent";
+import { PaneComponent } from "../paneComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
 import { PhysicsViewer } from "core/Debug/physicsViewer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 
 import "core/Physics/physicsEngineComponent";
 

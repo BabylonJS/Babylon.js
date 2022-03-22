@@ -1,15 +1,18 @@
-import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
+/* eslint-disable import/no-internal-modules */
+import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
 import { Tools } from "core/Misc/tools";
 
 import { Tags } from "core/Misc/tags";
 
-import { ConfigurationContainer } from "../configuration/configurationContainer";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { ObservablesManager } from "../managers/observablesManager";
+import type { ConfigurationContainer } from "../configuration/configurationContainer";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { ObservablesManager } from "../managers/observablesManager";
 import { ModelState, ViewerModel } from "../model/viewerModel";
-// eslint-disable-next-line import/no-internal-modules
-import { getLoaderPluginByName, ILoaderPlugin } from "./plugins/index";
+import type { ILoaderPlugin } from "./plugins/index";
+import { getLoaderPluginByName } from "./plugins/index";
 
 /**
  * An instance of the class is in charge of loading the model correctly.

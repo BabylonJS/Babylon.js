@@ -1,5 +1,5 @@
 import { SpriteManager } from "./spriteManager";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 
 /**

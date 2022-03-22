@@ -1,11 +1,11 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
-import { ColorCurves } from "../../Materials/colorCurves";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
+import type { ColorCurves } from "../../Materials/colorCurves";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 

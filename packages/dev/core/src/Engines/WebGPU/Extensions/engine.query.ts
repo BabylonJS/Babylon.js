@@ -1,4 +1,4 @@
-import { OcclusionQuery } from "../../Extensions/engine.query";
+import type { OcclusionQuery } from "../../Extensions/engine.query";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
 

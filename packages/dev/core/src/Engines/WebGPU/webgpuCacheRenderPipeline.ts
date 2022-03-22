@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Constants } from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
-import { Effect } from "../../Materials/effect";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Effect } from "../../Materials/effect";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { Nullable } from "../../types";
-import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
+import type { Nullable } from "../../types";
+import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 

@@ -1,14 +1,14 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
-import { Measure } from "../measure";
+import type { Measure } from "../measure";
 import { Tools } from "core/Misc/tools";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { Observer } from "core/Misc/observable";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * Class used to create a 2D grid container

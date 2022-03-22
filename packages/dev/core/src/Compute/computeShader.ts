@@ -1,16 +1,17 @@
-import { UniformBuffer } from "../Materials/uniformBuffer";
-import { ThinEngine } from "../Engines/thinEngine";
-import { Scene } from "../scene";
-import { Nullable } from "../types";
+import type { UniformBuffer } from "../Materials/uniformBuffer";
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { Scene } from "../scene";
+import type { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
-import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
-import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
+import type { ComputeBindingList, ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
+import { ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
-import { IComputeContext } from "./IComputeContext";
-import { StorageBuffer } from "../Buffers/storageBuffer";
+import type { IComputeContext } from "./IComputeContext";
+import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
 import { TextureSampler } from "../Materials/Textures/textureSampler";
 

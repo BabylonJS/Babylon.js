@@ -1,7 +1,7 @@
 import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math.vector";
 import { Action } from "./action";
-import { Condition } from "./condition";
+import type { Condition } from "./condition";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 

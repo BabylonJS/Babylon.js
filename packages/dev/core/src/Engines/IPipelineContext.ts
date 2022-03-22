@@ -1,6 +1,6 @@
-import { Nullable } from "../types";
-import { Effect } from "../Materials/effect";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
+import type { Nullable } from "../types";
+import type { Effect } from "../Materials/effect";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
 
 /**
  * Class used to store and describe the pipeline context associated with an effect

@@ -1,12 +1,14 @@
-import { Engine } from "../../Engines/engine";
+import type { Engine } from "../../Engines/engine";
 import { DeviceType } from "./deviceEnums";
-import { Nullable } from "../../types";
-import { Observable, Observer } from "../../Misc/observable";
-import { DeviceSource } from "./deviceSource";
-import { InternalDeviceSourceManager, IObservableManager } from "./internalDeviceSourceManager";
-import { IDisposable } from "../../scene";
-import { ThinEngine } from "../../Engines/thinEngine";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { DeviceSource } from "./deviceSource";
+import type { IObservableManager } from "./internalDeviceSourceManager";
+import { InternalDeviceSourceManager } from "./internalDeviceSourceManager";
+import type { IDisposable } from "../../scene";
+import type { ThinEngine } from "../../Engines/thinEngine";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Class to keep track of devices

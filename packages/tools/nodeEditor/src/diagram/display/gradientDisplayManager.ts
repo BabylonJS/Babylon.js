@@ -1,6 +1,6 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
 
 export class GradientDisplayManager implements IDisplayManager {
     public getHeaderClass() {

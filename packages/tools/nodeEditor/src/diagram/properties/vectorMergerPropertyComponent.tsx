@@ -1,9 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
+import type { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
 
 export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

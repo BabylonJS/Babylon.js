@@ -1,10 +1,10 @@
 import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Nullable } from "../../types";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
-import { CubeMapInfo } from "./panoramaToCubemap";
+import type { CubeMapInfo } from "./panoramaToCubemap";
 import { ToLinearSpace } from "../../Maths/math.constants";
 import { Color3 } from "../../Maths/math.color";
 
