@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import * as ProceduralTexturesLib from "procedural-textures/index";
 
 /**

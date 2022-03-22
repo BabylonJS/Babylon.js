@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./Vertex/index";
 export * from "./Fragment/index";
 export * from "./Dual/index";

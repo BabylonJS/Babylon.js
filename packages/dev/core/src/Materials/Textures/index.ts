@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./baseTexture";
 // eslint-disable-next-line import/export
 export * from "./baseTexture.polynomial";

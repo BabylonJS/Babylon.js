@@ -8,6 +8,7 @@ import { ConfigurationContainer } from "../configuration/configurationContainer"
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { ObservablesManager } from "../managers/observablesManager";
 import { ModelState, ViewerModel } from "../model/viewerModel";
+// eslint-disable-next-line import/no-internal-modules
 import { getLoaderPluginByName, ILoaderPlugin } from "./plugins/index";
 
 /**

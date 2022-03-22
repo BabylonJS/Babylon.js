@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./ktx2Decoder";
 export * from "./ktx2FileReader";
 export * from "./transcoder";

@@ -72,7 +72,8 @@
         //   "react/react-in-jsx-scope": "error",
         //   "react/self-closing-comp": "error",
         "import/no-unresolved": "off", // because of the way the repo is structured
-        "import/named": "error",
+        // todo - make this work with external modules
+        // "import/named": "error",
         "import/no-cycle": [1, { "maxDepth": 1, "ignoreExternal": true }],
         "import/no-internal-modules": [
             "error",

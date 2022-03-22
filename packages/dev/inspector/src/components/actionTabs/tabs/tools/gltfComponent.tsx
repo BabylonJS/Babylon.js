@@ -8,6 +8,8 @@ import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComp
 import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+// TODO - does it still work if loading the modules from the correct files?
+// eslint-disable-next-line import/no-internal-modules
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "loaders/glTF/index";
 import { Nullable } from "core/types";
 import { Observer } from "core/Misc/observable";

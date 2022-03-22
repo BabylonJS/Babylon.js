@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import * as postProcessLibrary from "post-processes/asciiArt/index";
 
 /**

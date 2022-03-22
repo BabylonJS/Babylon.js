@@ -2,6 +2,7 @@ import { mapperManager } from "./mappers";
 import { ViewerConfiguration } from "./configuration";
 import { processConfigurationCompatibility } from "./configurationCompatibility";
 
+// eslint-disable-next-line import/no-internal-modules
 import { deepmerge } from "../helper/index";
 import { Tools } from "core/Misc/tools";
 import { extendedConfiguration } from "./types/extended";
