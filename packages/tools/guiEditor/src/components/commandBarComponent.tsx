@@ -53,6 +53,7 @@ const _sizeOptions = [
     { label: "Square (2048)", value: 11 },
 ];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {

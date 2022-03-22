@@ -4,12 +4,14 @@ import { LiteTranscoder } from "./liteTranscoder";
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class LiteTranscoder_UASTC_ASTC extends LiteTranscoder {
     /**
      * URL to use when loading the wasm module for the transcoder
      */
     public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_astc.wasm";
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.ASTC_4x4_RGBA;
     }

@@ -16,20 +16,20 @@ export interface IFramePropertyTabComponentProps {
 }
 
 export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
-    private onFrameExpandStateChangedObserver: Nullable<Observer<GraphFrame>>;
+    private _onFrameExpandStateChangedObserver: Nullable<Observer<GraphFrame>>;
 
     constructor(props: IFramePropertyTabComponentProps) {
         super(props);
     }
 
     componentDidMount() {
-        this.onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
+        this._onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
     }
 
     componentWillUnmount() {
-        if (this.onFrameExpandStateChangedObserver) {
-            this.props.frame.onExpandStateChanged.remove(this.onFrameExpandStateChangedObserver);
-            this.onFrameExpandStateChangedObserver = null;
+        if (this._onFrameExpandStateChangedObserver) {
+            this.props.frame.onExpandStateChanged.remove(this._onFrameExpandStateChangedObserver);
+            this._onFrameExpandStateChangedObserver = null;
         }
     }
 

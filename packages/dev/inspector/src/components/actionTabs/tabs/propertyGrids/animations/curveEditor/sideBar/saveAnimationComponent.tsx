@@ -87,7 +87,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
         xmlHttp.open("POST", Animation.SnippetUrl + (this.props.context.snippetId ? "/" + this.props.context.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 animations: json,
             }),

@@ -130,7 +130,7 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         }
     }
 
-    private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
+    private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture) {
         if (this.scene.prePassRenderer) {
             if (!renderTarget._prePassRenderTarget) {
                 renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
@@ -147,7 +147,7 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         }
     }
 
-    private _afterCameraDraw(camera: Camera) {
+    private _afterCameraDraw() {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer._afterDraw();
         }

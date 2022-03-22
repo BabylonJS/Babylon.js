@@ -89,17 +89,19 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     this.props.context.onMoveToFrameRequired.notifyObservers(Math.min(this.props.context.clipLength, this.props.context.activeFrame + 1));
                 }
                 break;
-            case "ArrowDown":
+            case "ArrowDown": {
                 const prevKey = this.props.context.getPrevKey();
                 if (prevKey !== null) {
                     this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
                 }
                 break;
-            case "ArrowUp":
+            }
+            case "ArrowUp": {
                 const nextKey = this.props.context.getNextKey();
                 if (nextKey !== null) {
                     this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
                 }
+            }
         }
     }
 

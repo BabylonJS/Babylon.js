@@ -22,7 +22,7 @@ export class PostProcessRenderPipelineManager {
         const result = [];
 
         for (const renderPipelineName in this._renderPipelines) {
-            if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderPipelines, renderPipelineName)) {
                 const pipeline = this._renderPipelines[renderPipelineName];
                 if (pipeline.isSupported) {
                     result.push(pipeline);
@@ -109,7 +109,7 @@ export class PostProcessRenderPipelineManager {
      */
     public update(): void {
         for (const renderPipelineName in this._renderPipelines) {
-            if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderPipelines, renderPipelineName)) {
                 const pipeline = this._renderPipelines[renderPipelineName];
                 if (!pipeline.isSupported) {
                     pipeline.dispose();
@@ -124,7 +124,7 @@ export class PostProcessRenderPipelineManager {
     /** @hidden */
     public _rebuild(): void {
         for (const renderPipelineName in this._renderPipelines) {
-            if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderPipelines, renderPipelineName)) {
                 const pipeline = this._renderPipelines[renderPipelineName];
                 pipeline._rebuild();
             }
@@ -136,7 +136,7 @@ export class PostProcessRenderPipelineManager {
      */
     public dispose(): void {
         for (const renderPipelineName in this._renderPipelines) {
-            if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderPipelines, renderPipelineName)) {
                 const pipeline = this._renderPipelines[renderPipelineName];
                 pipeline.dispose();
             }

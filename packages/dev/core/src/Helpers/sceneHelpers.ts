@@ -21,6 +21,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
 
 /** @hidden */
+// eslint-disable-next-line no-var
 export var _forceSceneHelpersToBundle = true;
 
 declare module "../scene" {

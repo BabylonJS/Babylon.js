@@ -607,12 +607,12 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        for (var index = 0; index < this._options.defines.length; index++) {
+        for (let index = 0; index < this._options.defines.length; index++) {
             const defineToAdd = this._options.defines[index].indexOf("#define") === 0 ? this._options.defines[index] : `#define ${this._options.defines[index]}`;
             defines.push(defineToAdd);
         }
 
-        for (var index = 0; index < this._options.attributes.length; index++) {
+        for (let index = 0; index < this._options.attributes.length; index++) {
             attribs.push(this._options.attributes[index]);
         }
 
@@ -700,7 +700,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
             defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-            for (var index = 0; index < numInfluencers; index++) {
+            for (let index = 0; index < numInfluencers; index++) {
                 attribs.push(VertexBuffer.PositionKind + index);
 
                 if (normal) {
@@ -1118,11 +1118,11 @@ export class ShaderMaterial extends PushMaterial {
     public getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
-        for (var name in this._textures) {
+        for (const name in this._textures) {
             activeTextures.push(this._textures[name]);
         }
 
-        for (var name in this._textureArrays) {
+        for (const name in this._textureArrays) {
             const array = this._textureArrays[name];
             for (let index = 0; index < array.length; index++) {
                 activeTextures.push(array[index]);
@@ -1142,13 +1142,13 @@ export class ShaderMaterial extends PushMaterial {
             return true;
         }
 
-        for (var name in this._textures) {
+        for (const name in this._textures) {
             if (this._textures[name] === texture) {
                 return true;
             }
         }
 
-        for (var name in this._textureArrays) {
+        for (const name in this._textureArrays) {
             const array = this._textureArrays[name];
             for (let index = 0; index < array.length; index++) {
                 if (array[index] === texture) {
@@ -1190,117 +1190,117 @@ export class ShaderMaterial extends PushMaterial {
         this.stencil.copyTo(result.stencil);
 
         // Texture
-        for (var key in this._textures) {
+        for (const key in this._textures) {
             result.setTexture(key, this._textures[key]);
         }
 
         // TextureArray
-        for (var key in this._textureArrays) {
+        for (const key in this._textureArrays) {
             result.setTextureArray(key, this._textureArrays[key]);
         }
 
         // External texture
-        for (var key in this._externalTextures) {
+        for (const key in this._externalTextures) {
             result.setExternalTexture(key, this._externalTextures[key]);
         }
 
         // Int
-        for (var key in this._ints) {
+        for (const key in this._ints) {
             result.setInt(key, this._ints[key]);
         }
 
         // Float
-        for (var key in this._floats) {
+        for (const key in this._floats) {
             result.setFloat(key, this._floats[key]);
         }
 
         // Floats
-        for (var key in this._floatsArrays) {
+        for (const key in this._floatsArrays) {
             result.setFloats(key, this._floatsArrays[key]);
         }
 
         // Color3
-        for (var key in this._colors3) {
+        for (const key in this._colors3) {
             result.setColor3(key, this._colors3[key]);
         }
 
         // Color3Array
-        for (var key in this._colors3Arrays) {
+        for (const key in this._colors3Arrays) {
             result._colors3Arrays[key] = this._colors3Arrays[key];
         }
 
         // Color4
-        for (var key in this._colors4) {
+        for (const key in this._colors4) {
             result.setColor4(key, this._colors4[key]);
         }
 
         // Color4Array
-        for (var key in this._colors4Arrays) {
+        for (const key in this._colors4Arrays) {
             result._colors4Arrays[key] = this._colors4Arrays[key];
         }
 
         // Vector2
-        for (var key in this._vectors2) {
+        for (const key in this._vectors2) {
             result.setVector2(key, this._vectors2[key]);
         }
 
         // Vector3
-        for (var key in this._vectors3) {
+        for (const key in this._vectors3) {
             result.setVector3(key, this._vectors3[key]);
         }
 
         // Vector4
-        for (var key in this._vectors4) {
+        for (const key in this._vectors4) {
             result.setVector4(key, this._vectors4[key]);
         }
 
         // Matrix
-        for (var key in this._matrices) {
+        for (const key in this._matrices) {
             result.setMatrix(key, this._matrices[key]);
         }
 
         // MatrixArray
-        for (var key in this._matrixArrays) {
+        for (const key in this._matrixArrays) {
             result._matrixArrays[key] = this._matrixArrays[key].slice();
         }
 
         // Matrix 3x3
-        for (var key in this._matrices3x3) {
+        for (const key in this._matrices3x3) {
             result.setMatrix3x3(key, this._matrices3x3[key]);
         }
 
         // Matrix 2x2
-        for (var key in this._matrices2x2) {
+        for (const key in this._matrices2x2) {
             result.setMatrix2x2(key, this._matrices2x2[key]);
         }
 
         // Vector2Array
-        for (var key in this._vectors2Arrays) {
+        for (const key in this._vectors2Arrays) {
             result.setArray2(key, this._vectors2Arrays[key]);
         }
 
         // Vector3Array
-        for (var key in this._vectors3Arrays) {
+        for (const key in this._vectors3Arrays) {
             result.setArray3(key, this._vectors3Arrays[key]);
         }
 
         // Vector4Array
-        for (var key in this._vectors4Arrays) {
+        for (const key in this._vectors4Arrays) {
             result.setArray4(key, this._vectors4Arrays[key]);
         }
 
         // Uniform buffers
-        for (var key in this._uniformBuffers) {
+        for (const key in this._uniformBuffers) {
             result.setUniformBuffer(key, this._uniformBuffers[key]);
         }
 
         // Samplers
-        for (var key in this._textureSamplers) {
+        for (const key in this._textureSamplers) {
             result.setTextureSampler(key, this._textureSamplers[key]);
         }
 
         // Storag buffers
-        for (var key in this._storageBuffers) {
+        for (const key in this._storageBuffers) {
             result.setStorageBuffer(key, this._storageBuffers[key]);
         }
 

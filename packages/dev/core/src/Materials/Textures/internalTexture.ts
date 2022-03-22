@@ -540,12 +540,12 @@ export class InternalTexture extends TextureSampler {
         }
 
         const cache = this._engine.getLoadedTexturesCache();
-        var index = cache.indexOf(this);
+        let index = cache.indexOf(this);
         if (index !== -1) {
             cache.splice(index, 1);
         }
 
-        var index = cache.indexOf(target);
+        index = cache.indexOf(target);
         if (index === -1) {
             cache.push(target);
         }

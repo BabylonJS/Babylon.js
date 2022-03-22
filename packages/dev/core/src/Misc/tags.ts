@@ -52,7 +52,7 @@ export class Tags {
 
         const tags = obj._tags;
         for (const i in tags) {
-            if (tags.hasOwnProperty(i)) {
+            if (Object.prototype.hasOwnProperty.call(tags, i)) {
                 return true;
             }
         }
@@ -72,7 +72,7 @@ export class Tags {
         if (asString) {
             const tagsArray = [];
             for (const tag in obj._tags) {
-                if (obj._tags.hasOwnProperty(tag) && obj._tags[tag] === true) {
+                if (Object.prototype.hasOwnProperty.call(obj._tags, tag) && obj._tags[tag] === true) {
                     tagsArray.push(tag);
                 }
             }
@@ -98,7 +98,7 @@ export class Tags {
         }
 
         const tags = tagsString.split(" ");
-        tags.forEach(function (tag, index, array) {
+        tags.forEach(function (tag) {
             Tags._AddTagTo(obj, tag);
         });
     }

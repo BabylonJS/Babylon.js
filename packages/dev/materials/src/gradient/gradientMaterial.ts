@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
 import { Matrix } from "core/Maths/math.vector";

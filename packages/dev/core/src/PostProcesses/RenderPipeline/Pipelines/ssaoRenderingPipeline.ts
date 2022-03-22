@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector2, Vector3, TmpVectors } from "../../../Maths/math.vector";
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";

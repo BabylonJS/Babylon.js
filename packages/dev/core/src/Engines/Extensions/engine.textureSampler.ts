@@ -14,6 +14,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.setTextureSampler = function (name: string, sampler: Nullable<TextureSampler>): void {
     throw new Error("setTextureSampler: This engine does not support separate texture sampler objects!");
 };

@@ -1,7 +1,7 @@
 #scene-explorer-host {
     position: absolute;
     left: 0px;
-    top:0px;
+    top: 0px;
     bottom: 0px;
 
     &:focus {
@@ -52,59 +52,59 @@
         grid-row: 1;
         text-align: center;
         display: grid;
-        grid-template-columns: 30px 1fr 50px;        
-        -webkit-user-select: none; 
-        -moz-user-select: none;   
-        -ms-user-select: none;    
-        user-select: none;                
+        grid-template-columns: 30px 1fr 50px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
 
         #logo {
             position: relative;
-            grid-column: 1; 
+            grid-column: 1;
             width: 24px;
             height: 24px;
-            left:0;
+            left: 0;
             display: flex;
-            align-self: center;   
+            align-self: center;
             justify-self: center;
-        }        
+        }
 
         #title {
-            grid-column: 2; 
+            grid-column: 2;
             display: grid;
-            align-items: center;   
+            align-items: center;
             text-align: center;
         }
 
         #commands {
-            grid-column: 3; 
+            grid-column: 3;
             display: grid;
-            align-items: center;  
-            grid-template-columns: 1fr 1fr;   
-            
+            align-items: center;
+            grid-template-columns: 1fr 1fr;
+
             .expand {
                 grid-column: 1;
                 display: grid;
-                align-items: center;   
+                align-items: center;
                 justify-items: center;
-                cursor: pointer;     
+                cursor: pointer;
             }
 
             .close {
                 grid-column: 2;
                 display: grid;
-                align-items: center;   
+                align-items: center;
                 justify-items: center;
-                cursor: pointer;     
-            }            
+                cursor: pointer;
+            }
         }
     }
 
     #tree {
-       grid-row: 2; 
+        grid-row: 2;
 
-       overflow-x: hidden;
-       overflow-y: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .filter {
@@ -121,15 +121,15 @@
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);
             background-position: -1000px 0;
             background-size: 1000px 100%;
-            background-repeat: no-repeat;  
-            color:white;    
+            background-repeat: no-repeat;
+            color: white;
         }
 
         input::placeholder {
             color: lightgray;
         }
 
-        input:focus  {
+        input:focus {
             box-shadow: none;
             outline: none;
             background-position: 0 0;
@@ -141,16 +141,16 @@
         color: white;
         margin-top: 0px;
         margin-bottom: 0px;
-        height: 24px;    
+        height: 24px;
 
-        -webkit-user-select: none; 
-        -moz-user-select: none;   
-        -ms-user-select: none;    
-        user-select: none;    
-        
-        align-self: center;     
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+
+        align-self: center;
         display: grid;
-        align-items: center;           
+        align-items: center;
 
         &:hover {
             background: #444444;
@@ -182,19 +182,17 @@
                 }
             }
 
-            .expandAll {                
+            .expandAll {
                 opacity: 0.5;
                 grid-column: 2;
-                margin-right: 10px;  
+                margin-right: 10px;
             }
         }
-        
-
     }
 
     .icon {
         display: grid;
-        align-items: center;   
+        align-items: center;
         justify-items: center;
         cursor: pointer;
     }
@@ -204,11 +202,11 @@
         color: white;
         margin-top: 0px;
         margin-bottom: 0px;
-        height: 24px;   
-        -webkit-user-select: none; 
-        -moz-user-select: none;   
-        -ms-user-select: none;    
-        user-select: none;         
+        height: 24px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
         display: grid;
         grid-template-columns: 20px 1fr;
 
@@ -216,11 +214,11 @@
             background: #444444;
         }
 
-        &.selected{
+        &.selected {
             background: #bbbbbb;
             color: black;
         }
-        
+
         .isNotActive {
             opacity: 0.3;
         }
@@ -256,7 +254,6 @@
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 height: 18px;
-                
 
                 &:hover {
                     background: white;
@@ -271,23 +268,23 @@
             display: grid;
             grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;
             align-items: center;
-            cursor: pointer;         
+            cursor: pointer;
 
             .sceneTitle {
                 grid-column: 1;
-                margin-right: 5px;     
+                margin-right: 5px;
                 display: flex;
-                align-items: center;   
-                height: 24px;       
-            }            
+                align-items: center;
+                height: 24px;
+            }
 
             .translation {
                 grid-column: 2;
                 opacity: 0.6;
-               
+
                 &.selected {
                     opacity: 1;
-                }    
+                }
             }
 
             .rotation {
@@ -296,7 +293,7 @@
 
                 &.selected {
                     opacity: 1;
-                }    
+                }
             }
 
             .scaling {
@@ -304,24 +301,24 @@
                 opacity: 0.6;
                 &.selected {
                     opacity: 1;
-                }    
+                }
             }
-            
+
             .bounding {
                 grid-column: 5;
                 opacity: 0.6;
                 &.selected {
                     opacity: 1;
-                }    
+                }
             }
 
             .separator {
                 grid-column: 6;
-                margin-left: 5px;    
+                margin-left: 5px;
                 width: 5px;
                 display: flex;
-                align-items: center;   
-                height: 18px;           
+                align-items: center;
+                height: 18px;
                 border-left: solid 1px rgb(51, 122, 183);
             }
 
@@ -343,7 +340,7 @@
                 grid-column: 9;
             }
         }
-        
+
         .targetedAnimationTools {
             grid-column: 2;
             width: 100%;
@@ -351,7 +348,7 @@
             grid-template-columns: 1fr auto 5px;
             align-items: center;
             min-width: 0;
-           
+
             .extensions {
                 width: 20px;
                 grid-column: 2;
@@ -365,7 +362,7 @@
             grid-template-columns: 1fr auto 5px;
             align-items: center;
             min-width: 0;
-           
+
             .extensions {
                 width: 20px;
                 grid-column: 2;
@@ -379,13 +376,12 @@
             grid-template-columns: 1fr auto 5px;
             align-items: center;
             min-width: 0;
-           
+
             .extensions {
                 width: 20px;
                 grid-column: 2;
             }
         }
-
 
         .meshTools {
             grid-column: 2;
@@ -396,18 +392,18 @@
             min-width: 0;
 
             .bounding-box {
-                grid-column: 2;    
+                grid-column: 2;
                 opacity: 0.5;
-                
+
                 &.selected {
                     opacity: 1;
                 }
             }
 
             .visibility {
-                grid-column: 3;          
-            }        
-            
+                grid-column: 3;
+            }
+
             .extensions {
                 width: 20px;
                 grid-column: 4;
@@ -425,8 +421,8 @@
             }
 
             .enableGizmo {
-                grid-column: 3;          
-            } 
+                grid-column: 3;
+            }
 
             .extensions {
                 width: 20px;
@@ -448,8 +444,8 @@
                 width: 20px;
                 grid-column: 3;
             }
-        }        
-        
+        }
+
         .spriteTools {
             grid-column: 2;
             display: grid;
@@ -460,7 +456,7 @@
                 width: 20px;
                 grid-column: 2;
             }
-        }   
+        }
 
         .spriteManagerTools {
             grid-column: 2;
@@ -472,7 +468,7 @@
                 width: 20px;
                 grid-column: 2;
             }
-        }        
+        }
 
         .materialTools {
             grid-column: 2;
@@ -484,10 +480,10 @@
                 width: 20px;
                 grid-column: 2;
             }
-            
+
             .icon {
                 display: grid;
-                align-items: center;   
+                align-items: center;
                 justify-items: center;
                 cursor: pointer;
             }
@@ -551,7 +547,7 @@
                 width: 20px;
                 grid-column: 2;
             }
-        }      
+        }
 
         .adtextureTools {
             grid-column: 2;
@@ -562,7 +558,7 @@
             .edit {
                 grid-column: 2;
             }
-            
+
             .pickingMode {
                 grid-column: 3;
                 opacity: 0.6;
@@ -576,7 +572,7 @@
                 width: 20px;
                 grid-column: 3;
             }
-        }         
+        }
 
         .controlTools {
             grid-column: 2;
@@ -596,8 +592,8 @@
                 width: 20px;
                 grid-column: 4;
             }
-        }   
-        
+        }
+
         .transformNodeTools {
             grid-column: 2;
             display: grid;
@@ -608,7 +604,7 @@
                 width: 20px;
                 grid-column: 2;
             }
-        }    
+        }
 
         .skeletonTools {
             grid-column: 2;
@@ -620,7 +616,7 @@
                 width: 20px;
                 grid-column: 2;
             }
-        }  
+        }
 
         .title {
             grid-column: 1;
@@ -628,17 +624,17 @@
             white-space: nowrap;
             overflow: hidden;
             min-width: 0;
-            margin-right: 5px;     
+            margin-right: 5px;
             display: grid;
-            align-items: center;  
-            grid-template-columns: 25px 1fr; 
+            align-items: center;
+            grid-template-columns: 25px 1fr;
             height: 24px;
             cursor: pointer;
 
             .titleIcon {
                 grid-column: 1;
                 display: grid;
-                align-items: center; 
+                align-items: center;
                 justify-items: center;
             }
 
@@ -646,7 +642,7 @@
                 grid-column: 2;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                overflow: hidden;                
+                overflow: hidden;
             }
         }
     }

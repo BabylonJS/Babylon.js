@@ -82,7 +82,7 @@
             },
             {
                 "selector": "variable",
-                "format": ["camelCase", "UPPER_CASE"],
+                "format": ["camelCase", "UPPER_CASE", "snake_case"],
                 "leadingUnderscore": "allow"
             },
             {
@@ -131,10 +131,32 @@
             {
                 "selector": "variable",
                 "format": ["camelCase", "UPPER_CASE"]
+            },            
+            {
+                "selector": "variable",
+                "modifiers": ["const", "global"],
+                "format": ["PascalCase", "camelCase"],
+                "leadingUnderscore": "allow"
+            },    
+            {
+                "selector": "function",
+                "format": ["PascalCase", "camelCase"],
+                "leadingUnderscore": "allow"
+            },        
+            {
+                "selector": "function",
+                "modifiers": ["exported", "global"],
+                "format": ["PascalCase", "camelCase"],
+                "leadingUnderscore": "allow"
             },
             {
                 "selector": "interface",
                 "format": ["PascalCase"]
+            },
+            {
+                "selector": "class",
+                "format": ["PascalCase"],
+                "leadingUnderscore": "allow"
             }
         ],
         "no-unused-vars": "off",
@@ -156,8 +178,8 @@
         "no-case-declarations": "warn",
         "no-prototype-builtins": "warn",
         "no-loss-of-precision": "warn",
-        "prefer-spread": "warn",
-        "prefer-rest-params": "warn",
+        "prefer-spread": "off",
+        "prefer-rest-params": "off",
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn"
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.

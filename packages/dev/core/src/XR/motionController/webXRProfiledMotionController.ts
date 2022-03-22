@@ -35,6 +35,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         xrInput: XRInputSource,
         _profile: IMotionControllerProfile,
         private _repositoryUrl: string,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         private controllerCache?: Array<{
             filename: string;
             path: string;

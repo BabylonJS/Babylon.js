@@ -224,7 +224,7 @@ export class Layer {
             return;
         }
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         let defines = "";
 
@@ -246,8 +246,6 @@ export class Layer {
         if (!currentEffect || !currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
             return;
         }
-
-        var engine = this._scene.getEngine();
 
         this.onBeforeRenderObservable.notifyObservers(this);
 

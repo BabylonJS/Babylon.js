@@ -1,7 +1,7 @@
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { GroundMesh } from "../groundMesh";
 import { Tools } from "../../Misc/tools";
@@ -318,12 +318,12 @@ export function CreateGroundFromHeightMapVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.width
- * @param scene defines the hosting scene
  * @param options.height
  * @param options.subdivisions
  * @param options.subdivisionsX
  * @param options.subdivisionsY
  * @param options.updatable
+ * @param scene defines the hosting scene
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#ground
  */
@@ -362,7 +362,6 @@ export function CreateGround(
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.xmin
- * @param scene defines the hosting scene
  * @param options.zmin
  * @param options.xmax
  * @param options.zmax
@@ -373,6 +372,7 @@ export function CreateGround(
  * @param options.precision.w
  * @param options.precision.h
  * @param options.updatable
+ * @param scene defines the hosting scene
  * @returns the tiled ground mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#tiled-ground
  */
@@ -405,7 +405,6 @@ export function CreateTiledGround(
  * @param url defines the url to the height map
  * @param options defines the options used to create the mesh
  * @param options.width
- * @param scene defines the hosting scene
  * @param options.height
  * @param options.subdivisions
  * @param options.minHeight
@@ -414,6 +413,7 @@ export function CreateTiledGround(
  * @param options.alphaFilter
  * @param options.updatable
  * @param options.onReady
+ * @param scene defines the hosting scene
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/babylon101/height_map
  * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
@@ -500,8 +500,11 @@ export function CreateGroundFromHeightMap(
  * @deprecated use the functions directly from the module
  */
 export const GroundBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateGround,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateGroundFromHeightMap,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTiledGround,
 };
 

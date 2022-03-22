@@ -28,11 +28,10 @@ export class FlyCameraInputsManager extends CameraInputsManager<FlyCamera> {
 
     /**
      * Add mouse input support to the input manager.
-     * @param touchEnabled Enable touch screen support.
      * @returns the new FlyCameraMouseInput().
      */
-    addMouse(touchEnabled = true): FlyCameraInputsManager {
-        this.add(new FlyCameraMouseInput(touchEnabled));
+    addMouse(): FlyCameraInputsManager {
+        this.add(new FlyCameraMouseInput());
         return this;
     }
 }

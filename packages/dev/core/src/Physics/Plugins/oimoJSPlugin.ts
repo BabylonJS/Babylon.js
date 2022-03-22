@@ -14,6 +14,7 @@ declare let OIMO: any;
 export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "OimoJSPlugin";
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public BJSOIMO: any;
     private _raycastResult: PhysicsRaycastResult;
     private _fixedTimeStep: number = 1 / 60;
@@ -150,6 +151,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 const rot = globalQuaternion.toEulerAngles();
                 const extendSize = i.getObjectExtendSize();
 
+                // eslint-disable-next-line no-loss-of-precision
                 const radToDeg = 57.295779513082320876;
 
                 if (i === impostor) {
@@ -182,12 +184,13 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 switch (i.type) {
                     case PhysicsImpostor.ParticleImpostor:
                         Logger.Warn("No Particle support in OIMO.js. using SphereImpostor instead");
-                    case PhysicsImpostor.SphereImpostor:
-                        var radiusX = extendSize.x;
-                        var radiusY = extendSize.y;
-                        var radiusZ = extendSize.z;
+                    // eslint-disable-next-line no-fallthrough
+                    case PhysicsImpostor.SphereImpostor: {
+                        const radiusX = extendSize.x;
+                        const radiusY = extendSize.y;
+                        const radiusZ = extendSize.z;
 
-                        var size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
+                        const size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
 
                         bodyConfig.type.push("sphere");
                         //due to the way oimo works with compounds, add 3 times
@@ -195,23 +198,23 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         bodyConfig.size.push(size);
                         bodyConfig.size.push(size);
                         break;
-
-                    case PhysicsImpostor.CylinderImpostor:
-                        var sizeX = checkWithEpsilon(extendSize.x) / 2;
-                        var sizeY = checkWithEpsilon(extendSize.y);
+                    }
+                    case PhysicsImpostor.CylinderImpostor: {
+                        const sizeX = checkWithEpsilon(extendSize.x) / 2;
+                        const sizeY = checkWithEpsilon(extendSize.y);
                         bodyConfig.type.push("cylinder");
                         bodyConfig.size.push(sizeX);
                         bodyConfig.size.push(sizeY);
                         //due to the way oimo works with compounds, add one more value.
                         bodyConfig.size.push(sizeY);
                         break;
-
+                    }
                     case PhysicsImpostor.PlaneImpostor:
                     case PhysicsImpostor.BoxImpostor:
-                    default:
-                        var sizeX = checkWithEpsilon(extendSize.x);
-                        var sizeY = checkWithEpsilon(extendSize.y);
-                        var sizeZ = checkWithEpsilon(extendSize.z);
+                    default: {
+                        const sizeX = checkWithEpsilon(extendSize.x);
+                        const sizeY = checkWithEpsilon(extendSize.y);
+                        const sizeZ = checkWithEpsilon(extendSize.z);
 
                         bodyConfig.type.push("box");
                         //if (i === impostor) {
@@ -222,6 +225,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         //    bodyConfig.size.push(0,0,0);
                         //}
                         break;
+                    }
                 }
 
                 //actually not needed, but hey...
@@ -281,12 +285,14 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             case PhysicsJoint.BallAndSocketJoint:
                 type = "jointBall";
                 break;
-            case PhysicsJoint.SpringJoint:
+            case PhysicsJoint.SpringJoint: {
                 Logger.Warn("OIMO.js doesn't support Spring Constraint. Simulating using DistanceJoint instead");
-                var springData = <SpringJointData>jointData;
+                const springData = <SpringJointData>jointData;
                 nativeJointData.min = springData.length || nativeJointData.min;
                 //Max should also be set, just make sure it is at least min
                 nativeJointData.max = Math.max(nativeJointData.min, nativeJointData.max);
+            }
+            // eslint-disable-next-line no-fallthrough
             case PhysicsJoint.DistanceJoint:
                 type = "jointDistance";
                 nativeJointData.max = (<DistanceJointData>jointData).maxDistance;

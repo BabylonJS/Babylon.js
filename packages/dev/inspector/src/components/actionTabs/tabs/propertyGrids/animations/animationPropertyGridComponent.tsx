@@ -35,7 +35,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _mainAnimatable: Nullable<Animatable>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
-    private timelineRef: React.RefObject<SliderLineComponent>;
+    private _timelineRef: React.RefObject<SliderLineComponent>;
     private _animationCurveEditorContext: Nullable<Context>;
     private _animationControl = {
         from: 0,
@@ -84,7 +84,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             }
         }
 
-        this.timelineRef = React.createRef();
+        this._timelineRef = React.createRef();
     }
 
     playOrPause() {
@@ -228,7 +228,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 />
                                 {this._isPlaying && (
                                     <SliderLineComponent
-                                        ref={this.timelineRef}
+                                        ref={this._timelineRef}
                                         label="Current frame"
                                         minimum={this._animationControl.from}
                                         maximum={this._animationControl.to}

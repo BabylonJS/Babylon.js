@@ -85,7 +85,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
-        this.props.globalState.onResizeObservable.add((newSize) => {
+        this.props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
 
@@ -185,7 +185,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         .then(() => {
                             this.props.globalState.hostWindow.alert(`${alertMessage}. The ID was copied to your clipboard.`);
                         })
-                        .catch((err: any) => {
+                        .catch(() => {
                             this.props.globalState.hostWindow.alert(alertMessage);
                         });
                 } else {

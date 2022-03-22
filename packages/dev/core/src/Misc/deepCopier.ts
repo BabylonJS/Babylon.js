@@ -1,7 +1,7 @@
 import { EndsWith } from "./stringTools";
 import { Logger } from "./logger";
 
-const cloneValue = (source: any, destinationObject: any) => {
+const CloneValue = (source: any, destinationObject: any) => {
     if (!source) {
         return null;
     }
@@ -18,7 +18,7 @@ const cloneValue = (source: any, destinationObject: any) => {
     return null;
 };
 
-function getAllPropertyNames(obj: any): string[] {
+function GetAllPropertyNames(obj: any): string[] {
     const props: string[] = [];
 
     do {
@@ -44,7 +44,7 @@ export class DeepCopier {
      * @param mustCopyList defines a list of properties to copy (even if they start with _)
      */
     public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
-        const properties = getAllPropertyNames(source);
+        const properties = GetAllPropertyNames(source);
         for (const prop of properties) {
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
                 continue;
@@ -73,7 +73,7 @@ export class DeepCopier {
                         if (sourceValue.length > 0) {
                             if (typeof sourceValue[0] == "object") {
                                 for (let index = 0; index < sourceValue.length; index++) {
-                                    const clonedValue = cloneValue(sourceValue[index], destination);
+                                    const clonedValue = CloneValue(sourceValue[index], destination);
 
                                     if (destination[prop].indexOf(clonedValue) === -1) {
                                         // Test if auto inject was not done
@@ -85,7 +85,7 @@ export class DeepCopier {
                             }
                         }
                     } else {
-                        destination[prop] = cloneValue(sourceValue, destination);
+                        destination[prop] = CloneValue(sourceValue, destination);
                     }
                 } else {
                     destination[prop] = sourceValue;

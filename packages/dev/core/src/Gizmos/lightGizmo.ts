@@ -222,8 +222,8 @@ export class LightGizmo extends Gizmo {
         if (levels < 2) {
             return linePivot;
         }
-        for (var i = 0; i < 4; i++) {
-            var l = linePivot.clone("lineParentClone")!;
+        for (let i = 0; i < 4; i++) {
+            const l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
             l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
 
@@ -235,8 +235,8 @@ export class LightGizmo extends Gizmo {
         if (levels < 3) {
             return root;
         }
-        for (var i = 0; i < 4; i++) {
-            var l = linePivot.clone("linePivotClone");
+        for (let i = 0; i < 4; i++) {
+            const l = linePivot.clone("linePivotClone");
             l.rotation.z = Math.PI / 2;
             l.rotation.y = (Math.PI / 2) * i;
         }
@@ -244,8 +244,8 @@ export class LightGizmo extends Gizmo {
         if (levels < 4) {
             return root;
         }
-        for (var i = 0; i < 4; i++) {
-            var l = linePivot.clone("linePivotClone");
+        for (let i = 0; i < 4; i++) {
+            const l = linePivot.clone("linePivotClone");
             l.rotation.z = Math.PI + Math.PI / 4;
             l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
 
@@ -257,7 +257,7 @@ export class LightGizmo extends Gizmo {
         if (levels < 5) {
             return root;
         }
-        var l = linePivot.clone("linePivotClone");
+        const l = linePivot.clone("linePivotClone");
         l.rotation.z = Math.PI;
 
         return root;
@@ -343,11 +343,11 @@ export class LightGizmo extends Gizmo {
         );
         line.parent = mesh;
 
-        var left = line.clone(root.name)!;
+        let left = line.clone(root.name)!;
         left.scaling.y = 0.5;
         left.position.x += 1.25;
 
-        var right = line.clone(root.name)!;
+        let right = line.clone(root.name)!;
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 
@@ -366,11 +366,11 @@ export class LightGizmo extends Gizmo {
         arrowHead.position.y += 3;
         arrowHead.parent = mesh;
 
-        var left = arrowHead.clone(root.name);
+        left = arrowHead.clone(root.name);
         left.position.y = 1.5;
         left.position.x += 1.25;
 
-        var right = arrowHead.clone(root.name);
+        right = arrowHead.clone(root.name);
         right.position.y = 1.5;
         right.position.x += -1.25;
 

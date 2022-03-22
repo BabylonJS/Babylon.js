@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 import { IDeviceInputSystem } from "../../DeviceInput/InputDevices/inputInterfaces";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";

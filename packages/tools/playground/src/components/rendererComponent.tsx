@@ -89,7 +89,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     };
 
     private async _loadScriptAsync(url: string): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const script = document.createElement("script");
             script.src = url;
             script.onload = () => {

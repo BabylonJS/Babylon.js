@@ -1,4 +1,5 @@
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const _RegisteredTypes: { [key: string]: Object } = {};
 
 /**

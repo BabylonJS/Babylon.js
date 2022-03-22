@@ -524,9 +524,6 @@ export class ScrollViewer extends Rectangle {
     }
 
     public set barImage(value: Image) {
-        if (this._barBackgroundImage === value) {
-        }
-
         this._barBackgroundImage = value;
         const hb = <ImageScrollBar>this._horizontalBar;
         const vb = <ImageScrollBar>this._verticalBar;
@@ -540,9 +537,6 @@ export class ScrollViewer extends Rectangle {
     }
 
     public set horizontalBarImage(value: Image) {
-        if (this._horizontalBarBackgroundImage === value) {
-        }
-
         this._horizontalBarBackgroundImage = value;
         const hb = <ImageScrollBar>this._horizontalBar;
         hb.backgroundImage = value;
@@ -554,9 +548,6 @@ export class ScrollViewer extends Rectangle {
     }
 
     public set verticalBarImage(value: Image) {
-        if (this._verticalBarBackgroundImage === value) {
-        }
-
         this._verticalBarBackgroundImage = value;
         const vb = <ImageScrollBar>this._verticalBar;
         vb.backgroundImage = value;
@@ -658,7 +649,7 @@ export class ScrollViewer extends Rectangle {
 
         barContainer.addControl(barControl);
 
-        barControl.onValueChangedObservable.add((value) => {
+        barControl.onValueChangedObservable.add(() => {
             this._setWindowPosition();
         });
     }

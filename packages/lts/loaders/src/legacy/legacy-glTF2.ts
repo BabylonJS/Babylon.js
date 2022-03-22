@@ -15,16 +15,16 @@ if (typeof globalObject !== "undefined") {
     BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
 
     const keys = [];
-    for (var key in Extensions) {
+    for (const key in Extensions) {
         BABYLON.GLTF2.Loader.Extensions[key] = (<any>Extensions)[key];
         keys.push(key);
     }
-    for (var key in Interfaces) {
+    for (const key in Interfaces) {
         BABYLON.GLTF2.Loader[key] = (<any>Interfaces)[key];
         keys.push(key);
     }
 
-    for (var key in GLTF2) {
+    for (const key in GLTF2) {
         // Prevent Reassignment.
         if (keys.indexOf(key) > -1) {
             continue;

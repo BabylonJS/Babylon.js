@@ -138,8 +138,7 @@ WebGPUEngine.prototype.updateRawCubeTexture = function (
     format: number,
     type: number,
     invertY: boolean,
-    compression: Nullable<string> = null,
-    level: number = 0
+    compression: Nullable<string> = null
 ): void {
     texture._bufferViewArray = bufferView;
     texture.invertY = invertY;
@@ -406,6 +405,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function (
  * @param textureType
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
     let rgbaData: any;

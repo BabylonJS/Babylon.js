@@ -61,10 +61,10 @@ export class ParticleSystemSet implements IDisposable {
      * Creates a new emitter mesh as a sphere
      * @param options defines the options used to create the sphere
      * @param options.diameter
-     * @param renderingGroupId defines the renderingGroupId to use for the sphere
      * @param options.segments
-     * @param scene defines the hosting scene
      * @param options.color
+     * @param renderingGroupId defines the renderingGroupId to use for the sphere
+     * @param scene defines the hosting scene
      */
     public setEmitterAsSphere(options: { diameter: number; segments: number; color: Color3 }, renderingGroupId: number, scene: Scene) {
         if (this._emitterNodeIsOwned && this._emitterNode) {
