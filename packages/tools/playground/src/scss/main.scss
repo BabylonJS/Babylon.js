@@ -5,7 +5,7 @@
     margin: 0;
     overflow: hidden;
     font-family: "acumin-pro-condensed";
-    font-weight: normal;    
+    font-weight: normal;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: 55px calc(100% - 90px) 35px;
@@ -18,7 +18,7 @@
     margin: 0;
     overflow: hidden;
     font-family: "acumin-pro-condensed";
-    font-weight: normal;    
+    font-weight: normal;
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: 1fr 35px;
@@ -31,7 +31,7 @@
     margin: 0;
     overflow: hidden;
     font-family: "acumin-pro-condensed";
-    font-weight: normal;    
+    font-weight: normal;
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: 100%;
@@ -52,7 +52,7 @@
         width: 100%;
         height: 100%;
         padding: 0;
-        margin: 0;         
+        margin: 0;
     }
 
     .gutter.gutter-horizontal {
@@ -70,7 +70,7 @@
     background-color: #bb464b;
 
     .sub1 {
-        background-color:#e0684b
+        background-color: #e0684b;
     }
 }
 
@@ -78,7 +78,7 @@
     background-color: #3f3461;
 
     .sub1 {
-        background-color:#9379e6
+        background-color: #9379e6;
     }
 }
 

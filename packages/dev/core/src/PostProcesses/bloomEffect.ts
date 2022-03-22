@@ -49,23 +49,23 @@ export class BloomEffect extends PostProcessRenderEffect {
      * Specifies the size of the bloom blur kernel, relative to the final output size
      */
     public get kernel(): number {
-        return this._blurX.kernel / this.bloomScale;
+        return this._blurX.kernel / this._bloomScale;
     }
     public set kernel(value: number) {
-        this._blurX.kernel = value * this.bloomScale;
-        this._blurY.kernel = value * this.bloomScale;
+        this._blurX.kernel = value * this._bloomScale;
+        this._blurY.kernel = value * this._bloomScale;
     }
 
     /**
      * Creates a new instance of @see BloomEffect
      * @param scene The scene the effect belongs to.
-     * @param bloomScale The ratio of the blur texture to the input texture that should be used to compute the bloom.
-     * @param bloomKernel The size of the kernel to be used when applying the blur.
+     * @param _bloomScale The ratio of the blur texture to the input texture that should be used to compute the bloom.
      * @param bloomWeight The the strength of bloom.
+     * @param bloomKernel The size of the kernel to be used when applying the blur.
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(scene: Scene, private bloomScale: number, bloomWeight: number, bloomKernel: number, pipelineTextureType = 0, blockCompilation = false) {
+    constructor(scene: Scene, private _bloomScale: number, bloomWeight: number, bloomKernel: number, pipelineTextureType = 0, blockCompilation = false) {
         super(
             scene.getEngine(),
             "bloom",
@@ -80,7 +80,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             "horizontal blur",
             new Vector2(1.0, 0),
             10.0,
-            bloomScale,
+            _bloomScale,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
             scene.getEngine(),
@@ -96,7 +96,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             "vertical blur",
             new Vector2(0, 1.0),
             10.0,
-            bloomScale,
+            _bloomScale,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
             scene.getEngine(),
@@ -117,7 +117,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             this._downscale,
             this._blurY,
             bloomWeight,
-            bloomScale,
+            _bloomScale,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
             scene.getEngine(),

@@ -65,10 +65,9 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
 
     /**
      * @param name
-     * @param cameraIndex
      * @hidden
      */
-    public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
+    public createRigCamera(name: string): Nullable<Camera> {
         const camera = new TargetCamera(name, Vector3.Zero(), this.getScene());
         const transform = new TransformNode("tm_" + name, this.getScene());
         camera.parent = transform;

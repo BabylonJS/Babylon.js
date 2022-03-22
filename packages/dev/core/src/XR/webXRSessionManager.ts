@@ -140,7 +140,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     public exitXRAsync() {
         if (this.session && this.inXRSession) {
             this.inXRSession = false;
-            return this.session.end().catch((e) => {
+            return this.session.end().catch(() => {
                 Logger.Warn("Could not end XR session.");
             });
         }
@@ -178,7 +178,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
 
     /**
      * Creates a WebXRRenderTarget object for the XR session
-     * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
      * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */

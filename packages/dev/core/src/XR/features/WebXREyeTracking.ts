@@ -134,7 +134,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
 
 WebXRFeaturesManager.AddWebXRFeature(
     WebXREyeTracking.Name,
-    (xrSessionManager, options) => {
+    (xrSessionManager) => {
         return () => new WebXREyeTracking(xrSessionManager);
     },
     WebXREyeTracking.Version,

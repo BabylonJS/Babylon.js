@@ -12,11 +12,11 @@ export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
     private _previewImage: HTMLImageElement;
 
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return true;
     }
 

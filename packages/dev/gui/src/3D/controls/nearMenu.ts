@@ -17,11 +17,11 @@ export class NearMenu extends TouchHolographicMenu {
     /**
      * Base Url for the assets.
      */
-    private static ASSETS_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
+    private static _ASSETS_BASE_URL: string = "https://assets.babylonjs.com/meshes/MRTK/";
     /**
      * File name for the close icon.
      */
-    private static PIN_ICON_FILENAME: string = "IconPin.png";
+    private static _PIN_ICON_FILENAME: string = "IconPin.png";
 
     private _pinButton: TouchHolographicButton;
     private _dragObserver: Nullable<
@@ -66,7 +66,7 @@ export class NearMenu extends TouchHolographicMenu {
 
     private _createPinButton(parent: TransformNode) {
         const control = new TouchHolographicButton("pin" + this.name, false);
-        control.imageUrl = NearMenu.ASSETS_BASE_URL + NearMenu.PIN_ICON_FILENAME;
+        control.imageUrl = NearMenu._ASSETS_BASE_URL + NearMenu._PIN_ICON_FILENAME;
         control.parent = this;
         control._host = this._host;
         control.isToggleButton = true;

@@ -26,7 +26,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _scene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
-    private static _planeScene: Scene;
+    private static _PlaneScene: Scene;
     private _useAlternatePickedPointAboveMaxDragAngleDragSpeed = -1.1;
     /**
      * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
@@ -165,6 +165,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Predicate to determine if it is valid to move the object to a new position when it is moved
      * @param targetPosition
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public validateDrag = (targetPosition: Vector3) => {
         return true;
     };
@@ -197,22 +198,22 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         this.attachedNode = ownerNode;
 
         // Initialize drag plane to not interfere with existing scene
-        if (!PointerDragBehavior._planeScene) {
+        if (!PointerDragBehavior._PlaneScene) {
             if (this._debugMode) {
-                PointerDragBehavior._planeScene = this._scene;
+                PointerDragBehavior._PlaneScene = this._scene;
             } else {
-                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), { virtual: true });
-                PointerDragBehavior._planeScene.detachControl();
+                PointerDragBehavior._PlaneScene = new Scene(this._scene.getEngine(), { virtual: true });
+                PointerDragBehavior._PlaneScene.detachControl();
                 this._scene.onDisposeObservable.addOnce(() => {
-                    PointerDragBehavior._planeScene.dispose();
-                    (<any>PointerDragBehavior._planeScene) = null;
+                    PointerDragBehavior._PlaneScene.dispose();
+                    (<any>PointerDragBehavior._PlaneScene) = null;
                 });
             }
         }
         this._dragPlane = CreatePlane(
             "pointerDragPlane",
             { size: this._debugMode ? 1 : 10000, updatable: false, sideOrientation: Mesh.DOUBLESIDE },
-            PointerDragBehavior._planeScene
+            PointerDragBehavior._PlaneScene
         );
 
         // State of the drag
@@ -224,7 +225,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                   return this.attachedNode == m || m.isDescendantOf(this.attachedNode);
               };
 
-        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
+        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
             if (!this.enabled) {
                 // If behavior is disabled before releaseDrag is ever called, call it now.
                 if (this._attachedToElement) {
@@ -465,7 +466,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             }
         }
 
-        const pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m) => {
+        const pickResult = PointerDragBehavior._PlaneScene.pickWithRay(ray, (m) => {
             return m == this._dragPlane;
         });
         if (pickResult && pickResult.hit && pickResult.pickedMesh && pickResult.pickedPoint) {

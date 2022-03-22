@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Logger } from "../Misc/logger";
 
@@ -74,18 +75,21 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
     switch (header.image_type) {
         case _TYPE_RLE_INDEXED:
             use_rle = true;
+        // eslint-disable-next-line no-fallthrough
         case _TYPE_INDEXED:
             use_pal = true;
             break;
 
         case _TYPE_RLE_RGB:
             use_rle = true;
+        // eslint-disable-next-line no-fallthrough
         case _TYPE_RGB:
             // use_rgb = true;
             break;
 
         case _TYPE_RLE_GREY:
             use_rle = true;
+        // eslint-disable-next-line no-fallthrough
         case _TYPE_GREY:
             use_grey = true;
             break;

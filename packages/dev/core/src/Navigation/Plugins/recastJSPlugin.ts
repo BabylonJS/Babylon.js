@@ -9,6 +9,7 @@ import { Observer, Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Recast: any;
 
 /**
@@ -511,11 +512,11 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * true when a destination is active for an agent and notifier hasn't been notified of reach
      */
-    private agentDestinationArmed: boolean[] = new Array<boolean>();
+    private _agentDestinationArmed: boolean[] = new Array<boolean>();
     /**
      * agent current target
      */
-    private agentDestination: Vector3[] = new Array<Vector3>();
+    private _agentDestination: Vector3[] = new Array<Vector3>();
     /**
      * Link to the scene is kept to unregister the crowd from the scene
      */
@@ -575,8 +576,8 @@ export class RecastJSCrowd implements ICrowd {
         this.transforms.push(transform);
         this.agents.push(agentIndex);
         this.reachRadii.push(parameters.reachRadius ? parameters.reachRadius : parameters.radius);
-        this.agentDestinationArmed.push(false);
-        this.agentDestination.push(new Vector3(0, 0, 0));
+        this._agentDestinationArmed.push(false);
+        this._agentDestination.push(new Vector3(0, 0, 0));
         return agentIndex;
     }
 
@@ -669,8 +670,8 @@ export class RecastJSCrowd implements ICrowd {
         // arm observer
         const item = this.agents.indexOf(index);
         if (item > -1) {
-            this.agentDestinationArmed[item] = true;
-            this.agentDestination[item].set(destination.x, destination.y, destination.z);
+            this._agentDestinationArmed[item] = true;
+            this._agentDestination[item].set(destination.x, destination.y, destination.z);
         }
     }
 
@@ -728,8 +729,8 @@ export class RecastJSCrowd implements ICrowd {
             this.agents.splice(item, 1);
             this.transforms.splice(item, 1);
             this.reachRadii.splice(item, 1);
-            this.agentDestinationArmed.splice(item, 1);
-            this.agentDestination.splice(item, 1);
+            this._agentDestinationArmed.splice(item, 1);
+            this._agentDestination.splice(item, 1);
         }
     }
 
@@ -775,16 +776,16 @@ export class RecastJSCrowd implements ICrowd {
             const agentPosition = this.getAgentPosition(agentIndex);
             this.transforms[index].position = agentPosition;
             // check agent reach destination
-            if (this.agentDestinationArmed[index]) {
-                const dx = agentPosition.x - this.agentDestination[index].x;
-                const dz = agentPosition.z - this.agentDestination[index].z;
+            if (this._agentDestinationArmed[index]) {
+                const dx = agentPosition.x - this._agentDestination[index].x;
+                const dz = agentPosition.z - this._agentDestination[index].z;
                 const radius = this.reachRadii[index];
-                const groundY = this.agentDestination[index].y - this.reachRadii[index];
-                const ceilingY = this.agentDestination[index].y + this.reachRadii[index];
+                const groundY = this._agentDestination[index].y - this.reachRadii[index];
+                const ceilingY = this._agentDestination[index].y + this.reachRadii[index];
                 const distanceXZSquared = dx * dx + dz * dz;
                 if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < radius * radius) {
-                    this.onReachTargetObservable.notifyObservers({ agentIndex: agentIndex, destination: this.agentDestination[index] });
-                    this.agentDestinationArmed[index] = false;
+                    this.onReachTargetObservable.notifyObservers({ agentIndex: agentIndex, destination: this._agentDestination[index] });
+                    this._agentDestinationArmed[index] = false;
                 }
             }
         }

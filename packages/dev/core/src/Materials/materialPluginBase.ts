@@ -52,7 +52,7 @@ export class MaterialPluginBase {
     /**
      * Helper function to mark defines as being dirty.
      */
-    protected readonly markAllDefinesAsDirty: () => void;
+    public readonly markAllDefinesAsDirty: () => void;
 
     /**
      * Creates a new material plugin
@@ -102,6 +102,7 @@ export class MaterialPluginBase {
      * @param subMesh the submesh to check for readiness
      * @returns - boolean indicating that the submesh is ready or not.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReadyForSubMesh(defines: MaterialDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {
         return true;
     }
@@ -113,6 +114,7 @@ export class MaterialPluginBase {
      * @param engine defines the engine the material belongs to.
      * @param subMesh the submesh to bind data for
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {}
 
     /**
@@ -122,12 +124,14 @@ export class MaterialPluginBase {
      * @param engine the engine this scene belongs to.
      * @param subMesh the submesh to bind data for
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {}
 
     /**
      * Disposes the resources of the material.
      * @param forceDisposeTextures - Forces the disposal of all textures.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public dispose(forceDisposeTextures?: boolean): void {}
 
     /**
@@ -138,6 +142,7 @@ export class MaterialPluginBase {
      * In that case, the string found by the regular expression (if any) will be
      * replaced by the code provided.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         return null;
     }
@@ -169,6 +174,7 @@ export class MaterialPluginBase {
      * @param scene defines the scene to the material belongs to.
      * @param mesh the mesh being rendered
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public prepareDefines(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
 
     /**
@@ -176,6 +182,7 @@ export class MaterialPluginBase {
      * @param texture - Base texture to use.
      * @returns - Boolean specifying if a texture is used in the material.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public hasTexture(texture: BaseTexture): boolean {
         return false;
     }
@@ -192,18 +199,21 @@ export class MaterialPluginBase {
      * Fills the list of render target textures.
      * @param renderTargets the list of render targets to update
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void {}
 
     /**
      * Returns an array of the actively used textures.
      * @param activeTextures Array of BaseTextures
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getActiveTextures(activeTextures: BaseTexture[]): void {}
 
     /**
      * Returns the animatable textures.
      * @param animatables Array of animatable textures.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getAnimatables(animatables: IAnimatable[]): void {}
 
     /**
@@ -221,12 +231,14 @@ export class MaterialPluginBase {
      * Gets the samplers used by the plugin.
      * @param samplers list that the sampler names should be added to.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getSamplers(samplers: string[]): void {}
 
     /**
      * Gets the uniform buffers names added by the plugin.
      * @param ubos list that the ubo names should be added to.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getUniformBuffersNames(ubos: string[]): void {}
 
     /**

@@ -35,14 +35,14 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
                     break;
                 case "[object Array]":
                     components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
-                    for (var entry of value) {
+                    for (const entry of value) {
                         components.push(<IndentedTextLineComponent key={data + entry} value={entry} />);
                     }
                     break;
                 case "[object Object]":
                     components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
                     for (const entryKey in value) {
-                        components.push(<TextLineComponent key={data + entry} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />);
+                        components.push(<TextLineComponent key={data + entryKey} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />);
                     }
                     break;
             }

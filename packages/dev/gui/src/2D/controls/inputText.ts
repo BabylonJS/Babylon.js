@@ -9,7 +9,6 @@ import { IFocusableControl } from "./focusableControl";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Measure } from "../measure";
 import { TextWrapper } from "./textWrapper";
 import { serialize } from "core/Misc/decorators";
 import { IKeyboardEvent, IPointerEvent } from "core/Events/deviceInputEvents";
@@ -785,6 +784,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param evt
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
@@ -876,7 +876,7 @@ export class InputText extends Control implements IFocusableControl {
         this._textHasChanged();
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

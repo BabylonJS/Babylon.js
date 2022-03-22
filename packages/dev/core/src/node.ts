@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Scene } from "./scene";
 import { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
@@ -46,6 +47,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param to
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
         throw _WarnImport("AnimationRange");
     };
@@ -469,6 +471,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param initialCall
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
         if (!this.parent) {
             return null;
@@ -483,6 +486,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param ignoreParentClass
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _updateCache(ignoreParentClass?: boolean): void {}
 
     // override it in derived class if you add new variables to the cache

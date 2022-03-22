@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 export * from "./abstractMesh";
 export * from "./Compression/index";
 export * from "./csg";

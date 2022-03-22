@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Behavior } from "../../Behaviors/behavior";
 import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -286,7 +288,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             return this._ownerNode === m || (m.isDescendantOf(this._ownerNode) && (!this.draggableMeshes || this.draggableMeshes.indexOf(m) !== -1));
         };
 
-        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
+        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
             const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
             if (!this._virtualMeshesInfo[pointerId]) {
                 this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
@@ -445,6 +447,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion, pointerId: number) {
         // Herited classes can override that
     }

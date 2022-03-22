@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
 import { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
@@ -115,7 +116,7 @@ export class GlobalState {
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
 
-        this.onNewSceneObservable.add((scene) => {
+        this.onNewSceneObservable.add(() => {
             this.recorder.cancel();
         });
     }

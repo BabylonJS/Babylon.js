@@ -216,7 +216,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._ownerNode.setParent(oldParent);
     }
 
-    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
+    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
         if (this.currentDraggingPointerIds.length === 1) {
             this._onePointerPositionUpdated(worldDeltaPosition, worldDeltaRotation);
         } else if (this.currentDraggingPointerIds.length === 2) {
