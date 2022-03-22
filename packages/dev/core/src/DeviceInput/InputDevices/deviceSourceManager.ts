@@ -119,7 +119,6 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Hidden Functions
     /**
      * @param deviceSource - Source to add
-     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _addDevice(deviceSource: DeviceSourceType): void {
@@ -138,7 +137,6 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     /**
      * @param deviceType - DeviceType
      * @param deviceSlot - DeviceSlot
-     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
@@ -155,7 +153,6 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @param deviceType - DeviceType
      * @param deviceSlot - DeviceSlot
      * @param eventData - Event
-     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {

@@ -17,7 +17,6 @@ export enum DeviceInputEventType {
  * Native friendly interface for Event Object
  */
 export interface IUIEvent {
-    // Properties
     /**
      * Input array index
      */
@@ -44,7 +43,6 @@ export interface IUIEvent {
      */
     target: any;
 
-    // Methods
     /**
      * Tells user agent what to do when not explicitly handled
      */
@@ -55,7 +53,6 @@ export interface IUIEvent {
  * Native friendly interface for KeyboardEvent Object
  */
 export interface IKeyboardEvent extends IUIEvent {
-    // Properties
     /**
      * Status of Alt key being pressed
      */
@@ -102,7 +99,6 @@ export interface IKeyboardEvent extends IUIEvent {
  * Native friendly interface for MouseEvent Object
  */
 export interface IMouseEvent extends IUIEvent {
-    // Properties
     /**
      * Subset of possible PointerInput values for events, excluding ones that CANNOT be in events organically
      */
@@ -228,7 +224,6 @@ export interface IMouseEvent extends IUIEvent {
  * Native friendly interface for PointerEvent Object
  */
 export interface IPointerEvent extends IMouseEvent {
-    // Properties
     inputIndex: Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical | PointerInput.MouseWheelX | PointerInput.MouseWheelY | PointerInput.MouseWheelZ>;
     /**
      * Pointer Event ID
@@ -245,7 +240,6 @@ export interface IPointerEvent extends IMouseEvent {
  * Native friendly interface for WheelEvent Object
  */
 export interface IWheelEvent extends IMouseEvent {
-    // Properties
     inputIndex: PointerInput.MouseWheelX | PointerInput.MouseWheelY | PointerInput.MouseWheelZ;
     /**
      * Units for delta value

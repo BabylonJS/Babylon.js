@@ -15,7 +15,6 @@ import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 
-// eslint-disable-next-line tsdoc/syntax
 /** @hidden */
 class _ClickInfo {
     private _singleClick = false;
@@ -368,7 +367,6 @@ export class InputManager {
     }
 
     /** 
-     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      * @returns Boolean if delta for pointer exceeds drag movement threshold
      */
@@ -509,8 +507,7 @@ export class InputManager {
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
+        this._initActionManager = (act: Nullable<AbstractActionManager>, _clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -989,7 +986,6 @@ export class InputManager {
 
     /**
      * @param mesh - Mesh to invalidate
-     // eslint-disable-next-line tsdoc/syntax
      * @hidden
      */
     public _invalidateMesh(mesh: AbstractMesh) {
