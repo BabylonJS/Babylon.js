@@ -13,6 +13,7 @@ import {
     CylinderParticleEmitter,
     CylinderDirectedParticleEmitter,
     ConeParticleEmitter,
+// eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
 import { BaseTexture } from "../Materials/Textures/baseTexture";

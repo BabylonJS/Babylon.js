@@ -21,6 +21,7 @@ import {
     PointParticleEmitter,
     MeshParticleEmitter,
     CylinderDirectedParticleEmitter,
+// eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";

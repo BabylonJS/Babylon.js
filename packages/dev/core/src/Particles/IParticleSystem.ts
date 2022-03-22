@@ -11,6 +11,7 @@ import {
     SphereDirectedParticleEmitter,
     CylinderParticleEmitter,
     ConeParticleEmitter,
+// eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
