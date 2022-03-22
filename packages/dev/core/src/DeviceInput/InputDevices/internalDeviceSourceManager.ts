@@ -1,13 +1,13 @@
-import { IDisposable } from "../../scene";
+import type { IDisposable } from "../../scene";
 import { DeviceType } from "./deviceEnums";
-import { Observable } from "../../Misc/observable";
-import { IDeviceInputSystem } from "./inputInterfaces";
+import type { Observable } from "../../Misc/observable";
+import type { IDeviceInputSystem } from "./inputInterfaces";
 import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
 import { WebDeviceInputSystem } from "./webDeviceInputSystem";
 import { DeviceSource } from "./deviceSource";
-import { INative } from "../../Engines/Native/nativeInterfaces";
-import { Engine } from "../../Engines/engine";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { INative } from "../../Engines/Native/nativeInterfaces";
+import type { Engine } from "../../Engines/engine";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 
 declare const _native: INative;
 

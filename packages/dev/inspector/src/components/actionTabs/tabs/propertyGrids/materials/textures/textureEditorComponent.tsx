@@ -1,20 +1,23 @@
 import * as React from "react";
-import { TextureCanvasManager, IPixelData } from "./textureCanvasManager";
-import { ITool, ToolBar } from "./toolBar";
+import type { IPixelData } from "./textureCanvasManager";
+import { TextureCanvasManager } from "./textureCanvasManager";
+import type { ITool } from "./toolBar";
+import { ToolBar } from "./toolBar";
 import { PropertiesBar } from "./propertiesBar";
-import { IChannel, ChannelsBar } from "./channelsBar";
+import type { IChannel } from "./channelsBar";
+import { ChannelsBar } from "./channelsBar";
 import { BottomBar } from "./bottomBar";
 import { TextureCanvasComponent } from "./textureCanvasComponent";
 import defaultTools from "./defaultTools/defaultTools";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Tools } from "core/Misc/tools";
-import { Scene } from "core/scene";
-import { ISize } from "core/Maths/math.size";
-import { Vector2 } from "core/Maths/math.vector";
-import { PointerInfo } from "core/Events/pointerEvents";
+import type { Scene } from "core/scene";
+import type { ISize } from "core/Maths/math.size";
+import type { Vector2 } from "core/Maths/math.vector";
+import type { PointerInfo } from "core/Events/pointerEvents";
 
-import { PopupComponent } from "../../../../../popupComponent";
+import type { PopupComponent } from "../../../../../popupComponent";
 import { ToolSettings } from "./toolSettings";
 import { Constants } from "core/Engines/constants";
 

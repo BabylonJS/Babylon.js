@@ -1,15 +1,16 @@
-import { GraphNode } from "./graphNode";
-import { GraphCanvasComponent } from "./graphCanvas";
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { NodeLink } from "./nodeLink";
-import { IFrameData } from "../nodeLocationInfo";
+import type { GraphNode } from "./graphNode";
+import type { GraphCanvasComponent } from "./graphCanvas";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { NodeLink } from "./nodeLink";
+import type { IFrameData } from "../nodeLocationInfo";
 import { Color3 } from "core/Maths/math.color";
-import { NodePort } from "./nodePort";
+import type { NodePort } from "./nodePort";
 import { SerializationTools } from "../serializationTools";
 import { StringTools } from "shared-ui-components/stringTools";
 import { FrameNodePort } from "./frameNodePort";
-import { ISelectionChangedOptions } from "../globalState";
+import type { ISelectionChangedOptions } from "../globalState";
 
 enum ResizingDirection {
     Right,

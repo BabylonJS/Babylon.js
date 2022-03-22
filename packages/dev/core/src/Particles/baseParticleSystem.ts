@@ -1,11 +1,13 @@
-import { Nullable } from "../types";
+/* eslint-disable import/no-internal-modules */
+import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
-import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
+import type { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
+import type { IParticleEmitterType } from "../Particles/EmitterTypes/index";
 import {
     BoxParticleEmitter,
-    IParticleEmitterType,
     PointParticleEmitter,
     HemisphericParticleEmitter,
     SphereParticleEmitter,
@@ -13,12 +15,11 @@ import {
     CylinderParticleEmitter,
     CylinderDirectedParticleEmitter,
     ConeParticleEmitter,
-    // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color4 } from "../Maths/math.color";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
 

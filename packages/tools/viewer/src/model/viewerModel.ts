@@ -1,15 +1,15 @@
 /* eslint-disable import/no-internal-modules */
-import { IDisposable } from "core/scene";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import type { IDisposable } from "core/scene";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
-import { Skeleton } from "core/Bones/skeleton";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
 
 import { AnimationGroup } from "core/Animations/animationGroup";
+import type { Animatable } from "core/Animations/index";
 import {
     Animation,
-    Animatable,
     CircleEase,
     BackEase,
     BounceEase,
@@ -22,21 +22,22 @@ import {
     QuinticEase,
     SineEase,
 } from "core/Animations/index";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Tags } from "core/Misc/tags";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { Tools } from "core/Misc/tools";
-import { GLTFFileLoader } from "loaders/glTF/index";
-import { IAsset } from "babylonjs-gltf2interface";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
-import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
+import type { GLTFFileLoader } from "loaders/glTF/index";
+import type { IAsset } from "babylonjs-gltf2interface";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
+import type { IModelAnimation, ModelAnimationConfiguration } from "./modelAnimation";
+import { GroupModelAnimation, AnimationPlayMode, EasingFunction, AnimationState } from "./modelAnimation";
 import { deepmerge, extendClassWithConfig } from "../helper/index";
-import { ObservablesManager } from "../managers/observablesManager";
-import { ConfigurationContainer } from "../configuration/configurationContainer";
+import type { ObservablesManager } from "../managers/observablesManager";
+import type { ConfigurationContainer } from "../configuration/configurationContainer";
 
 /**
  * The current state of the model

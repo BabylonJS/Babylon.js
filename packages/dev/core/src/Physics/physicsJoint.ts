@@ -1,5 +1,5 @@
-import { Vector3 } from "../Maths/math.vector";
-import { IPhysicsEnginePlugin } from "./IPhysicsEngine";
+import type { Vector3 } from "../Maths/math.vector";
+import type { IPhysicsEnginePlugin } from "./IPhysicsEngine";
 /**
  * Interface for Physics-Joint data
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine

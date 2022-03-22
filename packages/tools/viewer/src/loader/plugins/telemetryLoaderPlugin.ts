@@ -1,7 +1,7 @@
-import { ILoaderPlugin } from "./loaderPlugin";
+import type { ILoaderPlugin } from "./loaderPlugin";
 import { telemetryManager } from "../../managers/telemetryManager";
-import { ViewerModel } from "../../model/viewerModel";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { ViewerModel } from "../../model/viewerModel";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import { PrecisionDate } from "core/Misc/precisionDate";
 
 export class TelemetryLoaderPlugin implements ILoaderPlugin {

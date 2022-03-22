@@ -1,10 +1,12 @@
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
-import { _InstancesBatch, Mesh } from "../Meshes/mesh";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { _InstancesBatch } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
-import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { MaterialHelper } from "../Materials/materialHelper";
 

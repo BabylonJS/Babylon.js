@@ -1,9 +1,9 @@
 import { serializeAsTexture, SerializationHelper } from "core/Misc/decorators";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import "./normalMapProceduralTexture.fragment";
 
 export class NormalMapProceduralTexture extends ProceduralTexture {

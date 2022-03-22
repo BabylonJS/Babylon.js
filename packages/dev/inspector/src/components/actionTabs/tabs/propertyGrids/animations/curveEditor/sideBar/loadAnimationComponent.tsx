@@ -1,7 +1,7 @@
 import { Tools } from "core/Misc/tools";
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context } from "../context";
 import { Animation } from "core/Animations/animation";
 
 interface ILoadAnimationComponentProps {

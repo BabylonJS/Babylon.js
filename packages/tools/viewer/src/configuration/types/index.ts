@@ -1,7 +1,7 @@
 import { minimalConfiguration } from "./minimal";
 import { defaultConfiguration } from "./default";
 import { extendedConfiguration } from "./extended";
-import { ViewerConfiguration } from "../configuration";
+import type { ViewerConfiguration } from "../configuration";
 import { shadowDirectionalLightConfiguration, shadowSpotlLightConfiguration } from "./shadowLight";
 import { environmentMapConfiguration } from "./environmentMap";
 // eslint-disable-next-line import/no-internal-modules

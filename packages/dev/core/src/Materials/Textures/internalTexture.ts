@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
-import { Nullable, int } from "../../types";
-import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
+import type { Nullable, int } from "../../types";
+import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
+import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;

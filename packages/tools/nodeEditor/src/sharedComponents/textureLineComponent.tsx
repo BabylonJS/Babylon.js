@@ -1,10 +1,10 @@
 import * as React from "react";
 
 import { Constants } from "core/Engines/constants";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import type { PostProcess } from "core/PostProcesses/postProcess";
 import { PassPostProcess, PassCubePostProcess } from "core/PostProcesses/passPostProcess";
 
 interface ITextureLineComponentProps {

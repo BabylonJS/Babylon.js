@@ -2,14 +2,14 @@ import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { Nullable } from "../../types";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { Nullable } from "../../types";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Matrix, TmpVectors } from "../../Maths/math.vector";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderTarget";
 import { Frustum } from "../../Maths/math.frustum";
-import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import type { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/engine" {
     export interface Engine {

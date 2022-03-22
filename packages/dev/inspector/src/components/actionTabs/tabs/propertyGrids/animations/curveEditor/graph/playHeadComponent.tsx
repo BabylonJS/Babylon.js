@@ -1,9 +1,9 @@
-import { Observer } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "../context";
 
 interface IPlayHeadComponentProps {
     globalState: GlobalState;

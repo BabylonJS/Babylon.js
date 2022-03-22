@@ -1,10 +1,10 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
-import { Scene } from "core/scene";
+import type { GlobalState } from "../../globalState";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../propertyChangedEvent";
+import type { Scene } from "core/scene";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 interface IMeshPickerComponentProps {
     globalState: GlobalState;

@@ -5,8 +5,8 @@ import { isUrl, camelToKebab, kebabToCamel, deepmerge } from "../helper/index";
 
 import * as Handlebars from "handlebars/dist/handlebars";
 import { EventManager } from "./eventManager";
-import { ITemplateConfiguration } from "../configuration/interfaces/templateConfiguration";
-import { IFileRequest } from "core/Misc/fileRequest";
+import type { ITemplateConfiguration } from "../configuration/interfaces/templateConfiguration";
+import type { IFileRequest } from "core/Misc/fileRequest";
 
 /**
  * The object sent when an event is triggered

@@ -1,16 +1,16 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { InputBlock } from "../Input/inputBlock";
-import { Effect } from "../../../effect";
-import { Scene } from "../../../../scene";
+import type { Effect } from "../../../effect";
+import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { TextureBlock } from "../Dual/textureBlock";
+import type { TextureBlock } from "../Dual/textureBlock";
 
 import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";

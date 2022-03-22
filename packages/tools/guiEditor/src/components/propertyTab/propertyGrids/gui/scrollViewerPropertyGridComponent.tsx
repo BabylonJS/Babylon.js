@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";

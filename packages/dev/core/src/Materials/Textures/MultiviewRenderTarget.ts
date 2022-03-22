@@ -1,5 +1,5 @@
 import { RenderTargetTexture } from "../Textures/renderTargetTexture";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
 
 /**

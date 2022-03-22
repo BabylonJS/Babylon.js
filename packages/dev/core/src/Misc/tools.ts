@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Nullable, float } from "../types";
+import type { Nullable, float } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -7,8 +7,9 @@ import { DeepCopier } from "./deepCopier";
 import { PrecisionDate } from "./precisionDate";
 import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
-import { IFileRequest } from "./fileRequest";
+import type { IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
+import type { ReadFileError } from "./fileTools";
 import {
     FileToolsOptions,
     DecodeBase64UrlToBinary,
@@ -16,15 +17,14 @@ import {
     LoadFile as FileToolsLoadFile,
     LoadImage as FileToolLoadImage,
     ReadFile as FileToolsReadFile,
-    ReadFileError,
     SetCorsBehavior,
 } from "./fileTools";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { PromisePolyfill } from "./promise";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
-import { IScreenshotSize } from "./interfaces/screenshotSize";
+import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import { SliceTools } from "./sliceTools";
 
 declare type Camera = import("../Cameras/camera").Camera;

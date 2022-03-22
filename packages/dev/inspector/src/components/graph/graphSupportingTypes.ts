@@ -1,5 +1,5 @@
-import { IPerfDatasets } from "core/Misc/interfaces/iPerfViewer";
-import { Observable } from "core/Misc/observable";
+import type { IPerfDatasets } from "core/Misc/interfaces/iPerfViewer";
+import type { Observable } from "core/Misc/observable";
 
 /**
  * Defines a structure to hold max, min and a optional current.

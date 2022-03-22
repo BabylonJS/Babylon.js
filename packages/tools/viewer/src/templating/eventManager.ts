@@ -1,4 +1,4 @@
-import { EventCallback, TemplateManager } from "./templateManager";
+import type { EventCallback, TemplateManager } from "./templateManager";
 
 /**
  * The EventManager is in charge of registering user interctions with the viewer.

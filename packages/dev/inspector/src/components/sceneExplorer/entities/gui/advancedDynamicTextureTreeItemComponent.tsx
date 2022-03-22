@@ -1,9 +1,9 @@
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { Observer, Observable } from "core/Misc/observable";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
-import { Control } from "gui/2D/controls/control";
-import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import type { Control } from "gui/2D/controls/control";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { faImage, faCrosshairs, faPen } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";

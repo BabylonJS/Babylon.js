@@ -1,5 +1,5 @@
-import { Page } from "puppeteer";
-import { StacktracedObject } from "./window";
+import type { Page } from "puppeteer";
+import type { StacktracedObject } from "./window";
 
 declare const BABYLON: typeof window.BABYLON;
 

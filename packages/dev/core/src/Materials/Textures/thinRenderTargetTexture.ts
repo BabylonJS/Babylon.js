@@ -1,10 +1,10 @@
-import { Nullable } from "../../types";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Nullable } from "../../types";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 
-import { ThinEngine } from "../../Engines/thinEngine";
-import { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
+import type { ThinEngine } from "../../Engines/thinEngine";
+import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 import { ThinTexture } from "./thinTexture";
-import { TextureSize, RenderTargetCreationOptions } from "./textureCreationOptions";
+import type { TextureSize, RenderTargetCreationOptions } from "./textureCreationOptions";
 
 /**
  * This is a tiny helper class to wrap a RenderTargetWrapper in a texture

@@ -1,23 +1,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { AnimationGroup } from "core/Animations/animationGroup";
+import type { AnimationGroup } from "core/Animations/animationGroup";
 import { AnimationEvent } from "core/Animations/animationEvent";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { TransformNode } from "core/Meshes/transformNode";
 import { Sound } from "core/Audio/sound";
 import { WeightedSound } from "core/Audio/weightedsound";
 
-import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import {
-    IMSFTAudioEmitter_Clip,
-    IMSFTAudioEmitter_Emitter,
-    IMSFTAudioEmitter_EmittersReference,
-    IMSFTAudioEmitter_AnimationEvent,
-    IMSFTAudioEmitter_AnimationEventAction,
-} from "babylonjs-gltf2interface";
+import type { IMSFTAudioEmitter_Clip, IMSFTAudioEmitter_Emitter, IMSFTAudioEmitter_EmittersReference, IMSFTAudioEmitter_AnimationEvent } from "babylonjs-gltf2interface";
+import { IMSFTAudioEmitter_AnimationEventAction } from "babylonjs-gltf2interface";
 
 const NAME = "MSFT_audio_emitter";
 

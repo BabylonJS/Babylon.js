@@ -1,4 +1,4 @@
-import { DeepImmutable, FloatArray } from "../types";
+import type { DeepImmutable, FloatArray } from "../types";
 import { Scalar } from "./math.scalar";
 import { ToLinearSpace, ToGammaSpace } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";

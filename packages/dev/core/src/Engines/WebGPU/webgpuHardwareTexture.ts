@@ -1,7 +1,7 @@
-import { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Scalar } from "../../Maths/math.scalar";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import * as WebGPUConstants from "./webgpuConstants";
 
 declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;

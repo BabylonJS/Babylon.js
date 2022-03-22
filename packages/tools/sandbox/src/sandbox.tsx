@@ -7,9 +7,9 @@ import { Footer } from "./components/footer";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { CreateScreenshotAsync } from "core/Misc/screenshotTools";
-import { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
+import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { Color3, Color4 } from "core/Maths/math";
 
 import "./scss/main.scss";

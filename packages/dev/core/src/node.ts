@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Scene } from "./scene";
-import { Nullable } from "./types";
+import type { Scene } from "./scene";
+import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
-import { Engine } from "./Engines/engine";
-import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
+import type { Engine } from "./Engines/engine";
+import type { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
-import { Observable, Observer } from "./Misc/observable";
+import type { Observer } from "./Misc/observable";
+import { Observable } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
 import { _WarnImport } from "./Misc/devTools";
-import { AbstractActionManager } from "./Actions/abstractActionManager";
-import { IInspectable } from "./Misc/iInspectable";
-import { AbstractScene } from "./abstractScene";
+import type { AbstractActionManager } from "./Actions/abstractActionManager";
+import type { IInspectable } from "./Misc/iInspectable";
+import type { AbstractScene } from "./abstractScene";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;

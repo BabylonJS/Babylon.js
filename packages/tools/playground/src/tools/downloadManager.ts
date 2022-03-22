@@ -1,5 +1,5 @@
 import { DynamicTexture, RawTexture } from "@dev/core";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
 declare type Engine = import("@dev/core").Engine;
 

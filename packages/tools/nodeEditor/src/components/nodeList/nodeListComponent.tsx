@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import { DraggableLineWithButtonComponent } from "../../sharedComponents/draggableLineWithButtonComponent";
 import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
