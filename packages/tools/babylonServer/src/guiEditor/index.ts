@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import { GUIEditor } from "gui-editor/index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;

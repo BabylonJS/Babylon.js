@@ -71,9 +71,9 @@
         //   "react/no-adjacent-inline-elements": "error",
         //   "react/react-in-jsx-scope": "error",
         //   "react/self-closing-comp": "error",
-        // "import/no-unresolved": "error",
+        "import/no-unresolved": "off", // because of the way the repo is structured
         "import/named": "error",
-        "import/no-cycle": [2, { "maxDepth": 1 }],
+        "import/no-cycle": [1, { "maxDepth": 1, "ignoreExternal": true }],
         "import/no-internal-modules": [
             "error",
             {
@@ -81,12 +81,13 @@
                 "forbid": ["**/index", "**/"]
             }
         ],
-        "no-restricted-imports": ["error", {
-            "patterns": [{
-              "group": ["index"],
-              "message": "Do not import from index"
-            }]
-        }],
+        // Another way of implementing that:
+        // "no-restricted-imports": ["error", {
+        //     "patterns": [{
+        //       "group": ["index"],
+        //       "message": "Do not import from index"
+        //     }]
+        // }],
         "no-duplicate-imports": ["error", { "includeExports": true }],
         // should be error, no?
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
