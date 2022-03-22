@@ -102,8 +102,8 @@ export interface IMouseEvent extends IUIEvent {
     /**
      * Subset of possible PointerInput values for events, excluding ones that CANNOT be in events organically
      */
-     inputIndex: Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical>;
-     
+    inputIndex: Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical>;
+
     /**
      * Status of Alt key being pressed
      */

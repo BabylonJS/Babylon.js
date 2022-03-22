@@ -367,7 +367,7 @@ export class InputManager {
         }
     }
 
-    /** 
+    /**
      * @hidden
      * @returns Boolean if delta for pointer exceeds drag movement threshold
      */
@@ -876,30 +876,27 @@ export class InputManager {
                     if (eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
-
-                        }
-                        else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
+                        } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData);
                         }
-                    }
-
-                    else if (attachMove) {
+                    } else if (attachMove) {
                         if (eventData.inputIndex === PointerInput.Move) {
                             this._onPointerMove(eventData);
-                        } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
+                        } else if (
+                            eventData.inputIndex === PointerInput.MouseWheelX ||
+                            eventData.inputIndex === PointerInput.MouseWheelY ||
+                            eventData.inputIndex === PointerInput.MouseWheelZ
+                        ) {
                             this._onPointerMove(eventData);
                         }
                     }
                 });
-            }
-            else if (deviceSource.deviceType === DeviceType.Touch) {
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    if ((eventData.inputIndex === PointerInput.LeftClick)) {
+                    if (eventData.inputIndex === PointerInput.LeftClick) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
-
-                        }
-                        else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
+                        } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData);
                         }
                     }
@@ -908,13 +905,11 @@ export class InputManager {
                         this._onPointerMove(eventData);
                     }
                 });
-            }
-            else if (deviceSource.deviceType === DeviceType.Keyboard) {
+            } else if (deviceSource.deviceType === DeviceType.Keyboard) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     if (eventData.type === "keydown") {
                         this._onKeyDown(eventData);
-                    }
-                    else if (eventData.type === "keyup") {
+                    } else if (eventData.type === "keyup") {
                         this._onKeyUp(eventData);
                     }
                 });

@@ -156,7 +156,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @hidden
      */
     public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {
-        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData as (IKeyboardEvent | IWheelEvent | IPointerEvent));
+        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData as IKeyboardEvent | IWheelEvent | IPointerEvent);
     }
 
     // Private Functions
