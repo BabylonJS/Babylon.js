@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
@@ -245,7 +246,7 @@ export class Slider3D extends Control3D {
         const pointerDragBehavior = new PointerDragBehavior({ dragAxis: Vector3.Right() });
         pointerDragBehavior.moveAttached = false;
 
-        pointerDragBehavior.onDragStartObservable.add((event) => {
+        pointerDragBehavior.onDragStartObservable.add(() => {
             this._draggedPosition = this._sliderThumb.position.x;
         });
 

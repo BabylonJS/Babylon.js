@@ -333,6 +333,7 @@ ThinEngine.prototype.createRawTexture = function (
     samplingMode: number,
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     creationFlags = 0
 ): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
@@ -614,6 +615,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
  * @param textureType
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
     // Create new RGBA data container.
     let rgbaData: any;
@@ -653,6 +655,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
  * @param is3D true for TEXTURE_3D and false for TEXTURE_2D_ARRAY
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _makeCreateRawTextureFunction(is3D: boolean) {
     return function (
         this: ThinEngine,
@@ -723,6 +726,7 @@ ThinEngine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
  * @param is3D true for TEXTURE_3D and false for TEXTURE_2D_ARRAY
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function _makeUpdateRawTextureFunction(is3D: boolean) {
     return function (
         this: ThinEngine,

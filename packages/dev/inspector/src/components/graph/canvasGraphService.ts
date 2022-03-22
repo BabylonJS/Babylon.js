@@ -680,8 +680,6 @@ export class CanvasGraphService {
 
     /**
      * Gets the min and max as a single object from an array of numbers.
-     *
-     * @param items the array of numbers to get the min and max for.
      * @param bounds
      * @param offset
      * @returns the min and max of the array.
@@ -1075,8 +1073,7 @@ export class CanvasGraphService {
      * @param minMax the minimum and maximum number in the range.
      * @param startingPixel position of the starting pixel in range.
      * @param endingPixel position of ending pixel in range.
-     * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
-     * @param shouldFlip
+     * @param shouldFlip if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns number corresponding to pixel position
      */
     private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number, shouldFlip: boolean): number {
@@ -1171,8 +1168,6 @@ export class CanvasGraphService {
 
     /**
      * Clears the panning object and removes the appropriate listener.
-     *
-     * @param event the mouse event containing positional information.
      */
     private _handlePanStop = () => {
         const { _ctx: ctx } = this;

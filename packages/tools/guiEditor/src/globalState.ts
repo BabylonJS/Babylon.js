@@ -89,7 +89,7 @@ export class GlobalState {
         this.backgroundColor = new Color3(r, g, b);
         this.onBackgroundColorChangeObservable.notifyObservers();
 
-        CoordinateHelper.globalState = this;
+        CoordinateHelper.GlobalState = this;
     }
 
     /** adds copy, cut and paste listeners to the host window */
@@ -161,6 +161,15 @@ export class GlobalState {
     public setSelection(controls: Control[]) {
         this.selectedControls = [...controls];
         this.onSelectionChangedObservable.notifyObservers();
+    }
+
+    public deleteSelectedNodes() {
+        for (const control of this.selectedControls) {
+            this.guiTexture.removeControl(control);
+            this.liveGuiTexture?.removeControl(control);
+            control.dispose();
+        }
+        this.setSelection([]);
     }
 
     public isMultiSelectable(control: Control): boolean {

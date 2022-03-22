@@ -120,8 +120,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * @param camera The camera that the post-process will be attached to
      * @param mesh The mesh used to create the light scattering
      * @param samples The post-process quality, default 100
-     * @param samplingModeThe post-process filtering mode
-     * @param samplingMode
+     * @param samplingMode The post-process filtering mode
      * @param engine The babylon engine
      * @param reusable If the post-process is reusable
      * @param scene The constructor needs a scene reference to initialize internal components. If "camera" is null a "scene" must be provided

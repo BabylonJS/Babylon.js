@@ -392,10 +392,12 @@ export class SceneLoader {
      * Defines the current logging level (while loading the scene)
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static get loggingLevel(): number {
         return SceneLoaderFlags.loggingLevel;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static set loggingLevel(value: number) {
         SceneLoaderFlags.loggingLevel = value;
     }
@@ -418,20 +420,20 @@ export class SceneLoader {
      */
     public static OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
 
-    private static _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
+    private static _RegisteredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 
-    private static _showingLoadingScreen = false;
+    private static _ShowingLoadingScreen = false;
 
     /**
      * Gets the default plugin (used to load Babylon files)
      * @returns the .babylon plugin
      */
     public static GetDefaultPlugin(): IRegisteredPlugin {
-        return SceneLoader._registeredPlugins[".babylon"];
+        return SceneLoader._RegisteredPlugins[".babylon"];
     }
 
     private static _GetPluginForExtension(extension: string): IRegisteredPlugin {
-        const registeredPlugin = SceneLoader._registeredPlugins[extension];
+        const registeredPlugin = SceneLoader._RegisteredPlugins[extension];
         if (registeredPlugin) {
             return registeredPlugin;
         }
@@ -444,11 +446,11 @@ export class SceneLoader {
     }
 
     private static _GetPluginForDirectLoad(data: string): IRegisteredPlugin {
-        for (const extension in SceneLoader._registeredPlugins) {
-            const plugin = SceneLoader._registeredPlugins[extension].plugin;
+        for (const extension in SceneLoader._RegisteredPlugins) {
+            const plugin = SceneLoader._RegisteredPlugins[extension].plugin;
 
             if (plugin.canDirectLoad && plugin.canDirectLoad(data)) {
-                return SceneLoader._registeredPlugins[extension];
+                return SceneLoader._RegisteredPlugins[extension];
             }
         }
 
@@ -659,7 +661,7 @@ export class SceneLoader {
      * @returns true if the extension is supported
      */
     public static IsPluginForExtensionAvailable(extension: string): boolean {
-        return !!SceneLoader._registeredPlugins[extension];
+        return !!SceneLoader._RegisteredPlugins[extension];
     }
 
     /**
@@ -669,14 +671,14 @@ export class SceneLoader {
     public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
         if (typeof plugin.extensions === "string") {
             const extension = <string>plugin.extensions;
-            SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+            SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: false,
             };
         } else {
             const extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
             Object.keys(extensions).forEach((extension) => {
-                SceneLoader._registeredPlugins[extension.toLowerCase()] = {
+                SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
                     plugin: plugin,
                     isBinary: extensions[extension].isBinary,
                 };
@@ -943,12 +945,12 @@ export class SceneLoader {
             return null;
         }
 
-        if (SceneLoader.ShowLoadingScreen && !this._showingLoadingScreen) {
-            this._showingLoadingScreen = true;
+        if (SceneLoader.ShowLoadingScreen && !this._ShowingLoadingScreen) {
+            this._ShowingLoadingScreen = true;
             scene.getEngine().displayLoadingUI();
             scene.executeWhenReady(() => {
                 scene.getEngine().hideLoadingUI();
-                this._showingLoadingScreen = false;
+                this._ShowingLoadingScreen = false;
             });
         }
 
@@ -1309,8 +1311,10 @@ export class SceneLoader {
         overwriteAnimations = true,
         animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
         targetConverter: Nullable<(target: any) => any> = null,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null
     ): Promise<Scene> {

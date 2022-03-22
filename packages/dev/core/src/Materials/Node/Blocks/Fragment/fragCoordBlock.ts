@@ -82,6 +82,7 @@ export class FragCoordBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected writeOutputs(state: NodeMaterialBuildState): string {
         let code = "";
 

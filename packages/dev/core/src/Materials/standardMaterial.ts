@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
@@ -1639,7 +1640,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        var depth = 1.0;
+                        let depth = 1.0;
                         if (!this._refractionTexture.isCube) {
                             ubo.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
 
@@ -1713,7 +1714,6 @@ export class StandardMaterial extends PushMaterial {
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                    var depth = 1.0;
                     if (this._refractionTexture.isCube) {
                         effect.setTexture("refractionCubeSampler", this._refractionTexture);
                     } else {

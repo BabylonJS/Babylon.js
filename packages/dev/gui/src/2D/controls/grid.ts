@@ -218,14 +218,14 @@ export class Grid extends Container {
             return this;
         }
 
-        for (var x = 0; x < this._rowDefinitions.length; x++) {
+        for (let x = 0; x < this._rowDefinitions.length; x++) {
             const key = `${x}:${index}`;
             const cell = this._cells[key];
 
             this._removeCell(cell, key);
         }
 
-        for (var x = 0; x < this._rowDefinitions.length; x++) {
+        for (let x = 0; x < this._rowDefinitions.length; x++) {
             for (let y = index + 1; y < this._columnDefinitions.length; y++) {
                 const previousKey = `${x}:${y - 1}`;
                 const key = `${x}:${y}`;
@@ -253,14 +253,14 @@ export class Grid extends Container {
             return this;
         }
 
-        for (var y = 0; y < this._columnDefinitions.length; y++) {
+        for (let y = 0; y < this._columnDefinitions.length; y++) {
             const key = `${index}:${y}`;
             const cell = this._cells[key];
 
             this._removeCell(cell, key);
         }
 
-        for (var y = 0; y < this._columnDefinitions.length; y++) {
+        for (let y = 0; y < this._columnDefinitions.length; y++) {
             for (let x = index + 1; x < this._rowDefinitions.length; x++) {
                 const previousKey = `${x - 1}:${y}`;
                 const key = `${x}:${y}`;
@@ -372,7 +372,7 @@ export class Grid extends Container {
 
         // Heights
         let index = 0;
-        for (var rowDefinition of this._rowDefinitions) {
+        for (const rowDefinition of this._rowDefinitions) {
             if (rowDefinition.isPixel) {
                 const height = rowDefinition.getValue(this._host);
                 availableHeight -= height;
@@ -385,7 +385,7 @@ export class Grid extends Container {
 
         let top = 0;
         index = 0;
-        for (var rowDefinition of this._rowDefinitions) {
+        for (const rowDefinition of this._rowDefinitions) {
             tops.push(top);
 
             if (!rowDefinition.isPixel) {
@@ -400,7 +400,7 @@ export class Grid extends Container {
 
         // Widths
         index = 0;
-        for (var columnDefinition of this._columnDefinitions) {
+        for (const columnDefinition of this._columnDefinitions) {
             if (columnDefinition.isPixel) {
                 const width = columnDefinition.getValue(this._host);
                 availableWidth -= width;
@@ -413,7 +413,7 @@ export class Grid extends Container {
 
         let left = 0;
         index = 0;
-        for (var columnDefinition of this._columnDefinitions) {
+        for (const columnDefinition of this._columnDefinitions) {
             lefts.push(left);
             if (!columnDefinition.isPixel) {
                 const width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
@@ -432,7 +432,7 @@ export class Grid extends Container {
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Setting child sizes
             for (const key in this._cells) {
-                if (!this._cells.hasOwnProperty(key)) {
+                if (!Object.prototype.hasOwnProperty.call(this._cells, key)) {
                     continue;
                 }
                 const split = key.split(":");
@@ -456,7 +456,7 @@ export class Grid extends Container {
 
     public _flagDescendantsAsMatrixDirty(): void {
         for (const key in this._cells) {
-            if (!this._cells.hasOwnProperty(key)) {
+            if (!Object.prototype.hasOwnProperty.call(this._cells, key)) {
                 continue;
             }
 
@@ -470,7 +470,7 @@ export class Grid extends Container {
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Columns
-            for (var index = 0; index < lefts.length; index++) {
+            for (let index = 0; index < lefts.length; index++) {
                 const left = this._currentMeasure.left + lefts[index] + widths[index];
                 context.beginPath();
                 context.moveTo(left, this._currentMeasure.top);
@@ -479,7 +479,7 @@ export class Grid extends Container {
             }
 
             // Rows
-            for (var index = 0; index < tops.length; index++) {
+            for (let index = 0; index < tops.length; index++) {
                 const top = this._currentMeasure.top + tops[index] + heights[index];
                 context.beginPath();
                 context.moveTo(this._currentMeasure.left, top);
@@ -498,10 +498,10 @@ export class Grid extends Container {
         for (const control of this._childControls) {
             control.dispose();
         }
-        for (var index = 0; index < this._rowDefinitions.length; index++) {
+        for (let index = 0; index < this._rowDefinitions.length; index++) {
             this._rowDefinitions[index].onChangedObservable.remove(this._rowDefinitionObservers[index]);
         }
-        for (var index = 0; index < this._columnDefinitions.length; index++) {
+        for (let index = 0; index < this._columnDefinitions.length; index++) {
             this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         }
         this._rowDefinitionObservers = [];

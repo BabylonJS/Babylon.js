@@ -90,6 +90,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      */
     public attachControl(noPreventDefault?: boolean): void {
         // was there a second variable defined?
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
         if (this._onCanvasBlurObserver) {
@@ -117,7 +118,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
@@ -137,7 +138,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
                             this._keys.splice(index, 1);
@@ -161,9 +162,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);

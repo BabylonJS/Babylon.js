@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
@@ -473,7 +474,6 @@ export class HighlightLayer extends EffectLayer {
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @param emissiveTexture the associated emissive texture used to generate the glow
      * @return true if ready otherwise, false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
@@ -750,7 +750,7 @@ export class HighlightLayer extends EffectLayer {
         }
 
         for (const uniqueId in this._meshes) {
-            if (this._meshes.hasOwnProperty(uniqueId)) {
+            if (Object.prototype.hasOwnProperty.call(this._meshes, uniqueId)) {
                 const mesh = this._meshes[uniqueId];
                 if (mesh) {
                     this.removeMesh(mesh.mesh);
@@ -880,7 +880,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Excluded meshes
         for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
-            var mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
+            const mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
             if (mesh) {
                 hl.addExcludedMesh(<Mesh>mesh);
             }
@@ -889,7 +889,7 @@ export class HighlightLayer extends EffectLayer {
         // Included meshes
         for (index = 0; index < parsedHightlightLayer.meshes.length; index++) {
             const highlightedMesh = parsedHightlightLayer.meshes[index];
-            var mesh = scene.getMeshById(highlightedMesh.meshId);
+            const mesh = scene.getMeshById(highlightedMesh.meshId);
 
             if (mesh) {
                 hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);

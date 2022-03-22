@@ -70,7 +70,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeMaterialBlock
      * @param block
      * @param recursion
      */
@@ -91,7 +90,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Connections
         if (block.inputs.length) {
-            for (var input of block.inputs) {
+            for (const input of block.inputs) {
                 if (input.isConnected && recursion) {
                     this.createNodeFromObject(input.sourceBlock!);
                 }
@@ -103,7 +102,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Links
         if (block.inputs.length && recursion) {
-            for (var input of block.inputs) {
+            for (const input of block.inputs) {
                 if (input.isConnected) {
                     this._graphCanvas.connectPorts(input.connectedPoint!, input);
                 }
@@ -537,7 +536,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else {
                 // Locations
                 for (const location of editorData.locations) {
-                    for (var node of this._graphCanvas.nodes) {
+                    for (const node of this._graphCanvas.nodes) {
                         if (node.block && node.block.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
@@ -553,7 +552,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             this._graphCanvas._isLoading = false;
-            for (var node of this._graphCanvas.nodes) {
+            for (const node of this._graphCanvas.nodes) {
                 node._refreshLinks();
             }
             this.hideWaitScreen();
@@ -822,11 +821,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             host.style.width = options.embedHostWidth || "auto";
 
             parentControl.appendChild(host);
-            const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+            const previewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
                 globalState: this.props.globalState,
                 togglePreviewAreaComponent: this.handlePopUp,
             });
-            ReactDOM.render(PreviewMeshControlComponentHost, host);
+            ReactDOM.render(previewMeshControlComponentHost, host);
         }
     };
 
@@ -854,11 +853,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         if (this._previewHost) {
-            const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
+            const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
                 width: 200,
             });
-            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
+            ReactDOM.render(previewAreaComponentHost, this._previewHost);
         }
     };
 

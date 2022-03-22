@@ -11,6 +11,7 @@ interface ISample {
     title: string;
     doc: string;
     icon: string;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     PGID: string;
     description: string;
 }
@@ -63,11 +64,12 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
 
         const list = await response.json();
 
-        for (var value of list.value) {
+        for (const value of list.value) {
             const newSample = {
                 title: value.title,
                 doc: this._documentationRoot + value.documentationPage,
                 icon: this._documentationRoot + value.imageUrl,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 PGID: value.playgroundId,
                 description: value.description,
             };

@@ -10,6 +10,7 @@ const NAME = "KHR_materials_sheen";
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
@@ -46,7 +47,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     }
 
     public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (babylonMaterial instanceof PBRMaterial) {
                 if (!babylonMaterial.sheen.isEnabled) {
                     resolve(node);

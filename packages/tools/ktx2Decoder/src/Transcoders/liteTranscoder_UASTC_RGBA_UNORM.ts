@@ -5,6 +5,7 @@ import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     /**
      * URL to use when loading the wasm module for the transcoder (unorm)

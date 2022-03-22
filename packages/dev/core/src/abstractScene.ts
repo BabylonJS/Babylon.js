@@ -100,7 +100,7 @@ export abstract class AbstractScene {
      */
     public static Parse(jsonData: any, scene: Scene, container: AssetContainer, rootUrl: string): void {
         for (const parserName in this._BabylonFileParsers) {
-            if (this._BabylonFileParsers.hasOwnProperty(parserName)) {
+            if (Object.prototype.hasOwnProperty.call(this._BabylonFileParsers, parserName)) {
                 this._BabylonFileParsers[parserName](jsonData, scene, container, rootUrl);
             }
         }

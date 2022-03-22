@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
@@ -35,7 +36,7 @@ export function CreateScreenshot(
     mimeType: string = "image/png",
     forceDownload = false
 ): void {
-    const { height, width } = _getScreenshotSize(engine, camera, size);
+    const { height, width } = _GetScreenshotSize(engine, camera, size);
 
     if (!(height && width)) {
         Logger.Error("Invalid 'size' parameter !");
@@ -125,7 +126,7 @@ export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScr
  * to the src parameter of an <img> to display it
  */
 export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType: string = "image/png"): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         CreateScreenshot(
             engine,
             camera,
@@ -172,7 +173,7 @@ export function CreateScreenshotUsingRenderTarget(
     renderSprites: boolean = false,
     enableStencilBuffer: boolean = false
 ): void {
-    const { height, width } = _getScreenshotSize(engine, camera, size);
+    const { height, width } = _GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
 
     if (!(height && width)) {
@@ -315,7 +316,7 @@ export function CreateScreenshotUsingRenderTargetAsync(
  * @param size
  * @private
  */
-function _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number } {
+function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number } {
     let height = 0;
     let width = 0;
 

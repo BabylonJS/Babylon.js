@@ -1,5 +1,4 @@
 import { GetTGAHeader, UploadContent } from "../../../Misc/tga";
-import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
@@ -9,6 +8,7 @@ import { EndsWith } from "../../../Misc/stringTools";
  * Implementation of the TGA Texture Loader.
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _TGATextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
@@ -26,19 +26,8 @@ export class _TGATextureLoader implements IInternalTextureLoader {
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
-     * @param data contains the texture data
-     * @param texture defines the BabylonJS internal texture
-     * @param createPolynomials will be true if polynomials have been requested
-     * @param onLoad defines the callback to trigger once the texture is ready
-     * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(
-        data: ArrayBufferView | ArrayBufferView[],
-        texture: InternalTexture,
-        createPolynomials: boolean,
-        onLoad: Nullable<(data?: any) => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>
-    ): void {
+    public loadCubeData(): void {
         throw ".env not supported in Cube.";
     }
 

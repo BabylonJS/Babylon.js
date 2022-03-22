@@ -72,7 +72,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
 
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
+            case NodeMaterialBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.name}>
@@ -109,6 +109,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                         )}
                     </div>
                 );
+            }
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent

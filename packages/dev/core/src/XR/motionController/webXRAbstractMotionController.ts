@@ -282,7 +282,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param _controllerCache a cache holding controller models already loaded in this session
      */
     constructor(
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         protected scene: Scene,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         protected layout: IMotionControllerLayout,
         /**
          * The gamepad object correlating to this controller
@@ -475,7 +477,6 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
 
     /**
      * Moves the axis on the controller mesh based on its current state
-     * @param axis the index of the axis
      * @param axisMap
      * @param axisValue the value of the axis which determines the meshes new position
      * @param fixValueCoordinates
@@ -500,6 +501,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Update the model itself with the current frame data
      * @param xrFrame the frame to use for updating the model mesh
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected updateModel(xrFrame: XRFrame): void {
         if (!this._modelReady) {
             return;

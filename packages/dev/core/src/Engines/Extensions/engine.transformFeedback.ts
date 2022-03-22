@@ -3,6 +3,7 @@ import { Engine } from "../../Engines/engine";
 import { DataBuffer } from "../../Buffers/dataBuffer";
 
 /** @hidden */
+// eslint-disable-next-line no-var
 export var _forceTransformFeedbackToBundle = true;
 
 declare module "../../Engines/engine" {

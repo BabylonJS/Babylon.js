@@ -135,7 +135,7 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.resetDepthCullingState();
     }
 
-    public apply(gl: WebGLRenderingContext) {
+    public apply() {
         // nothing to do
     }
 }

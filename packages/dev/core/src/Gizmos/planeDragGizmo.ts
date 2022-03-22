@@ -58,9 +58,9 @@ export class PlaneDragGizmo extends Gizmo {
 
     /**
      * Creates a PlaneDragGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param parent
      */
     constructor(

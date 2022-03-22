@@ -24,7 +24,7 @@ const config = JSON.parse(rawJsonData.replace(/^\uFEFF/, ''));
 
 // 2% error rate
 
-let engineFlags;
+let engineFlags: any;
 
 beforeAll(async () => {
     page.on("console", async (msg) => {

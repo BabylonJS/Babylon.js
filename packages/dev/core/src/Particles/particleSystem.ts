@@ -341,6 +341,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
@@ -367,7 +368,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
 
             for (let index = 0; index < particles.length; index++) {
-                var particle = particles[index];
+                const particle = particles[index];
 
                 let scaledUpdateSpeed = this._scaledUpdateSpeed;
                 const previousAge = particle.age;
@@ -891,7 +892,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         const data = new Uint8Array(this._rawTextureWidth * 4);
         const tmpColor = TmpColors.Color3[0];
 
-        for (var x = 0; x < this._rawTextureWidth; x++) {
+        for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
@@ -2204,7 +2205,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._subEmitters && this._subEmitters.length) {
-            for (var index = 0; index < this._subEmitters.length; index++) {
+            for (let index = 0; index < this._subEmitters.length; index++) {
                 for (const subEmitter of this._subEmitters[index]) {
                     subEmitter.dispose();
                 }
@@ -2224,7 +2225,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Remove from scene
         if (this._scene) {
-            var index = this._scene.particleSystems.indexOf(this);
+            const index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {
                 this._scene.particleSystems.splice(index, 1);
             }
@@ -2411,7 +2412,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (colorGradients) {
             serializationObject.colorGradients = [];
             for (const colorGradient of colorGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: colorGradient.gradient,
                     color1: colorGradient.color1.asArray(),
                 };
@@ -2430,7 +2431,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (rampGradients) {
             serializationObject.rampGradients = [];
             for (const rampGradient of rampGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: rampGradient.gradient,
                     color: rampGradient.color.asArray(),
                 };
@@ -2444,7 +2445,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (colorRemapGradients) {
             serializationObject.colorRemapGradients = [];
             for (const colorRemapGradient of colorRemapGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: colorRemapGradient.gradient,
                     factor1: colorRemapGradient.factor1,
                 };
@@ -2463,7 +2464,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (alphaRemapGradients) {
             serializationObject.alphaRemapGradients = [];
             for (const alphaRemapGradient of alphaRemapGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: alphaRemapGradient.gradient,
                     factor1: alphaRemapGradient.factor1,
                 };
@@ -2482,7 +2483,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (sizeGradients) {
             serializationObject.sizeGradients = [];
             for (const sizeGradient of sizeGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: sizeGradient.gradient,
                     factor1: sizeGradient.factor1,
                 };
@@ -2501,7 +2502,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (angularSpeedGradients) {
             serializationObject.angularSpeedGradients = [];
             for (const angularSpeedGradient of angularSpeedGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: angularSpeedGradient.gradient,
                     factor1: angularSpeedGradient.factor1,
                 };
@@ -2520,7 +2521,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (velocityGradients) {
             serializationObject.velocityGradients = [];
             for (const velocityGradient of velocityGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: velocityGradient.gradient,
                     factor1: velocityGradient.factor1,
                 };
@@ -2539,7 +2540,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (dragGradients) {
             serializationObject.dragGradients = [];
             for (const dragGradient of dragGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: dragGradient.gradient,
                     factor1: dragGradient.factor1,
                 };
@@ -2558,7 +2559,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (emitRateGradients) {
             serializationObject.emitRateGradients = [];
             for (const emitRateGradient of emitRateGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: emitRateGradient.gradient,
                     factor1: emitRateGradient.factor1,
                 };
@@ -2577,7 +2578,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (startSizeGradients) {
             serializationObject.startSizeGradients = [];
             for (const startSizeGradient of startSizeGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: startSizeGradient.gradient,
                     factor1: startSizeGradient.factor1,
                 };
@@ -2596,7 +2597,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (lifeTimeGradients) {
             serializationObject.lifeTimeGradients = [];
             for (const lifeTimeGradient of lifeTimeGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: lifeTimeGradient.gradient,
                     factor1: lifeTimeGradient.factor1,
                 };
@@ -2615,7 +2616,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (limitVelocityGradients) {
             serializationObject.limitVelocityGradients = [];
             for (const limitVelocityGradient of limitVelocityGradients) {
-                var serializedGradient: any = {
+                const serializedGradient: any = {
                     gradient: limitVelocityGradient.gradient,
                     factor1: limitVelocityGradient.factor1,
                 };

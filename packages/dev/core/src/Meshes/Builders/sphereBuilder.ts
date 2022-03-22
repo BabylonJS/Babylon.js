@@ -1,5 +1,5 @@
 import { Vector4, Vector3, Matrix } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
@@ -139,7 +139,6 @@ export function CreateSphereVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.segments
- * @param scene defines the hosting scene
  * @param options.diameter
  * @param options.diameterX
  * @param options.diameterY
@@ -150,6 +149,7 @@ export function CreateSphereVertexData(options: {
  * @param options.frontUVs
  * @param options.backUVs
  * @param options.updatable
+ * @param scene defines the hosting scene
  * @returns the sphere mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
  */
@@ -187,6 +187,7 @@ export function CreateSphere(
  * @deprecated use CreateSphere directly
  */
 export const SphereBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateSphere,
 };
 

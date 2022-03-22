@@ -108,7 +108,7 @@ class VRExperienceHelperGazer implements IDisposable {
     /** @hidden */
     public _currentHit: Nullable<PickingInfo>;
 
-    public static _idCounter = 0;
+    public static _IdCounter = 0;
     /** @hidden */
     public _id: number;
 
@@ -136,7 +136,7 @@ class VRExperienceHelperGazer implements IDisposable {
     public _activePointer = false;
 
     constructor(public scene: Scene, gazeTrackerToClone: Nullable<Mesh> = null) {
-        this._id = VRExperienceHelperGazer._idCounter++;
+        this._id = VRExperienceHelperGazer._IdCounter++;
 
         // Gaze tracker
         if (!gazeTrackerToClone) {
@@ -201,6 +201,7 @@ class VRExperienceHelperGazer implements IDisposable {
      * @param distance
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _updatePointerDistance(distance: number = 100) {}
 
     public dispose() {
@@ -292,7 +293,7 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
      * @hidden
      */
     public _setLaserPointerParent(mesh: AbstractMesh) {
-        var makeNotPick = (root: AbstractMesh) => {
+        const makeNotPick = (root: AbstractMesh) => {
             root.isPickable = false;
             root.getChildMeshes().forEach((c) => {
                 makeNotPick(c);
@@ -328,12 +329,12 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
 }
 
 class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
-    constructor(private getCamera: () => Nullable<Camera>, scene: Scene) {
+    constructor(private _getCamera: () => Nullable<Camera>, scene: Scene) {
         super(scene);
     }
 
     _getForwardRay(length: number): Ray {
-        const camera = this.getCamera();
+        const camera = this._getCamera();
         if (camera) {
             return camera.getForwardRay(length);
         } else {
@@ -384,8 +385,8 @@ export class VRExperienceHelper {
     private _existingCamera: Camera;
 
     private _onKeyDown: (event: KeyboardEvent) => void;
-    private _onVrDisplayPresentChange: any;
-    private _onVRDisplayChanged: (eventArgs: IDisplayChangedEventArgs) => void;
+    private _onVrDisplayPresentChangeBind: any;
+    private _onVRDisplayChangedBind: (eventArgs: IDisplayChangedEventArgs) => void;
     private _onVRRequestPresentStart: () => void;
     private _onVRRequestPresentComplete: (success: boolean) => void;
 
@@ -876,16 +877,16 @@ export class VRExperienceHelper {
                         });
                 } else {
                     // XR not supported (thou exists), continue WebVR init
-                    this.completeVRInit(scene, webVROptions);
+                    this._completeVRInit(scene, webVROptions);
                 }
             });
         } else {
             // no XR, continue init synchronous
-            this.completeVRInit(scene, webVROptions);
+            this._completeVRInit(scene, webVROptions);
         }
     }
 
-    private completeVRInit(scene: Scene, webVROptions: VRExperienceHelperOptions): void {
+    private _completeVRInit(scene: Scene, webVROptions: VRExperienceHelperOptions): void {
         this.xrTestDone = true;
         // Create VR cameras
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
@@ -933,7 +934,7 @@ export class VRExperienceHelper {
             style.appendChild(document.createTextNode(css));
             document.getElementsByTagName("head")[0].appendChild(style);
 
-            this.moveButtonToBottomRight();
+            this._moveButtonToBottomRight();
         }
 
         // VR button click event
@@ -963,11 +964,11 @@ export class VRExperienceHelper {
 
         // Display vr button when headset is connected
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
-            this.displayVRButton();
+            this._displayVRButton();
         } else {
             this._scene.getEngine().onVRDisplayChangedObservable.add((e) => {
                 if (e.vrDisplay) {
-                    this.displayVRButton();
+                    this._displayVRButton();
                 }
             });
         }
@@ -995,20 +996,20 @@ export class VRExperienceHelper {
         );
 
         // Listen for WebVR display changes
-        this._onVRDisplayChanged = (eventArgs: IDisplayChangedEventArgs) => this.onVRDisplayChanged(eventArgs);
-        this._onVrDisplayPresentChange = () => this.onVrDisplayPresentChange();
+        this._onVRDisplayChangedBind = (eventArgs: IDisplayChangedEventArgs) => this._onVRDisplayChanged(eventArgs);
+        this._onVrDisplayPresentChangeBind = () => this._onVrDisplayPresentChange();
         this._onVRRequestPresentStart = () => {
             this._webVRrequesting = true;
-            this.updateButtonVisibility();
+            this._updateButtonVisibility();
         };
         this._onVRRequestPresentComplete = () => {
             this._webVRrequesting = false;
-            this.updateButtonVisibility();
+            this._updateButtonVisibility();
         };
-        scene.getEngine().onVRDisplayChangedObservable.add(this._onVRDisplayChanged);
+        scene.getEngine().onVRDisplayChangedObservable.add(this._onVRDisplayChangedBind);
         scene.getEngine().onVRRequestPresentStart.add(this._onVRRequestPresentStart);
         scene.getEngine().onVRRequestPresentComplete.add(this._onVRRequestPresentComplete);
-        hostWindow.addEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChange);
+        hostWindow.addEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChangeBind);
 
         scene.onDisposeObservable.add(() => {
             this.dispose();
@@ -1019,7 +1020,7 @@ export class VRExperienceHelper {
         this._scene.gamepadManager.onGamepadConnectedObservable.add(this._onNewGamepadConnected);
         this._scene.gamepadManager.onGamepadDisconnectedObservable.add(this._onNewGamepadDisconnected);
 
-        this.updateButtonVisibility();
+        this._updateButtonVisibility();
 
         //create easing functions
         this._circleEase = new CircleEase();
@@ -1065,7 +1066,7 @@ export class VRExperienceHelper {
     }
 
     private _onResize = () => {
-        this.moveButtonToBottomRight();
+        this._moveButtonToBottomRight();
         if (this._fullscreenVRpresenting && this._webVRready) {
             this.exitVR();
         }
@@ -1090,7 +1091,7 @@ export class VRExperienceHelper {
                 this._btnVR.style.top = this._inputElement.offsetTop + this._inputElement.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._inputElement.offsetLeft + this._inputElement.offsetWidth - 100 + "px";
                 // make sure the button is visible after setting its position
-                this.updateButtonVisibility();
+                this._updateButtonVisibility();
             }
         }
     };
@@ -1102,7 +1103,7 @@ export class VRExperienceHelper {
         return (this.xr && this.webVROptions.useXR && this.xr.baseExperience.state === WebXRState.IN_XR) || this._webVRpresenting || this._fullscreenVRpresenting;
     }
 
-    private onVrDisplayPresentChange() {
+    private _onVrDisplayPresentChange() {
         const vrDisplay = this._scene.getEngine().getVRDevice();
         if (vrDisplay) {
             const wasPresenting = this._webVRpresenting;
@@ -1115,18 +1116,18 @@ export class VRExperienceHelper {
             Logger.Warn("Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?");
         }
 
-        this.updateButtonVisibility();
+        this._updateButtonVisibility();
     }
 
-    private onVRDisplayChanged(eventArgs: IDisplayChangedEventArgs) {
+    private _onVRDisplayChanged(eventArgs: IDisplayChangedEventArgs) {
         this._webVRsupported = eventArgs.vrSupported;
         this._webVRready = !!eventArgs.vrDisplay;
         this._webVRpresenting = eventArgs.vrDisplay && eventArgs.vrDisplay.isPresenting;
 
-        this.updateButtonVisibility();
+        this._updateButtonVisibility();
     }
 
-    private moveButtonToBottomRight() {
+    private _moveButtonToBottomRight() {
         if (this._inputElement && !this._useCustomVRButton && this._btnVR) {
             const rect: ClientRect = this._inputElement.getBoundingClientRect();
             this._btnVR.style.top = rect.top + rect.height - 70 + "px";
@@ -1134,14 +1135,14 @@ export class VRExperienceHelper {
         }
     }
 
-    private displayVRButton() {
+    private _displayVRButton() {
         if (!this._useCustomVRButton && !this._btnVRDisplayed && this._btnVR) {
             document.body.appendChild(this._btnVR);
             this._btnVRDisplayed = true;
         }
     }
 
-    private updateButtonVisibility() {
+    private _updateButtonVisibility() {
         if (!this._btnVR || this._useCustomVRButton) {
             return;
         }
@@ -1232,7 +1233,7 @@ export class VRExperienceHelper {
             }
             this._scene.activeCamera = this._vrDeviceOrientationCamera;
             this._scene.getEngine().enterFullscreen(this.requestPointerLockOnFullScreen);
-            this.updateButtonVisibility();
+            this._updateButtonVisibility();
             this._vrDeviceOrientationCamera.onViewMatrixChangedObservable.addOnce(() => {
                 this.onAfterEnteringVRObservable.notifyObservers({ success: true });
             });
@@ -1243,7 +1244,7 @@ export class VRExperienceHelper {
         }
 
         if (this._interactionsEnabled) {
-            this._scene.registerBeforeRender(this.beforeRender);
+            this._scene.registerBeforeRender(this._beforeRender);
         }
 
         if (this._displayLaserPointer) {
@@ -1323,10 +1324,10 @@ export class VRExperienceHelper {
                 }
             }
 
-            this.updateButtonVisibility();
+            this._updateButtonVisibility();
 
             if (this._interactionsEnabled) {
-                this._scene.unregisterBeforeRender(this.beforeRender);
+                this._scene.unregisterBeforeRender(this._beforeRender);
                 this._cameraGazer._gazeTracker.isVisible = false;
                 if (this._leftController) {
                     this._leftController._gazeTracker.isVisible = false;
@@ -1422,7 +1423,7 @@ export class VRExperienceHelper {
         return !(this._leftController && this._leftController._activePointer) && !(this._rightController && this._rightController._activePointer);
     }
 
-    private beforeRender = () => {
+    private _beforeRender = () => {
         if (this._leftController && this._leftController._activePointer) {
             this._castRayAndSelectObject(this._leftController);
         }
@@ -2388,7 +2389,7 @@ export class VRExperienceHelper {
         this._floorMeshesCollection = [];
 
         document.removeEventListener("keydown", this._onKeyDown);
-        window.removeEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChange);
+        window.removeEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChangeBind);
 
         window.removeEventListener("resize", this._onResize);
         document.removeEventListener("fullscreenchange", this._onFullscreenChange);
@@ -2397,15 +2398,14 @@ export class VRExperienceHelper {
         document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
         (<any>document).onmsfullscreenchange = null;
 
-        this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChanged);
+        this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChangedBind);
         this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);
         this._scene.getEngine().onVRRequestPresentComplete.removeCallback(this._onVRRequestPresentComplete);
-        window.removeEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChange);
 
         this._scene.gamepadManager.onGamepadConnectedObservable.removeCallback(this._onNewGamepadConnected);
         this._scene.gamepadManager.onGamepadDisconnectedObservable.removeCallback(this._onNewGamepadDisconnected);
 
-        this._scene.unregisterBeforeRender(this.beforeRender);
+        this._scene.unregisterBeforeRender(this._beforeRender);
     }
 
     /**
