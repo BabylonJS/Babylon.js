@@ -1,4 +1,5 @@
 import { Vector3 } from "core/Maths/math.vector";
+// eslint-disable-next-line import/no-internal-modules
 import { AnimationGroup, Animatable } from "core/Animations/index";
 
 /**

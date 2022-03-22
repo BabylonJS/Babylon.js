@@ -1,5 +1,6 @@
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import { IGLTFLoaderExtension } from "loaders/glTF/2.0/glTFLoaderExtension";
+// eslint-disable-next-line import/no-internal-modules
 import { GLTF2 } from "loaders/glTF/index";
 import { ViewerModel } from "../../model/viewerModel";
 import { ILoaderPlugin } from "./loaderPlugin";

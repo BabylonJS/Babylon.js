@@ -1,5 +1,6 @@
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
+// eslint-disable-next-line import/no-internal-modules
 import { isUrl, camelToKebab, kebabToCamel, deepmerge } from "../helper/index";
 
 import * as Handlebars from "handlebars/dist/handlebars";

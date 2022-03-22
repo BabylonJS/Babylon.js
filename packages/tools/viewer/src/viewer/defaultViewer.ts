@@ -6,6 +6,7 @@ import { Vector3 } from "core/Maths/math";
 import { AbstractViewerWithTemplate } from "./viewerWithTemplate";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+// eslint-disable-next-line import/no-internal-modules
 import { extendClassWithConfig } from "../helper/index";
 import { ViewerModel } from "../model/viewerModel";
 import { IModelAnimation, AnimationState } from "../model/modelAnimation";

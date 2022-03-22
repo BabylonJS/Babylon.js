@@ -1,3 +1,4 @@
+/* eslint-disable-next-line import/no-internal-modules */
 import { canvas, engine } from "./index";
 import "@dev/loaders";
 import "@tools/node-editor";

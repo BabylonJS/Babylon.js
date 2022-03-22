@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import { IDisposable } from "core/scene";
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { AbstractMesh } from "core/Meshes/abstractMesh";

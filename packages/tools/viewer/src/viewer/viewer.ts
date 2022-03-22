@@ -10,6 +10,7 @@ import { processConfigurationCompatibility } from "../configuration/configuratio
 import { ConfigurationContainer } from "../configuration/configurationContainer";
 import { viewerGlobals } from "../configuration/globals";
 import { RenderOnlyConfigurationLoader } from "../configuration/renderOnlyLoader";
+// eslint-disable-next-line import/no-internal-modules
 import { deepmerge } from "../helper/index";
 import { ModelLoader } from "../loader/modelLoader";
 import { ObservablesManager } from "../managers/observablesManager";

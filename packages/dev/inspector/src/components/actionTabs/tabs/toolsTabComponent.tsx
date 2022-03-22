@@ -18,6 +18,8 @@ import { Scene } from "core/scene";
 import { SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
+// TODO - does it still work if loading the modules from the correct files?
+// eslint-disable-next-line import/no-internal-modules
 import { GLTFData, GLTF2Export } from "serializers/glTF/2.0/index";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
