@@ -75,11 +75,19 @@
         "import/named": "error",
         "import/no-cycle": [2, { "maxDepth": 1 }],
         "import/no-internal-modules": [
-            "error",{
-            // {   "allow": ["**/*.ts", "**/*.tsx"]
-                "forbid": [ "**/index", "**/" ]
+            "error",
+            {
+                // {   "allow": ["**/*.ts", "**/*.tsx"]
+                "forbid": ["**/index", "**/"]
             }
         ],
+        "no-restricted-imports": ["error", {
+            "patterns": [{
+              "group": ["index"],
+              "message": "Do not import from index"
+            }]
+        }],
+        "no-duplicate-imports": ["error", { "includeExports": true }],
         // should be error, no?
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/naming-convention": [
@@ -139,18 +147,18 @@
             {
                 "selector": "variable",
                 "format": ["camelCase", "UPPER_CASE"]
-            },            
+            },
             {
                 "selector": "variable",
                 "modifiers": ["const", "global"],
                 "format": ["PascalCase", "camelCase"],
                 "leadingUnderscore": "allow"
-            },    
+            },
             {
                 "selector": "function",
                 "format": ["PascalCase", "camelCase"],
                 "leadingUnderscore": "allow"
-            },        
+            },
             {
                 "selector": "function",
                 "modifiers": ["exported", "global"],
