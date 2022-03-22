@@ -1019,6 +1019,7 @@ export class TransformNode extends Node {
         cache.pivotMatrixUpdated = false;
         cache.billboardMode = this.billboardMode;
         cache.infiniteDistance = this.infiniteDistance;
+        cache.parent = this._parentNode;
 
         this._currentRenderId = currentRenderId;
         this._childUpdateId += 1;
