@@ -67,7 +67,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                 info.scene.activeCamera = info.scene.cameras[this._camera];
             }
 
-            Sandbox._sceneLoadedDeferred.resolve(info.scene);
+            Sandbox._SceneLoadedDeferred.resolve(info.scene);
         });
 
         this._globalState.onError.add((error) => {
@@ -79,7 +79,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
                 this.setState({ errorMessage: error.message });
             }
 
-            Sandbox._sceneLoadedDeferred.reject(new Error(error.message));
+            Sandbox._SceneLoadedDeferred.reject(new Error(error.message));
         });
 
         this._globalState.onRequestClickInterceptor.add(() => {
@@ -237,7 +237,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     // Use the promise of this deferred to do something after the scene is loaded.
-    private static _sceneLoadedDeferred = new Deferred<Scene>();
+    private static _SceneLoadedDeferred = new Deferred<Scene>();
 
     public static Show(hostElement: HTMLElement): void {
         const sandbox = React.createElement(Sandbox, {});
@@ -245,7 +245,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
     }
 
     public static CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
-        return this._sceneLoadedDeferred.promise.then((scene) => {
+        return this._SceneLoadedDeferred.promise.then((scene) => {
             return CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
         });
     }

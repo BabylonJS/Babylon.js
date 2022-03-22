@@ -8,7 +8,9 @@ import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
 import { IDeviceInputSystem } from "./inputInterfaces";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_KEYCODES = 255;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
 /** @hidden */
@@ -26,15 +28,24 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _keyboardDownEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _keyboardUpEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _keyboardBlurEvent = (evt: any) => {};
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerMoveEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerDownEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerUpEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerCancelEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerWheelEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerBlurEvent = (evt: any) => {};
     private _wheelEventName: string;
     private _eventsAttached: boolean = false;
@@ -48,7 +59,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _pointerInputClearObserver: Nullable<Observer<Engine>> = null;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _gamepadConnectedEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _gamepadDisconnectedEvent = (evt: any) => {};
 
     private _eventPrefix: string;
@@ -334,7 +347,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
         };
 
-        this._keyboardBlurEvent = (evt) => {
+        this._keyboardBlurEvent = () => {
             if (this._keyboardActive) {
                 const kbKey = this._inputs[DeviceType.Keyboard][0];
 
@@ -593,7 +606,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             /* */
         }
 
-        this._pointerBlurEvent = (evt) => {
+        this._pointerBlurEvent = () => {
             // Handle mouse buttons
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];

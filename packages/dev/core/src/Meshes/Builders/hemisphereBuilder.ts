@@ -1,4 +1,4 @@
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { Scene } from "../../scene";
 import { CreateSphere } from "../Builders/sphereBuilder";
 import { CreateDisc } from "./discBuilder";
@@ -8,9 +8,9 @@ import { CreateDisc } from "./discBuilder";
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.segments
- * @param scene defines the hosting scene
  * @param options.diameter
  * @param options.sideOrientation
+ * @param scene defines the hosting scene
  * @returns the hemisphere mesh
  */
 export function CreateHemisphere(name: string, options: { segments?: number; diameter?: number; sideOrientation?: number } = {}, scene: any): Mesh {
@@ -36,6 +36,7 @@ export function CreateHemisphere(name: string, options: { segments?: number; dia
  * @deprecated use the function directly from the module
  */
 export const HemisphereBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateHemisphere,
 };
 

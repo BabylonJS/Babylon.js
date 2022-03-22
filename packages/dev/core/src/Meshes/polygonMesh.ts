@@ -115,11 +115,11 @@ export class Polygon {
      */
     static Parse(input: string): Vector2[] {
         const floats = input
-            .split(/[^-+eE\.\d]+/)
+            .split(/[^-+eE.\d]+/)
             .map(parseFloat)
             .filter((val) => !isNaN(val));
-        let i: number,
-            result = [];
+        let i: number;
+        const result = [];
         for (i = 0; i < (floats.length & 0x7ffffffe); i += 2) {
             result.push(new Vector2(floats[i], floats[i + 1]));
         }
@@ -279,10 +279,10 @@ export class PolygonMeshBuilder {
             }
 
             //Add the sides
-            this.addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false, smoothingThreshold);
+            this._addSide(positions, normals, uvs, indices, bounds, this._outlinepoints, depth, false, smoothingThreshold);
 
             this._holes.forEach((hole) => {
-                this.addSide(positions, normals, uvs, indices, bounds, hole, depth, true, smoothingThreshold);
+                this._addSide(positions, normals, uvs, indices, bounds, hole, depth, true, smoothingThreshold);
             });
         }
 
@@ -306,8 +306,8 @@ export class PolygonMeshBuilder {
      * @param flip flip of the polygon
      * @param smoothingThreshold
      */
-    private addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean, smoothingThreshold: number) {
-        let StartIndex: number = positions.length / 3;
+    private _addSide(positions: any[], normals: any[], uvs: any[], indices: any[], bounds: any, points: PolygonPoints, depth: number, flip: boolean, smoothingThreshold: number) {
+        let startIndex: number = positions.length / 3;
         let ulength: number = 0;
         for (let i: number = 0; i < points.elements.length; i++) {
             const p: IndexedVector2 = points.elements[i];
@@ -372,23 +372,23 @@ export class PolygonMeshBuilder {
             normals.push(vn_norm.x, vn_norm.y, vn_norm.z);
 
             if (!flip) {
-                indices.push(StartIndex);
-                indices.push(StartIndex + 1);
-                indices.push(StartIndex + 2);
+                indices.push(startIndex);
+                indices.push(startIndex + 1);
+                indices.push(startIndex + 2);
 
-                indices.push(StartIndex + 1);
-                indices.push(StartIndex + 3);
-                indices.push(StartIndex + 2);
+                indices.push(startIndex + 1);
+                indices.push(startIndex + 3);
+                indices.push(startIndex + 2);
             } else {
-                indices.push(StartIndex);
-                indices.push(StartIndex + 2);
-                indices.push(StartIndex + 1);
+                indices.push(startIndex);
+                indices.push(startIndex + 2);
+                indices.push(startIndex + 1);
 
-                indices.push(StartIndex + 1);
-                indices.push(StartIndex + 2);
-                indices.push(StartIndex + 3);
+                indices.push(startIndex + 1);
+                indices.push(startIndex + 2);
+                indices.push(startIndex + 3);
             }
-            StartIndex += 4;
+            startIndex += 4;
         }
     }
 }

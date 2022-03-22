@@ -30,6 +30,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _processLoadedModel(meshes: AbstractMesh[]): void {
         // nothing to do
     }
@@ -57,6 +58,7 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
     left: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
@@ -73,6 +75,7 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
     right: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
@@ -89,6 +92,7 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
     none: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {

@@ -17,25 +17,25 @@ if (typeof globalObject !== "undefined") {
     BABYLON.GLTF2.Exporter.Extensions = BABYLON.GLTF2.Exporter.Extensions || {};
 
     const keys = [];
-    for (var key in Exporters) {
+    for (const key in Exporters) {
         BABYLON[key] = (<any>Exporters)[key];
         keys.push(key);
     }
-    for (var key in Datas) {
+    for (const key in Datas) {
         BABYLON[key] = (<any>Datas)[key];
         keys.push(key);
     }
-    for (var key in Serializers) {
+    for (const key in Serializers) {
         BABYLON[key] = (<any>Serializers)[key];
         keys.push(key);
     }
 
-    for (var key in Extensions) {
+    for (const key in Extensions) {
         BABYLON.GLTF2.Exporter.Extensions[key] = (<any>Extensions)[key];
         keys.push(key);
     }
 
-    for (var key in GLTF2) {
+    for (const key in GLTF2) {
         // Prevent Reassignment.
         if (keys.indexOf(key) > -1) {
             continue;

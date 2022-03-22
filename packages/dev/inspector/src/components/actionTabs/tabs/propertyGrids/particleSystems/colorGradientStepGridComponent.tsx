@@ -106,7 +106,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                         min={0}
                         max={1.0}
                         value={gradient.gradient}
-                        onPointerUp={(evt) => this.onPointerUp()}
+                        onPointerUp={() => this.onPointerUp()}
                         onChange={(evt) => this.updateGradient(parseFloat(evt.target.value))}
                     />
                 </div>

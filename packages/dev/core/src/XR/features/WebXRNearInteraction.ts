@@ -136,7 +136,7 @@ export interface IWebXRNearInteractionOptions {
  * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
  */
 export class WebXRNearInteraction extends WebXRAbstractFeature {
-    private static _idCounter = 200;
+    private static _IdCounter = 200;
 
     private _tmpRay: Ray = new Ray(new Vector3(), new Vector3());
 
@@ -163,7 +163,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             hoverInteraction: false,
             nearInteraction: false,
             grabInteraction: false,
-            id: WebXRNearInteraction._idCounter++,
+            id: WebXRNearInteraction._IdCounter++,
             pickedPointVisualCue: selectionMesh,
         };
 
@@ -372,6 +372,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         break;
                     }
                 }
+                // eslint-disable-next-line no-fallthrough
                 case ControllerOrbAnimationState.HOVER: {
                     controllerData.touchCollisionMeshFunction(true);
                     if (newState === ControllerOrbAnimationState.TOUCH) {
@@ -387,6 +388,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         break;
                     }
                 }
+                // eslint-disable-next-line no-fallthrough
                 case ControllerOrbAnimationState.HOVER: {
                     controllerData.hydrateCollisionMeshFunction(false);
                     if (newState === ControllerOrbAnimationState.DEHYDRATED) {

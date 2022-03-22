@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness, WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";

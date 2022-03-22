@@ -26,7 +26,7 @@ export class Footer extends React.Component<IFooterProps> {
 
     public constructor(props: IFooterProps) {
         super(props);
-        props.globalState.onSceneLoaded.add((info) => {
+        props.globalState.onSceneLoaded.add(() => {
             this._updateCameraNames();
             this.forceUpdate();
         });
@@ -69,6 +69,7 @@ export class Footer extends React.Component<IFooterProps> {
         let variantNames: string[] = [];
         let hasVariants = false;
         let activeEntry = () => "";
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let switchVariant = (name: string, index: number) => {};
         const variantExtension = this._getVariantsExtension();
         if (variantExtension && this.props.globalState.currentScene) {
@@ -117,7 +118,7 @@ export class Footer extends React.Component<IFooterProps> {
                         globalState={this.props.globalState}
                         enabled={true}
                         icon={iconOpen}
-                        onFilesPicked={(evt, files) => {
+                        onFilesPicked={(evt) => {
                             this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
                             this.props.globalState.filesInput.loadFiles(evt);
                         }}

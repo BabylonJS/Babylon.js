@@ -10,6 +10,7 @@ interface INumericInputComponentProps {
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static defaultProps = {
         step: 1,
     };
@@ -37,7 +38,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
     updateValue(evt: any) {
         const value = evt.target.value;
 
-        if (/[^0-9\.\-]/g.test(value)) {
+        if (/[^0-9.-]/g.test(value)) {
             return;
         }
 
@@ -64,7 +65,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                 <input
                     type="number"
                     onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
-                    onBlur={(evt) => {
+                    onBlur={() => {
                         this.props.globalState.blockKeyboardEvents = false;
                     }}
                     step={this.props.step}

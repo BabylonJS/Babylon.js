@@ -17,6 +17,7 @@ const NAME = "KHR_lights_punctual";
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
     /** The name of this extension. */
     public readonly name = NAME;
@@ -63,7 +64,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @returns nullable INode promise
      */
     public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: { [key: number]: number }): Promise<Nullable<INode>> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (node && babylonNode instanceof ShadowLight) {
                 const babylonLight: ShadowLight = babylonNode;
                 let light: IKHRLightsPunctual_Light;

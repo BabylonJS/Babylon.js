@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { serializeAsColor4, serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
 import { Matrix, Vector3, Vector4 } from "core/Maths/math.vector";
@@ -290,7 +291,7 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;

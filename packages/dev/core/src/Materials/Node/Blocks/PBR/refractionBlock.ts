@@ -10,7 +10,6 @@ import { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { Nullable } from "../../../../types";
 import { BaseTexture } from "../../../Textures/baseTexture";
 import { Mesh } from "../../../../Meshes/mesh";
-import { SubMesh } from "../../../../Meshes/subMesh";
 import { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { Scene } from "../../../../scene";
@@ -223,7 +222,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         const refractionTexture = this._getTexture();

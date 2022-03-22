@@ -75,7 +75,7 @@ export class WebXRCamera extends FreeCamera {
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
         // applied to the rest of the elements using the referenceSpace object
         this._xrSessionManager.onXRFrameObservable.add(
-            (frame) => {
+            () => {
                 if (this._firstFrame) {
                     this._updateFromXRSession();
                 }

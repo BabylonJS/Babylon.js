@@ -3,15 +3,15 @@ import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 
-export class imageSourceDisplayManager implements IDisplayManager {
+export class ImageSourceDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
     private _previewImage: HTMLImageElement;
 
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return true;
     }
 
@@ -19,7 +19,7 @@ export class imageSourceDisplayManager implements IDisplayManager {
         return block.name;
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(): string {
         return "#323232";
     }
 

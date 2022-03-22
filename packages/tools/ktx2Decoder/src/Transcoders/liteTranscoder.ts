@@ -27,10 +27,12 @@ export class LiteTranscoder extends Transcoder {
         return this._modulePromise;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected get memoryManager(): WASMMemoryManager {
         return this._memoryManager;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected setModulePath(modulePath: string): void {
         this._modulePath = modulePath;
     }

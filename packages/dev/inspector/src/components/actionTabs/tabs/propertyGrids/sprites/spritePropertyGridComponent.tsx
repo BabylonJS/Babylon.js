@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 
 import { Observable } from "core/Misc/observable";
@@ -26,14 +27,14 @@ interface ISpritePropertyGridComponentProps {
 }
 
 export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
-    private canvasRef: React.RefObject<HTMLCanvasElement>;
-    private imageData: Nullable<Uint8Array> = null;
-    private cachedCellIndex = -1;
+    private _canvasRef: React.RefObject<HTMLCanvasElement>;
+    private _imageData: Nullable<Uint8Array> = null;
+    private _cachedCellIndex = -1;
 
     constructor(props: ISpritePropertyGridComponentProps) {
         super(props);
 
-        this.canvasRef = React.createRef();
+        this._canvasRef = React.createRef();
     }
 
     onManagerLink() {
@@ -74,7 +75,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
 
     shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps) {
         if (nextProps.sprite !== this.props.sprite) {
-            this.imageData = null;
+            this._imageData = null;
         }
 
         return true;
@@ -86,22 +87,22 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         const texture = manager.texture;
         const size = texture.getSize();
 
-        if (!this.imageData) {
+        if (!this._imageData) {
             TextureHelper.GetTextureDataAsync(texture, size.width, size.height, 0, { R: true, G: true, B: true, A: true }, this.props.globalState).then((data) => {
-                this.imageData = data;
+                this._imageData = data;
                 this.forceUpdate();
             });
 
             return;
         }
 
-        if (this.cachedCellIndex === sprite.cellIndex) {
+        if (this._cachedCellIndex === sprite.cellIndex) {
             return;
         }
 
-        this.cachedCellIndex = sprite.cellIndex;
+        this._cachedCellIndex = sprite.cellIndex;
 
-        const previewCanvas = this.canvasRef.current as HTMLCanvasElement;
+        const previewCanvas = this._canvasRef.current as HTMLCanvasElement;
         previewCanvas.width = manager.cellWidth;
         previewCanvas.height = manager.cellHeight;
         const context = previewCanvas.getContext("2d");
@@ -120,10 +121,10 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                 for (let y = 0; y < manager.cellHeight; y++) {
                     const targetCoord = (x + y * manager.cellWidth) * 4;
                     const sourceCoord = (x + y * size.width) * 4;
-                    castData[targetCoord] = this.imageData[offset + sourceCoord];
-                    castData[targetCoord + 1] = this.imageData[offset + sourceCoord + 1];
-                    castData[targetCoord + 2] = this.imageData[offset + sourceCoord + 2];
-                    castData[targetCoord + 3] = this.imageData[offset + sourceCoord + 3];
+                    castData[targetCoord] = this._imageData[offset + sourceCoord];
+                    castData[targetCoord + 1] = this._imageData[offset + sourceCoord + 1];
+                    castData[targetCoord + 2] = this._imageData[offset + sourceCoord + 2];
+                    castData[targetCoord + 3] = this._imageData[offset + sourceCoord + 3];
                 }
             }
 
@@ -181,7 +182,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                 </LineContainerComponent>
                 <LineContainerComponent title="CELL" selection={this.props.globalState}>
                     <canvas
-                        ref={this.canvasRef}
+                        ref={this._canvasRef}
                         className="preview"
                         style={{
                             margin: "auto",

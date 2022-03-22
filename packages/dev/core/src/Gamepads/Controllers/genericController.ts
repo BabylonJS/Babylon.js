@@ -4,7 +4,6 @@ import { SceneLoader } from "../../Loading/sceneLoader";
 
 import { WebVRController } from "./webVRController";
 import { ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
-import { GamepadButtonChanges } from "../../Gamepads/gamepad";
 
 /**
  * Generic Controller
@@ -46,9 +45,8 @@ export class GenericController extends WebVRController {
      * Called once for each button that changed state since the last frame
      * @param buttonIdx Which button index changed
      * @param state New state of the button
-     * @param changes Which properties on the state changed since last frame
      */
-    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton) {
         console.log("Button id: " + buttonIdx + "state: ");
         console.dir(state);
     }

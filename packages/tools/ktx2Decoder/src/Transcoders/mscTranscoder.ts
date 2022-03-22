@@ -75,6 +75,7 @@ export class MSCTranscoder extends Transcoder {
         return this._mscBasisTranscoderPromise;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return true;
     }

@@ -10,7 +10,7 @@ export class StringTools {
      */
     private static _SaveAs(blob: Blob, name: string, document: HTMLDocument) {
         if ("download" in HTMLAnchorElement.prototype) {
-            var URL = window.URL || window.webkitURL;
+            const URL = window.URL || window.webkitURL;
             const a = document.createElement("a");
 
             a.download = name;
@@ -52,7 +52,7 @@ export class StringTools {
             };
             reader.readAsDataURL(blob);
         } else {
-            var URL = window.URL || window.webkitURL;
+            const URL = window.URL || window.webkitURL;
             const url = URL.createObjectURL(blob);
             if (popup) {
                 popup.location.href = url;
