@@ -73,7 +73,7 @@
         //   "react/self-closing-comp": "error",
         "import/no-unresolved": "off", // because of the way the repo is structured
         // todo - make this work with external modules
-        // "import/named": "error",
+        "import/named": "error",
         "import/no-cycle": [1, { "maxDepth": 1, "ignoreExternal": true }],
         "import/no-internal-modules": [
             "error",
@@ -89,9 +89,10 @@
         //       "message": "Do not import from index"
         //     }]
         // }],
-        "no-duplicate-imports": ["error", { "includeExports": true }],
+        // "no-duplicate-imports": ["error", { "includeExports": true }],
         // should be error, no?
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "@typescript-eslint/consistent-type-imports": ["error", { "disallowTypeAnnotations": false }],
         "@typescript-eslint/naming-convention": [
             "warn",
             {
