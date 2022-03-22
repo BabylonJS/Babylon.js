@@ -75,7 +75,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                             return;
                         } else {
                             leftOvers.forEach((i) => {
-                                leftImports.push(ts.factory.updateImportSpecifier(i, true, i.propertyName, i.name));
+                                leftImports.push(ts.factory.updateImportSpecifier(i, false, i.propertyName, i.name));
                             });
                         }
                     }
