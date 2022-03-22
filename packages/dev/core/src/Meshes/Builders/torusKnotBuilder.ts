@@ -171,7 +171,7 @@ export function CreateTorusKnot(
         frontUVs?: Vector4;
         backUVs?: Vector4;
     } = {},
-    scene: any
+    scene?: Scene
 ): Mesh {
     const torusKnot = new Mesh(name, scene);
 
