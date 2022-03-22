@@ -173,7 +173,7 @@ export const evaluateEventListenerAugmentation = async () => {
             window.eventsRegistered[a].numberRemoved += window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded;
             window.eventsRegistered[a].registeredFunctions[registered] = null;
         } else {
-            console.error("could not find registered function");
+            // console.error("could not find registered function");
         }
     };
 };
