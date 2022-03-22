@@ -378,7 +378,7 @@ export function CreateCylinder(
         frontUVs?: Vector4;
         backUVs?: Vector4;
     } = {},
-    scene: any
+    scene?: Nullable<Scene>
 ): Mesh {
     const cylinder = new Mesh(name, scene);
 
