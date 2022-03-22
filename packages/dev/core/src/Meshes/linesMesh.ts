@@ -6,7 +6,6 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
-import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 
@@ -45,7 +44,7 @@ export class LinesMesh extends Mesh {
         return shader.getClassName() === "ShaderMaterial";
     }
 
-    private color4: Color4;
+    private _color4: Color4;
 
     /**
      * Creates a new LinesMesh
@@ -102,7 +101,7 @@ export class LinesMesh extends Mesh {
 
         if (!useVertexColor) {
             options.uniforms.push("color");
-            this.color4 = new Color4();
+            this._color4 = new Color4();
         } else {
             options.defines.push("#define VERTEXCOLOR");
             options.attributes.push(VertexBuffer.ColorKind);
@@ -157,12 +156,9 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @param subMesh
-     * @param effect
-     * @param fillMode
      * @hidden
      */
-    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
+    public _bind(): Mesh {
         if (!this._geometry) {
             return this;
         }
@@ -179,8 +175,8 @@ export class LinesMesh extends Mesh {
         // Color
         if (!this.useVertexColor && this._isShaderMaterial(this._lineMaterial)) {
             const { r, g, b } = this.color;
-            this.color4.set(r, g, b, this.alpha);
-            this._lineMaterial.setColor4("color", this.color4);
+            this._color4.set(r, g, b, this.alpha);
+            this._lineMaterial.setColor4("color", this._color4);
         }
 
         return this;

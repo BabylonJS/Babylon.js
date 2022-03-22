@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../types";
 import { Material } from "./material";
 import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
@@ -9,11 +10,9 @@ import { IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";
-import { SubMesh } from "../Meshes/subMesh";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type StandardMaterial = import("./standardMaterial").StandardMaterial;
 declare type PBRBaseMaterial = import("./PBR/pbrBaseMaterial").PBRBaseMaterial;
 
@@ -112,7 +111,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialDetailMapDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefines(defines: MaterialDetailMapDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
 
@@ -131,7 +130,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         }
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
         }

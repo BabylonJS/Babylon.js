@@ -7,7 +7,6 @@ import { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
 import { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
@@ -308,7 +307,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -359,7 +358,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect) {
         if (!this.texture) {
             return;
         }

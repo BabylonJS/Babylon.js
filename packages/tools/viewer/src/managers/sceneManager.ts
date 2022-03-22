@@ -87,7 +87,7 @@ export class SceneManager {
      */
     onModelsConfiguredObservable: Observable<IPostConfigurationCallback<Array<ViewerModel>, IModelConfiguration>>;
     /**
-     * Will notify after the envirnoment was configured. Can be used to further configure the environment
+     * Will notify after the environment was configured. Can be used to further configure the environment
      */
     onEnvironmentConfiguredObservable: Observable<
         IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean; ground?: IGroundConfiguration | boolean }>
@@ -119,15 +119,13 @@ export class SceneManager {
      */
     public environmentHelper?: EnvironmentHelper;
 
-    private _animationBlendingEnabled: boolean = true;
-
     //The following are configuration objects, default values.
     protected _defaultHighpTextureType: number;
     protected _shadowGeneratorBias: number;
     protected _defaultPipelineTextureType: number;
 
     /**
-     * The maximum number of shadows supported by the curent viewer
+     * The maximum number of shadows supported by the current viewer
      */
     protected _maxShadows: number;
     /**
@@ -318,13 +316,13 @@ export class SceneManager {
 
     private _groundMirrorEnabled = true;
     /**
-     * gets wether the reflection is disabled.
+     * gets whether the reflection is disabled.
      */
     public get groundMirrorEnabled(): boolean {
         return this._groundMirrorEnabled;
     }
     /**
-     * sets wether the reflection is disabled.
+     * sets whether the reflection is disabled.
      */
     public set groundMirrorEnabled(value: boolean) {
         if (this._groundMirrorEnabled === value) {
@@ -383,10 +381,9 @@ export class SceneManager {
     /**
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      * @param sceneConfiguration
-     * @param optimizerConfiguration
      */
-    public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
-        // if the scen exists, dispose it.
+    public initScene(sceneConfiguration: ISceneConfiguration = {}): Promise<Scene> {
+        // if the scene exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
         }
@@ -441,7 +438,6 @@ export class SceneManager {
     /**
      * This will update the scene's configuration, including camera, lights, environment.
      * @param newConfiguration the delta that should be configured. This includes only the changes
-     * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>) {
         if (this._configurationContainer) {
@@ -485,7 +481,7 @@ export class SceneManager {
         }
 
         if (newConfiguration.lab) {
-            // rendering piplines
+            // rendering pipelines
             if (newConfiguration.lab.defaultRenderingPipelines) {
                 const pipelineConfig = newConfiguration.lab.defaultRenderingPipelines;
                 if (typeof pipelineConfig === "boolean") {
@@ -605,6 +601,7 @@ export class SceneManager {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setDefaultMaterial(sceneConfig: ISceneConfiguration) {}
 
     /**
@@ -898,15 +895,9 @@ export class SceneManager {
     /**
      * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
      * @param cameraConfig the new camera configuration
-     * @param model optionally use the model to configure the camera.
      */
     protected _configureCamera(cameraConfig: ICameraConfiguration = {}) {
         if (!this.scene.activeCamera) {
-            let attachControl = true;
-            if (this._globalConfiguration.scene && this._globalConfiguration.scene.disableCameraControl) {
-                attachControl = false;
-            }
-
             // Inline scene.createDefaultCamera to reduce file size
             // Dispose existing camera in replace mode.
             if (this.scene.activeCamera) {
@@ -919,7 +910,6 @@ export class SceneManager {
                 const worldSize = worldExtends.max.subtract(worldExtends.min);
                 const worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-                let camera: ArcRotateCamera;
                 let radius = worldSize.length() * 1.5;
                 // empty scene scenario!
                 if (!isFinite(radius)) {
@@ -930,7 +920,7 @@ export class SceneManager {
                 const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
                 arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                 arcRotateCamera.wheelPrecision = 100 / radius;
-                camera = arcRotateCamera;
+                const camera = arcRotateCamera;
 
                 camera.minZ = radius * 0.01;
                 camera.maxZ = radius * 1000;
@@ -1210,9 +1200,7 @@ export class SceneManager {
 
     /**
      * configure the lights.
-     *
      * @param lightsConfiguration the (new) light(s) configuration
-     * @param model optionally use the model to configure the camera.
      */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}) {
         // sanity check!
@@ -1234,7 +1222,7 @@ export class SceneManager {
                 });
             }
 
-            lightKeys.forEach((name, idx) => {
+            lightKeys.forEach((name) => {
                 let lightConfig: ILightConfiguration = { type: 0 };
                 if (typeof lightsConfiguration[name] === "object") {
                     lightConfig = <ILightConfiguration>lightsConfiguration[name];
@@ -1332,7 +1320,7 @@ export class SceneManager {
                         //override defaults
                         extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
 
-                        // add the focues meshes to the shadow list
+                        // add the focus meshes to the shadow list
                         this._observablesManager &&
                             this._observablesManager.onModelLoadedObservable.add((model) => {
                                 this._updateShadowRenderList(shadowGenerator, model);
@@ -1352,6 +1340,7 @@ export class SceneManager {
             Object.keys(globalLightsConfiguration)
                 .sort()
                 .forEach((name, idx) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const configuration = globalLightsConfiguration[name];
                     const light = this.scene.getLightByName(name);
                     // sanity check
@@ -1373,7 +1362,7 @@ export class SceneManager {
 
     private _updateShadowRenderList(shadowGenerator: ShadowGenerator, model?: ViewerModel, resetList?: boolean) {
         const focusMeshes = model ? model.meshes : this.scene.meshes;
-        // add the focues meshes to the shadow list
+        // add the focus meshes to the shadow list
         const shadownMap = shadowGenerator.getShadowMap();
         if (!shadownMap) {
             return;
@@ -1490,7 +1479,7 @@ export class SceneManager {
     }
 
     /**
-     * Dispoe the entire viewer including the scene and the engine
+     * Dispose the entire viewer including the scene and the engine
      */
     public dispose() {
         // this.onCameraConfiguredObservable.clear();
@@ -1555,8 +1544,7 @@ export class SceneManager {
             | {
                   type: number;
                   [propName: string]: any;
-              },
-        payload?: any
+              }
     ) {
         let behavior: Behavior<ArcRotateCamera> | null;
         let type: number;

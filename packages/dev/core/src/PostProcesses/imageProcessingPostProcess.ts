@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 import { serialize } from "../Misc/decorators";
@@ -379,7 +380,7 @@ export class ImageProcessingPostProcess extends PostProcess {
             imageProcessingConfiguration.applyByPostProcess = true;
             this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
             // This will cause the shader to be compiled
-            this.fromLinearSpace = false;
+            this._updateParameters();
         }
         // Setup the default processing configuration to the scene.
         else {

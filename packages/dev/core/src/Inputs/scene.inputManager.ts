@@ -16,6 +16,7 @@ import { EngineStore } from "../Engines/engineStore";
 declare type Scene = import("../scene").Scene;
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 class _ClickInfo {
     private _singleClick = false;
     private _doubleClick = false;
@@ -507,7 +508,7 @@ export class InputManager {
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
-        this._initActionManager = (act: Nullable<AbstractActionManager>, _clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
+        this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;

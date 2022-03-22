@@ -227,7 +227,7 @@ export class MultiMaterial extends Material {
         }
 
         if (forceDisposeChildren) {
-            for (var index = 0; index < this.subMaterials.length; index++) {
+            for (let index = 0; index < this.subMaterials.length; index++) {
                 const subMaterial = this.subMaterials[index];
                 if (subMaterial) {
                     subMaterial.dispose(forceDisposeEffect, forceDisposeTextures);
@@ -235,7 +235,7 @@ export class MultiMaterial extends Material {
             }
         }
 
-        var index = scene.multiMaterials.indexOf(this);
+        const index = scene.multiMaterials.indexOf(this);
         if (index >= 0) {
             scene.multiMaterials.splice(index, 1);
         }

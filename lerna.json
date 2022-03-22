@@ -1,4 +1,5 @@
 {
     "packages": ["packages/**/*"],
-    "version": "independent"
+    "version": "independent",
+    "allowBranch": ["master", "preview"]
 }

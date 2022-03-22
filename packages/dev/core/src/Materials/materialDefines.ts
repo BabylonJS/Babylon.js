@@ -49,7 +49,7 @@ export class MaterialDefines {
         // Initialize External Properties
         if (externalProperties) {
             for (const prop in externalProperties) {
-                if (externalProperties.hasOwnProperty(prop)) {
+                if (Object.prototype.hasOwnProperty.call(externalProperties, prop)) {
                     this._setDefaultValue(prop);
                 }
             }

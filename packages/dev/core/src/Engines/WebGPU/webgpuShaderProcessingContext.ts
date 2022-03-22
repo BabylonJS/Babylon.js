@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 

@@ -22,6 +22,7 @@ env: {
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev"; // || "lts";
     const basePathForSources = path.resolve(__dirname, "../../", source);
+    const basePathForTools = path.resolve(__dirname, "../../", "tools");
     const externals = externalsFunction();
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
@@ -59,6 +60,8 @@ module.exports = (env) => {
                 "shared-ui-components": path.resolve(__dirname, "../../", "dev", "sharedUiComponents", outputDirectoryForAliases),
                 "post-processes": path.resolve(basePathForSources, "postProcesses", outputDirectoryForAliases),
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
+                "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
+                "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],

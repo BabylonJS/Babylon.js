@@ -1,7 +1,7 @@
 import { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from "../../types";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
@@ -588,7 +588,6 @@ export function CreatePolyhedronVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.type
- * @param scene defines the hosting scene
  * @param options.size
  * @param options.sizeX
  * @param options.sizeY
@@ -601,6 +600,7 @@ export function CreatePolyhedronVertexData(options: {
  * @param options.sideOrientation
  * @param options.frontUVs
  * @param options.backUVs
+ * @param scene defines the hosting scene
  * @returns the polyhedron mesh
  * @see https://doc.babylonjs.com/how_to/polyhedra_shapes
  */
@@ -640,6 +640,7 @@ export function CreatePolyhedron(
  * @deprecated use the function directly from the module
  */
 export const PolyhedronBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreatePolyhedron,
 };
 

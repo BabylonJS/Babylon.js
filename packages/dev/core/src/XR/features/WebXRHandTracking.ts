@@ -515,10 +515,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     // We want to use lightweight models, diameter will initially be 1 but scaled to the values returned from WebXR.
     private static readonly _ICOSPHERE_PARAMS = { radius: 0.5, flat: false, subdivisions: 2 };
 
-    private static rightHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
-    private static leftHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
+    private static _RightHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
+    private static _LeftHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
 
-    private static _generateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[]; right: AbstractMesh[] } {
+    private static _GenerateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[]; right: AbstractMesh[] } {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
@@ -553,27 +553,28 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         return { left: meshes.left, right: meshes.right };
     }
 
-    private static _generateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
+    private static _GenerateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
             // check the cache, defensive
-            if (WebXRHandTracking.rightHandGLB?.meshes[1]?.isDisposed()) {
-                WebXRHandTracking.rightHandGLB = null;
+            if (WebXRHandTracking._RightHandGLB?.meshes[1]?.isDisposed()) {
+                WebXRHandTracking._RightHandGLB = null;
             }
-            if (WebXRHandTracking.leftHandGLB?.meshes[1]?.isDisposed()) {
-                WebXRHandTracking.leftHandGLB = null;
+            if (WebXRHandTracking._LeftHandGLB?.meshes[1]?.isDisposed()) {
+                WebXRHandTracking._LeftHandGLB = null;
             }
 
-            const handsDefined = !!(WebXRHandTracking.rightHandGLB && WebXRHandTracking.leftHandGLB);
+            const handsDefined = !!(WebXRHandTracking._RightHandGLB && WebXRHandTracking._LeftHandGLB);
             // load them in parallel
             const handGLBs = await Promise.all([
-                WebXRHandTracking.rightHandGLB ||
+                WebXRHandTracking._RightHandGLB ||
                     SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene),
-                WebXRHandTracking.leftHandGLB ||
+                WebXRHandTracking._LeftHandGLB ||
                     SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene),
             ]);
-            WebXRHandTracking.rightHandGLB = handGLBs[0];
-            WebXRHandTracking.leftHandGLB = handGLBs[1];
+            WebXRHandTracking._RightHandGLB = handGLBs[0];
+            WebXRHandTracking._LeftHandGLB = handGLBs[1];
 
             const handShader = new NodeMaterial("handShader", scene, { emitComments: false });
             await handShader.loadAsync(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
@@ -608,7 +609,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             handNodes.tipFresnel.value = handColors.tipFresnel;
 
             ["left", "right"].forEach((handedness) => {
-                const handGLB = handedness == "left" ? WebXRHandTracking.leftHandGLB : WebXRHandTracking.rightHandGLB;
+                const handGLB = handedness == "left" ? WebXRHandTracking._LeftHandGLB : WebXRHandTracking._RightHandGLB;
                 if (!handGLB) {
                     // this should never happen!
                     throw new Error("Could not load hand model");
@@ -635,7 +636,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * Generates a mapping from XRHandJoint to bone name for the default hand mesh.
      * @param handedness The handedness being mapped for.
      */
-    private static _generateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
+    private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
         const H = handedness == "right" ? "R" : "L";
         return {
             [XRHandJoint.WRIST]: `wrist_${H}`,
@@ -782,18 +783,18 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         }
 
         this._handResources = {
-            jointMeshes: WebXRHandTracking._generateTrackedJointMeshes(this.options),
+            jointMeshes: WebXRHandTracking._GenerateTrackedJointMeshes(this.options),
             handMeshes: this.options.handMeshes?.customMeshes || null,
             rigMappings: this.options.handMeshes?.customRigMappings || null,
         };
 
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
-            WebXRHandTracking._generateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
+            WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {
-                    left: WebXRHandTracking._generateDefaultHandMeshRigMapping("left"),
-                    right: WebXRHandTracking._generateDefaultHandMeshRigMapping("right"),
+                    left: WebXRHandTracking._GenerateDefaultHandMeshRigMapping("left"),
+                    right: WebXRHandTracking._GenerateDefaultHandMeshRigMapping("right"),
                 };
 
                 // Apply meshes to existing hands if already tracking.
@@ -882,8 +883,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             this._handResources.handMeshes.left.dispose();
             this._handResources.handMeshes.right.dispose();
             // remove the cached meshes
-            WebXRHandTracking.rightHandGLB = null;
-            WebXRHandTracking.leftHandGLB = null;
+            WebXRHandTracking._RightHandGLB = null;
+            WebXRHandTracking._LeftHandGLB = null;
         }
 
         if (this._handResources.jointMeshes) {

@@ -2,9 +2,11 @@ import { IWebRequest } from "./interfaces/iWebRequest";
 import { Nullable } from "../types";
 import { INative } from "../Engines/Native/nativeInterfaces";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function createXMLHttpRequest(): XMLHttpRequest {
     // If running in Babylon Native, then defer to the native XMLHttpRequest, which has the same public contract
     if (typeof _native !== "undefined" && _native.XMLHttpRequest) {

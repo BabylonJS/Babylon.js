@@ -66,7 +66,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                         min={0}
                         max={1.0}
                         value={step.step}
-                        onPointerUp={(evt) => this.onPointerUp()}
+                        onPointerUp={() => this.onPointerUp()}
                         onChange={(evt) => this.updateStep(parseFloat(evt.target.value))}
                     />
                 </div>

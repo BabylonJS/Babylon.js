@@ -108,6 +108,7 @@ export class SubEmitter {
      * @param doNotStart
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
         throw _WarnImport("ParseParticle");
     }

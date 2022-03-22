@@ -123,7 +123,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                <div className="ge-divider-short">
+                <div className="ge-divider double">
                     <FloatLineComponent
                         iconLabel={"Value"}
                         icon={sliderValueIcon}

@@ -6,6 +6,7 @@ export interface IColorComponentEntryProps {
     max?: number;
     min?: number;
     onChange: (value: number) => void;
+    disabled?: boolean;
 }
 
 export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
@@ -14,7 +15,7 @@ export class ColorComponentEntry extends React.Component<IColorComponentEntryPro
     }
 
     updateValue(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
@@ -37,7 +38,14 @@ export class ColorComponentEntry extends React.Component<IColorComponentEntryPro
         return (
             <div className="color-picker-component">
                 <div className="color-picker-component-value">
-                    <input type="number" step={1} className="numeric-input" value={this.props.value} onChange={(evt) => this.updateValue(evt.target.value)} />
+                    <input
+                        type="number"
+                        step={1}
+                        className="numeric-input"
+                        value={this.props.value}
+                        onChange={(evt) => this.updateValue(evt.target.value)}
+                        disabled={this.props.disabled}
+                    />
                 </div>
                 <div className="color-picker-component-label">{this.props.label}</div>
             </div>

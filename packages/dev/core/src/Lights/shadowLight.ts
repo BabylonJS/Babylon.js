@@ -249,6 +249,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param faceIndex The index of the face we are computed the direction to generate shadow
      * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getShadowDirection(faceIndex?: number): Vector3 {
         return this.transformedDirection ? this.transformedDirection : this.direction;
     }

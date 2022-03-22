@@ -140,11 +140,11 @@ namespace Levenshtein {
         private _characters: number[];
 
         // Scratch values
-        private static readonly MAX_SEQUENCE_LENGTH = 256;
-        private static _costMatrix = [...Array(Sequence.MAX_SEQUENCE_LENGTH + 1)].map((n) => new Array<number>(Sequence.MAX_SEQUENCE_LENGTH + 1));
-        private static _insertionCost: number;
-        private static _deletionCost: number;
-        private static _substitutionCost: number;
+        private static readonly _MAX_SEQUENCE_LENGTH = 256;
+        private static _CostMatrix = [...Array(Sequence._MAX_SEQUENCE_LENGTH + 1)].map(() => new Array<number>(Sequence._MAX_SEQUENCE_LENGTH + 1));
+        private static _InsertionCost: number;
+        private static _DeletionCost: number;
+        private static _SubstitutionCost: number;
 
         /**
          * Serialize to JSON string. JSON representation does NOT include the Alphabet
@@ -176,8 +176,8 @@ namespace Levenshtein {
          * @param alphabet Alphabet, which must include all used characters
          */
         public constructor(characters: T[], alphabet: Alphabet<T>) {
-            if (characters.length > Sequence.MAX_SEQUENCE_LENGTH) {
-                throw new Error("Sequences longer than " + Sequence.MAX_SEQUENCE_LENGTH + " not supported.");
+            if (characters.length > Sequence._MAX_SEQUENCE_LENGTH) {
+                throw new Error("Sequences longer than " + Sequence._MAX_SEQUENCE_LENGTH + " not supported.");
             }
             this._alphabet = alphabet;
             this._characters = characters.map((c) => this._alphabet.getCharacterIdx(c));
@@ -189,7 +189,7 @@ namespace Levenshtein {
          * @returns Levenshtein distance
          */
         public distance(other: Sequence<T>): number {
-            return Sequence._distance<T>(this, other);
+            return Sequence._Distance<T>(this, other);
         }
 
         /**
@@ -198,7 +198,7 @@ namespace Levenshtein {
          * @param b second Sequence
          * @returns Levenshtein distance
          */
-        private static _distance<T>(a: Sequence<T>, b: Sequence<T>): number {
+        private static _Distance<T>(a: Sequence<T>, b: Sequence<T>): number {
             const alphabet = a._alphabet;
             if (alphabet !== b._alphabet) {
                 throw new Error("Cannot Levenshtein compare Sequences built from different alphabets.");
@@ -208,7 +208,7 @@ namespace Levenshtein {
             const aLength = aChars.length;
             const bLength = bChars.length;
 
-            const costMatrix = Sequence._costMatrix;
+            const costMatrix = Sequence._CostMatrix;
             costMatrix[0][0] = 0;
             for (let idx = 0; idx < aLength; ++idx) {
                 costMatrix[idx + 1][0] = costMatrix[idx][0] + alphabet.getInsertionCost(aChars[idx]);
@@ -219,11 +219,11 @@ namespace Levenshtein {
 
             for (let aIdx = 0; aIdx < aLength; ++aIdx) {
                 for (let bIdx = 0; bIdx < bLength; ++bIdx) {
-                    Sequence._insertionCost = costMatrix[aIdx + 1][bIdx] + alphabet.getInsertionCost(bChars[bIdx]);
-                    Sequence._deletionCost = costMatrix[aIdx][bIdx + 1] + alphabet.getDeletionCost(aChars[aIdx]);
-                    Sequence._substitutionCost = costMatrix[aIdx][bIdx] + alphabet.getSubstitutionCost(aChars[aIdx], bChars[bIdx]);
+                    Sequence._InsertionCost = costMatrix[aIdx + 1][bIdx] + alphabet.getInsertionCost(bChars[bIdx]);
+                    Sequence._DeletionCost = costMatrix[aIdx][bIdx + 1] + alphabet.getDeletionCost(aChars[aIdx]);
+                    Sequence._SubstitutionCost = costMatrix[aIdx][bIdx] + alphabet.getSubstitutionCost(aChars[aIdx], bChars[bIdx]);
 
-                    costMatrix[aIdx + 1][bIdx + 1] = Math.min(Sequence._insertionCost, Sequence._deletionCost, Sequence._substitutionCost);
+                    costMatrix[aIdx + 1][bIdx + 1] = Math.min(Sequence._InsertionCost, Sequence._DeletionCost, Sequence._SubstitutionCost);
                 }
             }
 
@@ -327,19 +327,19 @@ export class Trajectory {
 
         const segmentDir = new Vector3();
         for (let idx = 2; idx < this._points.length; ++idx) {
-            if (Trajectory._transformSegmentDirToRef(this._points[idx - 2], this._points[idx - 1], this._points[idx], segmentDir)) {
-                tokenization.push(Trajectory._tokenizeSegment(segmentDir, tokens));
+            if (Trajectory._TransformSegmentDirToRef(this._points[idx - 2], this._points[idx - 1], this._points[idx], segmentDir)) {
+                tokenization.push(Trajectory._TokenizeSegment(segmentDir, tokens));
             }
         }
 
         return tokenization;
     }
 
-    private static _forwardDir = new Vector3();
-    private static _inverseFromVec = new Vector3();
-    private static _upDir = new Vector3();
-    private static _fromToVec = new Vector3();
-    private static _lookMatrix = new Matrix();
+    private static _ForwardDir = new Vector3();
+    private static _InverseFromVec = new Vector3();
+    private static _UpDir = new Vector3();
+    private static _FromToVec = new Vector3();
+    private static _LookMatrix = new Matrix();
 
     /**
      * Transform the rotation (i.e., direction) of a segment to isolate
@@ -352,30 +352,30 @@ export class Trajectory {
      * @param result reference to output variable
      * @returns whether or not transformation was successful
      */
-    private static _transformSegmentDirToRef(priorVec: DeepImmutable<Vector3>, fromVec: DeepImmutable<Vector3>, toVec: DeepImmutable<Vector3>, result: Vector3): boolean {
+    private static _TransformSegmentDirToRef(priorVec: DeepImmutable<Vector3>, fromVec: DeepImmutable<Vector3>, toVec: DeepImmutable<Vector3>, result: Vector3): boolean {
         const DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD = 0.98;
 
-        fromVec.subtractToRef(priorVec, Trajectory._forwardDir);
-        Trajectory._forwardDir.normalize();
-        fromVec.scaleToRef(-1, Trajectory._inverseFromVec);
-        Trajectory._inverseFromVec.normalize();
+        fromVec.subtractToRef(priorVec, Trajectory._ForwardDir);
+        Trajectory._ForwardDir.normalize();
+        fromVec.scaleToRef(-1, Trajectory._InverseFromVec);
+        Trajectory._InverseFromVec.normalize();
 
-        if (Math.abs(Vector3.Dot(Trajectory._forwardDir, Trajectory._inverseFromVec)) > DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD) {
+        if (Math.abs(Vector3.Dot(Trajectory._ForwardDir, Trajectory._InverseFromVec)) > DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD) {
             return false;
         }
 
-        Vector3.CrossToRef(Trajectory._forwardDir, Trajectory._inverseFromVec, Trajectory._upDir);
-        Trajectory._upDir.normalize();
-        Matrix.LookAtLHToRef(priorVec, fromVec, Trajectory._upDir, Trajectory._lookMatrix);
-        toVec.subtractToRef(fromVec, Trajectory._fromToVec);
-        Trajectory._fromToVec.normalize();
-        Vector3.TransformNormalToRef(Trajectory._fromToVec, Trajectory._lookMatrix, result);
+        Vector3.CrossToRef(Trajectory._ForwardDir, Trajectory._InverseFromVec, Trajectory._UpDir);
+        Trajectory._UpDir.normalize();
+        Matrix.LookAtLHToRef(priorVec, fromVec, Trajectory._UpDir, Trajectory._LookMatrix);
+        toVec.subtractToRef(fromVec, Trajectory._FromToVec);
+        Trajectory._FromToVec.normalize();
+        Vector3.TransformNormalToRef(Trajectory._FromToVec, Trajectory._LookMatrix, result);
         return true;
     }
 
-    private static _bestMatch: number;
-    private static _score: number;
-    private static _bestScore: number;
+    private static _BestMatch: number;
+    private static _Score: number;
+    private static _BestScore: number;
 
     /**
      * Determine which token vector is most similar to the
@@ -384,19 +384,19 @@ export class Trajectory {
      * @param tokens token vector list
      * @returns index of the most similar token to the segment
      */
-    private static _tokenizeSegment(segment: DeepImmutable<Vector3>, tokens: DeepImmutable<Vector3[]>): number {
-        Trajectory._bestMatch = 0;
-        Trajectory._score = Vector3.Dot(segment, tokens[0]);
-        Trajectory._bestScore = Trajectory._score;
+    private static _TokenizeSegment(segment: DeepImmutable<Vector3>, tokens: DeepImmutable<Vector3[]>): number {
+        Trajectory._BestMatch = 0;
+        Trajectory._Score = Vector3.Dot(segment, tokens[0]);
+        Trajectory._BestScore = Trajectory._Score;
         for (let idx = 1; idx < tokens.length; ++idx) {
-            Trajectory._score = Vector3.Dot(segment, tokens[idx]);
-            if (Trajectory._score > Trajectory._bestScore) {
-                Trajectory._bestMatch = idx;
-                Trajectory._bestScore = Trajectory._score;
+            Trajectory._Score = Vector3.Dot(segment, tokens[idx]);
+            if (Trajectory._Score > Trajectory._BestScore) {
+                Trajectory._BestMatch = idx;
+                Trajectory._BestScore = Trajectory._Score;
             }
         }
 
-        return Trajectory._bestMatch;
+        return Trajectory._BestMatch;
     }
 }
 
@@ -505,7 +505,7 @@ class Vector3Alphabet {
  * attributes of Trajectories are and are not considered important, such as scale.
  */
 class TrajectoryDescriptor {
-    private static readonly FINEST_DESCRIPTOR_RESOLUTION = 32;
+    private static readonly _FINEST_DESCRIPTOR_RESOLUTION = 32;
 
     private _sequences: Levenshtein.Sequence<number>[];
 
@@ -540,7 +540,7 @@ class TrajectoryDescriptor {
      * @returns TrajectoryDescriptor describing provided Trajectory
      */
     public static CreateFromTrajectory(trajectory: Trajectory, vector3Alphabet: Vector3Alphabet, levenshteinAlphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
-        return TrajectoryDescriptor.CreateFromTokenizationPyramid(TrajectoryDescriptor._getTokenizationPyramid(trajectory, vector3Alphabet), levenshteinAlphabet);
+        return TrajectoryDescriptor.CreateFromTokenizationPyramid(TrajectoryDescriptor._GetTokenizationPyramid(trajectory, vector3Alphabet), levenshteinAlphabet);
     }
 
     /**
@@ -569,10 +569,10 @@ class TrajectoryDescriptor {
      * @param targetResolution finest resolution of descriptor
      * @returns tokenization pyramid for Trajectory
      */
-    private static _getTokenizationPyramid(
+    private static _GetTokenizationPyramid(
         trajectory: Trajectory,
         alphabet: Vector3Alphabet,
-        targetResolution: number = TrajectoryDescriptor.FINEST_DESCRIPTOR_RESOLUTION
+        targetResolution: number = TrajectoryDescriptor._FINEST_DESCRIPTOR_RESOLUTION
     ): number[][] {
         const pyramid: number[][] = [];
         for (let res = targetResolution; res > 4; res = Math.floor(res / 2)) {
@@ -604,7 +604,7 @@ class TrajectoryDescriptor {
  * class to facilitate methods of Trajectory clustering.
  */
 class TrajectoryClass {
-    private static readonly MIN_AVERAGE_DISTANCE = 1;
+    private static readonly _MIN_AVERAGE_DISTANCE = 1;
 
     private _descriptors: TrajectoryDescriptor[];
     private _centroidIdx: number;
@@ -707,7 +707,7 @@ class TrajectoryClass {
             this._averageDistance += desc.distance(this._descriptors[this._centroidIdx]);
         });
         if (this._descriptors.length > 0) {
-            this._averageDistance = Math.max(this._averageDistance / this._descriptors.length, TrajectoryClass.MIN_AVERAGE_DISTANCE);
+            this._averageDistance = Math.max(this._averageDistance / this._descriptors.length, TrajectoryClass._MIN_AVERAGE_DISTANCE);
         }
     }
 }

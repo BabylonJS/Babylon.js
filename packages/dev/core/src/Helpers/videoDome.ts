@@ -6,8 +6,6 @@ import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
 
-declare type Camera = import("../Cameras/camera").Camera;
-
 /**
  * Display a 360/180 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
  * As a subclass of TransformNode, this allow parenting to the camera or multiple videos with different locations in the scene.

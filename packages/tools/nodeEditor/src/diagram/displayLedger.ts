@@ -8,7 +8,7 @@ import { TextureDisplayManager } from "./display/textureDisplayManager";
 import { DiscardDisplayManager } from "./display/discardDisplayManager";
 import { PBRDisplayManager } from "./display/pbrDisplayManager";
 import { ConditionalDisplayManager } from "./display/conditionalDisplayManager";
-import { imageSourceDisplayManager } from "./display/imageSourceDisplayManager";
+import { ImageSourceDisplayManager } from "./display/imageSourceDisplayManager";
 import { ElbowDisplayManager } from "./display/elbowDisplayManager";
 
 export class DisplayLedger {
@@ -35,5 +35,5 @@ DisplayLedger.RegisteredControls["AnisotropyBlock"] = PBRDisplayManager;
 DisplayLedger.RegisteredControls["ClearCoatBlock"] = PBRDisplayManager;
 DisplayLedger.RegisteredControls["SheenBlock"] = PBRDisplayManager;
 DisplayLedger.RegisteredControls["SubSurfaceBlock"] = PBRDisplayManager;
-DisplayLedger.RegisteredControls["ImageSourceBlock"] = imageSourceDisplayManager;
+DisplayLedger.RegisteredControls["ImageSourceBlock"] = ImageSourceDisplayManager;
 DisplayLedger.RegisteredControls["ElbowBlock"] = ElbowDisplayManager;

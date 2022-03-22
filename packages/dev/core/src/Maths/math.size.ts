@@ -7,13 +7,13 @@ export interface ISize {
      */
     width: number;
     /**
-     * Heighht
+     * Height
      */
     height: number;
 }
 
 /**
- * Size containing widht and height
+ * Size containing width and height
  */
 export class Size implements ISize {
     /**

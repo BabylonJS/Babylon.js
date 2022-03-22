@@ -234,7 +234,7 @@ export class GraphNode {
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
-        for (var port of this._inputPorts) {
+        for (const port of this._inputPorts) {
             const attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
@@ -242,7 +242,7 @@ export class GraphNode {
             }
         }
 
-        for (var port of this._outputPorts) {
+        for (const port of this._outputPorts) {
             const attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
@@ -292,11 +292,11 @@ export class GraphNode {
             this._header.innerHTML = this.block.name;
         }
 
-        for (var port of this._inputPorts) {
+        for (const port of this._inputPorts) {
             port.refresh();
         }
 
-        for (var port of this._outputPorts) {
+        for (const port of this._outputPorts) {
             port.refresh();
         }
 
@@ -492,11 +492,11 @@ export class GraphNode {
             this._globalState.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
         }
 
-        for (var port of this._inputPorts) {
+        for (const port of this._inputPorts) {
             port.dispose();
         }
 
-        for (var port of this._outputPorts) {
+        for (const port of this._outputPorts) {
             port.dispose();
         }
 

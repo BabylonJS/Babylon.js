@@ -2,7 +2,7 @@ import { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SceneLoader, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
+import { SceneLoader, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import { Scene } from "core/scene";
 import { WebRequest } from "core/Misc/webRequest";
@@ -82,16 +82,17 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param loadingOptions options for loading and parsing OBJ/MTL files.
      */
     constructor(loadingOptions?: OBJLoadingOptions) {
-        this._loadingOptions = loadingOptions || OBJFileLoader.DefaultLoadingOptions;
+        this._loadingOptions = loadingOptions || OBJFileLoader._DefaultLoadingOptions;
     }
 
-    private static get DefaultLoadingOptions(): OBJLoadingOptions {
+    private static get _DefaultLoadingOptions(): OBJLoadingOptions {
         return {
             computeNormals: OBJFileLoader.COMPUTE_NORMALS,
             optimizeNormals: OBJFileLoader.OPTIMIZE_NORMALS,
             importVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
             invertY: OBJFileLoader.INVERT_Y,
             invertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             UVScaling: OBJFileLoader.UV_SCALING,
             materialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
             optimizeWithUV: OBJFileLoader.OPTIMIZE_WITH_UV,
@@ -130,16 +131,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns the created plugin
      */
     createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
-        return new OBJFileLoader(OBJFileLoader.DefaultLoadingOptions);
+        return new OBJFileLoader(OBJFileLoader._DefaultLoadingOptions);
     }
 
     /**
      * If the data string can be loaded directly.
-     *
-     * @param data string containing the file data
      * @returns if the data can be loaded directly
      */
-    public canDirectLoad(data: string): boolean {
+    public canDirectLoad(): boolean {
         return false;
     }
 
@@ -149,18 +148,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene the scene the meshes should be added to
      * @param data the OBJ data to load
      * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @param fileName Defines the name of the file to load
-     * @returns a promise containg the loaded meshes, particles, skeletons and animations
+     * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(
-        meshesNames: any,
-        scene: Scene,
-        data: any,
-        rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string
-    ): Promise<ISceneLoaderAsyncResult> {
+    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file
         return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
@@ -180,13 +170,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene the scene the objects should be added to
      * @param data the OBJ data to load
      * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @param fileName Defines the name of the file to load
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+    public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
         //Get the 3D model
-        return this.importMeshAsync(null, scene, data, rootUrl, onProgress).then(() => {
+        return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
             // return void
         });
     }
@@ -196,17 +184,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param scene The scene to load into
      * @param data The data to import
      * @param rootUrl The root url for scene and resources
-     * @param onProgress The callback when the load progresses
-     * @param fileName Defines the name of the file to load
      * @returns The loaded asset container
      */
-    public loadAssetContainerAsync(
-        scene: Scene,
-        data: string,
-        rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string
-    ): Promise<AssetContainer> {
+    public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
@@ -281,7 +261,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                     //Three variables to get all meshes with the same material
                                     let startIndex = 0;
                                     const _indices = [];
-                                    var _index;
+                                    let _index;
 
                                     //The material from MTL file is used in the meshes loaded
                                     //Push the indice in an array

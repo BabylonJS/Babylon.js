@@ -15,7 +15,7 @@ Then in JS/Typescript the viewer to be imported via:
 import * as BabylonViewer from '@babylonjs/viewer';
 ```
 
-Add a babylon element in an html file:
+Add a babylon element in a html file:
 ```
 <babylon id="babylon-viewer" camera.behaviors.auto-rotate="0"></babylon>
 ```

@@ -28,7 +28,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     private _onAnimationGroupPlayObserver: Nullable<Observer<AnimationGroup>>;
     private _onAnimationGroupPauseObserver: Nullable<Observer<AnimationGroup>>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private timelineRef: React.RefObject<SliderLineComponent>;
+    private _timelineRef: React.RefObject<SliderLineComponent>;
     private _animationCurveEditorContext: Context;
 
     constructor(props: IAnimationGroupGridComponentProps) {
@@ -43,7 +43,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
             this.updateCurrentFrame(this.props.animationGroup);
         });
 
-        this.timelineRef = React.createRef();
+        this._timelineRef = React.createRef();
     }
 
     disconnect(animationGroup: AnimationGroup) {
@@ -164,7 +164,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        ref={this.timelineRef}
+                        ref={this._timelineRef}
                         label="Current frame"
                         minimum={animationGroup.from}
                         maximum={animationGroup.to}

@@ -171,7 +171,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
             case DeviceType.DualShock:
             case DeviceType.Xbox:
             case DeviceType.Switch:
-            case DeviceType.Generic:
+            case DeviceType.Generic: {
                 delete this._firstDevice[type];
                 // eslint-disable-next-line no-case-declarations
                 const devices = this._devices[type];
@@ -184,6 +184,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
                     }
                 }
                 break;
+            }
         }
     }
 }
