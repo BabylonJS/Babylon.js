@@ -66,6 +66,9 @@ async function runTagsUpdate() {
     await runCommand(`git pull origin ${branchName ? branchName : ""}`);
     if (!dryRun) {
         await runCommand(`git push origin ${branchName} --tags`);
+    } else {
+        console.log("skipping", `git push origin ${branchName} --tags`);
+        await runCommand(`git status`);
     }
 }
 if (!branchName) {
