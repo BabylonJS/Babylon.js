@@ -1,4 +1,5 @@
 export * from "./Enums/index";
+export * from "./nodeMaterialConnectionPointCustomObject";
 export * from "./nodeMaterialBlockConnectionPoint";
 export * from "./nodeMaterialBlock";
 export * from "./nodeMaterial";
