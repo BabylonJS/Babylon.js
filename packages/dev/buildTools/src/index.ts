@@ -41,7 +41,10 @@ function runCommand() {
                 break;
             case "prepare-es6-build":
             case "peb":
-                prepareES6Build();
+                prepareES6Build().catch((e) => {
+                    console.error(e);
+                    process.exit(1);
+                });
                 break;
             case "dev-watch":
             case "dw":
