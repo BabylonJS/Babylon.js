@@ -6,6 +6,11 @@ import { TextWrapper } from "./textWrapper";
  * Class used to create a password control
  */
 export class InputPassword extends InputText {
+    
+    protected _getTypeName(): string {
+        return "InputPassword";
+    }
+
     protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper {
         const pwdTextWrapper = new TextWrapper();
         let txt = "";
