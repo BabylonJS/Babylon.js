@@ -79,6 +79,7 @@ export interface ExtendedGamepadButton extends GamepadButton {
 }
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _GamePadFactory {
     /**
      * Returns whether or not the current gamepad can be created for this type of controller.
@@ -251,12 +252,11 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
             EngineStore.LastCreatedScene.activeCamera &&
             (<WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera).devicePosition
         ) {
-            var camera = <WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera;
+            const camera = <WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera;
             camera._computeDevicePosition();
 
             this._deviceToWorld.setTranslation(camera.devicePosition);
             if (camera.deviceRotationQuaternion) {
-                var camera = camera;
                 camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(TmpVectors.Vector3[0]);
 
                 // Find the radian distance away that the headset is from the controllers rotation

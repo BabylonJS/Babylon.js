@@ -59,6 +59,7 @@ export class EasingFunction implements IEasingFunction {
      * @param gradient
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public easeInCore(gradient: number): number {
         throw new Error("You must implement this method");
     }

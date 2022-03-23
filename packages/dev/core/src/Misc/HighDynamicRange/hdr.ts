@@ -24,7 +24,7 @@ export interface HDRInfo {
  * This groups tools to convert HDR texture to native colors array.
  */
 export class HDRTools {
-    private static Ldexp(mantissa: number, exponent: number): number {
+    private static _Ldexp(mantissa: number, exponent: number): number {
         if (exponent > 1023) {
             return mantissa * Math.pow(2, 1023) * Math.pow(2, exponent - 1023);
         }
@@ -36,10 +36,10 @@ export class HDRTools {
         return mantissa * Math.pow(2, exponent);
     }
 
-    private static Rgbe2float(float32array: Float32Array, red: number, green: number, blue: number, exponent: number, index: number) {
+    private static _Rgbe2float(float32array: Float32Array, red: number, green: number, blue: number, exponent: number, index: number) {
         if (exponent > 0) {
             /*nonzero pixel*/
-            exponent = this.Ldexp(1.0, exponent - (128 + 8));
+            exponent = this._Ldexp(1.0, exponent - (128 + 8));
 
             float32array[index + 0] = red * exponent;
             float32array[index + 1] = green * exponent;
@@ -51,7 +51,7 @@ export class HDRTools {
         }
     }
 
-    private static readStringLine(uint8array: Uint8Array, startIndex: number): string {
+    private static _ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
         let line = "";
         let character = "";
 
@@ -76,11 +76,12 @@ export class HDRTools {
      * @param uint8array The binary file stored in  native array.
      * @return The header information.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
         let height: number = 0;
         let width: number = 0;
 
-        let line = this.readStringLine(uint8array, 0);
+        let line = this._ReadStringLine(uint8array, 0);
         if (line[0] != "#" || line[1] != "?") {
             throw "Bad HDR Format.";
         }
@@ -91,7 +92,7 @@ export class HDRTools {
 
         do {
             lineIndex += line.length + 1;
-            line = this.readStringLine(uint8array, lineIndex);
+            line = this._ReadStringLine(uint8array, lineIndex);
 
             if (line == "FORMAT=32-bit_rle_rgbe") {
                 findFormat = true;
@@ -105,9 +106,9 @@ export class HDRTools {
         }
 
         lineIndex += line.length + 1;
-        line = this.readStringLine(uint8array, lineIndex);
+        line = this._ReadStringLine(uint8array, lineIndex);
 
-        const sizeRegexp = /^\-Y (.*) \+X (.*)$/g;
+        const sizeRegexp = /^-Y (.*) \+X (.*)$/g;
         const match = sizeRegexp.exec(line);
 
         // TODO. Support +Y and -X if needed.
@@ -162,11 +163,12 @@ export class HDRTools {
      * @param hdrInfo The header information of the file.
      * @return The pixels data in RGB right to left up to down order.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
-        return this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
+        return this._RGBEReadPixelsRLE(uint8array, hdrInfo);
     }
 
-    private static RGBE_ReadPixels_RLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+    private static _RGBEReadPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
         let num_scanlines = hdrInfo.height;
         const scanline_width = hdrInfo.width;
 
@@ -191,7 +193,7 @@ export class HDRTools {
             d = uint8array[dataIndex++];
 
             if (a != 2 || b != 2 || c & 0x80 || hdrInfo.width < 8 || hdrInfo.width > 32767) {
-                return this.RGBE_ReadPixels_NOT_RLE(uint8array, hdrInfo);
+                return this._RGBEReadPixelsNOTRLE(uint8array, hdrInfo);
             }
 
             if (((c << 8) | d) != scanline_width) {
@@ -242,7 +244,7 @@ export class HDRTools {
                 c = scanLineArray[i + 2 * scanline_width];
                 d = scanLineArray[i + 3 * scanline_width];
 
-                this.Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+                this._Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
             }
 
             num_scanlines--;
@@ -251,7 +253,7 @@ export class HDRTools {
         return resultArray;
     }
 
-    private static RGBE_ReadPixels_NOT_RLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+    private static _RGBEReadPixelsNOTRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
         // this file is not run length encoded
         // read values sequentially
 
@@ -273,7 +275,7 @@ export class HDRTools {
                 c = uint8array[dataIndex++];
                 d = uint8array[dataIndex++];
 
-                this.Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+                this._Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
             }
 
             num_scanlines--;

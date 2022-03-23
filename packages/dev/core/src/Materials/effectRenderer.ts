@@ -46,22 +46,22 @@ export class EffectRenderer {
 
     /**
      * Creates an effect renderer
-     * @param engine the engine to use for rendering
+     * @param _engine the engine to use for rendering
      * @param options defines the options of the effect renderer
      */
-    constructor(private engine: ThinEngine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
+    constructor(private _engine: ThinEngine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
         options = {
             ...EffectRenderer._DefaultOptions,
             ...options,
         };
 
         this._vertexBuffers = {
-            [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
+            [VertexBuffer.PositionKind]: new VertexBuffer(_engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
         };
-        this._indexBuffer = engine.createIndexBuffer(options.indices!);
+        this._indexBuffer = _engine.createIndexBuffer(options.indices!);
 
-        this._onContextRestoredObserver = engine.onContextRestoredObservable.add(() => {
-            this._indexBuffer = engine.createIndexBuffer(options.indices!);
+        this._onContextRestoredObserver = _engine.onContextRestoredObservable.add(() => {
+            this._indexBuffer = _engine.createIndexBuffer(options.indices!);
 
             for (const key in this._vertexBuffers) {
                 const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
@@ -75,7 +75,7 @@ export class EffectRenderer {
      * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
      */
     public setViewport(viewport = this._fullscreenViewport): void {
-        this.engine.setViewport(viewport);
+        this._engine.setViewport(viewport);
     }
 
     /**
@@ -83,7 +83,7 @@ export class EffectRenderer {
      * @param effect Defines the effect to bind the attributes for
      */
     public bindBuffers(effect: Effect): void {
-        this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+        this._engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
     }
 
     /**
@@ -93,9 +93,9 @@ export class EffectRenderer {
      * @param effectWrapper Defines the effect to draw with
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
-        this.engine.depthCullingState.depthTest = false;
-        this.engine.stencilState.stencilTest = false;
-        this.engine.enableEffect(effectWrapper._drawWrapper);
+        this._engine.depthCullingState.depthTest = false;
+        this._engine.stencilState.stencilTest = false;
+        this._engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
@@ -104,18 +104,18 @@ export class EffectRenderer {
      * Restores engine states
      */
     public restoreStates(): void {
-        this.engine.depthCullingState.depthTest = true;
-        this.engine.stencilState.stencilTest = true;
+        this._engine.depthCullingState.depthTest = true;
+        this._engine.stencilState.stencilTest = true;
     }
 
     /**
      * Draws a full screen quad.
      */
     public draw(): void {
-        this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+        this._engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
-    private isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {
+    private _isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {
         return (texture as IRenderTargetTexture).renderTarget !== undefined;
     }
 
@@ -133,10 +133,10 @@ export class EffectRenderer {
         // Reset state
         this.setViewport();
 
-        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.renderTarget! : outputTexture;
+        const out = outputTexture === null ? null : this._isRenderTargetTexture(outputTexture) ? outputTexture.renderTarget! : outputTexture;
 
         if (out) {
-            this.engine.bindFramebuffer(out);
+            this._engine.bindFramebuffer(out);
         }
 
         this.applyEffectWrapper(effectWrapper);
@@ -144,7 +144,7 @@ export class EffectRenderer {
         this.draw();
 
         if (out) {
-            this.engine.unBindFramebuffer(out);
+            this._engine.unBindFramebuffer(out);
         }
 
         this.restoreStates();
@@ -161,11 +161,11 @@ export class EffectRenderer {
         }
 
         if (this._indexBuffer) {
-            this.engine._releaseBuffer(this._indexBuffer);
+            this._engine._releaseBuffer(this._indexBuffer);
         }
 
         if (this._onContextRestoredObserver) {
-            this.engine.onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this._engine.onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
         }
     }

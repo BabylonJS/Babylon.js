@@ -98,7 +98,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
+            case NodeMaterialBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.uniqueId}>
@@ -138,6 +138,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         )}
                     </div>
                 );
+            }
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent
@@ -294,7 +295,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         xmlHttp.open("POST", NodeMaterial.SnippetUrl + (material.snippetId ? "/" + material.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 nodeMaterial: json,
             }),
@@ -310,7 +311,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const material = this.props.globalState.nodeMaterial;
         const scene = material.getScene();
 
-        const snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = this.props.globalState.hostDocument.defaultView!.prompt("Please enter the snippet ID to use");
 
         if (!snippedId) {
             return;
@@ -438,7 +439,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ref={this._modeSelect}
                             label="Mode"
                             target={this}
-                            getSelection={(target) => this.props.globalState.mode}
+                            getSelection={() => this.props.globalState.mode}
                             options={modeList}
                             onSelect={(value) => this.changeMode(value)}
                         />
@@ -447,7 +448,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Help"
                             value="doc.babylonjs.com"
                             underline={true}
-                            onLink={() => window.open("https://doc.babylonjs.com/how_to/node_material", "_blank")}
+                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/how_to/node_material", "_blank")}
                         />
                         <TextInputLineComponent
                             label="Comment"

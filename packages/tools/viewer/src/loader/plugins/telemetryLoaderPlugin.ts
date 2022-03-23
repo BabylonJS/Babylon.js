@@ -23,7 +23,7 @@ export class TelemetryLoaderPlugin implements ILoaderPlugin {
         telemetryManager.flushWebGLErrors(model.rootMesh.getEngine(), model.getViewerId());
     }
 
-    public onError(message: string, exception: any) {
+    public onError() {
         this._loadEnd = PrecisionDate.Now;
         telemetryManager.broadcast("Load Error", this._model.getViewerId(), {
             model: this._model,

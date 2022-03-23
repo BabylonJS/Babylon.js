@@ -79,7 +79,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         if (material.reservedDataStore && material.reservedDataStore.debugTexture === texture) {
             const debugMaterial = material.reservedDataStore.debugMaterial;
             texture.level = material.reservedDataStore.level;
-            for (var mesh of scene.meshes) {
+            for (const mesh of scene.meshes) {
                 if (mesh.material === debugMaterial) {
                     mesh.material = material;
                 }
@@ -106,7 +106,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         debugMaterial.forceDepthWrite = true;
         debugMaterial.reservedDataStore = { hidden: true };
 
-        for (var mesh of scene.meshes) {
+        for (const mesh of scene.meshes) {
             if (mesh.material === checkMaterial) {
                 mesh.material = debugMaterial;
             }

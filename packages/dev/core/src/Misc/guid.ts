@@ -21,5 +21,6 @@ export const GUID = {
      * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
      * @returns a pseudo random id
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     RandomId: RandomGUID,
 };

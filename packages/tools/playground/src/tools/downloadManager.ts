@@ -3,6 +3,7 @@ import { GlobalState } from "../globalState";
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
 declare type Engine = import("@dev/core").Engine;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let JSZip: any;
 declare let saveAs: any;
 
@@ -10,7 +11,7 @@ export class DownloadManager {
     public constructor(public globalState: GlobalState) {}
 
     private _addContentToZipAsync(zip: typeof JSZip, name: string, url: string, replace: Nullable<string>, buffer = false): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
                 resolve();
                 return;
@@ -65,11 +66,11 @@ export class DownloadManager {
         if (textures[index].isCube) {
             if (textures[index].name.indexOf("dds") === -1 && textures[index].name.indexOf(".env") === -1) {
                 if (textures[index]._extensions) {
-                    for (var i = 0; i < 6; i++) {
+                    for (let i = 0; i < 6; i++) {
                         textures.push({ name: textures[index].name + textures[index]._extensions[i] });
                     }
                 } else if (textures[index]._files) {
-                    for (var i = 0; i < 6; i++) {
+                    for (let i = 0; i < 6; i++) {
                         textures.push({ name: textures[index]._files[i] });
                     }
                 }
@@ -140,6 +141,7 @@ export class DownloadManager {
             }
 
             textures.push({ name: match[1] });
+            // eslint-disable-next-line no-constant-condition
         } while (true);
 
         this._addContentToZipAsync(zip, "index.html", "/zipContent/index.html", zipCode)

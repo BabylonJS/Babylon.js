@@ -29,6 +29,7 @@ export interface EngineCapabilities {
     /** Defines if s3tc texture compression is supported */
     s3tc?: WEBGL_compressed_texture_s3tc;
     /** Defines if s3tc sRGB texture compression is supported */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     s3tc_srgb?: WEBGL_compressed_texture_s3tc_srgb;
     /** Defines if pvrtc texture compression is supported */
     pvrtc: any; //WEBGL_compressed_texture_pvrtc;
@@ -86,6 +87,7 @@ export interface EngineCapabilities {
     oculusMultiview?: any;
     /** Function used to let the system compiles shaders in background */
     parallelShaderCompile?: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         COMPLETION_STATUS_KHR: number;
     };
     /** Max number of texture samples for MSAA */

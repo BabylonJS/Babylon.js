@@ -194,7 +194,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             injectionCode += `float vertexID;\r\n`;
         }
 
-        for (var index = 0; index < repeatCount; index++) {
+        for (let index = 0; index < repeatCount; index++) {
             injectionCode += `#ifdef MORPHTARGETS\r\n`;
             if (manager?.isUsingTextureForTargets) {
                 injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\r\n`;
@@ -242,7 +242,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString = state.compilationString.replace(this._repeatableContentAnchor, injectionCode);
 
         if (repeatCount > 0) {
-            for (var index = 0; index < repeatCount; index++) {
+            for (let index = 0; index < repeatCount; index++) {
                 state.attributes.push(VertexBuffer.PositionKind + index);
 
                 if (hasNormals) {

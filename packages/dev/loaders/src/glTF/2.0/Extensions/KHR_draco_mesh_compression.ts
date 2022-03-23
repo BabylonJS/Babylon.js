@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
 import { Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";

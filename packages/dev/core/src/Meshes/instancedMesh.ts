@@ -4,7 +4,7 @@ import { Logger } from "../Misc/logger";
 import { Camera } from "../Cameras/camera";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh, _InstancesBatch } from "../Meshes/mesh";
+import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
@@ -90,11 +90,11 @@ export class InstancedMesh extends AbstractMesh {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _resyncLightSource(light: Light): void {
+    public _resyncLightSource(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _removeLightSource(light: Light, dispose: boolean): void {
+    public _removeLightSource(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
@@ -591,7 +591,7 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     if (!this.instancedBuffers) {
         this.instancedBuffers = {};
 
-        for (var instance of this.instances) {
+        for (const instance of this.instances) {
             instance.instancedBuffers = {};
         }
 
@@ -612,7 +612,7 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
     this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
 
-    for (var instance of this.instances) {
+    for (const instance of this.instances) {
         instance.instancedBuffers[kind] = null;
     }
 

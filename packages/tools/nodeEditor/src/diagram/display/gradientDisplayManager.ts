@@ -3,11 +3,11 @@ import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
 
 export class GradientDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return false;
     }
 

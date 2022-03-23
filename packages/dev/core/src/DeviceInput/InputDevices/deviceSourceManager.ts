@@ -178,7 +178,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
             case DeviceType.DualShock:
             case DeviceType.Xbox:
             case DeviceType.Switch:
-            case DeviceType.Generic:
+            case DeviceType.Generic: {
                 delete this._firstDevice[type];
                 const devices = this._devices[type];
                 if (devices) {
@@ -190,6 +190,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
                     }
                 }
                 break;
+            }
         }
     }
 }

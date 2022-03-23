@@ -4,7 +4,6 @@ import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeMaterial } from "../nodeMaterial";
 import { InputBlock } from "./Input/inputBlock";
 import { Vector4 } from "../../../Maths/math.vector";
 
@@ -69,7 +68,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure() {
         if (!this.row0.isConnected) {
             const row0Input = new InputBlock("row0");
             row0Input.value = new Vector4(1, 0, 0, 0);

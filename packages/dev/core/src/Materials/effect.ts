@@ -166,7 +166,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _multiTarget: boolean = false;
 
-    private static _uniqueIdSeed = 0;
+    private static _UniqueIdSeed = 0;
     /** @hidden */
     public _engine: Engine;
     private _uniformBuffersNamesList: string[];
@@ -205,7 +205,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     private _rawFragmentSourceCode: string = "";
 
-    private static _baseCache: { [key: number]: DataBuffer } = {};
+    private static _BaseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
 
     /**
@@ -287,7 +287,7 @@ export class Effect implements IDisposable {
 
         this._attributeLocationByName = {};
 
-        this.uniqueId = Effect._uniqueIdSeed++;
+        this.uniqueId = Effect._UniqueIdSeed++;
 
         let vertexSource: any;
         let fragmentSource: any;
@@ -968,10 +968,10 @@ export class Effect implements IDisposable {
      */
     public bindUniformBuffer(buffer: DataBuffer, name: string): void {
         const bufferName = this._uniformBuffersNames[name];
-        if (bufferName === undefined || (Effect._baseCache[bufferName] === buffer && this._engine._features.useUBOBindingCache)) {
+        if (bufferName === undefined || (Effect._BaseCache[bufferName] === buffer && this._engine._features.useUBOBindingCache)) {
             return;
         }
-        Effect._baseCache[bufferName] = buffer;
+        Effect._BaseCache[bufferName] = buffer;
         this._engine.bindUniformBufferBase(buffer, bufferName, name);
     }
 
@@ -1380,6 +1380,6 @@ export class Effect implements IDisposable {
      * Resets the cache of effects.
      */
     public static ResetCache() {
-        Effect._baseCache = {};
+        Effect._BaseCache = {};
     }
 }

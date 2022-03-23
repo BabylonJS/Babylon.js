@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Observable, Observer } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
@@ -121,7 +122,7 @@ export class GUI3DManager implements IDisposable {
             this._handlePointerOut(pointerId, true);
         });
 
-        this._pointerObserver = utilityLayerScene.onPointerObservable.add((pi, state) => {
+        this._pointerObserver = utilityLayerScene.onPointerObservable.add((pi) => {
             this._doPicking(pi);
         });
 
@@ -247,8 +248,8 @@ export class GUI3DManager implements IDisposable {
     public dispose() {
         this._rootContainer.dispose();
 
-        for (var materialName in this._sharedMaterials) {
-            if (!this._sharedMaterials.hasOwnProperty(materialName)) {
+        for (const materialName in this._sharedMaterials) {
+            if (!Object.prototype.hasOwnProperty.call(this._sharedMaterials, materialName)) {
                 continue;
             }
 
@@ -257,8 +258,8 @@ export class GUI3DManager implements IDisposable {
 
         this._sharedMaterials = {};
 
-        for (var materialName in this._touchSharedMaterials) {
-            if (!this._touchSharedMaterials.hasOwnProperty(materialName)) {
+        for (const materialName in this._touchSharedMaterials) {
+            if (!Object.prototype.hasOwnProperty.call(this._touchSharedMaterials, materialName)) {
                 continue;
             }
 

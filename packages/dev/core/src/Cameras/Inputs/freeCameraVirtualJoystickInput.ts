@@ -101,9 +101,8 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this._leftjoystick.releaseCanvas();
         this._rightjoystick.releaseCanvas();
     }

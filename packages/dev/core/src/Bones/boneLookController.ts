@@ -10,9 +10,9 @@ import { Space, Axis } from "../Maths/math.axis";
  * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
  */
 export class BoneLookController {
-    private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(10, Vector3.Zero);
-    private static _tmpQuat = Quaternion.Identity();
-    private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
+    private static _TmpVecs: Vector3[] = ArrayTools.BuildArray(10, Vector3.Zero);
+    private static _TmpQuat = Quaternion.Identity();
+    private static _TmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
 
     /**
      * The target Vector3 that the bone will look at
@@ -281,17 +281,17 @@ export class BoneLookController {
         }
 
         const bone = this.bone;
-        const bonePos = BoneLookController._tmpVecs[0];
+        const bonePos = BoneLookController._TmpVecs[0];
         bone.getAbsolutePositionToRef(this.mesh, bonePos);
 
         let target = this.target;
-        const _tmpMat1 = BoneLookController._tmpMats[0];
-        const _tmpMat2 = BoneLookController._tmpMats[1];
+        const _tmpMat1 = BoneLookController._TmpMats[0];
+        const _tmpMat2 = BoneLookController._TmpMats[1];
 
         const mesh = this.mesh;
         const parentBone = bone.getParent();
 
-        const upAxis = BoneLookController._tmpVecs[1];
+        const upAxis = BoneLookController._TmpVecs[1];
         upAxis.copyFrom(this.upAxis);
 
         if (this.upAxisSpace == Space.BONE && parentBone) {
@@ -317,15 +317,15 @@ export class BoneLookController {
         }
 
         if (checkYaw || checkPitch) {
-            const spaceMat = BoneLookController._tmpMats[2];
-            const spaceMatInv = BoneLookController._tmpMats[3];
+            const spaceMat = BoneLookController._TmpMats[2];
+            const spaceMatInv = BoneLookController._TmpMats[3];
 
             if (this.upAxisSpace == Space.BONE && upAxis.y == 1 && parentBone) {
                 parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, spaceMat);
             } else if (this.upAxisSpace == Space.LOCAL && upAxis.y == 1 && !parentBone) {
                 spaceMat.copyFrom(mesh.getWorldMatrix());
             } else {
-                var forwardAxis = BoneLookController._tmpVecs[2];
+                let forwardAxis = BoneLookController._TmpVecs[2];
                 forwardAxis.copyFrom(this._fowardAxis);
 
                 if (this._transformYawPitch) {
@@ -340,7 +340,7 @@ export class BoneLookController {
 
                 const rightAxis = Vector3.Cross(upAxis, forwardAxis);
                 rightAxis.normalize();
-                var forwardAxis = Vector3.Cross(rightAxis, upAxis);
+                forwardAxis = Vector3.Cross(rightAxis, upAxis);
 
                 Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, spaceMat);
             }
@@ -350,7 +350,7 @@ export class BoneLookController {
             let xzlen: Nullable<number> = null;
 
             if (checkPitch) {
-                var localTarget = BoneLookController._tmpVecs[3];
+                const localTarget = BoneLookController._TmpVecs[3];
                 target.subtractToRef(bonePos, localTarget);
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
@@ -374,7 +374,7 @@ export class BoneLookController {
             }
 
             if (checkYaw) {
-                var localTarget = BoneLookController._tmpVecs[4];
+                const localTarget = BoneLookController._TmpVecs[4];
                 target.subtractToRef(bonePos, localTarget);
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
@@ -411,13 +411,13 @@ export class BoneLookController {
 
                 if (this._slerping && this._yawRange > Math.PI) {
                     //are we going to be crossing into the min/max region?
-                    const boneFwd = BoneLookController._tmpVecs[8];
+                    const boneFwd = BoneLookController._TmpVecs[8];
                     boneFwd.copyFrom(Axis.Z);
                     if (this._transformYawPitch) {
                         Vector3.TransformCoordinatesToRef(boneFwd, this._transformYawPitchInv, boneFwd);
                     }
 
-                    const boneRotMat = BoneLookController._tmpMats[4];
+                    const boneRotMat = BoneLookController._TmpMats[4];
                     this._boneQuat.toRotationMatrix(boneRotMat);
                     this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
                     Vector3.TransformCoordinatesToRef(boneFwd, boneRotMat, boneFwd);
@@ -455,10 +455,10 @@ export class BoneLookController {
             }
         }
 
-        const zaxis = BoneLookController._tmpVecs[5];
-        const xaxis = BoneLookController._tmpVecs[6];
-        const yaxis = BoneLookController._tmpVecs[7];
-        const _tmpQuat = BoneLookController._tmpQuat;
+        const zaxis = BoneLookController._TmpVecs[5];
+        const xaxis = BoneLookController._TmpVecs[6];
+        const yaxis = BoneLookController._TmpVecs[7];
+        const tmpQuat = BoneLookController._TmpQuat;
 
         target.subtractToRef(bonePos, zaxis);
         zaxis.normalize();
@@ -492,8 +492,8 @@ export class BoneLookController {
             if (this._transformYawPitch) {
                 this._transformYawPitch.multiplyToRef(_tmpMat1, _tmpMat1);
             }
-            Quaternion.FromRotationMatrixToRef(_tmpMat1, _tmpQuat);
-            Quaternion.SlerpToRef(this._boneQuat, _tmpQuat, this.slerpAmount, this._boneQuat);
+            Quaternion.FromRotationMatrixToRef(_tmpMat1, tmpQuat);
+            Quaternion.SlerpToRef(this._boneQuat, tmpQuat, this.slerpAmount, this._boneQuat);
 
             this.bone.setRotationQuaternion(this._boneQuat, Space.WORLD, this.mesh);
             this._slerping = true;

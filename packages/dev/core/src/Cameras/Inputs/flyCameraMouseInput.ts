@@ -63,27 +63,27 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     private _observer: Nullable<Observer<PointerInfo>>;
     private _rollObserver: Nullable<Observer<Scene>>;
-    private previousPosition: Nullable<{ x: number; y: number }> = null;
-    private noPreventDefault: boolean | undefined;
-    private element: HTMLElement;
+    private _previousPosition: Nullable<{ x: number; y: number }> = null;
+    private _noPreventDefault: boolean | undefined;
+    private _element: HTMLElement;
 
     /**
      * Listen to mouse events to control the camera.
-     * @param touchEnabled Define if touch is enabled. (Default is true.)
      * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
-    constructor(touchEnabled = true) {}
+    constructor() {}
 
     /**
      * Attach the mouse control to the HTML DOM element.
      * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        this.noPreventDefault = noPreventDefault;
+        this._noPreventDefault = noPreventDefault;
 
-        this._observer = this.camera.getScene().onPointerObservable.add((p: any, s: any) => {
-            this._pointerInput(p, s);
+        this._observer = this.camera.getScene().onPointerObservable.add((p: any) => {
+            this._pointerInput(p);
         }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         // Correct Roll by rate, if enabled.
@@ -101,9 +101,8 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
@@ -111,8 +110,8 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
             this._observer = null;
             this._rollObserver = null;
-            this.previousPosition = null;
-            this.noPreventDefault = undefined;
+            this._previousPosition = null;
+            this._noPreventDefault = undefined;
         }
     }
 
@@ -133,7 +132,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     }
 
     // Track mouse movement, when the pointer is not locked.
-    private _pointerInput(p: any, s: any): void {
+    private _pointerInput(p: any): void {
         const e = <IPointerEvent>p.event;
 
         const camera = this.camera;
@@ -162,16 +161,16 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
                 // Nothing to do with the error. Execution continues.
             }
 
-            this.previousPosition = {
+            this._previousPosition = {
                 x: e.clientX,
                 y: e.clientY,
             };
 
             this.activeButton = e.button;
 
-            if (!this.noPreventDefault) {
+            if (!this._noPreventDefault) {
                 e.preventDefault();
-                this.element.focus();
+                this._element.focus();
             }
 
             // This is required to move while pointer button is down
@@ -189,14 +188,14 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
             this.activeButton = -1;
 
-            this.previousPosition = null;
-            if (!this.noPreventDefault) {
+            this._previousPosition = null;
+            if (!this._noPreventDefault) {
                 e.preventDefault();
             }
         }
         // Mouse move.
         else if (p.type === PointerEventTypes.POINTERMOVE) {
-            if (!this.previousPosition) {
+            if (!this._previousPosition) {
                 if (engine.isPointerLock) {
                     this._onMouseMove(p.event);
                 }
@@ -204,17 +203,17 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
                 return;
             }
 
-            const offsetX = e.clientX - this.previousPosition.x;
-            const offsetY = e.clientY - this.previousPosition.y;
+            const offsetX = e.clientX - this._previousPosition.x;
+            const offsetY = e.clientY - this._previousPosition.y;
 
-            this.rotateCamera(offsetX, offsetY);
+            this._rotateCamera(offsetX, offsetY);
 
-            this.previousPosition = {
+            this._previousPosition = {
                 x: e.clientX,
                 y: e.clientY,
             };
 
-            if (!this.noPreventDefault) {
+            if (!this._noPreventDefault) {
                 e.preventDefault();
             }
         }
@@ -232,11 +231,11 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         const offsetX = e.movementX || e.mozMovementX || e.webkitMovementX || e.msMovementX || 0;
         const offsetY = e.movementY || e.mozMovementY || e.webkitMovementY || e.msMovementY || 0;
 
-        this.rotateCamera(offsetX, offsetY);
+        this._rotateCamera(offsetX, offsetY);
 
-        this.previousPosition = null;
+        this._previousPosition = null;
 
-        if (!this.noPreventDefault) {
+        if (!this._noPreventDefault) {
             e.preventDefault();
         }
     }
@@ -246,7 +245,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      * @param offsetX
      * @param offsetY
      */
-    private rotateCamera(offsetX: number, offsetY: number): void {
+    private _rotateCamera(offsetX: number, offsetY: number): void {
         const camera = this.camera;
         const scene = this.camera.getScene();
 

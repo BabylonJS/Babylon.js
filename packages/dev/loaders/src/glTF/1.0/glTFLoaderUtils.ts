@@ -25,16 +25,11 @@ import { Scene } from "core/scene";
 export class GLTFUtils {
     /**
      * Sets the given "parameter" matrix
-     * @param scene: the Scene object
-     * @param source: the source node where to pick the matrix
-     * @param parameter: the GLTF technique parameter
-     * @param uniformName: the name of the shader's uniform
-     * @param shaderMaterial: the shader material
-     * @param scene
-     * @param source
-     * @param parameter
-     * @param uniformName
-     * @param shaderMaterial
+     * @param scene the Scene object
+     * @param source the source node where to pick the matrix
+     * @param parameter the GLTF technique parameter
+     * @param uniformName the name of the shader's uniform
+     * @param shaderMaterial the shader material
      */
     public static SetMatrix(scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: ShaderMaterial | Effect): void {
         let mat: Nullable<Matrix> = null;
@@ -63,8 +58,6 @@ export class GLTFUtils {
             mat = source.getWorldMatrix().multiply(scene.getTransformMatrix()).invert();
         } else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
             mat = Matrix.Transpose(source.getWorldMatrix().invert());
-        } else {
-            debugger;
         }
 
         if (mat) {
@@ -86,14 +79,10 @@ export class GLTFUtils {
 
     /**
      * Sets the given "parameter" matrix
-     * @param shaderMaterial: the shader material
-     * @param uniform: the name of the shader's uniform
-     * @param value: the value of the uniform
-     * @param type: the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
-     * @param shaderMaterial
-     * @param uniform
-     * @param value
-     * @param type
+     * @param shaderMaterial the shader material
+     * @param uniform the name of the shader's uniform
+     * @param value the value of the uniform
+     * @param type the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
      */
     public static SetUniform(shaderMaterial: ShaderMaterial | Effect, uniform: string, value: any, type: number): boolean {
         switch (type) {
@@ -116,8 +105,7 @@ export class GLTFUtils {
 
     /**
      * Returns the wrap mode of the texture
-     * @param mode: the mode value
-     * @param mode
+     * @param mode the mode value
      */
     public static GetWrapMode(mode: number): number {
         switch (mode) {
@@ -134,8 +122,7 @@ export class GLTFUtils {
 
     /**
      * Returns the byte stride giving an accessor
-     * @param accessor: the GLTF accessor objet
-     * @param accessor
+     * @param accessor the GLTF accessor objet
      */
     public static GetByteStrideFromType(accessor: IGLTFAccessor): number {
         // Needs this function since "byteStride" isn't requiered in glTF format
@@ -161,8 +148,7 @@ export class GLTFUtils {
 
     /**
      * Returns the texture filter mode giving a mode value
-     * @param mode: the filter mode value
-     * @param mode
+     * @param mode the filter mode value
      */
     public static GetTextureFilterMode(mode: number): ETextureFilterType {
         switch (mode) {
@@ -185,7 +171,7 @@ export class GLTFUtils {
         byteLength: number,
         componentType: EComponentType
     ): ArrayBufferView {
-        var byteOffset = bufferView.byteOffset + byteOffset;
+        byteOffset = bufferView.byteOffset + byteOffset;
 
         const loadedBufferView = gltfRuntime.loadedBufferViews[bufferView.buffer];
         if (byteOffset + byteLength > loadedBufferView.byteLength) {
@@ -211,10 +197,8 @@ export class GLTFUtils {
 
     /**
      * Returns a buffer from its accessor
-     * @param gltfRuntime: the GLTF runtime
-     * @param accessor: the GLTF accessor
-     * @param gltfRuntime
-     * @param accessor
+     * @param gltfRuntime the GLTF runtime
+     * @param accessor the GLTF accessor
      */
     public static GetBufferFromAccessor(gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor): any {
         const bufferView: IGLTFBufferView = gltfRuntime.bufferViews[accessor.bufferView];
@@ -224,8 +208,7 @@ export class GLTFUtils {
 
     /**
      * Decodes a buffer view into a string
-     * @param view: the buffer view
-     * @param view
+     * @param view the buffer view
      */
     public static DecodeBufferToText(view: ArrayBufferView): string {
         let result = "";
@@ -241,8 +224,7 @@ export class GLTFUtils {
     /**
      * Returns the default material of gltf. Related to
      * https://github.com/KhronosGroup/glTF/tree/master/specification/1.0#appendix-a-default-material
-     * @param scene: the Babylon.js scene
-     * @param scene
+     * @param scene the Babylon.js scene
      */
     public static GetDefaultMaterial(scene: Scene): ShaderMaterial {
         if (!GLTFUtils._DefaultMaterial) {

@@ -143,7 +143,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         }
         const adjustedKernelSize = kernelSize / Math.pow(2, blurCount - 1);
         let ratio = 1.0;
-        for (var i = 0; i < blurCount; i++) {
+        for (let i = 0; i < blurCount; i++) {
             const blurY = new DepthOfFieldBlurPostProcess(
                 "vertical blur",
                 scene,
@@ -183,7 +183,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
 
         // Set all post processes on the effect.
         this._effects = [this._circleOfConfusion];
-        for (var i = 0; i < this._depthOfFieldBlurX.length; i++) {
+        for (let i = 0; i < this._depthOfFieldBlurX.length; i++) {
             this._effects.push(this._depthOfFieldBlurY[i]);
             this._effects.push(this._depthOfFieldBlurX[i]);
         }

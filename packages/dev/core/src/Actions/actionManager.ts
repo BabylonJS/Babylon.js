@@ -433,6 +433,7 @@ export class ActionManager extends AbstractActionManager {
             const internalClassType = GetClass("BABYLON." + name);
             if (internalClassType) {
                 const newInstance: Object = Object.create(internalClassType.prototype);
+                // eslint-disable-next-line prefer-spread
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             }
@@ -454,7 +455,7 @@ export class ActionManager extends AbstractActionManager {
             const values = value.split(",");
 
             // Get effective Target
-            for (var i = 0; i < effectiveTarget.length; i++) {
+            for (let i = 0; i < effectiveTarget.length; i++) {
                 target = target[effectiveTarget[i]];
             }
 
@@ -469,7 +470,7 @@ export class ActionManager extends AbstractActionManager {
 
             // Parameters with multiple values such as Vector3 etc.
             const split = new Array<number>();
-            for (var i = 0; i < values.length; i++) {
+            for (let i = 0; i < values.length; i++) {
                 split.push(parseFloat(values[i]));
             }
 
@@ -493,7 +494,7 @@ export class ActionManager extends AbstractActionManager {
         };
 
         // traverse graph per trigger
-        var traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
+        const traverse = (parsedAction: any, trigger: any, condition: Nullable<Condition>, action: Nullable<Action>, combineArray: Nullable<Array<Action>> = null) => {
             if (parsedAction.detached) {
                 return;
             }
@@ -517,7 +518,7 @@ export class ActionManager extends AbstractActionManager {
                 }
                 parameters.push(actions);
             } else {
-                for (var i = 0; i < parsedAction.properties.length; i++) {
+                for (let i = 0; i < parsedAction.properties.length; i++) {
                     let value = parsedAction.properties[i].value;
                     const name = parsedAction.properties[i].name;
                     const targetType = parsedAction.properties[i].targetType;
@@ -593,14 +594,14 @@ export class ActionManager extends AbstractActionManager {
                 combineArray.push(newAction);
             }
 
-            for (var i = 0; i < parsedAction.children.length; i++) {
+            for (let i = 0; i < parsedAction.children.length; i++) {
                 traverse(parsedAction.children[i], trigger, condition, newAction, null);
             }
         };
 
         // triggers
         for (let i = 0; i < parsedActions.children.length; i++) {
-            var triggerParams: any;
+            let triggerParams: any;
             const trigger = parsedActions.children[i];
 
             if (trigger.properties.length > 0) {

@@ -181,15 +181,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 return;
             case "Delete":
             case "Backspace":
-                if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
-                    this.state.selectedEntity.dispose();
-                    this.props.globalState.selectedControls.forEach((node) => {
-                        if (node !== this.props.globalState.guiTexture.getChildren()[0]) {
-                            node.dispose();
-                        }
-                        this.forceUpdate();
-                    });
-                }
+                this.props.globalState.deleteSelectedNodes();
+                this.forceUpdate();
                 break;
         }
 
@@ -221,14 +214,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return (
             <div
                 id="tree"
-                onDrop={(event) => {
+                onDrop={() => {
                     this.props.globalState.onDropObservable.notifyObservers();
                     this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                 }}
                 onDragOver={(event) => {
                     event.preventDefault();
                 }}
-                onClick={(event) => {
+                onClick={() => {
                     if (!this.props.globalState.selectionLock) {
                         this.props.globalState.setSelection([]);
                     } else {

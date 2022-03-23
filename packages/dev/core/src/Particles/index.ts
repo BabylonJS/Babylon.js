@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 export * from "./baseParticleSystem";
 export * from "./EmitterTypes/index";
 export * from "./webgl2ParticleSystem";
@@ -7,7 +8,6 @@ export * from "./IParticleSystem";
 export * from "./particle";
 export * from "./particleHelper";
 export * from "./particleSystem";
-
 import "./particleSystemComponent";
 export * from "./particleSystemComponent";
 export * from "./particleSystemSet";

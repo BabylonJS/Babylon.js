@@ -81,7 +81,7 @@ export class WebGPUBufferManager {
         this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
-    private _GetHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
+    private _getHalfFloatAsFloatRGBAArrayBuffer(dataLength: number, arrayBuffer: ArrayBuffer, destArray?: Float32Array): Float32Array {
         if (!destArray) {
             destArray = new Float32Array(dataLength);
         }
@@ -127,7 +127,7 @@ export class WebGPUBufferManager {
                                     break;
                                 case 1: // half float
                                     // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                                    data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
+                                    data = this._getHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
                                     break;
                                 case 2: // float
                                     data = new Float32Array(size / 4);
@@ -142,7 +142,7 @@ export class WebGPUBufferManager {
                                     break;
                                 case 1: // half float
                                     // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                                    data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
+                                    data = this._getHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
                                     break;
                                 case 2: // float
                                     data = new Float32Array(data.buffer);

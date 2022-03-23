@@ -229,6 +229,7 @@ export class Inspector {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _CreateEmbedHost(scene: Scene, options: IInternalInspectorOptions, parentControl: Nullable<HTMLElement>, onSelectionChangedObservable: Observable<string>) {
         // Prepare the inspector host
         if (parentControl) {

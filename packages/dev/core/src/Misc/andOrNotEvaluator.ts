@@ -9,10 +9,10 @@ export class AndOrNotEvaluator {
      * @returns true if the query matches
      */
     public static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean {
-        if (!query.match(/\([^\(\)]*\)/g)) {
+        if (!query.match(/\([^()]*\)/g)) {
             query = AndOrNotEvaluator._HandleParenthesisContent(query, evaluateCallback);
         } else {
-            query = query.replace(/\([^\(\)]*\)/g, (r) => {
+            query = query.replace(/\([^()]*\)/g, (r) => {
                 // remove parenthesis
                 r = r.slice(1, r.length - 1);
                 return AndOrNotEvaluator._HandleParenthesisContent(r, evaluateCallback);
@@ -41,7 +41,7 @@ export class AndOrNotEvaluator {
         const or = parenthesisContent.split("||");
 
         for (const i in or) {
-            if (or.hasOwnProperty(i)) {
+            if (Object.prototype.hasOwnProperty.call(or, i)) {
                 let ori = AndOrNotEvaluator._SimplifyNegation(or[i].trim());
                 const and = ori.split("&&");
 

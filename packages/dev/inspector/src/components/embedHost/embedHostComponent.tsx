@@ -25,26 +25,26 @@ interface IEmbedHostComponentProps {
 
 export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
     private _once = true;
-    private splitRef: React.RefObject<HTMLDivElement>;
-    private topPartRef: React.RefObject<HTMLDivElement>;
-    private bottomPartRef: React.RefObject<HTMLDivElement>;
+    private _splitRef: React.RefObject<HTMLDivElement>;
+    private _topPartRef: React.RefObject<HTMLDivElement>;
+    private _bottomPartRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IEmbedHostComponentProps) {
         super(props);
 
-        this.splitRef = React.createRef();
-        this.topPartRef = React.createRef();
-        this.bottomPartRef = React.createRef();
+        this._splitRef = React.createRef();
+        this._topPartRef = React.createRef();
+        this._bottomPartRef = React.createRef();
     }
 
     componentDidMount() {
-        const container = this.splitRef.current;
+        const container = this._splitRef.current;
 
         if (!container) {
             return;
         }
 
-        Split([this.topPartRef.current, this.bottomPartRef.current], {
+        Split([this._topPartRef.current, this._bottomPartRef.current], {
             direction: "vertical",
             minSize: [200, 200],
             gutterSize: 4,
@@ -73,8 +73,8 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         }
 
         return (
-            <div ref={this.splitRef} id="split" className="noPopup">
-                <div id="topPart" ref={this.topPartRef}>
+            <div ref={this._splitRef} id="split" className="noPopup">
+                <div id="topPart" ref={this._topPartRef}>
                     <SceneExplorerComponent
                         scene={this.props.scene}
                         extensibilityGroups={this.props.extensibilityGroups}
@@ -83,7 +83,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                         noHeader={true}
                     />
                 </div>
-                <div id="bottomPart" ref={this.bottomPartRef} style={{ marginTop: "4px", overflow: "hidden" }}>
+                <div id="bottomPart" ref={this._bottomPartRef} style={{ marginTop: "4px", overflow: "hidden" }}>
                     <ActionTabsComponent scene={this.props.scene} globalState={this.props.globalState} popupMode={true} noHeader={true} initialTab={this.props.initialTab} />
                 </div>
             </div>

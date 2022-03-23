@@ -20,10 +20,12 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.createExternalTexture = function (video: HTMLVideoElement): Nullable<ExternalTexture> {
     return null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.setExternalTexture = function (name: string, texture: Nullable<ExternalTexture>): void {
     throw new Error("setExternalTexture: This engine does not support external textures!");
 };

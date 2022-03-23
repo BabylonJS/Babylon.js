@@ -239,7 +239,7 @@ export class DynamicTexture extends Texture {
         }
 
         const serializationObject = super.serialize();
-        if (this._IsCanvasElement(this._canvas)) {
+        if (DynamicTexture._IsCanvasElement(this._canvas)) {
             serializationObject.base64String = this._canvas.toDataURL();
         }
 
@@ -249,7 +249,7 @@ export class DynamicTexture extends Texture {
         return serializationObject;
     }
 
-    private _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas | ICanvas): canvas is HTMLCanvasElement {
+    private static _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas | ICanvas): canvas is HTMLCanvasElement {
         return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 
