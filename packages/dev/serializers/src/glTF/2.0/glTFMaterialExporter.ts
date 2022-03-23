@@ -219,6 +219,7 @@ export class _GLTFMaterialExporter {
      * @returns glTF Metallic Roughness Material representation
      */
     public _convertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness {
+        // Defines a cubic bezier curve where x is specular power and y is roughness
         const P0 = new Vector2(0, 1);
         const P1 = new Vector2(0, 0.1);
         const P2 = new Vector2(0, 0.1);
@@ -233,7 +234,7 @@ export class _GLTFMaterialExporter {
          * @param p3 fourth control point
          * @returns number result of cubic bezier curve at the specified t
          */
-        function _cubicBezierCurve(t: number, p0: number, p1: number, p2: number, p3: number): number {
+        function cubicBezierCurve(t: number, p0: number, p1: number, p2: number, p3: number): number {
             return (1 - t) * (1 - t) * (1 - t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3;
         }
 
@@ -244,16 +245,19 @@ export class _GLTFMaterialExporter {
          * @param specularPower specular power of standard material
          * @returns Number representing the roughness value
          */
-        function _solveForRoughness(specularPower: number): number {
+        function solveForRoughness(specularPower: number): number {
+            // Given P0.x = 0, P1.x = 0, P2.x = 0
+            //   x = t * t * t * P3.x
+            //   t = (x / P3.x)^(1/3)
             const t = Math.pow(specularPower / P3.x, 0.333333);
-            return _cubicBezierCurve(t, P0.y, P1.y, P2.y, P3.y);
+            return cubicBezierCurve(t, P0.y, P1.y, P2.y, P3.y);
         }
 
         const diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace().scale(0.5);
         const opacity = babylonStandardMaterial.alpha;
         const specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
 
-        const roughness = _solveForRoughness(specularPower);
+        const roughness = solveForRoughness(specularPower);
 
         const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {
             baseColorFactor: [diffuse.r, diffuse.g, diffuse.b, opacity],
