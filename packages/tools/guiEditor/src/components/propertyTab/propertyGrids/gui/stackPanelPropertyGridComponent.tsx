@@ -42,7 +42,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                         target={proxy}
                         propertyName="isVertical"
                         onValueChanged={() => {
-                            for(const panel of stackPanels) {
+                            for (const panel of stackPanels) {
                                 for (const child of panel.children) {
                                     if (proxy.isVertical) {
                                         child.horizontalAlignment = StackPanel.HORIZONTAL_ALIGNMENT_CENTER;
@@ -51,7 +51,6 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                                         child.verticalAlignment = StackPanel.VERTICAL_ALIGNMENT_CENTER;
                                         child._top.value = 0;
                                     }
-        
                                 }
                             }
                         }}

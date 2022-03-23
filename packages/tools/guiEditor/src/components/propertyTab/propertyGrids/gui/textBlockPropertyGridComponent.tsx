@@ -32,7 +32,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
     }
 
     render() {
-        const {onPropertyChangedObservable} = this.props;
+        const { onPropertyChangedObservable } = this.props;
         const textBlocks = this.props.textBlocks;
         const proxy = makeTargetsProxy(textBlocks, onPropertyChangedObservable);
 
@@ -49,63 +49,29 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 <TextLineComponent label="TEXTBLOCK" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
                     <IconComponent icon={fontFamilyIcon} label="Text" />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="text"
-                    />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="text" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={resizeToFitIcon} label="Automatically resize the text block to fit the size of the text" />
-                    <CheckBoxLineComponent
-                        label="RESIZE TO FIT"
-                        target={proxy}
-                        propertyName="resizeToFit"
-                    />
+                    <CheckBoxLineComponent label="RESIZE TO FIT" target={proxy} propertyName="resizeToFit" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={wordWrapIcon} label="Text Wrapping" />
-                    <OptionsLineComponent
-                        label=" "
-                        options={wrappingOptions}
-                        target={proxy}
-                        propertyName="textWrapping"
-                    />
+                    <OptionsLineComponent label=" " options={wrappingOptions} target={proxy} propertyName="textWrapping" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={lineSpacingIcon} label="Line Spacing" />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="lineSpacing"
-                    />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="lineSpacing" />
                 </div>
                 <hr />
                 <TextLineComponent label="OUTLINE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label="Outline Width" />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="outlineWidth"
-                        arrows
-                        min={0}
-                        unit="PX"
-                        unitLocked
-                        step="0.01"
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="outlineWidth" arrows min={0} unit="PX" unitLocked step="0.01" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label="Outline Color" />
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="outlineColor"
-                    />
+                    <ColorLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="outlineColor" />
                 </div>
             </div>
         );

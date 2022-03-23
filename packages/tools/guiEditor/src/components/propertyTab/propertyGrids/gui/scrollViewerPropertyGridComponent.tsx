@@ -29,61 +29,29 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
     }
 
     render() {
-        const {scrollViewers, onPropertyChangedObservable, lockObject} = this.props;
+        const { scrollViewers, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(scrollViewers, onPropertyChangedObservable);
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent
-                    lockObject={lockObject}
-                    controls={scrollViewers}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={scrollViewers} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
                     <IconComponent icon={scrollViewerPrecisionIcon} label={"Wheel Precision"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="wheelPrecision"
-                        arrows={true}
-                        min={0}
-                        digits={2}
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="wheelPrecision" arrows={true} min={0} digits={2} />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={widthIcon} label={"Bar Size"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="barSize"
-                        unit="PX"
-                        unitLocked
-                        arrows
-                        min={0}
-                        digits={2}
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barSize" unit="PX" unitLocked arrows min={0} digits={2} />
                 </div>
                 <div className="e-divider">
-                    <IconComponent icon={colorIcon} label="Bar Color"/>
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="barColor"
-                    />
+                    <IconComponent icon={colorIcon} label="Bar Color" />
+                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barColor" />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent icon={fillColorIcon} label="Bar Background Color"/>
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="barBackground"
-                    />
+                    <IconComponent icon={fillColorIcon} label="Bar Background Color" />
+                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barBackground" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
@@ -97,7 +65,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         arrows={true}
                         min={0}
                         digits={2}
-                        />
+                    />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
@@ -111,7 +79,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         arrows={true}
                         min={0}
                         digits={2}
-                        />
+                    />
                 </div>
             </div>
         );

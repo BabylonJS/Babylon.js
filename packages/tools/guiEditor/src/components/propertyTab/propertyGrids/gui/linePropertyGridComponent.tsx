@@ -116,8 +116,13 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                         onChange={(newValue) => this.onDashChange(newValue)}
                     />
                 </div>
-                <hr/>
-                <CommonControlPropertyGridComponent hideDimensions lockObject={this.props.lockObject} controls={lines} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <hr />
+                <CommonControlPropertyGridComponent
+                    hideDimensions
+                    lockObject={this.props.lockObject}
+                    controls={lines}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

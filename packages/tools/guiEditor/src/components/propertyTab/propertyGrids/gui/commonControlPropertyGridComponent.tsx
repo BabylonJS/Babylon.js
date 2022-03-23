@@ -468,45 +468,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="scaleX"
-                        arrows={true}
-                        digits={2}
-                        step="0.0005"
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Y"
-                        target={proxy}
-                        propertyName="scaleY"
-                        arrows={true}
-                        digits={2}
-                        step="0.0005"
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="X" target={proxy} propertyName="scaleX" arrows={true} digits={2} step="0.0005" />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={proxy} propertyName="scaleY" arrows={true} digits={2} step="0.0005" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={pivotIcon} label={"Transform Center"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="transformCenterX"
-                        arrows={true}
-                        digits={2}
-                        step="0.0005"
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Y"
-                        target={proxy}
-                        propertyName="transformCenterY"
-                        arrows={true}
-                        digits={2}
-                        step="0.0005"
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="X" target={proxy} propertyName="transformCenterX" arrows={true} digits={2} step="0.0005" />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={proxy} propertyName="transformCenterY" arrows={true} digits={2} step="0.0005" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={rotationIcon} label={"Rotation"} />
@@ -540,25 +508,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 )}
                 <div className="ge-divider">
                     <IconComponent icon={alphaIcon} label={"Alpha"} />
-                    <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="alpha"
-                        minimum={0}
-                        maximum={1}
-                        step={0.01}
-                    />
+                    <SliderLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="alpha" minimum={0} maximum={1} step={0.01} />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={shadowColorIcon} label={"Shadow Color"} />
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="shadowColor"
-                        disableAlpha={true}
-                    />
+                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="shadowColor" disableAlpha={true} />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset"} />
@@ -587,15 +541,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={shadowBlurIcon} label={"Shadow Blur"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="shadowBlur"
-                        arrows={true}
-                        min={0}
-                        digits={2}
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="shadowBlur" arrows={true} min={0} digits={2} />
                 </div>
                 {showTextProperties && (
                     <>
@@ -603,21 +549,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                            <TextInputLineComponent
-                                lockObject={this.props.lockObject}
-                                label=""
-                                target={proxy}
-                                propertyName="fontFamily"
-                            />
+                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
-                            <TextInputLineComponent
-                                lockObject={this.props.lockObject}
-                                label=""
-                                target={proxy}
-                                propertyName="fontWeight"
-                            />
+                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontWeight" />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontStyleIcon} label={"Font Style"} />

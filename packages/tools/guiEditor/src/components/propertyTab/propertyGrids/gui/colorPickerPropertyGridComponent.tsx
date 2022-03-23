@@ -27,10 +27,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent
-                    lockObject={this.props.lockObject}
-                    controls={colorPickers}
-                />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={colorPickers} />
                 <hr />
                 <TextLineComponent label="COLOR PICKER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
