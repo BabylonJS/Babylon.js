@@ -1,20 +1,8 @@
-import * as mv from "mv";
+// import * as mv from "mv";
 import * as path from "path";
 import * as glob from "glob";
-import * as fs from "fs";
-import { checkArgs, findRootDirectory, removeDir } from "./utils";
-
-const moveDir = async (from: string, to: string) => {
-    return new Promise<void>((resolve, reject) => {
-        mv(from, to, { mkdirp: false, clobber: false }, (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
-};
+import * as fs from "fs-extra";
+import { checkArgs, findRootDirectory } from "./utils";
 
 export const prepareES6Build = async () => {
     const baseDir = path.resolve(".");
@@ -62,9 +50,11 @@ export const prepareES6Build = async () => {
     // this script copies all files from dist to ../
 
     // first move to a temp folder
-    const rootDir = findRootDirectory();
-    removeDir(path.resolve(rootDir, ".temp"));
-    await moveDir(path.resolve(baseDir, "dist"), path.resolve(rootDir, ".temp"));
+    // const rootDir = findRootDirectory();
+    // fs.emptyDirSync(path.resolve(rootDir, ".temp"));
+    // fs.moveSync(path.resolve(baseDir, "dist"), path.resolve(rootDir, ".temp"), { overwrite: true });
+    // clear directory
     // then copy the files
-    await moveDir(path.resolve(rootDir, ".temp"), path.resolve(baseDir));
+    fs.copySync(path.resolve(baseDir, "dist"), path.resolve(baseDir), { overwrite: true });
+    fs.emptyDirSync(path.resolve(baseDir, "dist"));
 };
