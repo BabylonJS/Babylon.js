@@ -1452,7 +1452,10 @@ export class ShadowGenerator implements IShadowGenerator {
                         return false;
                     }
 
+                    const alphaCutOff = (material as any).alphaCutOff ?? 1;
+
                     defines.push("#define ALPHATEST");
+                    defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");

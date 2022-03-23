@@ -453,3 +453,4 @@
 - GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))
 - `currentState` and `previousState` have been removed from use in `onInputChangedObservable` in the `DeviceSourceManager` ([PolygonalSun](https://github.com/PolygonalSun))
 - `PointerInput` movement enums are no longer being used in any movement event handling in the `DeviceInputSystem` and `InputManager` ([PolygonalSun](https://github.com/PolygonalSun))
+- Shadow generators now use the `Material.alphaCutOff` value instead of a hard-coded 0.4 value. ([Popov72](https://github.com/Popov72))
