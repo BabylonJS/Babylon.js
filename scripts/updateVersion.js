@@ -57,7 +57,11 @@ async function runTagsUpdate() {
     await updateEngineVersion(version);
     await runCommand("git add .");
     await runCommand(`git commit -m "Version update ${version}"`);
-    await runCommand(`git tag -a ${version} -m ${version}`);
+    if (dryRun) {
+        console.log("skipping", `git tag -a ${version} -m ${version}`);
+    } else {
+        await runCommand(`git tag -a ${version} -m ${version}`);
+    }
     await runCommand(`git fetch origin`);
     await runCommand(`git pull origin ${branchName ? branchName : ""}`);
     if (!dryRun) {
