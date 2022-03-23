@@ -1,6 +1,6 @@
 import { Observable } from "core/Misc/observable";
 
-type Key = "control" | "shift" |"alt" | "space";
+type Key = "control" | "shift" | "alt" | "space";
 
 export class KeyboardManager {
     private _hostElement: HTMLElement | HTMLDocument;
@@ -10,8 +10,8 @@ export class KeyboardManager {
     public onKeyPressedObservable: Observable<Key>;
     constructor(hostElement: HTMLElement | HTMLDocument) {
         this._hostElement = hostElement;
-        this._kdListener = evt => this._updateKeys(evt as KeyboardEvent, true);
-        this._kuListener = evt => this._updateKeys(evt as KeyboardEvent, false);
+        this._kdListener = (evt) => this._updateKeys(evt as KeyboardEvent, true);
+        this._kuListener = (evt) => this._updateKeys(evt as KeyboardEvent, false);
         hostElement.addEventListener("keydown", this._kdListener);
         hostElement.addEventListener("keypress", this._kdListener);
         hostElement.addEventListener("keyup", this._kuListener);
@@ -41,7 +41,6 @@ export class KeyboardManager {
         }
     }
 
-
     public isKeyDown(key: Key) {
         return this._keys.has(key);
     }
@@ -51,5 +50,4 @@ export class KeyboardManager {
         this._hostElement.removeEventListener("keypress", this._kdListener);
         this._hostElement.removeEventListener("keyup", this._kuListener);
     }
-
 }

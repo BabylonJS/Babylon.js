@@ -135,7 +135,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         globalState.onToolChangeObservable.add(() => {
             this.forceUpdate();
-        })
+        });
         // Get the canvas element from the DOM.
 
         globalState.onFitToWindowObservable.add(() => {
@@ -704,7 +704,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (this.props.globalState.tool === Tool.SELECT) {
             this._mouseStartPoint = this.getScaledPointerPosition();
         }
-        if (evt.buttons & 4 || this.props.globalState.tool === Tool.PAN ) {
+        if (evt.buttons & 4 || this.props.globalState.tool === Tool.PAN) {
             this.startPanning();
         } else {
             if (this.props.globalState.tool === Tool.ZOOM) {
@@ -993,7 +993,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onWheel={(evt) => this.zoomWheel(evt)}
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
-                style={{cursor}}
+                style={{ cursor }}
             ></canvas>
         );
     }
