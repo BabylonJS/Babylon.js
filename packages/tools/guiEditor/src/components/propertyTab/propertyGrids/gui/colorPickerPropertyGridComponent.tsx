@@ -3,10 +3,13 @@ import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { ColorPicker } from "gui/2D/controls/colorpicker";
-import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
+
+import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IColorPickerPropertyGridComponentProps {
     colorPickers: ColorPicker[];
@@ -27,16 +30,19 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
                 <CommonControlPropertyGridComponent
                     lockObject={this.props.lockObject}
                     controls={colorPickers}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <hr />
-                <TextLineComponent label="COLORPICKER" value=" " color="grey"></TextLineComponent>
-                <Color3LineComponent
-                    label="Color"
-                    target={makeTargetsProxy(colorPickers, this.props.onPropertyChangedObservable)}
-                    propertyName="value"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <TextLineComponent label="COLOR PICKER" value=" " color="grey"></TextLineComponent>
+                <div className="ge-divider">
+                    <IconComponent icon={fillColorIcon} label={"Color Picker Value"} />
+                    <ColorLineComponent
+                        label=""
+                        target={makeTargetsProxy(colorPickers, this.props.onPropertyChangedObservable)}
+                        propertyName="value"
+                        disableAlpha={true}
+                        lockObject={this.props.lockObject}
+                    />
+                </div>
             </div>
         );
     }
