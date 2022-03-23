@@ -48,6 +48,8 @@ export class GlobalState {
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
     public keys: KeyboardManager;
+    /** DO NOT USE: in the process of removing */
+    public blockKeyboardEvents = false;
     onOutlineChangedObservable = new Observable<void>();
     controlCamera: boolean;
     selectionLock: boolean;
