@@ -4,15 +4,18 @@ import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent"
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
+import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
-import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
-import conerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import widthIcon from "shared-ui-components/imgs/widthIcon.svg"; // TODO: replace
+import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
+import scrollViewerPrecisionIcon from "shared-ui-components/imgs/scrollViewerPrecisionIcon.svg"; // TODO: replace
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface IScrollViewerPropertyGridComponentProps {
     scrollViewers: ScrollViewer[];
@@ -26,77 +29,90 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
     }
 
     render() {
-        const scrollViewers = this.props.scrollViewers;
+        const {scrollViewers, onPropertyChangedObservable, lockObject} = this.props;
+        const proxy = makeTargetsProxy(scrollViewers, onPropertyChangedObservable);
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent
-                    lockObject={this.props.lockObject}
+                    lockObject={lockObject}
                     controls={scrollViewers}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <hr />
-                <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel="Stroke Weight"
-                        icon={strokeWeightIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        iconLabel="Corner Radius"
-                        icon={conerRadiusIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
-                        propertyName="cornerRadius"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </div>
-                <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
+                    <IconComponent icon={scrollViewerPrecisionIcon} label={"Wheel Precision"} />
                     <FloatLineComponent
-                        iconLabel={"Wheel precision"}
-                        icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="wheelPrecision"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        iconLabel={"Bar size"}
-                        icon={sizeIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
-                        propertyName="barSize"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        min={0}
+                        digits={2}
                     />
                 </div>
-                <ColorLineComponent
-                    iconLabel={"Bar color"}
-                    icon={fillColorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
-                    propertyName="barColor"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <ColorLineComponent
-                    iconLabel={"Bar background"}
-                    icon={fillColorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
-                    propertyName="barBackground"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <div className="ge-divider">
+                    <IconComponent icon={widthIcon} label={"Bar Size"} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="barSize"
+                        unit="PX"
+                        unitLocked
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                </div>
+                <div className="e-divider">
+                    <IconComponent icon={colorIcon} label="Bar Color"/>
+                    <ColorLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="barColor"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={fillColorIcon} label="Bar Background Color"/>
+                    <ColorLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="barBackground"
+                    />
+                </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="thickness"
+                        unit="PX"
+                        unitLocked={true}
+                        arrows={true}
+                        min={0}
+                        digits={2}
+                        />
+                </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label=""
+                        target={makeTargetsProxy(scrollViewers, onPropertyChangedObservable)}
+                        propertyName="cornerRadius"
+                        unit="PX"
+                        unitLocked={true}
+                        arrows={true}
+                        min={0}
+                        digits={2}
+                        />
+                </div>
             </div>
         );
     }

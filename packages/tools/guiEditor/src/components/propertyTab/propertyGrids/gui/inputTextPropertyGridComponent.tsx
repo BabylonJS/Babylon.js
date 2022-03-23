@@ -19,6 +19,7 @@ import verticalMarginIcon from "shared-ui-components/imgs/verticalMarginIcon.svg
 import fontFamilyIcon from "shared-ui-components/imgs/fontFamilyIcon.svg";
 import alphaIcon from "shared-ui-components/imgs/alphaIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IInputTextPropertyGridComponentProps {
     inputTexts: InputText[];
@@ -39,109 +40,114 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={inputTexts} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="INPUT TEXT" value=" " color="grey"></TextLineComponent>
-                <TextInputLineComponent
-                    iconLabel={"Text"}
-                    icon={fontFamilyIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="text"
-                />
-                <TextInputLineComponent
-                    iconLabel={"Prompt"}
-                    icon={fontFamilyIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="promptMessage"
-                />
-                <TextInputLineComponent
-                    iconLabel={"Max width"}
-                    icon={sizeIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="maxWidth"
-                />
-                <ColorLineComponent
-                    iconLabel={"Highlight color"}
-                    icon={fillColorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="textHighlightColor"
-                />
-                <SliderLineComponent
-                    iconLabel={"Highligher opacity"}
-                    icon={alphaIcon}
-                    label=""
-                    minimum={0}
-                    maximum={1}
-                    step={0.01}
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="highligherOpacity"
-                />
-                <CheckBoxLineComponent
-                    iconLabel={"On focus select all"}
-                    icon={verticalMarginIcon}
-                    label="ON FOCUS SELECT ALL"
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="onFocusSelectAll"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <ColorLineComponent
-                    iconLabel={"Focused background"}
-                    icon={colorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="focusedBackground"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    iconLabel={"Margin"}
-                    icon={verticalMarginIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="margin"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <CheckBoxLineComponent
-                    iconLabel={"Auto stretch width"}
-                    icon={sizeIcon}
-                    label="AUTO STRETCH"
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="autoStretchWidth"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <FloatLineComponent
-                    iconLabel={"Thickness"}
-                    icon={strokeWeightIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="thickness"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    iconLabel={"Placeholder text"}
-                    icon={fontFamilyIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="placeholderText"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <ColorLineComponent
-                    iconLabel={"Placeholder color"}
-                    icon={fillColorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
-                    propertyName="placeholderColor"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <div className="ge-divider">
+                    <IconComponent icon={fontFamilyIcon} label="Text" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="text"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={fontFamilyIcon} label="Prompt Text" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="promptMessage"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={sizeIcon} label="Max Width" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="maxWidth"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={fillColorIcon} label="Highlight Color" />
+                    <ColorLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="textHighlightColor"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={alphaIcon} label="Highlight Opacity" />
+                    <SliderLineComponent
+                        label=" "
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="highligherOpacity"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={verticalMarginIcon} label="When Input is Focus, Select All" />
+                    <CheckBoxLineComponent
+                        label="ON FOCUS, SELECT ALL"
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="onFocusSelectAll"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={colorIcon} label="Background Color when Focused" />
+                    <ColorLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="focusedBackground"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={verticalMarginIcon} label="Margin" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="margin"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={sizeIcon} label="Automatically Stretch Width" />
+                    <CheckBoxLineComponent
+                        label="AUTO STRETCH"
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="autoStretchWidth"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={strokeWeightIcon} label="Border Thickness" />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="thickness"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={fontFamilyIcon} label="Placeholder Text" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="placeholderText"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={fillColorIcon} label="Placeholder Color" />
+                    <ColorLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
+                        propertyName="placeholderColor"
+                    />
+                </div>
             </div>
         );
     }
