@@ -145,7 +145,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         const windowAsAny = window as any;
                         if (windowAsAny.Playground && oldId) {
                             windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                                regex: new RegExp(`parseFromSnippetAsync("${oldId})`, "g"),
+                                regex: new RegExp(oldId, "g"),
                                 replace: `parseFromSnippetAsync("${adt.snippetId})`,
                             });
                         }
