@@ -10,6 +10,7 @@ import {
     evaluateRenderScene,
     getGlobalConfig,
     prepareLeakDetection,
+    logPageErrors,
 } from "@tools/test-tools";
 
 // IN TESTS
@@ -18,6 +19,9 @@ declare const BABYLON: typeof import("core/index");
 const classesToCheck = ["BABYLON.Node", "BABYLON.Scene", "BABYLON.ArcRotateCamera"];
 
 describe("Memory Leaks - cameras", () => {
+    beforeAll(async () => {
+        await logPageErrors(page);
+    });
     jest.setTimeout(30000);
 
     let init: CountValues;
