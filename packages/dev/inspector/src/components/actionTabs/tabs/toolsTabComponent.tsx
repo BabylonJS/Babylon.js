@@ -211,7 +211,7 @@ export class ToolsTabComponent extends PaneComponent {
             () => {},
             () => {},
             () => {},
-            (remaining: number) => {},
+            () => {},
             () => {},
             reload,
             () => {}
@@ -253,7 +253,7 @@ export class ToolsTabComponent extends PaneComponent {
                 this._isExporting = false;
                 this.forceUpdate();
             })
-            .catch((reason) => {
+            .catch(() => {
                 this._isExporting = false;
                 this.forceUpdate();
             });

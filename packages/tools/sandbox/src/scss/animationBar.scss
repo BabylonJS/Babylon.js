@@ -3,13 +3,13 @@
     color: white;
     min-height: 30px;
     height: var(--footer-height);
-    background-color: var(--footer-background);    
+    background-color: var(--footer-background);
     grid-column: 2;
     grid-row: 1;
     margin-left: 10px;
     display: flex;
 
-    * {        
+    * {
         padding: 0px;
         margin: 0px;
     }
@@ -19,10 +19,10 @@
         flex-direction: row;
         justify-content: center;
         flex-grow: 10;
-        align-items: center
+        align-items: center;
     }
 
-    #playBtn {    
+    #playBtn {
         display: flex;
         align-items: center;
         height: var(--footer-height);
@@ -37,17 +37,17 @@
         }
 
         &:hover {
-            background-color: var(--button-hover-color);   
+            background-color: var(--button-hover-color);
         }
-    
+
         &:active {
             background-color: var(--button-hover-background);
         }
-    
+
         &:focus {
             outline: none !important;
             border: none;
-        }    
+        }
     }
 
     .slider {
@@ -78,13 +78,12 @@
         background-color: white;
     }
 
-
     /** FireFox -moz */
     .slider::-moz-range-progress {
-    background-color: white;
-    height: 2px; 
+        background-color: white;
+        height: 2px;
     }
-    .slider::-moz-range-thumb{
+    .slider::-moz-range-thumb {
         width: 20px;
         height: 20px;
         border: 2px solid white;
@@ -99,10 +98,10 @@
     /** IE -ms */
     .slider::-ms-track {
         height: 2px;
-        
+
         /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
         background: transparent;
-        
+
         /*leave room for the larger thumb to overflow with a transparent border */
         border-color: transparent;
         border-width: 10px 0;
@@ -129,7 +128,7 @@
 }
 
 @media (max-width: 768px) {
-    .animationBar {       
+    .animationBar {
         margin-left: 0;
     }
 }

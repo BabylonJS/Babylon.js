@@ -7,25 +7,25 @@ import { DynamicFloat32Array } from "./dynamicFloat32Array";
 import { IPerfViewerCollectionStrategy, PerfStrategyInitialization } from "./performanceViewerCollectionStrategies";
 
 // the initial size of our array, should be a multiple of two!
-const initialArraySize = 1800;
+const InitialArraySize = 1800;
 
 // three octets in a hexcode. #[AA][BB][CC], i.e. 24 bits of data.
-const numberOfBitsInHexcode = 24;
+const NumberOfBitsInHexcode = 24;
 
 // Allows single numeral hex numbers to be appended by a 0.
-const hexPadding = "0";
+const HexPadding = "0";
 
 // header for the timestamp column
-const timestampColHeader = "timestamp";
+const TimestampColHeader = "timestamp";
 
 // header for the numPoints column
-const numPointsColHeader = "numPoints";
+const NumPointsColHeader = "numPoints";
 
 // regex to capture all carriage returns in the string.
-const carriageReturnRegex = /\r/g;
+const CarriageReturnRegex = /\r/g;
 
 // string to use as separator when exporting extra information along with the dataset id
-const exportedDataSeparator = "@";
+const ExportedDataSeparator = "@";
 
 /**
  * Callback strategy and optional category for data collection
@@ -94,8 +94,8 @@ export class PerformanceViewerCollector {
     constructor(private _scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]) {
         this.datasets = {
             ids: [],
-            data: new DynamicFloat32Array(initialArraySize),
-            startingIndices: new DynamicFloat32Array(initialArraySize),
+            data: new DynamicFloat32Array(InitialArraySize),
+            startingIndices: new DynamicFloat32Array(InitialArraySize),
         };
         this._strategies = new Map<string, IPerfViewerCollectionStrategy>();
         this._datasetMeta = new Map<string, IPerfMetadata>();
@@ -191,6 +191,7 @@ export class PerformanceViewerCollector {
      * @param strategyCallbacks the list of data to collect with callbacks.
      */
     public addCollectionStrategies(...strategyCallbacks: IPerformanceViewerStrategyParameter[]) {
+        // eslint-disable-next-line prefer-const
         for (let { strategyCallback, category, hidden } of strategyCallbacks) {
             const strategy = strategyCallback(this._scene);
             if (this._strategies.has(strategy.id)) {
@@ -201,7 +202,7 @@ export class PerformanceViewerCollector {
             this.datasets.ids.push(strategy.id);
 
             if (category) {
-                category = category.replace(new RegExp(exportedDataSeparator, "g"), "");
+                category = category.replace(new RegExp(ExportedDataSeparator, "g"), "");
             }
 
             this._datasetMeta.set(strategy.id, {
@@ -231,9 +232,9 @@ export class PerformanceViewerCollector {
 
         // then we build the string octet by octet.
         let hex = "#";
-        for (let i = 0; i < numberOfBitsInHexcode; i += 8) {
+        for (let i = 0; i < NumberOfBitsInHexcode; i += 8) {
             const octet = (hash >> i) & 0xff;
-            hex += (hexPadding + octet.toString(16)).substr(-2);
+            hex += (HexPadding + octet.toString(16)).substr(-2);
         }
 
         return hex;
@@ -336,9 +337,9 @@ export class PerformanceViewerCollector {
      * @param preserveStringEventsRestore if it should preserve the string events, by default will clear string events registered when called.
      */
     public clear(preserveStringEventsRestore?: boolean) {
-        this.datasets.data = new DynamicFloat32Array(initialArraySize);
+        this.datasets.data = new DynamicFloat32Array(InitialArraySize);
         this.datasets.ids.length = 0;
-        this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
+        this.datasets.startingIndices = new DynamicFloat32Array(InitialArraySize);
         this._datasetMeta.clear();
         this._strategies.forEach((strategy) => strategy.dispose());
         this._strategies.clear();
@@ -367,7 +368,7 @@ export class PerformanceViewerCollector {
      */
     public loadFromFileData(data: string, keepDatasetMeta?: boolean): boolean {
         const lines = data
-            .replace(carriageReturnRegex, "")
+            .replace(CarriageReturnRegex, "")
             .split("\n")
             .map((line) => line.split(",").filter((s) => s.length > 0))
             .filter((line) => line.length > 0);
@@ -379,14 +380,14 @@ export class PerformanceViewerCollector {
 
         const parsedDatasets: IPerfDatasets = {
             ids: [],
-            data: new DynamicFloat32Array(initialArraySize),
-            startingIndices: new DynamicFloat32Array(initialArraySize),
+            data: new DynamicFloat32Array(InitialArraySize),
+            startingIndices: new DynamicFloat32Array(InitialArraySize),
         };
 
-        // parse first line seperately to populate ids!
+        // parse first line separately to populate ids!
         const [firstLine, ...dataLines] = lines;
         // make sure we have the correct beginning headers
-        if (firstLine.length < 2 || firstLine[timestampIndex] !== timestampColHeader || firstLine[numPointsIndex] !== numPointsColHeader) {
+        if (firstLine.length < 2 || firstLine[timestampIndex] !== TimestampColHeader || firstLine[numPointsIndex] !== NumPointsColHeader) {
             return false;
         }
 
@@ -394,7 +395,7 @@ export class PerformanceViewerCollector {
 
         // populate the ids.
         for (let i = PerformanceViewerCollector.SliceDataOffset; i < firstLine.length; i++) {
-            const [id, category] = firstLine[i].split(exportedDataSeparator);
+            const [id, category] = firstLine[i].split(ExportedDataSeparator);
             parsedDatasets.ids.push(id);
             idCategoryMap.set(id, category);
         }
@@ -459,13 +460,13 @@ export class PerformanceViewerCollector {
     public exportDataToCsv() {
         let csvContent = "";
         // create the header line.
-        csvContent += `${timestampColHeader},${numPointsColHeader}`;
+        csvContent += `${TimestampColHeader},${NumPointsColHeader}`;
         for (let i = 0; i < this.datasets.ids.length; i++) {
             csvContent += `,${this.datasets.ids[i]}`;
             if (this._datasetMeta) {
                 const meta = this._datasetMeta.get(this.datasets.ids[i]);
                 if (meta?.category) {
-                    csvContent += `${exportedDataSeparator}${meta.category}`;
+                    csvContent += `${ExportedDataSeparator}${meta.category}`;
                 }
             }
         }
@@ -499,8 +500,8 @@ export class PerformanceViewerCollector {
      */
     public start(shouldPreserve?: boolean) {
         if (!shouldPreserve) {
-            this.datasets.data = new DynamicFloat32Array(initialArraySize);
-            this.datasets.startingIndices = new DynamicFloat32Array(initialArraySize);
+            this.datasets.data = new DynamicFloat32Array(InitialArraySize);
+            this.datasets.startingIndices = new DynamicFloat32Array(InitialArraySize);
             this._startingTimestamp = PrecisionDate.Now;
         } else if (this._startingTimestamp === undefined) {
             this._startingTimestamp = PrecisionDate.Now;

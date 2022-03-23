@@ -212,7 +212,7 @@ export interface ICanvasRenderingContext {
     rotate(angle: number): void;
 
     /**
-     * Adds a translation transformation by moving the canvas and its origin x horzontally and y vertically on the grid.
+     * Adds a translation transformation by moving the canvas and its origin x horizontally and y vertically on the grid.
      * @param x Distance to move in the horizontal direction. Positive values are to the right, and negative to the left.
      * @param y Distance to move in the vertical direction. Positive values are down, and negative are up.
      */

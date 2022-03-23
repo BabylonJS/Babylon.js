@@ -8,6 +8,7 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _MeshCollisionData {
     public _checkCollisions = false;
     public _collisionMask = -1;

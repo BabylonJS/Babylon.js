@@ -156,12 +156,14 @@ export class ValueAndUnit {
      */
     public toString(host: AdvancedDynamicTexture, decimals?: number): string {
         switch (this._unit) {
-            case ValueAndUnit.UNITMODE_PERCENTAGE:
+            case ValueAndUnit.UNITMODE_PERCENTAGE: {
                 const percentage = this.getValue(host) * 100;
                 return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
-            case ValueAndUnit.UNITMODE_PIXEL:
+            }
+            case ValueAndUnit.UNITMODE_PIXEL: {
                 const pixels = this.getValue(host);
                 return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
+            }
         }
 
         return this._unit.toString();

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
 import { IAnimatable } from "../../../Animations/animatable.interface";
@@ -238,7 +239,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     @serializeAsTexture("lensColorTexture")
     public lensColorTexture: Nullable<Texture> = null;
     /**
-     * The overall strengh for the lens flare effect
+     * The overall strength for the lens flare effect
      */
     @serialize()
     public lensFlareStrength: number = 20.0;
@@ -441,10 +442,12 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      * Specifies if the volumetric lights scattering effect is enabled
      */
     @serialize()
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get VLSEnabled(): boolean {
         return this._vlsEnabled;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set VLSEnabled(enabled) {
         if (this._vlsEnabled === enabled) {
             return;
@@ -821,7 +824,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         }
     }
 
-    // Down Sample X4 Post-Processs
+    // Down Sample X4 Post-Process
     private _createDownSampleX4PostProcess(scene: Scene, ratio: number): void {
         const downSampleX4Offsets = new Array<number>(32);
         this.downSampleX4PostProcess = new PostProcess(
@@ -1106,7 +1109,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     // Create luminance
     private _createLuminancePostProcesses(scene: Scene, textureType: number): void {
         // Create luminance
-        var size = Math.pow(3, StandardRenderingPipeline.LuminanceSteps);
+        let size = Math.pow(3, StandardRenderingPipeline.LuminanceSteps);
         this.luminancePostProcess = new PostProcess(
             "HDRLuminance",
             "standard",
@@ -1152,7 +1155,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
         // Create down sample luminance
         for (let i = StandardRenderingPipeline.LuminanceSteps - 1; i >= 0; i--) {
-            var size = Math.pow(3, i);
+            size = Math.pow(3, i);
 
             let defines = "#define LUMINANCE_DOWN_SAMPLE\n";
             if (i === 0) {
@@ -1563,7 +1566,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 this.lensFlareComposePostProcess.dispose(camera);
             }
 
-            for (var j = 0; j < this.luminanceDownSamplePostProcesses.length; j++) {
+            for (let j = 0; j < this.luminanceDownSamplePostProcesses.length; j++) {
                 this.luminanceDownSamplePostProcesses[j].dispose(camera);
             }
 
@@ -1589,11 +1592,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 this.fxaaPostProcess.dispose(camera);
             }
 
-            for (var j = 0; j < this.blurHPostProcesses.length; j++) {
+            for (let j = 0; j < this.blurHPostProcesses.length; j++) {
                 this.blurHPostProcesses[j].dispose(camera);
             }
 
-            for (var j = 0; j < this.blurVPostProcesses.length; j++) {
+            for (let j = 0; j < this.blurVPostProcesses.length; j++) {
                 this.blurVPostProcesses[j].dispose(camera);
             }
         }

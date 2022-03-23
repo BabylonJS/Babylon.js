@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";

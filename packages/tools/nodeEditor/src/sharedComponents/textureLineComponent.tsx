@@ -24,7 +24,7 @@ export interface ITextureLineComponentState {
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
-    private canvasRef: React.RefObject<HTMLCanvasElement>;
+    private _canvasRef: React.RefObject<HTMLCanvasElement>;
 
     constructor(props: ITextureLineComponentProps) {
         super(props);
@@ -37,13 +37,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             face: 0,
         };
 
-        this.canvasRef = React.createRef();
+        this._canvasRef = React.createRef();
     }
 
-    shouldComponentUpdate(
-        nextProps: ITextureLineComponentProps,
-        nextState: { displayRed: boolean; displayGreen: boolean; displayBlue: boolean; displayAlpha: boolean; face: number }
-    ): boolean {
+    shouldComponentUpdate(): boolean {
         return true;
     }
 
@@ -56,7 +53,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     public updatePreview() {
-        TextureLineComponent.UpdatePreview(this.canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
+        TextureLineComponent.UpdatePreview(this._canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
     public static async UpdatePreview(
@@ -124,7 +121,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             if (!texture.isCube) {
                 if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
+                    for (let i = 0; i < width * height * 4; i += 4) {
                         if (!options.displayRed) {
                             data[i] = 0;
                         }
@@ -150,7 +147,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             //To flip image on Y axis.
             if ((texture as Texture).invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
+                for (let i = 0; i < halfHeight; i++) {
                     for (let j = 0; j < numberOfChannelsByLine; j++) {
                         const currentCell = j + i * numberOfChannelsByLine;
                         const targetLine = height - i - 1;
@@ -253,7 +250,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                         </button>
                     </div>
                 )}
-                <canvas ref={this.canvasRef} className="preview" />
+                <canvas ref={this._canvasRef} className="preview" />
             </div>
         );
     }

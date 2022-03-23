@@ -6,6 +6,7 @@ import { BaseCameraMouseWheelInput } from "../../Cameras/Inputs/BaseCameraMouseW
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Coordinate } from "../../Maths/math.axis";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 enum _CameraProperty {
     MoveRelative,
     RotateRelative,

@@ -417,6 +417,8 @@
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
 - Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
+- Fix caching of parented node ([carolhmj](https://github.com/carolhmj))
+- Fix glTF exporter when exporting meshes with no material specified. ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
 
@@ -453,3 +455,4 @@
 - GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))
 - `currentState` and `previousState` have been removed from use in `onInputChangedObservable` in the `DeviceSourceManager` ([PolygonalSun](https://github.com/PolygonalSun))
 - `PointerInput` movement enums are no longer being used in any movement event handling in the `DeviceInputSystem` and `InputManager` ([PolygonalSun](https://github.com/PolygonalSun))
+- Shadow generators now use the `Material.alphaCutOff` value instead of a hard-coded 0.4 value. ([Popov72](https://github.com/Popov72))

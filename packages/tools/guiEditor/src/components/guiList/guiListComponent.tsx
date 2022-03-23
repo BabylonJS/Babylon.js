@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -40,6 +41,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
         // Block types used to create the menu from
         const allBlocks: any = {
             Buttons: ["TextButton", "ImageButton"],
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             Controls: ["Slider", "Checkbox", "ColorPicker", "VirtualKeyboard"],
             Containers: ["DisplayGrid", "Grid", "StackPanel"],
             Shapes: ["Ellipse", "Image", "Line", "Rectangle"],
@@ -52,7 +54,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
             const blockList = (allBlocks as any)[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
-                .map((block: any, i: number) => {
+                .map((block: any) => {
                     return <DraggableLineComponent key={block} data={block} tooltip={GuiListComponent._Tooltips[block] || ""} />;
                 });
 

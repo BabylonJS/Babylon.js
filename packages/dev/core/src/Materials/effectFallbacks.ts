@@ -81,7 +81,7 @@ export class EffectFallbacks implements IEffectFallbacks {
             effect._bonesComputationForcedToCPU = true;
 
             const scene = this._mesh.getScene();
-            for (var index = 0; index < scene.meshes.length; index++) {
+            for (let index = 0; index < scene.meshes.length; index++) {
                 const otherMesh = scene.meshes[index];
 
                 if (!otherMesh.material) {
@@ -111,7 +111,7 @@ export class EffectFallbacks implements IEffectFallbacks {
         } else {
             const currentFallbacks = this._defines[this._currentRank];
             if (currentFallbacks) {
-                for (var index = 0; index < currentFallbacks.length; index++) {
+                for (let index = 0; index < currentFallbacks.length; index++) {
                     currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");
                 }
             }

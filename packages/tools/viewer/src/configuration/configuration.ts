@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { IEnvironmentMapConfiguration } from "./interfaces/environmentMapConfiguration";
 import { EngineOptions } from "core/Engines/thinEngine";
 import { IObserversConfiguration } from "./interfaces/observersConfiguration";

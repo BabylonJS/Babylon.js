@@ -23,7 +23,7 @@ import "../../Materials/Textures/baseTexture.polynomial";
  * Example of such files can be found on Poly Haven: https://polyhaven.com/hdris
  */
 export class HDRCubeTexture extends BaseTexture {
-    private static _facesMapping = ["right", "left", "up", "down", "front", "back"];
+    private static _FacesMapping = ["right", "left", "up", "down", "front", "back"];
 
     private _generateHarmonics = true;
     private _noMipmap: boolean;
@@ -155,7 +155,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         if (!this._texture) {
             if (!this.getScene()?.useDelayedTextureLoading) {
-                this.loadTexture();
+                this._loadTexture();
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
@@ -179,7 +179,7 @@ export class HDRCubeTexture extends BaseTexture {
     /**
      * Occurs when the file is raw .hdr file.
      */
-    private loadTexture() {
+    private _loadTexture() {
         const engine = this._getEngine()!;
         const caps = engine.getCaps();
 
@@ -218,7 +218,7 @@ export class HDRCubeTexture extends BaseTexture {
                     byteArray = new Uint8Array(this._size * this._size * 3);
                 }
 
-                const dataFace = <Float32Array>(<any>data)[HDRCubeTexture._facesMapping[j]];
+                const dataFace = <Float32Array>(<any>data)[HDRCubeTexture._FacesMapping[j]];
 
                 // If special cases.
                 if (this.gammaSpace || shortArray || byteArray) {
@@ -316,7 +316,7 @@ export class HDRCubeTexture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap);
 
         if (!this._texture) {
-            this.loadTexture();
+            this._loadTexture();
         }
     }
 

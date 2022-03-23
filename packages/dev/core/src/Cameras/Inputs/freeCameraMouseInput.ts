@@ -31,7 +31,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _onMouseMove: Nullable<(e: IMouseEvent) => any>;
     private _observer: Nullable<Observer<PointerInfo>>;
-    private previousPosition: Nullable<{ x: number; y: number }> = null;
+    private _previousPosition: Nullable<{ x: number; y: number }> = null;
 
     /**
      * Observable for when a pointer move event occurs containing the move offset
@@ -64,6 +64,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         const engine = this.camera.getEngine();
         const element = engine.getInputElement();
@@ -98,7 +99,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         this._currentActiveButton = evt.button;
                     }
 
-                    this.previousPosition = {
+                    this._previousPosition = {
                         x: evt.clientX,
                         y: evt.clientY,
                     };
@@ -120,16 +121,16 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     }
                     this._currentActiveButton = -1;
 
-                    this.previousPosition = null;
+                    this._previousPosition = null;
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
                 } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
-                    } else if (this.previousPosition) {
-                        let offsetX = evt.clientX - this.previousPosition.x;
-                        const offsetY = evt.clientY - this.previousPosition.y;
+                    } else if (this._previousPosition) {
+                        let offsetX = evt.clientX - this._previousPosition.x;
+                        const offsetY = evt.clientY - this._previousPosition.y;
                         if (this.camera.getScene().useRightHandedSystem) {
                             offsetX *= -1;
                         }
@@ -143,7 +144,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         }
                         this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
-                        this.previousPosition = {
+                        this._previousPosition = {
                             x: evt.clientX,
                             y: evt.clientY,
                         };
@@ -177,7 +178,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
             this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
-            this.previousPosition = null;
+            this._previousPosition = null;
 
             if (!noPreventDefault) {
                 evt.preventDefault();
@@ -199,7 +200,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      * Override this method to provide functionality.
      * @param evt
      */
-    protected onContextMenu(evt: PointerEvent): void {
+    public onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();
     }
 
@@ -210,9 +211,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
@@ -228,7 +228,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
             this._observer = null;
             this._onMouseMove = null;
-            this.previousPosition = null;
+            this._previousPosition = null;
         }
     }
 

@@ -43,7 +43,7 @@ export class HolographicSlate extends ContentDisplay3D {
      */
     public static FOLLOW_ICON_FILENAME: string = "IconFollowMe.png";
 
-    private static DEFAULT_TEXT_RESOLUTION_Y = 102.4;
+    private static _DEFAULT_TEXT_RESOLUTION_Y = 102.4;
 
     /**
      * Margin between title bar and contentplate
@@ -239,8 +239,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
             // Update the title's AdvancedDynamicTexture scale to avoid visual stretching
             this._titleTextComponent.host.scaleTo(
-                (HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x) / titleBarTitle.scaling.y,
-                HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y
+                (HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x) / titleBarTitle.scaling.y,
+                HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y
             );
 
             const aspectRatio = this.dimensions.x / contentPlateHeight;
@@ -306,8 +306,8 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleTextComponent.textWrapping = TextWrapping.Ellipsis;
         this._titleTextComponent.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._titleTextComponent.color = "white";
-        this._titleTextComponent.fontSize = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 2;
-        this._titleTextComponent.paddingLeft = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 4;
+        this._titleTextComponent.fontSize = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y / 2;
+        this._titleTextComponent.paddingLeft = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y / 4;
         adt.addControl(this._titleTextComponent);
 
         if (scene.useRightHandedSystem) {

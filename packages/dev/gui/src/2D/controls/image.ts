@@ -67,7 +67,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
-     * Beware using this as this will comsume more memory as the image has to be stored twice
+     * Beware using this as this will consume more memory as the image has to be stored twice
      */
     @serialize()
     public get detectPointerOnOpaqueOnly(): boolean {
@@ -291,7 +291,7 @@ export class Image extends Control {
         }
     }
 
-    /** Gets or sets the streching mode used by the image */
+    /** Gets or sets the stretching mode used by the image */
     @serialize()
     public get stretch(): number {
         return this._stretch;
@@ -837,15 +837,16 @@ export class Image extends Control {
                 case Image.STRETCH_FILL:
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
-                case Image.STRETCH_UNIFORM:
-                    var hRatio = this._currentMeasure.width / width;
-                    var vRatio = this._currentMeasure.height / height;
-                    var ratio = Math.min(hRatio, vRatio);
-                    var centerX = (this._currentMeasure.width - width * ratio) / 2;
-                    var centerY = (this._currentMeasure.height - height * ratio) / 2;
+                case Image.STRETCH_UNIFORM: {
+                    const hRatio = this._currentMeasure.width / width;
+                    const vRatio = this._currentMeasure.height / height;
+                    const ratio = Math.min(hRatio, vRatio);
+                    const centerX = (this._currentMeasure.width - width * ratio) / 2;
+                    const centerY = (this._currentMeasure.height - height * ratio) / 2;
 
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                     break;
+                }
                 case Image.STRETCH_EXTEND:
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;

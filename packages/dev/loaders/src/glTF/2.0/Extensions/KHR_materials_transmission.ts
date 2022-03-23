@@ -67,7 +67,7 @@ class TransmissionHelper {
     /**
      * Creates the default options for the helper.
      */
-    private static _getDefaultOptions(): ITransmissionHelperOptions {
+    private static _GetDefaultOptions(): ITransmissionHelperOptions {
         return {
             renderSize: 1024,
             samples: 4,
@@ -103,14 +103,14 @@ class TransmissionHelper {
      */
     constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene) {
         this._options = {
-            ...TransmissionHelper._getDefaultOptions(),
+            ...TransmissionHelper._GetDefaultOptions(),
             ...options,
         };
         this._scene = scene as any;
         this._scene._transmissionHelper = this;
 
         this.onErrorObservable = new Observable();
-        this._scene.onDisposeObservable.addOnce((scene) => {
+        this._scene.onDisposeObservable.addOnce(() => {
             this.dispose();
         });
 
@@ -156,7 +156,7 @@ class TransmissionHelper {
         return this._opaqueRenderTarget;
     }
 
-    private shouldRenderAsTransmission(material: Nullable<Material>): boolean {
+    private _shouldRenderAsTransmission(material: Nullable<Material>): boolean {
         if (!material) {
             return false;
         }
@@ -172,7 +172,7 @@ class TransmissionHelper {
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
-            if (this.shouldRenderAsTransmission(mesh.material)) {
+            if (this._shouldRenderAsTransmission(mesh.material)) {
                 (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
                 this._transparentMeshesCache.push(mesh);
             } else {
@@ -208,7 +208,7 @@ class TransmissionHelper {
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-        const useTransmission = this.shouldRenderAsTransmission(mesh.material);
+        const useTransmission = this._shouldRenderAsTransmission(mesh.material);
         if (useTransmission) {
             if (mesh.material instanceof PBRMaterial) {
                 mesh.material.subSurface.refractionTexture = this._opaqueRenderTarget;
@@ -274,7 +274,7 @@ class TransmissionHelper {
         });
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
-            if (this.shouldRenderAsTransmission(mesh.material)) {
+            if (this._shouldRenderAsTransmission(mesh.material)) {
                 (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
             }
         });
@@ -299,6 +299,7 @@ const NAME = "KHR_materials_transmission";
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_transmission implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

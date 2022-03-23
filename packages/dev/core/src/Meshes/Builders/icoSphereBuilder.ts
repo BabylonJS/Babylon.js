@@ -1,6 +1,6 @@
 import { Scene } from "../../scene";
 import { Vector4, Vector3, Vector2 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from "../../types";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
@@ -50,7 +50,7 @@ export function CreateIcoSphereVertexData(options: {
     const t = (1 + Math.sqrt(5)) / 2;
 
     // 12 vertex x,y,z
-    const ico_vertices = [
+    const icoVertices = [
         -1,
         t,
         -0,
@@ -270,9 +270,9 @@ export function CreateIcoSphereVertexData(options: {
             const v_id = ico_indices[3 * face + v012];
             // vertex have 3D position (x,y,z)
             face_vertex_pos[v012].copyFromFloats(
-                ico_vertices[3 * vertices_unalias_id[v_id]],
-                ico_vertices[3 * vertices_unalias_id[v_id] + 1],
-                ico_vertices[3 * vertices_unalias_id[v_id] + 2]
+                icoVertices[3 * vertices_unalias_id[v_id]],
+                icoVertices[3 * vertices_unalias_id[v_id] + 1],
+                icoVertices[3 * vertices_unalias_id[v_id] + 2]
             );
             // Normalize to get normal, then scale to radius
             face_vertex_pos[v012].normalize().scaleInPlace(radius);
@@ -400,7 +400,6 @@ export function CreateIcoSphereVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.radius
- * @param scene defines the hosting scene
  * @param options.radiusX
  * @param options.radiusY
  * @param options.radiusZ
@@ -410,6 +409,7 @@ export function CreateIcoSphereVertexData(options: {
  * @param options.frontUVs
  * @param options.backUVs
  * @param options.updatable
+ * @param scene defines the hosting scene
  * @returns the icosahedron mesh
  * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
  */
@@ -445,6 +445,7 @@ export function CreateIcoSphere(
  * @deprecated use the function directly from the module
  */
 export const IcoSphereBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateIcoSphere,
 };
 

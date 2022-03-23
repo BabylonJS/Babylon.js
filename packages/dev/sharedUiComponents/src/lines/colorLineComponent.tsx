@@ -66,7 +66,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
             if (property === conflictingValuesPlaceholder) {
                 return emptyColor;
             }
-            return this.convertToColor(property);
+            return this._convertToColor(property);
         } else {
             if (props.isLinear) {
                 return property.toGammaSpace();
@@ -76,7 +76,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     }
 
     setColorFromString(colorString: string) {
-        const color = this.convertToColor(colorString);
+        const color = this._convertToColor(colorString);
         this.setColor(color);
     }
 
@@ -86,7 +86,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
             newColor.toLinearSpaceToRef(newColor);
         }
         // whether to set properties to color3 or color4
-        const setColor = this.props.disableAlpha ? this.toColor3(newColor) : newColor;
+        const setColor = this.props.disableAlpha ? this._toColor3(newColor) : newColor;
 
         const target = this.props.target;
         const initialValue = target[this.props.propertyName];
@@ -147,7 +147,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         element.remove();
     }
 
-    private convertToColor(color: string): Color4 {
+    private _convertToColor(color: string): Color4 {
         if (color === "" || color === "transparent") {
             return emptyColor;
         }
@@ -177,7 +177,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         return Color4.FromHexString(color);
     }
 
-    private toColor3(color: Color4) {
+    private _toColor3(color: Color4) {
         return new Color3(color.r, color.g, color.b);
     }
 
@@ -194,7 +194,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                     <div className="color3">
                         <ColorPickerLineComponent
                             linearHint={this.props.isLinear}
-                            value={this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color}
+                            value={this.props.disableAlpha ? this._toColor3(this.state.color) : this.state.color}
                             onColorChanged={(colorString) => {
                                 this.setColorFromString(colorString);
                             }}

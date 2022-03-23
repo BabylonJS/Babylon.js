@@ -77,7 +77,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     updateValue(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
@@ -124,6 +124,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 step={this.props.step || "0.01"}
                                 className="numeric-input"
                                 onBlur={() => {
+                                    this.props.globalState.blockKeyboardEvents = false;
                                     if (this.props.onEnter) {
                                         this.props.onEnter(this._store);
                                     }

@@ -90,6 +90,7 @@ declare module "../Meshes/linesMesh" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
     LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
     return this;
@@ -244,7 +245,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      */
     public customInstances = new SmartArray<Matrix>(32);
 
-    private static GetShader(scene: Scene): ShaderMaterial {
+    private static _GetShader(scene: Scene): ShaderMaterial {
         if (!scene._edgeRenderLineShader) {
             const shader = new ShaderMaterial(
                 "lineShader",
@@ -309,7 +310,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             return;
         }
 
-        this._lineShader = EdgesRenderer.GetShader(this._source.getScene());
+        this._lineShader = EdgesRenderer._GetShader(this._source.getScene());
     }
 
     /** @hidden */
@@ -420,6 +421,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      * @param offset
      * @protected
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected createLine(p0: Vector3, p1: Vector3, offset: number) {
         // Positions
         this._linesPositions.push(p0.x, p0.y, p0.z, p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p1.x, p1.y, p1.z);

@@ -18,7 +18,6 @@ export class VertexAnimationBaker {
      * Create a new VertexAnimationBaker object which can help baking animations into a texture.
      * @param scene Defines the scene the VAT belongs to
      * @param mesh Defines the mesh the VAT belongs to
-     * @param skeleton Defines the skeleton the VAT belongs to
      */
     constructor(scene: Scene, mesh: Mesh) {
         this._scene = scene;

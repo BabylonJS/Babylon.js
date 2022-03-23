@@ -81,5 +81,6 @@ export class ContentDisplay3D extends Control3D {
      * This function can be overloaded by child classes
      * @param facadeTexture defines the AdvancedDynamicTexture to use
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {}
 }

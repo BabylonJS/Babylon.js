@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper, serializeAsVector3 } from "core/Misc/decorators";
 import { Matrix, Vector4, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -111,7 +112,7 @@ export class GridMaterial extends PushMaterial {
     }
 
     /**
-     * Returns wehter or not the grid requires alpha blending.
+     * Returns whether or not the grid requires alpha blending.
      */
     public needAlphaBlending(): boolean {
         return this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());

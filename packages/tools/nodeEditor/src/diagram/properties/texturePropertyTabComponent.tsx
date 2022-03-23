@@ -38,6 +38,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube, textureIsPrefiltered: true };
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.block !== this.props.block) {
             const texture = (nextProps.block as AnyTexture).texture as BaseTexture;
@@ -48,7 +49,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     private _generateRandomForCache() {
-        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, (c) => {
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, () => {
             const r = (Math.random() * 10) | 0;
             return r.toString();
         });

@@ -2,11 +2,11 @@ import { IDisplayManager } from "./displayManager";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export class PBRDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return true;
     }
 
@@ -14,7 +14,7 @@ export class PBRDisplayManager implements IDisplayManager {
         return block.name;
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(): string {
         return "#6174FA";
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockConnectionPointMode } from "../../Enums/nodeMaterialBlockConnectionPointMode";
@@ -386,7 +387,7 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\r\n`;
     }
 
-    public initialize(state: NodeMaterialBuildState) {
+    public initialize() {
         this.associatedVariableName = "";
     }
 

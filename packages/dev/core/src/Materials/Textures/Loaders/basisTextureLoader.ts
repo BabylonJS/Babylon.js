@@ -9,6 +9,7 @@ import { EndsWith } from "../../../Misc/stringTools";
 /**
  * Loader for .basis file format
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _BasisTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
@@ -101,7 +102,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                     LoadTextureFromTranscodeResult(texture, result);
                 });
             })
-            .catch((err) => {
+            .catch(() => {
                 Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
                 callback(0, 0, false, false, () => {}, true);
             });

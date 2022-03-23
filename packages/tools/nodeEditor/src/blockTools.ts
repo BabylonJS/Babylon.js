@@ -193,10 +193,11 @@ export class BlockTools {
                 return new ReciprocalBlock("Reciprocal");
             case "ViewDirectionBlock":
                 return new ViewDirectionBlock("View direction");
-            case "LightInformationBlock":
+            case "LightInformationBlock": {
                 const lightInformationBlock = new LightInformationBlock("Light information");
                 lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
                 return lightInformationBlock;
+            }
             case "MaxBlock":
                 return new MaxBlock("Max");
             case "MinBlock":
@@ -370,9 +371,9 @@ export class BlockTools {
                 return splitter;
             }
             case "FogColorBlock": {
-                const FogColor = new InputBlock("Fog color");
-                FogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);
-                return FogColor;
+                const fogColor = new InputBlock("Fog color");
+                fogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);
+                return fogColor;
             }
             case "PositionBlock": {
                 const meshPosition = new InputBlock("position");
@@ -537,42 +538,51 @@ export class BlockTools {
                 return new ScreenSizeBlock("ScreenSize");
             case "SceneDepthBlock":
                 return new SceneDepthBlock("SceneDepth");
-            case "EqualBlock":
+            case "EqualBlock": {
                 const equalBlock = new ConditionalBlock("Equal");
                 equalBlock.condition = ConditionalBlockConditions.Equal;
                 return equalBlock;
-            case "NotEqualBlock":
+            }
+            case "NotEqualBlock": {
                 const notEqualBlock = new ConditionalBlock("NotEqual");
                 notEqualBlock.condition = ConditionalBlockConditions.NotEqual;
                 return notEqualBlock;
-            case "LessThanBlock":
+            }
+            case "LessThanBlock": {
                 const lessThanBlock = new ConditionalBlock("LessThan");
                 lessThanBlock.condition = ConditionalBlockConditions.LessThan;
                 return lessThanBlock;
-            case "LessOrEqualBlock":
+            }
+            case "LessOrEqualBlock": {
                 const lessOrEqualBlock = new ConditionalBlock("LessOrEqual");
                 lessOrEqualBlock.condition = ConditionalBlockConditions.LessOrEqual;
                 return lessOrEqualBlock;
-            case "GreaterThanBlock":
+            }
+            case "GreaterThanBlock": {
                 const greaterThanBlock = new ConditionalBlock("GreaterThan");
                 greaterThanBlock.condition = ConditionalBlockConditions.GreaterThan;
                 return greaterThanBlock;
-            case "GreaterOrEqualBlock":
+            }
+            case "GreaterOrEqualBlock": {
                 const greaterOrEqualBlock = new ConditionalBlock("GreaterOrEqual");
                 greaterOrEqualBlock.condition = ConditionalBlockConditions.GreaterOrEqual;
                 return greaterOrEqualBlock;
-            case "XorBlock":
+            }
+            case "XorBlock": {
                 const xorBlock = new ConditionalBlock("Xor");
                 xorBlock.condition = ConditionalBlockConditions.Xor;
                 return xorBlock;
-            case "OrBlock":
+            }
+            case "OrBlock": {
                 const orBlock = new ConditionalBlock("Or");
                 orBlock.condition = ConditionalBlockConditions.Or;
                 return orBlock;
-            case "AndBlock":
+            }
+            case "AndBlock": {
                 const andBlock = new ConditionalBlock("And");
                 andBlock.condition = ConditionalBlockConditions.And;
                 return andBlock;
+            }
             case "ImageSourceBlock":
                 return new ImageSourceBlock("ImageSource");
             case "ClipPlanesBlock":

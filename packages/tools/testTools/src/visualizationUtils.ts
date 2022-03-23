@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 declare const BABYLON: typeof window.BABYLON;
 
 export const evaluateInitEngineForVisualization = async (engineName: string, useReverseDepthBuffer: string | number, useNonCompatibilityMode: string | number, baseUrl: string) => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
@@ -208,7 +209,6 @@ export class NullEngine extends Engine {
     /**
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
-     * @param updatable defines if the index buffer must be updatable
      * @returns a new webGL buffer
      */
     public createIndexBuffer(indices: IndicesArray): DataBuffer {
@@ -264,6 +264,7 @@ export class NullEngine extends Engine {
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
         return {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             __SPECTOR_rebuildProgram: null,
         };
     }
@@ -565,8 +566,6 @@ export class NullEngine extends Engine {
      * Bind webGl buffers directly to the webGL context
      * @param vertexBuffers defines the vertex buffer to bind
      * @param indexBuffer defines the index buffer to bind
-     * @param vertexDeclaration defines the vertex declaration to use with the vertex buffer
-     * @param vertexStrideSize defines the vertex stride of the vertex buffer
      * @param effect defines the effect associated with the vertex buffer
      */
     public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: DataBuffer, effect: Effect): void {}
@@ -601,7 +600,7 @@ export class NullEngine extends Engine {
      * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
@@ -610,7 +609,7 @@ export class NullEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
      * @param indexCount defines the number of index to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
@@ -619,7 +618,7 @@ export class NullEngine extends Engine {
      * @param fillMode defines the primitive to use
      * @param verticesStart defines the index of first vertex to draw
      * @param verticesCount defines the count of vertices to draw
-     * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
 
@@ -840,7 +839,6 @@ export class NullEngine extends Engine {
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-     * @param lodLevel defines le lod level to bind to the frame buffer
      */
     public bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
         if (this._currentRenderTarget) {
@@ -887,7 +885,6 @@ export class NullEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param premulAlpha defines if alpha is stored as premultiplied
      * @param format defines the format of the data
-     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {}
 

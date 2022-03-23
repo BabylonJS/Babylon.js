@@ -34,6 +34,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         mat4x4: 16,
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
         sampler2D: "sampler2D",
         sampler2DArray: "sampler2DArray",
@@ -43,6 +44,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         sampler3D: "sampler3D",
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _TextureTypeByWebGLSamplerType: { [key: string]: string } = {
         sampler2D: "texture2D",
         sampler2DArray: "texture2DArray",
@@ -53,6 +55,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         sampler3D: "texture3D",
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _GpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
         textureCube: WebGPUConstants.TextureViewDimension.Cube,
         textureCubeArray: WebGPUConstants.TextureViewDimension.CubeArray,
@@ -62,11 +65,13 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     };
 
     // if the webgl sampler type is not listed in this array, "sampler" is taken by default
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _SamplerTypeByWebGLSamplerType: { [key: string]: string } = {
         sampler2DShadow: "samplerShadow",
         sampler2DArrayShadow: "samplerShadow",
     };
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _IsComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
         samplerShadow: true,
         samplerArrayShadow: true,
@@ -75,7 +80,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
 
     public shaderLanguage = ShaderLanguage.GLSL;
 
-    protected webgpuProcessingContext: WebGPUShaderProcessingContext;
+    protected _webgpuProcessingContext: WebGPUShaderProcessingContext;
 
     protected abstract _getArraySize(name: string, type: string, preProcessors: { [key: string]: string }): [string, string, number];
     protected abstract _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string;
@@ -85,13 +90,13 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
 
         [name, uniformType, length] = this._getArraySize(name, uniformType, preProcessors);
 
-        for (let i = 0; i < this.webgpuProcessingContext.leftOverUniforms.length; i++) {
-            if (this.webgpuProcessingContext.leftOverUniforms[i].name === name) {
+        for (let i = 0; i < this._webgpuProcessingContext.leftOverUniforms.length; i++) {
+            if (this._webgpuProcessingContext.leftOverUniforms[i].name === name) {
                 return;
             }
         }
 
-        this.webgpuProcessingContext.leftOverUniforms.push({
+        this._webgpuProcessingContext.leftOverUniforms.push({
             name,
             type: uniformType,
             length,
@@ -99,16 +104,16 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     protected _buildLeftOverUBO(): string {
-        if (!this.webgpuProcessingContext.leftOverUniforms.length) {
+        if (!this._webgpuProcessingContext.leftOverUniforms.length) {
             return "";
         }
         const name = WebGPUShaderProcessor.LeftOvertUBOName;
-        let availableUBO = this.webgpuProcessingContext.availableBuffers[name];
+        let availableUBO = this._webgpuProcessingContext.availableBuffers[name];
         if (!availableUBO) {
             availableUBO = {
-                binding: this.webgpuProcessingContext.getNextFreeUBOBinding(),
+                binding: this._webgpuProcessingContext.getNextFreeUBOBinding(),
             };
-            this.webgpuProcessingContext.availableBuffers[name] = availableUBO;
+            this._webgpuProcessingContext.availableBuffers[name] = availableUBO;
             this._addBufferBindingDescription(name, availableUBO, WebGPUConstants.BufferBindingType.Uniform, true);
             this._addBufferBindingDescription(name, availableUBO, WebGPUConstants.BufferBindingType.Uniform, false);
         }
@@ -118,23 +123,23 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
 
     protected _collectBindingNames(): void {
         // collect all the binding names for faster processing in WebGPUCacheBindGroup
-        for (let i = 0; i < this.webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
-            const setDefinition = this.webgpuProcessingContext.bindGroupLayoutEntries[i];
+        for (let i = 0; i < this._webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
+            const setDefinition = this._webgpuProcessingContext.bindGroupLayoutEntries[i];
             if (setDefinition === undefined) {
-                this.webgpuProcessingContext.bindGroupLayoutEntries[i] = [];
+                this._webgpuProcessingContext.bindGroupLayoutEntries[i] = [];
                 continue;
             }
             for (let j = 0; j < setDefinition.length; j++) {
-                const entry = this.webgpuProcessingContext.bindGroupLayoutEntries[i][j];
-                const name = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
-                const nameInArrayOfTexture = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].nameInArrayOfTexture;
+                const entry = this._webgpuProcessingContext.bindGroupLayoutEntries[i][j];
+                const name = this._webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
+                const nameInArrayOfTexture = this._webgpuProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].nameInArrayOfTexture;
                 if (entry) {
                     if (entry.texture || entry.externalTexture || entry.storageTexture) {
-                        this.webgpuProcessingContext.textureNames.push(nameInArrayOfTexture!);
+                        this._webgpuProcessingContext.textureNames.push(nameInArrayOfTexture!);
                     } else if (entry.sampler) {
-                        this.webgpuProcessingContext.samplerNames.push(name);
+                        this._webgpuProcessingContext.samplerNames.push(name);
                     } else if (entry.buffer) {
-                        this.webgpuProcessingContext.bufferNames.push(name);
+                        this._webgpuProcessingContext.bufferNames.push(name);
                     }
                 }
             }
@@ -142,14 +147,14 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     protected _preCreateBindGroupEntries(): void {
-        const bindGroupEntries = this.webgpuProcessingContext.bindGroupEntries;
+        const bindGroupEntries = this._webgpuProcessingContext.bindGroupEntries;
 
-        for (let i = 0; i < this.webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
-            const setDefinition = this.webgpuProcessingContext.bindGroupLayoutEntries[i];
+        for (let i = 0; i < this._webgpuProcessingContext.bindGroupLayoutEntries.length; i++) {
+            const setDefinition = this._webgpuProcessingContext.bindGroupLayoutEntries[i];
 
             const entries: GPUBindGroupEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
-                const entry = this.webgpuProcessingContext.bindGroupLayoutEntries[i][j];
+                const entry = this._webgpuProcessingContext.bindGroupLayoutEntries[i][j];
 
                 if (entry.sampler || entry.texture || entry.storageTexture || entry.externalTexture) {
                     entries.push({
@@ -180,21 +185,22 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         format: Nullable<GPUTextureFormat>,
         isVertex: boolean
     ): void {
+        // eslint-disable-next-line prefer-const
         let { groupIndex, bindingIndex } = textureInfo.textures[textureIndex];
-        if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
-            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
+        if (!this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
+            this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
-        if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
+        if (!this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
             let len;
             if (dimension === null) {
-                len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                len = this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
                     binding: bindingIndex,
                     visibility: 0,
                     externalTexture: {},
                 });
             } else if (format) {
-                len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                len = this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
                     binding: bindingIndex,
                     visibility: 0,
                     storageTexture: {
@@ -204,7 +210,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
                     },
                 });
             } else {
-                len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+                len = this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
                     binding: bindingIndex,
                     visibility: 0,
                     texture: {
@@ -215,64 +221,66 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
                 });
             }
             const textureName = textureInfo.isTextureArray ? name + textureIndex : name;
-            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1, nameInArrayOfTexture: textureName };
+            this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1, nameInArrayOfTexture: textureName };
         }
 
-        bindingIndex = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
+        bindingIndex = this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
         if (isVertex) {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
 
     protected _addSamplerBindingDescription(name: string, samplerInfo: WebGPUSamplerDescription, isVertex: boolean): void {
+        // eslint-disable-next-line prefer-const
         let { groupIndex, bindingIndex } = samplerInfo.binding;
-        if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
-            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
+        if (!this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
+            this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
-        if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
-            const len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+        if (!this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
+            const len = this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
                 binding: bindingIndex,
                 visibility: 0,
                 sampler: {
                     type: samplerInfo.type,
                 },
             });
-            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
+            this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
         }
 
-        bindingIndex = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
+        bindingIndex = this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
         if (isVertex) {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
 
     protected _addBufferBindingDescription(name: string, uniformBufferInfo: WebGPUBufferDescription, bufferType: GPUBufferBindingType, isVertex: boolean): void {
+        // eslint-disable-next-line prefer-const
         let { groupIndex, bindingIndex } = uniformBufferInfo.binding;
-        if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
-            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
+        if (!this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
+            this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex] = [];
         }
-        if (!this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
-            const len = this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
+        if (!this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex]) {
+            const len = this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex].push({
                 binding: bindingIndex,
                 visibility: 0,
                 buffer: {
                     type: bufferType,
                 },
             });
-            this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
+            this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex] = { name, index: len - 1 };
         }
 
-        bindingIndex = this.webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
+        bindingIndex = this._webgpuProcessingContext.bindGroupLayoutEntryInfo[groupIndex][bindingIndex].index;
         if (isVertex) {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Vertex;
         } else {
-            this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
+            this._webgpuProcessingContext.bindGroupLayoutEntries[groupIndex][bindingIndex].visibility |= WebGPUConstants.ShaderStage.Fragment;
         }
     }
 
@@ -280,8 +288,10 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         if (startingCode) {
             let idx = code.indexOf(mainFuncDecl);
             if (idx >= 0) {
+                // eslint-disable-next-line no-empty
                 while (idx++ < code.length && code.charAt(idx) != "{") {}
                 if (idx < code.length) {
+                    // eslint-disable-next-line no-empty
                     while (idx++ < code.length && code.charAt(idx) != "\n") {}
                     if (idx < code.length) {
                         const part1 = code.substring(0, idx + 1);

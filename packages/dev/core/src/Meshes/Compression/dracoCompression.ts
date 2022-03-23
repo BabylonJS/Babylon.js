@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Tools } from "../../Misc/tools";
 import { AutoReleaseWorkerPool } from "../../Misc/workerPool";
 import { Nullable } from "../../types";

@@ -45,10 +45,10 @@ export class PostProcessRenderPipeline {
 
     /**
      * Initializes a PostProcessRenderPipeline
-     * @param engine engine to add the pipeline to
+     * @param _engine engine to add the pipeline to
      * @param name name of the pipeline
      */
-    constructor(private engine: Engine, name: string) {
+    constructor(private _engine: Engine, name: string) {
         this._name = name;
 
         this._renderEffects = {};
@@ -70,7 +70,7 @@ export class PostProcessRenderPipeline {
      */
     public get isSupported(): boolean {
         for (const renderEffectName in this._renderEffects) {
-            if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderEffects, renderEffectName)) {
                 if (!this._renderEffects[renderEffectName].isSupported) {
                     return false;
                 }
@@ -168,7 +168,7 @@ export class PostProcessRenderPipeline {
         }
 
         for (const renderEffectName in this._renderEffects) {
-            if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderEffects, renderEffectName)) {
                 this._renderEffects[renderEffectName]._attachCameras(cams);
             }
         }
@@ -190,7 +190,7 @@ export class PostProcessRenderPipeline {
         }
 
         for (const renderEffectName in this._renderEffects) {
-            if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderEffects, renderEffectName)) {
                 this._renderEffects[renderEffectName]._detachCameras(cams);
             }
         }
@@ -203,7 +203,7 @@ export class PostProcessRenderPipeline {
     /** @hidden */
     public _update(): void {
         for (const renderEffectName in this._renderEffects) {
-            if (this._renderEffects.hasOwnProperty(renderEffectName)) {
+            if (Object.prototype.hasOwnProperty.call(this._renderEffects, renderEffectName)) {
                 this._renderEffects[renderEffectName]._update();
             }
         }
@@ -226,7 +226,7 @@ export class PostProcessRenderPipeline {
     }
 
     protected _enableMSAAOnFirstPostProcess(sampleCount: number): boolean {
-        if (!this.engine._features.supportMSAA) {
+        if (!this._engine._features.supportMSAA) {
             return false;
         }
 
@@ -246,6 +246,7 @@ export class PostProcessRenderPipeline {
      * @param prePassRenderer defines the prepass renderer to setup.
      * @returns true if the pre pass is needed.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         // Do Nothing by default
         return false;

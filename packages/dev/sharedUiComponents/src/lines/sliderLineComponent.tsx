@@ -133,7 +133,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                         const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
                     }}
-                    onChange={(evt) => {
+                    onChange={() => {
                         const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
                     }}

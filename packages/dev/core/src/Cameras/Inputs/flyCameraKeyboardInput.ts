@@ -66,6 +66,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         if (this._onCanvasBlurObserver) {
             return;
@@ -90,7 +91,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                     this.keysRight.indexOf(evt.keyCode) !== -1
                 ) {
-                    var index = this._keys.indexOf(evt.keyCode);
+                    const index = this._keys.indexOf(evt.keyCode);
 
                     if (index === -1) {
                         this._keys.push(evt.keyCode);
@@ -108,7 +109,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
                     this.keysRight.indexOf(evt.keyCode) !== -1
                 ) {
-                    var index = this._keys.indexOf(evt.keyCode);
+                    const index = this._keys.indexOf(evt.keyCode);
 
                     if (index >= 0) {
                         this._keys.splice(index, 1);
@@ -128,9 +129,8 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
@@ -146,7 +146,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {
@@ -154,10 +154,9 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     }
 
     /**
-     * @param e
      * @hidden
      */
-    public _onLostFocus(e: FocusEvent): void {
+    public _onLostFocus(): void {
         this._keys = [];
     }
 

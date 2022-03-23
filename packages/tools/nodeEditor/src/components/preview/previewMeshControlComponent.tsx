@@ -19,14 +19,14 @@ interface IPreviewMeshControlComponent {
 }
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
-    private colorInputRef: React.RefObject<HTMLInputElement>;
-    private filePickerRef: React.RefObject<HTMLInputElement>;
+    private _colorInputRef: React.RefObject<HTMLInputElement>;
+    private _filePickerRef: React.RefObject<HTMLInputElement>;
     private _onResetRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
-        this.colorInputRef = React.createRef();
-        this.filePickerRef = React.createRef();
+        this._colorInputRef = React.createRef();
+        this._filePickerRef = React.createRef();
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
@@ -61,8 +61,8 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             this.props.globalState.listOfCustomPreviewFiles = [file];
             this.forceUpdate();
         }
-        if (this.filePickerRef.current) {
-            this.filePickerRef.current.value = "";
+        if (this._filePickerRef.current) {
+            this._filePickerRef.current.value = "";
         }
     }
 
@@ -89,7 +89,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     }
 
     changeBackgroundClick() {
-        this.colorInputRef.current?.click();
+        this._colorInputRef.current?.click();
     }
 
     render() {
@@ -141,7 +141,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                                 if (value !== PreviewType.Custom + 1) {
                                     this.changeMeshType(value);
                                 } else {
-                                    this.filePickerRef.current?.click();
+                                    this._filePickerRef.current?.click();
                                 }
                             }}
                         />
@@ -151,7 +151,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                             }}
                             title="Preview with a custom mesh"
                         >
-                            <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept} />
+                            <input ref={this._filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept} />
                         </div>
                     </>
                 )}
@@ -162,7 +162,13 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                         </div>
                         <div id="color-picker-button" title="Background color" className={"button align"} onClick={(_) => this.changeBackgroundClick()}>
                             <img src={colorPicker} alt="" id="color-picker-image" />
-                            <input ref={this.colorInputRef} id="color-picker" type="color" value={this.props.globalState.backgroundColor.toHexString().slice(0,7)} onChange={(evt) => this.changeBackground(evt.target.value)} />
+                            <input
+                                ref={this._colorInputRef}
+                                id="color-picker"
+                                type="color"
+                                value={this.props.globalState.backgroundColor.toHexString().slice(0, 7)}
+                                onChange={(evt) => this.changeBackground(evt.target.value)}
+                            />
                         </div>
                     </>
                 )}

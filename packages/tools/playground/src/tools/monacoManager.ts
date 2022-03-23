@@ -245,7 +245,9 @@ class Playground {
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot).replace(".d.ts", ".module.d.ts");
+                declarations[index] = declarations[index]
+                    .replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot)
+                    .replace(".d.ts", ".module.d.ts");
             }
         }
 
@@ -255,7 +257,7 @@ class Playground {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com/", "//localhost:1337/");
             }
         }
-        
+
         declarations.push("https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts");
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
@@ -279,7 +281,7 @@ class Playground {
         // Definition worker
         this._setupDefinitionWorker(libContent);
 
-        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
+        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scripting needs
         this._setupMonacoCompilationPipeline(libContent);
 
         // This is used for a vscode-like color preview for ColorX types

@@ -130,7 +130,7 @@ declare module "core/scene" {
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
          * Gets a transform node with its auto-generated unique Id
-         * @param uniqueId efines the unique Id to search for
+         * @param uniqueId defines the unique Id to search for
          * @return the found transform node or null if not found at all.
          * @deprecated Please use getTransformNodeByUniqueId instead
          */
