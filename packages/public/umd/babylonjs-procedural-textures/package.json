@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-procedural-textures",
-    "version": "5.0.0-rc.4",
+    "version": "5.0.0-rc.6",
     "main": "dist/babylonjs.proceduralTextures.js",
     "types": "dist/babylonjs.proceduralTextures.module.d.ts",
     "files": [
@@ -15,7 +15,7 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.4"
+        "babylonjs": "^5.0.0-rc.6"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

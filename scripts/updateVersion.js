@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 const branchName = process.argv[2];
+const dryRun = process.argv[3];
 
 const config = require(path.resolve("./.build/config.json"));
 
@@ -56,10 +57,19 @@ async function runTagsUpdate() {
     await updateEngineVersion(version);
     await runCommand("git add .");
     await runCommand(`git commit -m "Version update ${version}"`);
-    await runCommand(`git tag -a ${version} -m ${version}`);
+    if (dryRun) {
+        console.log("skipping", `git tag -a ${version} -m ${version}`);
+    } else {
+        await runCommand(`git tag -a ${version} -m ${version}`);
+    }
     await runCommand(`git fetch origin`);
     await runCommand(`git pull origin ${branchName ? branchName : ""}`);
-    await runCommand(`git push origin ${branchName} --tags`);
+    if (!dryRun) {
+        await runCommand(`git push origin ${branchName} --tags`);
+    } else {
+        console.log("skipping", `git push origin ${branchName} --tags`);
+        await runCommand(`git status`);
+    }
 }
 if (!branchName) {
     console.log("Please provide a branch name");
