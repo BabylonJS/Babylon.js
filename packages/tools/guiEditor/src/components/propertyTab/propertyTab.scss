@@ -1,7 +1,6 @@
 :root {
     --backgroundGrey: #aaaaaa;
     --spacingHeight: 30px;
-    --labelFamily: "acumin-pro-semi-condensed", sans-serif;
     --button: #333333;
     --buttonBackground: #ffffff;
     --buttonDisabledBackground: #c8c8c8;
@@ -19,7 +18,7 @@
     color: black;
     background: #e2e2e2;
     * {
-        font-family: "acumin-pro-semi-condensed", sans-serif;
+        font-family: "acumin-pro-condensed", sans-serif;
         font-size: 12px;
     }
     #header {
@@ -126,6 +125,9 @@
         margin-top: 2px;
         cursor: pointer;
         margin-left: 2px;
+        font-family: "atten-round-new", sans-serif;
+        font-weight: 500;
+        font-style: normal;
     }
 
     .unit.disabled {
@@ -179,7 +181,6 @@
             display: flex;
             align-items: center;
             min-width: 15px;
-            font-family: var(--labelFamily);
             font-weight: 600;
         }
 
@@ -207,7 +208,6 @@
                 grid-column: 1;
                 display: none;
                 align-items: center;
-                font-family: var(--labelFamily);
                 font-weight: 600;
             }
 
@@ -309,7 +309,6 @@
             display: flex;
             align-items: center;
             min-width: 15px;
-            font-family: var(--labelFamily);
             font-weight: 600;
         }
 
@@ -336,6 +335,7 @@
             input {
                 width: 100%;
                 height: 24px;
+                color: #333333;
             }
             input.hasArrows {
                 padding-right: 15px;
@@ -712,7 +712,6 @@
             display: flex;
             align-items: center;
             min-width: 15px;
-            font-family: var(--labelFamily);
             font-weight: 600;
         }
 
@@ -923,6 +922,7 @@
             min-width: 100px;
             margin-left: 15px;
             height: var(--spacingHeight);
+            font-weight: 600;
         }
 
         img {
@@ -1097,7 +1097,8 @@
             min-width: 15px;
             color: #a9a9a9;
             font-size: 10px;
-            font-family: "acumin-pro-semicondensed";
+            font-family: "acumin-pro-semi-condensed", sans-serif;
+            font-weight: 600;
         }
 
         img {
