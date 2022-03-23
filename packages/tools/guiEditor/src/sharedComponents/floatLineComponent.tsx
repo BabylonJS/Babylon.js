@@ -137,6 +137,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                         this.props.onEnter(this._store);
                                     }
                                 }}
+                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
                                 value={this.state.value}
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />
