@@ -23,7 +23,7 @@ export enum DragOverLocation {
 export enum Tool {
     SELECT = 0,
     PAN = 1,
-    ZOOM = 2
+    ZOOM = 2,
 }
 
 export class GlobalState {
@@ -64,7 +64,7 @@ export class GlobalState {
         } else if (this._tool === Tool.PAN || this.keys.isKeyDown("space")) {
             return Tool.PAN;
         } else {
-            return Tool.SELECT
+            return Tool.SELECT;
         }
     }
     public set tool(newTool: Tool) {
@@ -141,7 +141,7 @@ export class GlobalState {
             // trigger a tool update (in case space is now pressed)
             // we should really have a state management system to handle this for us
             this.onToolChangeObservable.notifyObservers();
-        })
+        });
     }
 
     public get backgroundColor() {
