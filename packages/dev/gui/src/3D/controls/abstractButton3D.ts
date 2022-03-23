@@ -20,6 +20,6 @@ export class AbstractButton3D extends ContentDisplay3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        return new TransformNode("button" + this.name);
+        return new TransformNode("button" + this.name, scene);
     }
 }

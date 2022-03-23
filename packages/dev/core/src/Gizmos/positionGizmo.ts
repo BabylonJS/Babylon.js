@@ -230,9 +230,8 @@ export class PositionGizmo extends Gizmo {
 
     /**
      * CustomMeshes are not supported by this gizmo
-     * @param mesh The mesh to replace the default mesh of the gizmo
      */
-    public setCustomMesh(mesh: Mesh) {
+    public setCustomMesh() {
         Logger.Error(
             "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo,gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)"
         );

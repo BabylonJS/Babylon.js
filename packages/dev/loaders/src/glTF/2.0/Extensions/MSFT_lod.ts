@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Deferred } from "core/Misc/deferred";

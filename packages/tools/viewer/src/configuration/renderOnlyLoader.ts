@@ -45,6 +45,7 @@ export class RenderOnlyConfigurationLoader {
         return config;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected getExtendedConfig(type: string | undefined) {
         return this._getConfigurationTypeExcludeTemplate(type || "extended");
     }

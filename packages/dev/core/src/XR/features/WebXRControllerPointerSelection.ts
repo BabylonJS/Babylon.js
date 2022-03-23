@@ -125,7 +125,7 @@ export interface IWebXRControllerPointerSelectionOptions {
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
 export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
-    private static _idCounter = 200;
+    private static _IdCounter = 200;
 
     private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
@@ -144,7 +144,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
             disabledByNearInteraction: false,
-            id: WebXRControllerPointerSelection._idCounter++,
+            id: WebXRControllerPointerSelection._IdCounter++,
         };
 
         if (this._attachedController) {
@@ -290,7 +290,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
                 disabledByNearInteraction: false,
-                id: WebXRControllerPointerSelection._idCounter++,
+                id: WebXRControllerPointerSelection._IdCounter++,
             };
             this._attachGazeMode();
         }
@@ -658,7 +658,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                                 }
-                            } else {
                             }
                         } else {
                             if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {

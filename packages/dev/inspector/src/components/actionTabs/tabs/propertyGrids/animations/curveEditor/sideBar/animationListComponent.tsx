@@ -26,7 +26,7 @@ export class AnimationListComponent extends React.Component<IAnimationListCompon
 
         this.state = { isVisible: true };
 
-        this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add((animation) => {
+        this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add(() => {
             this.setState({
                 isVisible: false,
             });

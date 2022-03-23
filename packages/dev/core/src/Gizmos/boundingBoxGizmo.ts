@@ -155,18 +155,18 @@ export class BoundingBoxGizmo extends Gizmo {
 
     // Dragging
     private _dragMesh: Nullable<Mesh> = null;
-    private pointerDragBehavior = new PointerDragBehavior();
+    private _pointerDragBehavior = new PointerDragBehavior();
 
-    private coloredMaterial: StandardMaterial;
-    private hoverColoredMaterial: StandardMaterial;
+    private _coloredMaterial: StandardMaterial;
+    private _hoverColoredMaterial: StandardMaterial;
 
     /**
      * Sets the color of the bounding box gizmo
      * @param color the color to set
      */
     public setColor(color: Color3) {
-        this.coloredMaterial.emissiveColor = color;
-        this.hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
+        this._coloredMaterial.emissiveColor = color;
+        this._hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
         this._lineBoundingBox.getChildren().forEach((l) => {
             if ((l as LinesMesh).color) {
                 (l as LinesMesh).color = color;
@@ -175,8 +175,8 @@ export class BoundingBoxGizmo extends Gizmo {
     }
     /**
      * Creates an BoundingBoxGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      */
     constructor(color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer) {
         super(gizmoLayer);
@@ -186,10 +186,10 @@ export class BoundingBoxGizmo extends Gizmo {
 
         this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
         // Create Materials
-        this.coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this.coloredMaterial.disableLighting = true;
-        this.hoverColoredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this.hoverColoredMaterial.disableLighting = true;
+        this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._coloredMaterial.disableLighting = true;
+        this._hoverColoredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._hoverColoredMaterial.disableLighting = true;
 
         // Build bounding box out of lines
         this._lineBoundingBox = new AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -292,11 +292,11 @@ export class BoundingBoxGizmo extends Gizmo {
         for (let i = 0; i < 12; i++) {
             const sphere = CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
             sphere.rotationQuaternion = new Quaternion();
-            sphere.material = this.coloredMaterial;
+            sphere.material = this._coloredMaterial;
             sphere.isNearGrabbable = true;
 
             // Drag behavior
-            var _dragBehavior = new PointerDragBehavior({});
+            const _dragBehavior = new PointerDragBehavior({});
             _dragBehavior.moveAttached = false;
             _dragBehavior.updateDragPlane = false;
             sphere.addBehavior(_dragBehavior);
@@ -396,13 +396,13 @@ export class BoundingBoxGizmo extends Gizmo {
                     }
 
                     const box = CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
-                    box.material = this.coloredMaterial;
+                    box.material = this._coloredMaterial;
                     box.metadata = zeroAxisCount === 2; // None homogenous scale handle
                     box.isNearGrabbable = true;
 
                     // Dragging logic
                     const dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
-                    var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
+                    const _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     _dragBehavior.updateDragPlane = false;
                     _dragBehavior.moveAttached = false;
                     box.addBehavior(_dragBehavior);
@@ -480,12 +480,12 @@ export class BoundingBoxGizmo extends Gizmo {
                     .forEach((mesh) => {
                         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
                             pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
-                            mesh.material = this.hoverColoredMaterial;
+                            mesh.material = this._hoverColoredMaterial;
                         }
                     });
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
-                    pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this.coloredMaterial;
+                    pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
                     delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
                 }
             }
@@ -502,7 +502,7 @@ export class BoundingBoxGizmo extends Gizmo {
             }
 
             // If drag mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
-            if (this._dragMesh && this.attachedMesh && this.pointerDragBehavior.dragging) {
+            if (this._dragMesh && this.attachedMesh && this._pointerDragBehavior.dragging) {
                 this._lineBoundingBox.position.rotateByQuaternionToRef(this._rootMesh.rotationQuaternion!, this._tmpVector);
                 this.attachedMesh.setAbsolutePosition(this._dragMesh.position.add(this._tmpVector.scale(-1)));
             }
@@ -704,7 +704,7 @@ export class BoundingBoxGizmo extends Gizmo {
      * @param homogeneousScaling defines if scaling should only be homogeneous
      */
     public setEnabledScaling(enable: boolean, homogeneousScaling = false) {
-        this._scaleBoxesParent.getChildMeshes().forEach((m, i) => {
+        this._scaleBoxesParent.getChildMeshes().forEach((m) => {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
             if (homogeneousScaling && m.metadata === true) {
@@ -729,8 +729,8 @@ export class BoundingBoxGizmo extends Gizmo {
         this._dragMesh = CreateBox("dummy", { size: 1 }, this.gizmoLayer.utilityLayerScene);
         this._dragMesh.visibility = 0;
         this._dragMesh.rotationQuaternion = new Quaternion();
-        this.pointerDragBehavior.useObjectOrientationForDragging = false;
-        this._dragMesh.addBehavior(this.pointerDragBehavior);
+        this._pointerDragBehavior.useObjectOrientationForDragging = false;
+        this._dragMesh.addBehavior(this._pointerDragBehavior);
     }
 
     /**
@@ -754,7 +754,7 @@ export class BoundingBoxGizmo extends Gizmo {
      * @returns the bounding box mesh with the passed in mesh as a child
      */
     public static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh {
-        var makeNotPickable = (root: AbstractMesh) => {
+        const makeNotPickable = (root: AbstractMesh) => {
             root.isPickable = false;
             root.getChildMeshes().forEach((c) => {
                 makeNotPickable(c);
@@ -803,9 +803,8 @@ export class BoundingBoxGizmo extends Gizmo {
     }
     /**
      * CustomMeshes are not supported by this gizmo
-     * @param mesh The mesh to replace the default mesh of the gizmo
      */
-    public setCustomMesh(mesh: Mesh) {
+    public setCustomMesh() {
         Logger.Error("Custom meshes are not supported on this gizmo");
     }
 }

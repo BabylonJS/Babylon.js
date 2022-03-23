@@ -381,7 +381,7 @@ export class GLTFLoader implements IGLTFLoader {
                         const context = "/materials/" + m;
                         const babylonDrawMode = Material.TriangleFillMode;
 
-                        promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, (material) => {}));
+                        promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, () => {}));
                     }
                 }
 
@@ -1899,7 +1899,7 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data as Promise<IndicesArray>;
     }
 
-    private _loadVertexBufferViewAsync(bufferView: IBufferView, kind: string): Promise<Buffer> {
+    private _loadVertexBufferViewAsync(bufferView: IBufferView): Promise<Buffer> {
         if (bufferView._babylonBuffer) {
             return bufferView._babylonBuffer;
         }
@@ -1933,7 +1933,7 @@ export class GLTFLoader implements IGLTFLoader {
             });
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
+            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView).then((babylonBuffer) => {
                 const size = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(
                     this._babylonScene.getEngine(),

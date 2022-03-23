@@ -69,9 +69,11 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             kernel,
             options,
             camera,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (textureType = Constants.TEXTURETYPE_UNSIGNED_INT),
             `#define DOF 1\r\n`,
             blockCompilation

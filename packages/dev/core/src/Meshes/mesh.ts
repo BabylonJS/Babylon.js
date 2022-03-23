@@ -126,6 +126,7 @@ class _InternalMeshDataInfo {
     public meshMap: Nullable<{ [id: string]: Mesh | undefined }> = null;
 
     public _preActivateId: number = -1;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public _LODLevels = new Array<MeshLODLevel>();
     /** Alternative definition of LOD level, using screen coverage instead of distance */
     public _useLODScreenCoverage: boolean = false;
@@ -593,8 +594,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Animation ranges
             if (source._ranges) {
                 const ranges = source._ranges;
-                for (var name in ranges) {
-                    if (!ranges.hasOwnProperty(name)) {
+                for (const name in ranges) {
+                    if (!Object.prototype.hasOwnProperty.call(ranges, name)) {
                         continue;
                     }
 
@@ -1095,20 +1096,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
-     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
-     * - VertexBuffer.PositionKind
-     * - VertexBuffer.NormalKind
-     * - VertexBuffer.UVKind
-     * - VertexBuffer.UV2Kind
-     * - VertexBuffer.UV3Kind
-     * - VertexBuffer.UV4Kind
-     * - VertexBuffer.UV5Kind
-     * - VertexBuffer.UV6Kind
-     * - VertexBuffer.ColorKind
-     * - VertexBuffer.MatricesIndicesKind
-     * - VertexBuffer.MatricesIndicesExtraKind
-     * - VertexBuffer.MatricesWeightsKind
-     * - VertexBuffer.MatricesWeightsExtraKind
      * @returns an array of strings
      */
     public getVerticesDataKinds(): string[] {
@@ -1190,7 +1177,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const mat = this.material || scene.defaultMaterial;
         if (mat) {
             if (mat._storeEffectOnSubMeshes) {
-                for (var subMesh of this.subMeshes) {
+                for (const subMesh of this.subMeshes) {
                     const effectiveMaterial = subMesh.getMaterial();
                     if (effectiveMaterial) {
                         if (effectiveMaterial._storeEffectOnSubMeshes) {
@@ -1220,7 +1207,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (generator.getShadowMap()) {
                     engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
                 }
-                for (var subMesh of this.subMeshes) {
+                for (const subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
                         engine.currentRenderPassId = currentRenderPassId;
                         return false;
@@ -2038,6 +2025,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param renderSelf
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
         // Do nothing
     }
@@ -2371,15 +2359,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public cleanMatrixWeights(): void {
         if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsExtraKind)) {
-                this.normalizeSkinWeightsAndExtra();
+                this._normalizeSkinWeightsAndExtra();
             } else {
-                this.normalizeSkinFourWeights();
+                this._normalizeSkinFourWeights();
             }
         }
     }
 
     // faster 4 weight version.
-    private normalizeSkinFourWeights(): void {
+    private _normalizeSkinFourWeights(): void {
         const matricesWeights = <FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind);
         const numWeights = matricesWeights.length;
 
@@ -2401,7 +2389,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeights);
     }
     // handle special case of extra verts.  (in theory gltf can handle 12 influences)
-    private normalizeSkinWeightsAndExtra(): void {
+    private _normalizeSkinWeightsAndExtra(): void {
         const matricesWeightsExtra = <FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind);
         const matricesWeights = <FloatArray>this.getVerticesData(VertexBuffer.MatricesWeightsKind);
         const numWeights = matricesWeights.length;
@@ -2451,17 +2439,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let numberNotNormalized: number = 0;
         const numInfluences: number = matricesWeightsExtra === null ? 4 : 8;
         const usedWeightCounts = new Array<number>();
-        for (var a = 0; a <= numInfluences; a++) {
+        for (let a = 0; a <= numInfluences; a++) {
             usedWeightCounts[a] = 0;
         }
         const toleranceEpsilon: number = 0.001;
 
-        for (var a = 0; a < numWeights; a += 4) {
+        for (let a = 0; a < numWeights; a += 4) {
             let lastWeight: number = matricesWeights[a];
             let t = lastWeight;
             let usedWeights: number = t === 0 ? 0 : 1;
 
-            for (var b = 1; b < numInfluences; b++) {
+            for (let b = 1; b < numInfluences; b++) {
                 const d = b < 4 ? matricesWeights[a + b] : matricesWeightsExtra[a + b - 4];
                 if (d > lastWeight) {
                     numberNotSorted++;
@@ -2487,7 +2475,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 // renormalize so everything adds to 1 use reciprocal
                 const recip = 1 / t;
                 let tolerance = 0;
-                for (b = 0; b < numInfluences; b++) {
+                for (let b = 0; b < numInfluences; b++) {
                     if (b < 4) {
                         tolerance += Math.abs(matricesWeights[a + b] - matricesWeights[a + b] * recip);
                     } else {
@@ -2506,8 +2494,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const matricesIndices = <FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind);
         const matricesIndicesExtra = <FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind);
         let numBadBoneIndices: number = 0;
-        for (var a = 0; a < numWeights; a += 4) {
-            for (var b = 0; b < numInfluences; b++) {
+        for (let a = 0; a < numWeights; a += 4) {
+            for (let b = 0; b < numInfluences; b++) {
                 const index = b < 4 ? matricesIndices[a + b] : matricesIndicesExtra[a + b - 4];
                 if (index >= numBones || index < 0) {
                     numBadBoneIndices++;
@@ -2898,7 +2886,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param heightMapHeight is the height of the buffer image.
      * @param minHeight is the lower limit of the displacement.
      * @param maxHeight is the upper limit of the displacement.
-     * @param onSuccess is an optional Javascript function to be called just after the mesh is modified. It is passed the modified mesh and must return nothing.
      * @param uvOffset is an optional vector2 used to offset UV.
      * @param uvScale is an optional vector2 used to scale UV.
      * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
@@ -3212,7 +3199,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             const segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             const tempIndices: Array<Array<number>> = new Array();
-            for (var i = 0; i < segments + 1; i++) {
+            for (let i = 0; i < segments + 1; i++) {
                 tempIndices[i] = new Array();
             }
             let a: number; //vertex index of one end of a side
@@ -3227,11 +3214,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             let positionPtr: number = positions.length;
             let uvPtr: number = uvs.length;
 
-            for (var i = 0; i < currentIndices.length; i += 3) {
+            for (let i = 0; i < currentIndices.length; i += 3) {
                 vertexIndex[0] = currentIndices[i];
                 vertexIndex[1] = currentIndices[i + 1];
                 vertexIndex[2] = currentIndices[i + 2];
-                for (var j = 0; j < 3; j++) {
+                for (let j = 0; j < 3; j++) {
                     a = vertexIndex[j];
                     b = vertexIndex[(j + 1) % 3];
                     if (side[a] === undefined && side[b] === undefined) {
@@ -3256,7 +3243,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
                         deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
                         side[a][b].push(a);
-                        for (var k = 1; k < segments; k++) {
+                        for (let k = 1; k < segments; k++) {
                             side[a][b].push(positions.length / 3);
                             positions[positionPtr] = positions[3 * a] + k * deltaPosition.x;
                             normals[positionPtr++] = normals[3 * a] + k * deltaNormal.x;
@@ -3279,7 +3266,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 tempIndices[0][0] = currentIndices[i];
                 tempIndices[1][0] = side[currentIndices[i]][currentIndices[i + 1]][1];
                 tempIndices[1][1] = side[currentIndices[i]][currentIndices[i + 2]][1];
-                for (var k = 2; k < segments; k++) {
+                for (let k = 2; k < segments; k++) {
                     tempIndices[k][0] = side[currentIndices[i]][currentIndices[i + 1]][k];
                     tempIndices[k][k] = side[currentIndices[i]][currentIndices[i + 2]][k];
                     deltaPosition.x = (positions[3 * tempIndices[k][k]] - positions[3 * tempIndices[k][0]]) / k;
@@ -3290,7 +3277,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
                     deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
                     deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
-                    for (var j = 1; j < k; j++) {
+                    for (let j = 1; j < k; j++) {
                         tempIndices[k][j] = positions.length / 3;
                         positions[positionPtr] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
                         normals[positionPtr++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
@@ -3306,8 +3293,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // reform indices
                 indices.push(tempIndices[0][0], tempIndices[1][0], tempIndices[1][1]);
-                for (var k = 1; k < segments; k++) {
-                    for (var j = 0; j < k; j++) {
+                for (let k = 1; k < segments; k++) {
+                    let j: number;
+                    for (j = 0; j < k; j++) {
                         indices.push(tempIndices[k][j], tempIndices[k + 1][j], tempIndices[k + 1][j + 1]);
                         indices.push(tempIndices[k][j], tempIndices[k + 1][j + 1], tempIndices[k][j + 1]);
                     }
@@ -3349,9 +3337,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             for (let i = 0; i < currentIndices.length; i += 3) {
                 facet = [currentIndices[i], currentIndices[i + 1], currentIndices[i + 2]]; //facet vertex indices
                 pstring = new Array();
-                for (var j = 0; j < 3; j++) {
+                for (let j = 0; j < 3; j++) {
                     pstring[j] = "";
-                    for (var k = 0; k < 3; k++) {
+                    for (let k = 0; k < 3; k++) {
                         //small values make 0
                         if (Math.abs(currentPositions[3 * facet[j] + k]) < 0.00000001) {
                             currentPositions[3 * facet[j] + k] = 0;
@@ -3365,22 +3353,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     //for each facet position check if already listed in uniquePositions
                     // if not listed add to uniquePositions and set index pointer
                     // if listed use its index in uniquePositions and new index pointer
-                    for (var j = 0; j < 3; j++) {
+                    for (let j = 0; j < 3; j++) {
                         ptr = uniquePositions[pstring[j]];
                         if (ptr === undefined) {
                             uniquePositions[pstring[j]] = indexPtr;
                             ptr = indexPtr++;
                             //not listed so add individual x, y, z coordinates to positions
-                            for (var k = 0; k < 3; k++) {
+                            for (let k = 0; k < 3; k++) {
                                 positions.push(currentPositions[3 * facet[j] + k]);
                             }
                             if (currentColors !== null && currentColors !== void 0) {
-                                for (var k = 0; k < 4; k++) {
+                                for (let k = 0; k < 4; k++) {
                                     colors.push(currentColors[4 * facet[j] + k]);
                                 }
                             }
                             if (currentUVs !== null && currentUVs !== void 0) {
-                                for (var k = 0; k < 2; k++) {
+                                for (let k = 0; k < 2; k++) {
                                     uvs.push(currentUVs[2 * facet[j] + k]);
                                 }
                             }
@@ -3415,6 +3403,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param mesh
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention
     public static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh {
         throw _WarnImport("InstancedMesh");
     }
@@ -3425,6 +3414,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param jsonObject
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _PhysicsImpostorParser(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
         throw _WarnImport("PhysicsImpostor");
     }
@@ -3738,7 +3728,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return;
             }
 
-            for (var index = 0; index < morphTargetManager.numInfluencers; index++) {
+            for (let index = 0; index < morphTargetManager.numInfluencers; index++) {
                 const morphTarget = morphTargetManager.getActiveTarget(index);
 
                 const positions = morphTarget.getPositions();
@@ -3765,7 +3755,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
         } else {
-            var index = 0;
+            let index = 0;
 
             // Positions
             while (this.geometry.isVerticesDataPresent(VertexBuffer.PositionKind + index)) {
@@ -3791,6 +3781,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param scene
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         throw _WarnImport("GroundMesh");
     };
@@ -3800,6 +3791,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param scene
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
         throw _WarnImport("GoldbergMesh");
     };
@@ -3809,6 +3801,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param scene
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         throw _WarnImport("LinesMesh");
     };
@@ -4003,8 +3996,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Animations
         if (parsedMesh.animations) {
-            for (var animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
-                var parsedAnimation = parsedMesh.animations[animationIndex];
+            for (let animationIndex = 0; animationIndex < parsedMesh.animations.length; animationIndex++) {
+                const parsedAnimation = parsedMesh.animations[animationIndex];
                 const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     mesh.animations.push(internalClass.Parse(parsedAnimation));
@@ -4109,8 +4102,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // Animation
                 if (parsedInstance.animations) {
-                    for (animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
-                        parsedAnimation = parsedInstance.animations[animationIndex];
+                    for (let animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
+                        const parsedAnimation = parsedInstance.animations[animationIndex];
                         const internalClass = GetClass("BABYLON.Animation");
                         if (internalClass) {
                             instance.animations.push(internalClass.Parse(parsedAnimation));
@@ -4289,7 +4282,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let matWeightIdx = 0;
         let inf: number;
         for (let index = 0; index < positionsData.length; index += 3, matWeightIdx += 4) {
-            var weight: number;
+            let weight: number;
             for (inf = 0; inf < 4; inf++) {
                 weight = matricesWeightsData[matWeightIdx + inf];
                 if (weight > 0) {
@@ -4461,9 +4454,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
         if (multiMultiMaterials) {
-            var newMultiMaterial: Nullable<MultiMaterial> = null;
-            var subIndex: number;
-            var matIndex: number;
             subdivideWithSubMeshes = false;
         }
         const materialArray: Array<Material> = new Array<Material>();
@@ -4485,12 +4475,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (mesh.material) {
                     const material = mesh.material;
                     if (material instanceof MultiMaterial) {
-                        for (matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                        for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
                             if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
                                 materialArray.push(<Material>material.subMaterials[matIndex]);
                             }
                         }
-                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
                             indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                         }
@@ -4498,13 +4488,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         if (materialArray.indexOf(<Material>material) < 0) {
                             materialArray.push(<Material>material);
                         }
-                        for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                        for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             materialIndexArray.push(materialArray.indexOf(<Material>material));
                             indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                         }
                     }
                 } else {
-                    for (subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                    for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                         materialIndexArray.push(0);
                         indiceArray.push(mesh.subMeshes[subIndex].indexCount);
                     }
@@ -4589,9 +4579,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (multiMultiMaterials) {
-            newMultiMaterial = new MultiMaterial(source.name + "_merged", source.getScene());
+            const newMultiMaterial = new MultiMaterial(source.name + "_merged", source.getScene());
             newMultiMaterial.subMaterials = materialArray;
-            for (subIndex = 0; subIndex < meshSubclass.subMeshes.length; subIndex++) {
+            for (let subIndex = 0; subIndex < meshSubclass.subMeshes.length; subIndex++) {
                 meshSubclass.subMeshes[subIndex].materialIndex = materialIndexArray[subIndex];
             }
             meshSubclass.material = newMultiMaterial;

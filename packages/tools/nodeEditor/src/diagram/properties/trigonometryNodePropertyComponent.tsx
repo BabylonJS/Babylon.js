@@ -47,7 +47,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
                         options={operationOptions}
                         target={trigonometryBlock}
                         propertyName="operation"
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();

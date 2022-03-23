@@ -113,7 +113,7 @@ export class GeometryBufferRenderer {
         if (this._multiRenderTarget) {
             // prevents clearing of the RT since it's done by prepass
             this._multiRenderTarget.onClearObservable.clear();
-            this._multiRenderTarget.onClearObservable.add((engine) => {
+            this._multiRenderTarget.onClearObservable.add(() => {
                 // pass
             });
         }

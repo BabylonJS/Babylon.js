@@ -69,19 +69,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     copyToClipboard() {
-        const element = document.createElement("div");
-        element.textContent = this.getCurrentColor().toHexString();
-        document.body.appendChild(element);
-
-        if (window.getSelection) {
-            const range = document.createRange();
-            range.selectNode(element);
-            window.getSelection()!.removeAllRanges();
-            window.getSelection()!.addRange(range);
+        const { navigator } = this.props.globalState.hostWindow;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(this.getCurrentColor().toHexString());
         }
-
-        document.execCommand("copy");
-        element.remove();
     }
 
     render() {

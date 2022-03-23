@@ -281,6 +281,7 @@ export class SpotLight extends ShadowLight {
      * @param viewMatrix
      * @param renderList
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
         const activeCamera = this.getScene().activeCamera;
 
@@ -321,11 +322,11 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureProjectionLightDirty = false;
         this._projectionTextureDirty = true;
 
-        const light_far = this.projectionTextureLightFar;
-        const light_near = this.projectionTextureLightNear;
+        const lightFar = this.projectionTextureLightFar;
+        const lightNear = this.projectionTextureLightNear;
 
-        const P = light_far / (light_far - light_near);
-        const Q = -P * light_near;
+        const P = lightFar / (lightFar - lightNear);
+        const Q = -P * lightNear;
         const S = 1.0 / Math.tan(this._angle / 2.0);
         const A = 1.0;
 

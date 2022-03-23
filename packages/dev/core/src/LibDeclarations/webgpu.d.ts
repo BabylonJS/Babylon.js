@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 interface GPUObjectBase {
     label: string | undefined;
 }

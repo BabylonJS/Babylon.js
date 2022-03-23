@@ -25,7 +25,7 @@ export class InputArrowsComponent extends React.Component<IInputArrowsComponentP
             <div
                 className="arrows"
                 ref={this._arrowsRef}
-                onPointerDown={(event) => {
+                onPointerDown={() => {
                     this.props.setDragging(true);
                     this._arrowsRef.current?.requestPointerLock();
                     window.addEventListener("pointerup", this._releaseListener);

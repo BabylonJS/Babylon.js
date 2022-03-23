@@ -55,10 +55,8 @@ export type GoldbergCreationOption = {
 
 /**
  * Creates the Mesh for a Goldberg Polyhedron
- * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
- * @param goldBergData polyhedronData defining the Goldberg polyhedron
- * @param goldbergData
+ * @param goldbergData polyhedronData defining the Goldberg polyhedron
  * @returns GoldbergSphere mesh
  */
 export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, goldbergData: PolyhedronData): VertexData {

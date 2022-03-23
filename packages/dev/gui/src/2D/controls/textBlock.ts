@@ -386,10 +386,9 @@ export class TextBlock extends Control {
 
     /**
      * @param context
-     * @param invalidatedRectangle
      * @hidden
      */
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -415,19 +414,19 @@ export class TextBlock extends Control {
         const _lines = this.text.split("\n");
 
         if (this._textWrapping === TextWrapping.Ellipsis) {
-            for (var _line of _lines) {
+            for (const _line of _lines) {
                 lines.push(this._parseLineEllipsis(_line, refWidth, context));
             }
         } else if (this._textWrapping === TextWrapping.WordWrap) {
-            for (var _line of _lines) {
+            for (const _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
         } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
-            for (var _line of _lines) {
+            for (const _line of _lines) {
                 lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
-            for (var _line of _lines) {
+            for (const _line of _lines) {
                 lines.push(this._parseLine(_line, context));
             }
         }

@@ -30,7 +30,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="xSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -42,7 +42,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="ySwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -54,7 +54,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="zSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -66,7 +66,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="wSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();

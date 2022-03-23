@@ -23,7 +23,7 @@ import { Nullable } from "core/types";
 import { Observer } from "core/Misc/observable";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    private onValueChangedObserver: Nullable<Observer<InputBlock>>;
+    private _onValueChangedObserver: Nullable<Observer<InputBlock>>;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -31,7 +31,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
     componentDidMount() {
         const inputBlock = this.props.block as InputBlock;
-        this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
+        this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         });
@@ -39,9 +39,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
     componentWillUnmount() {
         const inputBlock = this.props.block as InputBlock;
-        if (this.onValueChangedObserver) {
-            inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
-            this.onValueChangedObserver = null;
+        if (this._onValueChangedObserver) {
+            inputBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
+            this._onValueChangedObserver = null;
         }
     }
 
@@ -374,7 +374,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             options={animationOptions}
                             target={inputBlock}
                             propertyName="animationType"
-                            onSelect={(value: any) => {
+                            onSelect={() => {
                                 this.forceUpdate();
 
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);

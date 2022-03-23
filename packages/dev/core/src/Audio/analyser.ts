@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";

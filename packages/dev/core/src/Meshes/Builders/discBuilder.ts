@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
@@ -22,6 +22,7 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @param options.backUVs
  * @returns the VertexData of the box
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function CreateDiscVertexData(options: { radius?: number; tessellation?: number; arc?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 }): VertexData {
     const positions = new Array<number>();
     const indices = new Array<number>();
@@ -85,13 +86,13 @@ function CreateDiscVertexData(options: { radius?: number; tessellation?: number;
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.radius
- * @param scene defines the hosting scene
  * @param options.tessellation
  * @param options.arc
  * @param options.updatable
  * @param options.sideOrientation
  * @param options.frontUVs
  * @param options.backUVs
+ * @param scene defines the hosting scene
  * @returns the plane polygonal mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
  */
@@ -116,6 +117,7 @@ export function CreateDisc(
  * @deprecated please use CreateDisc directly
  */
 export const DiscBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateDisc,
 };
 

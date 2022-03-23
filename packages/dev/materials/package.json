@@ -17,8 +17,7 @@
         "watch:source": "tsc -b tsconfig.build.json -w",
         "watch": "concurrently \"npm run watch:assets\" \"npm run watch:source\" --kill-others",
         "watch:dev": "npm run watch",
-        "watch:lts": "npm run watch:shaders",
-        "prepublishOnly": "nx build"
+        "watch:lts": "npm run watch:shaders"
         
     },
     "devDependencies": {

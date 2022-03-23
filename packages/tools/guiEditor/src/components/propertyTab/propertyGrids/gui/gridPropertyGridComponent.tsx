@@ -1,3 +1,4 @@
+/* eslint-disable import/no-duplicates */
 import * as React from "react";
 import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
@@ -10,7 +11,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 
 import gridColumnIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg";
-import gridRowIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg"; //needs change
+import gridRowIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg"; //needs change (please remove to top rule when done)
 import confirmGridElementDark from "shared-ui-components/imgs/confirmGridElementDark.svg";
 import subtractGridElementDark from "shared-ui-components/imgs/subtractGridElementDark.svg";
 import addGridElementDark from "shared-ui-components/imgs/addGridElementDark.svg";

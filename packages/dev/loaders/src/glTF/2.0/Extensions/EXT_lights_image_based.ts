@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Scalar } from "core/Maths/math.scalar";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";

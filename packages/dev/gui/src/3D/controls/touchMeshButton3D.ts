@@ -1,7 +1,6 @@
 import { TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
 
 import { TouchButton3D } from "./touchButton3D";
 
@@ -61,7 +60,7 @@ export class TouchMeshButton3D extends TouchButton3D {
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected _createNode(): TransformNode {
         this._currentMesh.getChildMeshes().forEach((mesh) => {
             this._injectGUI3DReservedDataStore(mesh).control = this;
         });
@@ -69,5 +68,6 @@ export class TouchMeshButton3D extends TouchButton3D {
         return this._currentMesh;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _affectMaterial(mesh: AbstractMesh) {}
 }

@@ -27,6 +27,7 @@ export class WebXREnterExitUIButton {
      * Extendable function which can be used to update the button's visuals when the state changes
      * @param activeButton the current active button in the UI
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public update(activeButton: Nullable<WebXREnterExitUIButton>) {}
 }
 
@@ -100,11 +101,11 @@ export class WebXREnterExitUI implements IDisposable {
     /**
      * Construct a new EnterExit UI class
      *
-     * @param scene babylon scene object to use
+     * @param _scene babylon scene object to use
      * @param options (read-only) version of the options passed to this UI
      */
     public constructor(
-        private scene: Scene,
+        private _scene: Scene,
         /** version of the options passed to this UI */
         public options: WebXREnterExitUIOptions
     ) {
@@ -155,10 +156,10 @@ export class WebXREnterExitUI implements IDisposable {
             this._updateButtons(null);
         }
 
-        const renderCanvas = scene.getEngine().getInputElement();
+        const renderCanvas = _scene.getEngine().getInputElement();
         if (renderCanvas && renderCanvas.parentNode) {
             renderCanvas.parentNode.appendChild(this.overlay);
-            scene.onDisposeObservable.addOnce(() => {
+            _scene.onDisposeObservable.addOnce(() => {
                 this.dispose();
             });
         }
@@ -236,7 +237,7 @@ export class WebXREnterExitUI implements IDisposable {
      * Disposes of the XR UI component
      */
     public dispose() {
-        const renderCanvas = this.scene.getEngine().getInputElement();
+        const renderCanvas = this._scene.getEngine().getInputElement();
         if (renderCanvas && renderCanvas.parentNode && renderCanvas.parentNode.contains(this.overlay)) {
             renderCanvas.parentNode.removeChild(this.overlay);
         }
@@ -244,6 +245,7 @@ export class WebXREnterExitUI implements IDisposable {
         (navigator as any).xr.removeEventListener("sessiongranted", this._onSessionGranted);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _onSessionGranted = (evt: { session: XRSession }) => {
         // This section is for future reference.
         // As per specs, evt.session.mode should have the supported session mode, but no browser supports it for now.

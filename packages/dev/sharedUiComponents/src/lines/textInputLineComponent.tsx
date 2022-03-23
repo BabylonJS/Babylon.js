@@ -102,7 +102,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     updateValue(value: string) {
         if (this.props.numbersOnly) {
-            if (/[^0-9.px%-]/g.test(value)) {
+            if (/[^0-9.\p\x%-]/g.test(value)) {
                 return;
             }
             if (!value) {
