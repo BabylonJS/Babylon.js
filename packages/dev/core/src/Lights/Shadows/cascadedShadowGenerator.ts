@@ -2,7 +2,6 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
 
 import { IShadowLight } from "../../Lights/shadowLight";
 import { Effect } from "../../Materials/effect";
@@ -30,7 +29,9 @@ interface ICascade {
     breakDistance: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const UpDir = Vector3.Up();
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const ZeroVec = Vector3.Zero();
 
 const tmpv1 = new Vector3(),
@@ -43,7 +44,7 @@ const tmpv1 = new Vector3(),
  * Based on: https://github.com/TheRealMJP/Shadows and https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
  */
 export class CascadedShadowGenerator extends ShadowGenerator {
-    private static readonly frustumCornersNDCSpace = [
+    private static readonly _FrustumCornersNDCSpace = [
         new Vector3(-1.0, +1.0, -1.0),
         new Vector3(+1.0, +1.0, -1.0),
         new Vector3(+1.0, -1.0, -1.0),
@@ -636,8 +637,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
         const cornerIndexOffset = this._scene.getEngine().useReverseDepthBuffer ? 4 : 0;
-        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++cornerIndex) {
-            tmpv1.copyFrom(CascadedShadowGenerator.frustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator.frustumCornersNDCSpace.length]);
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length; ++cornerIndex) {
+            tmpv1.copyFrom(CascadedShadowGenerator._FrustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator._FrustumCornersNDCSpace.length]);
             if (isNDCHalfZRange && tmpv1.z === -1) {
                 tmpv1.z = 0;
             }
@@ -645,7 +646,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         // Get the corners of the current cascade slice of the view frustum
-        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length / 2; ++cornerIndex) {
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length / 2; ++cornerIndex) {
             tmpv1.copyFrom(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4]).subtractInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
             tmpv2.copyFrom(tmpv1).scaleInPlace(prevSplitDist); // near corner ray
             tmpv1.scaleInPlace(splitDist); // far corner ray
@@ -833,9 +834,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._cascadeMaxExtents[cascadeIndex] = new Vector3();
             this._frustumCenter[cascadeIndex] = new Vector3();
             this._shadowCameraPos[cascadeIndex] = new Vector3();
-            this._frustumCornersWorldSpace[cascadeIndex] = new Array(CascadedShadowGenerator.frustumCornersNDCSpace.length);
+            this._frustumCornersWorldSpace[cascadeIndex] = new Array(CascadedShadowGenerator._FrustumCornersNDCSpace.length);
 
-            for (let i = 0; i < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++i) {
+            for (let i = 0; i < CascadedShadowGenerator._FrustumCornersNDCSpace.length; ++i) {
                 this._frustumCornersWorldSpace[cascadeIndex][i] = new Vector3();
             }
         }
@@ -872,11 +873,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._splitFrustum();
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
         effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
     }
 
-    protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
+    protected _isReadyCustomDefines(defines: any): void {
         defines.push("#define SM_DEPTHCLAMP " + (this._depthClamp && this._filter !== ShadowGenerator.FILTER_PCSS ? "1" : "0"));
     }
 

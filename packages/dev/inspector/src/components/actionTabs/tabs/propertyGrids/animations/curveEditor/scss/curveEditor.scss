@@ -41,7 +41,7 @@
     .action-button {
         &:hover {
             background: #666666;
-            color:white;
+            color: white;
             cursor: pointer;
         }
 
@@ -63,13 +63,13 @@
     }
 
     .text-input {
-        color:white;
+        color: white;
         background: #000000;
-        font-family: 'acumin-pro-condensed';
+        font-family: "acumin-pro-condensed";
         font-size: 11pt;
         border: 0;
         margin: 3px 1px;
-        text-align: end;    
+        text-align: end;
         padding-right: 4px;
 
         &:focus {

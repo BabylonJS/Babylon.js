@@ -24,9 +24,9 @@ interface IPlaygroundProps {
 }
 
 export class Playground extends React.Component<IPlaygroundProps, { errorMessage: string; mode: EditionMode }> {
-    private splitRef: React.RefObject<HTMLDivElement>;
-    private monacoRef: React.RefObject<HTMLDivElement>;
-    private renderingRef: React.RefObject<HTMLDivElement>;
+    private _splitRef: React.RefObject<HTMLDivElement>;
+    private _monacoRef: React.RefObject<HTMLDivElement>;
+    private _renderingRef: React.RefObject<HTMLDivElement>;
 
     private _globalState: GlobalState;
     private _splitInstance: any;
@@ -41,9 +41,9 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
         this._globalState.runtimeMode = props.runtimeMode || RuntimeMode.Editor;
 
-        this.splitRef = React.createRef();
-        this.monacoRef = React.createRef();
-        this.renderingRef = React.createRef();
+        this._splitRef = React.createRef();
+        this._monacoRef = React.createRef();
+        this._renderingRef = React.createRef();
 
         const defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
 
@@ -85,24 +85,24 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
             case EditionMode.CodeOnly:
                 this._splitInstance?.destroy();
                 this._splitInstance = null;
-                this.renderingRef.current!.classList.add("hidden");
-                this.monacoRef.current!.classList.remove("hidden");
-                this.monacoRef.current!.style.width = "100%";
+                this._renderingRef.current!.classList.add("hidden");
+                this._monacoRef.current!.classList.remove("hidden");
+                this._monacoRef.current!.style.width = "100%";
                 break;
             case EditionMode.RenderingOnly:
                 this._splitInstance?.destroy();
                 this._splitInstance = null;
-                this.monacoRef.current!.classList.add("hidden");
-                this.renderingRef.current!.classList.remove("hidden");
-                this.renderingRef.current!.style.width = "100%";
+                this._monacoRef.current!.classList.add("hidden");
+                this._renderingRef.current!.classList.remove("hidden");
+                this._renderingRef.current!.style.width = "100%";
                 break;
             case EditionMode.Desktop:
                 if (this._splitInstance) {
                     return;
                 }
-                this.renderingRef.current!.classList.remove("hidden");
-                this.monacoRef.current!.classList.remove("hidden");
-                this._splitInstance = (Split as any).default([this.monacoRef.current, this.renderingRef.current], {
+                this._renderingRef.current!.classList.remove("hidden");
+                this._monacoRef.current!.classList.remove("hidden");
+                this._splitInstance = (Split as any).default([this._monacoRef.current, this._renderingRef.current], {
                     direction: "horizontal",
                     minSize: [200, 200],
                     gutterSize: 4,
@@ -136,9 +136,9 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         return (
             <div id="pg-root">
                 <HeaderComponent globalState={this._globalState} />
-                <div ref={this.splitRef} id="pg-split">
-                    <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this.monacoRef} />
-                    <div ref={this.renderingRef} id="canvasZone" className="pg-split-part canvasZone">
+                <div ref={this._splitRef} id="pg-split">
+                    <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this._monacoRef} />
+                    <div ref={this._renderingRef} id="canvasZone" className="pg-split-part canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
                 </div>

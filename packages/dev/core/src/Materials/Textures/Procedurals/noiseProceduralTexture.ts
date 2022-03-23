@@ -121,7 +121,6 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * Creates a NoiseProceduralTexture from parsed noise procedural texture data
      * @param parsedTexture defines parsed texture data
      * @param scene defines the current scene
-     * @param rootUrl defines the root URL containing noise procedural texture information
      * @returns a parsed NoiseProceduralTexture
      */
     public static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture {

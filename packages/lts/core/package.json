@@ -10,7 +10,7 @@
         "src"
     ],
     "scripts": {
-        "build": "npm run compile",
+        "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "precompile": "build-tools -c transform-lts --path ./**/*.js",
         "compile": "tsc -b tsconfig.build.json",

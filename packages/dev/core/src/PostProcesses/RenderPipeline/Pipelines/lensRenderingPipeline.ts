@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";

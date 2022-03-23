@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { sourceTextureFormat, transcodeTarget } from "./transcoder";
 
 const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8e8c;

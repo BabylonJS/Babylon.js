@@ -27,6 +27,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data" };
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.block !== this.props.block) {
             const texture = (nextProps.block as ImageSourceBlock).texture as BaseTexture;
@@ -37,7 +38,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     private _generateRandomForCache() {
-        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, (c) => {
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, () => {
             const r = (Math.random() * 10) | 0;
             return r.toString();
         });

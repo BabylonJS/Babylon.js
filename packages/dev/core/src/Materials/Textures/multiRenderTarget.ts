@@ -325,7 +325,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._rebuild(true, textureNames);
     }
 
-    protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+    protected _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
         if (this._renderTarget) {
             engine.unBindMultiColorAttachmentFramebuffer(this._renderTarget, this.isCube, () => {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);

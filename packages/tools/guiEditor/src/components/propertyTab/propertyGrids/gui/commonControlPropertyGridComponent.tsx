@@ -91,7 +91,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
-        const nodeMatrix = CoordinateHelper.getNodeMatrix(control);
+        const nodeMatrix = CoordinateHelper.GetNodeMatrix(control);
         const transformed = new Vector2(1, 1);
         nodeMatrix.transformCoordinates(1, 1, transformed);
         return transformed;
@@ -212,7 +212,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 if (maximum !== undefined && newValue > maximum) newValue = maximum;
                 (control as any)[`${propertyName}InPixels`] = newValue;
                 if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
-                    CoordinateHelper.convertToPercentage(control, [propertyName]);
+                    CoordinateHelper.ConvertToPercentage(control, [propertyName]);
                 }
                 this.props.onPropertyChangedObservable?.notifyObservers({
                     object: control,
@@ -225,9 +225,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         const convertUnits = (unit: string, property: DimensionProperties) => {
             for (const control of controls) {
                 if (unit === "PX") {
-                    CoordinateHelper.convertToPercentage(control, [property], this.props.onPropertyChangedObservable);
+                    CoordinateHelper.ConvertToPercentage(control, [property], this.props.onPropertyChangedObservable);
                 } else {
-                    CoordinateHelper.convertToPixels(control, [property], this.props.onPropertyChangedObservable);
+                    CoordinateHelper.ConvertToPixels(control, [property]);
                 }
                 this.forceUpdate();
             }

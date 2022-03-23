@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
@@ -270,12 +271,12 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
                 };
             }
             case IMSFTAudioEmitter_AnimationEventAction.stop: {
-                return (currentFrame: number) => {
+                return () => {
                     sound.stop();
                 };
             }
             case IMSFTAudioEmitter_AnimationEventAction.pause: {
-                return (currentFrame: number) => {
+                return () => {
                     sound.pause();
                 };
             }

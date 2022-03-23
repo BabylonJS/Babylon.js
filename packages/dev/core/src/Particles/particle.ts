@@ -159,10 +159,10 @@ export class Particle {
             return;
         }
 
-        this.updateCellInfoFromSystem();
+        this._updateCellInfoFromSystem();
     }
 
-    private updateCellInfoFromSystem(): void {
+    private _updateCellInfoFromSystem(): void {
         this.cellIndex = this.particleSystem.startSpriteCellID;
     }
 

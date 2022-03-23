@@ -37,7 +37,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
     }
 
     updateFactor1(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
@@ -56,7 +56,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
     }
 
     updateFactor2(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
@@ -137,7 +137,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
                         min={0}
                         max={1.0}
                         value={gradient.gradient}
-                        onPointerUp={(evt) => this.onPointerUp()}
+                        onPointerUp={() => this.onPointerUp()}
                         onChange={(evt) => this.updateGradient(parseFloat(evt.target.value))}
                     />
                 </div>

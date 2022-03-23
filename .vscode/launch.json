@@ -351,7 +351,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve Prod (Dev)"
         }
     ]
 }

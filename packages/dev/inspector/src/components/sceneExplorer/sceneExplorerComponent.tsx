@@ -70,22 +70,22 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onSelectionRenamedObserver: Nullable<Observer<void>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
     private _onNewSceneObserver: Nullable<Observer<Scene>>;
-    private sceneExplorerRef: React.RefObject<Resizable>;
+    private _sceneExplorerRef: React.RefObject<Resizable>;
     private _mutationTimeout: Nullable<number> = null;
 
     private _once = true;
     private _hooked = false;
 
-    private sceneMutationFunc: () => void;
+    private _sceneMutationFunc: () => void;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
 
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene };
 
-        this.sceneMutationFunc = this.processMutation.bind(this);
+        this._sceneMutationFunc = this.processMutation.bind(this);
 
-        this.sceneExplorerRef = React.createRef();
+        this._sceneExplorerRef = React.createRef();
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Scene) => {
             this.setState({
                 scene,
@@ -140,21 +140,21 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         const scene = this.state.scene;
 
-        scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewCameraAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewLightAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewMaterialAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewMeshAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewTextureAddedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onNewTransformNodeAddedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onNewSkeletonAddedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onNewCameraAddedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onNewLightAddedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onNewMaterialAddedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onNewMeshAddedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onNewTextureAddedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onNewTransformNodeAddedObservable.removeCallback(this._sceneMutationFunc);
 
-        scene.onSkeletonRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onMeshRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onCameraRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onLightRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onMaterialRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onTransformNodeRemovedObservable.removeCallback(this.sceneMutationFunc);
-        scene.onTextureRemovedObservable.removeCallback(this.sceneMutationFunc);
+        scene.onSkeletonRemovedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onMeshRemovedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onCameraRemovedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onLightRemovedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onMaterialRemovedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onTransformNodeRemovedObservable.removeCallback(this._sceneMutationFunc);
+        scene.onTextureRemovedObservable.removeCallback(this._sceneMutationFunc);
     }
 
     filterContent(filter: string) {
@@ -218,7 +218,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             search = true;
         } else if (keyEvent.keyCode === 13 || keyEvent.keyCode === 39) {
             // enter or right
-            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            const reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(true);
             }
@@ -226,7 +226,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return;
         } else if (keyEvent.keyCode === 37) {
             // left
-            var reservedDataStore = this.state.selectedEntity.reservedDataStore;
+            const reservedDataStore = this.state.selectedEntity.reservedDataStore;
             if (reservedDataStore && reservedDataStore.setExpandedState) {
                 reservedDataStore.setExpandedState(false);
             }
@@ -261,21 +261,21 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (!this._hooked) {
             this._hooked = true;
-            scene.onNewSkeletonAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewCameraAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewLightAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMaterialAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewMeshAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTextureAddedObservable.add(this.sceneMutationFunc);
-            scene.onNewTransformNodeAddedObservable.add(this.sceneMutationFunc);
+            scene.onNewSkeletonAddedObservable.add(this._sceneMutationFunc);
+            scene.onNewCameraAddedObservable.add(this._sceneMutationFunc);
+            scene.onNewLightAddedObservable.add(this._sceneMutationFunc);
+            scene.onNewMaterialAddedObservable.add(this._sceneMutationFunc);
+            scene.onNewMeshAddedObservable.add(this._sceneMutationFunc);
+            scene.onNewTextureAddedObservable.add(this._sceneMutationFunc);
+            scene.onNewTransformNodeAddedObservable.add(this._sceneMutationFunc);
 
-            scene.onSkeletonRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMeshRemovedObservable.add(this.sceneMutationFunc);
-            scene.onCameraRemovedObservable.add(this.sceneMutationFunc);
-            scene.onLightRemovedObservable.add(this.sceneMutationFunc);
-            scene.onMaterialRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTransformNodeRemovedObservable.add(this.sceneMutationFunc);
-            scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
+            scene.onSkeletonRemovedObservable.add(this._sceneMutationFunc);
+            scene.onMeshRemovedObservable.add(this._sceneMutationFunc);
+            scene.onCameraRemovedObservable.add(this._sceneMutationFunc);
+            scene.onLightRemovedObservable.add(this._sceneMutationFunc);
+            scene.onMaterialRemovedObservable.add(this._sceneMutationFunc);
+            scene.onTransformNodeRemovedObservable.add(this._sceneMutationFunc);
+            scene.onTextureRemovedObservable.add(this._sceneMutationFunc);
         }
 
         const guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
@@ -627,7 +627,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <Resizable
                 tabIndex={-1}
                 id="sceneExplorer"
-                ref={this.sceneExplorerRef}
+                ref={this._sceneExplorerRef}
                 size={{ height: "100%" }}
                 minWidth={300}
                 maxWidth={600}

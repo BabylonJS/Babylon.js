@@ -9,6 +9,7 @@ import { EndsWith } from "../../../Misc/stringTools";
  * Implementation of the ENV Texture Loader.
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _ENVTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
@@ -73,15 +74,8 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
 
     /**
      * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
-     * @param data contains the texture data
-     * @param texture defines the BabylonJS internal texture
-     * @param callback defines the method to call once ready to upload
      */
-    public loadData(
-        data: ArrayBufferView,
-        texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
-    ): void {
+    public loadData(): void {
         throw ".env not supported in 2d.";
     }
 }

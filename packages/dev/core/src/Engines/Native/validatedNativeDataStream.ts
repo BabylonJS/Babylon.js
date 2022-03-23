@@ -12,7 +12,7 @@ NativeEngine._createNativeDataStream = function () {
     }
 };
 
-class ValidatedNativeDataStream extends NativeDataStream {
+export class ValidatedNativeDataStream extends NativeDataStream {
     constructor() {
         super();
     }

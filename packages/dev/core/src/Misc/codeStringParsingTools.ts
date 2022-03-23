@@ -103,8 +103,8 @@ export function IsIdentifierChar(c: string): boolean {
 export function RemoveComments(block: string): string {
     let currPos = 0,
         waitForChar = "",
-        inComments = false,
-        s = [];
+        inComments = false;
+    const s = [];
 
     while (currPos < block.length) {
         const currChar = block.charAt(currPos);

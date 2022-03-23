@@ -10,7 +10,7 @@ import { Logger } from "core/Misc/logger";
 import "../scss/renderingZone.scss";
 
 class Reflector {
-    private static readonly SERVER_PREFIX = "$$";
+    private static readonly _SERVER_PREFIX = "$$";
 
     private readonly _engine: Engine;
     private readonly _globalState: GlobalState;
@@ -27,8 +27,8 @@ class Reflector {
         this._webSocket.onmessage = (event) => {
             const message: string = event.data;
 
-            if (StringTools.StartsWith(message, Reflector.SERVER_PREFIX)) {
-                const serverMessage = message.substr(Reflector.SERVER_PREFIX.length);
+            if (StringTools.StartsWith(message, Reflector._SERVER_PREFIX)) {
+                const serverMessage = message.substr(Reflector._SERVER_PREFIX.length);
                 Logger.Log(`[Reflector] Received server message: ${serverMessage}`);
                 this._handleServerMessage(serverMessage);
                 return;
@@ -44,6 +44,7 @@ class Reflector {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _handleServerMessage(message: string): void {
         // do nothing
     }

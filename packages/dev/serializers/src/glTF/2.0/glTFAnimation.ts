@@ -28,6 +28,7 @@ import { IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animat
  * @hidden
  * Interface to store animation data.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationData {
     /**
      * Keyframe data.
@@ -54,6 +55,7 @@ export interface _IAnimationData {
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationInfo {
     /**
      * The target channel for the animation
@@ -73,6 +75,7 @@ export interface _IAnimationInfo {
  * @hidden
  * Enum for handling in tangent and out tangent.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 enum _TangentType {
     /**
      * Specifies that input tangents are used.
@@ -110,7 +113,7 @@ export class _GLTFAnimation {
         const inputs: number[] = [];
         const outputs: number[][] = [];
         const keyFrames = animation.getKeys();
-        const minMaxKeyFrames = _GLTFAnimation.calculateMinMaxKeyFrames(keyFrames);
+        const minMaxKeyFrames = _GLTFAnimation._CalculateMinMaxKeyFrames(keyFrames);
         const interpolationOrBake = _GLTFAnimation._DeduceInterpolation(keyFrames, animationChannelTargetPath, useQuaternion);
         const frameDelta = minMaxKeyFrames.max - minMaxKeyFrames.min;
 
@@ -267,7 +270,7 @@ export class _GLTFAnimation {
                             samplers: [],
                             channels: [],
                         };
-                        _GLTFAnimation.AddAnimation(
+                        _GLTFAnimation._AddAnimation(
                             `${animation.name}`,
                             animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
                             babylonNode,
@@ -353,7 +356,7 @@ export class _GLTFAnimation {
                                 samplers: [],
                                 channels: [],
                             };
-                            _GLTFAnimation.AddAnimation(
+                            _GLTFAnimation._AddAnimation(
                                 animation.name,
                                 animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
                                 babylonNode,
@@ -425,7 +428,7 @@ export class _GLTFAnimation {
                         if (animationInfo) {
                             const babylonTransformNode = target instanceof TransformNode ? (target as TransformNode) : (target[0] as TransformNode);
                             const convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
-                            _GLTFAnimation.AddAnimation(
+                            _GLTFAnimation._AddAnimation(
                                 `${animation.name}`,
                                 glTFAnimation,
                                 babylonTransformNode,
@@ -519,7 +522,7 @@ export class _GLTFAnimation {
                     combinedAnimationGroup!.setKeys(animationKeys);
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimationGroup!);
                     if (animationInfo) {
-                        _GLTFAnimation.AddAnimation(
+                        _GLTFAnimation._AddAnimation(
                             `${animationGroup.name}_${mesh.name}_MorphWeightAnimation`,
                             glTFAnimation,
                             mesh,
@@ -544,7 +547,7 @@ export class _GLTFAnimation {
         }
     }
 
-    private static AddAnimation(
+    private static _AddAnimation(
         name: string,
         glTFAnimation: IAnimation,
         babylonTransformNode: TransformNode,
@@ -670,8 +673,8 @@ export class _GLTFAnimation {
      * @param outputs output key frame data of the animation
      * @param minMaxFrames
      * @param minMaxFrames.min
-     * @param convertToRightHandedSystem converts the values to right-handed
      * @param minMaxFrames.max
+     * @param convertToRightHandedSystem converts the values to right-handed
      * @param useQuaternion specifies if quaternions should be used
      */
     private static _CreateBakedAnimation(
@@ -921,7 +924,7 @@ export class _GLTFAnimation {
     ) {
         animation.getKeys().forEach(function (keyFrame) {
             inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
-            _GLTFAnimation.AddSplineTangent(
+            _GLTFAnimation._AddSplineTangent(
                 babylonTransformNode,
                 _TangentType.INTANGENT,
                 outputs,
@@ -934,7 +937,7 @@ export class _GLTFAnimation {
             );
             _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
 
-            _GLTFAnimation.AddSplineTangent(
+            _GLTFAnimation._AddSplineTangent(
                 babylonTransformNode,
                 _TangentType.OUTTANGENT,
                 outputs,
@@ -990,7 +993,6 @@ export class _GLTFAnimation {
      * @param animation
      * @param outputs
      * @param animationChannelTargetPath
-     * @param basePositionRotationOrScale
      * @param babylonTransformNode
      * @param convertToRightHandedSystem
      * @param useQuaternion
@@ -1157,7 +1159,7 @@ export class _GLTFAnimation {
      * @param useQuaternion Specifies if quaternions are used
      * @param convertToRightHandedSystem Specifies if the values should be converted to right-handed
      */
-    private static AddSplineTangent(
+    private static _AddSplineTangent(
         babylonTransformNode: TransformNode,
         tangentType: _TangentType,
         outputs: number[][],
@@ -1221,7 +1223,7 @@ export class _GLTFAnimation {
      * @param keyFrames animation key frames
      * @returns the minimum and maximum key frame value
      */
-    private static calculateMinMaxKeyFrames(keyFrames: IAnimationKey[]): { min: number; max: number } {
+    private static _CalculateMinMaxKeyFrames(keyFrames: IAnimationKey[]): { min: number; max: number } {
         let min: number = Infinity;
         let max: number = -Infinity;
         keyFrames.forEach(function (keyFrame) {

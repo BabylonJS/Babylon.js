@@ -4,17 +4,17 @@
     box-sizing: border-box;
     margin: 0;
     padding: 10px;
-    width: 100%; 
+    width: 100%;
     overflow: hidden;
     overflow-y: auto;
 
     .log {
         color: white;
         font-size: 14px;
-        font-family: 'Courier New', Courier, monospace;
+        font-family: "Courier New", Courier, monospace;
 
         &.error {
-            color:red;
+            color: red;
         }
     }
 }

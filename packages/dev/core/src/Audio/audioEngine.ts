@@ -42,6 +42,7 @@ export class AudioEngine implements IAudioEngine {
      * Defines if Babylon should emit a warning if WebAudio is not supported.
      * @ignoreNaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public WarnedWebAudioUnsupported: boolean = false;
 
     /**

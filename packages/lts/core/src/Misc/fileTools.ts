@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { IFileRequest } from "core/Misc/fileRequest";
 import {
     DecodeBase64UrlToBinary,

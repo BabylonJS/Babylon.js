@@ -1,7 +1,7 @@
 #embed-host {
     position: absolute;
     right: 0px;
-    top:0px;
+    top: 0px;
     bottom: 0px;
     z-index: 10;
 }
@@ -27,57 +27,57 @@
         grid-row: 1;
         text-align: center;
         display: grid;
-        grid-template-columns: 30px 1fr 50px;        
-        -webkit-user-select: none; 
-        -moz-user-select: none;   
-        -ms-user-select: none;    
-        user-select: none;                
+        grid-template-columns: 30px 1fr 50px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
 
         #logo {
-            grid-column: 1; 
+            grid-column: 1;
             width: 24px;
             height: 24px;
             display: flex;
-            align-self: center;   
+            align-self: center;
             justify-self: center;
-        }      
-        
+        }
+
         #back {
-            grid-column: 1; 
+            grid-column: 1;
             display: grid;
-            align-self: center;   
+            align-self: center;
             justify-self: center;
             cursor: pointer;
-        }    
+        }
 
         #title {
-            grid-column: 2; 
+            grid-column: 2;
             display: grid;
-            align-items: center;   
+            align-items: center;
             text-align: center;
         }
 
         #commands {
-            grid-column: 3; 
+            grid-column: 3;
             display: grid;
-            align-items: center;  
-            grid-template-columns: 1fr 1fr;   
-            
+            align-items: center;
+            grid-template-columns: 1fr 1fr;
+
             .expand {
                 grid-column: 1;
                 display: grid;
-                align-items: center;   
+                align-items: center;
                 justify-items: center;
-                cursor: pointer;     
+                cursor: pointer;
             }
 
             .close {
                 grid-column: 2;
                 display: grid;
-                align-items: center;   
+                align-items: center;
                 justify-items: center;
-                cursor: pointer;     
-            }            
+                cursor: pointer;
+            }
         }
     }
 
@@ -85,7 +85,6 @@
         grid-row: 2;
         overflow: hidden;
 
-        
         &.splitPopup {
             display: grid;
             grid-template-rows: 300px 2px 1fr;
@@ -101,7 +100,7 @@
             display: grid;
             grid-auto-rows: 100%;
         }
-        
+
         #separator {
             grid-row: 2;
             background: white;
@@ -113,7 +112,7 @@
             grid-row: 3;
             display: grid;
             grid-auto-rows: 100%;
-        }        
+        }
 
         .gutter.gutter-vertical {
             background-image: none;
@@ -121,5 +120,4 @@
             cursor: row-resize;
         }
     }
-
 }

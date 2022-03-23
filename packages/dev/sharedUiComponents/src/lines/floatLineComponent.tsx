@@ -93,7 +93,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     updateValue(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 

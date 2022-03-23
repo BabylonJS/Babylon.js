@@ -33,7 +33,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
             activeState: Utilities.ReadStringFromStore(this.props.storeKey || this.props.tooltip, this.props.defaultValue!, this.props.useSessionStorage),
         };
 
-        this.props.globalState.OnNewDropdownButtonClicked.add((source) => {
+        this.props.globalState.onNewDropdownButtonClicked.add((source) => {
             if (source === this) {
                 return;
             }
@@ -60,7 +60,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                         className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")}
                         title={this.props.tooltip}
                         onClick={() => {
-                            this.props.globalState.OnNewDropdownButtonClicked.notifyObservers(this);
+                            this.props.globalState.onNewDropdownButtonClicked.notifyObservers(this);
                             const newState = !this.state.isExpanded;
                             const pgHost = document.getElementById("embed-host");
 

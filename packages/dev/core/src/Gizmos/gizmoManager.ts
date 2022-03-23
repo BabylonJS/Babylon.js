@@ -115,13 +115,13 @@ export class GizmoManager implements IDisposable {
 
     /**
      * Instantiates a gizmo manager
-     * @param scene the scene to overlay the gizmos on top of
+     * @param _scene the scene to overlay the gizmos on top of
      * @param thickness display gizmo axis thickness
      * @param utilityLayer the layer where gizmos are rendered
      * @param keepDepthUtilityLayer the layer where occluded gizmos are rendered
      */
     constructor(
-        private scene: Scene,
+        private _scene: Scene,
         thickness: number = 1,
         utilityLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
         keepDepthUtilityLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer
@@ -132,7 +132,7 @@ export class GizmoManager implements IDisposable {
         this._thickness = thickness;
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 
-        const attachToMeshPointerObserver = this._attachToMeshPointerObserver(scene);
+        const attachToMeshPointerObserver = this._attachToMeshPointerObserver(_scene);
         const gizmoAxisPointerObserver = Gizmo.GizmoAxisPointerObserver(this._defaultUtilityLayer, this._gizmoAxisCache);
         this._pointerObservers = [attachToMeshPointerObserver, gizmoAxisPointerObserver];
     }
@@ -350,7 +350,7 @@ export class GizmoManager implements IDisposable {
      */
     public dispose() {
         this._pointerObservers.forEach((observer) => {
-            this.scene.onPointerObservable.remove(observer);
+            this._scene.onPointerObservable.remove(observer);
         });
         for (const key in this.gizmos) {
             const gizmo = <Nullable<Gizmo>>(<any>this.gizmos)[key];

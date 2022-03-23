@@ -9,6 +9,7 @@ import { WebGPUEngine } from "@dev/core";
 
 import "../scss/hamburgerMenu.scss";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Versions: any;
 
 interface IHamburgerMenuComponentProps {
@@ -16,15 +17,15 @@ interface IHamburgerMenuComponentProps {
 }
 
 export class HamburgerMenuComponent extends React.Component<IHamburgerMenuComponentProps, { isExpanded: boolean }> {
-    private webGPUSupported: boolean = false;
+    private _webGPUSupported: boolean = false;
     public constructor(props: IHamburgerMenuComponentProps) {
         super(props);
         this.state = { isExpanded: false };
 
         if (typeof WebGPUEngine !== "undefined") {
             WebGPUEngine.IsSupportedAsync.then((result) => {
-                this.webGPUSupported = result;
-                if (location.search.indexOf("webgpu") !== -1 && this.webGPUSupported) {
+                this._webGPUSupported = result;
+                if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {
                     Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                 }
                 this.forceUpdate();
@@ -123,7 +124,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
             },
         ];
 
-        if (this.webGPUSupported) {
+        if (this._webGPUSupported) {
             engineOptions.splice(0, 0, {
                 label: "WebGPU",
                 tooltip: "Use WebGPU Renderer (experimental)",

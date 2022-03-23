@@ -4,27 +4,27 @@
     margin: 0;
     padding: 0;
     display: grid;
-    width: 100%; 
+    width: 100%;
     overflow: hidden;
 
     .panes {
         overflow: hidden;
-        
+
         .pane {
             color: white;
 
             overflow: hidden;
             height: 100%;
 
-            -webkit-user-select: none; 
-            -moz-user-select: none;   
-            -ms-user-select: none;    
-            user-select: none;     
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
 
             .filter {
                 display: flex;
                 align-items: stretch;
-        
+
                 input {
                     width: 100%;
                     margin: 10px 10px 5px 10px;
@@ -35,11 +35,11 @@
                     background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);
                     background-position: -1000px 0;
                     background-size: 1000px 100%;
-                    background-repeat: no-repeat;  
-                    color:white;    
+                    background-repeat: no-repeat;
+                    color: white;
                 }
-        
-                input:focus  {
+
+                input:focus {
                     box-shadow: none;
                     outline: none;
                     background-position: 0 0;
@@ -116,8 +116,8 @@
                         input[type="file"] {
                             display: none;
                         }
-                
-                        .file-upload {            
+
+                        .file-upload {
                             background: transparent;
                             border: transparent;
                             padding: 15px 200px;
@@ -125,44 +125,43 @@
                             cursor: pointer;
                             text-align: center;
                         }
-                
+
                         .file-upload:hover {
-                            opacity: 1.0;
+                            opacity: 1;
                         }
-                
+
                         .file-upload:active {
                             transform: scale(0.98);
                             transform-origin: 0.5 0.5;
                         }
-                
+
                         button {
                             background: transparent;
                             border: transparent;
                             margin: 5px 10px 5px 10px;
-                            color:white;
+                            color: white;
                             padding: 4px 5px;
                             opacity: 0.9;
                         }
-                
+
                         button:hover {
-                            opacity: 0.0;
+                            opacity: 0;
                         }
-                
+
                         button:active {
                             background: transparent;
-                        }   
-                        
+                        }
+
                         button:focus {
                             border: transparent;
                             outline: 0px;
-                        }  
+                        }
                     }
-                    
-                }                
+                }
 
                 .paneContainer {
                     margin-top: 3px;
-                    display:grid;
+                    display: grid;
                     grid-template-rows: 100%;
                     grid-template-columns: 100%;
 
@@ -173,12 +172,12 @@
                         .header {
                             display: grid;
                             grid-template-columns: 1fr auto;
-                            background: #555555;    
-                            height: 30px;   
-                            padding-right: 5px;                        
+                            background: #555555;
+                            height: 30px;
+                            padding-right: 5px;
                             cursor: pointer;
-                            
-                            .title {                                
+
+                            .title {
                                 border-left: 3px solid transparent;
                                 padding-left: 5px;
                                 grid-column: 1;
@@ -189,14 +188,14 @@
                             .collapse {
                                 grid-column: 2;
                                 display: flex;
-                                align-items: center;  
+                                align-items: center;
                                 justify-items: center;
                                 transform-origin: center;
 
                                 &.closed {
                                     transform: rotate(180deg);
                                 }
-                            }                        
+                            }
                         }
 
                         .paneList > div:not(:last-child) {
@@ -204,8 +203,7 @@
                         }
                     }
                 }
-            }    
+            }
         }
     }
 }
-

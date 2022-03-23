@@ -1,4 +1,4 @@
-import { GUIEditor } from "@tools/gui-editor";
+import { GUIEditor } from "gui-editor/index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
@@ -7,4 +7,4 @@ if (typeof globalObject !== "undefined") {
     (<any>globalObject).GUIEDITOR = GUIEditor;
 }
 
-export * from "@tools/gui-editor";
+export * from "gui-editor/index";

@@ -117,7 +117,6 @@ export class ViewerLabs {
 
     /**
      * Applies an `EnvironmentMapConfiguration` to the scene
-     * @param environmentMapConfiguration Environment map configuration to apply
      * @param rotationY
      */
     public applyEnvironmentMapConfiguration(rotationY?: number) {

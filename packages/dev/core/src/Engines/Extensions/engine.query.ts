@@ -9,6 +9,7 @@ import { Observer } from "../../Misc/observable";
 export type OcclusionQuery = WebGLQuery | number;
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _OcclusionDataStorage {
     /** @hidden */
     public occlusionInternalRetryCounter = 0;
@@ -352,6 +353,7 @@ declare module "../../Meshes/abstractMesh" {
          * Backing filed
          * @hidden
          */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         __occlusionDataStorage: _OcclusionDataStorage;
 
         /**

@@ -7,6 +7,7 @@ import { WebGPUEngine } from "@dev/core";
 
 import "../scss/commandBar.scss";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Versions: any;
 
 interface ICommandBarComponentProps {
@@ -14,7 +15,7 @@ interface ICommandBarComponentProps {
 }
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
-    private webGPUSupported: boolean = false;
+    private _webGPUSupported: boolean = false;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
@@ -24,8 +25,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
         if (typeof WebGPUEngine !== "undefined") {
             WebGPUEngine.IsSupportedAsync.then((result) => {
-                this.webGPUSupported = result;
-                if (location.search.indexOf("webgpu") !== -1 && this.webGPUSupported) {
+                this._webGPUSupported = result;
+                if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {
                     Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                 }
                 this.forceUpdate();
@@ -114,7 +115,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             },
         ];
 
-        if (this.webGPUSupported) {
+        if (this._webGPUSupported) {
             engineOptions.splice(0, 0, {
                 label: "WebGPU",
                 tooltip: "Use WebGPU Renderer (experimental)",

@@ -114,7 +114,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     public warningEnable: boolean = true;
 
-    protected onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
+    public onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         this._warning();
 
         if (this.axisXControlRotation) {
@@ -136,7 +136,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
-    protected onMultiTouch(
+    public onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,

@@ -390,7 +390,7 @@ export class MeshPropertyGridComponent extends React.Component<
             ? mesh.skeleton.bones
                   .filter((bone) => bone.getIndex() >= 0)
                   .sort((bone1, bone2) => bone1.getIndex() - bone2.getIndex())
-                  .map((bone, idx) => {
+                  .map((bone) => {
                       return {
                           label: bone.name,
                           value: bone.getIndex(),

@@ -22,15 +22,6 @@ WebGPUEngine.prototype._readTexturePixels = function (
     return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer, noDataConversion);
 };
 
-WebGPUEngine.prototype._readTexturePixelsSync = function (
-    texture: InternalTexture,
-    width: number,
-    height: number,
-    faceIndex = -1,
-    level = 0,
-    buffer: Nullable<ArrayBufferView> = null,
-    flushRenderer = true,
-    noDataConversion = false
-): ArrayBufferView {
+WebGPUEngine.prototype._readTexturePixelsSync = function (): ArrayBufferView {
     throw "_readTexturePixelsSync is unsupported in WebGPU!";
 };

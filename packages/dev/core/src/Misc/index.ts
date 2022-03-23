@@ -10,7 +10,6 @@ export * from "./filesInput";
 export * from "./HighDynamicRange/index";
 export * from "./khronosTextureContainer";
 export * from "./observable";
-export * from "./observableCoroutine";
 export * from "./performanceMonitor";
 export * from "./promise";
 export * from "./sceneOptimizer";
@@ -60,3 +59,5 @@ export * from "./PerformanceViewer/index";
 export * from "./coroutine";
 export * from "./guid";
 export * from "./error";
+// eslint-disable-next-line import/export
+export * from "./observableCoroutine";

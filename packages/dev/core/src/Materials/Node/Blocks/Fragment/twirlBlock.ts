@@ -4,7 +4,6 @@ import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { Vector2 } from "../../../../Maths/math.vector";
 
@@ -85,7 +84,7 @@ export class TwirlBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure() {
         if (!this.center.isConnected) {
             const centerInput = new InputBlock("center");
             centerInput.value = new Vector2(0.5, 0.5);

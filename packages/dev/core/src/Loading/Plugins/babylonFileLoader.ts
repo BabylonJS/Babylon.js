@@ -33,6 +33,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-var
 export var _BabylonLoaderRegistered = true;
 
 /**
@@ -78,6 +79,7 @@ const isDescendantOf = (mesh: any, names: Array<any>, hierarchyIds: Array<number
     return false;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const logOperation = (operation: string, producer: { file: string; name: string; version: string; exporter_version: string }) => {
     return (
         operation +
@@ -149,6 +151,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
     // and avoid problems with multiple concurrent .babylon loads.
     let log = "importScene has failed JSON parse";
     try {
+        // eslint-disable-next-line no-var
         var parsedData = JSON.parse(data);
         log = "";
         const fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
@@ -261,7 +264,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     log += "\n\t\t" + mat.toString(fullDetails);
 
                     // Textures
-                    var textures = mat.getActiveTextures();
+                    const textures = mat.getActiveTextures();
                     textures.forEach((t) => {
                         if (container.textures.indexOf(t) == -1) {
                             container.textures.push(t);
@@ -284,7 +287,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 log += "\n\t\t" + mmat.toString(fullDetails);
 
                 // Textures
-                var textures = mmat.getActiveTextures();
+                const textures = mmat.getActiveTextures();
                 textures.forEach((t) => {
                     if (container.textures.indexOf(t) == -1) {
                         container.textures.push(t);
@@ -307,7 +310,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
             for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                 const parsedSkeleton = parsedData.skeletons[index];
-                var skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                const skeleton = Skeleton.Parse(parsedSkeleton, scene);
                 container.skeletons.push(skeleton);
                 skeleton._parentContainer = container;
                 log += index === 0 ? "\n\tSkeletons:" : "";
@@ -352,7 +355,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
             for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                 const parsedMesh = parsedData.meshes[index];
-                var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
+                const mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
                 tempIndexContainer[parsedMesh.uniqueId] = mesh;
                 container.meshes.push(mesh);
                 mesh._parentContainer = container;
@@ -371,7 +374,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (parsedData.cameras !== undefined && parsedData.cameras !== null) {
             for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
                 const parsedCamera = parsedData.cameras[index];
-                var camera = Camera.Parse(parsedCamera, scene);
+                const camera = Camera.Parse(parsedCamera, scene);
                 tempIndexContainer[parsedCamera.uniqueId] = camera;
                 container.cameras.push(camera);
                 camera._parentContainer = container;
@@ -408,7 +411,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // Browsing all the graph to connect the dots
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
-            var camera = scene.cameras[index];
+            const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
                 camera.parent = findParent(camera._waitingParentId, scene);
                 camera._waitingParentId = null;
@@ -432,7 +435,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            var mesh = scene.meshes[index];
+            const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
                 mesh.parent = findParent(mesh._waitingParentId, scene);
                 mesh._waitingParentId = null;
@@ -460,7 +463,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // link skeleton transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
-            var skeleton = scene.skeletons[index];
+            const skeleton = scene.skeletons[index];
             if (skeleton._hasWaitingData) {
                 if (skeleton.bones != null) {
                     skeleton.bones.forEach((bone) => {
@@ -523,7 +526,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            var mesh = scene.meshes[index];
+            const mesh = scene.meshes[index];
             if (mesh._waitingData.actions) {
                 ActionManager.Parse(mesh._waitingData.actions, mesh, scene);
                 mesh._waitingData.actions = null;
@@ -581,6 +584,7 @@ SceneLoader.RegisterPlugin({
         // and avoid problems with multiple concurrent .babylon loads.
         let log = "importMesh has failed JSON parse";
         try {
+            // eslint-disable-next-line no-var
             var parsedData = JSON.parse(data);
             log = "";
             const fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
@@ -595,7 +599,7 @@ SceneLoader.RegisterPlugin({
             // Transform nodes (the overall idea is to load all of them as this is super fast and then get rid of the ones we don't need)
             const loadedTransformNodes = [];
             if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
-                for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                for (let index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
                     const parsedTransformNode = parsedData.transformNodes[index];
                     loadedTransformNodes.push(TransformNode.Parse(parsedTransformNode, scene, rootUrl));
                 }
@@ -606,10 +610,8 @@ SceneLoader.RegisterPlugin({
                 const loadedMaterialsIds: string[] = [];
                 const loadedMaterialsUniqueIds: string[] = [];
                 const loadedMorphTargetsIds = [];
-                var index: number;
-                var cache: number;
-                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                    var parsedMesh = parsedData.meshes[index];
+                for (let index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                    const parsedMesh = parsedData.meshes[index];
 
                     if (meshesNames === null || isDescendantOf(parsedMesh, meshesNames, hierarchyIds)) {
                         if (meshesNames !== null) {
@@ -622,7 +624,7 @@ SceneLoader.RegisterPlugin({
                             //does the file contain geometries?
                             if (parsedData.geometries !== undefined && parsedData.geometries !== null) {
                                 //find the correct geometry and add it to the scene
-                                var found: boolean = false;
+                                let found: boolean = false;
                                 ["boxes", "spheres", "cylinders", "toruses", "grounds", "planes", "torusKnots", "vertexData"].forEach((geometryType: string) => {
                                     if (found === true || !parsedData.geometries[geometryType] || !Array.isArray(parsedData.geometries[geometryType])) {
                                         return;
@@ -712,7 +714,7 @@ SceneLoader.RegisterPlugin({
                                 for (let skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     const parsedSkeleton = parsedData.skeletons[skeletonIndex];
                                     if (parsedSkeleton.id === parsedMesh.skeletonId) {
-                                        var skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                                        const skeleton = Skeleton.Parse(parsedSkeleton, scene);
                                         skeletons.push(skeleton);
                                         loadedSkeletonsIds.push(parsedSkeleton.id);
                                         log += "\n\tSkeleton " + skeleton.toString(fullDetails);
@@ -759,7 +761,7 @@ SceneLoader.RegisterPlugin({
                 });
 
                 // Connecting parents and lods
-                for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
                     const transformNode = scene.transformNodes[index];
                     if (transformNode._waitingParentId !== null) {
                         transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
@@ -767,7 +769,7 @@ SceneLoader.RegisterPlugin({
                     }
                 }
                 let currentMesh: AbstractMesh;
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
                         currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
@@ -790,8 +792,8 @@ SceneLoader.RegisterPlugin({
                 }
 
                 // link skeleton transform nodes
-                for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
-                    var skeleton = scene.skeletons[index];
+                for (let index = 0, cache = scene.skeletons.length; index < cache; index++) {
+                    const skeleton = scene.skeletons[index];
                     if (skeleton._hasWaitingData) {
                         if (skeleton.bones != null) {
                             skeleton.bones.forEach((bone) => {
@@ -810,7 +812,7 @@ SceneLoader.RegisterPlugin({
                 }
 
                 // freeze and compute world matrix application
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingData.freezeWorldMatrix) {
                         currentMesh.freezeWorldMatrix();
@@ -825,7 +827,7 @@ SceneLoader.RegisterPlugin({
             if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
                 const parser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
                 if (parser) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                    for (let index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         const parsedParticleSystem = parsedData.particleSystems[index];
                         if (hierarchyIds.indexOf(parsedParticleSystem.emitterId) !== -1) {
                             particleSystems.push(parser(parsedParticleSystem, scene, rootUrl));
@@ -858,6 +860,7 @@ SceneLoader.RegisterPlugin({
         // and avoid problems with multiple concurrent .babylon loads.
         let log = "importScene has failed JSON parse";
         try {
+            // eslint-disable-next-line no-var
             var parsedData = JSON.parse(data);
             log = "";
 
