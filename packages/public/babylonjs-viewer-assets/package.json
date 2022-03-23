@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-viewer-assets",
     "description": "Compiled resources for the Babylon viewer.",
-    "version": "5.0.0-rc.4",
+    "version": "5.0.0-rc.5",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
