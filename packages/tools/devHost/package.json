@@ -11,8 +11,7 @@
         "build": "webpack",
         "serve": "webpack serve",
         "serve-https": "webpack serve --server-type https --open",
-        "serve-https-public": "webpack serve --server-type https --host ::",
-        "prepublishOnly": "nx build"
+        "serve-https-public": "webpack serve --server-type https --host ::"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
