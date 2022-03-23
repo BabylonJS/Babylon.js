@@ -228,6 +228,7 @@ export interface IPointerEvent extends IMouseEvent {
      * Subset of possible PointerInput values for events, excluding ones that CANNOT be in events organically and mouse wheel values
      */
     inputIndex: Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical | PointerInput.MouseWheelX | PointerInput.MouseWheelY | PointerInput.MouseWheelZ>;
+
     /**
      * Pointer Event ID
      */
@@ -247,6 +248,7 @@ export interface IWheelEvent extends IMouseEvent {
      * Subset of possible PointerInput values for events that can only be used with mouse wheel
      */
     inputIndex: PointerInput.MouseWheelX | PointerInput.MouseWheelY | PointerInput.MouseWheelZ;
+
     /**
      * Units for delta value
      */
