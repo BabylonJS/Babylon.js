@@ -518,7 +518,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public isSynchronized(): boolean {
-        if (this._cache.parent != this._parentNode) {
+        if (this._cache.parent !== this._parentNode) {
             this._cache.parent = this._parentNode;
             return false;
         }

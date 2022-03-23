@@ -330,7 +330,7 @@ export function CreateGroundFromHeightMapVertexData(options: {
 export function CreateGround(
     name: string,
     options: { width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number; updatable?: boolean } = {},
-    scene: any
+    scene?: Scene
 ): Mesh {
     const ground = new GroundMesh(name, scene);
     ground._setReady(false);

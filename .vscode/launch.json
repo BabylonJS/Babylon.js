@@ -38,7 +38,7 @@
             "url": "http://localhost:1338",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run Dev host (Dev)"
-        },        
+        },
         {
             /*
             Launch the playground to be use to test changes in dev packages
@@ -349,6 +349,9 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
+            "env": {
+                "HEADLESS": "true"
+            },
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
             "preLaunchTask": "CDN Serve Prod (Dev)"

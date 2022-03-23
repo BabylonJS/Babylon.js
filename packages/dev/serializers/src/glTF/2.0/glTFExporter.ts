@@ -47,6 +47,7 @@ import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
 import { Camera } from "core/Cameras/camera";
 import { EngineStore } from "core/Engines/engineStore";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 
 /**
  * Utility interface for storing vertex attribute data
@@ -1720,8 +1721,8 @@ export class _Exporter {
                             }
                             this._materials.push(material);
                             materialIndex = this._materials.length - 1;
-                        } else if (babylonMaterial.getClassName() === "MultiMaterial") {
-                            const subMaterial: Material = (babylonMaterial as any).subMaterials[submesh.materialIndex];
+                        } else if (babylonMaterial instanceof MultiMaterial) {
+                            const subMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                             if (subMaterial) {
                                 babylonMaterial = subMaterial;
                                 materialIndex = this._materialMap[babylonMaterial.uniqueId];
@@ -2049,17 +2050,16 @@ export class _Exporter {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 exportNodes.push(babylonNode);
 
-                if (babylonNode.getClassName() === "Mesh") {
-                    const mesh = babylonNode as Mesh;
-                    if (mesh.material) {
-                        exportMaterials.add(mesh.material);
-                    }
-                } else {
-                    const meshes: AbstractMesh[] = babylonNode.getChildMeshes(false);
-                    for (const mesh of meshes) {
-                        if (mesh.material) {
-                            exportMaterials.add(mesh.material);
+                if (babylonNode instanceof AbstractMesh) {
+                    const material = babylonNode.material || babylonNode.getScene().defaultMaterial;
+                    if (material instanceof MultiMaterial) {
+                        for (const subMaterial of material.subMaterials) {
+                            if (subMaterial) {
+                                exportMaterials.add(subMaterial);
+                            }
                         }
+                    } else {
+                        exportMaterials.add(material);
                     }
                 }
             } else {

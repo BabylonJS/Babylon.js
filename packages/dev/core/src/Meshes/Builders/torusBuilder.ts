@@ -113,7 +113,7 @@ export function CreateTorusVertexData(options: { diameter?: number; thickness?: 
 export function CreateTorus(
     name: string,
     options: { diameter?: number; thickness?: number; tessellation?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {},
-    scene: any
+    scene?: Scene
 ): Mesh {
     const torus = new Mesh(name, scene);
 
