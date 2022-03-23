@@ -417,4 +417,4 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
         }
     });
     page.on("pageerror", ({ message }) => console.log(message)).on("requestfailed", (request) => console.log(`${request.failure().errorText} ${request.url()}`));
-}
+};
