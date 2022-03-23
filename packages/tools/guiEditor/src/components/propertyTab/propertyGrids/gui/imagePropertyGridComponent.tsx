@@ -116,12 +116,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={imageLinkIcon} label="Source" />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="source"
-                    />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="source" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={cropIcon} label="Crop" />
@@ -183,13 +178,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={stretchFillIcon} label="Stretch" />
-                    <OptionsLineComponent
-                        label=" "
-                        options={stretchOptions}
-                        target={proxy}
-                        propertyName="stretch"
-                        onSelect={(value) => this.setState({ mode: value })}
-                    />
+                    <OptionsLineComponent label=" " options={stretchOptions} target={proxy} propertyName="stretch" onSelect={(value) => this.setState({ mode: value })} />
                 </div>
                 {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && (
                     <>

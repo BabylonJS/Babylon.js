@@ -69,21 +69,11 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         arrows={true}
                         min={0}
                         digits={2}
-                        />
+                    />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
-                    <FloatLineComponent
-                        lockObject={lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="cornerRadius"
-                        unit="PX"
-                        unitLocked={true}
-                        arrows={true}
-                        min={0}
-                        digits={2}
-                        />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="cornerRadius" unit="PX" unitLocked={true} arrows={true} min={0} digits={2} />
                 </div>
                 <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>

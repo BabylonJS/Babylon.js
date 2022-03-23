@@ -38,42 +38,42 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                 <hr />
                 <TextLineComponent label="IMAGE LINKS" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <IconComponent icon={thumbImageLinkIcon} label="Thumb Image Link" />
-                <TextInputLineComponent
-                    lockObject={this.props.lockObject}
-                    target={makeTargetsProxy(
-                        imageBasedSliders.map((slider) => slider.thumbImage),
-                        this.props.onPropertyChangedObservable
-                    )}
-                    label=""
-                    propertyName="source"
-                />
+                    <IconComponent icon={thumbImageLinkIcon} label="Thumb Image Link" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(
+                            imageBasedSliders.map((slider) => slider.thumbImage),
+                            this.props.onPropertyChangedObservable
+                        )}
+                        label=""
+                        propertyName="source"
+                    />
                 </div>
                 <div className="ge-divider">
-                <IconComponent icon={valueBarImageLinkIcon} label="Value Bar Image Link" />
-                <TextInputLineComponent
-                    lockObject={this.props.lockObject}
-                    target={makeTargetsProxy(
-                        imageBasedSliders.map((slider) => slider.valueBarImage),
-                        this.props.onPropertyChangedObservable
-                    )}
-                    label=""
-                    propertyName="source"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                    <IconComponent icon={valueBarImageLinkIcon} label="Value Bar Image Link" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(
+                            imageBasedSliders.map((slider) => slider.valueBarImage),
+                            this.props.onPropertyChangedObservable
+                        )}
+                        label=""
+                        propertyName="source"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
                 <div className="ge-divider">
-                <IconComponent icon={sliderBackgroundImageIcon} label="Background Image Link" />
-                <TextInputLineComponent
-                    lockObject={this.props.lockObject}
-                    target={makeTargetsProxy(
-                        imageBasedSliders.map((slider) => slider.backgroundImage),
-                        this.props.onPropertyChangedObservable
-                    )}
-                    label=""
-                    propertyName="source"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                    <IconComponent icon={sliderBackgroundImageIcon} label="Background Image Link" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(
+                            imageBasedSliders.map((slider) => slider.backgroundImage),
+                            this.props.onPropertyChangedObservable
+                        )}
+                        label=""
+                        propertyName="source"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
                 <SliderPropertyGridComponent sliders={imageBasedSliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>

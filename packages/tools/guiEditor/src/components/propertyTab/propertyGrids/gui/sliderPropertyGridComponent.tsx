@@ -74,7 +74,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     <IconComponent icon={showThumbIcon} label="Display Thumb" />
                     <CheckBoxLineComponent label="DISPLAY THUMB" target={proxy} propertyName="displayThumb" onValueChanged={() => this.forceUpdate()} />
                 </div>
-                {proxy.displayThumb && 
+                {proxy.displayThumb && (
                     <>
                         <div className="ge-divider">
                             <IconComponent icon={thumbCircleIcon} label="Thumb Circular" />
@@ -89,7 +89,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                             <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="thumbWidth" />
                         </div>
                     </>
-                }
+                )}
             </div>
         );
     }

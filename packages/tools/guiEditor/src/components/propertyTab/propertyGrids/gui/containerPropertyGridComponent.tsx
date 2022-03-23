@@ -21,19 +21,11 @@ export class ContainerPropertyGridComponent extends React.Component<IContainerPr
             <>
                 <div className="ge-divider">
                     <IconComponent icon={clipContentsIcon} label={"Clip Content"} />
-                    <CheckBoxLineComponent
-                        label="CLIP CONTENT"
-                        target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)}
-                        propertyName="clipContent"
-                    />
+                    <CheckBoxLineComponent label="CLIP CONTENT" target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)} propertyName="clipContent" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={clipChildrenIcon} label={"Clip Children"} />
-                    <CheckBoxLineComponent
-                        label="CLIP CHILDREN"
-                        target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)}
-                        propertyName="clipChildren"
-                    />
+                    <CheckBoxLineComponent label="CLIP CHILDREN" target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)} propertyName="clipChildren" />
                 </div>
             </>
         );

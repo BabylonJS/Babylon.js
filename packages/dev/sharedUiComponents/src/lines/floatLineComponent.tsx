@@ -33,7 +33,7 @@ interface IFloatLineComponentProps {
     arrows?: boolean;
 }
 
-export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string, dragging: boolean }> {
+export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
     private _store: number;
 
@@ -62,7 +62,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         return "0";
     }
 
-    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string, dragging: boolean }) {
+    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -178,7 +178,6 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         if (event.key === "Enter" && this.props.onEnter) {
             this.props.onEnter(this._store);
         }
-        
     }
 
     render() {
@@ -227,7 +226,9 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 onFocus={() => this.lock()}
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />
-                            {this.props.arrows && <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />}
+                            {this.props.arrows && (
+                                <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />
+                            )}
                         </div>
                         {this.props.unit && (
                             <button
