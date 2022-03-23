@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui-editor",
-    "version": "5.0.0-rc.6",
+    "version": "5.0.0-rc.7",
     "main": "dist/babylon.guiEditor.max.js",
     "types": "dist/babylon.guiEditor.module.d.ts",
     "files": [
@@ -15,8 +15,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.6",
-        "babylonjs-gui": "^5.0.0-rc.6"
+        "babylonjs": "^5.0.0-rc.7",
+        "babylonjs-gui": "^5.0.0-rc.7"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
