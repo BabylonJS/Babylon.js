@@ -2,7 +2,6 @@ import { BaseSlider } from "./baseSlider";
 import { Measure } from "../../measure";
 import { Image } from "../image";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
 import { serialize } from "core/Misc/decorators";
 import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
@@ -105,7 +104,7 @@ export class ImageBasedSlider extends BaseSlider {
         return "ImageBasedSlider";
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

@@ -24,7 +24,7 @@ export interface TwgslOptions {
 /** @hidden */
 export class WebGPUTintWASM {
     // Default twgsl options.
-    private static readonly _twgslDefaultOptions: TwgslOptions = {
+    private static readonly _TWgslDefaultOptions: TwgslOptions = {
         jsPath: "https://preview.babylonjs.com/twgsl/twgsl.js",
         wasmPath: "https://preview.babylonjs.com/twgsl/twgsl.wasm",
     };
@@ -34,7 +34,7 @@ export class WebGPUTintWASM {
     public async initTwgsl(twgslOptions?: TwgslOptions): Promise<void> {
         twgslOptions = twgslOptions || {};
         twgslOptions = {
-            ...WebGPUTintWASM._twgslDefaultOptions,
+            ...WebGPUTintWASM._TWgslDefaultOptions,
             ...twgslOptions,
         };
 

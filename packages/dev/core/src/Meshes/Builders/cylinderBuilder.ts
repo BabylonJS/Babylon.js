@@ -1,6 +1,6 @@
 import { Vector4, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
@@ -41,6 +41,7 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @param options.backUVs
  * @returns the VertexData of the cylinder, cone or prism
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateCylinderVertexData(options: {
     height?: number;
     diameterTop?: number;
@@ -95,7 +96,7 @@ export function CreateCylinderVertexData(options: {
     const uvs = new Array<number>();
     const colors = new Array<number>();
 
-    const angle_step = (Math.PI * 2 * arc) / tessellation;
+    const angleStep = (Math.PI * 2 * arc) / tessellation;
     let angle: number;
     let h: number;
     let radius: number;
@@ -112,7 +113,7 @@ export function CreateCylinderVertexData(options: {
     let j: number;
     let r: number;
     let ringIdx: number = 1;
-    var s: number = 1; // surface index
+    let s: number = 1; // surface index
     let cs: number = 0;
     let v: number = 0;
 
@@ -128,7 +129,7 @@ export function CreateCylinderVertexData(options: {
                 s += 2 * r;
             }
             for (j = 0; j <= tessellation; j++) {
-                angle = j * angle_step;
+                angle = j * angleStep;
 
                 // position
                 ringVertex.x = Math.cos(-angle) * radius;
@@ -208,7 +209,6 @@ export function CreateCylinderVertexData(options: {
 
     // indices
     const e: number = arc !== 1 && enclose ? tessellation + 4 : tessellation; // correction of number of iteration if enclose
-    var s: number;
     i = 0;
     for (s = 0; s < subdivisions; s++) {
         let i0: number = 0;
@@ -339,7 +339,6 @@ export function CreateCylinderVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.height
- * @param scene defines the hosting scene
  * @param options.diameterTop
  * @param options.diameterBottom
  * @param options.diameter
@@ -355,6 +354,7 @@ export function CreateCylinderVertexData(options: {
  * @param options.sideOrientation
  * @param options.frontUVs
  * @param options.backUVs
+ * @param scene defines the hosting scene
  * @returns the cylinder mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
  */
@@ -378,7 +378,7 @@ export function CreateCylinder(
         frontUVs?: Vector4;
         backUVs?: Vector4;
     } = {},
-    scene: any
+    scene?: Nullable<Scene>
 ): Mesh {
     const cylinder = new Mesh(name, scene);
 
@@ -397,6 +397,7 @@ export function CreateCylinder(
  * @deprecated Please use CreateCylinder directly
  */
 export const CylinderBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateCylinder,
 };
 

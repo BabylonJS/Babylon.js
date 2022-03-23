@@ -100,8 +100,9 @@ export class CheckboxGroup extends SelectorGroup {
      * @param func is the function called when the Selector is checked
      * @param checked is true when Selector is checked
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public addCheckbox(text: string, func = (s: boolean) => {}, checked: boolean = false): void {
-        var checked = checked || false;
+        checked = checked || false;
         const button = new Checkbox();
         button.width = "20px";
         button.height = "20px";
@@ -176,6 +177,7 @@ export class RadioGroup extends SelectorGroup {
      * @param func is the function called when the Selector is checked
      * @param checked is true when Selector is checked
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public addRadio(label: string, func = (n: number) => {}, checked = false): void {
         const nb = this._selectNb++;
         const button = new RadioButton();
@@ -260,6 +262,7 @@ export class SliderGroup extends SelectorGroup {
      */
     public addSlider(
         label: string,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         func = (v: number) => {},
         unit: string = "Units",
         min: number = 0,

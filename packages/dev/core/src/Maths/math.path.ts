@@ -895,9 +895,9 @@ export class Curve3 {
         let amount = 0.0;
         if (closed) {
             const pointsCount = points.length;
-            for (var i = 0; i < pointsCount; i++) {
+            for (let i = 0; i < pointsCount; i++) {
                 amount = 0;
-                for (var c = 0; c < nbPoints; c++) {
+                for (let c = 0; c < nbPoints; c++) {
                     catmullRom.push(
                         Vector3.CatmullRom(points[i % pointsCount], points[(i + 1) % pointsCount], points[(i + 2) % pointsCount], points[(i + 3) % pointsCount], amount)
                     );
@@ -910,9 +910,10 @@ export class Curve3 {
             totalPoints.push(points[0].clone());
             Array.prototype.push.apply(totalPoints, points);
             totalPoints.push(points[points.length - 1].clone());
-            for (var i = 0; i < totalPoints.length - 3; i++) {
+            let i = 0;
+            for (; i < totalPoints.length - 3; i++) {
                 amount = 0;
-                for (var c = 0; c < nbPoints; c++) {
+                for (let c = 0; c < nbPoints; c++) {
                     catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step;
                 }

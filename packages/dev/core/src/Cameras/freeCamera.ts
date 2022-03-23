@@ -277,6 +277,7 @@ export class FreeCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored?: any, noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
     }
@@ -292,9 +293,8 @@ export class FreeCamera extends TargetCamera {
     public detachControl(ignored: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Nullable } from "core/types";
 import { Observable, Observer } from "core/Misc/observable";
 import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
@@ -1513,6 +1515,7 @@ export class Control {
     }
 
     /** @hidden */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
@@ -2489,16 +2492,6 @@ export class Control {
         return control;
     }
 
-    /**
-     * Creates a stack panel that can be used to render headers
-     * @param control defines the control to associate with the header
-     * @param text defines the text of the header
-     * @param size defines the size of the header
-     * @param options defines options used to configure the header
-     * @returns a new StackPanel
-     * @ignore
-     * @hidden
-     */
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
 
     /**

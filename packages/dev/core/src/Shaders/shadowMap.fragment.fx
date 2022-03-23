@@ -16,7 +16,7 @@ void main(void)
 
 #ifdef ALPHATEST
     float alphaFromAlphaTexture = texture2D(diffuseSampler, vUV).a;
-    if (alphaFromAlphaTexture < 0.4)
+    if (alphaFromAlphaTexture < ALPHATESTVALUE)
         discard;
 #endif
 

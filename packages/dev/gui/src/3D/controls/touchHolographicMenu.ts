@@ -30,6 +30,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     /**
      * Scale for the buttons added to the menu
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static MENU_BUTTON_SCALE: number = 1;
 
     /**

@@ -493,7 +493,7 @@ export class AssetContainer extends AbstractScene {
         }
 
         for (const key in this) {
-            if (this.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(this, key)) {
                 (<any>this)[key] = (<any>this)[key] || (key === "environmentTexture" ? null : []);
                 this._moveAssets((<any>this.scene)[key], (<any>this)[key], (<any>keepAssets)[key]);
             }

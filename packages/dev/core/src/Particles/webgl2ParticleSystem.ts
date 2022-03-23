@@ -154,7 +154,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         return data;
     }
 
-    public bindDrawBuffers(index: number, effect: Effect): void {
+    public bindDrawBuffers(index: number): void {
         this._engine.bindVertexArrayObject(this._renderVAO[index], null);
     }
 

@@ -132,18 +132,15 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
 
     /**
      * Adds all the elements from the container to the scene
-     * @param container the container holding the elements
      */
-    public addFromContainer(container: AbstractScene): void {
+    public addFromContainer(): void {
         // Nothing to do
     }
 
     /**
      * Removes all the elements in the container from the scene
-     * @param container contains the elements to remove
-     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
+    public removeFromContainer(): void {
         // Make sure nothing will be serialized
         if (!this.scene.prePassRenderer) {
             return;

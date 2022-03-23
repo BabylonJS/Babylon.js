@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { WebXRAbstractMotionController, IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -156,7 +157,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         });
 
         // Axis Meshes
-        this.getComponentIds().forEach((id, i) => {
+        this.getComponentIds().forEach((id) => {
             const comp = this.getComponent(id);
             if (!comp.isAxes()) {
                 return;

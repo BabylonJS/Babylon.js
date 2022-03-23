@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // "Coroutines are computer program components that generalize subroutines for non-preemptive multitasking, by allowing execution to be suspended and resumed."
 // https://en.wikipedia.org/wiki/Coroutine
 
@@ -42,6 +43,7 @@ export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onStep: (step
  * @param onError
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
     try {
         const step = coroutine.next();
@@ -68,6 +70,7 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepRe
  * @param yieldAfterMS
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function createYieldingScheduler<T>(yieldAfterMS = 25) {
     let startTime: number | undefined;
     return (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => {
@@ -95,6 +98,7 @@ export function createYieldingScheduler<T>(yieldAfterMS = 25) {
  * @param abortSignal
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function runCoroutine<T>(
     coroutine: AsyncCoroutine<T>,
     scheduler: CoroutineScheduler<T>,

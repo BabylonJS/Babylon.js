@@ -12,13 +12,13 @@ interface ILineWithFileButtonComponentProps {
 }
 
 export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, { isExpanded: boolean }> {
-    private uploadRef: React.RefObject<HTMLInputElement>;
+    private _uploadRef: React.RefObject<HTMLInputElement>;
     constructor(props: ILineWithFileButtonComponentProps) {
         super(props);
 
         const initialState = DataStorage.ReadBoolean(this.props.title, !this.props.closed);
         this.state = { isExpanded: initialState };
-        this.uploadRef = React.createRef();
+        this._uploadRef = React.createRef();
     }
 
     onChange(evt: any) {
@@ -45,7 +45,7 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
                 <div className="buttonLine" title={this.props.title}>
                     <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload" />
                     <input
-                        ref={this.uploadRef}
+                        ref={this._uploadRef}
                         id={this.props.uploadName ? this.props.uploadName : "file-upload"}
                         type="file"
                         accept={this.props.accept}

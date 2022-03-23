@@ -64,6 +64,8 @@ export class ViewerManager {
                 return this.getViewerById(id);
             }
         }
+
+        return null;
     }
 
     /**
@@ -73,7 +75,7 @@ export class ViewerManager {
      * @param id the viewer id to find
      */
     public getViewerPromiseById(id: string): Promise<AbstractViewer> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);

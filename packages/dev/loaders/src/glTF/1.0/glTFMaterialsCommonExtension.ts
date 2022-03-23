@@ -72,7 +72,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         super("KHR_materials_common");
     }
 
-    public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
+    public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime): boolean {
         if (!gltfRuntime.extensions) {
             return false;
         }
@@ -89,29 +89,32 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
                 const light: IGLTFLightCommonExtension = lights[thing];
 
                 switch (light.type) {
-                    case "ambient":
-                        var ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
-                        var ambient = light.ambient;
+                    case "ambient": {
+                        const ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
+                        const ambient = light.ambient;
                         if (ambient) {
                             ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
                         }
                         break;
-                    case "point":
-                        var pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
-                        var point = light.point;
+                    }
+                    case "point": {
+                        const pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
+                        const point = light.point;
                         if (point) {
                             pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
                         }
                         break;
-                    case "directional":
-                        var dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
-                        var directional = light.directional;
+                    }
+                    case "directional": {
+                        const dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
+                        const directional = light.directional;
                         if (directional) {
                             dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
                         }
                         break;
-                    case "spot":
-                        var spot = light.spot;
+                    }
+                    case "spot": {
+                        const spot = light.spot;
                         if (spot) {
                             const spotLight = new SpotLight(
                                 light.name,
@@ -124,6 +127,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
                             spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
                         }
                         break;
+                    }
                     default:
                         Tools.Warn('GLTF Material Common extension: light type "' + light.type + "” not supported");
                         break;
@@ -194,7 +198,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
             id,
             (buffer) => {
                 // Create texture from buffer
-                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => ((<any>material)[propertyPath] = texture), onError);
+                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => ((<any>material)[propertyPath] = texture));
             },
             onError
         );

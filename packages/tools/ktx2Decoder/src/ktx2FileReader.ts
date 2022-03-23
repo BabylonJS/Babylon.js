@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { DataReader } from "./Misc/dataReader";
 import { sourceTextureFormat } from "./transcoder";
 

@@ -20,7 +20,7 @@ export function isUrl(urlToCheck: string): boolean {
  * @param s string to convert
  */
 export function kebabToCamel(s) {
-    return s.replace(/(\-\w)/g, function (m) {
+    return s.replace(/(-\w)/g, function (m) {
         return m[1].toUpperCase();
     });
 }

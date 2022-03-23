@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";

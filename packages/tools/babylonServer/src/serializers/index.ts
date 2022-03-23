@@ -1,3 +1,5 @@
+/* eslint-disable import/export */
+/* eslint-disable import/namespace */
 import * as SERIALIZERS from "./legacy";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;

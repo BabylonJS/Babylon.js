@@ -1,8 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Skeleton } from "core/Bones/skeleton";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
@@ -20,11 +19,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     /** @hidden */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
     /** @hidden */
-    public normalPattern =
-        /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+    public normalPattern = /normal[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
     /** @hidden */
-    public vertexPattern =
-        /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+    public vertexPattern = /vertex[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
 
     /**
      * Defines the name of the plugin.
@@ -54,26 +51,15 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @param data The data to import
      * @param rootUrl The root url for scene and resources
      * @param meshes The meshes array to import into
-     * @param particleSystems The particle systems array to import into
-     * @param skeletons The skeletons array to import into
-     * @param onError The callback when import fails
      * @returns True if successful or false otherwise
      */
-    public importMesh(
-        meshesNames: any,
-        scene: Scene,
-        data: any,
-        rootUrl: string,
-        meshes: Nullable<AbstractMesh[]>,
-        particleSystems: Nullable<IParticleSystem[]>,
-        skeletons: Nullable<Skeleton[]>
-    ): boolean {
+    public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>): boolean {
         let matches;
 
         if (typeof data !== "string") {
             if (this._isBinary(data)) {
                 // binary .stl
-                var babylonMesh = new Mesh("stlmesh", scene);
+                const babylonMesh = new Mesh("stlmesh", scene);
                 this._parseBinary(babylonMesh, data);
                 if (meshes) {
                     meshes.push(babylonMesh);
@@ -118,7 +104,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             // stl mesh name can be empty as well
             meshName = meshName || "stlmesh";
 
-            var babylonMesh = new Mesh(meshName, scene);
+            const babylonMesh = new Mesh(meshName, scene);
             this._parseASCII(babylonMesh, matches[2]);
             if (meshes) {
                 meshes.push(babylonMesh);
@@ -133,11 +119,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @param scene The scene to load into
      * @param data The data to import
      * @param rootUrl The root url for scene and resources
-     * @param onError The callback when import fails
      * @returns true if successful or false otherwise
      */
     public load(scene: Scene, data: any, rootUrl: string): boolean {
-        const result = this.importMesh(null, scene, data, rootUrl, null, null, null);
+        const result = this.importMesh(null, scene, data, rootUrl, null);
         return result;
     }
 
@@ -146,21 +131,19 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @param scene The scene to load into
      * @param data The data to import
      * @param rootUrl The root url for scene and resources
-     * @param onError The callback when import fails
      * @returns The loaded asset container
      */
-    public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+    public loadAssetContainer(scene: Scene, data: string, rootUrl: string): AssetContainer {
         const container = new AssetContainer(scene);
         scene._blockEntityCollection = true;
-        this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+        this.importMesh(null, scene, data, rootUrl, container.meshes);
         scene._blockEntityCollection = false;
         return container;
     }
 
     private _isBinary(data: any) {
         // check if file size is correct for binary stl
-        let faceSize, nFaces, reader;
-        reader = new DataView(data);
+        const reader = new DataView(data);
 
         // A Binary STL header is 80 bytes, if the data size is not great than
         // that then it's not a binary STL.
@@ -168,8 +151,8 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             return false;
         }
 
-        faceSize = (32 / 8) * 3 + (32 / 8) * 3 * 3 + 16 / 8;
-        nFaces = reader.getUint32(80, true);
+        const faceSize = (32 / 8) * 3 + (32 / 8) * 3 * 3 + 16 / 8;
+        const nFaces = reader.getUint32(80, true);
 
         if (80 + 32 / 8 + nFaces * faceSize === reader.byteLength) {
             return true;
@@ -258,7 +241,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             }
             const normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
 
-            var vertexMatch;
+            let vertexMatch;
             while ((vertexMatch = this.vertexPattern.exec(facet))) {
                 if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
                     positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));

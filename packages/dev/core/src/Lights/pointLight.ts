@@ -139,6 +139,7 @@ export class PointLight extends ShadowLight {
      * @param viewMatrix
      * @param renderList
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
         const activeCamera = this.getScene().activeCamera;
 

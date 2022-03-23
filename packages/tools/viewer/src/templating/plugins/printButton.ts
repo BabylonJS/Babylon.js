@@ -1,6 +1,5 @@
 import { AbstractViewerNavbarButton } from "../viewerTemplatePlugin";
 import { DefaultViewer } from "../../viewer/defaultViewer";
-import { EventCallback } from "../templateManager";
 import { Tools } from "core/Misc/tools";
 
 export class PrintButtonPlugin extends AbstractViewerNavbarButton {
@@ -31,13 +30,14 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
         });
     }
 
-    onEvent(event: EventCallback): void {
+    onEvent(): void {
         if (this._currentModelUrl) {
             const printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.builder3d://");
             window.open(printUrl, "_self");
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static HtmlTemplate: string = `
 {{#unless hidePrint}}
 <style>

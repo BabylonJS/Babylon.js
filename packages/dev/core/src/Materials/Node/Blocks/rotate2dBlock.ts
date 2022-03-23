@@ -4,7 +4,6 @@ import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeMaterial } from "../nodeMaterial";
 import { InputBlock } from "./Input/inputBlock";
 
 /**
@@ -52,7 +51,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure() {
         if (!this.angle.isConnected) {
             const angleInput = new InputBlock("angle");
             angleInput.value = 0;
