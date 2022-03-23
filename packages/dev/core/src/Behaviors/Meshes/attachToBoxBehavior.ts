@@ -45,9 +45,9 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
 
     /**
      * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
-     * @param ui The transform node that should be attached to the mesh
+     * @param _ui The transform node that should be attached to the mesh
      */
-    constructor(private ui: TransformNode) {
+    constructor(private _ui: TransformNode) {
         /* Does nothing */
     }
 
@@ -135,38 +135,38 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
             });
 
             // Position the app bar on that face
-            this.ui.position.copyFrom(target.position);
+            this._ui.position.copyFrom(target.position);
             if (facing.direction.x) {
                 facing.rotatedDirection.scaleToRef(target.scaling.x / 2 + this.distanceAwayFromFace, this._tmpVector);
-                this.ui.position.addInPlace(this._tmpVector);
+                this._ui.position.addInPlace(this._tmpVector);
             }
             if (facing.direction.y) {
                 facing.rotatedDirection.scaleToRef(target.scaling.y / 2 + this.distanceAwayFromFace, this._tmpVector);
-                this.ui.position.addInPlace(this._tmpVector);
+                this._ui.position.addInPlace(this._tmpVector);
             }
             if (facing.direction.z) {
                 facing.rotatedDirection.scaleToRef(target.scaling.z / 2 + this.distanceAwayFromFace, this._tmpVector);
-                this.ui.position.addInPlace(this._tmpVector);
+                this._ui.position.addInPlace(this._tmpVector);
             }
 
             // Rotate to be oriented properly to the camera
-            if (!this.ui.rotationQuaternion) {
-                this.ui.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.ui.rotation.y, this.ui.rotation.x, this.ui.rotation.z);
+            if (!this._ui.rotationQuaternion) {
+                this._ui.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._ui.rotation.y, this._ui.rotation.x, this._ui.rotation.z);
             }
             facing.rotatedDirection.scaleToRef(-1, this._tmpVector);
-            this._lookAtToRef(this._tmpVector, facingUp.rotatedDirection, this.ui.rotationQuaternion);
+            this._lookAtToRef(this._tmpVector, facingUp.rotatedDirection, this._ui.rotationQuaternion);
 
             // Place ui the correct distance from the bottom of the mesh
             if (facingUp.direction.x) {
-                this.ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.x / 2, this._tmpVector);
+                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.x / 2, this._tmpVector);
             }
             if (facingUp.direction.y) {
-                this.ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.y / 2, this._tmpVector);
+                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.y / 2, this._tmpVector);
             }
             if (facingUp.direction.z) {
-                this.ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.z / 2, this._tmpVector);
+                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.z / 2, this._tmpVector);
             }
-            this.ui.position.addInPlace(this._tmpVector);
+            this._ui.position.addInPlace(this._tmpVector);
         });
     }
 

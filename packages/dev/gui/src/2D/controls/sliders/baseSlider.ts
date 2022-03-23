@@ -32,7 +32,7 @@ export class BaseSlider extends Control {
     protected _backgroundBoxThickness: number;
     protected _effectiveThumbThickness: number;
 
-    /** Observable raised when the sldier value changes */
+    /** Observable raised when the slider value changes */
     public onValueChangedObservable = new Observable<number>();
 
     /** Gets or sets a boolean indicating if the thumb must be rendered */

@@ -29,6 +29,15 @@ export const prepareSnapshot = () => {
         }
     }
 
+    // make sure the .d.ts files are also available, clone the .module.d.ts files
+    {
+        const baseLocation = path.join(baseDirectory, ".snapshot");
+        const staticFiles = glob.sync(`${baseLocation}/**/*.module.d.ts`);
+        for (const file of staticFiles) {
+            copyFile(file, file.replace(".module", ""), false);
+        }
+    }
+
     // copy all static files
     const baseLocation = path.join(baseDirectory, "packages", "tools", "babylonServer", "public");
     const staticFiles = glob.sync(`${baseLocation}/**/*.*`);

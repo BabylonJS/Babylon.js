@@ -154,6 +154,7 @@ export class DebugLayer {
 
     private _scene: Scene;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSINSPECTOR = this._getGlobalInspector();
 
     private _onPropertyChangedObservable?: Observable<{ object: any; property: string; value: any; initialValue: any }>;
@@ -289,7 +290,7 @@ export class DebugLayer {
      * @return a promise fulfilled when the debug layer is visible
      */
     public show(config?: IInspectorOptions): Promise<DebugLayer> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (typeof this.BJSINSPECTOR == "undefined") {
                 const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
 

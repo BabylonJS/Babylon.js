@@ -14,7 +14,7 @@ declare module "../scene" {
         _depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
 
         /**
-         * Flag to indicate if we want to use order independant transparency, despite the performance hit
+         * Flag to indicate if we want to use order independent transparency, despite the performance hit
          */
         useOrderIndependentTransparency: boolean;
         /** @hidden */
@@ -58,7 +58,7 @@ Object.defineProperty(Scene.prototype, "useOrderIndependentTransparency", {
 });
 
 /**
- * Scene component to render order independant transparency with depth peeling
+ * Scene component to render order independent transparency with depth peeling
  */
 export class DepthPeelingSceneComponent implements ISceneComponent {
     /**

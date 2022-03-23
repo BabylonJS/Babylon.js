@@ -20,14 +20,14 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
     public gamepad: Nullable<Gamepad>;
 
     /**
-     * Defines the gamepad rotation sensiblity.
+     * Defines the gamepad rotation sensibility.
      * This is the threshold from when rotation starts to be accounted for to prevent jittering.
      */
     @serialize()
     public gamepadRotationSensibility = 80;
 
     /**
-     * Defines the gamepad move sensiblity.
+     * Defines the gamepad move sensibility.
      * This is the threshold from when moving starts to be accounted for for to prevent jittering.
      */
     @serialize()
@@ -79,9 +79,8 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
         this.gamepad = null;
@@ -94,27 +93,27 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
     public checkInputs(): void {
         if (this.gamepad) {
             const camera = this.camera;
-            const RSValues = this.gamepad.rightStick;
+            const rsValues = this.gamepad.rightStick;
 
-            if (RSValues) {
-                if (RSValues.x != 0) {
-                    const normalizedRX = RSValues.x / this.gamepadRotationSensibility;
+            if (rsValues) {
+                if (rsValues.x != 0) {
+                    const normalizedRX = rsValues.x / this.gamepadRotationSensibility;
                     if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
                         camera.inertialAlphaOffset += normalizedRX;
                     }
                 }
 
-                if (RSValues.y != 0) {
-                    const normalizedRY = (RSValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
+                if (rsValues.y != 0) {
+                    const normalizedRY = (rsValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
                     if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
                         camera.inertialBetaOffset += normalizedRY;
                     }
                 }
             }
 
-            const LSValues = this.gamepad.leftStick;
-            if (LSValues && LSValues.y != 0) {
-                const normalizedLY = LSValues.y / this.gamepadMoveSensibility;
+            const lsValues = this.gamepad.leftStick;
+            if (lsValues && lsValues.y != 0) {
+                const normalizedLY = lsValues.y / this.gamepadMoveSensibility;
                 if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
                     this.camera.inertialRadiusOffset -= normalizedLY;
                 }

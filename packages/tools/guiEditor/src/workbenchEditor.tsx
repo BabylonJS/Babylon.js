@@ -31,7 +31,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
-    private _toolBarIconSize = 40;
 
     private _popUpWindow: Window;
     private _draggedItem: Nullable<string>;
@@ -69,11 +68,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        if (evt.button !== 0) return;
         this._moveInProgress = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
 
     onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
+        if (evt.button !== 0) return;
         this._moveInProgress = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
@@ -85,7 +86,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
         const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
-        const maxWidth = this.props.globalState.hostWindow.innerWidth - this._toolBarIconSize - 8;
+        const maxWidth = this.props.globalState.hostWindow.innerWidth;
 
         if (forLeft) {
             this._leftWidth = Math.max(150, Math.min(maxWidth - this._rightWidth, evt.clientX - this._rootRef.current!.clientLeft));
@@ -101,7 +102,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     buildColumnLayout() {
-        return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) ${this._rightWidth}px`;
+        return `${this._leftWidth}px 1fr ${this._rightWidth}px`;
     }
 
     handlePopUp = () => {
@@ -210,15 +211,15 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }
                     }}
                     ref={this._rootRef}
+                    onPointerUp={(evt) => this.onPointerUp(evt)}
                 >
                     {/* Node creation menu */}
 
-                    <div
-                        id="leftGrab"
-                        onPointerDown={(evt) => this.onPointerDown(evt)}
-                        onPointerUp={(evt) => this.onPointerUp(evt)}
-                        onPointerMove={(evt) => this.resizeColumns(evt)}
-                    ></div>
+                    <div className="left-panel">
+                        <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
+                        {this.createToolbar()}
+                        <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
+                    </div>
                     <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                     {this.createToolbar()}
                     {/* The gui workbench diagram */}
@@ -241,12 +242,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     </div>
                     {/* Property tab */}
                     <div className="right-panel">
-                        <div
-                            id="rightGrab"
-                            onPointerDown={(evt) => this.onPointerDown(evt)}
-                            onPointerUp={(evt) => this.onPointerUp(evt)}
-                            onPointerMove={(evt) => this.resizeColumns(evt, false)}
-                        ></div>
+                        <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
                         <PropertyTabComponent globalState={this.props.globalState} />
                     </div>
 

@@ -1,7 +1,6 @@
 import { DataBuffer } from "../../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
 import { FloatArray } from "../../../types";
-import { IPipelineContext } from "../../IPipelineContext";
 import { WebGPUEngine } from "../../webgpuEngine";
 import * as WebGPUConstants from "../webgpuConstants";
 
@@ -50,4 +49,4 @@ WebGPUEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, loc
     this._currentDrawContext.setBuffer(name, buffer as WebGPUDataBuffer);
 };
 
-WebGPUEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {};
+WebGPUEngine.prototype.bindUniformBlock = function (): void {};

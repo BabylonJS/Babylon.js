@@ -288,8 +288,9 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      * Node creation.
      * Can be overriden by children
      * @param scene defines the scene where the node must be attached
-     * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an atttached visible object
+     * @returns the attached node or null if none. Must return a Mesh or AbstractMesh if there is an attached visible object
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _createNode(scene: Scene): Nullable<TransformNode> {
         // Do nothing by default
         return null;
@@ -303,7 +304,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         mesh.material = null;
     }
 
-    private _IsTouchButton3D(control: Control3D): control is TouchButton3D {
+    private _isTouchButton3D(control: Control3D): control is TouchButton3D {
         return (control as TouchButton3D)._generatePointerEventType !== undefined;
     }
 
@@ -448,7 +449,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      * @hidden
      */
     public _processObservables(type: number, pickedPoint: Vector3, originMeshPosition: Nullable<Vector3>, pointerId: number, buttonIndex: number): boolean {
-        if (this._IsTouchButton3D(this) && originMeshPosition) {
+        if (this._isTouchButton3D(this) && originMeshPosition) {
             type = this._generatePointerEventType(type, originMeshPosition, this._downCount);
         }
 

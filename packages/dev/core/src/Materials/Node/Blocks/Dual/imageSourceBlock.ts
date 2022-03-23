@@ -9,7 +9,6 @@ import { Texture } from "../../../Textures/texture";
 import { Constants } from "../../../../Engines/constants";
 import { Effect } from "../../../effect";
 import { NodeMaterial } from "../../nodeMaterial";
-import { Mesh } from "../../../../Meshes/mesh";
 import { Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
@@ -70,7 +69,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         );
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect) {
         if (!this.texture) {
             return;
         }

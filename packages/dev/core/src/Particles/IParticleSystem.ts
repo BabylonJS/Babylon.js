@@ -190,7 +190,7 @@ export interface IParticleSystem {
      */
     endSpriteCellID: number;
     /**
-     * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+     * If using a spritesheet (isAnimationSheetEnabled), defines whether the sprite animation is looping
      */
     spriteCellLoop: boolean;
     /**

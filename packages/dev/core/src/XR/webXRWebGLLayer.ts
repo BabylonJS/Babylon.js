@@ -56,6 +56,7 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
         const layerWidth = this._layer.framebufferWidth;
         const layerHeight = this._layer.framebufferHeight;

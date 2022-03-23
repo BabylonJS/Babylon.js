@@ -5,8 +5,6 @@ import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
-import { Measure } from "../measure";
 import { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
 import { ICanvasRenderingContext } from "core/Engines/ICanvas";
@@ -104,10 +102,9 @@ export class Checkbox extends Control {
 
     /**
      * @param context
-     * @param invalidatedRectangle
      * @hidden
      */
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -133,13 +130,13 @@ export class Checkbox extends Control {
         if (this._isChecked) {
             context.fillStyle = this._isEnabled ? this.color : this._disabledColorItem;
             const offsetWidth = actualWidth * this._checkSizeRatio;
-            const offseHeight = actualHeight * this._checkSizeRatio;
+            const offsetHeight = actualHeight * this._checkSizeRatio;
 
             context.fillRect(
                 this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2,
-                this._currentMeasure.top + this._thickness / 2 + (actualHeight - offseHeight) / 2,
+                this._currentMeasure.top + this._thickness / 2 + (actualHeight - offsetHeight) / 2,
                 offsetWidth,
-                offseHeight
+                offsetHeight
             );
         }
 

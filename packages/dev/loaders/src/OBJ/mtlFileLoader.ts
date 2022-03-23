@@ -116,14 +116,14 @@ export class MTLFileLoader {
             } else if (key === "map_ka" && material) {
                 // ambient texture map with a loaded image
                 //We must first get the folder of the image
-                material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                material.ambientTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
             } else if (key === "map_kd" && material) {
                 // Diffuse texture map with a loaded image
-                material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                material.diffuseTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
             } else if (key === "map_ks" && material) {
                 // Specular texture map with a loaded image
                 //We must first get the folder of the image
-                material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                material.specularTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
             } else if (key === "map_ns") {
                 //Specular
                 //Specular highlight component
@@ -143,13 +143,13 @@ export class MTLFileLoader {
                     values.splice(bumpMultiplierIndex, 2); // remove
                 }
 
-                material.bumpTexture = MTLFileLoader._getTexture(rootUrl, values.join(" "), scene);
+                material.bumpTexture = MTLFileLoader._GetTexture(rootUrl, values.join(" "), scene);
                 if (material.bumpTexture && bumpMultiplier !== null) {
                     material.bumpTexture.level = parseFloat(bumpMultiplier);
                 }
             } else if (key === "map_d" && material) {
                 // The dissolve of the material
-                material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                material.opacityTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
 
                 //Options for illumination
             } else if (key === "illum") {
@@ -191,14 +191,14 @@ export class MTLFileLoader {
      * Gets the texture for the material.
      *
      * If the material is imported from input file,
-     * We sanitize the url to ensure it takes the textre from aside the material.
+     * We sanitize the url to ensure it takes the texture from aside the material.
      *
      * @param rootUrl The root url to load from
      * @param value The value stored in the mtl
      * @param scene
      * @return The Texture
      */
-    private static _getTexture(rootUrl: string, value: string, scene: Scene): Nullable<Texture> {
+    private static _GetTexture(rootUrl: string, value: string, scene: Scene): Nullable<Texture> {
         if (!value) {
             return null;
         }

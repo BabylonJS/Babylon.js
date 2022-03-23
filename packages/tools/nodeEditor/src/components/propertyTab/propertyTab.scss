@@ -1,7 +1,7 @@
 .right-panel {
     #propertyTab {
         $line-padding-left: 5px;
-        color:white;
+        color: white;
         background: #333333;
 
         #header {
@@ -12,27 +12,27 @@
             grid-row: 1;
             text-align: center;
             display: grid;
-            grid-template-columns: 30px 1fr;        
-            -webkit-user-select: none; 
-            -moz-user-select: none;   
-            -ms-user-select: none;    
-            user-select: none;                
+            grid-template-columns: 30px 1fr;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
 
             #logo {
                 position: relative;
-                grid-column: 1; 
+                grid-column: 1;
                 width: 24px;
                 height: 24px;
-                left:0;
+                left: 0;
                 display: flex;
-                align-self: center;   
+                align-self: center;
                 justify-self: center;
-            }        
+            }
 
             #title {
-                grid-column: 2; 
+                grid-column: 2;
                 display: grid;
-                align-items: center;   
+                align-items: center;
                 text-align: center;
             }
         }
@@ -45,14 +45,14 @@
             border-radius: 5px;
             outline: none;
             opacity: 0.7;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
+            -webkit-transition: 0.2s;
+            transition: opacity 0.2s;
         }
-        
+
         .range:hover {
             opacity: 1;
         }
-        
+
         .range::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -62,7 +62,7 @@
             background: rgb(51, 122, 183);
             cursor: pointer;
         }
-        
+
         .range::-moz-range-thumb {
             width: 14px;
             height: 14px;
@@ -92,7 +92,7 @@
             grid-template-rows: 100%;
             grid-template-columns: 1fr 50px auto;
 
-            .label { 
+            .label {
                 grid-column: 1;
                 display: flex;
                 align-items: center;
@@ -110,34 +110,34 @@
             .floatLine {
                 grid-column: 2;
                 padding-left: $line-padding-left;
-        
+
                 .label {
                     grid-column: 1;
                     display: flex;
                     align-items: center;
                 }
-            
+
                 .short {
-                    grid-column: 1; 
+                    grid-column: 1;
                     display: flex;
                     align-items: center;
-                    
+
                     input {
                         width: 35px;
                     }
-                    
+
                     input::-webkit-outer-spin-button,
                     input::-webkit-inner-spin-button {
-                    -webkit-appearance: none;
-                    margin: 0;
+                        -webkit-appearance: none;
+                        margin: 0;
                     }
-        
-                    input[type=number] {
+
+                    input[type="number"] {
                         -moz-appearance: textfield;
                     }
                 }
-            }  
-        }     
+            }
+        }
 
         .textInputLine {
             padding-left: $line-padding-left;
@@ -151,17 +151,17 @@
                 align-items: center;
             }
 
-            .value {                        
+            .value {
                 display: flex;
                 align-items: center;
                 grid-column: 2;
-                
+
                 input {
                     width: calc(100% - 5px);
                 }
             }
         }
-        
+
         .textInputArea {
             padding-left: $line-padding-left;
             height: 50px;
@@ -174,11 +174,11 @@
                 align-items: center;
             }
 
-            .value {                        
+            .value {
                 display: flex;
                 align-items: center;
                 grid-column: 2;
-                
+
                 textarea {
                     width: calc(150% - 5px);
                     margin-left: -50%;
@@ -186,31 +186,31 @@
                 }
             }
         }
-        
+
         .paneContainer {
             margin-top: 3px;
-            display:grid;
+            display: grid;
             grid-template-rows: 100%;
             grid-template-columns: 100%;
-            
+
             .paneList {
                 border-left: 3px solid transparent;
             }
 
-            &:hover {  
-                .paneList {                      
+            &:hover {
+                .paneList {
                     border-left: 3px solid rgba(51, 122, 183, 0.8);
                 }
 
                 .paneContainer-content {
                     .header {
-                        .title {   
+                        .title {
                             border-left: 3px solid rgb(51, 122, 183);
                         }
                     }
                 }
             }
-            
+
             .paneContainer-highlight-border {
                 grid-row: 1;
                 grid-column: 1;
@@ -218,7 +218,7 @@
                 border: 3px solid red;
                 transition: opacity 250ms;
                 pointer-events: none;
-                
+
                 &.transparent {
                     opacity: 0;
                 }
@@ -231,12 +231,12 @@
                 .header {
                     display: grid;
                     grid-template-columns: 1fr auto;
-                    background: #555555;    
-                    height: 30px;   
-                    padding-right: 5px;                        
+                    background: #555555;
+                    height: 30px;
+                    padding-right: 5px;
                     cursor: pointer;
-                    
-                    .title {                                
+
+                    .title {
                         border-left: 3px solid transparent;
                         padding-left: 5px;
                         grid-column: 1;
@@ -247,21 +247,21 @@
                     .collapse {
                         grid-column: 2;
                         display: flex;
-                        align-items: center;  
+                        align-items: center;
                         justify-items: center;
                         transform-origin: center;
 
                         &.closed {
                             transform: rotate(180deg);
                         }
-                    }                        
+                    }
                 }
 
                 .paneList > div:not(:last-child) {
                     border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
                 }
 
-                .fragment > div:not(:last-child)  {
+                .fragment > div:not(:last-child) {
                     border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
                 }
             }
@@ -289,8 +289,8 @@
 
             .color-picker-float {
                 z-index: 2;
-                position: absolute;  
-            }                
+                position: absolute;
+            }
         }
 
         .gradient-step {
@@ -305,22 +305,22 @@
                 grid-row: 1;
                 grid-column: 1;
             }
-                
+
             .color {
                 grid-row: 1;
                 grid-column: 2;
                 cursor: pointer;
             }
 
-            .step-value {       
-                margin-left: 5px;     
+            .step-value {
+                margin-left: 5px;
                 grid-row: 1;
                 grid-column: 3;
                 text-align: right;
                 margin-right: 5px;
             }
 
-            .step-slider {            
+            .step-slider {
                 grid-row: 1;
                 grid-column: 4;
                 display: grid;
@@ -334,13 +334,13 @@
                 }
             }
 
-            .gradient-copy {            
+            .gradient-copy {
                 grid-row: 1;
                 grid-column: 5;
                 display: grid;
                 align-content: center;
                 justify-content: center;
-    
+
                 .img {
                     height: 20px;
                     width: 20px;
@@ -348,9 +348,8 @@
                 .img:hover {
                     cursor: pointer;
                 }
-
             }
-            .gradient-delete {            
+            .gradient-delete {
                 grid-row: 1;
                 grid-column: 6;
                 display: grid;
@@ -363,9 +362,7 @@
                 .img:hover {
                     cursor: pointer;
                 }
-
             }
-
         }
 
         .floatLine {
@@ -373,7 +370,6 @@
             height: 30px;
             display: grid;
             grid-template-columns: 1fr 120px;
-
 
             .label {
                 grid-column: 1;
@@ -383,10 +379,10 @@
 
             .value {
                 grid-column: 2;
-                
+
                 display: flex;
                 align-items: center;
-                
+
                 input {
                     width: 110px;
                 }
@@ -394,28 +390,28 @@
 
             .short {
                 grid-column: 2;
-                
+
                 display: flex;
                 align-items: center;
-                
+
                 input {
                     width: 27px;
                 }
-                
+
                 input::-webkit-outer-spin-button,
                 input::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
+                    -webkit-appearance: none;
+                    margin: 0;
                 }
 
-                input[type=number] {
+                input[type="number"] {
                     -moz-appearance: textfield;
                 }
             }
         }
 
         .vector3Line {
-            padding-left:$line-padding-left;                    
+            padding-left: $line-padding-left;
             display: grid;
 
             .firstLine {
@@ -448,7 +444,7 @@
 
             .secondLine {
                 display: grid;
-                padding-right: 5px;  
+                padding-right: 5px;
                 border-left: 1px solid rgb(51, 122, 183);
 
                 .no-right-margin {
@@ -464,18 +460,18 @@
                     text-align: right;
                     grid-column: 1;
                     display: flex;
-                    align-items: center;                            
+                    align-items: center;
                     justify-self: right;
-                    margin-right: 10px;                          
+                    margin-right: 10px;
                 }
 
                 .numeric-value {
                     width: 120px;
                     grid-column: 2;
                     display: flex;
-                    align-items: center;  
-                    border: 1px solid  rgb(51, 122, 183);
-                }                        
+                    align-items: center;
+                    border: 1px solid rgb(51, 122, 183);
+                }
             }
         }
 
@@ -494,11 +490,11 @@
                 display: none;
             }
 
-            .file-upload {            
+            .file-upload {
                 background: #222222;
                 border: 1px solid rgb(51, 122, 183);
                 margin: 5px 10px;
-                color:white;
+                color: white;
                 padding: 4px 5px;
                 padding-top: 0px;
                 opacity: 0.9;
@@ -507,7 +503,7 @@
             }
 
             .file-upload:hover {
-                opacity: 1.0;
+                opacity: 1;
             }
 
             .file-upload:active {
@@ -519,26 +515,25 @@
                 background: #222222;
                 border: 1px solid rgb(51, 122, 183);
                 margin: 5px 10px 5px 10px;
-                color:white;
+                color: white;
                 padding: 4px 5px;
                 opacity: 0.9;
             }
 
             button:hover {
-                opacity: 1.0;
+                opacity: 1;
             }
 
             button:active {
                 background: #282828;
-            }   
-            
+            }
+
             button:focus {
                 border: 1px solid rgb(51, 122, 183);
                 outline: 0px;
-            }  
+            }
         }
 
-        
         .checkBoxLine {
             padding-left: $line-padding-left;
             height: 30px;
@@ -553,7 +548,7 @@
 
             .checkBox {
                 grid-column: 2;
-                
+
                 display: flex;
                 align-items: center;
 
@@ -578,16 +573,16 @@
                     height: 10px;
                     border-radius: 100px;
                     background: #fff;
-                    box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
-                    content: '';
+                    box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);
+                    content: "";
                     transition: all 0.15s ease;
                 }
 
-                .lbl:active:after { 
-                    transform: scale(1.15, 0.85); 
+                .lbl:active:after {
+                    transform: scale(1.15, 0.85);
                 }
 
-                .cbx:checked ~ label { 
+                .cbx:checked ~ label {
                     background: rgb(51, 122, 183);
                 }
 
@@ -596,7 +591,7 @@
                     background: rgb(22, 73, 117);
                 }
 
-                .cbx:checked ~ label.disabled { 
+                .cbx:checked ~ label.disabled {
                     background: rgb(22, 73, 117);
                     cursor: pointer;
                 }
@@ -612,18 +607,17 @@
                     cursor: pointer;
                 }
 
-                .hidden { 
-                    display: none; 
-                }               
-            }                    
-        }  
+                .hidden {
+                    display: none;
+                }
+            }
+        }
 
         .listLine {
             padding-left: $line-padding-left;
             height: 30px;
             display: grid;
             grid-template-columns: 1fr auto;
-
 
             .label {
                 grid-column: 1;
@@ -633,17 +627,17 @@
 
             .options {
                 grid-column: 2;
-                
+
                 display: flex;
-                align-items: center;   
+                align-items: center;
                 margin-right: 5px;
 
                 select {
                     width: 115px;
                 }
-            }                    
-        }  
-                        
+            }
+        }
+
         .color3Line {
             padding-left: $line-padding-left;
             display: grid;
@@ -660,12 +654,12 @@
                 }
 
                 .color3 {
-                    grid-column: 2;                
+                    grid-column: 2;
                     width: 50px;
-                    
+
                     display: flex;
-                    align-items: center;            
-                    
+                    align-items: center;
+
                     input {
                         margin-right: 5px;
                     }
@@ -677,7 +671,7 @@
                     align-items: center;
                     justify-items: center;
                     cursor: pointer;
-                    
+
                     img {
                         height: 100%;
                         width: 20px;
@@ -696,11 +690,11 @@
                         width: 20px;
                     }
                 }
-            }   
+            }
 
             .secondLine {
                 display: grid;
-                padding-right: 5px;  
+                padding-right: 5px;
                 border-left: 1px solid rgb(51, 122, 183);
 
                 .numeric {
@@ -712,21 +706,21 @@
                     text-align: right;
                     grid-column: 1;
                     display: flex;
-                    align-items: center;                            
+                    align-items: center;
                     justify-self: right;
-                    margin-right: 10px;                          
+                    margin-right: 10px;
                 }
 
                 .numeric-value {
                     width: 120px;
                     grid-column: 2;
                     display: flex;
-                    align-items: center;  
-                    border: 1px solid  rgb(51, 122, 183);
-                }                        
-            }                  
-        }     
-        
+                    align-items: center;
+                    border: 1px solid rgb(51, 122, 183);
+                }
+            }
+        }
+
         .textLine {
             padding-left: $line-padding-left;
             height: 30px;
@@ -746,7 +740,7 @@
                 overflow: hidden;
                 text-align: end;
                 opacity: 0.8;
-                margin:5px;
+                margin: 5px;
                 margin-top: 6px;
                 max-width: 140px;
                 text-decoration: underline;
@@ -760,13 +754,13 @@
                 overflow: hidden;
                 text-align: end;
                 opacity: 0.8;
-                margin:5px;
+                margin: 5px;
                 margin-top: 6px;
                 max-width: 200px;
-                -webkit-user-select: text; 
-                -moz-user-select: text;   
-                -ms-user-select: text;    
-                user-select: text;                
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
 
                 &.check {
                     color: green;
@@ -774,9 +768,8 @@
 
                 &.uncheck {
                     color: red;
-                }  
+                }
             }
-        }    
-
+        }
     }
 }

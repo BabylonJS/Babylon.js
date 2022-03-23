@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ComputeEffect, IComputeEffectCreationOptions } from "../../Compute/computeEffect";
 import { IComputeContext } from "../../Compute/IComputeContext";
 import { IComputePipelineContext } from "../../Compute/IComputePipelineContext";

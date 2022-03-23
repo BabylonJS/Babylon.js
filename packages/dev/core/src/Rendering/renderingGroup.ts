@@ -18,7 +18,7 @@ import { Camera } from "../Cameras/camera";
  * @hidden
  */
 export class RenderingGroup {
-    private static _zeroVector: DeepImmutable<Vector3> = Vector3.Zero();
+    private static _ZeroVector: DeepImmutable<Vector3> = Vector3.Zero();
     private _scene: Scene;
     private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
     private _transparentSubMeshes = new SmartArray<SubMesh>(256);
@@ -50,9 +50,9 @@ export class RenderingGroup {
     public set opaqueSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
         this._opaqueSortCompareFn = value;
         if (value) {
-            this._renderOpaque = this.renderOpaqueSorted;
+            this._renderOpaque = this._renderOpaqueSorted;
         } else {
-            this._renderOpaque = RenderingGroup.renderUnsorted;
+            this._renderOpaque = RenderingGroup._RenderUnsorted;
         }
     }
 
@@ -63,9 +63,9 @@ export class RenderingGroup {
     public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
         this._alphaTestSortCompareFn = value;
         if (value) {
-            this._renderAlphaTest = this.renderAlphaTestSorted;
+            this._renderAlphaTest = this._renderAlphaTestSorted;
         } else {
-            this._renderAlphaTest = RenderingGroup.renderUnsorted;
+            this._renderAlphaTest = RenderingGroup._RenderUnsorted;
         }
     }
 
@@ -79,7 +79,7 @@ export class RenderingGroup {
         } else {
             this._transparentSortCompareFn = RenderingGroup.defaultTransparentSortCompare;
         }
-        this._renderTransparent = this.renderTransparentSorted;
+        this._renderTransparent = this._renderTransparentSorted;
     }
 
     /**
@@ -201,38 +201,42 @@ export class RenderingGroup {
      * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
      * @param subMeshes The submeshes to render
      */
-    private renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
-        return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
+    private _renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
+        return RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
     }
 
     /**
      * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
      * @param subMeshes The submeshes to render
      */
-    private renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
-        return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
+    private _renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
+        return RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
     }
 
     /**
      * Renders the opaque submeshes in the order from the transparentSortCompareFn.
      * @param subMeshes The submeshes to render
      */
-    private renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
-        return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
+    private _renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
+        return RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
     }
 
     /**
      * Renders the submeshes in a specified order.
      * @param subMeshes The submeshes to sort before render
      * @param sortCompareFn The comparison function use to sort
-     * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
-     * @param camera
+     * @param camera The camera position use to preprocess the submeshes to help sorting
      * @param transparent Specifies to activate blending if true
      */
-    private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>, camera: Nullable<Camera>, transparent: boolean): void {
+    private static _RenderSorted(
+        subMeshes: SmartArray<SubMesh>,
+        sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>,
+        camera: Nullable<Camera>,
+        transparent: boolean
+    ): void {
         let subIndex = 0;
         let subMesh: SubMesh;
-        const cameraPosition = camera ? camera.globalPosition : RenderingGroup._zeroVector;
+        const cameraPosition = camera ? camera.globalPosition : RenderingGroup._ZeroVector;
         for (; subIndex < subMeshes.length; subIndex++) {
             subMesh = subMeshes.data[subIndex];
             subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
@@ -268,7 +272,7 @@ export class RenderingGroup {
      * Renders the submeshes in the order they were dispatched (no sort applied).
      * @param subMeshes The submeshes to render
      */
-    private static renderUnsorted(subMeshes: SmartArray<SubMesh>): void {
+    private static _RenderUnsorted(subMeshes: SmartArray<SubMesh>): void {
         for (let subIndex = 0; subIndex < subMeshes.length; subIndex++) {
             const submesh = subMeshes.data[subIndex];
             submesh.render(false);
@@ -283,6 +287,7 @@ export class RenderingGroup {
      * @param b The second submesh
      * @returns The result of the comparison
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number {
         // Alpha index first
         if (a._alphaIndex > b._alphaIndex) {
@@ -304,6 +309,7 @@ export class RenderingGroup {
      * @param b The second submesh
      * @returns The result of the comparison
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static backToFrontSortCompare(a: SubMesh, b: SubMesh): number {
         // Then distance to camera
         if (a._distanceToCamera < b._distanceToCamera) {
@@ -324,6 +330,7 @@ export class RenderingGroup {
      * @param b The second submesh
      * @returns The result of the comparison
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static frontToBackSortCompare(a: SubMesh, b: SubMesh): number {
         // Then distance to camera
         if (a._distanceToCamera < b._distanceToCamera) {

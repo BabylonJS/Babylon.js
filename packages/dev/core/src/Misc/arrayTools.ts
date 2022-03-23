@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /** @hidden */
 interface TupleTypes<T> {
     2: [T, T];

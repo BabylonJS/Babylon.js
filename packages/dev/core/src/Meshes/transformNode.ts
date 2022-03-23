@@ -411,7 +411,7 @@ export class TransformNode extends Node {
      * @param options defines options to configure how copy is done
      * @param options.doNotInstantiate
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
-     * @returns an instance (or a clone) of the current node with its hiearchy
+     * @returns an instance (or a clone) of the current node with its hierarchy
      */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
@@ -557,7 +557,7 @@ export class TransformNode extends Node {
         return this;
     }
 
-    private static _lookAtVectorCache = new Vector3(0, 0, 0);
+    private static _LookAtVectorCache = new Vector3(0, 0, 0);
 
     /**
      * Orients a mesh towards a target point. Mesh must be drawn facing user.
@@ -569,7 +569,7 @@ export class TransformNode extends Node {
      * @returns the TransformNode.
      */
     public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
-        const dv = TransformNode._lookAtVectorCache;
+        const dv = TransformNode._LookAtVectorCache;
         const pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
         targetPoint.subtractToRef(pos, dv);
         this.setDirection(dv, yawCor, pitchCor, rollCor);
@@ -578,11 +578,11 @@ export class TransformNode extends Node {
         if (space === Space.WORLD && this.parent) {
             if (this.rotationQuaternion) {
                 // Get local rotation matrix of the looking object
-                var rotationMatrix = TmpVectors.Matrix[0];
+                const rotationMatrix = TmpVectors.Matrix[0];
                 this.rotationQuaternion.toRotationMatrix(rotationMatrix);
 
                 // Offset rotation by parent's inverted rotation matrix to correct in world space
-                var parentRotationMatrix = TmpVectors.Matrix[1];
+                const parentRotationMatrix = TmpVectors.Matrix[1];
                 this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
                 parentRotationMatrix.invert();
                 rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
@@ -591,11 +591,11 @@ export class TransformNode extends Node {
                 // Get local rotation matrix of the looking object
                 const quaternionRotation = TmpVectors.Quaternion[0];
                 Quaternion.FromEulerVectorToRef(this.rotation, quaternionRotation);
-                var rotationMatrix = TmpVectors.Matrix[0];
+                const rotationMatrix = TmpVectors.Matrix[0];
                 quaternionRotation.toRotationMatrix(rotationMatrix);
 
                 // Offset rotation by parent's inverted rotation matrix to correct in world space
-                var parentRotationMatrix = TmpVectors.Matrix[1];
+                const parentRotationMatrix = TmpVectors.Matrix[1];
                 this.parent.getWorldMatrix().getRotationMatrixToRef(parentRotationMatrix);
                 parentRotationMatrix.invert();
                 rotationMatrix.multiplyToRef(parentRotationMatrix, rotationMatrix);
@@ -857,7 +857,7 @@ export class TransformNode extends Node {
         return this;
     }
 
-    private static _rotationAxisCache = new Quaternion();
+    private static _RotationAxisCache = new Quaternion();
     /**
      * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
      * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
@@ -876,7 +876,7 @@ export class TransformNode extends Node {
         }
         let rotationQuaternion: Quaternion;
         if (!space || (space as any) === Space.LOCAL) {
-            rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._rotationAxisCache);
+            rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._RotationAxisCache);
             this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
         } else {
             if (this.parent) {
@@ -884,7 +884,7 @@ export class TransformNode extends Node {
                 this.parent.getWorldMatrix().invertToRef(invertParentWorldMatrix);
                 axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
             }
-            rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._rotationAxisCache);
+            rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._RotationAxisCache);
             rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         }
         return this;
@@ -1019,6 +1019,7 @@ export class TransformNode extends Node {
         cache.pivotMatrixUpdated = false;
         cache.billboardMode = this.billboardMode;
         cache.infiniteDistance = this.infiniteDistance;
+        cache.parent = this._parentNode;
 
         this._currentRenderId = currentRenderId;
         this._childUpdateId += 1;

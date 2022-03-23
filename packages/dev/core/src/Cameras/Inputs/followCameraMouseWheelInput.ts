@@ -57,8 +57,9 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        this._wheel = (p, s) => {
+        this._wheel = (p) => {
             // sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
@@ -122,9 +123,8 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;

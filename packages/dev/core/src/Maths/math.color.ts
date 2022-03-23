@@ -836,7 +836,7 @@ export class Color4 {
      * @param min defines minimum clamping value (default is 0)
      * @param max defines maximum clamping value (default is 1)
      * @param result defines color to store the result into.
-     * @returns the cuurent Color4
+     * @returns the current Color4
      */
     public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
         result.r = Scalar.Clamp(this.r, min, max);
@@ -847,7 +847,7 @@ export class Color4 {
     }
 
     /**
-     * Multipy an Color4 value by another and return a new Color4 object
+     * Multiply an Color4 value by another and return a new Color4 object
      * @param color defines the Color4 value to multiply by
      * @returns a new Color4 object
      */
@@ -856,7 +856,7 @@ export class Color4 {
     }
 
     /**
-     * Multipy a Color4 value by another and push the result in a reference value
+     * Multiply a Color4 value by another and push the result in a reference value
      * @param color defines the Color4 value to multiply by
      * @param result defines the Color4 to fill the result in
      * @returns the result Color4

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import { DragOverLocation, GlobalState, Tool } from "../globalState";
 import { Nullable } from "core/types";
@@ -87,7 +88,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public get guiSize() {
         return this._guiSize;
     }
-    // sets the size of the GUI and makes all neccessary adjustments
+    // sets the size of the GUI and makes all necessary adjustments
     public set guiSize(value: ISize) {
         this._guiSize = { ...value };
         this._visibleRegionContainer.widthInPixels = this._guiSize.width;
@@ -141,25 +142,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (globalState.selectedControls.length) {
                 let minX = Number.MAX_SAFE_INTEGER;
                 let minY = Number.MAX_SAFE_INTEGER;
-                
+
                 let maxX = -Number.MAX_SAFE_INTEGER;
                 let maxY = -Number.MAX_SAFE_INTEGER;
 
                 // Find bounding box of selected controls
                 for (const selectedControl of globalState.selectedControls) {
-                    let left : number, top : number, right : number, bottom : number;
-                    
-                    left = -selectedControl.widthInPixels / 2;
-                    top = -selectedControl.heightInPixels / 2;
+                    const left = -selectedControl.widthInPixels / 2;
+                    const top = -selectedControl.heightInPixels / 2;
 
-                    right = left! + selectedControl.widthInPixels;
-                    bottom = top! + selectedControl.heightInPixels;
-                    
+                    const right = left! + selectedControl.widthInPixels;
+                    const bottom = top! + selectedControl.heightInPixels;
+
                     // Compute all four corners of the control in root space
-                    const leftTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, top, new Vector2(), undefined, this.trueRootContainer);
-                    const rightBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, bottom, new Vector2(), undefined, this.trueRootContainer);
-                    const leftBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, bottom, new Vector2(), undefined, this.trueRootContainer);
-                    const rightTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, top, new Vector2(), undefined, this.trueRootContainer);
+                    const leftTopRS = CoordinateHelper.NodeToRTTSpace(selectedControl, left, top, new Vector2(), undefined, this.trueRootContainer);
+                    const rightBottomRS = CoordinateHelper.NodeToRTTSpace(selectedControl, right, bottom, new Vector2(), undefined, this.trueRootContainer);
+                    const leftBottomRS = CoordinateHelper.NodeToRTTSpace(selectedControl, left, bottom, new Vector2(), undefined, this.trueRootContainer);
+                    const rightTopRS = CoordinateHelper.NodeToRTTSpace(selectedControl, right, top, new Vector2(), undefined, this.trueRootContainer);
 
                     minX = Math.min(minX, leftTopRS.x, rightBottomRS.x, leftBottomRS.x, rightTopRS.x);
                     minY = Math.min(minY, leftTopRS.y, rightBottomRS.y, leftBottomRS.y, rightTopRS.y);
@@ -182,7 +181,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 const xFactor = this._engine.getRenderWidth() / width;
                 const yFactor = this._engine.getRenderHeight() / height;
                 this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
-
             } else {
                 this._panningOffset = new Vector2(0, 0);
                 const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
@@ -238,7 +236,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (evt.key === "Delete" || evt.key === "Backspace") {
             if (!this.props.globalState.lockObject.lock) {
-                this._deleteSelectedNodes();
+                this.props.globalState.deleteSelectedNodes();
             }
         }
 
@@ -249,15 +247,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
     };
-
-    private _deleteSelectedNodes() {
-        for (const control of this.props.globalState.selectedControls) {
-            this.props.globalState.guiTexture.removeControl(control);
-            this.props.globalState.liveGuiTexture?.removeControl(control);
-            control.dispose();
-        }
-        this.props.globalState.setSelection([]);
-    }
 
     public copyToClipboard(copyFn: (content: string) => void) {
         const controlList: any[] = [];
@@ -276,7 +265,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public cutToClipboard(copyFn: (content: string) => void) {
         this.copyToClipboard(copyFn);
-        this._deleteSelectedNodes();
+        this.props.globalState.deleteSelectedNodes();
     }
 
     public pasteFromClipboard(clipboardContents: string) {
@@ -307,7 +296,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.props.globalState.workbench.appendBlock(newControl);
             this.props.globalState.guiTexture.removeControl(newControl);
             if (original.parent?.typeName === "Grid") {
-                const cell = Tools.getCellInfo(original.parent as Grid, original);
+                const cell = Tools.GetCellInfo(original.parent as Grid, original);
                 (original.parent as Grid).addControl(newControl, cell.x, cell.y);
             } else {
                 original.parent?.addControl(newControl);
@@ -482,7 +471,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 if (dropLocationControl != null) {
                     //the control you are dragging onto top
                     if (
-                        dropLocationControl instanceof Container && //dropping inside a contrainer control
+                        dropLocationControl instanceof Container && //dropping inside a container control
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER
                     ) {
                         draggedControlParent.removeControl(draggedControl);
@@ -540,13 +529,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
-        const cellInfo = Tools.getCellInfo(grid, draggedControl);
+        const cellInfo = Tools.GetCellInfo(grid, draggedControl);
         grid.removeControl(draggedControl);
 
         let index = grid.children.indexOf(dropLocationControl);
         index = this._adjustParentingIndex(index);
 
-        Tools.reorderGrid(grid, index, draggedControl, cellInfo);
+        Tools.ReorderGrid(grid, index, draggedControl, cellInfo);
     }
 
     private _isNotChildInsert(control: Nullable<Control>, draggedControl: Nullable<Control>) {
@@ -606,7 +595,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         let totalRotation = 0;
-        let currentControl: Nullable<Control> = guiControl;
+        let currentControl: Nullable<Control> = guiControl.parent;
         while (currentControl) {
             totalRotation += currentControl.rotation;
 
@@ -626,7 +615,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         //convert to percentage
         if (this._responsive) {
-            CoordinateHelper.convertToPercentage(guiControl, ["left", "top"]);
+            CoordinateHelper.ConvertToPercentage(guiControl, ["left", "top"]);
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
@@ -811,7 +800,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
-        // to prevent an infite loop, we flip a boolean flag
+        // to prevent an infinite loop, we flip a boolean flag
         if (this.props.globalState.liveGuiTexture) {
             this._guiRenderObserver = this.props.globalState.guiTexture.onBeginRenderObservable.add(() => {
                 if (this._liveGuiTextureRerender) {

@@ -21,6 +21,7 @@ declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _IAnimationState {
     key: number;
     repeatCount: number;
@@ -358,7 +359,7 @@ export class Animation {
         }
 
         // Find key bookends, create them if they don't exist
-        var index = 0;
+        let index = 0;
         while (!referenceFound || !fromKeyFound || (!toKeyFound && index < animation._keys.length - 1)) {
             const currentKey = animation._keys[index];
             const nextKey = animation._keys[index + 1];
@@ -447,7 +448,7 @@ export class Animation {
         }
 
         // Subtract the reference value from all of the key values
-        for (var index = startIndex; index <= endIndex; index++) {
+        for (index = startIndex; index <= endIndex; index++) {
             const key = animation._keys[index];
 
             // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
@@ -965,8 +966,8 @@ export class Animation {
 
                 switch (this.dataType) {
                     // Float
-                    case Animation.ANIMATIONTYPE_FLOAT:
-                        var floatValue = useTangent
+                    case Animation.ANIMATIONTYPE_FLOAT: {
+                        const floatValue = useTangent
                             ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
                             : this.floatInterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -977,9 +978,10 @@ export class Animation {
                                 return state.offsetValue * state.repeatCount + floatValue;
                         }
                         break;
+                    }
                     // Quaternion
-                    case Animation.ANIMATIONTYPE_QUATERNION:
-                        var quatValue = useTangent
+                    case Animation.ANIMATIONTYPE_QUATERNION: {
+                        const quatValue = useTangent
                             ? this.quaternionInterpolateFunctionWithTangents(
                                   startValue,
                                   startKey.outTangent.scale(frameDelta),
@@ -997,9 +999,10 @@ export class Animation {
                         }
 
                         return quatValue;
+                    }
                     // Vector3
-                    case Animation.ANIMATIONTYPE_VECTOR3:
-                        var vec3Value = useTangent
+                    case Animation.ANIMATIONTYPE_VECTOR3: {
+                        const vec3Value = useTangent
                             ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.vector3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1009,9 +1012,11 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return vec3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
+                        break;
+                    }
                     // Vector2
-                    case Animation.ANIMATIONTYPE_VECTOR2:
-                        var vec2Value = useTangent
+                    case Animation.ANIMATIONTYPE_VECTOR2: {
+                        const vec2Value = useTangent
                             ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.vector2InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1021,8 +1026,10 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return vec2Value.add(state.offsetValue.scale(state.repeatCount));
                         }
+                        break;
+                    }
                     // Size
-                    case Animation.ANIMATIONTYPE_SIZE:
+                    case Animation.ANIMATIONTYPE_SIZE: {
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -1030,9 +1037,11 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
                         }
+                        break;
+                    }
                     // Color3
-                    case Animation.ANIMATIONTYPE_COLOR3:
-                        var color3Value = useTangent
+                    case Animation.ANIMATIONTYPE_COLOR3: {
+                        const color3Value = useTangent
                             ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.color3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1042,9 +1051,11 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return color3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
+                        break;
+                    }
                     // Color4
-                    case Animation.ANIMATIONTYPE_COLOR4:
-                        var color4Value = useTangent
+                    case Animation.ANIMATIONTYPE_COLOR4: {
+                        const color4Value = useTangent
                             ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                             : this.color4InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
@@ -1054,17 +1065,24 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return color4Value.add(state.offsetValue.scale(state.repeatCount));
                         }
+                        break;
+                    }
                     // Matrix
-                    case Animation.ANIMATIONTYPE_MATRIX:
+                    case Animation.ANIMATIONTYPE_MATRIX: {
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                            case Animation.ANIMATIONLOOPMODE_CONSTANT: {
                                 if (Animation.AllowMatricesInterpolation) {
                                     return this.matrixInterpolateFunction(startValue, endValue, gradient, state.workValue);
                                 }
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return startValue;
+                            }
+                            case Animation.ANIMATIONLOOPMODE_RELATIVE: {
+                                return startValue;
+                            }
                         }
+                        break;
+                    }
                     default:
                         break;
                 }

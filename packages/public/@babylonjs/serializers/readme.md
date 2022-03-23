@@ -11,7 +11,7 @@ npm install --save @babylonjs/core @babylonjs/serializers
 
 # How to use
 
-Afterwards it can be imported to the your project using:
+Afterwards it can be imported to your project using:
 
 ```
 import { GLTF2Export } from '@babylonjs/serializers/glTF';
@@ -25,5 +25,5 @@ GLTF2Export.GLTFAsync(scene, "fileName").then((gltf) => {
 });
 ```
 
-For more information you can have a look at our [our ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support) and the [gltf exporter documentation](https://doc.babylonjs.com/extensions/gltfexporter).
+For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support) and the [gltf exporter documentation](https://doc.babylonjs.com/extensions/gltfexporter).
 

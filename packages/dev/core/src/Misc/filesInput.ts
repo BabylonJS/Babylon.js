@@ -93,13 +93,13 @@ export class FilesInput {
             this._elementToMonitor = elementToMonitor;
 
             this._dragEnterHandler = (e) => {
-                this.drag(e);
+                this._drag(e);
             };
             this._dragOverHandler = (e) => {
-                this.drag(e);
+                this._drag(e);
             };
             this._dropHandler = (e) => {
-                this.drop(e);
+                this._drop(e);
             };
 
             this._elementToMonitor.addEventListener("dragenter", this._dragEnterHandler, false);
@@ -126,7 +126,7 @@ export class FilesInput {
         this._elementToMonitor.removeEventListener("drop", this._dropHandler);
     }
 
-    private renderFunction(): void {
+    private _renderFunction(): void {
         if (this._additionalRenderLoopLogicCallback) {
             this._additionalRenderLoopLogicCallback();
         }
@@ -143,12 +143,12 @@ export class FilesInput {
         }
     }
 
-    private drag(e: DragEvent): void {
+    private _drag(e: DragEvent): void {
         e.stopPropagation();
         e.preventDefault();
     }
 
-    private drop(eventDrop: DragEvent): void {
+    private _drop(eventDrop: DragEvent): void {
         eventDrop.stopPropagation();
         eventDrop.preventDefault();
 
@@ -311,7 +311,7 @@ export class FilesInput {
                     this._currentScene.executeWhenReady(() => {
                         this._engine.hideLoadingUI();
                         this._engine.runRenderLoop(() => {
-                            this.renderFunction();
+                            this._renderFunction();
                         });
                     });
                 })

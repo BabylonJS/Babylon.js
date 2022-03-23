@@ -19,7 +19,7 @@ export interface IComputeEffectCreationOptions {
      */
     defines: any;
     /**
-     * The name of the entry point in the shader source (defaut: "main")
+     * The name of the entry point in the shader source (default: "main")
      */
     entryPoint?: string;
     /**
@@ -40,7 +40,7 @@ export interface IComputeEffectCreationOptions {
  * Effect wrapping a compute shader and let execute (dispatch) the shader
  */
 export class ComputeEffect {
-    private static _uniqueIdSeed = 0;
+    private static _UniqueIdSeed = 0;
 
     /**
      * Enable logging of the shader code when a compilation error occurs
@@ -115,7 +115,7 @@ export class ComputeEffect {
         this._key = key;
 
         this._engine = engine;
-        this.uniqueId = ComputeEffect._uniqueIdSeed++;
+        this.uniqueId = ComputeEffect._UniqueIdSeed++;
 
         this.defines = options.defines ?? "";
         this.onError = options.onError;

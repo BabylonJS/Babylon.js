@@ -429,8 +429,7 @@ export class SpriteMap implements ISpriteMap {
      * @param tile The SpriteIndex of the new Tile
      */
     public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[], tile: number = 0): void {
-        let buffer: Nullable<ArrayBufferView>;
-        buffer = this._tileMaps[_layer]!._texture!._bufferView;
+        const buffer = this._tileMaps[_layer]!._texture!._bufferView;
         if (buffer === null) {
             return;
         }

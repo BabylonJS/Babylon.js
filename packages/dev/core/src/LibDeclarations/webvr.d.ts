@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-var */
 // Type definitions for WebVR API
 // Project: https://w3c.github.io/webvr/
 // Definitions by: six a <https://github.com/lostfictions>
@@ -45,7 +47,7 @@ interface VRDisplay extends EventTarget {
     /**
      * Passing the value returned by `requestAnimationFrame` to
      * `cancelAnimationFrame` will unregister the callback.
-     * @param handle Define the hanle of the request to cancel
+     * @param handle Define the handle of the request to cancel
      */
     cancelAnimationFrame(handle: number): void;
 

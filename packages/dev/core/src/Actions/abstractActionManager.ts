@@ -96,7 +96,7 @@ export abstract class AbstractActionManager implements IDisposable {
      **/
     public static get HasTriggers(): boolean {
         for (const t in AbstractActionManager.Triggers) {
-            if (AbstractActionManager.Triggers.hasOwnProperty(t)) {
+            if (Object.prototype.hasOwnProperty.call(AbstractActionManager.Triggers, t)) {
                 return true;
             }
         }
@@ -108,9 +108,9 @@ export abstract class AbstractActionManager implements IDisposable {
      **/
     public static get HasPickTriggers(): boolean {
         for (const t in AbstractActionManager.Triggers) {
-            if (AbstractActionManager.Triggers.hasOwnProperty(t)) {
-                const t_int = parseInt(t);
-                if (t_int >= Constants.ACTION_OnPickTrigger && t_int <= Constants.ACTION_OnPickUpTrigger) {
+            if (Object.prototype.hasOwnProperty.call(AbstractActionManager.Triggers, t)) {
+                const tAsInt = parseInt(t);
+                if (tAsInt >= Constants.ACTION_OnPickTrigger && tAsInt <= Constants.ACTION_OnPickUpTrigger) {
                     return true;
                 }
             }
@@ -125,9 +125,9 @@ export abstract class AbstractActionManager implements IDisposable {
      **/
     public static HasSpecificTrigger(trigger: number): boolean {
         for (const t in AbstractActionManager.Triggers) {
-            if (AbstractActionManager.Triggers.hasOwnProperty(t)) {
-                const t_int = parseInt(t);
-                if (t_int === trigger) {
+            if (Object.prototype.hasOwnProperty.call(AbstractActionManager.Triggers, t)) {
+                const tAsInt = parseInt(t);
+                if (tAsInt === trigger) {
                     return true;
                 }
             }

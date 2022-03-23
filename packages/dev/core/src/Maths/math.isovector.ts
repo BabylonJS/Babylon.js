@@ -7,6 +7,7 @@ import { Vector3 } from "./math.vector";
  * y axis is 60 deg counter clockwise from positive y axis
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _IsoVector {
     /**
      * Creates a new isovector from the given x and y coordinates

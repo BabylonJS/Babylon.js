@@ -20,7 +20,7 @@ import "../Shaders/sprites.vertex";
 /**
  * Class used to render sprites.
  *
- * It can be used either to render Sprites or ThinSriptes with ThinEngine only.
+ * It can be used either to render Sprites or ThinSprites with ThinEngine only.
  */
 export class SpriteRenderer {
     /**

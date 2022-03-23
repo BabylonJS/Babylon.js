@@ -300,7 +300,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    private __isCube: boolean;
+    private _isCubeData: boolean;
     /**
      * Gets render target creation options that were used.
      */
@@ -408,7 +408,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
         this._renderPassIds = [];
-        this.__isCube = isCube;
+        this._isCubeData = isCube;
 
         this._processSizeParameter(size);
 
@@ -491,7 +491,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this._releaseRenderPassId();
 
         const engine = this._scene!.getEngine(); // scene can't be null in a RenderTargetTexture, see constructor
-        const numPasses = this.__isCube ? 6 : this.getRenderLayers() || 1;
+        const numPasses = this._isCubeData ? 6 : this.getRenderLayers() || 1;
 
         for (let i = 0; i < numPasses; ++i) {
             this._renderPassIds[i] = engine.createRenderPassId(`RenderTargetTexture - ${this.name}#${i}`);
@@ -762,7 +762,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false, checkReadiness: boolean = false): boolean {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return checkReadiness;
@@ -776,7 +776,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         if (this._waitingRenderList) {
             this.renderList = [];
-            for (var index = 0; index < this._waitingRenderList.length; index++) {
+            for (let index = 0; index < this._waitingRenderList.length; index++) {
                 const id = this._waitingRenderList[index];
                 const mesh = scene.getMeshById(id);
                 if (mesh) {
@@ -795,7 +795,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 this.renderList = [];
             }
 
-            var scene = this.getScene();
+            const scene = this.getScene();
 
             if (!scene) {
                 return checkReadiness;
@@ -803,7 +803,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             const sceneMeshes = scene.meshes;
 
-            for (var index = 0; index < sceneMeshes.length; index++) {
+            for (let index = 0; index < sceneMeshes.length; index++) {
                 const mesh = sceneMeshes[index];
                 if (this.renderListPredicate(mesh)) {
                     this.renderList.push(mesh);
@@ -833,18 +833,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         if (!checkReadiness) {
             if (this.is2DArray) {
                 for (let layer = 0; layer < this.getRenderLayers(); layer++) {
-                    this.renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
+                    this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
             } else if (this.isCube) {
                 for (let face = 0; face < 6; face++) {
-                    this.renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
+                    this._renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
             } else {
-                this.renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
+                this._renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
             }
         } else {
             if (!scene.getViewMatrix()) {
@@ -1020,7 +1020,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+    protected _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
         if (!this._renderTarget) {
             return;
         }
@@ -1046,7 +1046,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    private renderToTarget(faceIndex: number, useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0, camera: Nullable<Camera> = null): void {
+    private _renderToTarget(faceIndex: number, useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0, camera: Nullable<Camera> = null): void {
         const scene = this.getScene();
 
         if (!scene) {
@@ -1162,7 +1162,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
 
         // Unbind
-        this.unbindFrameBuffer(engine, faceIndex);
+        this._unbindFrameBuffer(engine, faceIndex);
 
         if (this.isCube && faceIndex === 5) {
             engine.generateMipMapsForCubemap(this._texture);
@@ -1361,6 +1361,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number) => {
     return new RenderTargetTexture(name, renderTargetSize, scene, generateMipMaps);
 };

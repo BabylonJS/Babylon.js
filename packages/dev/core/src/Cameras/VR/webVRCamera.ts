@@ -229,13 +229,13 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param name The name of the WebVRFreeCamera
      * @param position The starting anchor position for the camera
      * @param scene The scene the camera belongs to
-     * @param webVROptions a set of customizable options for the webVRCamera
+     * @param _webVROptions a set of customizable options for the webVRCamera
      */
-    constructor(name: string, position: Vector3, scene?: Scene, private webVROptions: WebVROptions = {}) {
+    constructor(name: string, position: Vector3, scene?: Scene, private _webVROptions: WebVROptions = {}) {
         super(name, position, scene);
         this._cache.position = Vector3.Zero();
-        if (webVROptions.defaultHeight) {
-            this._defaultHeight = webVROptions.defaultHeight;
+        if (_webVROptions.defaultHeight) {
+            this._defaultHeight = _webVROptions.defaultHeight;
             this.position.y = this._defaultHeight;
         }
 
@@ -243,24 +243,25 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
         //legacy support - the compensation boolean was removed.
         if (arguments.length === 5) {
-            this.webVROptions = arguments[4];
+            // eslint-disable-next-line prefer-rest-params
+            this._webVROptions = arguments[4];
         }
 
         // default webVR options
-        if (this.webVROptions.trackPosition == undefined) {
-            this.webVROptions.trackPosition = true;
+        if (this._webVROptions.trackPosition == undefined) {
+            this._webVROptions.trackPosition = true;
         }
-        if (this.webVROptions.controllerMeshes == undefined) {
-            this.webVROptions.controllerMeshes = true;
+        if (this._webVROptions.controllerMeshes == undefined) {
+            this._webVROptions.controllerMeshes = true;
         }
-        if (this.webVROptions.defaultLightingOnControllers == undefined) {
-            this.webVROptions.defaultLightingOnControllers = true;
+        if (this._webVROptions.defaultLightingOnControllers == undefined) {
+            this._webVROptions.defaultLightingOnControllers = true;
         }
 
         this.rotationQuaternion = new Quaternion();
 
-        if (this.webVROptions && this.webVROptions.positionScale) {
-            this.deviceScaleFactor = this.webVROptions.positionScale;
+        if (this._webVROptions && this._webVROptions.positionScale) {
+            this.deviceScaleFactor = this._webVROptions.positionScale;
         }
 
         //enable VR
@@ -282,7 +283,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
             if (this._attached) {
-                this.getEngine().enableVR(this.webVROptions);
+                this.getEngine().enableVR(this._webVROptions);
             }
         });
 
@@ -290,7 +291,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             this._frameData = new VRFrameData();
         }
 
-        if (webVROptions.useMultiview) {
+        if (_webVROptions.useMultiview) {
             if (!this.getScene().getEngine().getCaps().multiview) {
                 Logger.Warn("Multiview is not supported, falling back to standard rendering");
                 this._useMultiviewToSingleView = false;
@@ -356,12 +357,13 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
      * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public useStandingMatrix(callback = (bool: boolean) => {}) {
         // Use standing matrix if available
         this.getEngine()
             .initWebVRAsync()
             .then((result) => {
-                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform || !this.webVROptions.trackPosition) {
+                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform || !this._webVROptions.trackPosition) {
                     callback(false);
                 } else {
                     this._standingMatrix = new Matrix();
@@ -402,7 +404,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     /**
      * Gets a vrController by name.
-     * @param name The name of the controller to retreive
+     * @param name The name of the controller to retrieve
      * @returns the controller matching the name specified or null if not found
      */
     public getControllerByName(name: string): Nullable<WebVRController> {
@@ -480,7 +482,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                 this._deviceRoomRotationQuaternion.z *= -1;
                 this._deviceRoomRotationQuaternion.w *= -1;
             }
-            if (this.webVROptions.trackPosition && this.rawPose.position) {
+            if (this._webVROptions.trackPosition && this.rawPose.position) {
                 this._deviceRoomPosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
                 if (this.getScene().useRightHandedSystem) {
                     this._deviceRoomPosition.z *= -1;
@@ -506,6 +508,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         super.attachControl(noPreventDefault);
         this._attached = true;
@@ -513,7 +516,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
         if (this._vrDevice) {
-            this.getEngine().enableVR(this.webVROptions);
+            this.getEngine().enableVR(this._webVROptions);
         }
 
         const hostWindow = this._scene.getEngine().getHostWindow();
@@ -530,9 +533,8 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
 
@@ -577,11 +579,11 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     private _oneVector = Vector3.One();
     private _workingMatrix = Matrix.Identity();
 
-    private updateCacheCalled: boolean;
+    private _updateCacheCalled: boolean;
 
     // Remove translation from 6dof headset if trackposition is set to false
     private _correctPositionIfNotTrackPosition(matrix: Matrix, isViewMatrix = false) {
-        if (this.rawPose && this.rawPose.position && !this.webVROptions.trackPosition) {
+        if (this.rawPose && this.rawPose.position && !this._webVROptions.trackPosition) {
             Matrix.TranslationToRef(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2], this._tmpMatrix);
             if (!isViewMatrix) {
                 this._tmpMatrix.invert();
@@ -598,9 +600,9 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)) {
             // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
-            if (!this.updateCacheCalled) {
+            if (!this._updateCacheCalled) {
                 // make sure it is only called once per loop. this.update() might cause an infinite loop.
-                this.updateCacheCalled = true;
+                this._updateCacheCalled = true;
                 this.update();
             }
 
@@ -632,7 +634,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         if (!ignoreParentClass) {
             super._updateCache();
         }
-        this.updateCacheCalled = false;
+        this._updateCacheCalled = false;
     }
 
     /**
@@ -776,7 +778,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type === Gamepad.POSE_ENABLED) {
                 const webVrController: WebVRController = <WebVRController>gamepad;
-                if (!this.webVROptions.trackPosition) {
+                if (!this._webVROptions.trackPosition) {
                     webVrController._disableTrackPosition(new Vector3(webVrController.hand == "left" ? -0.15 : 0.15, -0.5, 0.25));
                     // Cache must be updated before rendering controllers to avoid them being one frame behind
                     if (!this._updateCacheWhenTrackingDisabledObserver) {
@@ -789,7 +791,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                 webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
                 this._correctPositionIfNotTrackPosition(webVrController._deviceToWorld);
 
-                if (this.webVROptions.controllerMeshes) {
+                if (this._webVROptions.controllerMeshes) {
                     if (webVrController.defaultModel) {
                         webVrController.defaultModel.setEnabled(true);
                     } else {
@@ -797,7 +799,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                         webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
                             loadedMesh.scaling.scaleInPlace(this.deviceScaleFactor);
                             this.onControllerMeshLoadedObservable.notifyObservers(webVrController);
-                            if (this.webVROptions.defaultLightingOnControllers) {
+                            if (this._webVROptions.defaultLightingOnControllers) {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new HemisphericLight("vrControllersLight", new Vector3(0, 1, 0), this.getScene());
                                 }

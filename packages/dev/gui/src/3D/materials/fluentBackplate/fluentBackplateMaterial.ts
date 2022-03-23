@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Nullable } from "core/types";
 import { SerializationHelper, serialize, serializeAsVector3 } from "core/Misc/decorators";
 import { Matrix, Vector3, Vector4 } from "core/Maths/math.vector";
@@ -36,7 +37,7 @@ class FluentBackplateMaterialDefines extends MaterialDefines {
 }
 
 /**
- * Class used to render square buttons with fluent desgin
+ * Class used to render square buttons with fluent design
  */
 export class FluentBackplateMaterial extends PushMaterial {
     /**
@@ -238,7 +239,7 @@ export class FluentBackplateMaterial extends PushMaterial {
         return null;
     }
 
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;

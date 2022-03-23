@@ -3,11 +3,11 @@ import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { TrigonometryBlock, TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
 
 export class TrigonometryDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return false;
     }
 
@@ -15,7 +15,7 @@ export class TrigonometryDisplayManager implements IDisplayManager {
         return block.name;
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(): string {
         return "#405C86";
     }
 

@@ -8,9 +8,6 @@ const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppe
  * Used mainly for publishing and generating LTS versions.
  * The idea is to convert 'import { Something } from "location/something";' to 'import { Something } from "package/something";'
  * @param location the source's location
- * @param buildType can be esm, umd and es6
- * @param workingPackage the current package being processed. Wether abstract (core, gui) or concrete (@babylonjs/core, babylonjs and so on)
- * @param returnPackageOnly do not return full path but only the package
  * @param options
  */
 export const transformPackageLocation = (location: string, options: ITransformerOptions) => {

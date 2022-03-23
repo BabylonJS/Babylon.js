@@ -31,7 +31,7 @@ export class NodeEditor {
      */
     public static Show(options: INodeEditorOptions) {
         if (this._CurrentState) {
-            var popupWindow = (Popup as any)["node-editor"];
+            const popupWindow = (Popup as any)["node-editor"];
             if (popupWindow) {
                 popupWindow.close();
             }
@@ -73,7 +73,7 @@ export class NodeEditor {
         });
 
         // Close the popup window when the page is refreshed or scene is disposed
-        var popupWindow = (Popup as any)["node-editor"];
+        const popupWindow = (Popup as any)["node-editor"];
         if (globalState.nodeMaterial && popupWindow) {
             globalState.nodeMaterial.getScene().onDisposeObservable.addOnce(() => {
                 if (popupWindow) {

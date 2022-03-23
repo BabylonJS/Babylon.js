@@ -96,12 +96,14 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Called by the GPUParticleSystem to setup the update shader
      * @param uboOrEffect defines the update shader
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {}
 
     /**
      * Creates the structure of the ubo for this particle emitter
      * @param ubo ubo to create the structure for
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public buildUniformLayout(ubo: UniformBuffer): void {}
 
     /**
@@ -136,5 +138,6 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public parse(serializationObject: any): void {}
 }

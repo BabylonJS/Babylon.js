@@ -79,7 +79,7 @@ export class PrePassRenderer {
         this.defaultRT.samples = n;
     }
 
-    private static _textureFormats = [
+    private static _TextureFormats = [
         {
             type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
@@ -221,7 +221,7 @@ export class PrePassRenderer {
     public disableGammaTransform = false;
 
     /**
-     * Instanciates a prepass renderer
+     * Instantiates a prepass renderer
      * @param scene The scene
      */
     constructor(scene: Scene) {
@@ -235,7 +235,7 @@ export class PrePassRenderer {
 
     /**
      * Creates a new PrePassRenderTarget
-     * This should be the only way to instanciate a `PrePassRenderTarget`
+     * This should be the only way to instantiate a `PrePassRenderTarget`
      * @param name Name of the `PrePassRenderTarget`
      * @param renderTargetTexture RenderTarget the `PrePassRenderTarget` will be attached to.
      * Can be `null` if the created `PrePassRenderTarget` is attached to the scene (default framebuffer).
@@ -309,14 +309,14 @@ export class PrePassRenderer {
     }
 
     private _resetLayout() {
-        for (let i = 0; i < PrePassRenderer._textureFormats.length; i++) {
-            this._textureIndices[PrePassRenderer._textureFormats[i].type] = -1;
+        for (let i = 0; i < PrePassRenderer._TextureFormats.length; i++) {
+            this._textureIndices[PrePassRenderer._TextureFormats[i].type] = -1;
         }
 
         this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
         this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
-        this._mrtFormats = [PrePassRenderer._textureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
-        this._mrtNames = [PrePassRenderer._textureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
+        this._mrtFormats = [PrePassRenderer._TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
+        this._mrtNames = [PrePassRenderer._TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
         this.mrtCount = 1;
     }
 
@@ -389,6 +389,7 @@ export class PrePassRenderer {
      * @param layer
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number) {
         // const previousEnabled = this._enabled && this._currentTarget.enabled;
 
@@ -463,6 +464,7 @@ export class PrePassRenderer {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
@@ -699,8 +701,8 @@ export class PrePassRenderer {
                 this._textureIndices[type] = this._mrtLayout.length;
                 this._mrtLayout.push(type);
 
-                this._mrtFormats.push(PrePassRenderer._textureFormats[type].format);
-                this._mrtNames.push(PrePassRenderer._textureFormats[type].name);
+                this._mrtFormats.push(PrePassRenderer._TextureFormats[type].format);
+                this._mrtNames.push(PrePassRenderer._TextureFormats[type].name);
                 this.mrtCount++;
             }
 

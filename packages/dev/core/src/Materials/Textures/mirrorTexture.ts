@@ -116,7 +116,13 @@ export class MirrorTexture extends RenderTargetTexture {
     }
 
     private _updateGammaSpace() {
-        this.gammaSpace = !this.scene!.imageProcessingConfiguration.isEnabled || !this.scene!.imageProcessingConfiguration.applyByPostProcess;
+        const scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
+        this.gammaSpace = !scene.imageProcessingConfiguration.isEnabled || !scene.imageProcessingConfiguration.applyByPostProcess;
     }
 
     private _imageProcessingConfigChangeObserver: Nullable<Observer<ImageProcessingConfiguration>>;
@@ -151,7 +157,7 @@ export class MirrorTexture extends RenderTargetTexture {
     constructor(
         name: string,
         size: number | { width: number; height: number } | { ratio: number },
-        private scene?: Scene,
+        scene?: Scene,
         generateMipMaps?: boolean,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
@@ -159,7 +165,7 @@ export class MirrorTexture extends RenderTargetTexture {
     ) {
         super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
-        this.scene = <Scene>this.getScene();
+        scene = <Scene>this.getScene();
 
         if (!scene) {
             return this;
@@ -189,33 +195,33 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this.onBeforeRenderObservable.add(() => {
             if (this._sceneUBO) {
-                this._currentSceneUBO = scene.getSceneUniformBuffer();
-                scene.setSceneUniformBuffer(this._sceneUBO);
-                scene.getSceneUniformBuffer().unbindEffect();
+                this._currentSceneUBO = scene!.getSceneUniformBuffer();
+                scene!.setSceneUniformBuffer(this._sceneUBO);
+                scene!.getSceneUniformBuffer().unbindEffect();
             }
 
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
-            this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
+            this._mirrorMatrix.multiplyToRef(scene!.getViewMatrix(), this._transformMatrix);
 
-            scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
+            scene!.setTransformMatrix(this._transformMatrix, scene!.getProjectionMatrix());
 
-            saveClipPlane = scene.clipPlane;
-            scene.clipPlane = this.mirrorPlane;
+            saveClipPlane = scene!.clipPlane;
+            scene!.clipPlane = this.mirrorPlane;
 
-            scene.getEngine().cullBackFaces = false;
+            scene!.getEngine().cullBackFaces = false;
 
-            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
+            scene!._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene!.activeCamera).globalPosition, this._mirrorMatrix);
         });
 
         this.onAfterRenderObservable.add(() => {
             if (this._sceneUBO) {
-                scene.setSceneUniformBuffer(this._currentSceneUBO);
+                scene!.setSceneUniformBuffer(this._currentSceneUBO);
             }
-            scene.updateTransformMatrix();
-            scene.getEngine().cullBackFaces = null;
-            scene._mirroredCameraPosition = null;
+            scene!.updateTransformMatrix();
+            scene!.getEngine().cullBackFaces = null;
+            scene!._mirroredCameraPosition = null;
 
-            scene.clipPlane = saveClipPlane;
+            scene!.clipPlane = saveClipPlane;
         });
     }
 
@@ -333,7 +339,11 @@ export class MirrorTexture extends RenderTargetTexture {
      */
     public dispose() {
         super.dispose();
-        this.scene!.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
+        const scene = this.getScene();
+
+        if (scene) {
+            scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
+        }
         this._sceneUBO?.dispose();
     }
 }

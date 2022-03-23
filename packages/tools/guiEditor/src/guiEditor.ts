@@ -43,7 +43,7 @@ export class GUIEditor {
         }
 
         if (!hostElement) {
-            var popupWindow = (Popup as any)["gui-editor"];
+            const popupWindow = (Popup as any)["gui-editor"];
             if (popupWindow) {
                 popupWindow.close();
             }
@@ -79,7 +79,7 @@ export class GUIEditor {
         }
 
         if (options.customLoadObservable) {
-            options.customLoadObservable.add((data) => {
+            options.customLoadObservable.add(() => {
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
@@ -88,7 +88,7 @@ export class GUIEditor {
         this._CurrentState = globalState;
 
         // Close the popup window when the page is refreshed or scene is disposed
-        var popupWindow = (Popup as any)["gui-editor"];
+        const popupWindow = (Popup as any)["gui-editor"];
         if (popupWindow) {
             window.onbeforeunload = () => {
                 const popupWindow = (Popup as any)["gui-editor"];

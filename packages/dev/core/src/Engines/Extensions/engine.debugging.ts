@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ThinEngine } from "../../Engines/thinEngine";
 
 declare module "../../Engines/thinEngine" {

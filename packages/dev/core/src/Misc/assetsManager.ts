@@ -114,10 +114,10 @@ export abstract class AbstractAssetTask {
         this.runTask(
             scene,
             () => {
-                this.onDoneCallback(onSuccess, onError);
+                this._onDoneCallback(onSuccess, onError);
             },
             (msg, exception) => {
-                this.onErrorCallback(onError, msg, exception);
+                this._onErrorCallback(onError, msg, exception);
             }
         );
     }
@@ -128,6 +128,7 @@ export abstract class AbstractAssetTask {
      * @param onSuccess is a callback called when the task is successfully executed
      * @param onError is a callback called if an error occurs
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
         throw new Error("runTask is not implemented");
     }
@@ -140,7 +141,7 @@ export abstract class AbstractAssetTask {
         this._taskState = AssetTaskState.INIT;
     }
 
-    private onErrorCallback(onError: (message?: string, exception?: any) => void, message?: string, exception?: any) {
+    private _onErrorCallback(onError: (message?: string, exception?: any) => void, message?: string, exception?: any) {
         this._taskState = AssetTaskState.ERROR;
 
         this._errorObject = {
@@ -155,7 +156,7 @@ export abstract class AbstractAssetTask {
         onError();
     }
 
-    private onDoneCallback(onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+    private _onDoneCallback(onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
         try {
             this._taskState = AssetTaskState.DONE;
             this._isCompleted = true;
@@ -166,7 +167,7 @@ export abstract class AbstractAssetTask {
 
             onSuccess();
         } catch (e) {
-            this.onErrorCallback(onError, "Task is done, error executing success callback(s)", e);
+            this._onErrorCallback(onError, "Task is done, error executing success callback(s)", e);
         }
     }
 }
@@ -462,7 +463,7 @@ export class TextFileAssetTask extends AbstractAssetTask {
  */
 export class BinaryFileAssetTask extends AbstractAssetTask {
     /**
-     * Gets the lodaded data (as an array buffer)
+     * Gets the loaded data (as an array buffer)
      */
     public data: ArrayBuffer;
 
@@ -1142,8 +1143,8 @@ export class AssetsManager {
                     this.onFinish(currentTasks);
                 }
 
-                // Let's remove successfull tasks
-                for (var task of currentTasks) {
+                // Let's remove successful tasks
+                for (const task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
                         const index = this._tasks.indexOf(task);
 
