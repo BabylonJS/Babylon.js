@@ -2,7 +2,7 @@
 import * as path from "path";
 import * as glob from "glob";
 import * as fs from "fs-extra";
-import { checkArgs, findRootDirectory } from "./utils";
+import { checkArgs } from "./utils";
 
 export const prepareES6Build = async () => {
     const baseDir = path.resolve(".");
