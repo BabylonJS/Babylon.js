@@ -14,7 +14,6 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
         "watch": "tsc -b tsconfig.build.json -w",
-        "prepublishOnly": "nx build",
         "watch:dev": "npm run watch"
     },
     "devDependencies": {

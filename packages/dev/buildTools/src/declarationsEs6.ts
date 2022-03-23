@@ -14,7 +14,7 @@ export const declarationsEs6 = () => {
         .map((file) => {
             return fs.readFileSync(file, "utf8");
         })
-        .join("\n");
+        .join("\n").replace(/declare /g, "");
     const newContent = `
 ${fileContent}
 // Mixins

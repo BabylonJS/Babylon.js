@@ -18,8 +18,7 @@
         "compile:assets": "build-tools -c process-assets --package core",
         "watch:assets": "build-tools -c process-assets --package core --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --package \"shared-ui-components\" -wa",
-        "prepublishOnly": "nx build"
+        "watch": "build-tools -c dev-watch --package \"shared-ui-components\" -wa"
     },
     "peerDependencies": {
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
