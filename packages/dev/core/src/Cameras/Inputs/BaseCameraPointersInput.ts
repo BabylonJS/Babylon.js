@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observer } from "../../Misc/observable";
+import type { EventState, Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { Camera } from "../../Cameras/camera";
-import { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { PointerInfo, PointerEventTypes, PointerTouch } from "../../Events/pointerEvents";
-import { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { Camera } from "../../Cameras/camera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo, PointerTouch } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Base class for Camera Pointer Inputs.

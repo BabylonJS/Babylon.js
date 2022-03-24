@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { Light } from "core/Lights/light";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Light } from "core/Lights/light";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb, faEye } from "@fortawesome/free-solid-svg-icons";
@@ -7,7 +7,7 @@ import { faLightbulb as faLightbubRegular } from "@fortawesome/free-regular-svg-
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 
 interface ILightTreeItemComponentProps {
     light: Light;

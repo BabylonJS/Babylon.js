@@ -1,8 +1,8 @@
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Scalar } from "core/Maths/math.scalar";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 
 /**

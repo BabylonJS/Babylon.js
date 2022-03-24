@@ -1,6 +1,6 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
-import { MaterialPluginBase } from "./materialPluginBase";
+import type { MaterialPluginBase } from "./materialPluginBase";
 import { PBRAnisotropicConfiguration } from "./PBR/pbrAnisotropicConfiguration";
 import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import { PBRBRDFConfiguration } from "./PBR/pbrBRDFConfiguration";

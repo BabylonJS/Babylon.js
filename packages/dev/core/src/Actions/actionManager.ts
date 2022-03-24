@@ -1,14 +1,15 @@
-import { Nullable } from "../types";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Scene } from "../scene";
 import { Vector3, Vector4 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Condition, ValueCondition } from "./condition";
-import { Action, IAction } from "./action";
+import type { IAction } from "./action";
+import { Action } from "./action";
 import { DoNothingAction } from "./directActions";
 
 import { EngineStore } from "../Engines/engineStore";
-import { IActionEvent } from "../Actions/actionEvent";
+import type { IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GetClass } from "../Misc/typeStore";

@@ -1,6 +1,6 @@
-import { Node } from "core/node";
-import { Scene } from "core/scene";
-import { GLTFData } from "./glTFData";
+import type { Node } from "core/node";
+import type { Scene } from "core/scene";
+import type { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
 
 /**

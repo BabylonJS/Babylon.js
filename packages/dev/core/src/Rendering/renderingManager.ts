@@ -1,7 +1,7 @@
-import { Nullable } from "../types";
-import { SmartArray } from "../Misc/smartArray";
-import { ISpriteManager } from "../Sprites/spriteManager";
-import { IParticleSystem } from "../Particles/IParticleSystem";
+import type { Nullable } from "../types";
+import type { SmartArray } from "../Misc/smartArray";
+import type { ISpriteManager } from "../Sprites/spriteManager";
+import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RenderingGroup } from "./renderingGroup";
 
 declare type Scene = import("../scene").Scene;

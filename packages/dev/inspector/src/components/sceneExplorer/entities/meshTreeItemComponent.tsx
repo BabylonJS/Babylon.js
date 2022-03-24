@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/free-solid-svg-icons";
@@ -7,7 +7,7 @@ import { faEye, faEyeSlash, faSquare } from "@fortawesome/free-regular-svg-icons
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 
 import "core/Rendering/boundingBoxRenderer";
 

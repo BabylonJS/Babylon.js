@@ -1,7 +1,7 @@
-import { Collider } from "./collider";
+import type { Collider } from "./collider";
 import { Vector3 } from "../Maths/math.vector";
-import { Nullable } from "../types";
-import { Observer } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 

@@ -1,10 +1,10 @@
-import { WebXRAbstractMotionController, IMotionControllerProfile } from "./webXRAbstractMotionController";
+import type { WebXRAbstractMotionController, IMotionControllerProfile } from "./webXRAbstractMotionController";
 import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionController";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
-import { Nullable } from "../../types";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Nullable } from "../../types";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 
 /**
  * A construction function type to create a new controller based on an xrInput object

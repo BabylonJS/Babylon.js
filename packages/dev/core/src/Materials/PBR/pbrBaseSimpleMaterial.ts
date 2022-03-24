@@ -1,8 +1,8 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 
 /**
  * The Physically based simple base material of BJS.

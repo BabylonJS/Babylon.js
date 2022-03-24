@@ -1,11 +1,11 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
-import { NodeMaterial } from "../nodeMaterial";
+import type { NodeMaterial } from "../nodeMaterial";
 
 import "../../../Shaders/ShadersInclude/fresnelFunction";
 import { ViewDirectionBlock } from "./viewDirectionBlock";

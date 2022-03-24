@@ -1,5 +1,5 @@
 import { GetClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 const XmlLoaderError = "XmlLoader Exception : XML file is malformed or corrupted.";
 

@@ -1,9 +1,10 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Checkbox } from "gui/2D/controls/checkbox";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Checkbox } from "gui/2D/controls/checkbox";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
@@ -12,7 +13,6 @@ import checkBoxIconDark from "shared-ui-components/imgs/checkboxIconDark.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface ICheckboxPropertyGridComponentProps {
     checkboxes: Checkbox[];

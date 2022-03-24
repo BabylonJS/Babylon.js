@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 
 import expandedIcon from "../../imgs/expandedIcon.svg";
 import collapsedIcon from "../../imgs/collapsedIcon.svg";

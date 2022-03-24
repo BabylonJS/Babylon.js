@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { LockObject } from "../tabs/propertyGrids/lockObject";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { SliderLineComponent } from "./sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import { conflictingValuesPlaceholder } from "./targetsProxy";

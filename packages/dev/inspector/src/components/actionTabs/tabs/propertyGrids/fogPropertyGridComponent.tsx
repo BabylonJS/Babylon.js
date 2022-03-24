@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../globalState";
 
 interface IFogPropertyGridComponentProps {
     globalState: GlobalState;

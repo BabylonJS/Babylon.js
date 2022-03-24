@@ -1,6 +1,6 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 import { Control3D } from "./control3D";
 

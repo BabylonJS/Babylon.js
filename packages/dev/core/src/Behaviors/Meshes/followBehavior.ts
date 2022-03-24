@@ -1,11 +1,11 @@
-import { Behavior } from "../behavior";
-import { Scene } from "../../scene";
-import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { Camera } from "../../Cameras/camera";
+import type { Behavior } from "../behavior";
+import type { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { Camera } from "../../Cameras/camera";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { TransformNode } from "../../Meshes/transformNode";
+import type { TransformNode } from "../../Meshes/transformNode";
 import { Epsilon } from "../../Maths/math.constants";
 
 /**

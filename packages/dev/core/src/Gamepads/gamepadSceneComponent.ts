@@ -1,6 +1,7 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { GamepadManager } from "./gamepadManager";
 
 import { FreeCameraInputsManager } from "../Cameras/freeCameraInputsManager";

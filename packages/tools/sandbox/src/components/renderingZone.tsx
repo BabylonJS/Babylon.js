@@ -1,14 +1,14 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 import { Engine } from "core/Engines/engine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "core/Misc/tools";
 import { FilesInput } from "core/Misc/filesInput";

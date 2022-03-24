@@ -1,10 +1,10 @@
 import { Observable } from "../Misc/observable";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import { Condition } from "./condition";
+import type { Condition } from "./condition";
 import { RegisterClass } from "../Misc/typeStore";
-import { AbstractActionManager } from "./abstractActionManager";
-import { Nullable } from "../types";
+import type { AbstractActionManager } from "./abstractActionManager";
+import type { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;

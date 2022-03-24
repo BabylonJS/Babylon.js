@@ -1,7 +1,7 @@
-import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 
 import { Button3D } from "./button3D";
 

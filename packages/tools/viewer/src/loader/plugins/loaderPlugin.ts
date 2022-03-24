@@ -1,10 +1,10 @@
-import { ViewerModel } from "../../model/viewerModel";
-import { IGLTFLoaderExtension, IGLTFLoaderData } from "loaders/glTF/glTFFileLoader";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import type { ViewerModel } from "../../model/viewerModel";
+import type { IGLTFLoaderExtension, IGLTFLoaderData } from "loaders/glTF/glTFFileLoader";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Material } from "core/Materials/material";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Material } from "core/Materials/material";
 
 /**
  * This interface defines the structure of a loader plugin.

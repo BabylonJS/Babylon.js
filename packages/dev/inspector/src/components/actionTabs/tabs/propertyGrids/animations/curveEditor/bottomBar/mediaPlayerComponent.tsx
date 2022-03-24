@@ -1,6 +1,6 @@
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context } from "../context";
 import { ControlButtonComponent } from "../controls/controlButtonComponent";
 
 import firstKeyIcon from "../assets/animationLastKeyIcon.svg";

@@ -1,6 +1,6 @@
-import { Nullable } from "../types";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import { DepthRenderer } from "../Rendering/depthRenderer";
 

@@ -1,7 +1,7 @@
 import * as React from "react";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IPixelData } from "./textureCanvasManager";
-import { ISize } from "core/Maths/math.size";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IPixelData } from "./textureCanvasManager";
+import type { ISize } from "core/Maths/math.size";
 
 interface IPropertiesBarProps {
     texture: BaseTexture;

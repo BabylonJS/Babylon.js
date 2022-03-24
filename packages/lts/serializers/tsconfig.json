@@ -1,9 +1,6 @@
 {
     "extends": "../../../tsconfig.json",
-    "compilerOptions": {
-        "paths": {
-            "core/*": ["lts/core/generated/*"],
-        }
-    },
+
+    "compilerOptions": {},
     "exclude": ["generated"]
 }

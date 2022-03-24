@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { WASMMemoryManager } from "./wasmMemoryManager";
-import { KTX2FileReader, IKTX2_ImageDesc } from "./ktx2FileReader";
+import type { WASMMemoryManager } from "./wasmMemoryManager";
+import type { KTX2FileReader, IKTX2_ImageDesc } from "./ktx2FileReader";
 
 /**
  * @hidden

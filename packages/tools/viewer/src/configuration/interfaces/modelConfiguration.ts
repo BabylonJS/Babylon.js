@@ -1,4 +1,4 @@
-import { IModelAnimationConfiguration } from "./modelAnimationConfiguration";
+import type { IModelAnimationConfiguration } from "./modelAnimationConfiguration";
 
 export interface IModelConfiguration {
     id?: string;

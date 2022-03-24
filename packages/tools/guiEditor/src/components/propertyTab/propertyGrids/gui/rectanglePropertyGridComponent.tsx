@@ -1,17 +1,17 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Rectangle } from "gui/2D/controls/rectangle";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Rectangle } from "gui/2D/controls/rectangle";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
 import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 
 interface IRectanglePropertyGridComponentProps {
     rectangles: Rectangle[];

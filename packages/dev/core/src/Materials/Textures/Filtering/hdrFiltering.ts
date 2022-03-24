@@ -1,12 +1,12 @@
 import { Vector3 } from "../../../Maths/math";
 import { Scalar } from "../../../Maths/math.scalar";
-import { BaseTexture } from "../baseTexture";
-import { ThinEngine } from "../../../Engines/thinEngine";
-import { Effect } from "../../../Materials/effect";
+import type { BaseTexture } from "../baseTexture";
+import type { ThinEngine } from "../../../Engines/thinEngine";
+import type { Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
-import { Nullable } from "../../../types";
-import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import type { Nullable } from "../../../types";
+import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";

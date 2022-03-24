@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { PostProcess } from "core/PostProcesses/postProcess";
 import { Texture } from "core/Materials/Textures/texture";
-import { GlobalState } from "./components/globalState";
+import type { GlobalState } from "./components/globalState";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Nullable } from "core/types";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Nullable } from "core/types";
 
 import "./lod";
 import "./lodCube";

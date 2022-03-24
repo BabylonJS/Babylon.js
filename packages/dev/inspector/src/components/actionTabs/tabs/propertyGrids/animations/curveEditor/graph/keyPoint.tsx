@@ -1,11 +1,11 @@
 import { Animation } from "core/Animations/animation";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { TmpVectors, Vector2 } from "core/Maths/math.vector";
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import * as React from "react";
-import { Context } from "../context";
-import { Curve } from "./curve";
+import type { Context } from "../context";
+import type { Curve } from "./curve";
 
 const keyInactive = require("../assets/keyInactiveIcon.svg") as string;
 const keySelected = require("../assets/keySelectedIcon.svg") as string;

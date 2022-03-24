@@ -1,12 +1,12 @@
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Nullable } from "../types";
-import { Observer } from "../Misc/observable";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { TransformNode } from "../Meshes/transformNode";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Class used to create a trail following a mesh

@@ -1,5 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 declare type TextureSampler = import("../../Materials/Textures/textureSampler").TextureSampler;
 

@@ -1,5 +1,5 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -10,7 +10,7 @@ import { RegisterClass } from "../../Misc/typeStore";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { ToGammaSpace } from "../../Maths/math.constants";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";

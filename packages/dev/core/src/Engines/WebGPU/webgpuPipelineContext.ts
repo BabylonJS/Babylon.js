@@ -1,10 +1,10 @@
-import { IPipelineContext } from "../IPipelineContext";
-import { Nullable } from "../../types";
-import { WebGPUEngine } from "../webgpuEngine";
-import { Effect } from "../../Materials/effect";
-import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
+import type { IPipelineContext } from "../IPipelineContext";
+import type { Nullable } from "../../types";
+import type { WebGPUEngine } from "../webgpuEngine";
+import type { Effect } from "../../Materials/effect";
+import type { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */

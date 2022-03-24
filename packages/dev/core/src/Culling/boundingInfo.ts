@@ -1,10 +1,11 @@
-import { DeepImmutable } from "../types";
+import type { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import type { Matrix } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 
 declare type Collider = import("../Collisions/collider").Collider;
 

@@ -1,9 +1,9 @@
 import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { Engine } from "core/Engines/engine";
-import { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { Scene } from "core/scene";
+import type { Engine } from "core/Engines/engine";
+import type { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 
-import { ViewerModel } from "../model/viewerModel";
+import type { ViewerModel } from "../model/viewerModel";
 
 export class ObservablesManager {
     /**

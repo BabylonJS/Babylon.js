@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faSkull } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Skeleton } from "core/Bones/skeleton";
+import type { Skeleton } from "core/Bones/skeleton";
 
 interface ISkeletonTreeItemComponentProps {
     skeleton: Skeleton;

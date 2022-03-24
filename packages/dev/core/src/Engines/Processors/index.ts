@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./iShaderProcessor";
 export * from "./Expressions/index";
 export * from "./shaderCodeConditionNode";

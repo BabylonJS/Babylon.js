@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Slider } from "gui/2D/controls/sliders/slider";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Slider } from "gui/2D/controls/sliders/slider";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
 
 interface ISliderGenericPropertyGridComponentProps {

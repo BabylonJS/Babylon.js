@@ -1,8 +1,8 @@
-import { TargetedAnimation } from "core/Animations/animationGroup";
+import type { TargetedAnimation } from "core/Animations/animationGroup";
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
-import { Animation } from "core/Animations/animation";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context } from "../context";
+import type { Animation } from "core/Animations/animation";
 
 import handleIcon from "../assets/scrollbarHandleIcon.svg";
 

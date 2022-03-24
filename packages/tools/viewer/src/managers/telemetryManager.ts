@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import { Engine } from "core/Engines/engine";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * The data structure of a telemetry event.

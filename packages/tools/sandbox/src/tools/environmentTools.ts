@@ -1,10 +1,10 @@
 import { HDRCubeTexture } from "core/Materials/Textures/hdrCubeTexture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { LocalStorageHelper } from "./localStorageHelper";
-import { GlobalState } from "../globalState";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { GlobalState } from "../globalState";
+import type { StandardMaterial } from "core/Materials/standardMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { EngineStore } from "core/Engines/engineStore";
 

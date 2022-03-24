@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
-import { Container } from "gui/2D/controls/container";
+import type { Container } from "gui/2D/controls/container";
 
 import clipContentsIcon from "shared-ui-components/imgs/clipContentsIcon.svg";
 import clipChildrenIcon from "shared-ui-components/imgs/clipChildrenIcon.svg";
