@@ -8,7 +8,7 @@ import type { IObservableManager, DeviceSourceType } from "./internalDeviceSourc
 import { InternalDeviceSourceManager } from "./internalDeviceSourceManager";
 import type { IDisposable } from "../../scene";
 import type { ThinEngine } from "../../Engines/thinEngine";
-import type { IUIEvent } from "../../Events/deviceInputEvents";
+import type { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Class to keep track of devices
