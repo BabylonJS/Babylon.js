@@ -1,21 +1,20 @@
 {
     "name": "babylonjs-node-editor",
-    "version": "5.0.0-rc.6",
-    "main": "dist/babylon.nodeEditor.bundle.js",
-    "types": "dist/babylon.nodeEditor.module.d.ts",
+    "version": "5.0.0-rc.7",
+    "main": "babylon.nodeEditor.bundle.js",
+    "types": "babylon.nodeEditor.module.d.ts",
     "files": [
-        "dist",
-        "readme.md"
+        "*"
     ],
     "scripts": {
         "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist"
+        "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.6"
+        "babylonjs": "^5.0.0-rc.7"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

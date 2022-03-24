@@ -1,22 +1,21 @@
 {
     "name": "babylonjs-serializers",
-    "version": "5.0.0-rc.6",
-    "main": "dist/babylonjs.serializers.js",
-    "types": "dist/babylonjs.serializers.module.d.ts",
+    "version": "5.0.0-rc.7",
+    "main": "babylonjs.serializers.js",
+    "types": "babylonjs.serializers.module.d.ts",
     "files": [
-        "dist",
-        "readme.md"
+        "*"
     ],
     "scripts": {
         "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist"
+        "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.6",
-        "babylonjs-gltf2interface": "^5.0.0-rc.6"
+        "babylonjs": "^5.0.0-rc.7",
+        "babylonjs-gltf2interface": "^5.0.0-rc.7"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
