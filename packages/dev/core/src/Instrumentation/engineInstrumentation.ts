@@ -1,8 +1,8 @@
-import { Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
 import { PerfCounter } from "../Misc/perfCounter";
-import { Nullable } from "../types";
-import { IDisposable } from "../scene";
-import { Engine } from "../Engines/engine";
+import type { Nullable } from "../types";
+import type { IDisposable } from "../scene";
+import type { Engine } from "../Engines/engine";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation

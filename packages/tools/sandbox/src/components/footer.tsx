@@ -1,13 +1,13 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { FooterButton } from "./footerButton";
 import { DropUpButton } from "./dropUpButton";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { FooterFileButton } from "./footerFileButton";
 import { AnimationBar } from "./animationBar";
-import { Nullable } from "core/types";
-import { KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
-import { Mesh } from "core/Meshes/mesh";
+import type { Nullable } from "core/types";
+import type { KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+import type { Mesh } from "core/Meshes/mesh";
 
 import "../scss/footer.scss";
 import babylonIdentity from "../img/babylon-identity.svg";

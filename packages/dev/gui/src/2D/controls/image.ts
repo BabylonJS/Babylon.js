@@ -1,12 +1,12 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
 
 import { Control } from "./control";
-import { Measure } from "../measure";
+import type { Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import { ICanvas, ICanvasRenderingContext, IImage } from "core/Engines/ICanvas";
+import type { ICanvas, ICanvasRenderingContext, IImage } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**

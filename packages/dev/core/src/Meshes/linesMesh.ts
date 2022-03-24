@@ -1,9 +1,9 @@
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Color3, Color4 } from "../Maths/math.color";
-import { Node } from "../node";
+import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
+import type { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Material } from "../Materials/material";

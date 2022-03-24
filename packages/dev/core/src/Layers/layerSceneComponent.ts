@@ -1,10 +1,11 @@
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
-import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
-import { Layer } from "./layer";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { AbstractScene } from "../abstractScene";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
+import type { Engine } from "../Engines/engine";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
+import type { Layer } from "./layer";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { AbstractScene } from "../abstractScene";
 import { EngineStore } from "../Engines/engineStore";
 
 declare module "../abstractScene" {

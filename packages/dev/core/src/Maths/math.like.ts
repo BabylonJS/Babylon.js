@@ -1,4 +1,4 @@
-import { float, int, DeepImmutable } from "../types";
+import type { float, int, DeepImmutable } from "../types";
 
 /**
  * @hidden

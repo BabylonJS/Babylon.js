@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 
 import { faMagic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";

@@ -1,11 +1,11 @@
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context } from "../context";
 import { AnimationEntryComponent } from "./animationEntryComponent";
-import { Animation } from "core/Animations/animation";
-import { TargetedAnimation } from "core/Animations/animationGroup";
+import type { Animation } from "core/Animations/animation";
+import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 interface IAnimationListComponentProps {
     globalState: GlobalState;

@@ -1,10 +1,11 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
-import { PostProcess, PostProcessOptions } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
-import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
+import type { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
 import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/screenSpaceCurvature.fragment";

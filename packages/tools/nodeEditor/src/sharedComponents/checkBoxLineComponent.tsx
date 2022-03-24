@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
 
 export interface ICheckBoxLineComponentProps {
     label: string;

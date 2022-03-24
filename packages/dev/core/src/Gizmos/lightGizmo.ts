@@ -1,22 +1,24 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector3, Quaternion } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Node } from "../node";
+import type { Node } from "../node";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Light } from "../Lights/light";
-import { Scene } from "../scene";
+import type { Light } from "../Lights/light";
+import type { Scene } from "../scene";
 import { HemisphericLight } from "../Lights/hemisphericLight";
 import { DirectionalLight } from "../Lights/directionalLight";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateHemisphere } from "../Meshes/Builders/hemisphereBuilder";
 import { SpotLight } from "../Lights/spotLight";
 import { TransformNode } from "../Meshes/transformNode";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { Observer, Observable } from "../Misc/observable";
+import type { PointerInfo } from "../Events/pointerEvents";
+import { PointerEventTypes } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 
 /**

@@ -1,14 +1,15 @@
-import { Nullable } from "../types";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { Nullable } from "../types";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Viewport } from "../Maths/math.viewport";
 import { Constants } from "../Engines/constants";
-import { Observable, Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Effect } from "./effect";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
-import { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import { ShaderLanguage } from "./shaderLanguage";
+import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import type { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";

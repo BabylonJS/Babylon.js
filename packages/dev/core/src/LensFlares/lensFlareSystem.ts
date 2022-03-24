@@ -1,10 +1,10 @@
 import { Tools } from "../Misc/tools";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { EngineStore } from "../Engines/engineStore";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Ray } from "../Culling/ray";
 import { Material } from "../Materials/material";
@@ -14,9 +14,9 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
 import { _WarnImport } from "../Misc/devTools";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color";
-import { Viewport } from "../Maths/math.viewport";
+import type { Viewport } from "../Maths/math.viewport";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.

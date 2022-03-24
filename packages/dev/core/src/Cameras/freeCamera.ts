@@ -1,13 +1,13 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { serializeAsVector3, serialize } from "../Misc/decorators";
 import { Vector3, Vector2 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
-import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
-import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
+import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools";
 
 declare type Collider = import("../Collisions/collider").Collider;

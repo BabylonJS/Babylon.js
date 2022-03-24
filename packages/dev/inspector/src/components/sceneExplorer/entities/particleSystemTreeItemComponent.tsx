@@ -1,10 +1,10 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { faBraille } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
 
 interface IParticleSystemTreeItemComponentProps {
     system: IParticleSystem;

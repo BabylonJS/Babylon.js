@@ -1,7 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { Nullable } from "../../types";
-import { ICanvas } from "../ICanvas";
+import type { Nullable } from "../../types";
+import type { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

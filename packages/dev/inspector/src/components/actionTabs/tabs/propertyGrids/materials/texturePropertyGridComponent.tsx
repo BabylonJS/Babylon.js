@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
-import { Observable } from "core/Misc/observable";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Observable } from "core/Misc/observable";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Constants } from "core/Engines/constants";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -19,9 +19,9 @@ import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ValueLineComponent } from "shared-ui-components/lines/valueLineComponent";
-import { GlobalState } from "../../../../../components/globalState";
+import type { GlobalState } from "../../../../../components/globalState";
 
 import { AdvancedDynamicTextureInstrumentation } from "gui/2D/adtInstrumentation";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";

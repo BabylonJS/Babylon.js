@@ -1,5 +1,5 @@
-import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import { SmartArray } from "../Misc/smartArray";
+import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import type { SmartArray } from "../Misc/smartArray";
 
 declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
 declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;

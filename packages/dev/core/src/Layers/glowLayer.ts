@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { PostProcess } from "../PostProcesses/postProcess";
+import type { PostProcess } from "../PostProcesses/postProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
@@ -20,7 +20,7 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { Engine } from "../Engines/engine";
 import { Color4 } from "../Maths/math.color";
-import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";

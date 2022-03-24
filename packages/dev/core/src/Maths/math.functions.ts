@@ -1,5 +1,6 @@
-import { FloatArray, Nullable, IndicesArray } from "../types";
-import { Vector2, Vector3 } from "./math.vector";
+import type { FloatArray, Nullable, IndicesArray } from "../types";
+import type { Vector2 } from "./math.vector";
+import { Vector3 } from "./math.vector";
 import { nativeOverride } from "../Misc/decorators";
 
 // This helper class is only here so we can apply the nativeOverride decorator to functions.

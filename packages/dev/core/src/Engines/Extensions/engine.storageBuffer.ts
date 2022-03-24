@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { DataArray, Nullable } from "../../types";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
+import type { DataArray, Nullable } from "../../types";
 
 declare type StorageBuffer = import("../../Buffers/storageBuffer").StorageBuffer;
 

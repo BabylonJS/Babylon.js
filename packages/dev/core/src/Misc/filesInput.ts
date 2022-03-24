@@ -1,9 +1,10 @@
-import { Engine } from "../Engines/engine";
-import { Scene } from "../scene";
-import { ISceneLoaderProgressEvent, SceneLoader } from "../Loading/sceneLoader";
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
+import type { ISceneLoaderProgressEvent } from "../Loading/sceneLoader";
+import { SceneLoader } from "../Loading/sceneLoader";
 import { Logger } from "../Misc/logger";
 import { FilesInputStore } from "./filesInputStore";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 /**
  * Class used to help managing file picking and drag-n-drop

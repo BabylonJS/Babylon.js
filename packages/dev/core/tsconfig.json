@@ -1,5 +1,7 @@
 {
     "extends": "../../../tsconfig.json",
 
-    "compilerOptions": {},
+    "compilerOptions": {
+        "moduleResolution": "classic"
+    },
 }

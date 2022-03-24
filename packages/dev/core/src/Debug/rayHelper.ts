@@ -1,13 +1,13 @@
-import { Nullable } from "../types";
-import { Ray } from "../Culling/ray";
+import type { Nullable } from "../types";
+import type { Ray } from "../Culling/ray";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
-import { Scene } from "../scene";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { LinesMesh } from "../Meshes/linesMesh";
+import type { Color3 } from "../Maths/math.color";
+import type { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { LinesMesh } from "../Meshes/linesMesh";
 
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
-import { Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
 
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays

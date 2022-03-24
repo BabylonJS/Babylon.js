@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3 } from "../../Maths/math.vector";
-import { Color4 } from "../../Maths/math.color";
+import type { Color4 } from "../../Maths/math.color";
 import { _CreationDataStorage, Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { FloatArray, Nullable } from "../../types";
+import type { FloatArray, Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
 
 declare type Material = import("../../Materials/material").Material;

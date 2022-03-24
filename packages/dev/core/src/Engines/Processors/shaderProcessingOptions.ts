@@ -1,5 +1,5 @@
-import { IShaderProcessor } from "./iShaderProcessor";
-import { Nullable } from "../../types";
+import type { IShaderProcessor } from "./iShaderProcessor";
+import type { Nullable } from "../../types";
 
 /**
  * Function for custom code generation

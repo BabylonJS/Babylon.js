@@ -1,13 +1,13 @@
 import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 import "../../Engines/Extensions/engine.cubeTexture";
 import { StartsWith } from "../../Misc/stringTools";

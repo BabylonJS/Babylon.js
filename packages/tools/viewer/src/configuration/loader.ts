@@ -1,4 +1,5 @@
 import { RenderOnlyConfigurationLoader } from "./renderOnlyLoader";
+// eslint-disable-next-line import/no-internal-modules
 import { getConfigurationType } from "./types/index";
 
 export class ConfigurationLoader extends RenderOnlyConfigurationLoader {

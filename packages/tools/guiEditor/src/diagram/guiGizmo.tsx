@@ -1,12 +1,13 @@
 import { Control } from "gui/2D/controls/control";
 import { Vector2 } from "core/Maths/math.vector";
 import * as React from "react";
-import { GlobalState } from "../globalState";
-import { Image } from "gui/2D/controls/image";
-import { TextBlock } from "gui/2D/controls/textBlock";
-import { CoordinateHelper, DimensionProperties, Rect } from "./coordinateHelper";
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { GlobalState } from "../globalState";
+import type { Image } from "gui/2D/controls/image";
+import type { TextBlock } from "gui/2D/controls/textBlock";
+import type { DimensionProperties } from "./coordinateHelper";
+import { CoordinateHelper, Rect } from "./coordinateHelper";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 
 import "./workbenchCanvas.scss";

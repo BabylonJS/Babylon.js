@@ -1,10 +1,11 @@
-import { Nullable } from "../../types";
-import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
+import type { Nullable } from "../../types";
+import type { IDisplayChangedEventArgs } from "../../Engines/engine";
+import { Engine } from "../../Engines/engine";
 import { Size } from "../../Maths/math.size";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { IsWindowObjectExist } from "../../Misc/domManagement";
-import { WebVROptions } from "../../Cameras/VR/webVRCamera";
+import type { WebVROptions } from "../../Cameras/VR/webVRCamera";
 
 /**
  * Interface used to define additional presentation attributes

@@ -1,4 +1,5 @@
-import { ISceneComponent, SceneComponentConstants } from "../../sceneComponent";
+import type { ISceneComponent } from "../../sceneComponent";
+import { SceneComponentConstants } from "../../sceneComponent";
 import { PostProcessRenderPipelineManager } from "./postProcessRenderPipelineManager";
 import { Scene } from "../../scene";
 

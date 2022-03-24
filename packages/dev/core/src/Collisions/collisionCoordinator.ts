@@ -1,9 +1,9 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { Collider } from "./collider";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /** @hidden */
 export interface ICollisionCoordinator {

@@ -1,7 +1,7 @@
-import { Bone } from "./bone";
+import type { Bone } from "./bone";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
-import { TransformNode } from "../Meshes/transformNode";
-import { Nullable } from "../types";
+import type { TransformNode } from "../Meshes/transformNode";
+import type { Nullable } from "../types";
 import { Space } from "../Maths/math.axis";
 
 /**

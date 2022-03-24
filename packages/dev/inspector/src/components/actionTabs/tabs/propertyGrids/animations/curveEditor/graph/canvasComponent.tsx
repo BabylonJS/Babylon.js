@@ -1,12 +1,12 @@
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "../context";
 import { FrameBarComponent } from "./frameBarComponent";
 import { GraphComponent } from "./graphComponent";
 import { PlayHeadComponent } from "./playHeadComponent";
 import { RangeFrameBarComponent } from "./rangeFrameBarComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 import "../scss/canvas.scss";
 

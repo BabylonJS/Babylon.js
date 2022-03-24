@@ -1,18 +1,19 @@
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Quaternion, Vector3 } from "../../Maths/math.vector";
-import { Node } from "../../node";
+import type { Node } from "../../node";
 import { Mesh } from "../../Meshes/mesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { TransformNode } from "../../Meshes/transformNode";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { TransformNode } from "../../Meshes/transformNode";
 import { Ray } from "../../Culling/ray";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
 import { GenericController } from "./genericController";
-import { PoseEnabledController, PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
-import { StickValues } from "../../Gamepads/gamepad";
+import type { ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledController, PoseEnabledControllerType, PoseEnabledControllerHelper } from "./poseEnabledController";
+import type { StickValues } from "../../Gamepads/gamepad";
 
 /**
  * Defines the LoadedMeshInfo object that describes information about the loaded webVR controller mesh

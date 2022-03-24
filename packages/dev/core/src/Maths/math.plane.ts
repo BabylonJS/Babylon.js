@@ -1,4 +1,4 @@
-import { DeepImmutable } from "../types";
+import type { DeepImmutable } from "../types";
 import { Vector3, Matrix } from "./math.vector";
 
 /**

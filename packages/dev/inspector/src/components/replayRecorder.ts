@@ -1,5 +1,5 @@
 import { SceneRecorder } from "core/Misc/sceneRecorder";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { Tools } from "core/Misc/tools";
 
 export class ReplayRecorder {

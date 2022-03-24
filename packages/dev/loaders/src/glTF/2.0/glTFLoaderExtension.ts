@@ -1,16 +1,16 @@
-﻿import { Nullable } from "core/types";
-import { AnimationGroup } from "core/Animations/animationGroup";
-import { Material } from "core/Materials/material";
-import { Camera } from "core/Cameras/camera";
-import { Geometry } from "core/Meshes/geometry";
-import { TransformNode } from "core/Meshes/transformNode";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Mesh } from "core/Meshes/mesh";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { IDisposable } from "core/scene";
-import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
-import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
-import { IProperty } from "babylonjs-gltf2interface";
+﻿import type { Nullable } from "core/types";
+import type { AnimationGroup } from "core/Animations/animationGroup";
+import type { Material } from "core/Materials/material";
+import type { Camera } from "core/Cameras/camera";
+import type { Geometry } from "core/Meshes/geometry";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { IDisposable } from "core/scene";
+import type { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
+import type { IProperty } from "babylonjs-gltf2interface";
 
 /**
  * Interface for a glTF loader extension.

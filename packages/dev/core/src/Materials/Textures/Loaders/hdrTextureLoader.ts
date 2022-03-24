@@ -1,7 +1,7 @@
 import { HDRTools } from "../../../Misc/HighDynamicRange/hdr";
 import { Engine } from "../../../Engines/engine";
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
+import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { EndsWith } from "../../../Misc/stringTools";
 import { Constants } from "../../../Engines/constants";
 

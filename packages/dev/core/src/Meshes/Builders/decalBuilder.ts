@@ -1,10 +1,10 @@
-import { Nullable, IndicesArray } from "../../types";
+import type { Nullable, IndicesArray } from "../../types";
 import { Vector3, Matrix, Vector2 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import { AbstractMesh } from "../abstractMesh";
-import { Camera } from "../../Cameras/camera";
+import type { AbstractMesh } from "../abstractMesh";
+import type { Camera } from "../../Cameras/camera";
 import { PositionNormalTextureVertex } from "../../Maths/math.vertexFormat";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 

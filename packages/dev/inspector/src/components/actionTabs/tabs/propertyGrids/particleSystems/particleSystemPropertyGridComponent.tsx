@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
@@ -29,7 +29,7 @@ import { HemisphericEmitterGridComponent } from "./hemisphericEmitterGridCompone
 import { PointEmitterGridComponent } from "./pointEmitterGridComponent";
 import { SphereEmitterGridComponent } from "./sphereEmitterGridComponent";
 import { Vector3 } from "core/Maths/math.vector";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import { MeshEmitterGridComponent } from "./meshEmitterGridComponent";
 import { ValueGradientGridComponent, GradientGridMode } from "./valueGradientGridComponent";

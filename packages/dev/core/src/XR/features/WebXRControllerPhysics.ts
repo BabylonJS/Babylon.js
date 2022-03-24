@@ -1,14 +1,14 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
-import { WebXRInputSource } from "../webXRInputSource";
+import type { WebXRInputSource } from "../webXRInputSource";
 import { PhysicsImpostor } from "../../Physics/physicsImpostor";
-import { WebXRInput } from "../webXRInput";
-import { WebXRSessionManager } from "../webXRSessionManager";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { WebXRInput } from "../webXRInput";
+import type { WebXRSessionManager } from "../webXRSessionManager";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * Options for the controller physics feature
