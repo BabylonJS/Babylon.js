@@ -85,7 +85,7 @@ export class ToolsTabComponent extends PaneComponent {
 
     componentDidMount() {
         if (!(BABYLON as any).GLTF2Export) {
-            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {});
+            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => { });
             return;
         }
     }
@@ -222,13 +222,13 @@ export class ToolsTabComponent extends PaneComponent {
         const filesInputAnimation = new FilesInput(
             scene.getEngine() as any,
             scene as any,
-            () => {},
-            () => {},
-            () => {},
-            () => {},
-            () => {},
+            () => { },
+            () => { },
+            () => { },
+            () => { },
+            () => { },
             reload,
-            () => {}
+            () => { }
         );
 
         filesInputAnimation.loadFiles(event);
