@@ -24,7 +24,7 @@ export class InputArrowsComponent extends React.Component<IInputArrowsComponentP
         if (this._arrowsRef.current?.ownerDocument.pointerLockElement !== this._arrowsRef.current) {
             this._releaseListener();
         }
-    }
+    };
 
     render() {
         return (
