@@ -81,8 +81,8 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     }
                     const transformed = transformLocation(packageName, (node.moduleSpecifier as any).text); // TODO any is still needed
                     // check if we are loading from the same source
-                    if (!transformed || !clause) {
-                        return;
+                    if (!transformed) {
+                        return node;
                     }
                     if (clause && clause.namedBindings && clause.namedBindings.kind === ts.SyntaxKind.NamedImports) {
                         // update the import declaration
@@ -107,7 +107,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     const transformed = transformLocation(packageName, (node.moduleSpecifier as any).text); // TODO any is still needed
                     // check if we are loading from the same source
                     if (!transformed) {
-                        return;
+                        return node;
                     }
                     // update the import declaration
                     // const newClause = ts.factory.updateExport(clause, clause.isTypeOnly, clause.name, ts.factory.createNamedImports(leftImports));
