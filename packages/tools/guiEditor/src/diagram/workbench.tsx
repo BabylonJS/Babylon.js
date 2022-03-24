@@ -253,6 +253,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         globalState.workbench = this;
         globalState.onResizeObservable.notifyObservers(this._guiSize);
+
+        globalState.onPopupClosedObservable.add(() => {
+            this.dispose();
+        });
     }
 
     keyEvent = (evt: KeyboardEvent) => {
@@ -356,7 +360,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
     };
 
-    componentWillUnmount() {
+    dispose() {
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
@@ -372,10 +376,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
                 control.onPointerOutObservable.remove(control.metadata.onPointerOut);
                 control.onDisposeObservable.remove(control.metadata.onDispose);
+                
                 control.highlightLineWidth = control.metadata.highlightLineWidth;
                 control.isHighlighted = control.metadata.isHighlighted;
                 control.isPointerBlocker = control.metadata.isPointerBlocker;
+                control.isHitTestVisible = control.metadata.isHitTestVisible;
+                control.isReadOnly = control.metadata.isReadOnly;
+
+                this.props.globalState.guiTexture.removeControl(control);
+                control.parent = control.metadata.parent;
+                
                 control.metadata = control.metadata.metadata;
+                control._host = this.props.globalState.liveGuiTexture!;
+            });
+            this.props.globalState.liveGuiTexture.markAsDirty();
+            this.props.globalState.guiTexture.getDescendants(true).forEach((control) => {
+                this.props.globalState.guiTexture.removeControl(control);
             });
         }
         this._engine.dispose();
@@ -484,6 +500,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             onPointerEnter,
             onPointerOut,
             onDispose,
+            parent: guiControl.parent
         };
         guiControl.highlightLineWidth = 5;
         guiControl.isHighlighted = false;
