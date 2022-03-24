@@ -1,20 +1,21 @@
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { Observer, Observable } from "core/Misc/observable";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from "@fortawesome/free-solid-svg-icons";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
-import { LightGizmo } from "core/Gizmos/lightGizmo";
-import { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import type { LightGizmo } from "core/Gizmos/lightGizmo";
+import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import { TmpVectors, Vector3 } from "core/Maths/math";
 
 interface ISceneTreeItemComponentProps {

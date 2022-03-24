@@ -9,6 +9,7 @@ import { ViewerModel, ModelState } from "./model/viewerModel";
 import { AnimationPlayMode, AnimationState } from "./model/modelAnimation";
 import { ILoaderPlugin } from "./loader/plugins/loaderPlugin";
 import { AbstractViewerNavbarButton } from "./templating/viewerTemplatePlugin";
+// eslint-disable-next-line import/no-internal-modules
 import { registerCustomOptimizer } from "./optimizer/custom/index";
 
 /**
@@ -67,6 +68,8 @@ export {
     AbstractViewerNavbarButton,
     registerCustomOptimizer,
 };
+// eslint-disable-next-line no-duplicate-imports
 export { GLTF2 } from "babylonjs-loaders";
 // export publicliy all configuration interfaces
+// eslint-disable-next-line import/no-internal-modules
 export * from "./configuration/index";

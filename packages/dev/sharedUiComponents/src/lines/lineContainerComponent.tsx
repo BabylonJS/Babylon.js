@@ -1,6 +1,6 @@
 import * as React from "react";
 import { DataStorage } from "core/Misc/dataStorage";
-import { ISelectedLineContainer } from "./iSelectedLineContainer";
+import type { ISelectedLineContainer } from "./iSelectedLineContainer";
 import downArrow from "./downArrow.svg";
 
 interface ILineContainerComponentProps {

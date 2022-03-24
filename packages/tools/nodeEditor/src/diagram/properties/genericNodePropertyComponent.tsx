@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -8,10 +8,11 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Materials/Node/nodeMaterialDecorator";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Materials/Node/nodeMaterialDecorator";
+import { PropertyTypeForEdition } from "core/Materials/Node/nodeMaterialDecorator";
 import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

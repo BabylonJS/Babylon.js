@@ -1,6 +1,6 @@
 import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { FilesInput } from "core/Misc/filesInput";
+import type { Scene } from "core/scene";
+import type { FilesInput } from "core/Misc/filesInput";
 import "@dev/inspector";
 
 export class GlobalState {

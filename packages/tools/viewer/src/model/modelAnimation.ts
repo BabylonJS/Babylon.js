@@ -1,5 +1,6 @@
-import { Vector3 } from "core/Maths/math.vector";
-import { AnimationGroup, Animatable } from "core/Animations/index";
+import type { Vector3 } from "core/Maths/math.vector";
+// eslint-disable-next-line import/no-internal-modules
+import type { AnimationGroup, Animatable } from "core/Animations/index";
 
 /**
  * Animation play mode enum - is the animation looping or playing once

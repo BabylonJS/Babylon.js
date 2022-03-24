@@ -1,9 +1,10 @@
-import { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
-import { Observable } from "../../Misc/observable";
+import type { ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, PoseEnabledControllerHelper } from "./poseEnabledController";
+import type { Observable } from "../../Misc/observable";
 
 /**
  * Vive Controller

@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
+import type { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 
 /**
  * Class used to specific a value and its associated unit

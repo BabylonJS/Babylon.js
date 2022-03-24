@@ -1,17 +1,17 @@
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { GlobalState, ISelectionChangedOptions } from "../globalState";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { GraphCanvasComponent } from "./graphCanvas";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GlobalState, ISelectionChangedOptions } from "../globalState";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { GraphCanvasComponent } from "./graphCanvas";
 import { PropertyLedger } from "./propertyLedger";
 import * as React from "react";
 import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent";
 import { DisplayLedger } from "./displayLedger";
-import { IDisplayManager } from "./display/displayManager";
-import { NodeLink } from "./nodeLink";
+import type { IDisplayManager } from "./display/displayManager";
+import type { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
-import { GraphFrame } from "./graphFrame";
+import type { GraphFrame } from "./graphFrame";
 
 import triangle from "../imgs/triangle.svg";
 

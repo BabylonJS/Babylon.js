@@ -1,14 +1,17 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observer } from "../../Misc/observable";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { EventState, Observer } from "../../Misc/observable";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
-import { EventConstants, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
 
 /**

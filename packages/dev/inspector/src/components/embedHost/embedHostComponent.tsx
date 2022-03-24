@@ -3,9 +3,9 @@ import { HeaderComponent } from "../headerComponent";
 import Resizable from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
-import { Scene } from "core/scene";
-import { GlobalState } from "../../components/globalState";
-import { IExplorerExtensibilityGroup, DebugLayerTab } from "core/Debug/debugLayer";
+import type { Scene } from "core/scene";
+import type { GlobalState } from "../../components/globalState";
+import type { IExplorerExtensibilityGroup, DebugLayerTab } from "core/Debug/debugLayer";
 
 const Split = require("split.js").default;
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Color4, Color3 } from "core/Maths/math.color";
+import type { Color4, Color3 } from "core/Maths/math.color";
 import { ColorPicker } from "../colorPicker/colorPicker";
 
 export interface IColorPickerComponentProps {

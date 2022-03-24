@@ -1,7 +1,7 @@
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { Nullable } from "../../../types";
+import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
+import type { Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
-import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
     if (!texture || texture._isDisabled) {

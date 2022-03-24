@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Logger } from "../Misc/logger";
-import { Nullable, FloatArray, IndicesArray } from "../types";
+import type { Nullable, FloatArray, IndicesArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import { VertexBuffer } from "../Buffers/buffer";
+import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { Effect } from "../Materials/effect";
+import type { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
-import { IPipelineContext } from "./IPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import { IColor4Like, IViewportLike } from "../Maths/math.like";
-import { ISceneLike } from "./thinEngine";
+import type { IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { ISceneLike } from "./thinEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
-import { IStencilState } from "../States/IStencilState";
+import type { IStencilState } from "../States/IStencilState";
 
 declare const global: any;
 

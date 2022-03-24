@@ -1,18 +1,20 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { PointerInfo } from "../Events/pointerEvents";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { TransformNode } from "../Meshes/transformNode";
-import { Node } from "../node";
-import { Mesh } from "../Meshes/mesh";
+import type { Node } from "../node";
+import type { Mesh } from "../Meshes/mesh";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo, GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache } from "./gizmo";
+import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Scene } from "../scene";
-import { PositionGizmo } from "./positionGizmo";
+import type { Scene } from "../scene";
+import type { PositionGizmo } from "./positionGizmo";
 /**
  * Single plane drag gizmo
  */

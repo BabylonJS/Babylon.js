@@ -1,7 +1,7 @@
-import { IMaterial } from "babylonjs-gltf2interface";
-import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import type { IMaterial } from "babylonjs-gltf2interface";
+import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 

@@ -1,6 +1,6 @@
 import { AbstractViewerNavbarButton } from "../viewerTemplatePlugin";
-import { DefaultViewer } from "../../viewer/defaultViewer";
-import { EventCallback } from "../templateManager";
+import type { DefaultViewer } from "../../viewer/defaultViewer";
+import type { EventCallback } from "../templateManager";
 
 export class HDButtonPlugin extends AbstractViewerNavbarButton {
     constructor(private _viewer: DefaultViewer) {

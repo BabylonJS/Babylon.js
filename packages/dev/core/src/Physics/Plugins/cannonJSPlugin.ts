@@ -1,14 +1,16 @@
-import { Nullable, FloatArray } from "../../types";
+import type { Nullable, FloatArray } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
-import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
-import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
+import type { IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
+import { PhysicsImpostor } from "../../Physics/physicsImpostor";
+import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
+import { PhysicsJoint } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
-import { TransformNode } from "../../Meshes/transformNode";
+import type { TransformNode } from "../../Meshes/transformNode";
 
 //declare var require: any;
 declare let CANNON: any;

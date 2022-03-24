@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
-import { IAnimatable } from "../../../Animations/animatable.interface";
+import type { IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
 import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector";
 import { Scalar } from "../../../Maths/math.scalar";
-import { Camera } from "../../../Cameras/camera";
-import { Effect } from "../../../Materials/effect";
+import type { Camera } from "../../../Cameras/camera";
+import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
 import { FxaaPostProcess } from "../../../PostProcesses/fxaaPostProcess";
-import { IDisposable, Scene } from "../../../scene";
-import { SpotLight } from "../../../Lights/spotLight";
-import { DirectionalLight } from "../../../Lights/directionalLight";
-import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import type { IDisposable, Scene } from "../../../scene";
+import type { SpotLight } from "../../../Lights/spotLight";
+import type { DirectionalLight } from "../../../Lights/directionalLight";
+import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 
 import { Constants } from "../../../Engines/constants";
 import { RegisterClass } from "../../../Misc/typeStore";

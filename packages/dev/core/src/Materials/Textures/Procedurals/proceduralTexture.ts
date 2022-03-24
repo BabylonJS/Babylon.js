@@ -1,15 +1,15 @@
 import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
-import { Nullable } from "../../../types";
-import { Scene } from "../../../scene";
-import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
-import { Color4, Color3 } from "../../../Maths/math.color";
-import { Engine } from "../../../Engines/engine";
+import type { Nullable } from "../../../types";
+import type { Scene } from "../../../scene";
+import type { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
+import type { Color4, Color3 } from "../../../Maths/math.color";
+import type { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
 import { Material } from "../../../Materials/material";
-import { Effect } from "../../../Materials/effect";
+import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
@@ -17,14 +17,14 @@ import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneCompone
 import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
-import { DataBuffer } from "../../../Buffers/dataBuffer";
+import type { DataBuffer } from "../../../Buffers/dataBuffer";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeMaterial } from "../../Node/nodeMaterial";
-import { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import type { NodeMaterial } from "../../Node/nodeMaterial";
+import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { EngineStore } from "../../../Engines/engineStore";
 import { Constants } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
-import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.

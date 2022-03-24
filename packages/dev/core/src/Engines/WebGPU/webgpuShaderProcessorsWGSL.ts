@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../../types";
-import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
-import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
+import type { Nullable } from "../../types";
+import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
+import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";

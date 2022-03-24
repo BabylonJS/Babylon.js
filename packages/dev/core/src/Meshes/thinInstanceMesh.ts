@@ -1,4 +1,4 @@
-import { Nullable, DeepImmutableObject } from "../types";
+import type { Nullable, DeepImmutableObject } from "../types";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";

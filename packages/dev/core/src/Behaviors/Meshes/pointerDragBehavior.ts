@@ -1,17 +1,19 @@
-import { Behavior } from "../../Behaviors/behavior";
+import type { Behavior } from "../../Behaviors/behavior";
 import { Mesh } from "../../Meshes/mesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
-import { Nullable } from "../../types";
-import { Observer, Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { Vector3 } from "../../Maths/math.vector";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from "../../Misc/pivotTools";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
-import { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events

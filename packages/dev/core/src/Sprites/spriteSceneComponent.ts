@@ -1,15 +1,16 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
-import { Sprite } from "./sprite";
-import { ISpriteManager } from "./spriteManager";
+import type { Sprite } from "./sprite";
+import type { ISpriteManager } from "./spriteManager";
 import { Ray } from "../Culling/ray";
-import { Camera } from "../Cameras/camera";
+import type { Camera } from "../Cameras/camera";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { ActionEvent } from "../Actions/actionEvent";
 import { Constants } from "../Engines/constants";
-import { IPointerEvent } from "../Events/deviceInputEvents";
+import type { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare module "../scene" {
     export interface Scene {

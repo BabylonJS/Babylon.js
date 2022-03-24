@@ -2,7 +2,7 @@ import { Measure } from "../../measure";
 import { Container } from "../container";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { Control } from "../control";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a the container for ScrollViewer

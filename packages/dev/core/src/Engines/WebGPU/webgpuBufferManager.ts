@@ -1,7 +1,7 @@
-import { DataBuffer } from "../../Buffers/dataBuffer";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import * as WebGPUConstants from "./webgpuConstants";

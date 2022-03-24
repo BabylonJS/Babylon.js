@@ -1,6 +1,6 @@
-import { DataBuffer } from "../../../Buffers/dataBuffer";
-import { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
-import { DataArray, IndicesArray } from "../../../types";
+import type { DataBuffer } from "../../../Buffers/dataBuffer";
+import type { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
+import type { DataArray, IndicesArray } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 
 WebGPUEngine.prototype.updateDynamicIndexBuffer = function (indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {

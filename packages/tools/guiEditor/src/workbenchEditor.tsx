@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "./globalState";
+import type { GlobalState } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -10,9 +10,9 @@ import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { ControlTypes } from "./controlTypes";
 
 import "./main.scss";

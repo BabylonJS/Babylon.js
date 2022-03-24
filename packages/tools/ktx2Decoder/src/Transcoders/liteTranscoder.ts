@@ -1,6 +1,7 @@
-import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
+import type { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import { Transcoder } from "../transcoder";
 import { WASMMemoryManager } from "../wasmMemoryManager";
-import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @hidden

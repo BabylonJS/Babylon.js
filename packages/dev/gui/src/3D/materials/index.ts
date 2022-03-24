@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./fluent/index";
 export * from "./fluentButton/index";
 export * from "./fluentBackplate/index";

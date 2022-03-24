@@ -1,5 +1,5 @@
 import { Mesh } from "../mesh";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { CreateSphere } from "../Builders/sphereBuilder";
 import { CreateDisc } from "./discBuilder";
 

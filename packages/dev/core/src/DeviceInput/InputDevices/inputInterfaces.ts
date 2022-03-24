@@ -1,5 +1,5 @@
-import { IDisposable } from "../../scene";
-import { DeviceType } from "./deviceEnums";
+import type { IDisposable } from "../../scene";
+import type { DeviceType } from "./deviceEnums";
 
 /**
  * Interface for DeviceInputSystem implementations (JS and Native)

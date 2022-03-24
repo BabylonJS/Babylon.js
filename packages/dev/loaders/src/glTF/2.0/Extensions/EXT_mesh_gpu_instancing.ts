@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
-import { Mesh } from "core/Meshes/mesh";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Nullable } from "core/types";
+import type { Mesh } from "core/Meshes/mesh";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Nullable } from "core/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { INode } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { INode } from "../glTFLoaderInterfaces";
 
-import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
+import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 import "core/Meshes/thinInstanceMesh";
 

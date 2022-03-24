@@ -1,9 +1,9 @@
-import { AnimationRange } from "../Animations/animationRange";
+import type { AnimationRange } from "../Animations/animationRange";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
 /**

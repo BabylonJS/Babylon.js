@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Deferred } from "core/Misc/deferred";
-import { Material } from "core/Materials/material";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { Material } from "core/Materials/material";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Mesh } from "core/Meshes/mesh";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
+import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
 
 const NAME = "MSFT_lod";
 

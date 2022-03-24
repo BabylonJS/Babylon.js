@@ -1,9 +1,9 @@
-import { Scene } from "../../scene";
-import { Vector4 } from "../../Maths/math.vector";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable } from "../../types";
-import { Plane } from "../../Maths/math.plane";
+import type { Nullable } from "../../types";
+import type { Plane } from "../../Maths/math.plane";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**

@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 /**
  * This class implement a typical dictionary using a string as key and the generic type T as value.

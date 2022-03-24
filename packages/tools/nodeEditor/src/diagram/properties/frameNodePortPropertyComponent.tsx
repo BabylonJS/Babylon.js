@@ -1,12 +1,13 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GlobalState, ISelectionChangedOptions } from "../../globalState";
+import type { GlobalState, ISelectionChangedOptions } from "../../globalState";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
-import { FramePortPosition, GraphFrame } from "../graphFrame";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { FrameNodePort } from "../frameNodePort";
+import type { GraphFrame } from "../graphFrame";
+import { FramePortPosition } from "../graphFrame";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { FrameNodePort } from "../frameNodePort";
 import { isFramePortData } from "../graphCanvas";
 
 export interface IFrameNodePortPropertyTabComponentProps {

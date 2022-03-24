@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
+import type {
     IGLTFRuntime,
     IGLTFTechniqueParameter,
     IGLTFAnimation,
@@ -20,21 +20,17 @@ import {
     IGLTFScene,
     IGLTFTechnique,
     IGLTFMaterial,
-    EParameterType,
     IGLTFProgram,
     IGLTFBuffer,
     IGLTFTexture,
     IGLTFImage,
     IGLTFSampler,
-    ETextureFilterType,
     IGLTFShader,
     IGLTFTechniqueStates,
-    ECullingType,
-    EBlendingFunction,
-    EShaderType,
 } from "./glTFLoaderInterfaces";
+import { EParameterType, ETextureFilterType, ECullingType, EBlendingFunction, EShaderType } from "./glTFLoaderInterfaces";
 
-import { FloatArray, Nullable } from "core/types";
+import type { FloatArray, Nullable } from "core/types";
 import { Quaternion, Vector3, Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
@@ -49,7 +45,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { Node } from "core/node";
+import type { Node } from "core/node";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
@@ -60,13 +56,14 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
-import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import { Scene } from "core/scene";
+import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import type { Scene } from "core/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { GLTFFileLoader, IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
+import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
+import { GLTFFileLoader } from "../glTFFileLoader";
 import { Constants } from "core/Engines/constants";
-import { AssetContainer } from "core/assetContainer";
+import type { AssetContainer } from "core/assetContainer";
 
 /**
  * Tokenizer. Used for shaders compatibility

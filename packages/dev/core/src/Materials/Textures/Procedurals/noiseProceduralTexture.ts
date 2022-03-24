@@ -1,7 +1,7 @@
-import { Nullable } from "../../../types";
-import { Scene } from "../../../scene";
+import type { Nullable } from "../../../types";
+import type { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
-import { Texture } from "../../../Materials/Textures/texture";
+import type { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
 import { RegisterClass } from "../../../Misc/typeStore";
 

@@ -5,7 +5,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/languageFeatures";
 
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { CompilationError } from "../components/errorDisplayComponent";
 import { Observable } from "@dev/core";

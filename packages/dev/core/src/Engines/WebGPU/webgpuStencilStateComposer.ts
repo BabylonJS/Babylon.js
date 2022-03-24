@@ -1,4 +1,4 @@
-import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
+import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { StencilStateComposer } from "../../States/stencilStateComposer";
 
 /**

@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { GlobalState } from "../../../../globalState";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Observable } from "core/Misc/observable";
+import type { GlobalState } from "../../../../globalState";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
+import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { MeshPickerComponent } from "../../../lines/meshPickerComponent";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 interface IMeshEmitterGridComponentProps {
     globalState: GlobalState;

@@ -1,14 +1,14 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { TransformNode } from "../Meshes/transformNode";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
 import { _WarnImport } from "../Misc/devTools";
-import { ISoundOptions } from "./Interfaces/ISoundOptions";
+import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { EngineStore } from "../Engines/engineStore";
 
 /**

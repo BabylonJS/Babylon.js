@@ -1,8 +1,8 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
+import type { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class TransformPropertyTabComponent extends React.Component<IPropertyComponentProps> {

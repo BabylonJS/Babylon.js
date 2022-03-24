@@ -1,7 +1,7 @@
 import * as WebGPUConstants from "./webgpuConstants";
 import { Constants } from "../constants";
-import { TextureSampler } from "../../Materials/Textures/textureSampler";
-import { Nullable } from "../../types";
+import type { TextureSampler } from "../../Materials/Textures/textureSampler";
+import type { Nullable } from "../../types";
 
 const filterToBits = [
     0 | (0 << 1) | (0 << 2), // not used
