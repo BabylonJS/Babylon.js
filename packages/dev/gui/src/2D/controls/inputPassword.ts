@@ -6,7 +6,6 @@ import { TextWrapper } from "./textWrapper";
  * Class used to create a password control
  */
 export class InputPassword extends InputText {
-    
     protected _getTypeName(): string {
         return "InputPassword";
     }
