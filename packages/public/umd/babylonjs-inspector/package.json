@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-inspector",
-    "version": "5.0.0-rc.8",
+    "version": "5.0.0-rc.9",
     "main": "babylon.inspector.bundle.max.js",
     "types": "babylon.inspector.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.8"
+        "babylonjs": "^5.0.0-rc.9"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
