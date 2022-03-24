@@ -769,7 +769,8 @@ export class VertexData {
     ): Nullable<FloatArray> {
         const nonNullOthers = others.filter((other): other is [element: FloatArray, transform?: Matrix] => other[0] !== null && other[0] !== undefined);
 
-        if (nonNullOthers.length === 0) {
+        // If there is no source to copy and no other non-null sources then skip this element.
+        if (!source && nonNullOthers.length == 0) {
             return source;
         }
 

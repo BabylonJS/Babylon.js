@@ -1,4 +1,4 @@
-import { PointerInput } from "../DeviceInput";
+import { PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 
 /**
  * Event Types
