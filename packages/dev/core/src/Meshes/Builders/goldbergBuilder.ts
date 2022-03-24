@@ -1,11 +1,12 @@
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
-import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
+import type { PolyhedronData } from "../geodesicMesh";
+import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 

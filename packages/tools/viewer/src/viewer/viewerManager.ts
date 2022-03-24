@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import { AbstractViewer } from "./viewer";
+import type { AbstractViewer } from "./viewer";
 
 /**
  * The viewer manager is the container for all viewers currently registered on this page.

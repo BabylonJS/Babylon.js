@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
-import { Vector3, Matrix, Quaternion } from "core/Maths/math.vector";
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector3, Quaternion } from "core/Maths/math.vector";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 

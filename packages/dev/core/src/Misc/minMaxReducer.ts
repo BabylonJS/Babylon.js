@@ -1,13 +1,14 @@
-import { Nullable } from "../types";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { Observer, Observable } from "./observable";
-import { Effect } from "../Materials/effect";
+import type { Observer } from "./observable";
+import { Observable } from "./observable";
+import type { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
 
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 import "../Shaders/minmaxRedux.fragment";
 

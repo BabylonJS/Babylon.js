@@ -1,8 +1,8 @@
 import { Camera } from "../../Cameras/camera";
 import { UniversalCamera } from "../../Cameras/universalCamera";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { TargetCamera } from "../targetCamera";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Viewport } from "../../Maths/math.viewport";

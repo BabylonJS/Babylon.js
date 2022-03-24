@@ -1,8 +1,8 @@
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "../context";
 import { TextInputComponent } from "../controls/textInputComponent";
 import { MediaPlayerComponent } from "./mediaPlayerComponent";
 import { RangeSelectorComponent } from "./rangeSelectorComponent";

@@ -1,7 +1,7 @@
-import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import { Nullable } from "../types";
+import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import type { Nullable } from "../types";
 import { Material } from "./material";
-import {
+import type {
     MaterialPluginPrepareEffect,
     MaterialPluginBindForSubMesh,
     MaterialPluginDisposed,
@@ -12,11 +12,11 @@ import {
     MaterialPluginIsReadyForSubMesh,
     MaterialPluginPrepareDefines,
     MaterialPluginPrepareUniformBuffer,
-    MaterialPluginEvent,
     MaterialPluginHardBindForSubMesh,
     MaterialPluginHasRenderTargetTextures,
     MaterialPluginFillRenderTargetTextures,
 } from "./materialPluginEvent";
+import { MaterialPluginEvent } from "./materialPluginEvent";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;

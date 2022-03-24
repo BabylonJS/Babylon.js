@@ -1,17 +1,17 @@
 import * as React from "react";
 
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { Observable } from "core/Misc/observable";
+import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import type { Observable } from "core/Misc/observable";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 
 interface IArcRotateCameraPropertyGridComponentProps {
     globalState: GlobalState;

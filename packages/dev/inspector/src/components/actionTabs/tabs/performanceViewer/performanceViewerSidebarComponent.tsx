@@ -1,12 +1,12 @@
 import { Color3 } from "core/Maths/math.color";
-import { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import { useEffect, useState } from "react";
 import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
 import { faSquare, faCheckSquare } from "@fortawesome/free-solid-svg-icons";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { Observable } from "core/Misc/observable";
-import { IPerfMinMax, IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
+import type { Observable } from "core/Misc/observable";
+import type { IPerfMinMax, IVisibleRangeChangedObservableProps } from "../../../graph/graphSupportingTypes";
 import { Engine } from "core/Engines/engine";
 
 interface IPerformanceViewerSidebarComponentProps {

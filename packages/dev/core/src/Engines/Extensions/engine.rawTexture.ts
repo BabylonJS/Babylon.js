@@ -1,11 +1,11 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
 import { Tools } from "../../Misc/tools";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine";
-import { IWebRequest } from "../../Misc/interfaces/iWebRequest";
+import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

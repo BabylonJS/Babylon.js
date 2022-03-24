@@ -1,6 +1,6 @@
-import { ComponentClass } from "react";
+import type { ComponentClass } from "react";
 import { InputPropertyTabComponent } from "./properties/inputNodePropertyComponent";
-import { IPropertyComponentProps } from "./properties/propertyComponentProps";
+import type { IPropertyComponentProps } from "./properties/propertyComponentProps";
 import { TransformPropertyTabComponent } from "./properties/transformNodePropertyComponent";
 import { GradientPropertyTabComponent } from "./properties/gradientNodePropertyComponent";
 import { LightPropertyTabComponent } from "./properties/lightPropertyTabComponent";

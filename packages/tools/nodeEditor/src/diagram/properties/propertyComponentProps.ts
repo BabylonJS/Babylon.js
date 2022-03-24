@@ -1,5 +1,5 @@
-import { GlobalState } from "../../globalState";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GlobalState } from "../../globalState";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export interface IPropertyComponentProps {
     globalState: GlobalState;

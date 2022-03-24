@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Material } from "core/Materials/material";
+import type { Nullable } from "core/types";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";

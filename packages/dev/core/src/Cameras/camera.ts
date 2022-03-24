@@ -2,20 +2,20 @@ import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/deco
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { CameraInputsManager } from "./cameraInputsManager";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { CameraInputsManager } from "./cameraInputsManager";
+import type { Scene } from "../scene";
 import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
-import { Mesh } from "../Meshes/mesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { ICullable } from "../Culling/boundingInfo";
+import type { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;

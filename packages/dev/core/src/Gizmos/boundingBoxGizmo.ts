@@ -1,11 +1,12 @@
-import { Observer, Observable } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { PointerInfo } from "../Events/pointerEvents";
+import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
@@ -16,9 +17,9 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
 import { Color3 } from "../Maths/math.color";
 
-import { LinesMesh } from "../Meshes/linesMesh";
+import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
-import { IPointerEvent } from "../Events/deviceInputEvents";
+import type { IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
  * Bounding box gizmo

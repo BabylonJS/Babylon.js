@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observable } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../globalState";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

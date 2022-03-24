@@ -1,11 +1,11 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 // Ensures Raw texture are included
 import "../../Engines/Extensions/engine.rawTexture";

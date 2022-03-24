@@ -1,10 +1,10 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import { SubMesh } from "../../Meshes/subMesh";
+import type { SubMesh } from "../../Meshes/subMesh";
 
-import { IShadowLight } from "../../Lights/shadowLight";
-import { Effect } from "../../Materials/effect";
+import type { IShadowLight } from "../../Lights/shadowLight";
+import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { Constants } from "../../Engines/constants";
@@ -12,13 +12,13 @@ import { Constants } from "../../Engines/constants";
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShadowGenerator } from "./shadowGenerator";
-import { DirectionalLight } from "../directionalLight";
+import type { DirectionalLight } from "../directionalLight";
 
 import { BoundingInfo } from "../../Culling/boundingInfo";
-import { DepthRenderer } from "../../Rendering/depthRenderer";
+import type { DepthRenderer } from "../../Rendering/depthRenderer";
 import { DepthReducer } from "../../Misc/depthReducer";
 
 import { Logger } from "../../Misc/logger";

@@ -1,5 +1,5 @@
-import { Effect } from "./effect";
-import { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
+import type { Effect } from "./effect";
+import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
 /**
  * "Static Class" containing a few commonly used helper while dealing with material for rendering purpose.

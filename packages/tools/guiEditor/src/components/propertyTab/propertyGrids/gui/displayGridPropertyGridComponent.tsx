@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { DisplayGrid } from "gui/2D/controls/displayGrid";
+import type { DisplayGrid } from "gui/2D/controls/displayGrid";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";

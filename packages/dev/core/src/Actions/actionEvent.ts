@@ -1,8 +1,8 @@
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Nullable } from "../types";
-import { Sprite } from "../Sprites/sprite";
-import { Scene } from "../scene";
-import { Vector2 } from "../Maths/math.vector";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Nullable } from "../types";
+import type { Sprite } from "../Sprites/sprite";
+import type { Scene } from "../scene";
+import type { Vector2 } from "../Maths/math.vector";
 
 /**
  * Interface used to define ActionEvent

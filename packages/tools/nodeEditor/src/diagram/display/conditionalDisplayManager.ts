@@ -1,6 +1,7 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { ConditionalBlockConditions, ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
+import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
 
 export class ConditionalDisplayManager implements IDisplayManager {
     public getHeaderClass() {

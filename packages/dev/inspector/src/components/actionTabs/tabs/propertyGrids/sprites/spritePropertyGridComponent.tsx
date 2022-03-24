@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { GlobalState } from "../../../../globalState";
+import type { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { Sprite } from "core/Sprites/sprite";
+import type { Sprite } from "core/Sprites/sprite";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextureHelper } from "../../../../../textureHelper";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 
 interface ISpritePropertyGridComponentProps {

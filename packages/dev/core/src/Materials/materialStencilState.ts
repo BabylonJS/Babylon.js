@@ -1,6 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { IStencilState } from "../States/IStencilState";
+import type { IStencilState } from "../States/IStencilState";
 
 declare type Scene = import("../scene").Scene;
 

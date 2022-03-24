@@ -2,7 +2,7 @@ import * as glob from "glob";
 import * as path from "path";
 import { copyFile, checkArgs } from "./utils";
 import * as chokidar from "chokidar";
-import { DevPackageName } from "./packageMapping";
+import type { DevPackageName } from "./packageMapping";
 import { buildShader } from "./buildShaders";
 
 const processFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName } = {}) => {

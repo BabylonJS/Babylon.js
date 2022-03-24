@@ -1,8 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisH } from "@fortawesome/free-solid-svg-icons";
 import * as React from "react";
-import { Nullable } from "core/types";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 interface IExtensionsComponentProps {
     target: any;

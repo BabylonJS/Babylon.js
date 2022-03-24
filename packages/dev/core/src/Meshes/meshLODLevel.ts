@@ -1,5 +1,5 @@
-import { Mesh } from "./mesh";
-import { Nullable } from "../types";
+import type { Mesh } from "./mesh";
+import type { Nullable } from "../types";
 
 /**
  * Class used to represent a specific level of detail of a mesh

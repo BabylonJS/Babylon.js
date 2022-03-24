@@ -1,11 +1,11 @@
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { Observable } from "../Misc/observable";
-import { Nullable, FloatArray } from "../types";
-import { Scene } from "../scene";
+import type { Nullable, FloatArray } from "../types";
+import type { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { GetClass } from "../Misc/typeStore";
 

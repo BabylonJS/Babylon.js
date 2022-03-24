@@ -1,7 +1,7 @@
 import { BaseSlider } from "./baseSlider";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create slider controls

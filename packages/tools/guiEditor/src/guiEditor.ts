@@ -3,8 +3,8 @@ import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { Popup } from "shared-ui-components/lines/popup";
-import { Observable } from "core/Misc/observable";
-import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import type { Observable } from "core/Misc/observable";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 /**
  * Interface used to specify creation options for the gui editor

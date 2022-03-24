@@ -1,5 +1,5 @@
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 

@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { GlobalState } from "../../../../globalState";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import type { Observable } from "core/Misc/observable";
+import type { GlobalState } from "../../../../globalState";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 

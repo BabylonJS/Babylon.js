@@ -1,14 +1,15 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GradientBlockColorStep, GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientStepComponent } from "./gradientStepComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { Color3 } from "core/Maths/math.color";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;

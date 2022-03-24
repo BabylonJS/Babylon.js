@@ -1,22 +1,21 @@
 import { Bone } from "./bone";
-
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import { Scene } from "../scene";
-import { Nullable } from "../types";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import { Animatable } from "../Animations/animatable";
-import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
+import type { Animatable } from "../Animations/animatable";
+import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { Animation } from "../Animations/animation";
 import { AnimationRange } from "../Animations/animationRange";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
-import { IInspectable } from "../Misc/iInspectable";
-import { IAnimatable } from "../Animations/animatable.interface";
-import { AbstractScene } from "../abstractScene";
+import type { IInspectable } from "../Misc/iInspectable";
+import type { IAnimatable } from "../Animations/animatable.interface";
+import type { AbstractScene } from "../abstractScene";
 
 /**
  * Class used to handle skinning animations

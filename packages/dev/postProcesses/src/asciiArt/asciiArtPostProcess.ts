@@ -1,11 +1,11 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { serialize, SerializationHelper } from "core/Misc/decorators";
-import { Camera } from "core/Cameras/camera";
+import type { Camera } from "core/Cameras/camera";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { Effect } from "core/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 import { PostProcess } from "core/PostProcesses/postProcess";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import "core/Engines/Extensions/engine.dynamicTexture";
 import "./asciiart.fragment";
 

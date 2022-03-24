@@ -1,4 +1,4 @@
-import {
+import type {
     ICanvasGraphServiceSettings,
     IPerfMinMax,
     IGraphDrawableArea,
@@ -8,15 +8,15 @@ import {
     IPerfTextMeasureCache,
     IPerfLayoutSize,
     IPerfTicker,
-    TimestampUnit,
     ITooltipPreprocessedInformation,
     IPerfTooltipHoverPosition,
     IVisibleRangeChangedObservableProps,
 } from "./graphSupportingTypes";
-import { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { TimestampUnit } from "./graphSupportingTypes";
+import type { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import { Scalar } from "core/Maths/math.scalar";
 import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
 const defaultColor = "#000";
 const axisColor = "#c0c4c8";

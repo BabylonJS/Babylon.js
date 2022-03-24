@@ -71,9 +71,28 @@
         //   "react/no-adjacent-inline-elements": "error",
         //   "react/react-in-jsx-scope": "error",
         //   "react/self-closing-comp": "error",
-        "import/no-unresolved": "off",
+        "import/no-unresolved": "off", // because of the way the repo is structured
+        // todo - make this work with external modules
+        "import/named": "error",
+        "import/no-cycle": [1, { "maxDepth": 1, "ignoreExternal": true }],
+        "import/no-internal-modules": [
+            "error",
+            {
+                // {   "allow": ["**/*.ts", "**/*.tsx"]
+                "forbid": ["**/index", "**/"]
+            }
+        ],
+        // Another way of implementing that:
+        // "no-restricted-imports": ["error", {
+        //     "patterns": [{
+        //       "group": ["index"],
+        //       "message": "Do not import from index"
+        //     }]
+        // }],
+        // "no-duplicate-imports": ["error", { "includeExports": true }],
         // should be error, no?
         "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        // "@typescript-eslint/consistent-type-imports": ["error", { "disallowTypeAnnotations": false }],
         "@typescript-eslint/naming-convention": [
             "warn",
             {
@@ -131,18 +150,18 @@
             {
                 "selector": "variable",
                 "format": ["camelCase", "UPPER_CASE"]
-            },            
+            },
             {
                 "selector": "variable",
                 "modifiers": ["const", "global"],
                 "format": ["PascalCase", "camelCase"],
                 "leadingUnderscore": "allow"
-            },    
+            },
             {
                 "selector": "function",
                 "format": ["PascalCase", "camelCase"],
                 "leadingUnderscore": "allow"
-            },        
+            },
             {
                 "selector": "function",
                 "modifiers": ["exported", "global"],

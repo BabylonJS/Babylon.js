@@ -1,13 +1,13 @@
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "../context";
 import { Animation } from "core/Animations/animation";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
 import { CurveComponent } from "./curveComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { IAnimationKey } from "core/Animations/animationKey";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { IAnimationKey } from "core/Animations/animationKey";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";

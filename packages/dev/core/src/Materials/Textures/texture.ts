@@ -1,13 +1,13 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
-import { IInspectable } from "../../Misc/iInspectable";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { IInspectable } from "../../Misc/iInspectable";
+import type { ThinEngine } from "../../Engines/thinEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";

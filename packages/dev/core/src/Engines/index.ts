@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./constants";
 export * from "./engineCapabilities";
 export * from "./instancingAttributeInfo";

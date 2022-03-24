@@ -1,11 +1,12 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { StackPanel } from "./stackPanel";
 import { Button } from "./button";
-import { Container } from "./container";
-import { TextBlock } from "./textBlock";
-import { InputText } from "./inputText";
+import type { Container } from "./container";
+import type { TextBlock } from "./textBlock";
+import type { InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**

@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size

@@ -1,7 +1,7 @@
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
+import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from "../../../Misc/tools";
 import { EndsWith } from "../../../Misc/stringTools";

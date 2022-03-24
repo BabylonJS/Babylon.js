@@ -1,18 +1,18 @@
-import { Scene } from "../scene";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { IParticleSystem } from "../Particles/IParticleSystem";
-import { Skeleton } from "../Bones/skeleton";
+import type { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { IParticleSystem } from "../Particles/IParticleSystem";
+import type { Skeleton } from "../Bones/skeleton";
 import { SceneLoader } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
-import { AnimationGroup } from "../Animations/animationGroup";
-import { AssetContainer } from "../assetContainer";
+import type { AnimationGroup } from "../Animations/animationGroup";
+import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 
 /**

@@ -1,18 +1,20 @@
 import { Logger } from "../Misc/logger";
-import { Observable, Observer } from "../Misc/observable";
-import { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
-import { Gizmo, GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache } from "./gizmo";
+import { Gizmo } from "./gizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Mesh } from "../Meshes/mesh";
-import { Node } from "../node";
-import { PointerInfo } from "../Events/pointerEvents";
+import type { Mesh } from "../Meshes/mesh";
+import type { Node } from "../node";
+import type { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { GizmoManager } from "./gizmoManager";
+import type { GizmoManager } from "./gizmoManager";
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */

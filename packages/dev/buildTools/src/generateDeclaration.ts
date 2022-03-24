@@ -27,6 +27,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
     const mapping = getAllPackageMappingsByDevNames();
     let processedLines = lines
         .map((line: string) => {
+            line = line.replace("import type ", "import ");
             // Replace Type Imports
             const regexTypeImport = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
             let match = regexTypeImport.exec(line);

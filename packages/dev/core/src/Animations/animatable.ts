@@ -1,13 +1,13 @@
 import { Animation } from "./animation";
 import { RuntimeAnimation } from "./runtimeAnimation";
 
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Matrix, Quaternion, Vector3, TmpVectors } from "../Maths/math.vector";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { Bone } from "../Bones/bone";
-import { Node } from "../node";
+import type { Node } from "../node";
 
 /**
  * Class used to store an actual running animation

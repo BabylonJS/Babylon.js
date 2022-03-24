@@ -1,7 +1,7 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
-import { PickingInfo } from "../Collisions/pickingInfo";
-import { IMouseEvent } from "./deviceInputEvents";
+import type { PickingInfo } from "../Collisions/pickingInfo";
+import type { IMouseEvent } from "./deviceInputEvents";
 
 declare type Ray = import("../Culling/ray").Ray;
 

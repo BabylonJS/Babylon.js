@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger } from "../Misc/logger";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 
 /**
  * for description see https://www.khronos.org/opengles/sdk/tools/KTX/

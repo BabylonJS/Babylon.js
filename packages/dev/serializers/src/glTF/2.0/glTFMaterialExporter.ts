@@ -1,32 +1,28 @@
-import {
+import type {
     ITextureInfo,
-    ImageMimeType,
     IMaterial,
     IMaterialPbrMetallicRoughness,
-    MaterialAlphaMode,
     IMaterialOcclusionTextureInfo,
     ISampler,
-    TextureMagFilter,
-    TextureMinFilter,
-    TextureWrapMode,
     ITexture,
     IImage,
     IMaterialExtension,
 } from "babylonjs-gltf2interface";
+import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
 import { TextureTools } from "core/Misc/textureTools";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
-import { _Exporter } from "./glTFExporter";
+import type { _Exporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
 
 declare type Material = import("core/Materials/material").Material;

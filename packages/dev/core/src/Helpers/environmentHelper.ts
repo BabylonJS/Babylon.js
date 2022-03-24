@@ -1,10 +1,10 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
