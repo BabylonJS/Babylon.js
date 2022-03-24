@@ -9,6 +9,10 @@ import type { INative } from "../../Engines/Native/nativeInterfaces";
 import type { Engine } from "../../Engines/engine";
 import type { IUIEvent } from "../../Events/deviceInputEvents";
 
+type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
+
+export type DeviceSourceType = Distribute<DeviceType>;
+
 declare const _native: INative;
 
 declare module "../../Engines/engine" {
@@ -20,8 +24,8 @@ declare module "../../Engines/engine" {
 
 /** @hidden */
 export interface IObservableManager {
-    onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-    onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+    onDeviceConnectedObservable: Observable<DeviceSourceType>;
+    onDeviceDisconnectedObservable: Observable<DeviceSourceType>;
 
     // Functions
     _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void;
