@@ -1,23 +1,24 @@
 import * as React from "react";
-import { Observable, Observer } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
-import { Image } from "gui/2D/controls/image";
-import { TextBlock } from "gui/2D/controls/textBlock";
+import type { Image } from "gui/2D/controls/image";
+import type { TextBlock } from "gui/2D/controls/textBlock";
 import { Container } from "gui/2D/controls/container";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "shared-ui-components/lines/targetsProxy";
-import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
+import type { DimensionProperties } from "../../../../diagram/coordinateHelper";
+import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
 import { Vector2 } from "core/Maths/math";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 

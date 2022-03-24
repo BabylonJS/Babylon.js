@@ -1,13 +1,13 @@
-import { Scene } from "core/scene";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Nullable } from "core/types";
-import { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Nullable } from "core/types";
+import type { Mesh } from "core/Meshes/mesh";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
-import { Observer } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
-import { PickingInfo } from "core/Collisions/pickingInfo";
+import type { Observer } from "core/Misc/observable";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { PickingInfo } from "core/Collisions/pickingInfo";
 
 /**
  * NearMenu that displays buttons and follows the camera

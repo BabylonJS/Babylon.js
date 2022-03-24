@@ -1,6 +1,6 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { BlockTools } from "../../blockTools";
 
 export class ElbowDisplayManager implements IDisplayManager {

@@ -1,8 +1,8 @@
-import { INative } from "../../Engines/Native/nativeInterfaces";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { INative } from "../../Engines/Native/nativeInterfaces";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, NativePointerInput, PointerInput } from "./deviceEnums";
-import { IDeviceInputSystem } from "./inputInterfaces";
+import type { IDeviceInputSystem } from "./inputInterfaces";
 
 declare const _native: INative;
 

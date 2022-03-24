@@ -1,6 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import { IndicesArray } from "../types";
+import type { IndicesArray } from "../types";
 import { SubMesh } from "./subMesh";
 
 declare module "./subMesh" {

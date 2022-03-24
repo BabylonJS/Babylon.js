@@ -1,6 +1,6 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
-import { Nullable } from "core/types";
+import type { GlobalState } from "../globalState";
+import type { Nullable } from "core/types";
 
 import "../scss/errorDisplay.scss";
 

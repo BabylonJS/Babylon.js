@@ -1,17 +1,17 @@
 import * as React from "react";
 
 import { Observable } from "core/Misc/observable";
-import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import type { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 
 interface IBackgroundMaterialPropertyGridComponentProps {
     globalState: GlobalState;

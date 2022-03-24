@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
@@ -10,9 +10,9 @@ import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { RGBDTextureTools } from "./rgbdTextureTools";
-import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 import "../Engines/Extensions/engine.renderTargetCube";
 import "../Engines/Extensions/engine.readTexture";

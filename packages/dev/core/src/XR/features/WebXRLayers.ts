@@ -1,11 +1,12 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from "../webXRSessionManager";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { WebXRLayerType, WebXRLayerWrapper } from "../webXRLayerWrapper";
-import { Viewport } from "../../Maths/math.viewport";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { WebXRLayerType } from "../webXRLayerWrapper";
+import { WebXRLayerWrapper } from "../webXRLayerWrapper";
+import type { Viewport } from "../../Maths/math.viewport";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
 
 /**

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
+import type { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
 
 export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

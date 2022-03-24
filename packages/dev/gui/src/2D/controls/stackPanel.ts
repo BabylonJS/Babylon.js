@@ -1,12 +1,12 @@
 import { Tools } from "core/Misc/tools";
 
 import { Container } from "./container";
-import { Measure } from "../measure";
+import type { Measure } from "../measure";
 import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create a 2D stack panel container

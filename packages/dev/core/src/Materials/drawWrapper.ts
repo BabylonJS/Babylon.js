@@ -1,6 +1,6 @@
-import { IDrawContext } from "../Engines/IDrawContext";
-import { IMaterialContext } from "../Engines/IMaterialContext";
-import { Nullable } from "../types";
+import type { IDrawContext } from "../Engines/IDrawContext";
+import type { IMaterialContext } from "../Engines/IMaterialContext";
+import type { Nullable } from "../types";
 
 declare type ThinEngine = import("../Engines/thinEngine").ThinEngine;
 declare type Effect = import("./effect").Effect;

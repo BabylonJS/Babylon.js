@@ -1,5 +1,5 @@
 import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
-import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 
 declare let MSC_TRANSCODER: any;

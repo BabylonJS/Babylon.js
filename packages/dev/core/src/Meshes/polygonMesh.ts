@@ -1,10 +1,10 @@
 import { Logger } from "../Misc/logger";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Path2 } from "../Maths/math.path";
 import { Epsilon } from "../Maths/math.constants";
 import { EngineStore } from "../Engines/engineStore";

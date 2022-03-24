@@ -1,10 +1,11 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Particle } from "../particle";
-import { IParticleEmitterType } from "./IParticleEmitterType";
-import { Nullable } from "../../types";
-import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3, TmpVectors } from "../../Maths/math.vector";
+import type { Particle } from "../particle";
+import type { IParticleEmitterType } from "./IParticleEmitterType";
+import type { Nullable } from "../../types";
+import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from a custom list of positions.
  */

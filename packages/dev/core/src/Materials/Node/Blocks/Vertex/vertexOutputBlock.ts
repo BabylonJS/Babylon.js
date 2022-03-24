@@ -1,10 +1,10 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Immutable } from "../../../../types";
+import type { Immutable } from "../../../../types";
 
 declare type FragmentOutputBlock = import("../Fragment/fragmentOutputBlock").FragmentOutputBlock;
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { PaneComponent } from "./paneComponent";
+import type { PaneComponent } from "./paneComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface ITabsComponentProps {

@@ -1,8 +1,9 @@
-import { ComputeEffect, IComputeEffectCreationOptions } from "../../../Compute/computeEffect";
-import { IComputeContext } from "../../../Compute/IComputeContext";
-import { IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
-import { Nullable } from "../../../types";
-import { ComputeBindingList, ComputeBindingMapping } from "../../Extensions/engine.computeShader";
+import type { IComputeEffectCreationOptions } from "../../../Compute/computeEffect";
+import { ComputeEffect } from "../../../Compute/computeEffect";
+import type { IComputeContext } from "../../../Compute/IComputeContext";
+import type { IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
+import type { Nullable } from "../../../types";
+import type { ComputeBindingList, ComputeBindingMapping } from "../../Extensions/engine.computeShader";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";

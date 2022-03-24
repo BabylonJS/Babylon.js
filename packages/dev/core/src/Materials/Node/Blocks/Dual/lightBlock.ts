@@ -1,19 +1,19 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { MaterialHelper } from "../../../materialHelper";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { Effect } from "../../../effect";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import { Light } from "../../../../Lights/light";
-import { Nullable } from "../../../../types";
+import type { Light } from "../../../../Lights/light";
+import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Scene } from "../../../../scene";
+import type { Scene } from "../../../../scene";
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";

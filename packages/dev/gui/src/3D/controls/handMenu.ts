@@ -1,10 +1,10 @@
-import { Scene } from "core/scene";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Nullable } from "core/types";
-import { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Nullable } from "core/types";
+import type { Mesh } from "core/Meshes/mesh";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
 import { HandConstraintBehavior } from "core/Behaviors/Meshes/handConstraintBehavior";
-import { WebXRExperienceHelper } from "core/XR/webXRExperienceHelper";
+import type { WebXRExperienceHelper } from "core/XR/webXRExperienceHelper";
 
 /**
  * Hand menu that displays buttons and floats around the hand.

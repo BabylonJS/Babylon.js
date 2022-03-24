@@ -1,4 +1,4 @@
-import { WebRequest } from "./webRequest";
+import type { WebRequest } from "./webRequest";
 
 /**
  * Class used to define a retry strategy when error happens while loading assets

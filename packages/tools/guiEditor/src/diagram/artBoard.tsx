@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { CoordinateHelper, Rect } from "./coordinateHelper";
 
 interface IArtBoardProps {

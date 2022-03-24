@@ -1,8 +1,8 @@
-import { IDisposable } from "../scene";
-import { IActionEvent } from "./actionEvent";
-import { IAction } from "./action";
+import type { IDisposable } from "../scene";
+import type { IActionEvent } from "./actionEvent";
+import type { IAction } from "./action";
 import { Constants } from "../Engines/constants";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 /**
  * Abstract class used to decouple action Manager from scene and meshes.

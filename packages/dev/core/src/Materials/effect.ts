@@ -1,16 +1,16 @@
 import { Observable } from "../Misc/observable";
-import { FloatArray, Nullable } from "../types";
+import type { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
-import { IDisposable } from "../scene";
-import { IPipelineContext } from "../Engines/IPipelineContext";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { IDisposable } from "../scene";
+import type { IPipelineContext } from "../Engines/IPipelineContext";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
-import { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
-import { ThinEngine } from "../Engines/thinEngine";
-import { IEffectFallbacks } from "./iEffectFallbacks";
+import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "./shaderLanguage";
 

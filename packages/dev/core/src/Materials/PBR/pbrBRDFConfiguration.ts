@@ -3,7 +3,7 @@ import { Constants } from "../../Engines/constants";
 import { serialize, expandToProperty } from "../../Misc/decorators";
 import { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
+import type { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 /**
  * @hidden

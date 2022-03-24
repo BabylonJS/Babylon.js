@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import * as MatLib from "materials/gradient/index";
 
 /**

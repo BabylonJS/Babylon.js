@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math.color";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { IAnimatable } from "../../Animations/animatable.interface";
-import { EffectFallbacks } from "../effectFallbacks";
-import { SubMesh } from "../../Meshes/subMesh";
+import type { IAnimatable } from "../../Animations/animatable.interface";
+import type { EffectFallbacks } from "../effectFallbacks";
+import type { SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";

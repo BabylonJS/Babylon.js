@@ -1,14 +1,14 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Slider } from "gui/2D/controls/sliders/slider";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Slider } from "gui/2D/controls/sliders/slider";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
-import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import type { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";

@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { checkDirectorySync, checkArgs } from "./utils";
+import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils";
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
 // import { DevPackageName } from "./packageMapping";
@@ -161,6 +161,14 @@ export const ${shaderName} = { name, shader };`
     // Go to disk.
     const tsShaderFilename = path.join(directory /*.replace("src", "dist")*/, tsFilename);
     checkDirectorySync(path.dirname(tsShaderFilename));
+    // check hash
+    if (fs.existsSync(tsShaderFilename)) {
+        const hash = getHashOfFile(tsShaderFilename);
+        const newHash = getHashOfContent(tsContent);
+        if (hash === newHash) {
+            return;
+        }
+    }
     fs.writeFileSync(tsShaderFilename, tsContent);
     isVerbose && console.log("Generated " + tsShaderFilename);
 }

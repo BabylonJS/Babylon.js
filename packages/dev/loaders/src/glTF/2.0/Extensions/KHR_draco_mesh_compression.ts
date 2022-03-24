@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 
-import { MeshPrimitiveMode, IKHRDracoMeshCompression, AccessorComponentType } from "babylonjs-gltf2interface";
-import { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
+import { MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
+import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_draco_mesh_compression";

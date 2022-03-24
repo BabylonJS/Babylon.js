@@ -1,7 +1,7 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import "../Shaders/rgbdDecode.fragment";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 import "../Engines/Extensions/engine.renderTarget";
 import { ApplyPostProcess } from "./textureTools";

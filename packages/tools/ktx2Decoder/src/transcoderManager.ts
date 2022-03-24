@@ -1,4 +1,5 @@
-import { transcodeTarget, sourceTextureFormat, Transcoder } from "./transcoder";
+import type { Transcoder } from "./transcoder";
+import { transcodeTarget, sourceTextureFormat } from "./transcoder";
 import { WASMMemoryManager } from "./wasmMemoryManager";
 
 /**

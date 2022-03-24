@@ -1,8 +1,8 @@
 import { Tools } from "../Misc/tools";
-import { Observer } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene, IDisposable } from "../scene";
+import type { Observer } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene, IDisposable } from "../scene";
 import { PerfCounter } from "../Misc/perfCounter";
 /**
  * This class can be used to get instrumentation data from a Babylon engine

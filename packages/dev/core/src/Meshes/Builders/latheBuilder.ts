@@ -1,8 +1,9 @@
-import { Scene } from "../../scene";
-import { Vector3, Vector4 } from "../../Maths/math.vector";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * Creates lathe mesh.

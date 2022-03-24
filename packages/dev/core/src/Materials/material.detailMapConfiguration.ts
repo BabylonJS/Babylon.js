@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Material } from "./material";
 import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
 import { MaterialFlags } from "./materialFlags";
 import { MaterialHelper } from "./materialHelper";
-import { BaseTexture } from "./Textures/baseTexture";
-import { UniformBuffer } from "./uniformBuffer";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { BaseTexture } from "./Textures/baseTexture";
+import type { UniformBuffer } from "./uniformBuffer";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Constants } from "../Engines/constants";

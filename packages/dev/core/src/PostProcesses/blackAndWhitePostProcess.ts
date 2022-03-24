@@ -1,12 +1,13 @@
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
-import { Engine } from "../Engines/engine";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
+import type { Engine } from "../Engines/engine";
 
 import "../Shaders/blackAndWhite.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 

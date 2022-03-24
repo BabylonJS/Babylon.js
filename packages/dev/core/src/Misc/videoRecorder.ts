@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-var */
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 interface MediaRecorder {
     /** Starts recording */

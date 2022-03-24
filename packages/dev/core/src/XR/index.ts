@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./webXRCamera";
 export * from "./webXREnterExitUI";
 export * from "./webXRExperienceHelper";

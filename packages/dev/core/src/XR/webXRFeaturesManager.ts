@@ -1,5 +1,5 @@
-import { WebXRSessionManager } from "./webXRSessionManager";
-import { IDisposable } from "../scene";
+import type { WebXRSessionManager } from "./webXRSessionManager";
+import type { IDisposable } from "../scene";
 import { Tools } from "../Misc/tools";
 
 /**

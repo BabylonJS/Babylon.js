@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { Color3 } from "core/Maths/math.color";
+import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import type { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
 
 const inputNameToAttributeValue: { [name: string]: string } = {

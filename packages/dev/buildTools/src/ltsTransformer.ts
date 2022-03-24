@@ -75,18 +75,43 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                             return;
                         } else {
                             leftOvers.forEach((i) => {
-                                leftImports.push(ts.factory.updateImportSpecifier(i, true, i.propertyName, i.name));
+                                leftImports.push(ts.factory.updateImportSpecifier(i, false, i.propertyName, i.name));
                             });
                         }
                     }
                     const transformed = transformLocation(packageName, (node.moduleSpecifier as any).text); // TODO any is still needed
                     // check if we are loading from the same source
-                    if (!transformed || !clause) {
-                        return;
+                    if (!transformed) {
+                        return node;
+                    }
+                    if (clause && clause.namedBindings && clause.namedBindings.kind === ts.SyntaxKind.NamedImports) {
+                        // update the import declaration
+                        const newClause = ts.factory.updateImportClause(clause, clause.isTypeOnly, clause.name, ts.factory.createNamedImports(leftImports));
+                        return ts.factory.updateImportDeclaration(node, node.decorators, node.modifiers, newClause, ts.factory.createStringLiteral(transformed), node.assertClause); // TODO what is the assert clause?
+                    } else {
+                        return ts.factory.updateImportDeclaration(
+                            node,
+                            node.decorators,
+                            node.modifiers,
+                            node.importClause,
+                            ts.factory.createStringLiteral(transformed),
+                            node.assertClause
+                        ); // TODO what is the assert clause?
+                    }
+                } else if (ts.isExportDeclaration(node)) {
+                    // check import clause
+                    const clause = node.exportClause;
+                    if (!node.moduleSpecifier) {
+                        return node;
+                    }
+                    const transformed = transformLocation(packageName, (node.moduleSpecifier as any).text); // TODO any is still needed
+                    // check if we are loading from the same source
+                    if (!transformed) {
+                        return node;
                     }
                     // update the import declaration
-                    const newClause = ts.factory.updateImportClause(clause, clause.isTypeOnly, clause.name, ts.factory.createNamedImports(leftImports));
-                    return ts.factory.updateImportDeclaration(node, node.decorators, node.modifiers, newClause, ts.factory.createStringLiteral(transformed), undefined); // TODO what is the assert clause?
+                    // const newClause = ts.factory.updateExport(clause, clause.isTypeOnly, clause.name, ts.factory.createNamedImports(leftImports));
+                    return ts.factory.updateExportDeclaration(node, node.decorators, node.modifiers, false, clause, ts.factory.createStringLiteral(transformed), undefined); // TODO what is the assert clause?
                 } else if (ts.isModuleDeclaration(node)) {
                     const symbol = checker.getSymbolAtLocation(node.name);
                     // is it a module declaration of a file and not an actual module (i.e. 'declare module "./scene"')
@@ -163,7 +188,15 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
         );
     } else {
         console.log(ltsFile, "no corresponding file in base package. copying.");
-        copyFile(ltsFile, newLocation);
+        inLTS = true;
+        // run the LTS file through the transformer
+        const resultLTS = ts.transform(sourceLTS, [ltsTransformer]);
+
+        // generate the LTS source that will be added to the original source
+        const ltsVersion = printer.printFile(resultLTS.transformed[0]);
+        // save the LTS source to the generated folder
+        checkDirectorySync(path.dirname(newLocation));
+        fs.writeFileSync(path.resolve(newLocation), `${ltsVersion}`);
     }
     console.log(`LTS source saved to ${newLocation}`);
 };
