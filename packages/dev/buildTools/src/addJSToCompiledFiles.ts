@@ -17,7 +17,7 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
 
         const regex = /import .* from "(\..*)";/g;
         let match;
-        while ((match = regex.exec(sourceCode)) !== null) {
+        while ((match = regex.exec(processed)) !== null) {
             if(!fs.existsSync(path.resolve(path.dirname(file), match[1]))) {
                 console.log(file, path.resolve(path.dirname(file), match[1]));
                 throw new Error(`File ${match[1]} does not exist. Are you importing from an index/directory?`);
