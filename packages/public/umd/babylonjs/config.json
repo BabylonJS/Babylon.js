@@ -1,5 +1,6 @@
 {
     "declarationLibs": ["@lts/core"],
     "devPackageName": "core",
-    "filename": "babylon.module.d.ts"
+    "filename": "babylon.module.d.ts",
+    "outputDirectory": "./"
 }
