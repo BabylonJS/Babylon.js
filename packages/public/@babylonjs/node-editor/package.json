@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-editor",
-    "version": "5.0.0-rc.4",
+    "version": "5.0.0-rc.7",
     "main": "dist/babylon.nodeEditor.max.js",
     "module": "dist/babylon.nodeEditor.max.js",
     "esnext": "dist/babylon.nodeEditor.max.js",
@@ -17,8 +17,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.4",
-        "@babylonjs/gui": "^5.0.0-rc.4",
+        "@babylonjs/core": "^5.0.0-rc.7",
+        "@babylonjs/gui": "^5.0.0-rc.7",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "tslib": "^2.3.1"
