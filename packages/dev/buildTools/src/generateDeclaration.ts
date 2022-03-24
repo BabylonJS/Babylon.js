@@ -359,7 +359,7 @@ export function generateDeclaration() {
         const outputDir = config.outputDirectory || "./dist";
         checkDirectorySync(outputDir);
         const directoriesToWatch = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`));
-        const looseDeclarations = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/src/LibDeclarations/**/*.d.ts`));
+        const looseDeclarations = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`));
         // const files = config.declarationLibs.map((lib: string) => {
         //     // load the declarations from the root directory of the requested lib
         //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
@@ -383,10 +383,10 @@ export function generateDeclaration() {
             );
             const filename = `${outputDir}/${config.filename || "index.d.ts"}`;
             // check hash
-            if(fs.existsSync(filename)){
+            if (fs.existsSync(filename)) {
                 const hash = getHashOfFile(filename);
                 const newHash = getHashOfContent(output);
-                if(hash === newHash){
+                if (hash === newHash) {
                     return;
                 }
             }
@@ -404,7 +404,7 @@ export function generateDeclaration() {
                         stabilityThreshold: 300,
                         pollInterval: 100,
                     },
-                    alwaysStat: true
+                    alwaysStat: true,
                 })
                 .on("all", (e, p, stats) => {
                     if (stats) {
