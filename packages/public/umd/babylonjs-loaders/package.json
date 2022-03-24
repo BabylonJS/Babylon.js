@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-loaders",
-    "version": "5.0.0-rc.7",
+    "version": "5.0.0-rc.8",
     "main": "babylonjs.loaders.js",
     "types": "babylonjs.loaders.module.d.ts",
     "files": [
@@ -14,8 +14,8 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.7",
-        "babylonjs-gltf2interface": "^5.0.0-rc.7"
+        "babylonjs": "^5.0.0-rc.8",
+        "babylonjs-gltf2interface": "^5.0.0-rc.8"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
