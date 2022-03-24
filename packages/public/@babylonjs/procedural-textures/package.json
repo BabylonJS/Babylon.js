@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/procedural-textures",
-    "version": "5.0.0-rc.8",
+    "version": "5.0.0-rc.9",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,7 +18,7 @@
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.8",
+        "@babylonjs/core": "^5.0.0-rc.9",
         "tslib": "^2.3.1"
     },
     "devDependencies": {

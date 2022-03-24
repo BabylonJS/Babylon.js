@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "5.0.0-rc.8",
+    "version": "5.0.0-rc.9",
     "module": "dist/babylon.inspector.bundle.max.js",
     "main": "dist/babylon.inspector.bundle.max.js",
     "typings": "dist/babylon.inspector.module.d.ts",
@@ -16,8 +16,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.8",
-        "@babylonjs/gui": "^5.0.0-rc.8",
+        "@babylonjs/core": "^5.0.0-rc.9",
+        "@babylonjs/gui": "^5.0.0-rc.9",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "tslib": "^2.3.1"
