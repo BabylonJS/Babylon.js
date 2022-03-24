@@ -331,7 +331,7 @@ export class _Exporter {
      */
     public constructor(babylonScene?: Nullable<Scene>, options?: IExportOptions) {
         this._glTF = {
-            asset: { generator: "BabylonJS", version: "2.0" },
+            asset: { generator: `Babylon.js v${Engine.Version}`, version: "2.0" },
         };
         babylonScene = babylonScene || EngineStore.LastCreatedScene;
         if (!babylonScene) {
@@ -1930,36 +1930,38 @@ export class _Exporter {
         });
 
         // Export babylon cameras to glTFCamera
-        const cameraHash = new Map();
+        const cameraMap = new Map<Camera, number>();
         babylonScene.cameras.forEach((camera) => {
-            const glTFCamera: ICamera = {
-                type: camera.mode === Camera.PERSPECTIVE_CAMERA ? CameraType.PERSPECTIVE : CameraType.ORTHOGRAPHIC,
-            };
-
-            if (camera.name) {
-                glTFCamera.name = camera.name;
-            }
-
-            if (glTFCamera.type === CameraType.PERSPECTIVE) {
-                glTFCamera.perspective = {
-                    aspectRatio: camera.getEngine().getAspectRatio(camera),
-                    yfov: camera._cache.fovMode === Camera.FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera._cache.aspectRatio,
-                    znear: camera.minZ,
-                    zfar: camera.maxZ,
+            if (!this._options.shouldExportNode || this._options.shouldExportNode(camera)) {
+                const glTFCamera: ICamera = {
+                    type: camera.mode === Camera.PERSPECTIVE_CAMERA ? CameraType.PERSPECTIVE : CameraType.ORTHOGRAPHIC,
                 };
-            } else if (glTFCamera.type === CameraType.ORTHOGRAPHIC) {
-                const halfWidth = camera.orthoLeft && camera.orthoRight ? 0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
-                const halfHeight = camera.orthoBottom && camera.orthoTop ? 0.5 * (camera.orthoTop - camera.orthoBottom) : camera.getEngine().getRenderHeight() * 0.5;
-                glTFCamera.orthographic = {
-                    xmag: halfWidth,
-                    ymag: halfHeight,
-                    znear: camera.minZ,
-                    zfar: camera.maxZ,
-                };
-            }
 
-            cameraHash.set(camera, this._cameras.length);
-            this._cameras.push(glTFCamera);
+                if (camera.name) {
+                    glTFCamera.name = camera.name;
+                }
+
+                if (glTFCamera.type === CameraType.PERSPECTIVE) {
+                    glTFCamera.perspective = {
+                        aspectRatio: camera.getEngine().getAspectRatio(camera),
+                        yfov: camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera.getEngine().getAspectRatio(camera),
+                        znear: camera.minZ,
+                        zfar: camera.maxZ,
+                    };
+                } else if (glTFCamera.type === CameraType.ORTHOGRAPHIC) {
+                    const halfWidth = camera.orthoLeft && camera.orthoRight ? 0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
+                    const halfHeight = camera.orthoBottom && camera.orthoTop ? 0.5 * (camera.orthoTop - camera.orthoBottom) : camera.getEngine().getRenderHeight() * 0.5;
+                    glTFCamera.orthographic = {
+                        xmag: halfWidth,
+                        ymag: halfHeight,
+                        znear: camera.minZ,
+                        zfar: camera.maxZ,
+                    };
+                }
+
+                cameraMap.set(camera, this._cameras.length);
+                this._cameras.push(glTFCamera);
+            }
         });
 
         const [exportNodes, exportMaterials] = this._getExportNodes(nodes);
@@ -1988,7 +1990,7 @@ export class _Exporter {
                             }
 
                             if (babylonNode instanceof Camera) {
-                                glTFNode.camera = cameraHash.get(babylonNode);
+                                glTFNode.camera = cameraMap.get(babylonNode);
                             }
 
                             if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
