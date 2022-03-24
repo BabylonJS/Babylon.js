@@ -101,6 +101,9 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                 } else if (ts.isExportDeclaration(node)) {
                     // check import clause
                     const clause = node.exportClause;
+                    if (!node.moduleSpecifier) {
+                        return node;
+                    }
                     const transformed = transformLocation(packageName, (node.moduleSpecifier as any).text); // TODO any is still needed
                     // check if we are loading from the same source
                     if (!transformed) {
