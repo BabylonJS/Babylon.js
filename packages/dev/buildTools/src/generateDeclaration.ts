@@ -305,7 +305,6 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
             return `\n${data}`;
         })
         .join("\n");
-    console.log(loseDeclarationsString);
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const defaultModuleName = getPublicPackageName(packageVariables.namespace);
     const packageName = getPublicPackageName(packageVariables[buildType]);
