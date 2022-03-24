@@ -3,9 +3,8 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chokidar from "chokidar";
 
-import { camelize, checkArgs, checkDirectorySync, debounce } from "./utils";
-import type { BuildType, DevPackageName } from "./packageMapping";
-import { getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
+import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile } from "./utils";
+import { BuildType, DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
 
 export interface IGenerateDeclarationConfig {
     devPackageName: DevPackageName;
@@ -339,6 +338,7 @@ export function generateDeclaration() {
         throw new Error("--config path to config file is required");
     }
     const asJSON = checkArgs("--json", true) as boolean;
+    const rootDir = findRootDirectory();
     // import { createRequire } from "module";
     // const requireRequest = createRequire(import.meta.url);
     // // a hack to load JSON!
@@ -359,30 +359,65 @@ export function generateDeclaration() {
         }
         const outputDir = config.outputDirectory || "./dist";
         checkDirectorySync(outputDir);
-        const files = config.declarationLibs.map((lib: string) => {
-            // load the declarations from the root directory of the requested lib
-            const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
-            return glob.sync(p);
-        });
+        const directoriesToWatch = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`));
+        const looseDeclarations = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`));
+        // const files = config.declarationLibs.map((lib: string) => {
+        //     // load the declarations from the root directory of the requested lib
+        //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
+        //     console.log(p);
+        //     return glob.sync(p);
+        // });
 
         // check if there are .d.ts files in LibDeclaration in the source directory
-        const decFiles = config.declarationLibs.map((lib: string) => {
-            // load the declarations from the root directory of the requested lib
-            const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`);
-            return glob.sync(p);
-        });
+        // const decFiles = config.declarationLibs.map((lib: string) => {
+        //     // load the declarations from the root directory of the requested lib
+        //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`);
+        //     return glob.sync(p);
+        // });
 
         const debounced = debounce(() => {
-            const output = generateCombinedDeclaration(files.flat(), config, decFiles.flat(), config.buildType);
-            fs.writeFileSync(`${outputDir}/${config.filename || "index.d.ts"}`, output);
+            const output = generateCombinedDeclaration(
+                directoriesToWatch.map((dir) => glob.sync(dir)).flat(),
+                config,
+                looseDeclarations.map((dir) => glob.sync(dir)).flat(),
+                config.buildType
+            );
+            const filename = `${outputDir}/${config.filename || "index.d.ts"}`;
+            // check hash
+            if (fs.existsSync(filename)) {
+                const hash = getHashOfFile(filename);
+                const newHash = getHashOfContent(output);
+                if (hash === newHash) {
+                    return;
+                }
+            }
+            fs.writeFileSync(filename, output);
             console.log("declaration file generated", config.declarationLibs);
-        }, 200);
+        }, 250);
 
-        debounced();
+        // debounced();
         if (checkArgs("--watch")) {
-            chokidar.watch(files.flat(), { ignoreInitial: true, awaitWriteFinish: true }).on("all", () => {
-                debounced();
-            });
+            const watchSize: { [path: string]: number } = {};
+            chokidar
+                .watch(directoriesToWatch, {
+                    ignoreInitial: false,
+                    awaitWriteFinish: {
+                        stabilityThreshold: 300,
+                        pollInterval: 100,
+                    },
+                    alwaysStat: true,
+                })
+                .on("all", (e, p, stats) => {
+                    if (stats) {
+                        if (watchSize[p] === stats.size) {
+                            return;
+                        }
+                        watchSize[p] = stats.size;
+                    }
+                    debounced();
+                });
+        } else {
+            debounced();
         }
     });
 }
