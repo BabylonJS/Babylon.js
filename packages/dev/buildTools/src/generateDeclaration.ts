@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chokidar from "chokidar";
 
-import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory } from "./utils";
+import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile } from "./utils";
 import { BuildType, DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
 
 export interface IGenerateDeclarationConfig {
@@ -381,7 +381,16 @@ export function generateDeclaration() {
                 looseDeclarations.map((dir) => glob.sync(dir)).flat(),
                 config.buildType
             );
-            fs.writeFileSync(`${outputDir}/${config.filename || "index.d.ts"}`, output);
+            const filename = `${outputDir}/${config.filename || "index.d.ts"}`;
+            // check hash
+            if(fs.existsSync(filename)){
+                const hash = getHashOfFile(filename);
+                const newHash = getHashOfContent(output);
+                if(hash === newHash){
+                    return;
+                }
+            }
+            fs.writeFileSync(filename, output);
             console.log("declaration file generated", config.declarationLibs);
         }, 250);
 
@@ -395,9 +404,7 @@ export function generateDeclaration() {
                         stabilityThreshold: 300,
                         pollInterval: 100,
                     },
-                    alwaysStat: true,
-                    interval: 200,
-                    binaryInterval: 600,
+                    alwaysStat: true
                 })
                 .on("all", (e, p, stats) => {
                     if (stats) {
