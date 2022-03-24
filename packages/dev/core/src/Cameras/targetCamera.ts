@@ -1,7 +1,7 @@
 import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Camera } from "./camera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";

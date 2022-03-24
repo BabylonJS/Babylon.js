@@ -1,8 +1,9 @@
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "../Engines/engine";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/depthOfFieldMerge.fragment";

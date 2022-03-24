@@ -1,6 +1,6 @@
 import * as React from "react";
-import { GlobalState } from "../../../globalState";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { GlobalState } from "../../../globalState";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { Color4LineComponent } from "../../../sharedComponents/color4LineComponent";
 
 interface IColor4PropertyTabComponentProps {

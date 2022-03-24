@@ -1,5 +1,5 @@
 import { Vector3 } from "../Maths/math.vector";
-import { Path2 } from "../Maths/math.path";
+import type { Path2 } from "../Maths/math.path";
 
 /**
  * A cursor which tracks a point on a path

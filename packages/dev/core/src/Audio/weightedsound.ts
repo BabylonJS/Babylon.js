@@ -1,4 +1,4 @@
-import { Sound } from "../Audio/sound";
+import type { Sound } from "../Audio/sound";
 import { Logger } from "../Misc/logger";
 
 /**

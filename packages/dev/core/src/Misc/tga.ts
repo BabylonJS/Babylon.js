@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Logger } from "../Misc/logger";
 
 //private static _TYPE_NO_DATA = 0;

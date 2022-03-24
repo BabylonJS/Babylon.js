@@ -1,4 +1,4 @@
-import { Nullable, IndicesArray, FloatArray } from "../types";
+import type { Nullable, IndicesArray, FloatArray } from "../types";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -6,16 +6,16 @@ import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
-import { Scene, IDisposable } from "../scene";
+import type { Scene, IDisposable } from "../scene";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
-import { TargetCamera } from "../Cameras/targetCamera";
+import type { TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Axis } from "../Maths/math.axis";
 import { SubMesh } from "../Meshes/subMesh";
-import { Material } from "../Materials/material";
+import type { Material } from "../Materials/material";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
-import { PickingInfo } from "../Collisions/pickingInfo";
+import type { PickingInfo } from "../Collisions/pickingInfo";
 import { Tools } from "../Misc/tools";
 
 /**

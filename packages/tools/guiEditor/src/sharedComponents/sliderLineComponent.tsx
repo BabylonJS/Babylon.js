@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { FloatLineComponent } from "./floatLineComponent";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 interface ISliderLineComponentProps {
     label: string;

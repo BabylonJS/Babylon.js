@@ -1,8 +1,8 @@
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
 /**

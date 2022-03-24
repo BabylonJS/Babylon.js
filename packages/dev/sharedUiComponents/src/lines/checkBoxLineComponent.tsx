@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./../propertyChangedEvent";
-import { IconDefinition } from "@fortawesome/fontawesome-common-types";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./../propertyChangedEvent";
+import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 

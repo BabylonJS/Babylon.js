@@ -1,18 +1,18 @@
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { Vector2 } from "core/Maths/math";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Vector2 } from "core/Maths/math";
 import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
-import { Image } from "../image";
+import type { Image } from "../image";
 import { Control } from "../control";
-import { Container } from "../container";
-import { Measure } from "../../measure";
-import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
+import type { Container } from "../container";
+import type { Measure } from "../../measure";
+import type { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a viewer window and sliders in a grid

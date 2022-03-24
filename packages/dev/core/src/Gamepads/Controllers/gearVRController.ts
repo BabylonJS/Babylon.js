@@ -1,10 +1,11 @@
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
+import type { ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, PoseEnabledControllerHelper } from "./poseEnabledController";
 
 /**
  * Gear VR Controller

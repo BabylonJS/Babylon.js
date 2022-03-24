@@ -1,17 +1,17 @@
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
-import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { Buffer, VertexBuffer } from "../Buffers/buffer";
-import { GPUParticleSystem } from "./gpuParticleSystem";
+import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import type { Buffer, VertexBuffer } from "../Buffers/buffer";
+import type { GPUParticleSystem } from "./gpuParticleSystem";
 
-import { DataArray } from "../types";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataArray } from "../types";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
-import { Effect } from "../Materials/effect";
+import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
+import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
 
 import "../ShadersWGSL/gpuUpdateParticles.compute";

@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
-import { Skeleton } from "core/Bones/skeleton";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
+import type { Skeleton } from "core/Bones/skeleton";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";

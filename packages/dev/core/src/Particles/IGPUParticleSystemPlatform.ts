@@ -1,9 +1,9 @@
-import { Buffer, VertexBuffer } from "../Buffers/buffer";
+import type { Buffer, VertexBuffer } from "../Buffers/buffer";
 
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { Effect } from "../Materials/effect";
-import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import { DataArray } from "../types";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { Effect } from "../Materials/effect";
+import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
+import type { DataArray } from "../types";
 
 /** @hidden */
 export interface IGPUParticleSystemPlatform {

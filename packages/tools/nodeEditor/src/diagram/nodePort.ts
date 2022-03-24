@@ -1,13 +1,13 @@
 import { BlockTools } from "../blockTools";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { GlobalState, ISelectionChangedOptions } from "../globalState";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { Vector2 } from "core/Maths/math.vector";
-import { IDisplayManager } from "./display/displayManager";
-import { GraphNode } from "./graphNode";
-import { FrameNodePort } from "./frameNodePort";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { GlobalState, ISelectionChangedOptions } from "../globalState";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Vector2 } from "core/Maths/math.vector";
+import type { IDisplayManager } from "./display/displayManager";
+import type { GraphNode } from "./graphNode";
+import type { FrameNodePort } from "./frameNodePort";
 
 export class NodePort {
     protected _element: HTMLDivElement;

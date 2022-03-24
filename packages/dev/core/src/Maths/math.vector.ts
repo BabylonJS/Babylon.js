@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
-import { Viewport } from "./math.viewport";
-import { DeepImmutable, Nullable, FloatArray, float } from "../types";
+import type { Viewport } from "./math.viewport";
+import type { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { IPlaneLike } from "./math.like";
+import type { IPlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
-import { Plane } from "./math.plane";
+import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 

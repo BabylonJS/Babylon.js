@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { InputText } from "gui/2D/controls/inputText";
+import type { InputText } from "gui/2D/controls/inputText";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";

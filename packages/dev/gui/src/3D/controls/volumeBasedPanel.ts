@@ -1,9 +1,9 @@
 import { Tools } from "core/Misc/tools";
 import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector";
-import { int } from "core/types";
+import type { int } from "core/types";
 
 import { Container3D } from "./container3D";
-import { Control3D } from "./control3D";
+import type { Control3D } from "./control3D";
 
 /**
  * Abstract class used to create a container panel deployed on the surface of a volume

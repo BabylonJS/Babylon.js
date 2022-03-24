@@ -1,5 +1,5 @@
 import { FreeCamera } from "./freeCamera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 

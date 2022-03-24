@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import type { Observable } from "core/Misc/observable";
+import type { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -12,7 +12,7 @@ import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineCo
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import { GlobalState } from "../../../../globalState";
+import type { GlobalState } from "../../../../globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 

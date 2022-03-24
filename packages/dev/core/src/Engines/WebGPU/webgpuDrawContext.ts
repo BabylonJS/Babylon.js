@@ -1,7 +1,7 @@
-import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
-import { Nullable } from "../../types";
-import { IDrawContext } from "../IDrawContext";
-import { WebGPUBufferManager } from "./webgpuBufferManager";
+import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
+import type { Nullable } from "../../types";
+import type { IDrawContext } from "../IDrawContext";
+import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 
 /** @hidden */

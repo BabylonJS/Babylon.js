@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import * as Extensions from "loaders/glTF/2.0/Extensions/index";
 import * as Interfaces from "loaders/glTF/2.0/glTFLoaderInterfaces";
 import * as GLTF2 from "loaders/glTF/2.0/index";

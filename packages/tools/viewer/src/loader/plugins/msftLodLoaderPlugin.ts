@@ -1,8 +1,9 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import { IGLTFLoaderExtension } from "loaders/glTF/2.0/glTFLoaderExtension";
-import { GLTF2 } from "loaders/glTF/index";
-import { ViewerModel } from "../../model/viewerModel";
-import { ILoaderPlugin } from "./loaderPlugin";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { IGLTFLoaderExtension } from "loaders/glTF/2.0/glTFLoaderExtension";
+// eslint-disable-next-line import/no-internal-modules
+import type { GLTF2 } from "loaders/glTF/index";
+import type { ViewerModel } from "../../model/viewerModel";
+import type { ILoaderPlugin } from "./loaderPlugin";
 
 /**
  * A loader plugin to use MSFT_lod extension correctly (glTF)

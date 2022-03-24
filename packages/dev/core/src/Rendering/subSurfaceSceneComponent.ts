@@ -1,6 +1,7 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
+import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
 import { AbstractScene } from "../abstractScene";
 import { Color3 } from "../Maths/math.color";

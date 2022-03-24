@@ -1,3 +1,4 @@
+/* eslint-disable-next-line import/no-internal-modules */
 import { canvas, engine } from "./index";
 import * as BABYLON from "@dev/core";
 import "@dev/loaders";

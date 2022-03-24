@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { Control } from "gui/2D/controls/control";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { Control } from "gui/2D/controls/control";
 import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../tabs/propertyGrids/lockObject";
+import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
     control: Control;

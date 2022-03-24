@@ -1,15 +1,15 @@
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
+import type { GlobalState } from "../../../../../../globalState";
 import { ActionButtonComponent } from "../controls/actionButtonComponent";
-import { Context } from "../context";
-import { Animation } from "core/Animations/animation";
+import type { Context } from "../context";
+import type { Animation } from "core/Animations/animation";
 import { AnimationListComponent } from "./animationListComponent";
 import { TextInputComponent } from "../controls/textInputComponent";
 import { SaveAnimationComponent } from "./saveAnimationComponent";
 import { LoadAnimationComponent } from "./loadAnimationComponent";
 import { AddAnimationComponent } from "./addAnimationComponent";
 import { EditAnimationComponent } from "./editAnimationComponent";
-import { TargetedAnimation } from "core/Animations/animationGroup";
+import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import "../scss/sideBar.scss";
 

@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faMusic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Sound } from "core/Audio/sound";
+import type { Sound } from "core/Audio/sound";
 
 interface ISoundTreeItemComponentProps {
     sound: Sound;

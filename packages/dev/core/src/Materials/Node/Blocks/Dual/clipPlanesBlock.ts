@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { MaterialHelper } from "../../../materialHelper";
-import { Effect } from "../../../effect";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { Mesh } from "../../../../Meshes/mesh";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Effect } from "../../../effect";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 /**
  * Block used to implement clip planes
  */

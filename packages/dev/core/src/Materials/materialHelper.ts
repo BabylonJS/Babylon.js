@@ -1,22 +1,22 @@
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
-import { PrePassConfiguration } from "../Materials/prePassConfiguration";
+import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
-import { UniformBuffer } from "./uniformBuffer";
-import { Effect, IEffectCreationOptions } from "./effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { MaterialDefines } from "./materialDefines";
+import type { UniformBuffer } from "./uniformBuffer";
+import type { Effect, IEffectCreationOptions } from "./effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { MaterialDefines } from "./materialDefines";
 import { Color3 } from "../Maths/math.color";
-import { EffectFallbacks } from "./effectFallbacks";
+import type { EffectFallbacks } from "./effectFallbacks";
 import { ThinMaterialHelper } from "./thinMaterialHelper";
 
 /**

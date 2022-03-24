@@ -1,11 +1,13 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observer } from "../../Misc/observable";
-import { FollowCamera } from "../../Cameras/followCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { EventState, Observer } from "../../Misc/observable";
+import type { FollowCamera } from "../../Cameras/followCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
-import { IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.

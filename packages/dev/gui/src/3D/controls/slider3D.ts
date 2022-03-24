@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Scene } from "core/scene";
 import { Control3D } from "./control3D";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial";
 import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial";

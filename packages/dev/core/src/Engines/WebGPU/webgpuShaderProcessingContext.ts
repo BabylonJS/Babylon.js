@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { ShaderLanguage } from "../../Materials/shaderLanguage";
+import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 const _maxGroups = 4;
 const _maxBindingsPerGroup = 1 << 16;

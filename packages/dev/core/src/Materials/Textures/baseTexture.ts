@@ -1,18 +1,19 @@
 import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
-import { Observer, Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
-import { IAnimatable } from "../../Animations/animatable.interface";
+import type { IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
 import "../../Misc/fileTools";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 import { ThinTexture } from "./thinTexture";
-import { AbstractScene } from "../../abstractScene";
+import type { AbstractScene } from "../../abstractScene";
 
 declare type Animation = import("../../Animations/animation").Animation;
 

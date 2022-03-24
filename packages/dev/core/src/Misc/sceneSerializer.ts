@@ -1,13 +1,13 @@
-import { Geometry } from "../Meshes/geometry";
+import type { Geometry } from "../Meshes/geometry";
 import { Mesh } from "../Meshes/mesh";
 import { Constants } from "../Engines/constants";
 import { MultiMaterial } from "../Materials/multiMaterial";
-import { Material } from "../Materials/material";
-import { Scene } from "../scene";
-import { Light } from "../Lights/light";
+import type { Material } from "../Materials/material";
+import type { Scene } from "../scene";
+import type { Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators";
 import { Texture } from "../Materials/Textures/texture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 
 let serializedGeometries: Geometry[] = [];
 const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {

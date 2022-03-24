@@ -8,7 +8,7 @@ import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
-import { ProcessingOptions } from "./shaderProcessingOptions";
+import type { ProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 

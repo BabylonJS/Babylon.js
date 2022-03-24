@@ -1,6 +1,7 @@
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from "./webXRAbstractMotionController";
-import { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { IMotionControllerProfile, IMotionControllerMeshMap } from "./webXRAbstractMotionController";
+import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
+import type { Scene } from "../../scene";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "../../Maths/math.axis";

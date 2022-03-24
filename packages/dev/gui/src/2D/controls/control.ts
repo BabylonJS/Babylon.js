@@ -1,23 +1,25 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
-import { PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Scene } from "core/scene";
 
-import { Container } from "./container";
-import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import type { Container } from "./container";
+import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
-import { Style } from "../style";
+import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**

@@ -1,13 +1,13 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
+import type { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
-import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import type { RenderTargetWrapper } from "../renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

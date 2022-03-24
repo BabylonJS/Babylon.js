@@ -1,15 +1,15 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import { LogEntry } from "./components/log/logComponent";
+import type { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color3 } from "core/Maths/math.color";
-import { WorkbenchComponent } from "./diagram/workbench";
-import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { Scene } from "core/scene";
-import { Control } from "gui/2D/controls/control";
+import type { WorkbenchComponent } from "./diagram/workbench";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Scene } from "core/scene";
+import type { Control } from "gui/2D/controls/control";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { ISize } from "core/Maths/math";
+import type { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
 
 export enum DragOverLocation {

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
-import { IScreenshotSize } from "./interfaces/screenshotSize";
+import type { IScreenshotSize } from "./interfaces/screenshotSize";
 
 declare type Engine = import("../Engines/engine").Engine;
 

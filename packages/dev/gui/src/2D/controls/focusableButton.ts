@@ -1,13 +1,13 @@
-import { Nullable } from "core/types";
-import { Vector2 } from "core/Maths/math.vector";
+import type { Nullable } from "core/types";
+import type { Vector2 } from "core/Maths/math.vector";
 
 import { Button } from "./button";
-import { Control } from "./control";
+import type { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
-import { PointerInfoBase } from "core/Events/pointerEvents";
-import { IFocusableControl } from "./focusableControl";
+import type { PointerInfoBase } from "core/Events/pointerEvents";
+import type { IFocusableControl } from "./focusableControl";
 import { Observable } from "core/Misc/observable";
-import { IKeyboardEvent } from "core/Events/deviceInputEvents";
+import type { IKeyboardEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to create a focusable button that can easily handle keyboard events

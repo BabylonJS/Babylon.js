@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import type { Observable } from "core/Misc/observable";
+import type { PostProcess } from "core/PostProcesses/postProcess";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonPostProcessPropertyGridComponent } from "./commonPostProcessPropertyGridComponent";
-import { GlobalState } from "../../../../globalState";
+import type { GlobalState } from "../../../../globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 

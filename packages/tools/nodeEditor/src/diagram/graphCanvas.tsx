@@ -1,23 +1,20 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GlobalState } from "../globalState";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { GraphNode } from "./graphNode";
 import * as dagre from "dagre";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
-import {
-    NodeMaterialConnectionPoint,
-    NodeMaterialConnectionPointDirection,
-    NodeMaterialConnectionPointCompatibilityStates,
-} from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { Vector2 } from "core/Maths/math.vector";
-import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
-import { IEditorData, IFrameData } from "../nodeLocationInfo";
+import type { IEditorData, IFrameData } from "../nodeLocationInfo";
 import { FrameNodePort } from "./frameNodePort";
 
 import "./graphCanvas.scss";
