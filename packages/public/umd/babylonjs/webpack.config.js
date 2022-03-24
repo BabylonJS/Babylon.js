@@ -7,7 +7,7 @@ module.exports = (env) => {
         mode: env.production ? "production" : "development",
         devPackageName: "core",
         namespace: "BABYLON",
-        outputPath: path.resolve(__dirname, "dist"),
+        outputPath: path.resolve(__dirname),
         maxMode: true,
         alias: {
             core: path.resolve(__dirname, "../../../lts/core/dist"),

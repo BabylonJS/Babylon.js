@@ -7,6 +7,7 @@ module.exports = (env) => {
         devPackageAliasPath: `../../../dev/inspector/dist`, // not really needed?
         devPackageName: "inspector",
         namespace: "INSPECTOR",
+        outputPath: path.resolve(__dirname),
         maxMode: true,
         alias: {
             "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),

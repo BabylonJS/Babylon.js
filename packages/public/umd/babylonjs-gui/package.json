@@ -1,18 +1,17 @@
 {
     "name": "babylonjs-gui",
     "version": "5.0.0-rc.7",
-    "main": "dist/babylon.gui.js",
-    "types": "dist/babylon.gui.module.d.ts",
+    "main": "babylon.gui.js",
+    "types": "babylon.gui.module.d.ts",
     "files": [
-        "dist",
-        "readme.md"
+        "*"
     ],
     "scripts": {
         "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist"
+        "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
         "babylonjs": "^5.0.0-rc.7"
