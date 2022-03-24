@@ -753,9 +753,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._processSelectionOnUp = true;
             }
             this._scene.onAfterRenderObservable.addOnce(() => {
-                if (!this._processSelectionOnUp || this._controlsHit.length === 0) {
+                // if we didn't hit any selected controls, immediately process new selection
+                if (!this._processSelectionOnUp || this._controlsHit.filter(control => this.props.globalState.selectedControls.includes(control)).length === 0) {
                     this.processSelection();
                     this._controlsHit = [];
+                    this._processSelectionOnUp = false;
                 }
             });
         }

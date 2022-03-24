@@ -87,8 +87,8 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
     componentWillUnmount() {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
-        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
-        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingStartObservable);
+        this.props.globalState.onDraggingEndObservable.remove(this._onDraggingEndObservable);
+        this.props.globalState.onDraggingStartObservable.remove(this._onDraggingStartObservable);
     }
 
     onSelect() {
