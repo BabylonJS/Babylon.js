@@ -8,7 +8,7 @@ import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineCo
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-import checkBoxIconDark from "../../../../imgs/checkBoxIconDark.svg";
+import checkBoxIconDark from "shared-ui-components/imgs/checkboxIconDark.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
