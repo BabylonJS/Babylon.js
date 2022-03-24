@@ -24,6 +24,7 @@
         "canvas": "~2.9.0",
         "chokidar": "~3.5.2",
         "concurrently": "~7.0.0",
+        "crypto": "^1.0.1",
         "dotenv": "~16.0.0",
         "eslint": "~8.11.0",
         "eslint-config-prettier": "~8.5.0",
@@ -50,7 +51,7 @@
         "packages/**/*"
     ],
     "scripts": {
-        "build:dev": "npm run build:assets && npm run build:source",
+        "build:dev": "npm run build:assets && npm run build:source && npm run build:declaration -w @tools/babylon-server",
         "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",
         "build:source:lts": "npx nx run-many --target=compile --projects=@lts/core,@lts/gui,@lts/loaders,@lts/materials,@lts/post-processes,@lts/procedural-textures,@lts/serializers --parallel=1",
@@ -62,7 +63,7 @@
         "watch:source:lts": "npx nx run-many --target=watch:lts --all --parallel --maxParallel=20",
         "build:assets": "build-tools -c pa --global",
         "build:shaders": "build-tools -c build-shaders --global",
-        "watch:dev": "npx build-tools -c dw -wa",
+        "watch:dev": "npx build-tools -c dw -wa -wd",
         "watch-dev-test": "concurrently --kill-others -m 2 -n typescript,declarations,server,shaders \"tsc -b ./tsconfig.devpackages.json --watch\" \"npm run watch:declaration -w @tools/babylon-server\" \"npm run watch-shaders\"",
         "watch-and-serve:dev": "concurrently \"npm run watch-dev-test\" \"npm run serve -w @tools/babylon-server\"",
         "watch-lts": "npx nx run-many --target=watch:lts --all --parallel --maxParallel=20",
