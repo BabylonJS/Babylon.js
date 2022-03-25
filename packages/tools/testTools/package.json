@@ -12,7 +12,8 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
-        "postcompile": "node scripts/copyDeclaration.js"
+        "postcompile": "node scripts/copyDeclaration.js",
+        "prepare": "npm run compile"
     },
     "sideEffects": true,
     "devDependencies": {
