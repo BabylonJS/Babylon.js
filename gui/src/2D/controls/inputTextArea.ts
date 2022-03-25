@@ -289,38 +289,52 @@ export class InputTextArea extends InputText {
             case 38: // UP
                 // update the cursor
                 this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
 
                 if (evt) {
                     if (evt.shiftKey) {
-                        this._isTextHighlightOn = true;
                         if (!this._isTextHighlightOn) {
                             this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
                             this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+                            this._highlightCursorInfo.initialRelativeStartIndex = this._cursorInfo.relativeStartIndex;
                         }
+                        this._isTextHighlightOn = true;
+                        this._blinkIsEven = true;
+                    } else {
+                        this._isTextHighlightOn = false;
                     }
                     evt.preventDefault();
                 }
 
-                if (this._cursorInfo.globalStartIndex < this._lines[this._cursorInfo.currentLineIndex].text.length) {
+                if (this._cursorInfo.currentLineIndex === 0) {
                     // First line
                     this._cursorInfo.globalStartIndex = 0;
                 } else {
                     const currentLine = this._lines[this._cursorInfo.currentLineIndex];
                     const upperLine = this._lines[this._cursorInfo.currentLineIndex - 1];
 
-                    const currentText = currentLine.text.substr(0, this._cursorInfo.relativeStartIndex);
+                    let tmpIndex = 0;
+                    let relativeIndex = 0;
+                    if (!this._isTextHighlightOn 
+                        || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex ) {
+                        tmpIndex = this._cursorInfo.globalStartIndex;
+                        relativeIndex = this._cursorInfo.relativeStartIndex;
+                    } else {
+                        tmpIndex = this._cursorInfo.globalEndIndex;
+                        relativeIndex = this._cursorInfo.relativeEndIndex;
+                    }
 
+                    const currentText = currentLine.text.substr(0, relativeIndex);
                     const currentWidth = this._contextForBreakLines.measureText(currentText).width;
+
                     let upperWidth = 0;
                     let previousWidth = 0;
 
-                    this._cursorInfo.globalStartIndex -= this._cursorInfo.relativeStartIndex; // Start of current line
-                    this._cursorInfo.globalStartIndex -= (upperLine.text.length + upperLine.lineEnding.length); // Start of upper line
+                    tmpIndex -= relativeIndex; // Start of current line
+                    tmpIndex -= (upperLine.text.length + upperLine.lineEnding.length); // Start of upper line
                     let upperLineRelativeIndex = 0;
 
                     while(upperWidth < currentWidth && upperLineRelativeIndex < upperLine.text.length) {
-                        this._cursorInfo.globalStartIndex++;
+                        tmpIndex++;
                         upperLineRelativeIndex++;
                         previousWidth = Math.abs(currentWidth - upperWidth);
                         upperWidth = this._contextForBreakLines.measureText(upperLine.text.substr(0, upperLineRelativeIndex)).width;
@@ -328,7 +342,16 @@ export class InputTextArea extends InputText {
 
                     // Find closest move
                     if (Math.abs(currentWidth - upperWidth) > previousWidth && upperLineRelativeIndex > 0) {
-                        this._cursorInfo.globalStartIndex--;
+                        tmpIndex--;
+                    }
+
+                    if (!this._isTextHighlightOn) {
+                        this._cursorInfo.globalStartIndex = tmpIndex;
+                    } else if (this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex ) {
+                        this._cursorInfo.globalStartIndex = tmpIndex;
+                        this._cursorInfo.globalEndIndex = this._highlightCursorInfo.initialStartIndex;
+                    } else {
+                        this._cursorInfo.globalEndIndex = tmpIndex;
                     }
                 }
 
