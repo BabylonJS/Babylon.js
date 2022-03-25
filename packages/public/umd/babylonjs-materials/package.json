@@ -1,8 +1,8 @@
 {
     "name": "babylonjs-materials",
     "version": "5.0.0-rc.10",
-    "main": "babylon.materials.js",
-    "types": "babylon.materials.module.d.ts",
+    "main": "babylonjs.materials.js",
+    "types": "babylonjs.materials.module.d.ts",
     "files": [
         "*"
     ],
