@@ -24,7 +24,6 @@
         "canvas": "~2.9.0",
         "chokidar": "~3.5.2",
         "concurrently": "~7.0.0",
-        "crypto": "^1.0.1",
         "dotenv": "~16.0.0",
         "eslint": "~8.11.0",
         "eslint-config-prettier": "~8.5.0",
