@@ -143,7 +143,8 @@ export class InputTextArea extends InputText {
                 break;
             case 8: // BACKSPACE
                 if (!this._isTextHighlightOn && this._cursorInfo.globalStartIndex > 0) {
-                this._cursorInfo.globalStartIndex--;
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex
+                    this._cursorInfo.globalStartIndex--;
                 }
 
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
@@ -160,7 +161,7 @@ export class InputTextArea extends InputText {
                 break;
             case 46: // DELETE
                 if (!this._isTextHighlightOn && this._cursorInfo.globalEndIndex < this.text.length - 1) {
-                this._cursorInfo.globalEndIndex++;
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex + 1;
                 }
 
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
@@ -1069,9 +1070,6 @@ export class InputTextArea extends InputText {
                 }
 
                 this._cursorInfo.relativeEndIndex = this._cursorInfo.globalEndIndex - tmpLength;
-            } else {
-                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
             }
         }
     }
