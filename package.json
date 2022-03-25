@@ -86,7 +86,7 @@
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps"
     },
     "engines": {
-        "node": ">=12.0.0",
+        "node": ">=12.0.0 <17.0.0",
         "npm": ">=7.0.0"
     },
     "changelog": {
