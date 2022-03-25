@@ -62,14 +62,15 @@ async function runTagsUpdate() {
     } else {
         await runCommand(`git tag -a ${version} -m ${version}`);
     }
-    await runCommand(`git fetch origin`);
-    await runCommand(`git pull origin ${branchName ? branchName : ""}`);
-    if (!dryRun) {
-        await runCommand(`git push origin ${branchName} --tags`);
-    } else {
-        console.log("skipping", `git push origin ${branchName} --tags`);
-        await runCommand(`git status`);
-    }
+    // this is done in the CI (or should be done manually if executed locally).
+    // await runCommand(`git fetch origin`);
+    // await runCommand(`git pull origin ${branchName ? branchName : ""}`);
+    // if (!dryRun) {
+    //     await runCommand(`git push origin ${branchName} --tags`);
+    // } else {
+    //     console.log("skipping", `git push origin ${branchName} --tags`);
+    //     await runCommand(`git status`);
+    // }
 }
 if (!branchName) {
     console.log("Please provide a branch name");
