@@ -194,7 +194,7 @@ export class InputTextArea extends InputText {
 
                 this._isTextHighlightOn = false;
 
-                this._markAsDirty();
+                this._textHasChanged();
                 return;
             case 35: // END
                 this._cursorInfo.globalStartIndex = this.text.length;
@@ -488,7 +488,7 @@ export class InputTextArea extends InputText {
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, key);
                 this._cursorInfo.globalStartIndex += key.length;
 
-                this._markAsDirty();
+                this._textHasChanged();
             }
         }
     }
