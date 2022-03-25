@@ -360,47 +360,74 @@ export class InputTextArea extends InputText {
             case 40: // DOWN
                 // update the cursor
                 this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
 
                 if (evt) {
                     if (evt.shiftKey) {
-                        this._isTextHighlightOn = true;
                         if (!this._isTextHighlightOn) {
                             this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
                             this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+                            this._highlightCursorInfo.initialRelativeStartIndex = this._cursorInfo.relativeStartIndex;
                         }
+
+                        this._isTextHighlightOn = true;
+                        this._blinkIsEven = true;
+                    } else {
+                        this._isTextHighlightOn = false;
                     }
                     evt.preventDefault();
                 }
 
-                if (this._cursorInfo.globalStartIndex >= this.text.length - this._lines[this._lines.length - 1].text.length
-                && this._cursorInfo.globalStartIndex < this.text.length) {
+                if (this._cursorInfo.currentLineIndex === this._lines.length - 1) {
                     // Last line
-                    this._cursorInfo.globalStartIndex = this.text.length;
+                    this._cursorInfo.globalEndIndex = this.text.length;
                 } else {
                     const currentLine = this._lines[this._cursorInfo.currentLineIndex];
                     const underLine = this._lines[this._cursorInfo.currentLineIndex + 1];
 
-                    const currentText = currentLine.text.substr(0, this._cursorInfo.relativeStartIndex);
+                    let tmpIndex = 0;
+                    let relativeIndex = 0;
+                    if (!this._isTextHighlightOn
+                        || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex ) {
+                        tmpIndex = this._cursorInfo.globalStartIndex;
+                        relativeIndex = this._cursorInfo.relativeStartIndex;
+                    } else {
+                        tmpIndex = this._cursorInfo.globalEndIndex;
+                        relativeIndex = this._cursorInfo.relativeEndIndex;
+                    }
 
+                    const currentText = currentLine.text.substr(0, relativeIndex);
                     const currentWidth = this._contextForBreakLines.measureText(currentText).width;
-                    let upperWidth = 0;
+
+                    let underWidth = 0;
                     let previousWidth = 0;
 
-                    this._cursorInfo.globalStartIndex += (currentLine.text.length - this._cursorInfo.relativeStartIndex + currentLine.lineEnding.length); // Start of current line
-                //  this._cursorInfo.globalStartIndex += (underLine.text.length + underLine.lineEnding.length); // Start of under line
+                    tmpIndex += (currentLine.text.length - relativeIndex + currentLine.lineEnding.length); // Start of current line
                     let underLineRelativeIndex = 0;
 
-                    while(upperWidth < currentWidth && underLineRelativeIndex < underLine.text.length) {
-                        this._cursorInfo.globalStartIndex++;
+                    while(underWidth < currentWidth && underLineRelativeIndex < underLine.text.length) {
+                        tmpIndex++;
                         underLineRelativeIndex++;
-                        previousWidth = Math.abs(currentWidth - upperWidth);
-                        upperWidth = this._contextForBreakLines.measureText(underLine.text.substr(0, underLineRelativeIndex)).width;
+                        previousWidth = Math.abs(currentWidth - underWidth);
+                        underWidth = this._contextForBreakLines.measureText(underLine.text.substr(0, underLineRelativeIndex)).width;
                     }
 
                     // Find closest move
-                    if (Math.abs(currentWidth - upperWidth) > previousWidth && underLineRelativeIndex > 0) {
-                        this._cursorInfo.globalStartIndex--;
+                    if (Math.abs(currentWidth - underWidth) > previousWidth && underLineRelativeIndex > 0) {
+                        tmpIndex--;
+                    }
+
+                    if (!this._isTextHighlightOn) {
+                        this._cursorInfo.globalStartIndex = tmpIndex;
+                    } else if(this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex ) {
+                        this._cursorInfo.globalStartIndex = tmpIndex;
+                        if (this._cursorInfo.globalStartIndex > this._cursorInfo.globalEndIndex) {
+                            this._cursorInfo.globalEndIndex += this._cursorInfo.globalStartIndex;
+                            this._cursorInfo.globalStartIndex = this._cursorInfo.globalEndIndex - this._cursorInfo.globalStartIndex;
+                            this._cursorInfo.globalEndIndex -= this._cursorInfo.globalStartIndex; 
+                        }
+                    } else {
+                        this._cursorInfo.globalEndIndex = tmpIndex;
+                        this._cursorInfo.globalStartIndex = this._highlightCursorInfo.initialStartIndex;
                     }
                 }
 
