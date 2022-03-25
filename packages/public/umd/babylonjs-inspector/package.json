@@ -14,7 +14,11 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.10"
+        "babylonjs": "^5.0.0-rc.10",
+        "babylonjs-gui": "^5.0.0-rc.10",
+        "babylonjs-materials": "^5.0.0-rc.10",
+        "babylonjs-serializers": "^5.0.0-rc.10",
+        "babylonjs-loaders": "^5.0.0-rc.10"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
