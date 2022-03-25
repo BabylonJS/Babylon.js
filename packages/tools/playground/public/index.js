@@ -72,15 +72,28 @@ var Versions = {
     ],
 };
 
+const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
-        let script = document.createElement("script");
+        const script = document.createElement("script");
         script.src = url;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
             }
         };
+        script.onerror = () => {
+            // fallback
+            const fallbackScript = document.createElement("script");
+            fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
+            fallbackScript.onload = () => {
+                if (!instantResolve) {
+                    resolve();
+                }
+            }
+            document.head.appendChild(fallbackScript);
+        }
         document.head.appendChild(script);
         if (instantResolve) {
             resolve();

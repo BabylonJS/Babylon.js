@@ -268,12 +268,19 @@ class Playground {
 
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
+        const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
-                return;
+                // attempt a fallback
+                const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
+                if (fallbackResponse.ok) {
+                    libContent += await fallbackResponse.text();
+                } else {
+                    console.log("missing declaration", response.url);
+                }
+            } else {
+                libContent += await response.text();
             }
-
-            libContent += await response.text();
         }
 
         this._createEditor();
