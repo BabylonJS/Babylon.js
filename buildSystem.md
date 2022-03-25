@@ -656,7 +656,8 @@ A new package introduced in the babylon server, which is a direct copy of the ba
 
 Similar to the dev host, the babylon server will take the latest compiled code from the dev (or lts) packages and serve it to the browser. The default address for the local CDN is <http://localhost:1337>
 
-The babylon server's index.html has references to all of our public packages and has the BABYLON namespace populated, similar to the way the playground is working. *If you want to debug a playground scene without starting the playground*, edit the file sceneJs.js or sceneTs.ts for typescript, and open <http://localhost:1337/index.html> or <http://localhost:1337/index-ts.html>
+The babylon server's index.html has references to all of our public packages and has the BABYLON namespace populated, similar to the way the playground is working. When the repository initializes the server generates two files - createScene and createEngine. Those files are not a part of the git repository and can be changed in any way you wish. createScene can be async if needed.
+*If you want to debug a playground scene without starting the playground*, edit the file createScene.js (or sceneTs.ts for typescript), and open <http://localhost:1337/index.html> or <http://localhost:1337/index-ts.html>
 
 To start the babylon server, run:
 
