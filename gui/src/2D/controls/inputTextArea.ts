@@ -29,7 +29,7 @@ export class InputTextArea extends InputText {
     private _clipTextLeft: number;
     
     private _cursorInfo: { globalStartIndex: number, globalEndIndex: number, relativeStartIndex: number, relativeEndIndex: number, currentLineIndex: number };
-    private _highlightCursorInfo: { initialStartIndex: number, initialLineIndex: number };
+    private _highlightCursorInfo: { initialStartIndex: number, initialRelativeStartIndex: number, initialLineIndex: number };
 
     /**
     * An event triggered after the text was broken up into lines
@@ -106,7 +106,16 @@ export class InputTextArea extends InputText {
 
         this._highlightCursorInfo = {
             initialStartIndex: -1,
+            initialRelativeStartIndex: -1,
             initialLineIndex: -1,
+        };
+
+        this._cursorInfo = {
+            globalStartIndex: -1,
+            globalEndIndex: -1,
+            relativeEndIndex: -1,
+            relativeStartIndex: -1,
+            currentLineIndex: 0,
         };
     }
 
