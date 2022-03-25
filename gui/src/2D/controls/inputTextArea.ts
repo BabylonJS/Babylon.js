@@ -36,15 +36,11 @@ export class InputTextArea extends InputText {
     */
     public onLinesReadyObservable = new Observable<InputTextArea>();
 
-    private lastClickedCoordinateY = 0;
-    private _selectedLineIndex = 0;
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
     private _contextForBreakLines: ICanvasRenderingContext;
     private _clickedCoordinateX: Nullable<number>;
     private _clickedCoordinateY: Nullable<number>;
-
-    private _lastClickedLineIndex = -1;
 
     private _availableWidth: number;
     private _availableHeight: number;
@@ -101,9 +97,6 @@ export class InputTextArea extends InputText {
 
         this.onLinesReadyObservable.add((inputTextArea)=> this._updateCursorPosition());
 
-        this._scrollTop = 0;
-        this._scrollLeft = 0;
-
         this._highlightCursorInfo = {
             initialStartIndex: -1,
             initialRelativeStartIndex: -1,
@@ -128,13 +121,6 @@ export class InputTextArea extends InputText {
 
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
-            return;
-        }
-
-        //select all
-        if (evt && (evt.ctrlKey || evt.metaKey) && keyCode === 65) {
-            this._selectAllText();
-            evt.preventDefault();
             return;
         }
 
@@ -760,8 +746,6 @@ export class InputTextArea extends InputText {
         if (this.color) {
             context.fillStyle = this.color;
         }
-        // before render just returns the same string
-        // TODO: why do we need this method?
 
         const height = this._currentMeasure.height;
         const width = this._currentMeasure.width;
@@ -786,18 +770,6 @@ export class InputTextArea extends InputText {
         // here we define the visible reactangle to clip it in next line
         context.rect(this._clipTextLeft,this._clipTextTop , this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
-
-        //if (this._isFocused && this._textWidth > availableWidth) {
-
-        // TODO: here we have some trouble if the line doesn't exist anymore
-        // TODO: That code needs to go somewhere else when pointer is updated
-        // TODO: possible problem again with deleting multilines
-        while (typeof this._lines[this._selectedLineIndex] === 'undefined') {
-            this._selectedLineIndex--;
-            if (this._selectedLineIndex <= 0) {
-                break;
-            }
-        }
 
         // Text
         rootY += this._scrollTop;
@@ -895,7 +867,7 @@ export class InputTextArea extends InputText {
                         context.fillRect(highlightRootX + leftOffsetWidth, highlightRootY, hightlightWidth, this._fontOffset.height);
 
                         highlightRootY += this._fontOffset.height;
-        }
+                    }
 
                     if (this._cursorInfo.globalEndIndex === this._cursorInfo.globalStartIndex) {
                         this._resetBlinking();
@@ -1102,57 +1074,6 @@ export class InputTextArea extends InputText {
                 this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
             }
         }
-    }
-
-    /**
-     * Apply the given callback to the selected range
-     * @param callback {function} The callback to apply with these parameters : line object, current index, start index, end index
-     */
-    private _applyOnSelectedRange(callback: (line: any, currentIndex: number, startIndex: number, endIndex: number) => void) {
-        if (!this._isTextHighlightOn) { return; }
-
-        const startLineIndex = Math.min(this._lastClickedLineIndex, this._selectedLineIndex);
-        const endLineIndex = Math.max(this._lastClickedLineIndex, this._selectedLineIndex);
-
-        for (let index = startLineIndex; index <= endLineIndex; index++) {
-            callback(this._lines[index], index, startLineIndex, endLineIndex);
-        }
-    }
-
-    /**
-     * Delete the current selection if any and move the cursor to the correct place
-     */
-    private _deleteSelection() {
-        if (!this._isTextHighlightOn) { return; }
-
-        const tmpLine = {text: "", index: -1};
-        this._applyOnSelectedRange((line, index, startIndex, endIndex) => {
-            this._selectedLineIndex = startIndex;
-            this.lastClickedCoordinateY = this._margin.getValueInPixel(this._host, this._tempParentMeasure.height) + startIndex * this._fontOffset.height + 1;
-
-            const begin = index === startIndex ? this._startHighlightIndex : 0;
-            const end = index === endIndex ? this._endHighlightIndex : line.text.length;
-
-            tmpLine.text += line.text.substring(0, begin) + line.text.substring(end);
-            tmpLine.index = startIndex;
-            line.text = "";
-        });
-        this._lines[tmpLine.index].text = tmpLine.text;
-
-        this._lines = this._lines.filter((l) => l.text !== "");
-
-        // In case of complete deletion a blank line is added
-        if (this._lines.length === 0) {
-            this._lines.push({ text: "", width: 0, lineEnding: "" });
-        }
-
-        this._cursorIndex = this._startHighlightIndex;
-
-        this._cursorOffset = this._lines[tmpLine.index].text.length - this._cursorIndex;
-
-        this._isTextHighlightOn = false;
-
-        this._highlightedText = "";
     }
 
     /** @hidden */
