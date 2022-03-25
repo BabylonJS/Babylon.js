@@ -691,7 +691,8 @@ export class InputTextArea extends InputText {
 
         this._host.clipboardData = this._highlightedText;
 
-        this._deleteSelection();
+        this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
+
         this._textHasChanged();
     }
 
