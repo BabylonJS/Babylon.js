@@ -8,6 +8,10 @@ import type { RuleSetRule, Configuration } from "webpack";
 
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
     return function ({ request }: { request: string }, callback: (err: Error | null, result?: any) => void) {
+        // fix for mac
+        if(request.includes("webpack")) {
+            return callback(null);
+        };
         const importParts = request.split("/");
         const devPackageName = importParts[0].replace(/^babylonjs/, "") || "core";
         // check if this request needs to be ignored or transformed
