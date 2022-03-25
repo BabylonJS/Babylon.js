@@ -1,5 +1,5 @@
-import { Skeleton } from "../Bones/skeleton";
-import { Color3 } from "../Maths/math.color";
+import type { Skeleton } from "../Bones/skeleton";
+import type { Color3 } from "../Maths/math.color";
 
 /**
  * Defines the options associated with the creation of a SkeletonViewer.

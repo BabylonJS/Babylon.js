@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 /**
  * A class serves as a medium between the observable and its observers

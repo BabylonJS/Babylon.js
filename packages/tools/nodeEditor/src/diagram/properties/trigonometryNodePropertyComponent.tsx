@@ -1,8 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { TrigonometryBlockOperations, TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
+import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {

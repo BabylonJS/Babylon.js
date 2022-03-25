@@ -1,4 +1,4 @@
-import { WebGPUBufferManager } from "./webgpuBufferManager";
+import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";

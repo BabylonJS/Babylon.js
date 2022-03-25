@@ -1,6 +1,6 @@
-import { IImageProcessingConfiguration } from "./imageProcessingConfiguration";
-import { IColorGradingConfiguration } from "./colorGradingConfiguration";
-import { IGlowLayerOptions } from "babylonjs";
+import type { IImageProcessingConfiguration } from "./imageProcessingConfiguration";
+import type { IColorGradingConfiguration } from "./colorGradingConfiguration";
+import type { IGlowLayerOptions } from "babylonjs";
 
 export interface ISceneConfiguration {
     debug?: boolean;

@@ -1,12 +1,13 @@
 import { NodePort } from "./nodePort";
-import { GraphNode } from "./graphNode";
-import { FramePortPosition } from "./graphFrame";
-import { GlobalState } from "../globalState";
-import { IDisplayManager } from "./display/displayManager";
+import type { GraphNode } from "./graphNode";
+import type { FramePortPosition } from "./graphFrame";
+import type { GlobalState } from "../globalState";
+import type { IDisplayManager } from "./display/displayManager";
 import { Observable } from "core/Misc/observable";
-import { Nullable } from "core/types";
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { FramePortData, isFramePortData } from "./graphCanvas";
+import type { Nullable } from "core/types";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { FramePortData } from "./graphCanvas";
+import { isFramePortData } from "./graphCanvas";
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;

@@ -1,10 +1,10 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
-import { Mesh } from "../Meshes/mesh";
-import { SubMesh } from "../Meshes/subMesh";
+import type { Mesh } from "../Meshes/mesh";
+import type { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SmartArray } from "../Misc/smartArray";
-import { Scene } from "../scene";
+import type { SmartArray } from "../Misc/smartArray";
+import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialHelper } from "../Materials/materialHelper";

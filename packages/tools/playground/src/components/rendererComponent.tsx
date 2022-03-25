@@ -1,5 +1,6 @@
 import * as React from "react";
-import { GlobalState, RuntimeMode } from "../globalState";
+import type { GlobalState } from "../globalState";
+import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { Engine, WebGPUEngine, UnregisterAllMaterialPlugins } from "@dev/core";

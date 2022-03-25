@@ -1,5 +1,5 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { IShaderProcessor } from "../Processors/iShaderProcessor";
+import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 
 /** @hidden */
 export class WebGL2ShaderProcessor implements IShaderProcessor {

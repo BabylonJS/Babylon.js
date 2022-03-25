@@ -1,13 +1,17 @@
-import ts from "typescript";
+import type ts from "typescript";
 import transformer from "./pathTransform";
-import { BuildType, DevPackageName, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, UMDPackageName } from "./packageMapping";
+import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping";
+import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping";
 import * as path from "path";
 import { camelize } from "./utils";
-import { RuleSetRule, Configuration } from "webpack";
-import { umdPackageMapping } from ".";
+import type { RuleSetRule, Configuration } from "webpack";
 
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
     return function ({ request }: { request: string }, callback: (err: Error | null, result?: any) => void) {
+        // fix for mac
+        if (request.includes("webpack")) {
+            return callback(null);
+        }
         const importParts = request.split("/");
         const devPackageName = importParts[0].replace(/^babylonjs/, "") || "core";
         // check if this request needs to be ignored or transformed

@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { BaseTexture } from "../../../Textures/baseTexture";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { BaseTexture } from "../../../Textures/baseTexture";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Scene } from "../../../../scene";
-import { InputBlock } from "../Input/inputBlock";
+import type { Scene } from "../../../../scene";
+import type { InputBlock } from "../Input/inputBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { Effect } from "../../../effect";
+import type { Effect } from "../../../effect";
 
 declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 

@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { Observable } from "core/Misc/observable";
-import { Grid } from "gui/2D/controls/grid";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
 import { Vector2 } from "core/Maths/math.vector";
 

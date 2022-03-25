@@ -4,7 +4,7 @@
     ],
     "files.exclude": {
         "**/node_modules": true,
-        "**/dist": false,
+        "**/dist": true,
         "**/@babylonjs/**/*.{js|ts|map}": true,
         "**/.rollup.cache": true,
         "**/packages/dev/**/Shaders/**/*.ts": true,

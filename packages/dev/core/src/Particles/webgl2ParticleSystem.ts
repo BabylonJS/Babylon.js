@@ -1,12 +1,13 @@
-import { VertexBuffer, Buffer } from "../Buffers/buffer";
-import { ThinEngine } from "../Engines/thinEngine";
-import { Effect, IEffectCreationOptions } from "../Materials/effect";
-import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import type { VertexBuffer, Buffer } from "../Buffers/buffer";
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { IEffectCreationOptions } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
+import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
-import { GPUParticleSystem } from "./gpuParticleSystem";
-import { DataArray } from "../types";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { GPUParticleSystem } from "./gpuParticleSystem";
+import type { DataArray } from "../types";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";

@@ -1,18 +1,20 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Matrix } from "../Maths/math";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { Observer, Observable } from "../Misc/observable";
+import type { PointerInfo } from "../Events/pointerEvents";
+import { PointerEventTypes } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 
 /**
  * Gizmo that enables viewing a camera

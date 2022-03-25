@@ -1,9 +1,10 @@
-import { Nullable } from "../types";
-import { Matrix } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "../Engines/engine";
+import type { Nullable } from "../types";
+import type { Matrix } from "../Maths/math.vector";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Engine } from "../Engines/engine";
 
 import "../Shaders/filter.fragment";
 import { RegisterClass } from "../Misc/typeStore";

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./anaglyphPostProcess";
 export * from "./blackAndWhitePostProcess";
 export * from "./bloomEffect";

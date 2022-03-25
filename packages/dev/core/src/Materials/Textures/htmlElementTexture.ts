@@ -1,4 +1,4 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from "../../Maths/math.vector";

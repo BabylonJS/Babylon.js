@@ -1,13 +1,13 @@
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { WebGLHardwareTexture } from "../Engines/WebGL/webGLHardwareTexture";
-import { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "../Engines/WebGL/webGLRenderTargetWrapper";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { MultiviewRenderTarget } from "../Materials/Textures/MultiviewRenderTarget";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Viewport } from "../Maths/math.viewport";
-import { IDisposable, Scene } from "../scene";
-import { Nullable } from "../types";
-import { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import type { Viewport } from "../Maths/math.viewport";
+import type { IDisposable, Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
 
 /**
  * An interface for objects that provide render target textures for XR rendering.

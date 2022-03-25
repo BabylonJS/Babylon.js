@@ -1,4 +1,4 @@
-import { IDisposable } from "../scene";
+import type { IDisposable } from "../scene";
 
 /** @ignore */
 interface WorkerInfo {

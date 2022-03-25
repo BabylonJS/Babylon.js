@@ -5,9 +5,9 @@
     "files": [
         "dist"
     ],
-    "types": "dist/guiEditor.d.ts",
-    "main": "dist/guiEditor.js",
-    "module": "dist/guiEditor.js",
+    "types": "dist/index.d.ts",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
     "scripts": {
         "build": "npm run clean && npm run compile",
         "build:declaration": "build-tools -c pud --config ./config.json",

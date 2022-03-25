@@ -1,5 +1,5 @@
-import { TargetedAnimation } from "core/Animations/animationGroup";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { TargetedAnimation } from "core/Animations/animationGroup";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { faFilm } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";

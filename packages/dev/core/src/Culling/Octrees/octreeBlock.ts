@@ -1,8 +1,8 @@
-import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
+import type { SmartArrayNoDuplicate } from "../../Misc/smartArray";
 import { Vector3 } from "../../Maths/math.vector";
-import { Ray } from "../../Culling/ray";
+import type { Ray } from "../../Culling/ray";
 import { BoundingBox } from "../../Culling/boundingBox";
-import { Plane } from "../../Maths/math.plane";
+import type { Plane } from "../../Maths/math.plane";
 
 /**
  * Contains an array of blocks representing the octree

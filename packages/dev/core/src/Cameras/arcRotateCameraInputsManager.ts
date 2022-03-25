@@ -1,4 +1,4 @@
-import { ArcRotateCamera } from "./arcRotateCamera";
+import type { ArcRotateCamera } from "./arcRotateCamera";
 import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";

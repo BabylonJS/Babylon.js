@@ -1,7 +1,7 @@
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 
 import { Container3D } from "./container3D";
-import { Control3D } from "./control3D";
+import type { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 
 /**

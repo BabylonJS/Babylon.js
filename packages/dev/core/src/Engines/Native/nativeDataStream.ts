@@ -1,4 +1,4 @@
-import { INative, INativeDataStream } from "./nativeInterfaces";
+import type { INative, INativeDataStream } from "./nativeInterfaces";
 
 declare const _native: INative;
 

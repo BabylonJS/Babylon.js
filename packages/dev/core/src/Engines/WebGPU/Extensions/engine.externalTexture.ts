@@ -1,6 +1,6 @@
 import { WebGPUEngine } from "../../webgpuEngine";
-import { ExternalTexture } from "../../../Materials/Textures/externalTexture";
-import { Nullable } from "../../../types";
+import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
+import type { Nullable } from "../../../types";
 import { WebGPUExternalTexture } from "../webgpuExternalTexture";
 import { Effect } from "../../../Materials/effect";
 

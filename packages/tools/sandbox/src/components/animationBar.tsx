@@ -1,10 +1,10 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { DropUpButton } from "./dropUpButton";
-import { Scene } from "core/scene";
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
-import { AnimationGroup } from "core/Animations/animationGroup";
+import type { Scene } from "core/scene";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { AnimationGroup } from "core/Animations/animationGroup";
 
 import iconPlay from "../img/icon-play.svg";
 import iconPause from "../img/icon-pause.svg";

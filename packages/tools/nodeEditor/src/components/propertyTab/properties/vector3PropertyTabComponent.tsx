@@ -1,7 +1,7 @@
 import * as React from "react";
-import { GlobalState } from "../../../globalState";
+import type { GlobalState } from "../../../globalState";
 import { Vector3LineComponent } from "../../../sharedComponents/vector3LineComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 
 interface IVector3PropertyTabComponentProps {
     globalState: GlobalState;

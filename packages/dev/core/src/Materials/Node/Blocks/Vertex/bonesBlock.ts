@@ -1,20 +1,20 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { Mesh } from "../../../../Meshes/mesh";
-import { Effect } from "../../../effect";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { Effect } from "../../../effect";
 import { MaterialHelper } from "../../../materialHelper";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/bonesDeclaration";
 import "../../../../Shaders/ShadersInclude/bonesVertex";
-import { EffectFallbacks } from "../../../effectFallbacks";
+import type { EffectFallbacks } from "../../../effectFallbacks";
 
 /**
  * Block used to add support for vertex skinning (bones)

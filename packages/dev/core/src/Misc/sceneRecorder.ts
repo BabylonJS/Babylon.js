@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Scene } from "../scene";
-import { Nullable } from "../types";
+import type { Scene } from "../scene";
+import type { Nullable } from "../types";
 import { SceneSerializer } from "./sceneSerializer";
 import { Mesh } from "../Meshes/mesh";
 import { Light } from "../Lights/light";

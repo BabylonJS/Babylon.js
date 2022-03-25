@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faSun } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { EffectLayer } from "core/Layers/effectLayer";
+import type { EffectLayer } from "core/Layers/effectLayer";
 
 interface IEffectLayerItemComponenttProps {
     layer: EffectLayer;

@@ -1,7 +1,8 @@
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
-import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
-import { Nullable } from "../types";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
+import type { Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
 
 declare module "../scene" {

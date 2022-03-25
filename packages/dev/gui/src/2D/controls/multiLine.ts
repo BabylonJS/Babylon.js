@@ -1,12 +1,12 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Vector3 } from "core/Maths/math.vector";
+import type { Vector3 } from "core/Maths/math.vector";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create multi line control

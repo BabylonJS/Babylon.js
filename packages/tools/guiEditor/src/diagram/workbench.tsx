@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import { DragOverLocation, GlobalState } from "../globalState";
-import { Nullable } from "core/types";
+import type { GlobalState } from "../globalState";
+import { DragOverLocation } from "../globalState";
+import type { Nullable } from "core/types";
 import { Control } from "gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -13,13 +14,14 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { Axis } from "core/Maths/math.axis";
 import { Epsilon } from "core/Maths/math.constants";
 import { Container } from "gui/2D/controls/container";
-import { KeyboardEventTypes, KeyboardInfo } from "core/Events/keyboardEvents";
-import { Line } from "gui/2D/controls/line";
+import type { KeyboardInfo } from "core/Events/keyboardEvents";
+import { KeyboardEventTypes } from "core/Events/keyboardEvents";
+import type { Line } from "gui/2D/controls/line";
 import { DataStorage } from "core/Misc/dataStorage";
-import { Grid } from "gui/2D/controls/grid";
+import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import { Observer } from "core/Misc/observable";
-import { ISize } from "core/Maths/math";
+import type { Observer } from "core/Misc/observable";
+import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
 import { CoordinateHelper } from "./coordinateHelper";
 import { Logger } from "core/Misc/logger";
@@ -753,9 +755,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._processSelectionOnUp = true;
             }
             this._scene.onAfterRenderObservable.addOnce(() => {
-                if (!this._processSelectionOnUp || this._controlsHit.length === 0) {
+                // if we didn't hit any selected controls, immediately process new selection
+                if (!this._processSelectionOnUp || this._controlsHit.filter((control) => this.props.globalState.selectedControls.includes(control)).length === 0) {
                     this.processSelection();
                     this._controlsHit = [];
+                    this._processSelectionOnUp = false;
                 }
             });
         }

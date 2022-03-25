@@ -1,11 +1,11 @@
 import { serialize, serializeAsVector2, SerializationHelper } from "core/Misc/decorators";
 import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 import "./fireProceduralTexture.fragment";
 

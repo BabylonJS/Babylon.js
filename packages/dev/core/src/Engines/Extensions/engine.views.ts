@@ -1,7 +1,7 @@
 import { Engine } from "../engine";
-import { Camera } from "../../Cameras/camera";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Camera } from "../../Cameras/camera";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 
 /**
  * Class used to define an additional view for the engine

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Engine } from "core/Engines/engine";
-import { Scene } from "core/scene";
-import { WebGPUEngine } from "core/Engines/webgpuEngine";
+import type { Engine } from "core/Engines/engine";
+import type { Scene } from "core/scene";
+import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 interface StacktracedObject {
     stackTrace: string;

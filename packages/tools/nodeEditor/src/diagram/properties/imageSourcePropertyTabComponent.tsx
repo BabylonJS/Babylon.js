@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
@@ -8,8 +8,8 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
-import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
+import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";

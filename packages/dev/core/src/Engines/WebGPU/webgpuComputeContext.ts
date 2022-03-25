@@ -1,13 +1,14 @@
-import { StorageBuffer } from "../../Buffers/storageBuffer";
-import { IComputeContext } from "../../Compute/IComputeContext";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { TextureSampler } from "../../Materials/Textures/textureSampler";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { StorageBuffer } from "../../Buffers/storageBuffer";
+import type { IComputeContext } from "../../Compute/IComputeContext";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { TextureSampler } from "../../Materials/Textures/textureSampler";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
-import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader";
-import { WebGPUCacheSampler } from "./webgpuCacheSampler";
+import type { ComputeBindingList, ComputeBindingMapping } from "../Extensions/engine.computeShader";
+import { ComputeBindingType } from "../Extensions/engine.computeShader";
+import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from "./webgpuConstants";
-import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
 /** @hidden */
 export class WebGPUComputeContext implements IComputeContext {

@@ -1,4 +1,5 @@
-import {
+/* eslint-disable import/no-internal-modules */
+import type {
     ILightConfiguration,
     ISceneConfiguration,
     ISceneOptimizerConfiguration,
@@ -9,41 +10,45 @@ import {
     IDefaultRenderingPipelineConfiguration,
     IVRConfiguration,
 } from "../configuration/interfaces/index";
-import { getConfigurationKey, ViewerConfiguration } from "../configuration/configuration";
-import { ViewerModel, ModelState } from "../model/viewerModel";
+import type { ViewerConfiguration } from "../configuration/configuration";
+import { getConfigurationKey } from "../configuration/configuration";
+import type { ViewerModel } from "../model/viewerModel";
+import { ModelState } from "../model/viewerModel";
 import { extendClassWithConfig, deepmerge } from "../helper/index";
 import { CameraBehavior } from "../interfaces";
 import { ViewerLabs } from "../labs/viewerLabs";
 import { getCustomOptimizerByName } from "../optimizer/custom/index";
-import { ObservablesManager } from "../managers/observablesManager";
-import { ConfigurationContainer } from "../configuration/configurationContainer";
-import { IEnvironmentMapConfiguration } from "../configuration/interfaces/environmentMapConfiguration";
+import type { ObservablesManager } from "../managers/observablesManager";
+import type { ConfigurationContainer } from "../configuration/configurationContainer";
+import type { IEnvironmentMapConfiguration } from "../configuration/interfaces/environmentMapConfiguration";
 import { Observable } from "core/Misc/observable";
 import { SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Light } from "core/Lights/light";
-import { EnvironmentHelper, IEnvironmentHelperOptions } from "core/Helpers/environmentHelper";
-import { VRExperienceHelper, VRExperienceHelperOptions } from "core/Cameras/VR/vrExperienceHelper";
+import type { IEnvironmentHelperOptions } from "core/Helpers/environmentHelper";
+import { EnvironmentHelper } from "core/Helpers/environmentHelper";
+import type { VRExperienceHelper, VRExperienceHelperOptions } from "core/Cameras/VR/vrExperienceHelper";
 import { Color3, Quaternion, Vector3, Axis, Matrix } from "core/Maths/math";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
-import { Engine } from "core/Engines/engine";
+import type { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/index";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { ShadowLight, IShadowLight } from "core/Lights/shadowLight";
+import type { IShadowLight } from "core/Lights/shadowLight";
+import { ShadowLight } from "core/Lights/shadowLight";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
-import { DirectionalLight } from "core/Lights/directionalLight";
+import type { DirectionalLight } from "core/Lights/directionalLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { Scalar } from "core/Maths/math.scalar";
-import { SpotLight } from "core/Lights/spotLight";
-import { PointLight } from "core/Lights/pointLight";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SpotLight } from "core/Lights/spotLight";
+import type { PointLight } from "core/Lights/pointLight";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { Tags } from "core/Misc/tags";
-import { Behavior } from "core/Behaviors/behavior";
-import { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import type { Behavior } from "core/Behaviors/behavior";
+import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Scene } from "core/scene";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Constants } from "core/Engines/constants";

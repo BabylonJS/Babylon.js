@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
 import { _WarnImport } from "../Misc/devTools";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { GetClass } from "../Misc/typeStore";
 
 declare type Scene = import("../scene").Scene;

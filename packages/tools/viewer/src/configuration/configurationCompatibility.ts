@@ -1,4 +1,5 @@
-import { ViewerConfiguration, getConfigurationKey } from "./configuration";
+import type { ViewerConfiguration } from "./configuration";
+import { getConfigurationKey } from "./configuration";
 /**
  * This function will make sure the configuration file is taking deprecated fields into account
  * and is setting them to the correct keys and values.

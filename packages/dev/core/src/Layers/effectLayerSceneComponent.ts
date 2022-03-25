@@ -1,12 +1,13 @@
 import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
+import type { Scene } from "../scene";
+import type { Engine } from "../Engines/engine";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
-import { AssetContainer } from "../assetContainer";
+import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

@@ -1,13 +1,13 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { Scene } from "../../../scene";
-import { InputBlock } from "./Input/inputBlock";
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
-import { NodeMaterial, NodeMaterialDefines } from "../nodeMaterial";
+import type { Scene } from "../../../scene";
+import type { InputBlock } from "./Input/inputBlock";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../nodeMaterial";
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4

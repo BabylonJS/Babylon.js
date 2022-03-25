@@ -1,19 +1,20 @@
-import { IDisposable, Scene } from "../scene";
-import { Nullable } from "../types";
-import { Observable, Observer } from "../Misc/observable";
+import type { IDisposable, Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { Camera } from "../Cameras/camera";
+import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
 import { Tools } from "../Misc/tools";
 import { WebRequest } from "../Misc/webRequest";
 import { SpriteRenderer } from "./spriteRenderer";
-import { ThinSprite } from "./thinSprite";
-import { ISize } from "../Maths/math.size";
+import type { ThinSprite } from "./thinSprite";
+import type { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
 
 declare type Ray = import("../Culling/ray").Ray;

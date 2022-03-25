@@ -1,5 +1,4 @@
-import {
-    AccessorType,
+import type {
     IBufferView,
     IAccessor,
     INode,
@@ -10,41 +9,39 @@ import {
     IImage,
     ISampler,
     IAnimation,
-    ImageMimeType,
     IMeshPrimitive,
     IBuffer,
     IGLTF,
-    MeshPrimitiveMode,
-    AccessorComponentType,
     ITextureInfo,
     ISkin,
     ICamera,
-    CameraType,
 } from "babylonjs-gltf2interface";
+import { AccessorType, ImageMimeType, MeshPrimitiveMode, AccessorComponentType, CameraType } from "babylonjs-gltf2interface";
 
-import { FloatArray, Nullable, IndicesArray } from "core/types";
-import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "core/Maths/math.vector";
+import type { FloatArray, Nullable, IndicesArray } from "core/types";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector2, Vector3, Vector4, Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Node } from "core/node";
+import type { Node } from "core/node";
 import { TransformNode } from "core/Meshes/transformNode";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
 import { Mesh } from "core/Meshes/mesh";
-import { MorphTarget } from "core/Morph/morphTarget";
+import type { MorphTarget } from "core/Morph/morphTarget";
 import { LinesMesh } from "core/Meshes/linesMesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
-import { Bone } from "core/Bones/bone";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Bone } from "core/Bones/bone";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
-import { Engine } from "core/Engines/engine";
-import { Scene } from "core/scene";
+import type { Engine } from "core/Engines/engine";
+import type { Scene } from "core/scene";
 
-import { IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
+import type { IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
 import { _GLTFMaterialExporter } from "./glTFMaterialExporter";
-import { IExportOptions } from "./glTFSerializer";
+import type { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";

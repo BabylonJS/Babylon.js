@@ -1,18 +1,18 @@
 import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
-import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
+import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
-import { PostProcess } from "../PostProcesses/postProcess";
-import { Effect } from "../Materials/effect";
+import type { PostProcess } from "../PostProcesses/postProcess";
+import type { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import { Color4 } from "../Maths/math.color";
-import { Nullable } from "../types";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Camera } from "../Cameras/camera";
 import { Material } from "../Materials/material";
-import { SubMesh } from "../Meshes/subMesh";
-import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
 /**

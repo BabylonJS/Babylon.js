@@ -1,9 +1,9 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Tools } from "../Misc/tools";
 import { Logger } from "../Misc/logger";
 import { GetTGAHeader } from "../Misc/tga";
 import { Engine } from "../Engines/engine";
-import { IOfflineProvider } from "./IOfflineProvider";
+import type { IOfflineProvider } from "./IOfflineProvider";
 import { WebRequest } from "../Misc/webRequest";
 
 // Sets the default offline provider to Babylon.js
