@@ -1076,6 +1076,11 @@ export class InputTextArea extends InputText {
     }
 
     /** @hidden */
+    protected _updateValueFromCursorIndex(offset: number) {
+        // Override to avoid parent behavior during _onPointerMove
+    }
+
+    /** @hidden */
     protected _selectAllText() {
         this._selectedLineIndex = this._lines.length - 1;
         this._lastClickedLineIndex = 0;
