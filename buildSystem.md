@@ -658,6 +658,7 @@ Similar to the dev host, the babylon server will take the latest compiled code f
 
 The babylon server's index.html has references to all of our public packages and has the BABYLON namespace populated, similar to the way the playground is working. When the repository initializes the server generates two files - createScene and createEngine. Those files are not a part of the git repository and can be changed in any way you wish. createScene can be async if needed.
 *If you want to debug a playground scene without starting the playground*, edit the file createScene.js (or sceneTs.ts for typescript), and open <http://localhost:1337/index.html> or <http://localhost:1337/index-ts.html>
+Open the inspector by pressing Ctrl+Shift+U (or Cmd+Shift+U on Mac).
 
 To start the babylon server, run:
 
