@@ -248,6 +248,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         onDrop={(event) => {
                             event.preventDefault();
                             this.props.globalState.onDropObservable.notifyObservers();
+                            this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -278,7 +279,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     onCreate(value: string): Control {
         const guiElement = GUINodeTools.CreateControlFromString(value);
         const newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
-        this.props.globalState.select(newGuiNode);
+        this.props.globalState.setSelection([newGuiNode]);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
         return newGuiNode;
