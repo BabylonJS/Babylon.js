@@ -756,35 +756,12 @@ export class InputTextArea extends InputText {
 
         // Cursor
         if (this._isFocused) {
-            //show the highlighted text
-            if (this._isTextHighlightOn) {
-                let highlightCursorLeft = 0;
-                let highlightCursorRight = 0;
-                this._highlightedText = "";
-                let yOffset = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
-                const xOffset = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
 
-                this._applyOnSelectedRange((line, currentIndex, startIndex, endIndex) => {
-                    highlightCursorLeft = currentIndex === startIndex ? this._startHighlightIndex : 0;
-                    highlightCursorRight = currentIndex === endIndex ? this._endHighlightIndex : line.text.length;
+            // Caret Blinking
+            this._resetBlinking();
 
-                    let width = context.measureText(line.text.substring(highlightCursorLeft, highlightCursorRight)).width;
-                    let leftOffsetWidth = context.measureText(line.text.substring(0, highlightCursorLeft)).width + xOffset;
-
-                    this._highlightedText += line.text.substring(highlightCursorLeft, highlightCursorRight);
-
-                    context.globalAlpha = this._highligherOpacity;
-                    context.fillStyle = "green"; // this._textHighlightColor;
-
-                    context.fillRect(leftOffsetWidth, yOffset + currentIndex * this._fontOffset.height, width, this._fontOffset.height);
-                    context.globalAlpha = 1.0;
-                });
-            }
-
-            context.restore();
-
-            // Render cursor
-            if (!this._blinkIsEven) {
+            // Compute overflowing cursor position in case on blinking or highlighting
+            if (!this._blinkIsEven || this._isTextHighlightOn) {
                 let cursorLeft = this._scrollLeft + context.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, this._cursorInfo.relativeStartIndex)).width;
 
                 if (cursorLeft < this._clipTextLeft) {
@@ -809,18 +786,60 @@ export class InputTextArea extends InputText {
                     this._markAsDirty();
                 }
 
+                // Render cursor
+                if (!this._blinkIsEven) {
                 context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
+            }
+
+                //show the highlighted text
+                if (this._isTextHighlightOn) {
+                    clearTimeout(this._blinkTimeout);
+
+                    this._highlightedText = this.text.substring(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
+
+                    context.globalAlpha = this._highligherOpacity;
+                    context.fillStyle = "green"; // this._textHighlightColor;
+
+                    const startLineIndex = Math.min(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
+                    const endLineIndex = Math.max(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
+
+                    let highlightRootY = this._scrollTop + startLineIndex * this._fontOffset.height;
+
+                    for (let i = startLineIndex; i <= endLineIndex; i++) {
+                        const line = this._lines[i];
+
+                        let highlightRootX = this._scrollLeft as number;
+                        switch (this._textHorizontalAlignment) {
+                            case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                                highlightRootX += 0;
+                                break;
+                            case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                                highlightRootX += width - line.width;
+                                break;
+                            case Control.HORIZONTAL_ALIGNMENT_CENTER:
+                                highlightRootX += (width - line.width) / 2;
+                                break;
+                        }
+
+                        const begin = i === startLineIndex ? this._cursorInfo.relativeStartIndex : 0;
+                        const end = i === endLineIndex ? this._cursorInfo.relativeEndIndex : line.text.length;
+
+                        const leftOffsetWidth = context.measureText(line.text.substr(0,begin)).width;
+                        const selectedText = line.text.substring(begin, end);
+                        const hightlightWidth = context.measureText(selectedText).width;
+
+                        context.fillRect(highlightRootX + leftOffsetWidth, highlightRootY, hightlightWidth, this._fontOffset.height);
+
+                        highlightRootY += this._fontOffset.height;
+        }
+
+                    if (this._cursorInfo.globalEndIndex === this._cursorInfo.globalStartIndex) {
+                        this._resetBlinking();
+                    }
+                }
             }
         }
 
-        context.restore();
-
-        // Caret Blinking
-        clearTimeout(this._blinkTimeout);
-        this._blinkTimeout = <any>setTimeout(() => {
-            this._blinkIsEven = !this._blinkIsEven;
-            this._markAsDirty();
-        }, 500);
         context.restore();
 
         // Border
@@ -840,6 +859,7 @@ export class InputTextArea extends InputText {
             context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
                 this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
         }
+    }
 
     private _resetBlinking() {
         clearTimeout(this._blinkTimeout);
