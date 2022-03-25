@@ -243,19 +243,20 @@ export class InputTextArea extends InputText {
                 this._isTextHighlightOn = false;
                 return;
             case 39: // RIGHT
-                // update the cursor
-                this._blinkIsEven = false;
+                this._markAsDirty();
+
                 if (evt && evt.shiftKey) {
                     // shift + ctrl/cmd + ->
                     if (evt.ctrlKey || evt.metaKey) {
                         const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex - 1;
                         this._cursorInfo.globalEndIndex += rightDelta;
-                        this._cursorInfo.globalStartIndex = this._highlightCursorInfo.initialLineIndex;
+                        this._cursorInfo.globalStartIndex = this._highlightCursorInfo.initialStartIndex;
                     }
                     // store the starting point
                     if (!this._isTextHighlightOn) {
                         this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
                         this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+                        this._highlightCursorInfo.initialRelativeStartIndex = this._cursorInfo.relativeStartIndex;
 
                         this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                         this._cursorInfo.globalEndIndex++;
@@ -267,26 +268,23 @@ export class InputTextArea extends InputText {
                             this._cursorInfo.globalEndIndex++;
                         }
                     }
+                    this._blinkIsEven = true;
                     evt.preventDefault();
                     return;
                 }
                 if (this._isTextHighlightOn) {
                     this._cursorInfo.globalStartIndex = this._cursorInfo.globalEndIndex;
-                }
-
-                if (this._cursorInfo.globalStartIndex < this.text.length) {
+                } else if (evt && (evt.ctrlKey || evt.metaKey)) { //ctr + ->
+                    const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex;
+                    this._cursorInfo.globalStartIndex += rightDelta;
+                } else if (this._cursorInfo.globalStartIndex < this.text.length) {
                     this._cursorInfo.globalStartIndex++;
                 }
 
-                //ctr + ->
-                if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex - 1;
-                    this._cursorInfo.globalStartIndex += rightDelta;
-                }
-
+                // update the cursor
+                this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._cursorIndex = -1;
-                this._markAsDirty();
                 return;
             case 38: // UP
                 // update the cursor
