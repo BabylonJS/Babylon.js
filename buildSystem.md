@@ -843,6 +843,8 @@ This will run all tests that have the word "material" in their name.
 
 Run visualization tests using `npm run test:visualization` in the main directory.
 
+Note - a dependency needed to run the test does not currently support OSX using M1 processors. Running the tests on theses machines will fail.
+
 #### Configuring the visualization tests
 
 Visualization tests are running using puppeteer, which is an interface to control chrome or firefox on node. The test will run in a browser and will generate a report if any test fails. The browser selected is the local chromium installed together with puppeteer. If you want the tests to run in a different browser you can customize the puppeteer configuration at `jest-puppeteer.config.js` in the main directory. Some of the options are:
