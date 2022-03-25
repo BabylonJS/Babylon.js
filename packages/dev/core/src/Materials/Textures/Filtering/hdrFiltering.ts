@@ -59,7 +59,7 @@ export class HDRFiltering {
         // pass
         this._engine = engine;
         this.hdrScale = options.hdrScale || this.hdrScale;
-        this.quality = options.hdrScale || this.quality;
+        this.quality = options.quality || this.quality;
     }
 
     private _createRenderTarget(size: number): RenderTargetWrapper {
