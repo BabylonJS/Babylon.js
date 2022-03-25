@@ -953,6 +953,11 @@ export class InputTextArea extends InputText {
 
     // for textselection
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
+        // Avoid Chromium-like beahavior when this event is fired right after onPointerDown
+        if (pi.event.movementX === 0 && pi.event.movementY === 0) {
+            return;
+        }
+
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinateX = coordinates.x;
             this._clickedCoordinateY = coordinates.y;
