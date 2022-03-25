@@ -54,7 +54,7 @@
         "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",
         "build:source:lts": "npx nx run-many --target=compile --projects=@lts/core,@lts/gui,@lts/loaders,@lts/materials,@lts/post-processes,@lts/procedural-textures,@lts/serializers --parallel=1",
-        "build:umd": "nx run-many --target=build --parallel=3 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-gui-editor,babylonjs-ktx2decoder",
+        "build:umd": "nx run-many --target=build --parallel=3 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-viewer-assets",
         "build:es6": "nx run-many --target=build --parallel=3 --projects=core,gui,loaders,materials,serializers,post-processes,procedural-textures,node-editor,inspector,gui-editor",
         "watch:shaders": "build-tools -c build-shaders --global --watch",
         "watch:assets": "build-tools -c pa --global --watch",
