@@ -494,9 +494,11 @@ export class InputTextArea extends InputText {
             const metrics = context.measureText(testLine);
             const testWidth = metrics.width;
             if (testWidth > width) {
-
+                if (n > 0) {
+                    // Avoid first word duplication if of too long
                 lineWidth = context.measureText(line).width;
                 lines.push({ text: line, width: lineWidth, lineEnding: " "  });
+                }
 
                 line = words[n];
 
