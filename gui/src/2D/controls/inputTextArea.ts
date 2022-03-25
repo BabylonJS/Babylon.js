@@ -957,6 +957,14 @@ export class InputTextArea extends InputText {
             this._clickedCoordinateX = coordinates.x;
             this._clickedCoordinateY = coordinates.y;
 
+            if (!this._isTextHighlightOn) {
+                this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
+                this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+                this._highlightCursorInfo.initialRelativeStartIndex = this._cursorInfo.relativeStartIndex;
+
+                this._isTextHighlightOn = true;
+            }
+
             this._markAsDirty();
         }
         super._onPointerMove(target, coordinates, pointerId, pi);
