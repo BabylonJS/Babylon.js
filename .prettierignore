@@ -1,2 +1,6 @@
 Shaders
 ShadersWGSL
+createScene.*
+createEngine.*
+*.vertex.ts
+*.fragment.ts
