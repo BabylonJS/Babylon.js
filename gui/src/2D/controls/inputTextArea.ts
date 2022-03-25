@@ -841,7 +841,12 @@ export class InputTextArea extends InputText {
                 this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
         }
 
-        context.restore();
+    private _resetBlinking() {
+        clearTimeout(this._blinkTimeout);
+        this._blinkTimeout = <any>setTimeout(() => {
+            this._blinkIsEven = !this._blinkIsEven;
+            this._markAsDirty();
+        }, 500);
     }
 
     protected _applyStates(context: ICanvasRenderingContext): void {
