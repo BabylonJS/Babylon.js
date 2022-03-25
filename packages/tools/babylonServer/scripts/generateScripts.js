@@ -6,6 +6,12 @@ if (!fs.existsSync(path.resolve("./src/createEngine.js"))) {
         path.resolve("./src/createEngine.js"),
         `
 /* global BABYLON */
+///<reference path="../declarations/core.d.ts"/>
+///<reference path="../declarations/gui.d.ts"/>
+///<reference path="../declarations/loaders.d.ts"/>
+///<reference path="../declarations/serializers.d.ts"/>
+///<reference path="../declarations/inspector.d.ts"/>
+///<reference path="../declarations/materials.d.ts"/>
 export const createEngine = () => {
     const canvas = document.getElementById("babylon-canvas"); // Get the canvas element
     const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true} );
