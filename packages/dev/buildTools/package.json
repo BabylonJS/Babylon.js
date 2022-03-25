@@ -10,7 +10,6 @@
     ],
     "scripts": {
         "build": "npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json"
     },
     "sideEffects": true,
