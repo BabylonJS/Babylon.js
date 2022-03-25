@@ -36,7 +36,7 @@ import type { Bone } from "core/Bones/bone";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
-import type { Engine } from "core/Engines/engine";
+import { Engine } from "core/Engines/engine";
 import type { Scene } from "core/scene";
 
 import type { IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
