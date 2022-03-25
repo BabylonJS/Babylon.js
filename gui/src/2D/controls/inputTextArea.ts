@@ -634,6 +634,9 @@ export class InputTextArea extends InputText {
         } else {
             this._scrollTop = this._clipTextTop;
         }
+
+        // Flush the highlighted text each frame
+        this.highlightedText = "";
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
