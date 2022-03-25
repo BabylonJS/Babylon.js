@@ -4,3 +4,4 @@ createScene.*
 createEngine.*
 *.vertex.ts
 *.fragment.ts
+*.compute.ts
