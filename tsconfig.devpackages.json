@@ -14,6 +14,9 @@
             "path": "packages/dev/gui/tsconfig.nocomposite.json"
         },
         {
+            "path": "packages/dev/sharedUiComponents/tsconfig.nocomposite.json"
+        },
+        {
             "path": "packages/dev/materials/tsconfig.nocomposite.json"
         },
         {
@@ -30,9 +33,6 @@
         },
         {
             "path": "packages/dev/inspector/tsconfig.nocomposite.json"
-        },
-        {
-            "path": "packages/dev/sharedUiComponents/tsconfig.nocomposite.json"
         },
         {
             "path": "packages/tools/nodeEditor/tsconfig.nocomposite.json"
