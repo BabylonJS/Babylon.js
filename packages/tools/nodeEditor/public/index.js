@@ -1,10 +1,11 @@
-var snippetUrl = "https://snippet.babylonjs.com";
-var currentSnippetToken;
-var previousHash = "";
-var nodeMaterial;
+/* global BABYLON */
+let snippetUrl = "https://snippet.babylonjs.com";
+let currentSnippetToken;
+let previousHash = "";
+let nodeMaterial;
 
 let loadScriptAsync = function (url, instantResolve) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         let script = document.createElement("script");
         script.src = url;
         script.onload = () => {
@@ -20,10 +21,7 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 const Versions = {
-    dist: [
-        "https://preview.babylonjs.com/babylon.js",
-        "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
-    ],
+    dist: ["https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"],
     local: ["//localhost:1337/babylon.js", "//localhost:1337/loaders/babylonjs.loaders.min.js"],
 };
 
@@ -43,18 +41,32 @@ let checkBabylonVersionAsync = function () {
         activeVersion = "local";
     }
 
-    return new Promise((resolve, reject) => {
-        loadInSequence(Versions[activeVersion], 0, resolve);
+    let snapshot = "";
+    // see if a snapshot should be used
+    if (window.location.search.indexOf("snapshot=") !== -1) {
+        snapshot = window.location.search.split("=")[1];
+        // cleanup, just in case
+        snapshot = snapshot.split("&")[0];
+        activeVersion = "dist";
+    }
+
+    let versions = Versions[activeVersion] || Versions["dist"];
+    if (snapshot && activeVersion === "dist") {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    }
+
+    return new Promise((resolve) => {
+        loadInSequence(versions, 0, resolve);
     });
 };
 
 checkBabylonVersionAsync().then(() => {
     loadScriptAsync("babylon.nodeEditor.js").then(() => {
-        var customLoadObservable = new BABYLON.Observable();
-        var editorDisplayed = false;
+        let customLoadObservable = new BABYLON.Observable();
+        let editorDisplayed = false;
 
-        var cleanHash = function () {
-            var splits = decodeURIComponent(location.hash.substr(1)).split("#");
+        let cleanHash = function () {
+            let splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
             if (splits.length > 2) {
                 splits.splice(2, splits.length - 2);
@@ -63,7 +75,7 @@ checkBabylonVersionAsync().then(() => {
             location.hash = splits.join("#");
         };
 
-        var checkHash = function () {
+        let checkHash = function () {
             if (location.hash) {
                 if (previousHash != location.hash) {
                     cleanHash();
@@ -71,11 +83,11 @@ checkBabylonVersionAsync().then(() => {
                     previousHash = location.hash;
 
                     try {
-                        var xmlHttp = new XMLHttpRequest();
+                        let xmlHttp = new XMLHttpRequest();
                         xmlHttp.onreadystatechange = function () {
                             if (xmlHttp.readyState == 4) {
                                 if (xmlHttp.status == 200) {
-                                    var snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
+                                    let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
                                     let serializationObject = JSON.parse(snippet.nodeMaterial);
 
                                     if (editorDisplayed) {
@@ -93,7 +105,7 @@ checkBabylonVersionAsync().then(() => {
                             }
                         };
 
-                        var hash = location.hash.substr(1);
+                        let hash = location.hash.substr(1);
                         currentSnippetToken = hash.split("#")[0];
                         xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                         xmlHttp.send();
@@ -104,9 +116,9 @@ checkBabylonVersionAsync().then(() => {
             setTimeout(checkHash, 200);
         };
 
-        var showEditor = function () {
+        let showEditor = function () {
             editorDisplayed = true;
-            var hostElement = document.getElementById("host-element");
+            let hostElement = document.getElementById("host-element");
 
             BABYLON.NodeEditor.Show({
                 nodeMaterial: nodeMaterial,
@@ -116,13 +128,13 @@ checkBabylonVersionAsync().then(() => {
                     label: "Save as unique URL",
                     action: (data) => {
                         return new Promise((resolve, reject) => {
-                            var xmlHttp = new XMLHttpRequest();
+                            let xmlHttp = new XMLHttpRequest();
                             xmlHttp.onreadystatechange = function () {
                                 if (xmlHttp.readyState == 4) {
                                     if (xmlHttp.status == 200) {
-                                        var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                                        var snippet = JSON.parse(xmlHttp.responseText);
-                                        var newUrl = baseUrl + "#" + snippet.id;
+                                        let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                                        let snippet = JSON.parse(xmlHttp.responseText);
+                                        let newUrl = baseUrl + "#" + snippet.id;
                                         currentSnippetToken = snippet.id;
                                         if (snippet.version && snippet.version != "0") {
                                             newUrl += "#" + snippet.version;
@@ -142,7 +154,7 @@ checkBabylonVersionAsync().then(() => {
                             xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
                             xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-                            var dataToSend = {
+                            let dataToSend = {
                                 payload: JSON.stringify({
                                     nodeMaterial: data,
                                 }),
@@ -159,12 +171,12 @@ checkBabylonVersionAsync().then(() => {
         };
         // Let's start
         if (BABYLON.Engine.isSupported()) {
-            var canvas = document.createElement("canvas");
-            var engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
-            var scene = new BABYLON.Scene(engine);
-            var light0 = new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
-            var light1 = new BABYLON.HemisphericLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
-            var light2 = new BABYLON.HemisphericLight("light #2", new BABYLON.Vector3(0, 1, 0), scene);
+            let canvas = document.createElement("canvas");
+            let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
+            let scene = new BABYLON.Scene(engine);
+            new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
+            new BABYLON.HemisphericLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
+            new BABYLON.HemisphericLight("light #2", new BABYLON.Vector3(0, 1, 0), scene);
 
             nodeMaterial = new BABYLON.NodeMaterial("node");
 

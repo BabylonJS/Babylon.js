@@ -53,8 +53,22 @@ let checkBabylonVersionAsync = function () {
         activeVersion = "local";
     }
 
+    let snapshot = "";
+    // see if a snapshot should be used
+    if (window.location.search.indexOf("snapshot=") !== -1) {
+        snapshot = window.location.search.split("=")[1];
+        // cleanup, just in case
+        snapshot = snapshot.split("&")[0];
+        activeVersion = "dist";
+    }
+
+    let versions = Versions[activeVersion] || Versions["dist"];
+    if (snapshot && activeVersion === "dist") {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    }
+
     return new Promise((resolve, _reject) => {
-        loadInSequence(Versions[activeVersion], 0, resolve);
+        loadInSequence(versions, 0, resolve);
     });
 };
 
