@@ -83,10 +83,11 @@
         "lint:check": "eslint ./packages/**/src/**/*.{ts,tsx,js,json}",
         "lint:fix": "eslint ./packages/**/src/**/*.{ts,tsx,js,json} --fix",
         "update-all-dependencies": "npm update -ws",
-        "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps"
+        "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
+        "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev\" \"npm run serve -w @tools/babylon-server\""
     },
     "engines": {
-        "node": ">=12.0.0",
+        "node": ">=12.0.0 <17.0.0",
         "npm": ">=7.0.0"
     },
     "changelog": {

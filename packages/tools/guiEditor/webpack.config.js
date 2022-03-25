@@ -1,6 +1,5 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
-require("dotenv").config();
 
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
