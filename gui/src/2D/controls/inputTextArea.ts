@@ -862,7 +862,7 @@ export class InputTextArea extends InputText {
                     this._highlightedText = this.text.substring(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
                     context.globalAlpha = this._highligherOpacity;
-                    context.fillStyle = "green"; // this._textHighlightColor;
+                    context.fillStyle = this._textHighlightColor;
 
                     const startLineIndex = Math.min(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
                     const endLineIndex = Math.max(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);

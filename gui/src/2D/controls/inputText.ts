@@ -42,7 +42,7 @@ export class InputText extends Control implements IFocusableControl {
     protected _addKey = true;
     protected _currentKey = "";
     protected _isTextHighlightOn = false;
-    private _textHighlightColor = "#d5e0ff";
+    protected _textHighlightColor = "#d5e0ff";
     protected _highligherOpacity = 0.4;
     protected _highlightedText = "";
     protected _startHighlightIndex = 0;
