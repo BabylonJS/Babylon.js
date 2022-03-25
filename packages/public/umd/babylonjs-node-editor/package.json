@@ -1,7 +1,7 @@
 {
     "name": "babylonjs-node-editor",
     "version": "5.0.0-rc.10",
-    "main": "babylon.nodeEditor.bundle.js",
+    "main": "babylon.nodeEditor.js",
     "types": "babylon.nodeEditor.module.d.ts",
     "files": [
         "*"
