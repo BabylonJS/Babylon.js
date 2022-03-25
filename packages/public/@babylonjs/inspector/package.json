@@ -20,8 +20,7 @@
         "@babylonjs/gui": "^5.0.0-rc.10",
         "@babylonjs/materials": "^5.0.0-rc.10",
         "@babylonjs/serializers": "^5.0.0-rc.10",
-        "@babylonjs/loaders": "^5.0.0-rc.10",
-        "tslib": "^2.3.1"
+        "@babylonjs/loaders": "^5.0.0-rc.10"
     },
     "peerDependencies": {
         "@types/react": ">=16.7.3",
