@@ -1144,11 +1144,24 @@ export class InputTextArea extends InputText {
 
     /** @hidden */
     protected _selectAllText() {
-        this._selectedLineIndex = this._lines.length - 1;
-        this._lastClickedLineIndex = 0;
-        this._cursorOffset = 0;
-        this._cursorIndex = 0;
-        this._updateValueFromCursorIndex(this._cursorOffset);
+        this._isTextHighlightOn = true;
+        this._blinkIsEven = true;
+
+        this._highlightCursorInfo = {
+            initialStartIndex: 0,
+            initialRelativeStartIndex: 0,
+            initialLineIndex: 0,
+        };
+
+        this._cursorInfo = {
+            globalStartIndex: 0,
+            globalEndIndex: this.text.length,
+            relativeEndIndex: -1,
+            relativeStartIndex: -1,
+            currentLineIndex: 0,
+        };
+
+        this._markAsDirty();
     }
 }
 RegisterClass("BABYLON.GUI.InputTextArea", InputTextArea);
