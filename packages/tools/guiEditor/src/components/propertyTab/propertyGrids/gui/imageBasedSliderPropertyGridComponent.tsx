@@ -12,6 +12,7 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import thumbImageLinkIcon from "shared-ui-components/imgs/thumbImageLinkIcon.svg";
 import valueBarImageLinkIcon from "shared-ui-components/imgs/valueBarImageLinkIcon.svg";
 import sliderBackgroundImageIcon from "shared-ui-components/imgs/sliderBackgroundImageIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSliders: ImageBasedSlider[];
@@ -36,42 +37,44 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                 />
                 <hr />
                 <TextLineComponent label="IMAGE LINKS" value=" " color="grey"></TextLineComponent>
-                <TextInputLineComponent
-                    icon={thumbImageLinkIcon}
-                    lockObject={this.props.lockObject}
-                    iconLabel="Thumb Image Link"
-                    target={makeTargetsProxy(
-                        imageBasedSliders.map((slider) => slider.thumbImage),
-                        this.props.onPropertyChangedObservable
-                    )}
-                    label=""
-                    propertyName="source"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    icon={valueBarImageLinkIcon}
-                    lockObject={this.props.lockObject}
-                    iconLabel="Value Bar Image Link"
-                    target={makeTargetsProxy(
-                        imageBasedSliders.map((slider) => slider.valueBarImage),
-                        this.props.onPropertyChangedObservable
-                    )}
-                    label=""
-                    propertyName="source"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    icon={sliderBackgroundImageIcon}
-                    lockObject={this.props.lockObject}
-                    iconLabel="Background Image Link"
-                    target={makeTargetsProxy(
-                        imageBasedSliders.map((slider) => slider.backgroundImage),
-                        this.props.onPropertyChangedObservable
-                    )}
-                    label=""
-                    propertyName="source"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <div className="ge-divider">
+                    <IconComponent icon={thumbImageLinkIcon} label="Thumb Image Link" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(
+                            imageBasedSliders.map((slider) => slider.thumbImage),
+                            this.props.onPropertyChangedObservable
+                        )}
+                        label=""
+                        propertyName="source"
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={valueBarImageLinkIcon} label="Value Bar Image Link" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(
+                            imageBasedSliders.map((slider) => slider.valueBarImage),
+                            this.props.onPropertyChangedObservable
+                        )}
+                        label=""
+                        propertyName="source"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={sliderBackgroundImageIcon} label="Background Image Link" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(
+                            imageBasedSliders.map((slider) => slider.backgroundImage),
+                            this.props.onPropertyChangedObservable
+                        )}
+                        label=""
+                        propertyName="source"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </div>
                 <SliderPropertyGridComponent sliders={imageBasedSliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );

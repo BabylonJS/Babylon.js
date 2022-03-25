@@ -9,7 +9,11 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-import positionIcon from "shared-ui-components/imgs/positionIcon.svg";
+import positionIcon from "shared-ui-components/imgs/positionIcon.svg"; // TODO: replace
+import linePoint1Icon from "shared-ui-components/imgs/linePoint1Icon.svg";
+import linePoint2Icon from "shared-ui-components/imgs/linePoint2Icon.svg";
+import lineDashIcon from "shared-ui-components/imgs/lineDashIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface ILinePropertyGridComponentProps {
     lines: Line[];
@@ -58,62 +62,66 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={lines} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <hr />
                 <TextLineComponent label="LINE" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
+                <div className="ge-divider double">
+                    <IconComponent icon={linePoint1Icon} label={"Position 1"} />
                     <TextInputLineComponent
-                        iconLabel={"Position 1"}
-                        icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
                         target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="x1"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="y1"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
+                    <IconComponent icon={linePoint2Icon} label={"Position 2"} />
                     <TextInputLineComponent
-                        iconLabel={"Position 2"}
-                        icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
                         target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="x2"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="y2"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                <FloatLineComponent
-                    iconLabel={"Line width"}
-                    icon={positionIcon}
+                <div className="ge-divider double">
+                    <IconComponent icon={positionIcon} label={"Line Width"} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        propertyName="lineWidth"
+                        unit="PX"
+                        unitLocked={true}
+                        min={0}
+                        arrows={true}
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={lineDashIcon} label={"Dash Pattern"} />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        value={dashString}
+                        onChange={(newValue) => this.onDashChange(newValue)}
+                    />
+                </div>
+                <hr />
+                <CommonControlPropertyGridComponent
+                    hideDimensions
                     lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
-                    propertyName="lineWidth"
+                    controls={lines}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    iconLabel={"Dash pattern"}
-                    icon={positionIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
-                    value={dashString}
-                    onChange={(newValue) => this.onDashChange(newValue)}
                 />
             </div>
         );
