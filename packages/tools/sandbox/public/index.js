@@ -62,7 +62,7 @@ let loadInSequence = async function (versions, index, resolve) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {
+    if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1)) {
         activeVersion = "local";
     }
 
