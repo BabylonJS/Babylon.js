@@ -199,8 +199,8 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 37: // LEFT
-                // update the cursor
-                this._blinkIsEven = false;
+                this._markAsDirty();
+
                 if (evt && evt.shiftKey) {
                     // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
@@ -212,36 +212,35 @@ export class InputTextArea extends InputText {
                     if (!this._isTextHighlightOn) {
                         this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
                         this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+                        this._highlightCursorInfo.initialRelativeStartIndex = this._cursorInfo.relativeStartIndex;
 
                         this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                         this._cursorInfo.globalStartIndex--;
                         this._isTextHighlightOn = true;
                     } else {
-                        if(this._cursorInfo.globalStartIndex < this._highlightCursorInfo.initialStartIndex) {
-                            this._cursorInfo.globalStartIndex--;
-                        } else {
+                        if(this._cursorInfo.globalEndIndex > this._highlightCursorInfo.initialStartIndex) {
                             this._cursorInfo.globalEndIndex--;
+                        } else {
+                            this._cursorInfo.globalStartIndex--;
                         }
                     }
+                    this._blinkIsEven = true;
                     evt.preventDefault();
                     return;
                 }
 
-                if (this._cursorInfo.globalStartIndex > 0) {
+                if (this._isTextHighlightOn) {
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                } else if (evt && (evt.ctrlKey || evt.metaKey)) { // ctr + <-
+                    this._cursorInfo.globalStartIndex -= this._cursorInfo.relativeStartIndex;
+                    evt.preventDefault();
+                } else if (this._cursorInfo.globalStartIndex > 0) {
                     this._cursorInfo.globalStartIndex--;
                 }
 
-                if (this._isTextHighlightOn) {
-                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                }
-                // ctr + <-
-                if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    this._cursorInfo.globalStartIndex -= this._cursorInfo.relativeStartIndex;
-                    evt.preventDefault();
-                }
-
+                // update the cursor
+                this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
-                this._markAsDirty();
                 return;
             case 39: // RIGHT
                 // update the cursor
