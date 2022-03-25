@@ -85,7 +85,7 @@ export class ToolsTabComponent extends PaneComponent {
 
     componentDidMount() {
         if (!(BABYLON as any).GLTF2Export) {
-            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => { });
+            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {});
             return;
         }
     }
@@ -222,13 +222,13 @@ export class ToolsTabComponent extends PaneComponent {
         const filesInputAnimation = new FilesInput(
             scene.getEngine() as any,
             scene as any,
-            () => { },
-            () => { },
-            () => { },
-            () => { },
-            () => { },
+            () => {},
+            () => {},
+            () => {},
+            () => {},
+            () => {},
             reload,
-            () => { }
+            () => {}
         );
 
         filesInputAnimation.loadFiles(event);
@@ -273,15 +273,17 @@ export class ToolsTabComponent extends PaneComponent {
             return true;
         };
 
-        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) })
-            .then((glb: GLTFData) => {
+        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) }).then(
+            (glb: GLTFData) => {
                 this._isExportingGltf = false;
                 this.forceUpdate();
                 glb.downloadFiles();
-            }, () => {
+            },
+            () => {
                 this._isExportingGltf = false;
                 this.forceUpdate();
-            });
+            }
+        );
     }
 
     exportBabylon() {
@@ -454,10 +456,26 @@ export class ToolsTabComponent extends PaneComponent {
                     {this._isExportingGltf && <TextLineComponent label="Please wait..exporting" ignoreValue={true} />}
                     {!this._isExportingGltf && (
                         <>
-                            <CheckBoxLineComponent label="Export Disabled Nodes" isSelected={() => this._gltfExportOptions.exportDisabledNodes} onSelect={(value) => this._gltfExportOptions.exportDisabledNodes = value} />
-                            <CheckBoxLineComponent label="Export Skybox" isSelected={() => this._gltfExportOptions.exportSkyboxes} onSelect={(value) => this._gltfExportOptions.exportSkyboxes = value} />
-                            <CheckBoxLineComponent label="Export Cameras" isSelected={() => this._gltfExportOptions.exportCameras} onSelect={(value) => this._gltfExportOptions.exportCameras = value} />
-                            <CheckBoxLineComponent label="Export Lights" isSelected={() => this._gltfExportOptions.exportLights} onSelect={(value) => this._gltfExportOptions.exportLights = value} />
+                            <CheckBoxLineComponent
+                                label="Export Disabled Nodes"
+                                isSelected={() => this._gltfExportOptions.exportDisabledNodes}
+                                onSelect={(value) => (this._gltfExportOptions.exportDisabledNodes = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Export Skybox"
+                                isSelected={() => this._gltfExportOptions.exportSkyboxes}
+                                onSelect={(value) => (this._gltfExportOptions.exportSkyboxes = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Export Cameras"
+                                isSelected={() => this._gltfExportOptions.exportCameras}
+                                onSelect={(value) => (this._gltfExportOptions.exportCameras = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Export Lights"
+                                isSelected={() => this._gltfExportOptions.exportLights}
+                                onSelect={(value) => (this._gltfExportOptions.exportLights = value)}
+                            />
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                         </>
                     )}
