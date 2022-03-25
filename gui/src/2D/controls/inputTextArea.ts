@@ -601,9 +601,9 @@ export class InputTextArea extends InputText {
         this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
         this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
 
-        if (this._isFocused && this._lines[this._selectedLineIndex].width > this._availableWidth) {
+        if (this._isFocused && this._lines[this._cursorInfo.currentLineIndex].width > this._availableWidth) {
 
-            let textLeft = this._clipTextLeft - this._lines[this._selectedLineIndex].width + this._availableWidth;
+            const textLeft = this._clipTextLeft - this._lines[this._cursorInfo.currentLineIndex].width + this._availableWidth;
 
             if (!this._scrollLeft) {
                 this._scrollLeft = textLeft;
@@ -612,10 +612,9 @@ export class InputTextArea extends InputText {
             this._scrollLeft = this._clipTextLeft;
         }
 
-        let selectedHeight = (this._selectedLineIndex + 1)   * this._fontOffset.height;
-
         if (this._isFocused) {
-            let textTop = this._clipTextTop - selectedHeight + this._availableHeight;
+            const selectedHeight = (this._cursorInfo.currentLineIndex + 1)   * this._fontOffset.height;
+            const textTop = this._clipTextTop - selectedHeight + this._availableHeight;
 
             if (!this._scrollTop) {
                 this._scrollTop = textTop;
@@ -747,8 +746,9 @@ export class InputTextArea extends InputText {
         // before render just returns the same string
         // TODO: why do we need this method?
 
-        var height = this._currentMeasure.height;
-        var rootY = 0;
+        const height = this._currentMeasure.height;
+        const width = this._currentMeasure.width;
+        let rootY = 0;
 
         switch (this._textVerticalAlignment) {
             case Control.VERTICAL_ALIGNMENT_TOP:
