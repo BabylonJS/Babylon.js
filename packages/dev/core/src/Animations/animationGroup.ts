@@ -1,13 +1,13 @@
-import { Animatable } from "./animatable";
+import type { Animatable } from "./animatable";
 import { Animation } from "./animation";
-import { IAnimationKey } from "./animationKey";
+import type { IAnimationKey } from "./animationKey";
 
-import { Scene, IDisposable } from "../scene";
+import type { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-import { AbstractScene } from "../abstractScene";
+import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 
 /**

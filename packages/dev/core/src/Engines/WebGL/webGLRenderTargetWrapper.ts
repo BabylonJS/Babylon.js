@@ -1,9 +1,9 @@
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import { Nullable } from "../../types";
-import { Engine } from "../engine";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import type { Nullable } from "../../types";
+import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
-import { ThinEngine } from "../thinEngine";
+import type { ThinEngine } from "../thinEngine";
 
 /** @hidden */
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {

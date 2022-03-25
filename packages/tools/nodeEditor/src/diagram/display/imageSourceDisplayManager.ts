@@ -1,6 +1,6 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 
 export class ImageSourceDisplayManager implements IDisplayManager {

@@ -1,11 +1,11 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { Material } from "core/Materials/material";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Material } from "core/Materials/material";
 import { faBrush, faPen } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 
 interface IMaterialTreeItemComponentProps {
     material: Material | NodeMaterial;

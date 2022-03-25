@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { GlobalState } from "../../../../globalState";
+import type { GlobalState } from "../../../../globalState";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";

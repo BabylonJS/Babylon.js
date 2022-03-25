@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Engine } from "../Engines/engine";
 /**
  * Interface used to present a loading screen while loading a scene

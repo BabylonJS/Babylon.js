@@ -1,6 +1,6 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Engine } from "../../Engines/engine";
-import { DataBuffer } from "../../Buffers/dataBuffer";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
 
 /** @hidden */
 // eslint-disable-next-line no-var

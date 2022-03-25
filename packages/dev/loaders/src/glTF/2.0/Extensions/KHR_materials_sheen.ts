@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 
-import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
-import { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
+import type { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_sheen";
 

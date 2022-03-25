@@ -1,5 +1,5 @@
 import { Action } from "./action";
-import { Condition } from "./condition";
+import type { Condition } from "./condition";
 
 import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";

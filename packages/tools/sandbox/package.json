@@ -5,9 +5,9 @@
     "files": [
         "dist"
     ],
-    "types": "dist/nodeEditor.d.ts",
-    "main": "dist/nodeEditor.js",
-    "module": "dist/nodeEditor.js",
+    "types": "dist/index.d.ts",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
     "scripts": {
         "build": "npm run clean && npm run compile",
         "build:declaration": "build-tools -c pud --config ./config.json",

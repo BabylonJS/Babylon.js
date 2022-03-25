@@ -1,15 +1,15 @@
 import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../../Maths/math.vector";
-import { Node } from "../../node";
-import { TransformNode } from "../../Meshes/transformNode";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Node } from "../../node";
+import type { TransformNode } from "../../Meshes/transformNode";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
-import { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
-import { TargetCamera } from "../../Cameras/targetCamera";
+import type { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
+import type { TargetCamera } from "../../Cameras/targetCamera";
 
 /**
  * Defines the types of pose enabled controllers that are supported

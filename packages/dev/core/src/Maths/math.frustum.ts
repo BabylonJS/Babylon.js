@@ -1,5 +1,5 @@
-import { Matrix } from "./math.vector";
-import { DeepImmutable } from "../types";
+import type { Matrix } from "./math.vector";
+import type { DeepImmutable } from "../types";
 import { Plane } from "./math.plane";
 
 /**

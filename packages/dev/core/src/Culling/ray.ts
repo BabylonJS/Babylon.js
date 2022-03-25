@@ -1,14 +1,14 @@
-import { DeepImmutable, Nullable, float } from "../types";
+import type { DeepImmutable, Nullable, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { BoundingBox } from "./boundingBox";
-import { BoundingSphere } from "./boundingSphere";
+import type { BoundingBox } from "./boundingBox";
+import type { BoundingSphere } from "./boundingSphere";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { EngineStore } from "../Engines/engineStore";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;

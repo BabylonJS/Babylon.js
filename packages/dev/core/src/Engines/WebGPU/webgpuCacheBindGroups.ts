@@ -1,12 +1,12 @@
 import { Logger } from "../../Misc/logger";
-import { WebGPUCacheSampler } from "./webgpuCacheSampler";
-import { WebGPUMaterialContext } from "./webgpuMaterialContext";
-import { WebGPUPipelineContext } from "./webgpuPipelineContext";
-import { WebGPUEngine } from "../webgpuEngine";
-import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { ExternalTexture } from "../../Materials/Textures/externalTexture";
-import { WebGPUDrawContext } from "./webgpuDrawContext";
+import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
+import type { WebGPUMaterialContext } from "./webgpuMaterialContext";
+import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import type { WebGPUEngine } from "../webgpuEngine";
+import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
+import type { WebGPUDrawContext } from "./webgpuDrawContext";
 
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };

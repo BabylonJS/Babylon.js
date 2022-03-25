@@ -1,4 +1,4 @@
-import { Vector2 } from "core/Maths/math.vector";
+import type { Vector2 } from "core/Maths/math.vector";
 
 /**
  * Options for loading OBJ/MTL files

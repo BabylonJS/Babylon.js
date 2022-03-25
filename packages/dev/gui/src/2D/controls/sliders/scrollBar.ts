@@ -1,10 +1,10 @@
-import { Vector2 } from "core/Maths/math.vector";
+import type { Vector2 } from "core/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
-import { Control } from "../control";
+import type { Control } from "../control";
 import { Measure } from "../../measure";
-import { PointerInfoBase } from "core/Events/pointerEvents";
+import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create slider controls

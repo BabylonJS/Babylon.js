@@ -1,14 +1,14 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GraphFrame } from "../graphFrame";
-import { GlobalState } from "../../globalState";
+import type { GraphFrame } from "../graphFrame";
+import type { GlobalState } from "../../globalState";
 import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;

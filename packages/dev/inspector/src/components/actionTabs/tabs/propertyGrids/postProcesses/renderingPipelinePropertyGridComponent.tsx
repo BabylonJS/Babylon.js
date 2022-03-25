@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import type { Observable } from "core/Misc/observable";
+import type { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
-import { GlobalState } from "../../../../globalState";
+import type { GlobalState } from "../../../../globalState";
 
 interface IRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;

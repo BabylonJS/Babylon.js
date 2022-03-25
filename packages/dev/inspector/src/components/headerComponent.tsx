@@ -2,8 +2,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindowRestore, faTimes, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observable, Observer } from "core/Misc/observable";
 
 export interface IHeaderComponentProps {
     title: string;

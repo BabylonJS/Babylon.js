@@ -1,16 +1,17 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Rectangle } from "gui/2D/controls/rectangle";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Rectangle } from "gui/2D/controls/rectangle";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
-import conerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IRectanglePropertyGridComponentProps {
     rectangles: Rectangle[];
@@ -25,37 +26,20 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
 
     render() {
         const { rectangles, lockObject, onPropertyChangedObservable } = this.props;
+        const proxy = makeTargetsProxy(rectangles, onPropertyChangedObservable);
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel="Stroke Weight"
-                        icon={strokeWeightIcon}
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={makeTargetsProxy(rectangles, onPropertyChangedObservable)}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={onPropertyChangedObservable}
-                        unit="PX"
-                        unitLocked={true}
-                    />
+                <div className="ge-divider double">
+                    <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="thickness" unit="PX" unitLocked arrows min={0} digits={2} />
                 </div>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel="Corner Radius"
-                        icon={conerRadiusIcon}
-                        lockObject={lockObject}
-                        label=""
-                        target={makeTargetsProxy(rectangles, onPropertyChangedObservable)}
-                        propertyName="cornerRadius"
-                        onPropertyChangedObservable={onPropertyChangedObservable}
-                        unit="PX"
-                        unitLocked={true}
-                    />
+                <div className="ge-divider double">
+                    <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="cornerRadius" unit="PX" unitLocked arrows min={0} digits={2} />
                 </div>
                 <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>

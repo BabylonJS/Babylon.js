@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import { KTX2Decoder } from "../index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;

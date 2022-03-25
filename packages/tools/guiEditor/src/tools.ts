@@ -1,5 +1,5 @@
-import { Control } from "gui/2D/controls/control";
-import { Grid } from "gui/2D/controls/grid";
+import type { Control } from "gui/2D/controls/control";
+import type { Grid } from "gui/2D/controls/grid";
 import { Vector2 } from "core/Maths/math";
 
 export class Tools {

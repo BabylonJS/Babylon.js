@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { Light } from "core/Lights/light";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { Light } from "core/Lights/light";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";

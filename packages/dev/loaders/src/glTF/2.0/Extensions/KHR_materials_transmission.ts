@@ -1,19 +1,20 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Material } from "core/Materials/material";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { Material } from "core/Materials/material";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import { Scene } from "core/scene";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { Texture } from "core/Materials/Textures/texture";
+import type { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
+import type { Scene } from "core/scene";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { Observable, Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
-import { Color4 } from "core/Maths/math.color";
+import type { Color4 } from "core/Maths/math.color";
 
 interface ITransmissionHelperHolder {
     /**

@@ -1,16 +1,17 @@
 import { Gizmo } from "core/Gizmos/gizmo";
 import { Epsilon } from "core/Maths/math.constants";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector";
-import { Scene } from "core/scene";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Scene } from "core/scene";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import { PivotTools } from "core/Misc/pivotTools";
-import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
-import { Nullable } from "core/types";
+import type { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import type { Nullable } from "core/types";
 
-import { HolographicSlate } from "../controls/holographicSlate";
-import { CornerHandle, GizmoHandle, SideHandle } from "./gizmoHandle";
+import type { HolographicSlate } from "../controls/holographicSlate";
+import type { GizmoHandle } from "./gizmoHandle";
+import { CornerHandle, SideHandle } from "./gizmoHandle";
 
 // Mask contains the influence of the drag offset vectors on dimensions or origin of the slate
 // Mask vector is multiplied to the offset vector

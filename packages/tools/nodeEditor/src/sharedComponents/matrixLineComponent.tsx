@@ -1,11 +1,12 @@
 import * as React from "react";
-import { Vector3, Matrix, Vector4, Quaternion } from "core/Maths/math.vector";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { Vector3, Vector4 } from "core/Maths/math.vector";
+import { Matrix, Quaternion } from "core/Maths/math.vector";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { Vector4LineComponent } from "./vector4LineComponent";
 import { OptionsLineComponent } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 interface IMatrixLineComponentProps {
     label: string;

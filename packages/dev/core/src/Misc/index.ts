@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./andOrNotEvaluator";
 export * from "./assetsManager";
 export * from "./basis";

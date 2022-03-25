@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Texture } from "core/Materials/Textures/texture";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { GridMaterial } from "materials/grid/gridMaterial";
 
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { GlobalState } from "../../../globalState";
+import type { GlobalState } from "../../../globalState";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 
 interface IRenderGridPropertyGridComponentProps {

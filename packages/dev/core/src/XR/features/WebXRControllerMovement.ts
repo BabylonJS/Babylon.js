@@ -1,13 +1,14 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { Observer } from "../../Misc/observable";
-import { WebXRSessionManager } from "../webXRSessionManager";
-import { Nullable } from "../../types";
-import { WebXRInput } from "../webXRInput";
-import { WebXRInputSource } from "../webXRInputSource";
-import { WebXRControllerComponent, IWebXRMotionControllerAxesValue, IWebXRMotionControllerComponentChangesValues } from "../motionController/webXRControllerComponent";
+import type { Observer } from "../../Misc/observable";
+import type { WebXRSessionManager } from "../webXRSessionManager";
+import type { Nullable } from "../../types";
+import type { WebXRInput } from "../webXRInput";
+import type { WebXRInputSource } from "../webXRInputSource";
+import type { IWebXRMotionControllerAxesValue, IWebXRMotionControllerComponentChangesValues } from "../motionController/webXRControllerComponent";
+import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { MotionControllerComponentType } from "../motionController/webXRAbstractMotionController";
+import type { MotionControllerComponentType } from "../motionController/webXRAbstractMotionController";
 import { Tools } from "../../Misc/tools";
 
 /**

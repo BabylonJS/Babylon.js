@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../types";
-import { Observer } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
 import { serialize } from "../Misc/decorators";
-import { Color4 } from "../Maths/math.color";
-import { Camera } from "../Cameras/camera";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Effect } from "../Materials/effect";
-import { ColorCurves } from "../Materials/colorCurves";
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "../Engines/engine";
+import type { Color4 } from "../Maths/math.color";
+import type { Camera } from "../Cameras/camera";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { Effect } from "../Materials/effect";
+import type { ColorCurves } from "../Materials/colorCurves";
+import type { IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 

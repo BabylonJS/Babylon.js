@@ -1,8 +1,9 @@
-import { PaneComponent, IPaneComponentProps } from "../paneComponent";
+import type { IPaneComponentProps } from "../paneComponent";
+import { PaneComponent } from "../paneComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 import { Engine } from "core/Engines/engine";

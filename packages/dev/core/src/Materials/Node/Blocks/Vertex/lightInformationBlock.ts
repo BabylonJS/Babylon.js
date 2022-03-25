@@ -1,17 +1,17 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Nullable } from "../../../../types";
-import { Scene } from "../../../../scene";
-import { Effect } from "../../../effect";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { Mesh } from "../../../../Meshes/mesh";
-import { Light } from "../../../../Lights/light";
+import type { Nullable } from "../../../../types";
+import type { Scene } from "../../../../scene";
+import type { Effect } from "../../../effect";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { Light } from "../../../../Lights/light";
 import { PointLight } from "../../../../Lights/pointLight";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 /**
  * Block used to get data information from a light
  */

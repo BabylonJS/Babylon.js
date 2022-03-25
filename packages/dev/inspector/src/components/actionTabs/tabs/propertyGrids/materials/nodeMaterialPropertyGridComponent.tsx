@@ -1,12 +1,12 @@
 import * as React from "react";
 
 import { Observable } from "core/Misc/observable";
-import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -17,7 +17,7 @@ import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComp
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { GradientPropertyTabComponent } from "../../gradientNodePropertyComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 

@@ -1,9 +1,9 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { PostProcess } from "./postProcess";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 import "../Shaders/stereoscopicInterlace.fragment";
 

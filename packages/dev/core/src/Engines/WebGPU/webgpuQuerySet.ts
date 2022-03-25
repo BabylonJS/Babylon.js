@@ -1,6 +1,6 @@
-import { WebGPUBufferManager } from "./webgpuBufferManager";
+import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
-import { QueryType } from "./webgpuConstants";
+import type { QueryType } from "./webgpuConstants";
 
 /** @hidden */
 export class WebGPUQuerySet {

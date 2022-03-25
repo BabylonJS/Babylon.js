@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
@@ -13,14 +13,14 @@ import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponen
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
-import { IPropertyComponentProps } from "./propertyComponentProps";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<InputBlock>>;

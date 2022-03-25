@@ -1,10 +1,10 @@
-import { IDisposable, Scene } from "../../scene";
+import type { IDisposable, Scene } from "../../scene";
 import { WebXRControllerComponent } from "./webXRControllerComponent";
 import { Observable } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Nullable } from "../../types";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Nullable } from "../../types";
 import { Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 

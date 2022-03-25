@@ -1,6 +1,6 @@
 import { Engine } from "@dev/core";
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { Utilities } from "../tools/utilities";
 
 interface ICommandDropdownComponentProps {

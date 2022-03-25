@@ -1,8 +1,8 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { Nullable } from "../../types";
-import { IShaderProcessor } from "../Processors/iShaderProcessor";
+import type { Nullable } from "../../types";
+import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import * as WebGPUConstants from "./webgpuConstants";
-import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
+import type { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
 export abstract class WebGPUShaderProcessor implements IShaderProcessor {

@@ -1,7 +1,8 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { Camera } from "../Cameras/camera";
-import { PostProcess, PostProcessOptions } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/pass.fragment";

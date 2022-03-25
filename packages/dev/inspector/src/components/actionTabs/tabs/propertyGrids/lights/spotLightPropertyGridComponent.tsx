@@ -1,15 +1,15 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { SpotLight } from "core/Lights/spotLight";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { SpotLight } from "core/Lights/spotLight";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 
 interface ISpotLightPropertyGridComponentProps {
     globalState: GlobalState;

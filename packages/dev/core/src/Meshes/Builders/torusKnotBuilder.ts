@@ -1,7 +1,8 @@
-import { Vector4, Vector3 } from "../../Maths/math.vector";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473

@@ -22,14 +22,15 @@
 // SOFTWARE.
 import * as WebGPUConstants from "./webgpuConstants";
 import { Scalar } from "../../Maths/math.scalar";
-import { WebGPUBufferManager } from "./webgpuBufferManager";
+import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import { Constants } from "../constants";
-import { Nullable } from "../../types";
-import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { Nullable } from "../../types";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import { WebGPUTintWASM } from "./webgpuTintWASM";
+import type { WebGPUTintWASM } from "./webgpuTintWASM";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
