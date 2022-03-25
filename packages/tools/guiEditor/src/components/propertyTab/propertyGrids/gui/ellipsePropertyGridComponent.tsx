@@ -10,6 +10,7 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IEllipsePropertyGridComponentProps {
     ellipses: Ellipse[];
@@ -24,24 +25,16 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
 
     render() {
         const { ellipses, onPropertyChangedObservable, lockObject } = this.props;
+        const proxy = makeTargetsProxy(ellipses, onPropertyChangedObservable);
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel="Stroke Weight"
-                        icon={strokeWeightIcon}
-                        lockObject={lockObject}
-                        label=""
-                        target={makeTargetsProxy(ellipses, onPropertyChangedObservable)}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={onPropertyChangedObservable}
-                        unit={"PX"}
-                        unitLocked={true}
-                    />
+                <div className="ge-divider double">
+                    <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="thickness" unit={"PX"} unitLocked={true} arrows={true} min={0} digits={2} />
                 </div>
                 <ContainerPropertyGridComponent containers={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>

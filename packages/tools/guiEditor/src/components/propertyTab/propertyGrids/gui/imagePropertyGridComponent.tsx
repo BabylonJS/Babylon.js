@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { Observable, Observer } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { Image } from "gui/2D/controls/image";
@@ -18,6 +18,7 @@ import cellIDIcon from "shared-ui-components/imgs/cellIDIcon.svg";
 import autoResizeIcon from "shared-ui-components/imgs/autoResizeIcon.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import animationSheetIcon from "shared-ui-components/imgs/animationSheetIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IImagePropertyGridComponentProps {
     images: Image[];
@@ -26,8 +27,33 @@ interface IImagePropertyGridComponentProps {
 }
 
 export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
+    private _observers = new Map<Image, Observer<Image>>();
     constructor(props: IImagePropertyGridComponentProps) {
         super(props);
+        this.updateObservers([], props.images);
+    }
+
+    shouldComponentUpdate(nextProps: IImagePropertyGridComponentProps) {
+        this.updateObservers(this.props.images, nextProps.images);
+        return true;
+    }
+
+    updateObservers(oldImages: Image[], newImages: Image[]) {
+        for (const image of newImages) {
+            if (!oldImages.includes(image)) {
+                this._observers.set(image, image.onImageLoadedObservable.add(() => this.forceUpdate())!);
+            }
+        }
+        for (const image of oldImages) {
+            if (!newImages.includes(image)) {
+                image.onImageLoadedObservable.remove(this._observers.get(image)!);
+                this._observers.delete(image);
+            }
+        }
+    }
+
+    componentWillUnmount() {
+        this.updateObservers(this.props.images, []);
     }
 
     toggleAnimations(on: boolean) {
@@ -88,80 +114,81 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={images} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
-                <TextInputLineComponent
-                    iconLabel={"Source"}
-                    icon={imageLinkIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={proxy}
-                    propertyName="source"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel={"Crop"}
-                        icon={cropIcon}
+                <div className="ge-divider double">
+                    <IconComponent icon={imageLinkIcon} label="Source" />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="source" />
+                </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={cropIcon} label="Crop" />
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="L"
                         target={proxy}
                         propertyName="sourceLeft"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        numeric={true}
+                        arrows={true}
+                        min={0}
+                        placeholder="0"
+                        unit="PX"
+                        unitLocked={true}
                     />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="T"
                         target={proxy}
                         propertyName="sourceTop"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        numeric={true}
+                        arrows={true}
+                        min={0}
+                        placeholder="0"
+                        unit="PX"
+                        unitLocked={true}
+                    />
+                </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={cropIcon} label="Crop" />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="W"
+                        target={proxy}
+                        propertyName="sourceWidth"
+                        numeric={true}
+                        arrows={true}
+                        min={0}
+                        placeholder={Math.max(...images.map((image) => image.imageWidth)).toString()}
+                        unit="PX"
+                        unitLocked={true}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="H"
+                        target={proxy}
+                        propertyName="sourceHeight"
+                        numeric={true}
+                        arrows={true}
+                        min={0}
+                        placeholder={Math.max(...images.map((image) => image.imageHeight)).toString()}
+                        unit="PX"
+                        unitLocked={true}
                     />
                 </div>
                 <div className="ge-divider">
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="R"
-                        target={proxy}
-                        icon={cropIcon}
-                        iconLabel={"Crop"}
-                        propertyName="sourceWidth"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="B"
-                        target={proxy}
-                        propertyName="sourceHeight"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
+                    <IconComponent icon={autoResizeIcon} label="Autoscale" />
+                    <CheckBoxLineComponent label="AUTOSCALE" target={proxy} propertyName="autoScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </div>
-                <CheckBoxLineComponent
-                    iconLabel={"Autoscale"}
-                    icon={autoResizeIcon}
-                    label="AUTOSCALE"
-                    target={proxy}
-                    propertyName="autoScale"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <OptionsLineComponent
-                    iconLabel={"Stretch"}
-                    icon={stretchFillIcon}
-                    label=""
-                    options={stretchOptions}
-                    target={proxy}
-                    propertyName="stretch"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onSelect={(value) => this.setState({ mode: value })}
-                />
+                <div className="ge-divider">
+                    <IconComponent icon={stretchFillIcon} label="Stretch" />
+                    <OptionsLineComponent label=" " options={stretchOptions} target={proxy} propertyName="stretch" onSelect={(value) => this.setState({ mode: value })} />
+                </div>
                 {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && (
                     <>
-                        <div className="ge-divider">
+                        <div className="ge-divider double">
+                            <IconComponent icon={cropIcon} label="Slice Horizontal" />
                             <FloatLineComponent
-                                iconLabel={"Slice"}
-                                icon={cropIcon}
                                 lockObject={this.props.lockObject}
                                 label="L"
                                 target={image}
                                 propertyName="sliceLeft"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onChange={() => {
                                     image.populateNinePatchSlicesFromImage = false;
                                     this.forceUpdate();
@@ -172,22 +199,19 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                                 label="R"
                                 target={image}
                                 propertyName="sliceRight"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onChange={() => {
                                     image.populateNinePatchSlicesFromImage = false;
                                     this.forceUpdate();
                                 }}
                             />
                         </div>
-                        <div className="ge-divider">
+                        <div className="ge-divider double">
+                            <IconComponent icon={cropIcon} label="Slice Vertical" />
                             <FloatLineComponent
                                 lockObject={this.props.lockObject}
                                 label="T"
                                 target={image}
-                                icon={cropIcon}
-                                iconLabel={"Slice"}
                                 propertyName="sliceTop"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onChange={() => {
                                     image.populateNinePatchSlicesFromImage = false;
                                     this.forceUpdate();
@@ -198,25 +222,24 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                                 label="B"
                                 target={image}
                                 propertyName="sliceBottom"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onChange={() => {
                                     image.populateNinePatchSlicesFromImage = false;
                                     this.forceUpdate();
                                 }}
                             />
                         </div>
-                        <CheckBoxLineComponent
-                            iconLabel={"populateNinePatchSlicesFromImage"}
-                            icon={autoResizeIcon}
-                            label="SLICE FROM IMAGE"
-                            target={image}
-                            propertyName="populateNinePatchSlicesFromImage"
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            onValueChanged={() => {
-                                this.forceUpdate();
-                                image._markAsDirty();
-                            }}
-                        />
+                        <div className="ge-divider">
+                            <IconComponent icon={autoResizeIcon} label="Populate Nine Patch Slices From Image" />
+                            <CheckBoxLineComponent
+                                label="SLICE FROM IMAGE"
+                                target={image}
+                                propertyName="populateNinePatchSlicesFromImage"
+                                onValueChanged={() => {
+                                    this.forceUpdate();
+                                    image._markAsDirty();
+                                }}
+                            />
+                        </div>
                     </>
                 )}
                 <hr />
@@ -241,7 +264,6 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                                 isInteger={true}
                                 target={proxy}
                                 propertyName="cellId"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 min={0}
                                 max={maxCells}
                             />
@@ -254,7 +276,6 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                                 target={proxy}
                                 propertyName="cellWidth"
                                 isInteger={true}
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onChange={() => this.updateCellSize()}
                                 min={1}
                                 max={maxCellWidth}
@@ -265,7 +286,6 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                                 target={proxy}
                                 propertyName="cellHeight"
                                 isInteger={true}
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onChange={() => this.updateCellSize()}
                                 min={1}
                                 max={maxCellHeight}

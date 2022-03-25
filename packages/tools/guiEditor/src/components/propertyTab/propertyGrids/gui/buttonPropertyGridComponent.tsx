@@ -10,10 +10,11 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
-import conerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import addImageButtonIcon from "shared-ui-components/imgs/addImageButtonIcon.svg";
 import addTextButtonIcon from "shared-ui-components/imgs/addTextButtonIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IButtonPropertyGridComponentProps {
     rectangles: Rectangle[];
@@ -29,33 +30,11 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
 
     render() {
         const { rectangles, lockObject, onPropertyChangedObservable, onAddComponent } = this.props;
+        const proxy = makeTargetsProxy(rectangles, onPropertyChangedObservable);
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
-                <hr />
-                <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel="Stroke Weight"
-                        icon={strokeWeightIcon}
-                        lockObject={lockObject}
-                        label=""
-                        target={makeTargetsProxy(rectangles, onPropertyChangedObservable)}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        iconLabel="Corner Radius"
-                        icon={conerRadiusIcon}
-                        lockObject={lockObject}
-                        label=""
-                        target={makeTargetsProxy(rectangles, onPropertyChangedObservable)}
-                        propertyName="cornerRadius"
-                        onPropertyChangedObservable={onPropertyChangedObservable}
-                    />
-                </div>
-                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -78,6 +57,25 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         }}
                     />
                 </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="thickness"
+                        unit="PX"
+                        unitLocked={true}
+                        arrows={true}
+                        min={0}
+                        digits={2}
+                    />
+                </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="cornerRadius" unit="PX" unitLocked={true} arrows={true} min={0} digits={2} />
+                </div>
+                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );
     }
