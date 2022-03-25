@@ -74,7 +74,7 @@
         "test:visualization": "jest --selectProjects=visualization --runInBand",
         "test:integration": "jest --selectProjects=integration --runInBand",
         "test:performance": "jest --selectProjects=performance --runInBand",
-        "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets",
+        "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
         "clean": "npx nx run-many --target=clean --all && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check ./packages/**/src/**/*.{ts,tsx,js,json,scss,css}",
