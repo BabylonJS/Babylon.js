@@ -706,14 +706,15 @@ export class InputTextArea extends InputText {
             //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
-        // Delete selection if any
-        this._deleteSelection();
-        const innerPosition = this._lines[this._selectedLineIndex].text.length - this._cursorOffset;
-        const line = this._lines[this._selectedLineIndex];
-        line.text = line.text.substring(0, innerPosition) + data + line.text.substring(innerPosition);
-        this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
-        this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
-        this._cursorOffset = this._lines[this._selectedLineIndex].text.length - innerPosition;
+
+        this._isTextHighlightOn = false;
+
+        this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, data);
+
+        const deltaIndex = data.length - (this._cursorInfo.globalEndIndex - this._cursorInfo.globalStartIndex);
+
+        this._cursorInfo.globalStartIndex += deltaIndex;
+        this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
 
         this._textHasChanged();
     }
