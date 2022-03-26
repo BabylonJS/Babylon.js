@@ -346,7 +346,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         const computeReflectionCoordsFunc = `
             vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
-                ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true)}
+                ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true, true)}
                 return ${this._reflectionVectorName};
             }\r\n`;
 
