@@ -243,9 +243,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
-        let horizontalDisabled = false, verticalDisabled = false;
-        let sizeUnitsLocked = false;
-
+        let horizontalDisabled = false,
+            verticalDisabled = false,
+            sizeUnitsLocked = false;
 
         const parent = controls[0].parent;
         if (parent?.getClassName() === "StackPanel") {
