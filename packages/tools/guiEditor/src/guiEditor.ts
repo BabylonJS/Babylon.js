@@ -99,6 +99,7 @@ export class GUIEditor {
         }
         globalState.hostWindow.addEventListener("beforeunload", () => {
             globalState.onPopupClosedObservable.notifyObservers();
+            globalState.dispose();
         });
     }
 }
