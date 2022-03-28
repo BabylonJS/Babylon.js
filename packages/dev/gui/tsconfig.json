@@ -7,7 +7,5 @@
         }
     ],
 
-    "compilerOptions": {
-        "moduleResolution": "classic"
-    }
+    "compilerOptions": {}
 }
