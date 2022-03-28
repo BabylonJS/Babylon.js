@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { Effect } from "core/Materials/effect";
-import { MaterialDefines } from "core/Materials/materialDefines";
+import type { MaterialDefines } from "core/Materials/materialDefines";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 
 export class CustomShaderStructure {

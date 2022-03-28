@@ -1,15 +1,16 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SceneLoader, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
-import { Scene } from "core/scene";
-import { WebRequest } from "core/Misc/webRequest";
+import type { Scene } from "core/scene";
+import type { WebRequest } from "core/Misc/webRequest";
 import { MTLFileLoader } from "./mtlFileLoader";
-import { OBJLoadingOptions } from "./objLoadingOptions";
+import type { OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 
 /**
  * OBJ file type loader.

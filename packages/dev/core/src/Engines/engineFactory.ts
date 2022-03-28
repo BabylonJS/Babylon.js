@@ -1,6 +1,6 @@
 import { Engine } from "./engine";
 import { NullEngine } from "./nullEngine";
-import { ThinEngine } from "./thinEngine";
+import type { ThinEngine } from "./thinEngine";
 import { WebGPUEngine } from "./webgpuEngine";
 
 /**

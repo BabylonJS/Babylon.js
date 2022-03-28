@@ -1,12 +1,12 @@
-import { Color4 } from "core/Maths/math.color";
-import { Vector4, Vector3 } from "core/Maths/math.vector";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { ICreateCapsuleOptions } from "core/Meshes/Builders/capsuleBuilder";
-import { GroundMesh } from "core/Meshes/groundMesh";
-import { LinesMesh } from "core/Meshes/linesMesh";
+import type { Color4 } from "core/Maths/math.color";
+import type { Vector4, Vector3 } from "core/Maths/math.vector";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { ICreateCapsuleOptions } from "core/Meshes/Builders/capsuleBuilder";
+import type { GroundMesh } from "core/Meshes/groundMesh";
+import type { LinesMesh } from "core/Meshes/linesMesh";
 import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 
 declare module "core/Meshes/mesh" {
     interface Mesh {

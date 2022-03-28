@@ -1,11 +1,11 @@
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
-import { ISize } from "../../Maths/math.size";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
-import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
+import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 /**
  * A class extending Texture allowing drawing on a texture

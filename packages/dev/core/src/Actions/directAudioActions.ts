@@ -1,7 +1,7 @@
 import { Action } from "./action";
-import { Condition } from "./condition";
+import type { Condition } from "./condition";
 import { RegisterClass } from "../Misc/typeStore";
-import { Sound } from "../Audio/sound";
+import type { Sound } from "../Audio/sound";
 
 /**
  * This defines an action helpful to play a defined sound on a triggered action.

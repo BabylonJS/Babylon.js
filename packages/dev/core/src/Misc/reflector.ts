@@ -1,4 +1,4 @@
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Logger } from "./logger";
 import { SceneSerializer } from "./sceneSerializer";
 import { StartsWith } from "./stringTools";

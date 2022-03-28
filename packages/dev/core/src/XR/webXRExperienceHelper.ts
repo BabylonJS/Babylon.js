@@ -1,10 +1,11 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
-import { IDisposable, Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
+import type { IDisposable, Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
-import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
+import type { WebXRRenderTarget } from "./webXRTypes";
+import { WebXRState } from "./webXRTypes";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";

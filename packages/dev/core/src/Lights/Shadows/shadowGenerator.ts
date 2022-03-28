@@ -1,18 +1,18 @@
-import { SmartArray } from "../../Misc/smartArray";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { SmartArray } from "../../Misc/smartArray";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
 
-import { IShadowLight } from "../../Lights/shadowLight";
+import type { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-import { MaterialDefines } from "../../Materials/materialDefines";
+import type { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -24,7 +24,7 @@ import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";

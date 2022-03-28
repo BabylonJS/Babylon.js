@@ -1,10 +1,10 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Texture } from "core/Materials/Textures/texture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
-import { Scene } from "core/scene";
-import { AssetContainer } from "core/assetContainer";
+import type { Scene } from "core/scene";
+import type { AssetContainer } from "core/assetContainer";
 /**
  * Class reading and parsing the MTL file bundled with the obj file.
  */

@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
-import { GlobalState } from "../../../components/globalState";
+import type { GlobalState } from "../../../components/globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { TextureHelper, TextureChannelsToDisplay } from "../../../textureHelper";
+import type { TextureChannelsToDisplay } from "../../../textureHelper";
+import { TextureHelper } from "../../../textureHelper";
 
 interface ITextureLineComponentProps {
     texture: BaseTexture;

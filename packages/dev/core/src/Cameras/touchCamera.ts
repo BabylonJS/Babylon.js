@@ -1,7 +1,7 @@
 import { FreeCamera } from "./freeCamera";
-import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
-import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
-import { Scene } from "../scene";
+import type { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
+import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 

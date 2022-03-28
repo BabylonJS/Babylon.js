@@ -1,5 +1,5 @@
-import { Nullable } from "../../types";
-import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
+import type { Nullable } from "../../types";
+import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { DepthCullingState } from "../../States/depthCullingState";
 
 /**

@@ -1,12 +1,11 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
 import pointerIcon from "../imgs/pointerIcon.svg";
@@ -18,6 +17,7 @@ import canvasFitIcon from "../imgs/canvasFitIcon.svg";
 import betaFlag from "../imgs/betaFlag.svg";
 
 import "../scss/commandBar.scss";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface ICommandBarComponentProps {
     globalState: GlobalState;
@@ -261,38 +261,30 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         )}
                         {!DataStorage.ReadBoolean("Responsive", true) && (
                             <>
-                                <TextInputLineComponent
+                                <FloatLineComponent
                                     label="W"
                                     target={size}
                                     propertyName="width"
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
-                                        const number = parseInt(newValue, 10);
-                                        if (!isNaN(number)) {
-                                            this.props.globalState.workbench.guiSize = { width: number, height: size.height };
-                                        }
+                                        this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
                                     }}
-                                    numeric={true}
                                     arrows={true}
-                                    roundValues={true}
-                                ></TextInputLineComponent>
-                                <TextInputLineComponent
+                                    isInteger={true}
+                                />
+                                <FloatLineComponent
                                     label="H"
                                     target={size}
                                     propertyName="height"
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
-                                        const number = parseInt(newValue, 10);
-                                        if (!isNaN(number)) {
-                                            this.props.globalState.workbench.guiSize = { width: size.width, height: number };
-                                        }
+                                        this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
                                     }}
-                                    numeric={true}
                                     arrows={true}
-                                    roundValues={true}
-                                ></TextInputLineComponent>
+                                    isInteger={true}
+                                />
                             </>
                         )}
                     </div>

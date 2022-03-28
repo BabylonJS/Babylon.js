@@ -1,17 +1,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
-import { Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector3, TmpVectors } from "core/Maths/math.vector";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { IEffectCreationOptions } from "core/Materials/effect";
+import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color";
 

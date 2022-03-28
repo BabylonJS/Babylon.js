@@ -1,12 +1,12 @@
 import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
-import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import type { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
+import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import { Tools } from "core/Misc/tools";
 import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";

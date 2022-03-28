@@ -1,13 +1,18 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
-import { Scene } from "../scene";
-import { WebXRInput, IWebXRInputOptions } from "./webXRInput";
-import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
-import { WebXRNearInteraction, IWebXRNearInteractionOptions } from "./features/WebXRNearInteraction";
-import { WebXRRenderTarget } from "./webXRTypes";
-import { WebXREnterExitUI, WebXREnterExitUIOptions } from "./webXREnterExitUI";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
-import { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from "./features/WebXRControllerTeleportation";
+import type { Scene } from "../scene";
+import type { IWebXRInputOptions } from "./webXRInput";
+import { WebXRInput } from "./webXRInput";
+import type { IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
+import { WebXRControllerPointerSelection } from "./features/WebXRControllerPointerSelection";
+import type { IWebXRNearInteractionOptions } from "./features/WebXRNearInteraction";
+import { WebXRNearInteraction } from "./features/WebXRNearInteraction";
+import type { WebXRRenderTarget } from "./webXRTypes";
+import type { WebXREnterExitUIOptions } from "./webXREnterExitUI";
+import { WebXREnterExitUI } from "./webXREnterExitUI";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
+import type { IWebXRTeleportationOptions } from "./features/WebXRControllerTeleportation";
+import { WebXRMotionControllerTeleportation } from "./features/WebXRControllerTeleportation";
 import { Logger } from "../Misc/logger";
 
 /**

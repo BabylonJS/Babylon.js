@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
+import * as crypto from "crypto";
 
 export function populateEnvironment() {
     dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") });
@@ -71,20 +72,22 @@ export const checkArgs = (testArgument: string | string[], checkOnly: boolean = 
     }
 };
 
-export function copyFile(from: string, to: string, silent?: boolean) {
+export function copyFile(from: string, to: string, silent?: boolean, checkHash?: boolean) {
     checkDirectorySync(path.dirname(to));
+    if (checkHash) {
+        // check if file exists
+        if (fs.existsSync(to)) {
+            const hash = getHashOfFile(to);
+            const newHash = getHashOfFile(from);
+            if (hash === newHash) {
+                if (!silent) {
+                    console.log(`${from} is up to date.`);
+                }
+                return;
+            }
+        }
+    }
     fs.copyFileSync(from, to);
-    // at certain times the file is read incorrectly and we have to read again.
-    // let tries = 20;
-    // let content = fs.readFileSync(from, "utf8");
-    // while (content.length === 0 && tries > 0) {
-    //     tries--;
-    //     content = fs.readFileSync(from, "utf8");
-    // }
-    // if (content.length === 0) {
-    //     console.log("Received no content from file, skipping copy.", from);
-    // }
-    // fs.writeFileSync(to, content);
     if (!silent) {
         console.log("File copied: " + from);
     }
@@ -124,3 +127,14 @@ export function findRootDirectory(): string {
     } while (localPackageJSON.name !== "@babylonjs/root");
     return path.resolve(currentRoot);
 }
+
+export const getHashOfFile = (filePath: string) => {
+    const content = fs.readFileSync(filePath, "utf8");
+    return getHashOfContent(content);
+};
+
+export const getHashOfContent = (content: string) => {
+    const md5sum = crypto.createHash("md5");
+    md5sum.update(content);
+    return md5sum.digest("hex");
+};

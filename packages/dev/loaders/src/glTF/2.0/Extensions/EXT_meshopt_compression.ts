@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { Nullable } from "core/types";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
-import { IBufferView } from "../glTFLoaderInterfaces";
-import { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
+import type { IBufferView } from "../glTFLoaderInterfaces";
+import type { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
 import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
 
 const NAME = "EXT_meshopt_compression";

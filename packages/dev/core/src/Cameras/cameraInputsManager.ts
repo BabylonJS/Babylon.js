@@ -1,6 +1,6 @@
 import { Logger } from "../Misc/logger";
 import { SerializationHelper } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Camera } from "./camera";
 /**
  * @ignore

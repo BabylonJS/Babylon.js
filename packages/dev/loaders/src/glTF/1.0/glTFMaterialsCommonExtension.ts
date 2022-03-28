@@ -1,6 +1,6 @@
 import { GLTFLoaderExtension, GLTFLoaderBase, GLTFLoader } from "./glTFLoader";
 
-import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
+import type { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
 import { Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";

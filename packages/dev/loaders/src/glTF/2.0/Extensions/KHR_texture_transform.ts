@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Nullable } from "core/types";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 
-import { ITextureInfo } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { ITextureInfo } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRTextureTransform } from "babylonjs-gltf2interface";
+import type { IKHRTextureTransform } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_texture_transform";
 

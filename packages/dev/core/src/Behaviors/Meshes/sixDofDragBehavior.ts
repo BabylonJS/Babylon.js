@@ -1,8 +1,9 @@
-import { Mesh } from "../../Meshes/mesh";
-import { Scene } from "../../scene";
-import { Nullable } from "../../types";
+import type { Mesh } from "../../Meshes/mesh";
+import type { Scene } from "../../scene";
+import type { Nullable } from "../../types";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Observable, Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Space } from "../../Maths/math.axis";

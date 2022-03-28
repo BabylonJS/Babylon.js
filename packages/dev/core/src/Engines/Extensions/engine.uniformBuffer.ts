@@ -1,9 +1,9 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { FloatArray, Nullable } from "../../types";
-import { DataBuffer } from "../../Buffers/dataBuffer";
+import type { FloatArray, Nullable } from "../../types";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
-import { IPipelineContext } from "../IPipelineContext";
-import { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
+import type { IPipelineContext } from "../IPipelineContext";
+import type { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

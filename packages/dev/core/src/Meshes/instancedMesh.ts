@@ -1,15 +1,16 @@
-import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import type { Nullable, FloatArray, IndicesArray } from "../types";
+import type { Vector3 } from "../Maths/math.vector";
+import { Matrix, TmpVectors } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
-import { Camera } from "../Cameras/camera";
-import { Node } from "../node";
+import type { Camera } from "../Cameras/camera";
+import type { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Material } from "../Materials/material";
-import { Skeleton } from "../Bones/skeleton";
+import type { Material } from "../Materials/material";
+import type { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from "./transformNode";
-import { Light } from "../Lights/light";
+import type { Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Tools } from "../Misc/tools";
 

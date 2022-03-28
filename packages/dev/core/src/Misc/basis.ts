@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Tools } from "./tools";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Scalar } from "../Maths/math.scalar";
 import { Constants } from "../Engines/constants";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 /**
  * Info about the .basis files

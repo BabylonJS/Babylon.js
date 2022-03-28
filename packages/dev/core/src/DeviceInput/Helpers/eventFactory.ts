@@ -1,8 +1,9 @@
 import { Constants } from "../../Engines/constants";
-import { EventConstants, IUIEvent } from "../../Events/deviceInputEvents";
-import { Nullable } from "../../types";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
+import { EventConstants } from "../../Events/deviceInputEvents";
+import type { Nullable } from "../../types";
 import { DeviceType, NativePointerInput, PointerInput } from "../InputDevices/deviceEnums";
-import { IDeviceInputSystem } from "../InputDevices/inputInterfaces";
+import type { IDeviceInputSystem } from "../InputDevices/inputInterfaces";
 
 /**
  * Class to wrap DeviceInputSystem data into an event object

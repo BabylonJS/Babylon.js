@@ -1,8 +1,8 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
-import { Nullable } from "../../../types";
+import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { RenderTargetWrapper } from "../../renderTargetWrapper";
+import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 

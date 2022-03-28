@@ -43,19 +43,20 @@ export class GUINodeTools {
                 return element;
             case "Ellipse":
                 element = new Ellipse("Ellipse");
-                element.color = "#cccccc";
+                element.color = "#000000";
+                element.background = "#cccccc";
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
             case "Rectangle":
                 element = new Rectangle("Rectangle");
-                element.color = "#cccccc";
-                element.background = "transparent";
+                element.color = "#000000";
+                element.background = "#cccccc";
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
             case "Line":
-                element = new Line();
+                element = new Line("Line");
                 element.x1 = 0;
                 element.y1 = 1024;
                 element.y2 = 512;

@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { LockObject } from "../tabs/propertyGrids/lockObject";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 
-interface ITextInputLineComponentProps {
+export interface ITextInputLineComponentProps {
     label?: string;
     lockObject?: LockObject;
     target?: any;
@@ -37,8 +37,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
+        const emptyValue = this.props.numeric ? "0" : "";
+
         this.state = {
-            value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "",
+            value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || emptyValue,
             dragging: false,
         };
     }
@@ -84,6 +86,20 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         });
     }
 
+    getCurrentNumericValue(value: string) {
+        const numeric = parseFloat(value);
+        if (!isNaN(numeric)) {
+            return numeric;
+        }
+        if (this.props.placeholder !== undefined) {
+            const placeholderNumeric = parseFloat(this.props.placeholder);
+            if (!isNaN(placeholderNumeric)) {
+                return placeholderNumeric;
+            }
+        }
+        return 0;
+    }
+
     updateValue(value: string) {
         if (this.props.numbersOnly) {
             if (/[^0-9.\p\x%-]/g.test(value)) {
@@ -100,14 +116,14 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         }
 
         if (this.props.numeric) {
-            let numericValue = parseFloat(value);
+            let numericValue = this.getCurrentNumericValue(value);
             if (this.props.roundValues) {
                 numericValue = Math.round(numericValue);
             }
-            if (this.props.min) {
+            if (this.props.min !== undefined) {
                 numericValue = Math.max(this.props.min, numericValue);
             }
-            if (this.props.max) {
+            if (this.props.max !== undefined) {
                 numericValue = Math.min(this.props.max, numericValue);
             }
             value = numericValue.toString();
@@ -132,10 +148,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             this.props.arrowsIncrement(amount);
             return;
         }
-        let currentValue = parseFloat(this.state.value);
-        if (isNaN(currentValue)) {
-            currentValue = 0;
-        }
+        const currentValue = this.getCurrentNumericValue(this.state.value);
         this.updateValue((currentValue + amount).toFixed(2));
     }
 

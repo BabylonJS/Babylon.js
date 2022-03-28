@@ -1,32 +1,32 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import { IAnimatable } from "../Animations/animatable.interface";
-import { SmartArray } from "../Misc/smartArray";
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Matrix } from "../Maths/math.vector";
+import type { IAnimatable } from "../Animations/animatable.interface";
+import type { SmartArray } from "../Misc/smartArray";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import { Geometry } from "../Meshes/geometry";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Geometry } from "../Meshes/geometry";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect } from "./effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { MaterialDefines } from "./materialDefines";
+import type { Effect } from "./effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { IInspectable } from "../Misc/iInspectable";
+import type { IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
-import { ShadowDepthWrapper } from "./shadowDepthWrapper";
+import type { ShadowDepthWrapper } from "./shadowDepthWrapper";
 import { MaterialHelper } from "./materialHelper";
-import { IMaterialContext } from "../Engines/IMaterialContext";
+import type { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
-import { Scene } from "../scene";
-import { AbstractScene } from "../abstractScene";
-import {
-    MaterialPluginEvent,
+import type { Scene } from "../scene";
+import type { AbstractScene } from "../abstractScene";
+import type {
     MaterialPluginDisposed,
     MaterialPluginIsReadyForSubMesh,
     MaterialPluginGetDefineNames,
@@ -42,7 +42,8 @@ import {
     MaterialPluginHasRenderTargetTextures,
     MaterialPluginHardBindForSubMesh,
 } from "./materialPluginEvent";
-import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { MaterialPluginEvent } from "./materialPluginEvent";
+import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;

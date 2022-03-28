@@ -1,5 +1,5 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from "../webXRSessionManager";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3 } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";

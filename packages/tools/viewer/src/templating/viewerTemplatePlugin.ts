@@ -1,4 +1,4 @@
-import { EventCallback, Template } from "./templateManager";
+import type { EventCallback, Template } from "./templateManager";
 import * as Handlebars from "handlebars/dist/handlebars";
 
 export interface IViewerTemplatePlugin {

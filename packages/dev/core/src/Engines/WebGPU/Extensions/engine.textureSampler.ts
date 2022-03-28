@@ -1,5 +1,5 @@
 import { WebGPUEngine } from "../../webgpuEngine";
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 import { Effect } from "../../../Materials/effect";
 
 declare type TextureSampler = import("../../../Materials/Textures/textureSampler").TextureSampler;

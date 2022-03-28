@@ -1,7 +1,7 @@
 import { Vector2 } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
-import { VRCameraMetrics } from "../Cameras/VR/vrCameraMetrics";
-import { Effect } from "../Materials/effect";
+import type { Camera } from "../Cameras/camera";
+import type { VRCameraMetrics } from "../Cameras/VR/vrCameraMetrics";
+import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 

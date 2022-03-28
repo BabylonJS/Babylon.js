@@ -1,10 +1,11 @@
-import { SmartArray, SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import { Vector3 } from "../../Maths/math.vector";
-import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Ray } from "../../Culling/ray";
+import type { SmartArray } from "../../Misc/smartArray";
+import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
+import type { Vector3 } from "../../Maths/math.vector";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Ray } from "../../Culling/ray";
 import { OctreeBlock } from "./octreeBlock";
-import { Plane } from "../../Maths/math.plane";
+import type { Plane } from "../../Maths/math.plane";
 
 /**
  * Octrees are a really powerful data structure that can quickly select entities based on space coordinates.

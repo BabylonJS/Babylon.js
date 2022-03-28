@@ -1,4 +1,4 @@
-import { IndicesArray, FloatArray } from "../types";
+import type { IndicesArray, FloatArray } from "../types";
 import { Color4, Color3 } from "../Maths/math";
 import { Vector2, Vector3, Vector4, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
@@ -6,14 +6,14 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { EngineStore } from "../Engines/engineStore";
-import { Scene, IDisposable } from "../scene";
+import type { Scene, IDisposable } from "../scene";
 import { CloudPoint, PointsGroup } from "./cloudPoint";
 import { Ray } from "../Culling/ray";
-import { PickingInfo } from "../Collisions/pickingInfo";
+import type { PickingInfo } from "../Collisions/pickingInfo";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { BaseTexture } from "./../Materials/Textures/baseTexture";
 import { Scalar } from "../Maths/math.scalar";
-import { Material } from "../Materials/material";
+import type { Material } from "../Materials/material";
 
 /** Defines the 4 color options */
 export enum PointColor {
