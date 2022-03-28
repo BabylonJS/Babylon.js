@@ -272,6 +272,8 @@ export class CoordinateHelper {
     }
 
     public static ConvertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"]) {
+        // make sure we are using the latest measures for the control
+        (guiControl as any)._processMeasures(guiControl.parent?._currentMeasure, guiControl.host);
         for (const property of properties) {
             guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
         }

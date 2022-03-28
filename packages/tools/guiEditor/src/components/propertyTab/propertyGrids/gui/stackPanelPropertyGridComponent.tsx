@@ -13,6 +13,8 @@ import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent
 import alignVerticalIcon from "shared-ui-components/imgs/alignVerticalIcon.svg";
 import stackPanelSpacingIcon from "shared-ui-components/imgs/stackPanelSpacingIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { ValueAndUnit } from "gui/2D/valueAndUnit";
+import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];
@@ -46,12 +48,19 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                                     if (proxy.isVertical) {
                                         child.horizontalAlignment = StackPanel.HORIZONTAL_ALIGNMENT_CENTER;
                                         child._left.value = 0;
+                                        if (child._height.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                                            CoordinateHelper.ConvertToPixels(child, ["height"]);
+                                        }
                                     } else {
                                         child.verticalAlignment = StackPanel.VERTICAL_ALIGNMENT_CENTER;
                                         child._top.value = 0;
+                                        if (child._width.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                                            CoordinateHelper.ConvertToPixels(child, ["width"]);
+                                        }
                                     }
                                 }
                             }
+                            this.forceUpdate();
                         }}
                     />
                 </div>
