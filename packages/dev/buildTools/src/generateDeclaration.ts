@@ -385,6 +385,8 @@ ${looseDeclarationsString || ""}
                 );
                 // check documentation flags
                 if (config.addToDocumentation) {
+                    // make sure snapshot directory exists
+                    checkDirectorySync(path.join(rootDir, "packages", ".snapshot"));
                     const documentationFile = path.join(rootDir, ".snapshot", "documentation.d.ts");
                     const originalFile = fs.existsSync(documentationFile) && !config.initDocumentation ? fs.readFileSync(documentationFile, "utf8") : "";
                     fs.writeFileSync(
