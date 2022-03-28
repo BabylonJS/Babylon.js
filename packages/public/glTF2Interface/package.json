@@ -8,7 +8,7 @@
     },
     "files": [
         "babylon.glTF2Interface.d.ts",
-        "package.json"
+        "license.md"
     ],
     "typings": "babylon.glTF2Interface.d.ts",
     "keywords": [
@@ -22,5 +22,9 @@
     "devDependencies": {
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4"
+    },
+    "homepage": "https://www.babylonjs.com",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
