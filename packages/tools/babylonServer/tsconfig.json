@@ -1,9 +1,5 @@
 {
     "extends": "../../../tsconfig.json",
 
-    "compilerOptions": {
-        "types": [
-            "declarations/**/*.d.ts"
-        ]
-    },
+    "compilerOptions": {}
 }
