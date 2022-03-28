@@ -45,7 +45,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
     }
 
     render() {
-        const {lines,onPropertyChangedObservable,lockObject} = this.props;
+        const { lines, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(lines, onPropertyChangedObservable);
         let dashes = lines[0].dash;
         for (const line of lines) {
@@ -66,64 +66,24 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 <TextLineComponent label="LINE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={linePoint1Icon} label={"Position 1"} />
-                    <TextInputLineComponent
-                        lockObject={lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="x1"
-                    />
-                    <TextInputLineComponent
-                        lockObject={lockObject}
-                        label="Y"
-                        target={proxy}
-                        propertyName="y1"
-                    />
+                    <TextInputLineComponent lockObject={lockObject} label="X" target={proxy} propertyName="x1" />
+                    <TextInputLineComponent lockObject={lockObject} label="Y" target={proxy} propertyName="y1" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={linePoint2Icon} label={"Position 2"} />
-                    <TextInputLineComponent
-                        lockObject={lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="x2"
-                    />
-                    <TextInputLineComponent
-                        lockObject={lockObject}
-                        label="Y"
-                        target={proxy}
-                        propertyName="y2"
-                    />
+                    <TextInputLineComponent lockObject={lockObject} label="X" target={proxy} propertyName="x2" />
+                    <TextInputLineComponent lockObject={lockObject} label="Y" target={proxy} propertyName="y2" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label={"Line Width"} />
-                    <FloatLineComponent
-                        lockObject={lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="lineWidth"
-                        unit="PX"
-                        unitLocked={true}
-                        min={0}
-                        arrows={true}
-                    />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="lineWidth" unit="PX" unitLocked={true} min={0} arrows={true} />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={lineDashIcon} label={"Dash Pattern"} />
-                    <TextInputLineComponent
-                        lockObject={lockObject}
-                        label=""
-                        target={proxy}
-                        value={dashString}
-                        onChange={(newValue) => this.onDashChange(newValue)}
-                    />
+                    <TextInputLineComponent lockObject={lockObject} label="" target={proxy} value={dashString} onChange={(newValue) => this.onDashChange(newValue)} />
                 </div>
                 <hr />
-                <CommonControlPropertyGridComponent
-                    hideDimensions
-                    lockObject={lockObject}
-                    controls={lines}
-                    onPropertyChangedObservable={onPropertyChangedObservable}
-                />
+                <CommonControlPropertyGridComponent hideDimensions lockObject={lockObject} controls={lines} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );
     }

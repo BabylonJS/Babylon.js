@@ -60,7 +60,16 @@ export function GizmoLine(props: IGizmoLineProps) {
     return (
         <div className="gizmo">
             {scalePoints.map((point, index) => (
-                <GizmoScalePoint scalePoint={point} clickable={true} onDrag={() => {}} onRotate={() => {}} onUp={() => {}} key={index} overrideCursor="not-allowed" canRotate={false} />
+                <GizmoScalePoint
+                    scalePoint={point}
+                    clickable={true}
+                    onDrag={() => {}}
+                    onRotate={() => {}}
+                    onUp={() => {}}
+                    key={index}
+                    overrideCursor="not-allowed"
+                    canRotate={false}
+                />
             ))}
         </div>
     );
