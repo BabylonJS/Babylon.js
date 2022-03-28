@@ -378,7 +378,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
                 control.onPointerOutObservable.remove(control.metadata.onPointerOut);
                 control.onDisposeObservable.remove(control.metadata.onDispose);
-                
+
                 control.highlightLineWidth = control.metadata.highlightLineWidth;
                 control.isHighlighted = control.metadata.isHighlighted;
                 control.isPointerBlocker = control.metadata.isPointerBlocker;
@@ -387,7 +387,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                 this.props.globalState.guiTexture.removeControl(control);
                 control.parent = control.metadata.parent;
-                
+
                 control.metadata = control.metadata.metadata;
                 control._host = this.props.globalState.liveGuiTexture!;
             });
@@ -502,7 +502,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             onPointerEnter,
             onPointerOut,
             onDispose,
-            parent: guiControl.parent
+            parent: guiControl.parent,
         };
         guiControl.highlightLineWidth = 5;
         guiControl.isHighlighted = false;
