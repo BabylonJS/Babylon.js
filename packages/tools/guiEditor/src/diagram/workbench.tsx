@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import type { GlobalState, GUIEditorTool } from "../globalState";
-import { DragOverLocation } from "../globalState";
+import type { GlobalState } from "../globalState";
+import { DragOverLocation, GUIEditorTool } from "../globalState";
 import type { Nullable } from "core/types";
 import { Control } from "gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
