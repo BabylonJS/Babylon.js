@@ -245,9 +245,7 @@ class Playground {
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index]
-                    .replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot)
-                    .replace(".d.ts", ".module.d.ts");
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot);
             }
         }
 
