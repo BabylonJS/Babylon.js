@@ -356,8 +356,7 @@ export class Gizmo implements IDisposable {
                     }
                     // setter doesn't copy values. Need a new Vector3
                     light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
-                    Vector3.Backward(false).rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
-                    light.direction = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                    light.direction = new Vector3(light.direction.x, light.direction.y, light.direction.z);
                 }
             }
         }
