@@ -34,7 +34,6 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
-                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <div className="ge-divider">
                     <IconComponent icon={alignVerticalIcon} label={"Determines if children are stacked horizontally or vertically"} />
                     <CheckBoxLineComponent
@@ -70,6 +69,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                         min={0}
                     />
                 </div>
+                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );
     }

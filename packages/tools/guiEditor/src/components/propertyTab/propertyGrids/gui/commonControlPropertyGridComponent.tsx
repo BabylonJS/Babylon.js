@@ -243,8 +243,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
-        const horizontalDisabled = controls[0]?.parent?.getClassName() === "StackPanel" && !(controls[0]?.parent as StackPanel).isVertical;
-        const verticalDisabled = controls[0]?.parent?.getClassName() === "StackPanel" && (controls[0]?.parent as StackPanel).isVertical;
+        let horizontalDisabled = false, verticalDisabled = false;
+        let sizeUnitsLocked = false;
+
+
+        const parent = controls[0].parent;
+        if (parent?.getClassName() === "StackPanel") {
+            sizeUnitsLocked = true;
+            if ((parent as StackPanel).isVertical) {
+                verticalDisabled = true;
+            } else {
+                horizontalDisabled = true;
+            }
+        }
 
         return (
             <div>
@@ -362,7 +373,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     this._checkAndUpdateValues("width", newValue);
                                 }}
                                 unit={getUnitString("_width")}
-                                onUnitClicked={(unit) => convertUnits(unit, "width")}
+                                unitLocked={sizeUnitsLocked}
+                                onUnitClicked={(unit) => !sizeUnitsLocked && convertUnits(unit, "width")}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("width", amount)}
                             />
@@ -387,7 +399,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     this._checkAndUpdateValues("height", newValue);
                                 }}
                                 unit={getUnitString("_height")}
-                                onUnitClicked={(unit) => convertUnits(unit, "height")}
+                                unitLocked={sizeUnitsLocked}
+                                onUnitClicked={(unit) => !sizeUnitsLocked && convertUnits(unit, "height")}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("height", amount)}
                             />
