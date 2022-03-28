@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-editor",
-    "version": "5.0.0-rc.11",
+    "version": "5.0.0-rc.12",
     "main": "babylon.nodeEditor.js",
     "types": "babylon.nodeEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.11"
+        "babylonjs": "^5.0.0-rc.12"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -35,5 +35,21 @@
         "webpack-cli": "^4.9.1",
         "webpack-merge": "^5.8.0"
     },
-    "sideEffects": true
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
 }

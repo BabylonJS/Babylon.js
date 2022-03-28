@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-viewer-assets",
     "description": "Compiled resources for the Babylon viewer.",
-    "version": "5.0.0-rc.11",
+    "version": "5.0.0-rc.12",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -14,7 +14,8 @@
         "dist/babylon.viewer.assets.js",
         "dist/*.d.ts",
         "readme.md",
-        "package.json"
+        "package.json",
+        "license.md"
     ],
     "typings": "dist/index.d.ts",
     "keywords": [
@@ -39,5 +40,9 @@
         "webpack": "^5.59.1",
         "webpack-cli": "^4.9.1",
         "webpack-merge": "^5.8.0"
+    },
+    "homepage": "https://www.babylonjs.com",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }

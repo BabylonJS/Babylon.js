@@ -53,6 +53,7 @@
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
 - Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
+- Added `ArcThru3Points` to `Curve3` ([JohnK](https://github.com/BabylonJSGuide/))
 - Updated the gravity parameter in `Scene.enablePhysics()` as optional to fit the current behaviour ([Faber](https://https://github.com/Faber-smythe))
 - Allow the possibility to override the radius delta calculation for mouse wheel event ([RaananW](https://github.com/RaananW))
 - Modified behavior for FreeCamera and ArcRotateCamera so that default mouse dragging movements now account for what button was used to initiate it ([PolygonalSun](https://github.com/PolygonalSun))
