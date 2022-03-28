@@ -1,18 +1,19 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/layer.fragment";
@@ -224,7 +225,7 @@ export class Layer {
             return;
         }
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         let defines = "";
 
@@ -246,8 +247,6 @@ export class Layer {
         if (!currentEffect || !currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
             return;
         }
-
-        var engine = this._scene.getEngine();
 
         this.onBeforeRenderObservable.notifyObservers(this);
 

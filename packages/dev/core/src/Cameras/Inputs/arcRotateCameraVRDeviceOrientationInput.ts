@@ -1,5 +1,6 @@
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
 import { Tools } from "../../Misc/tools";
 
@@ -61,6 +62,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
         this.camera.attachControl(noPreventDefault);
@@ -127,9 +129,8 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
     }
 

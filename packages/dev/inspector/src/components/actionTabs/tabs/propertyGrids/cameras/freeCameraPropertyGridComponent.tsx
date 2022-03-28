@@ -1,14 +1,14 @@
 import * as React from "react";
-import { FreeCamera } from "core/Cameras/freeCamera";
-import { Observable } from "core/Misc/observable";
+import type { FreeCamera } from "core/Cameras/freeCamera";
+import type { Observable } from "core/Misc/observable";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 
 interface IFreeCameraPropertyGridComponentProps {
     globalState: GlobalState;

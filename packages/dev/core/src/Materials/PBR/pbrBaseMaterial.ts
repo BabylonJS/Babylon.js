@@ -1,36 +1,40 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector4 } from "../../Maths/math.vector";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 import { Scalar } from "../../Maths/math.scalar";
 
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
+import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
+import { Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
 
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { CubeTexture } from "../../Materials/Textures/cubeTexture";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
-import { IAnimatable } from "../../Animations/animatable.interface";
+import type { IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
 import "../../Shaders/pbr.fragment";
@@ -42,8 +46,6 @@ import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
-
-declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -832,7 +834,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * It helps with side by side comparison against the final render
      * This defaults to -1
      */
-    private debugLimit = -1;
+    private _debugLimit = -1;
 
     /**
      * @hidden
@@ -840,7 +842,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * As the default viewing range might not be enough (if the ambient is really small for instance)
      * You can use the factor to better multiply the final value.
      */
-    private debugFactor = 1;
+    private _debugFactor = 1;
 
     /**
      * Defines the clear coat layer parameters for the material.
@@ -2123,12 +2125,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 1);
 
                     const ior = this.subSurface?._indexOfRefraction ?? 1.5;
-                    const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
+                    const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
 
                     // We are here deriving our default reflectance from a common value for none metallic surface.
                     // Based of the schlick fresnel approximation model
                     // for dielectrics.
-                    const f0 = Math.pow((ior - outside_ior) / (ior + outside_ior), 2);
+                    const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
 
                     // Tweak the default F0 and F90 based on our given setup
                     this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
@@ -2160,7 +2162,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
 
-                ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
+                ubo.updateFloat2("vDebugMode", this._debugLimit, this._debugFactor);
             }
 
             // Textures
@@ -2452,9 +2454,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Sets the required values to the prepass renderer.
-     * @param prePassRenderer defines the prepass renderer to setup
      */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+    public setPrePassRenderer(): boolean {
         if (this.subSurface?.isScatteringEnabled) {
             const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
             if (subSurfaceConfiguration) {

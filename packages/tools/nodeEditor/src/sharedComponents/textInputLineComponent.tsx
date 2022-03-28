@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { GlobalState } from "../globalState";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { GlobalState } from "../globalState";
 
 interface ITextInputLineComponentProps {
     label: string;

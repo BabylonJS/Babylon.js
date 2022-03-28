@@ -1,7 +1,7 @@
-import { Nullable } from "../../../types";
-import { Scene } from "../../../scene";
+import type { Nullable } from "../../../types";
+import type { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
-import { Texture } from "../../../Materials/Textures/texture";
+import type { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
 import { RegisterClass } from "../../../Misc/typeStore";
 
@@ -121,7 +121,6 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * Creates a NoiseProceduralTexture from parsed noise procedural texture data
      * @param parsedTexture defines parsed texture data
      * @param scene defines the current scene
-     * @param rootUrl defines the root URL containing noise procedural texture information
      * @returns a parsed NoiseProceduralTexture
      */
     public static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture {

@@ -1,4 +1,4 @@
-import { ViewerConfiguration } from "./../configuration";
+import type { ViewerConfiguration } from "./../configuration";
 
 /**
  * Defines a default directional shadow light for normalized objects (!)

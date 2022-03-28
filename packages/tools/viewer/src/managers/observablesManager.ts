@@ -1,9 +1,9 @@
 import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { Engine } from "core/Engines/engine";
-import { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { Scene } from "core/scene";
+import type { Engine } from "core/Engines/engine";
+import type { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 
-import { ViewerModel } from "../model/viewerModel";
+import type { ViewerModel } from "../model/viewerModel";
 
 export class ObservablesManager {
     /**
@@ -17,7 +17,7 @@ export class ObservablesManager {
 
     /**
      * Will notify when a new model was added to the scene.
-     * Note that added does not neccessarily mean loaded!
+     * Note that added does not necessarily mean loaded!
      */
     public onModelAddedObservable: Observable<ViewerModel>;
     /**

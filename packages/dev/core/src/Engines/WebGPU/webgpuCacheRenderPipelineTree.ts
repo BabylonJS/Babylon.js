@@ -1,5 +1,5 @@
-import { VertexBuffer } from "../../Buffers/buffer";
-import { Nullable } from "../../types";
+import type { VertexBuffer } from "../../Buffers/buffer";
+import type { Nullable } from "../../types";
 import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
 /** @hidden */

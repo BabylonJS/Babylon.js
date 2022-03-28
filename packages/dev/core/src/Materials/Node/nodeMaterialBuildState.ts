@@ -1,6 +1,6 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
-import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
+import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
 import { StartsWith } from "../../Misc/stringTools";
 

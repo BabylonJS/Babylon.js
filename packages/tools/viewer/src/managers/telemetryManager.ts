@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import { Engine } from "core/Engines/engine";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * The data structure of a telemetry event.
@@ -25,8 +25,6 @@ export class TelemetryManager {
 
     /**
      * Receives a telemetry event
-     * @param event The name of the Telemetry event
-     * @param details An additional value, or an object containing a list of property/value pairs
      */
     public get broadcast() {
         return this._event;
@@ -55,7 +53,7 @@ export class TelemetryManager {
 
     /**
      * Enable or disable telemetry events
-     * @param enabled Boolan, true if events are enabled
+     * @param enabled Boolean, true if events are enabled
      */
     public set enable(enabled: boolean) {
         if (enabled) {
@@ -90,7 +88,7 @@ export class TelemetryManager {
 
         if (typeof details === "object") {
             for (const attr in details) {
-                if (details.hasOwnProperty(attr)) {
+                if (Object.prototype.hasOwnProperty.call(details, attr)) {
                     telemetryData[attr] = details[attr];
                 }
             }
@@ -102,7 +100,7 @@ export class TelemetryManager {
     }
 
     /**
-     * Returns the current session ID or creates one if it doesn't exixt
+     * Returns the current session ID or creates one if it doesn't exist
      * @return The current session ID
      */
     public get session(): string {

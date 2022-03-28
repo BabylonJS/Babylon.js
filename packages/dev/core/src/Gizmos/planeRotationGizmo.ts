@@ -1,17 +1,19 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Node } from "../node";
+import type { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo, GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache } from "./gizmo";
+import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { RotationGizmo } from "./rotationGizmo";
+import type { RotationGizmo } from "./rotationGizmo";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
@@ -44,7 +46,7 @@ export class PlaneRotationGizmo extends Gizmo {
     public static MaxDragAngle: number = (Math.PI * 9) / 20;
 
     /**
-     * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
+     * Accumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
      */
     public angle: number = 0;
 
@@ -58,7 +60,7 @@ export class PlaneRotationGizmo extends Gizmo {
     private _dragging: boolean = false;
     private _angles = new Vector3();
 
-    private static _rotationGizmoVertexShader = `
+    private static _RotationGizmoVertexShader = `
         precision highp float;
         attribute vec3 position;
         attribute vec2 uv;
@@ -70,7 +72,7 @@ export class PlaneRotationGizmo extends Gizmo {
             vUV = uv;
         }`;
 
-    private static _rotationGizmoFragmentShader = `
+    private static _RotationGizmoFragmentShader = `
         precision highp float;
         varying vec2 vUV;
         varying vec3 vPosition;
@@ -103,9 +105,9 @@ export class PlaneRotationGizmo extends Gizmo {
 
     /**
      * Creates a PlaneRotationGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      * @param parent
      * @param useEulerRotation Use and update Euler angle instead of quaternion
@@ -117,6 +119,7 @@ export class PlaneRotationGizmo extends Gizmo {
         gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
         tessellation = 32,
         parent: Nullable<RotationGizmo> = null,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         useEulerRotation = false,
         thickness: number = 1
     ) {
@@ -144,8 +147,8 @@ export class PlaneRotationGizmo extends Gizmo {
         this._rotationDisplayPlane.parent = this._gizmoMesh;
         this._rotationDisplayPlane.setEnabled(false);
 
-        Effect.ShadersStore["rotationGizmoVertexShader"] = PlaneRotationGizmo._rotationGizmoVertexShader;
-        Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._rotationGizmoFragmentShader;
+        Effect.ShadersStore["rotationGizmoVertexShader"] = PlaneRotationGizmo._RotationGizmoVertexShader;
+        Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._RotationGizmoFragmentShader;
         this._rotationShaderMaterial = new ShaderMaterial(
             "shader",
             this.gizmoLayer.utilityLayerScene,

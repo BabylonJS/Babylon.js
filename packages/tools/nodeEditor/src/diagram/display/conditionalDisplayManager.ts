@@ -1,13 +1,14 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { ConditionalBlockConditions, ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
+import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
 
 export class ConditionalDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return true;
     }
 
@@ -48,9 +49,9 @@ export class ConditionalDisplayManager implements IDisplayManager {
         return block.name + " (" + desc + ")";
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(): string {
         return "#00A080";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {}
+    public updatePreviewContent(): void {}
 }

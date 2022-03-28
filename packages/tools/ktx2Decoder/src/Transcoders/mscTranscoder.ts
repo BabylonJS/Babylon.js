@@ -1,5 +1,5 @@
 import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
-import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 
 declare let MSC_TRANSCODER: any;
@@ -75,6 +75,7 @@ export class MSCTranscoder extends Transcoder {
         return this._mscBasisTranscoderPromise;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return true;
     }

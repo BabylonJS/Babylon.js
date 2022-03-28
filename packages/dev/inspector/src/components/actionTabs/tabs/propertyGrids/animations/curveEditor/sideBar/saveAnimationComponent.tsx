@@ -1,9 +1,9 @@
 import * as React from "react";
 import { StringTools } from "shared-ui-components/stringTools";
-import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context } from "../context";
 import { Animation } from "core/Animations/animation";
-import { TargetedAnimation } from "core/Animations/animationGroup";
+import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 interface ISaveAnimationComponentProps {
     globalState: GlobalState;
@@ -87,7 +87,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
         xmlHttp.open("POST", Animation.SnippetUrl + (this.props.context.snippetId ? "/" + this.props.context.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 animations: json,
             }),

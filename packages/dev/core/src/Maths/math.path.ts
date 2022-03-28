@@ -1,4 +1,4 @@
-import { DeepImmutable, Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import { Scalar } from "./math.scalar";
 import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
 import { Epsilon } from "./math.constants";
@@ -139,7 +139,7 @@ export class Arc2 {
     /**
      * Creates an Arc object from the three given points : start, middle and end.
      * @param startPoint Defines the start point of the arc
-     * @param midPoint Defines the midlle point of the arc
+     * @param midPoint Defines the middle point of the arc
      * @param endPoint Defines the end point of the arc
      */
     constructor(
@@ -291,7 +291,7 @@ export class Path2 {
 
     /**
      * Retreives the point at the distance aways from the starting point
-     * @param normalizedLengthPosition the length along the path to retreive the point from
+     * @param normalizedLengthPosition the length along the path to retrieve the point from
      * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
      */
     public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
@@ -719,7 +719,7 @@ export class Path3D {
      * Updates the point at data for an interpolated point along this curve
      * @param position the position of the point along this curve, from 0.0 to 1.0
      * @param interpolateTNB
-     * @interpolateTNB wether to compute the interpolated tangent, normal and binormal
+     * @interpolateTNB whether to compute the interpolated tangent, normal and binormal
      * @returns the (updated) point at data
      */
     private _updatePointAtData(position: number, interpolateTNB: boolean = false) {
@@ -895,9 +895,9 @@ export class Curve3 {
         let amount = 0.0;
         if (closed) {
             const pointsCount = points.length;
-            for (var i = 0; i < pointsCount; i++) {
+            for (let i = 0; i < pointsCount; i++) {
                 amount = 0;
-                for (var c = 0; c < nbPoints; c++) {
+                for (let c = 0; c < nbPoints; c++) {
                     catmullRom.push(
                         Vector3.CatmullRom(points[i % pointsCount], points[(i + 1) % pointsCount], points[(i + 2) % pointsCount], points[(i + 3) % pointsCount], amount)
                     );
@@ -910,9 +910,10 @@ export class Curve3 {
             totalPoints.push(points[0].clone());
             Array.prototype.push.apply(totalPoints, points);
             totalPoints.push(points[points.length - 1].clone());
-            for (var i = 0; i < totalPoints.length - 3; i++) {
+            let i = 0;
+            for (; i < totalPoints.length - 3; i++) {
                 amount = 0;
-                for (var c = 0; c < nbPoints; c++) {
+                for (let c = 0; c < nbPoints; c++) {
                     catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step;
                 }

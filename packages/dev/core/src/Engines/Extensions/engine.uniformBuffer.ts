@@ -1,9 +1,9 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { FloatArray, Nullable } from "../../types";
-import { DataBuffer } from "../../Buffers/dataBuffer";
+import type { FloatArray, Nullable } from "../../types";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
-import { IPipelineContext } from "../IPipelineContext";
-import { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
+import type { IPipelineContext } from "../IPipelineContext";
+import type { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -129,6 +129,7 @@ ThinEngine.prototype.bindUniformBuffer = function (buffer: Nullable<DataBuffer>)
     this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer ? buffer.underlyingResource : null);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, location: number, name: string): void {
     this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
 };
@@ -138,5 +139,7 @@ ThinEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineCont
 
     const uniformLocation = this._gl.getUniformBlockIndex(program, blockName);
 
-    this._gl.uniformBlockBinding(program, uniformLocation, index);
+    if (uniformLocation !== 0xffffffff) {
+        this._gl.uniformBlockBinding(program, uniformLocation, index);
+    }
 };

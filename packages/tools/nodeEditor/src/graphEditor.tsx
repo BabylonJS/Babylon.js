@@ -1,28 +1,28 @@
 import * as React from "react";
-import { GlobalState } from "./globalState";
+import type { GlobalState } from "./globalState";
 
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
-import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import type { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { CustomBlock } from "core/Materials/Node/Blocks/customBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { BlockTools } from "./blockTools";
 import { PreviewManager } from "./components/preview/previewManager";
-import { IEditorData } from "./nodeLocationInfo";
+import type { IEditorData } from "./nodeLocationInfo";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
 import { GraphCanvasComponent } from "./diagram/graphCanvas";
-import { GraphNode } from "./diagram/graphNode";
+import type { GraphNode } from "./diagram/graphNode";
 import { GraphFrame } from "./diagram/graphFrame";
 import * as ReactDOM from "react-dom";
-import { IInspectorOptions } from "core/Debug/debugLayer";
+import type { IInspectorOptions } from "core/Debug/debugLayer";
 import { Popup } from "./sharedComponents/popup";
 
 import "./main.scss";
@@ -70,7 +70,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeMaterialBlock
      * @param block
      * @param recursion
      */
@@ -91,7 +90,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Connections
         if (block.inputs.length) {
-            for (var input of block.inputs) {
+            for (const input of block.inputs) {
                 if (input.isConnected && recursion) {
                     this.createNodeFromObject(input.sourceBlock!);
                 }
@@ -103,7 +102,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Links
         if (block.inputs.length && recursion) {
-            for (var input of block.inputs) {
+            for (const input of block.inputs) {
                 if (input.isConnected) {
                     this._graphCanvas.connectPorts(input.connectedPoint!, input);
                 }
@@ -537,7 +536,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else {
                 // Locations
                 for (const location of editorData.locations) {
-                    for (var node of this._graphCanvas.nodes) {
+                    for (const node of this._graphCanvas.nodes) {
                         if (node.block && node.block.uniqueId === location.blockId) {
                             node.x = location.x;
                             node.y = location.y;
@@ -553,7 +552,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             this._graphCanvas._isLoading = false;
-            for (var node of this._graphCanvas.nodes) {
+            for (const node of this._graphCanvas.nodes) {
                 node._refreshLinks();
             }
             this.hideWaitScreen();
@@ -822,11 +821,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             host.style.width = options.embedHostWidth || "auto";
 
             parentControl.appendChild(host);
-            const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+            const previewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
                 globalState: this.props.globalState,
                 togglePreviewAreaComponent: this.handlePopUp,
             });
-            ReactDOM.render(PreviewMeshControlComponentHost, host);
+            ReactDOM.render(previewMeshControlComponentHost, host);
         }
     };
 
@@ -854,11 +853,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         if (this._previewHost) {
-            const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
+            const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
                 width: 200,
             });
-            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
+            ReactDOM.render(previewAreaComponentHost, this._previewHost);
         }
     };
 

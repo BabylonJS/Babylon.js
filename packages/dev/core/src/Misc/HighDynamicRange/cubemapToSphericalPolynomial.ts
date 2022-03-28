@@ -1,10 +1,10 @@
 import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Nullable } from "../../types";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
-import { CubeMapInfo } from "./panoramaToCubemap";
+import type { CubeMapInfo } from "./panoramaToCubemap";
 import { ToLinearSpace } from "../../Maths/math.constants";
 import { Color3 } from "../../Maths/math.color";
 
@@ -27,7 +27,7 @@ class FileFaceOrientation {
  * from a cube map.
  */
 export class CubeMapToSphericalPolynomialTools {
-    private static FileFaces: FileFaceOrientation[] = [
+    private static _FileFaces: FileFaceOrientation[] = [
         new FileFaceOrientation("right", new Vector3(1, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)), // +X east
         new FileFaceOrientation("left", new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, -1, 0)), // -X west
         new FileFaceOrientation("up", new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1)), // +Y north
@@ -76,7 +76,7 @@ export class CubeMapToSphericalPolynomialTools {
             type = Constants.TEXTURETYPE_FLOAT;
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             Promise.all([leftPromise, rightPromise, upPromise, downPromise, frontPromise, backPromise]).then(([left, right, up, down, front, back]) => {
                 const cubeInfo: CubeMapInfo = {
                     size,
@@ -127,7 +127,7 @@ export class CubeMapToSphericalPolynomialTools {
         const minUV = halfTexel - 1.0;
 
         for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
-            const fileFace = this.FileFaces[faceIndex];
+            const fileFace = this._FileFaces[faceIndex];
             const dataArray = (<any>cubeInfo)[fileFace.name];
             let v = minUV;
 

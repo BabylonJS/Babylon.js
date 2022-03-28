@@ -1,14 +1,14 @@
 {
     "name": "babylonjs-gltf2interface",
-    "description": "A typescript declaration of babylon's gltf2 inteface.",
-    "version": "5.0.0-rc.4",
+    "description": "A typescript declaration of babylon's gltf2 interface.",
+    "version": "5.0.0-rc.12",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
     "files": [
         "babylon.glTF2Interface.d.ts",
-        "package.json"
+        "license.md"
     ],
     "typings": "babylon.glTF2Interface.d.ts",
     "keywords": [
@@ -22,5 +22,9 @@
     "devDependencies": {
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4"
+    },
+    "homepage": "https://www.babylonjs.com",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }

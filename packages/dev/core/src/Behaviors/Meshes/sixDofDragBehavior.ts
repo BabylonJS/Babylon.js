@@ -1,8 +1,9 @@
-import { Mesh } from "../../Meshes/mesh";
-import { Scene } from "../../scene";
-import { Nullable } from "../../types";
+import type { Mesh } from "../../Meshes/mesh";
+import type { Scene } from "../../scene";
+import type { Nullable } from "../../types";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Observable, Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Space } from "../../Maths/math.axis";
@@ -216,7 +217,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._ownerNode.setParent(oldParent);
     }
 
-    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
+    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
         if (this.currentDraggingPointerIds.length === 1) {
             this._onePointerPositionUpdated(worldDeltaPosition, worldDeltaRotation);
         } else if (this.currentDraggingPointerIds.length === 2) {

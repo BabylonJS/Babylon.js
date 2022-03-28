@@ -1,14 +1,14 @@
-import { DeepImmutable, Nullable, float } from "../types";
+import type { DeepImmutable, Nullable, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { BoundingBox } from "./boundingBox";
-import { BoundingSphere } from "./boundingSphere";
+import type { BoundingBox } from "./boundingBox";
+import type { BoundingSphere } from "./boundingSphere";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { EngineStore } from "../Engines/engineStore";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -18,7 +18,7 @@ declare type Mesh = import("../Meshes/mesh").Mesh;
  */
 export class Ray {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
-    private static _rayDistant = Ray.Zero();
+    private static _RayDistant = Ray.Zero();
     private _tmpRay: Ray;
 
     /**
@@ -266,24 +266,27 @@ export class Ray {
      */
     public intersectsAxis(axis: string, offset: number = 0): Nullable<Vector3> {
         switch (axis) {
-            case "y":
-                var t = (this.origin.y - offset) / this.direction.y;
+            case "y": {
+                const t = (this.origin.y - offset) / this.direction.y;
                 if (t > 0) {
                     return null;
                 }
                 return new Vector3(this.origin.x + this.direction.x * -t, offset, this.origin.z + this.direction.z * -t);
-            case "x":
-                var t = (this.origin.x - offset) / this.direction.x;
+            }
+            case "x": {
+                const t = (this.origin.x - offset) / this.direction.x;
                 if (t > 0) {
                     return null;
                 }
                 return new Vector3(offset, this.origin.y + this.direction.y * -t, this.origin.z + this.direction.z * -t);
-            case "z":
-                var t = (this.origin.z - offset) / this.direction.z;
+            }
+            case "z": {
+                const t = (this.origin.z - offset) / this.direction.z;
                 if (t > 0) {
                     return null;
                 }
                 return new Vector3(this.origin.x + this.direction.x * -t, this.origin.y + this.direction.y * -t, offset);
+            }
             default:
                 return null;
         }
@@ -346,8 +349,8 @@ export class Ray {
         }
     }
 
-    private static smallnum = 0.00000001;
-    private static rayl = 10e8;
+    private static _Smallnum = 0.00000001;
+    private static _Rayl = 10e8;
 
     /**
      * Intersection test between the ray and a given segment within a given tolerance (threshold)
@@ -365,7 +368,7 @@ export class Ray {
 
         segb.subtractToRef(sega, u);
 
-        this.direction.scaleToRef(Ray.rayl, v);
+        this.direction.scaleToRef(Ray._Rayl, v);
         o.addToRef(v, rsegb);
 
         sega.subtractToRef(o, w);
@@ -376,15 +379,13 @@ export class Ray {
         const d = Vector3.Dot(u, w);
         const e = Vector3.Dot(v, w);
         const D = a * c - b * b; // always >= 0
-        let sc: number,
-            sN: number,
+        let sN: number,
             sD = D; // sc = sN / sD, default sD = D >= 0
-        let tc: number,
-            tN: number,
+        let tN: number,
             tD = D; // tc = tN / tD, default tD = D >= 0
 
         // compute the line parameters of the two closest points
-        if (D < Ray.smallnum) {
+        if (D < Ray._Smallnum) {
             // the lines are almost parallel
             sN = 0.0; // force using point P0 on segment S1
             sD = 1.0; // to prevent possible division by 0.0 later
@@ -433,8 +434,8 @@ export class Ray {
             }
         }
         // finally do the division to get sc and tc
-        sc = Math.abs(sN) < Ray.smallnum ? 0.0 : sN / sD;
-        tc = Math.abs(tN) < Ray.smallnum ? 0.0 : tN / tD;
+        const sc = Math.abs(sN) < Ray._Smallnum ? 0.0 : sN / sD;
+        const tc = Math.abs(tN) < Ray._Smallnum ? 0.0 : tN / tD;
 
         // get the difference of the two closest points
         const qtc = TmpVectors.Vector3[4];
@@ -481,15 +482,15 @@ export class Ray {
             // One way to fix it is to compute the ray with world at identity then transform the ray in object space.
             // This is slower (2 matrix inverts instead of 1) but precision is preserved.
             // This is hidden behind `EnableDistantPicking` flag (default is false)
-            if (!Ray._rayDistant) {
-                Ray._rayDistant = Ray.Zero();
+            if (!Ray._RayDistant) {
+                Ray._RayDistant = Ray.Zero();
             }
 
-            Ray._rayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
+            Ray._RayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
 
             const tm = TmpVectors.Matrix[0];
             world.invertToRef(tm);
-            Ray.TransformToRef(Ray._rayDistant, tm, this);
+            Ray.TransformToRef(Ray._RayDistant, tm, this);
         } else {
             this.unprojectRayToRef(x, y, viewportWidth, viewportHeight, world, view, projection);
         }
@@ -906,7 +907,7 @@ Scene.prototype.pickWithBoundingInfo = function (
         return null;
     }
     const result = this._internalPick(
-        (world, enableDistantPicking) => {
+        (world) => {
             if (!this._tempPickingRay) {
                 this._tempPickingRay = Ray.Zero();
             }
@@ -931,7 +932,7 @@ Scene.prototype.pick = function (
     fastCheck?: boolean,
     camera?: Nullable<Camera>,
     trianglePredicate?: TrianglePickingPredicate,
-    enableDistantPicking = false
+    _enableDistantPicking = false
 ): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
@@ -994,7 +995,7 @@ Scene.prototype.multiPick = function (
     camera?: Camera,
     trianglePredicate?: TrianglePickingPredicate
 ): Nullable<PickingInfo[]> {
-    return this._internalMultiPick((world, enableDistantPicking) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
+    return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
 };
 
 Scene.prototype.multiPickWithRay = function (ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {

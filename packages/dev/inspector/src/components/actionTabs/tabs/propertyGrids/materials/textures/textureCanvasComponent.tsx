@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 interface ITextureCanvasComponentProps {
     canvasUI: React.RefObject<HTMLCanvasElement>;

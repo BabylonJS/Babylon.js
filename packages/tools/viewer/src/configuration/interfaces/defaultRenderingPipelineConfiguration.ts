@@ -1,4 +1,4 @@
-import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
+import type { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
 
 export interface IDefaultRenderingPipelineConfiguration {
     sharpenEnabled?: boolean;

@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { GlobalState } from "../globalState";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { GlobalState } from "../globalState";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -84,7 +84,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     updateValue(valueString: string) {
-        if (/[^0-9\.\-]/g.test(valueString)) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
@@ -132,7 +132,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 type="number"
                                 step={this.props.step || "0.01"}
                                 className="numeric-input"
-                                onBlur={(evt) => {
+                                onBlur={() => {
                                     this._onFocus = false;
                                     this.props.globalState.blockKeyboardEvents = false;
                                     if (this.props.onEnter) {

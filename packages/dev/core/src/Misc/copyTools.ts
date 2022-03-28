@@ -1,5 +1,6 @@
-import { ISize } from "../Maths/math.size";
-import { Nullable } from "../types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { ISize } from "../Maths/math.size";
+import type { Nullable } from "../types";
 
 declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
 

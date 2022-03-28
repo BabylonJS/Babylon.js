@@ -1,4 +1,5 @@
-import { Nullable } from "../../types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
 import { Constants } from "../../Engines/constants";
 

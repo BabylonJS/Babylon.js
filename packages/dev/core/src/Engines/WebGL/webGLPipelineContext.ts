@@ -1,8 +1,8 @@
-import { IPipelineContext } from "../IPipelineContext";
-import { Nullable } from "../../types";
-import { Effect } from "../../Materials/effect";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
-import { ThinEngine } from "../thinEngine";
+import type { IPipelineContext } from "../IPipelineContext";
+import type { Nullable } from "../../types";
+import type { Effect } from "../../Materials/effect";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { ThinEngine } from "../thinEngine";
 
 /** @hidden */
 export class WebGLPipelineContext implements IPipelineContext {
@@ -240,8 +240,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param x First int in int3.
      * @param y Second int in int3.
-     * @param y Third int in int3.
-     * @param z
+     * @param z Third int in int3.
      */
     public setInt3(uniformName: string, x: number, y: number, z: number): void {
         if (this._cacheFloat3(uniformName, x, y, z)) {
@@ -256,8 +255,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param x First int in int4.
      * @param y Second int in int4.
-     * @param y Third int in int4.
-     * @param z
+     * @param z Third int in int4.
      * @param w Fourth int in int4.
      */
     public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {

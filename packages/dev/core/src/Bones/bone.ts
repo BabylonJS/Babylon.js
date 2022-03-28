@@ -1,9 +1,8 @@
-import { Skeleton } from "./skeleton";
-
+import type { Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Nullable } from "../types";
-import { TransformNode } from "../Meshes/transformNode";
+import type { Nullable } from "../types";
+import type { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Space } from "../Maths/math.axis";
 
@@ -15,9 +14,9 @@ declare type AnimationPropertiesOverride = import("../Animations/animationProper
  * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
  */
 export class Bone extends Node {
-    private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(2, Vector3.Zero);
-    private static _tmpQuat = Quaternion.Identity();
-    private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
+    private static _TmpVecs: Vector3[] = ArrayTools.BuildArray(2, Vector3.Zero);
+    private static _TmpQuat = Quaternion.Identity();
+    private static _TmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
 
     /**
      * Gets the list of child bones
@@ -446,10 +445,9 @@ export class Bone extends Node {
 
     /**
      * Flag the bone as dirty (Forcing it to update everything)
-     * @param property helps children apply precise "dirtyfication"
      * @returns this bone
      */
-    public markAsDirty(property?: string): Bone {
+    public markAsDirty(): Bone {
         this._currentRenderId++;
         this._childUpdateId++;
         this._skeleton._markAsDirty();
@@ -489,8 +487,8 @@ export class Bone extends Node {
             }
 
             this._skeleton.computeAbsoluteTransforms();
-            const tmat = Bone._tmpMats[0];
-            const tvec = Bone._tmpVecs[0];
+            const tmat = Bone._TmpMats[0];
+            const tvec = Bone._TmpVecs[0];
 
             if (this.parent) {
                 if (tNode && wm) {
@@ -536,8 +534,8 @@ export class Bone extends Node {
 
             this._skeleton.computeAbsoluteTransforms();
 
-            const tmat = Bone._tmpMats[0];
-            const vec = Bone._tmpVecs[0];
+            const tmat = Bone._TmpMats[0];
+            const vec = Bone._TmpVecs[0];
 
             if (this.parent) {
                 if (tNode && wm) {
@@ -578,14 +576,14 @@ export class Bone extends Node {
         const locMat = this.getLocalMatrix();
 
         // Apply new scaling on top of current local matrix
-        const scaleMat = Bone._tmpMats[0];
+        const scaleMat = Bone._TmpMats[0];
         Matrix.ScalingToRef(x, y, z, scaleMat);
         scaleMat.multiplyToRef(locMat, locMat);
 
         // Invert scaling matrix and apply the inverse to all children
         scaleMat.invert();
 
-        for (var child of this.children) {
+        for (const child of this.children) {
             const cm = child.getLocalMatrix();
             cm.multiplyToRef(scaleMat, cm);
             cm.multiplyAtIndex(12, x);
@@ -598,7 +596,7 @@ export class Bone extends Node {
         this._markAsDirtyAndDecompose();
 
         if (scaleChildren) {
-            for (var child of this.children) {
+            for (const child of this.children) {
                 child.scale(x, y, z, scaleChildren);
             }
         }
@@ -642,18 +640,18 @@ export class Bone extends Node {
      */
     public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
-            const quat = Bone._tmpQuat;
+            const quat = Bone._TmpQuat;
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, quat);
             this.setRotationQuaternion(quat, space, tNode);
             return;
         }
 
-        const rotMatInv = Bone._tmpMats[0];
+        const rotMatInv = Bone._TmpMats[0];
         if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
-        const rotMat = Bone._tmpMats[1];
+        const rotMat = Bone._TmpMats[1];
         Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
 
         rotMatInv.multiplyToRef(rotMat, rotMat);
@@ -668,7 +666,7 @@ export class Bone extends Node {
      * @param tNode The TransformNode that this bone is attached to. This is only used in world space
      */
     public rotate(axis: Vector3, amount: number, space = Space.LOCAL, tNode?: TransformNode): void {
-        const rmat = Bone._tmpMats[0];
+        const rmat = Bone._TmpMats[0];
         rmat.setTranslationFromFloats(0, 0, 0);
         Matrix.RotationAxisToRef(axis, amount, rmat);
         this._rotateWithMatrix(rmat, space, tNode);
@@ -683,19 +681,19 @@ export class Bone extends Node {
      */
     public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
-            const quat = Bone._tmpQuat;
+            const quat = Bone._TmpQuat;
             Quaternion.RotationAxisToRef(axis, angle, quat);
 
             this.setRotationQuaternion(quat, space, tNode);
             return;
         }
 
-        const rotMatInv = Bone._tmpMats[0];
+        const rotMatInv = Bone._TmpMats[0];
         if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
-        const rotMat = Bone._tmpMats[1];
+        const rotMat = Bone._TmpMats[1];
         Matrix.RotationAxisToRef(axis, angle, rotMat);
 
         rotMatInv.multiplyToRef(rotMat, rotMat);
@@ -728,12 +726,12 @@ export class Bone extends Node {
             return;
         }
 
-        const rotMatInv = Bone._tmpMats[0];
+        const rotMatInv = Bone._TmpMats[0];
         if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
-        const rotMat = Bone._tmpMats[1];
+        const rotMat = Bone._TmpMats[1];
         Matrix.FromQuaternionToRef(quat, rotMat);
 
         rotMatInv.multiplyToRef(rotMat, rotMat);
@@ -749,18 +747,18 @@ export class Bone extends Node {
      */
     public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, tNode?: TransformNode): void {
         if (space === Space.LOCAL) {
-            const quat = Bone._tmpQuat;
+            const quat = Bone._TmpQuat;
             Quaternion.FromRotationMatrixToRef(rotMat, quat);
             this.setRotationQuaternion(quat, space, tNode);
             return;
         }
 
-        const rotMatInv = Bone._tmpMats[0];
+        const rotMatInv = Bone._TmpMats[0];
         if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
             return;
         }
 
-        const rotMat2 = Bone._tmpMats[1];
+        const rotMat2 = Bone._TmpMats[1];
         rotMat2.copyFrom(rotMat);
 
         rotMatInv.multiplyToRef(rotMat, rotMat2);
@@ -774,8 +772,8 @@ export class Bone extends Node {
         const ly = lmat.m[13];
         const lz = lmat.m[14];
         const parent = this.getParent();
-        const parentScale = Bone._tmpMats[3];
-        const parentScaleInv = Bone._tmpMats[4];
+        const parentScale = Bone._TmpMats[3];
+        const parentScaleInv = Bone._TmpMats[4];
 
         if (parent && space == Space.WORLD) {
             if (tNode) {
@@ -809,7 +807,7 @@ export class Bone extends Node {
     }
 
     private _getNegativeRotationToRef(rotMatInv: Matrix, tNode?: TransformNode): boolean {
-        const scaleMatrix = Bone._tmpMats[2];
+        const scaleMatrix = Bone._TmpMats[2];
         rotMatInv.copyFrom(this.getAbsoluteTransform());
 
         if (tNode) {
@@ -869,7 +867,7 @@ export class Bone extends Node {
 
             this._skeleton.computeAbsoluteTransforms();
 
-            let tmat = Bone._tmpMats[0];
+            let tmat = Bone._TmpMats[0];
 
             if (tNode && wm) {
                 tmat.copyFrom(this.getAbsoluteTransform());
@@ -962,7 +960,7 @@ export class Bone extends Node {
 
         this._skeleton.computeAbsoluteTransforms();
 
-        const mat = Bone._tmpMats[0];
+        const mat = Bone._TmpMats[0];
 
         mat.copyFrom(this.getAbsoluteTransform());
 
@@ -996,7 +994,7 @@ export class Bone extends Node {
      * @param result The vector3 that the rotation should be copied to
      */
     public getRotationToRef(space = Space.LOCAL, tNode: Nullable<TransformNode> = null, result: Vector3): void {
-        const quat = Bone._tmpQuat;
+        const quat = Bone._TmpQuat;
 
         this.getRotationQuaternionToRef(space, tNode, quat);
 
@@ -1028,7 +1026,7 @@ export class Bone extends Node {
             this._decompose();
             result.copyFrom(this._localRotation);
         } else {
-            const mat = Bone._tmpMats[0];
+            const mat = Bone._TmpMats[0];
             const amat = this.getAbsoluteTransform();
 
             if (tNode) {
@@ -1069,7 +1067,7 @@ export class Bone extends Node {
         if (space == Space.LOCAL) {
             this.getLocalMatrix().getRotationMatrixToRef(result);
         } else {
-            const mat = Bone._tmpMats[0];
+            const mat = Bone._TmpMats[0];
             const amat = this.getAbsoluteTransform();
 
             if (tNode) {
@@ -1116,7 +1114,7 @@ export class Bone extends Node {
 
         this._skeleton.computeAbsoluteTransforms();
 
-        let tmat = Bone._tmpMats[0];
+        let tmat = Bone._TmpMats[0];
 
         if (tNode && wm) {
             tmat.copyFrom(this.getAbsoluteTransform());
@@ -1158,7 +1156,7 @@ export class Bone extends Node {
 
         this._skeleton.computeAbsoluteTransforms();
 
-        const tmat = Bone._tmpMats[0];
+        const tmat = Bone._TmpMats[0];
 
         tmat.copyFrom(this.getAbsoluteTransform());
 

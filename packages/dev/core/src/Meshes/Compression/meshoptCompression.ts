@@ -1,7 +1,8 @@
 import { Tools } from "../../Misc/tools";
-import { IDisposable } from "../../scene";
-import { Nullable } from "../../types";
+import type { IDisposable } from "../../scene";
+import type { Nullable } from "../../types";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let MeshoptDecoder: any;
 
 /**

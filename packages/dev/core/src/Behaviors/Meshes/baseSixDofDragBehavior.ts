@@ -1,16 +1,20 @@
-import { Behavior } from "../../Behaviors/behavior";
-import { Mesh } from "../../Meshes/mesh";
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Behavior } from "../../Behaviors/behavior";
+import type { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
-import { Nullable } from "../../types";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { Nullable } from "../../types";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
-import { Observer, Observable } from "../../Misc/observable";
-import { TransformNode } from "../../Meshes/transformNode";
-import { PickingInfo } from "../../Collisions/pickingInfo";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { TransformNode } from "../../Meshes/transformNode";
+import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
-import { Ray } from "../../Culling/ray";
-import { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { Ray } from "../../Culling/ray";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Data store to track virtual pointers movement
@@ -286,7 +290,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             return this._ownerNode === m || (m.isDescendantOf(this._ownerNode) && (!this.draggableMeshes || this.draggableMeshes.indexOf(m) !== -1));
         };
 
-        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
+        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
             const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
             if (!this._virtualMeshesInfo[pointerId]) {
                 this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
@@ -445,6 +449,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion, pointerId: number) {
         // Herited classes can override that
     }

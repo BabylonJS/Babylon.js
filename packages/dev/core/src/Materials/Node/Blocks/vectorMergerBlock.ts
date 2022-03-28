@@ -1,29 +1,29 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { Scene } from "../../../scene";
+import type { Scene } from "../../../scene";
 
 /**
  * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
  */
 export class VectorMergerBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the swizzle for x (meaning which compoent to affect to the output.x)
+     * Gets or sets the swizzle for x (meaning which component to affect to the output.x)
      */
     public xSwizzle: "x" | "y" | "z" | "w" = "x";
     /**
-     * Gets or sets the swizzle for y (meaning which compoent to affect to the output.y)
+     * Gets or sets the swizzle for y (meaning which component to affect to the output.y)
      */
     public ySwizzle: "x" | "y" | "z" | "w" = "y";
     /**
-     * Gets or sets the swizzle for z (meaning which compoent to affect to the output.z)
+     * Gets or sets the swizzle for z (meaning which component to affect to the output.z)
      */
     public zSwizzle: "x" | "y" | "z" | "w" = "z";
     /**
-     * Gets or sets the swizzle for w (meaning which compoent to affect to the output.w)
+     * Gets or sets the swizzle for w (meaning which component to affect to the output.w)
      */
     public wSwizzle: "x" | "y" | "z" | "w" = "w";
 

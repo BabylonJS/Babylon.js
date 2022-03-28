@@ -1,15 +1,17 @@
-import { Nullable, IndicesArray } from "../types";
+import type { Nullable, IndicesArray } from "../types";
 import { Logger } from "../Misc/logger";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
-import { TransformNode } from "../Meshes/transformNode";
+import type { Matrix } from "../Maths/math.vector";
+import { Vector3, Quaternion } from "../Maths/math.vector";
+import type { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Scene } from "../scene";
-import { Bone } from "../Bones/bone";
-import { BoundingInfo } from "../Culling/boundingInfo";
-import { IPhysicsEngine } from "./IPhysicsEngine";
-import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
+import type { Scene } from "../scene";
+import type { Bone } from "../Bones/bone";
+import type { BoundingInfo } from "../Culling/boundingInfo";
+import type { IPhysicsEngine } from "./IPhysicsEngine";
+import type { PhysicsJointData } from "./physicsJoint";
+import { PhysicsJoint } from "./physicsJoint";
 import { Space } from "../Maths/math.axis";
 
 /**
@@ -239,8 +241,8 @@ export class PhysicsImpostor {
 
     private _isDisposed = false;
 
-    private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(3, Vector3.Zero);
-    private static _tmpQuat: Quaternion = Quaternion.Identity();
+    private static _TmpVecs: Vector3[] = ArrayTools.BuildArray(3, Vector3.Zero);
+    private static _TmpQuat: Quaternion = Quaternion.Identity();
 
     /**
      * Specifies if the physics imposter is disposed
@@ -545,7 +547,6 @@ export class PhysicsImpostor {
 
     /**
      * Sets the updated scaling
-     * @param updated Specifies if the scaling is updated
      */
     public setScalingUpdated() {
         this.forceUpdate();
@@ -1155,12 +1156,12 @@ export class PhysicsImpostor {
      * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
      */
     public syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion) {
-        const tempVec = PhysicsImpostor._tmpVecs[0];
+        const tempVec = PhysicsImpostor._TmpVecs[0];
         const mesh = <AbstractMesh>this.object;
 
         if (mesh.rotationQuaternion) {
             if (adjustRotation) {
-                const tempQuat = PhysicsImpostor._tmpQuat;
+                const tempQuat = PhysicsImpostor._TmpQuat;
                 mesh.rotationQuaternion.multiplyToRef(adjustRotation, tempQuat);
                 bone.setRotationQuaternion(tempQuat, Space.WORLD, boneMesh);
             } else {
@@ -1213,7 +1214,7 @@ export class PhysicsImpostor {
 
         if (mesh.rotationQuaternion) {
             if (adjustRotation) {
-                const tempQuat = PhysicsImpostor._tmpQuat;
+                const tempQuat = PhysicsImpostor._TmpQuat;
                 bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
                 tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
             } else {
@@ -1221,11 +1222,11 @@ export class PhysicsImpostor {
             }
         }
 
-        const pos = PhysicsImpostor._tmpVecs[0];
-        const boneDir = PhysicsImpostor._tmpVecs[1];
+        const pos = PhysicsImpostor._TmpVecs[0];
+        const boneDir = PhysicsImpostor._TmpVecs[1];
 
         if (!boneAxis) {
-            boneAxis = PhysicsImpostor._tmpVecs[2];
+            boneAxis = PhysicsImpostor._TmpVecs[2];
             boneAxis.x = 0;
             boneAxis.y = 1;
             boneAxis.z = 0;

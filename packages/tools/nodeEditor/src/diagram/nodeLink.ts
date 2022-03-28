@@ -1,11 +1,12 @@
 import { GraphCanvasComponent } from "./graphCanvas";
-import { GraphNode } from "./graphNode";
-import { NodePort } from "./nodePort";
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { FrameNodePort } from "./frameNodePort";
-import { ISelectionChangedOptions } from "../globalState";
-import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
+import type { GraphNode } from "./graphNode";
+import type { NodePort } from "./nodePort";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { FrameNodePort } from "./frameNodePort";
+import type { ISelectionChangedOptions } from "../globalState";
+import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;

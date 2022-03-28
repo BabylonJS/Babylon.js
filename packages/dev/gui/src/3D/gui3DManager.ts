@@ -1,17 +1,20 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
-import { PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
-import { Material } from "core/Materials/material";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import type { Material } from "core/Materials/material";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { EngineStore } from "core/Engines/engineStore";
-import { IDisposable, Scene } from "core/scene";
+import type { IDisposable, Scene } from "core/scene";
 
 import { Container3D } from "./controls/container3D";
-import { Control3D } from "./controls/control3D";
-import { IPointerEvent } from "core/Events/deviceInputEvents";
+import type { Control3D } from "./controls/control3D";
+import type { IPointerEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to manage 3D user interface
@@ -121,7 +124,7 @@ export class GUI3DManager implements IDisposable {
             this._handlePointerOut(pointerId, true);
         });
 
-        this._pointerObserver = utilityLayerScene.onPointerObservable.add((pi, state) => {
+        this._pointerObserver = utilityLayerScene.onPointerObservable.add((pi) => {
             this._doPicking(pi);
         });
 
@@ -247,8 +250,8 @@ export class GUI3DManager implements IDisposable {
     public dispose() {
         this._rootContainer.dispose();
 
-        for (var materialName in this._sharedMaterials) {
-            if (!this._sharedMaterials.hasOwnProperty(materialName)) {
+        for (const materialName in this._sharedMaterials) {
+            if (!Object.prototype.hasOwnProperty.call(this._sharedMaterials, materialName)) {
                 continue;
             }
 
@@ -257,8 +260,8 @@ export class GUI3DManager implements IDisposable {
 
         this._sharedMaterials = {};
 
-        for (var materialName in this._touchSharedMaterials) {
-            if (!this._touchSharedMaterials.hasOwnProperty(materialName)) {
+        for (const materialName in this._touchSharedMaterials) {
+            if (!Object.prototype.hasOwnProperty.call(this._touchSharedMaterials, materialName)) {
                 continue;
             }
 

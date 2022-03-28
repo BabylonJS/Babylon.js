@@ -1,12 +1,12 @@
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import { Scene } from "../scene";
-import { Nullable } from "../types";
-import { Bone } from "../Bones/bone";
-import { Skeleton } from "../Bones/skeleton";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Bone } from "../Bones/bone";
+import type { Skeleton } from "../Bones/skeleton";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
+import type { LinesMesh } from "../Meshes/linesMesh";
 import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Material } from "../Materials/material";
@@ -15,8 +15,8 @@ import { DynamicTexture } from "../Materials/Textures/dynamicTexture";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Effect } from "../Materials/effect";
 
-import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from "./ISkeletonViewer";
-import { Observer } from "../Misc/observable";
+import type { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from "./ISkeletonViewer";
+import type { Observer } from "../Misc/observable";
 
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";
@@ -654,7 +654,7 @@ export class SkeletonViewer {
 
                 boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
-                bone.children.forEach((bc, i) => {
+                bone.children.forEach((bc) => {
                     const childAbsoluteBindPoseTransform: Matrix = new Matrix();
                     bc.getBaseMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     const childPoint = new Vector3();

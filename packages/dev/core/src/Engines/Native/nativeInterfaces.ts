@@ -1,9 +1,10 @@
-import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import { IDeviceInputSystem } from "../../DeviceInput/InputDevices/inputInterfaces";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { Nullable } from "../../types";
-import { ICanvas, IImage } from "../ICanvas";
-import { NativeData, NativeDataStream } from "./nativeDataStream";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
+import type { IDeviceInputSystem } from "../../DeviceInput/InputDevices/inputInterfaces";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Nullable } from "../../types";
+import type { ICanvas, IImage } from "../ICanvas";
+import type { NativeData, NativeDataStream } from "./nativeDataStream";
 
 /** @hidden */
 export interface INativeEngine {

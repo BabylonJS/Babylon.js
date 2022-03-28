@@ -1,24 +1,25 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { SerializationHelper } from "core/Misc/decorators";
-import { Matrix } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IShadowLight } from "core/Lights/shadowLight";
-import { IEffectCreationOptions } from "core/Materials/effect";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IShadowLight } from "core/Lights/shadowLight";
+import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
+import type { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;

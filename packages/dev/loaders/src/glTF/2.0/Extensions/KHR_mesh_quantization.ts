@@ -1,4 +1,5 @@
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_mesh_quantization";

@@ -1,12 +1,14 @@
-import { Engine } from "../../Engines/engine";
+import type { Engine } from "../../Engines/engine";
 import { DeviceType } from "./deviceEnums";
-import { Nullable } from "../../types";
-import { Observable, Observer } from "../../Misc/observable";
-import { DeviceSource } from "./deviceSource";
-import { InternalDeviceSourceManager, IObservableManager } from "./internalDeviceSourceManager";
-import { IDisposable } from "../../scene";
-import { ThinEngine } from "../../Engines/thinEngine";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { DeviceSource } from "./deviceSource";
+import type { IObservableManager, DeviceSourceType } from "./internalDeviceSourceManager";
+import { InternalDeviceSourceManager } from "./internalDeviceSourceManager";
+import type { IDisposable } from "../../scene";
+import type { ThinEngine } from "../../Engines/thinEngine";
+import type { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Class to keep track of devices
@@ -16,12 +18,12 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     /**
      * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
      */
-    public readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+    public readonly onDeviceConnectedObservable: Observable<DeviceSourceType>;
 
     /**
      * Observable to be triggered when after a device is disconnected
      */
-    public readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+    public readonly onDeviceDisconnectedObservable: Observable<DeviceSourceType>;
 
     // Private Members
     private _engine: Engine;
@@ -32,8 +34,8 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Public Functions
     /**
      * Gets a DeviceSource, given a type and slot
-     * @param deviceType Type of Device
-     * @param deviceSlot Slot or ID of device
+     * @param deviceType - Type of Device
+     * @param deviceSlot - Slot or ID of device
      * @returns DeviceSource
      */
     public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> {
@@ -49,40 +51,27 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
             return null;
         }
 
-        return this._devices[deviceType][deviceSlot];
+        return this._devices[deviceType][deviceSlot] as DeviceSource<T>;
     }
     /**
      * Gets an array of DeviceSource objects for a given device type
-     * @param deviceType Type of Device
+     * @param deviceType - Type of Device
      * @returns All available DeviceSources of a given type
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
         return this._devices[deviceType].filter((source) => {
             return !!source;
-        });
-    }
-
-    /**
-     * Returns a read-only list of all available devices
-     * @returns All available DeviceSources
-     */
-    public getDevices(): ReadonlyArray<DeviceSource<DeviceType>> {
-        const deviceArray = new Array<DeviceSource<DeviceType>>();
-        for (const deviceSet of this._devices) {
-            deviceArray.push.apply(deviceArray, deviceSet);
-        }
-
-        return deviceArray;
+        }) as Array<DeviceSource<T>>;
     }
 
     /**
      * Default constructor
-     * @param engine Used to get canvas (if applicable)
+     * @param engine - Used to get canvas (if applicable)
      */
     constructor(engine: Engine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
-        this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
-        this._firstDevice = new Array<number>(numberOfDeviceTypes);
+        this._devices = new Array(numberOfDeviceTypes);
+        this._firstDevice = new Array(numberOfDeviceTypes);
         this._engine = engine;
 
         if (!this._engine._deviceSourceManager) {
@@ -91,12 +80,18 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
         this._engine._deviceSourceManager._refCount++;
 
         // Observables
-        this.onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
-            this.getDevices().forEach((device) => {
-                this.onDeviceConnectedObservable.notifyObserver(observer, device);
-            });
+        this.onDeviceConnectedObservable = new Observable((observer) => {
+            for (const devices of this._devices) {
+                if (devices) {
+                    for (const device of devices) {
+                        if (device) {
+                            this.onDeviceConnectedObservable.notifyObserver(observer, device as DeviceSourceType);
+                        }
+                    }
+                }
+            }
         });
-        this.onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
+        this.onDeviceDisconnectedObservable = new Observable();
 
         this._engine._deviceSourceManager.registerManager(this);
 
@@ -125,12 +120,12 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
 
     // Hidden Functions
     /**
-     * @param deviceSource
+     * @param deviceSource - Source to add
      * @hidden
      */
-    public _addDevice(deviceSource: DeviceSource<DeviceType>): void {
+    public _addDevice(deviceSource: DeviceSourceType): void {
         if (!this._devices[deviceSource.deviceType]) {
-            this._devices[deviceSource.deviceType] = new Array<DeviceSource<DeviceType>>();
+            this._devices[deviceSource.deviceType] = new Array();
         }
 
         if (!this._devices[deviceSource.deviceType][deviceSource.deviceSlot]) {
@@ -142,13 +137,13 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
 
     /**
-     * @param deviceType
-     * @param deviceSlot
+     * @param deviceType - DeviceType
+     * @param deviceSlot - DeviceSlot
      * @hidden
      */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
         const deviceSource = this._devices[deviceType]?.[deviceSlot]; // Grab local reference to use before removing from devices
-        this.onDeviceDisconnectedObservable.notifyObservers(deviceSource);
+        this.onDeviceDisconnectedObservable.notifyObservers(deviceSource as DeviceSourceType);
         if (this._devices[deviceType]?.[deviceSlot]) {
             delete this._devices[deviceType][deviceSlot];
         }
@@ -157,13 +152,13 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
 
     /**
-     * @param deviceType
-     * @param deviceSlot
-     * @param eventData
+     * @param deviceType - DeviceType
+     * @param deviceSlot - DeviceSlot
+     * @param eventData - Event
      * @hidden
      */
-    public _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void {
-        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
+    public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {
+        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData as IKeyboardEvent | IWheelEvent | IPointerEvent);
     }
 
     // Private Functions
@@ -178,8 +173,9 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
             case DeviceType.DualShock:
             case DeviceType.Xbox:
             case DeviceType.Switch:
-            case DeviceType.Generic:
+            case DeviceType.Generic: {
                 delete this._firstDevice[type];
+                // eslint-disable-next-line no-case-declarations
                 const devices = this._devices[type];
                 if (devices) {
                     for (let i = 0; i < devices.length; i++) {
@@ -190,6 +186,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
                     }
                 }
                 break;
+            }
         }
     }
 }

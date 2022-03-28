@@ -1,26 +1,26 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
-import { WebXRSessionManager } from "../webXRSessionManager";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
+import type { WebXRSessionManager } from "../webXRSessionManager";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
-import { Observer } from "../../Misc/observable";
-import { WebXRInput } from "../webXRInput";
-import { WebXRInputSource } from "../webXRInputSource";
-import { Scene } from "../../scene";
-import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
-import { IndicesArray, Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { WebXRInput } from "../webXRInput";
+import type { WebXRInputSource } from "../webXRInputSource";
+import type { Scene } from "../../scene";
+import type { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import type { IndicesArray, Nullable } from "../../types";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
-import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
+import type { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 import { BoundingSphere } from "../../Culling/boundingSphere";
-import { TransformNode } from "../../Meshes/transformNode";
+import type { TransformNode } from "../../Meshes/transformNode";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
-import { Material } from "../../Materials/material";
+import type { Material } from "../../Materials/material";
 import { Animation } from "../../Animations/animation";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 // side effects
@@ -136,7 +136,7 @@ export interface IWebXRNearInteractionOptions {
  * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
  */
 export class WebXRNearInteraction extends WebXRAbstractFeature {
-    private static _idCounter = 200;
+    private static _IdCounter = 200;
 
     private _tmpRay: Ray = new Ray(new Vector3(), new Vector3());
 
@@ -163,7 +163,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             hoverInteraction: false,
             nearInteraction: false,
             grabInteraction: false,
-            id: WebXRNearInteraction._idCounter++,
+            id: WebXRNearInteraction._IdCounter++,
             pickedPointVisualCue: selectionMesh,
         };
 
@@ -372,6 +372,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         break;
                     }
                 }
+                // eslint-disable-next-line no-fallthrough
                 case ControllerOrbAnimationState.HOVER: {
                     controllerData.touchCollisionMeshFunction(true);
                     if (newState === ControllerOrbAnimationState.TOUCH) {
@@ -387,6 +388,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         break;
                     }
                 }
+                // eslint-disable-next-line no-fallthrough
                 case ControllerOrbAnimationState.HOVER: {
                     controllerData.hydrateCollisionMeshFunction(false);
                     if (newState === ControllerOrbAnimationState.DEHYDRATED) {

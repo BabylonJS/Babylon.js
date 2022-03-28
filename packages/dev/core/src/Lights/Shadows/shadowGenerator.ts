@@ -1,18 +1,18 @@
-import { SmartArray } from "../../Misc/smartArray";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { SmartArray } from "../../Misc/smartArray";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
 
-import { IShadowLight } from "../../Lights/shadowLight";
+import type { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-import { MaterialDefines } from "../../Materials/materialDefines";
+import type { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -24,7 +24,7 @@ import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -926,7 +926,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Force the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
         // shader variations in DEPTHPREPASS mode.
-        this._shadowMap.customIsReadyFunction = (m: AbstractMesh, r: number) => {
+        this._shadowMap.customIsReadyFunction = () => {
             return true;
         };
 
@@ -991,9 +991,9 @@ export class ShadowGenerator implements IShadowGenerator {
         });
 
         // Recreate on resize.
-        this._shadowMap.onResizeObservable.add((RTT) => {
+        this._shadowMap.onResizeObservable.add((rtt) => {
             this._storedUniqueId = this._shadowMap!.uniqueId;
-            this._mapSize = RTT.getRenderSize();
+            this._mapSize = rtt.getRenderSize();
             this._light._markMeshesAsLightDirty();
             this.recreateShadowMap();
         });
@@ -1115,6 +1115,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
         effect.setMatrix("viewProjection", this.getTransformMatrix());
     }
@@ -1341,7 +1342,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         let currentIndex = 0;
 
-        var checkReady = () => {
+        const checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
             }
@@ -1380,6 +1381,7 @@ export class ShadowGenerator implements IShadowGenerator {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {}
 
     private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
@@ -1452,7 +1454,10 @@ export class ShadowGenerator implements IShadowGenerator {
                         return false;
                     }
 
+                    const alphaCutOff = (material as any).alphaCutOff ?? 1;
+
                     defines.push("#define ALPHATEST");
+                    defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");
@@ -1818,7 +1823,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // Reinitializes.
         this._initializeGenerator();
         // Reaffect the filter to ensure a correct fallback if necessary.
-        this.filter = this.filter;
+        this.filter = this._filter;
         // Reaffect the filter.
         this._applyFilterValues();
         // Reaffect Render List.

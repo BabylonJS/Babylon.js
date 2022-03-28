@@ -1,18 +1,18 @@
-import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Nullable } from "core/types";
-import { Control3D } from "./control3D";
+import type { Scene } from "core/scene";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Nullable } from "core/types";
+import type { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Mesh } from "core/Meshes/mesh";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { Color3 } from "core/Maths/math.color";
-import { Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
-import { Container3D } from "./container3D";
-import { TouchHolographicButton } from "./touchHolographicButton";
+import type { Container3D } from "./container3D";
+import type { TouchHolographicButton } from "./touchHolographicButton";
 
 /**
  * Simple menu that can contain holographic buttons
@@ -30,6 +30,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     /**
      * Scale for the buttons added to the menu
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static MENU_BUTTON_SCALE: number = 1;
 
     /**

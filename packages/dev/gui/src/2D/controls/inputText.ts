@@ -1,19 +1,21 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { Vector2 } from "core/Maths/math.vector";
-import { ClipboardEventTypes, ClipboardInfo } from "core/Events/clipboardEvents";
-import { PointerInfo, PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { Vector2 } from "core/Maths/math.vector";
+import type { ClipboardInfo } from "core/Events/clipboardEvents";
+import { ClipboardEventTypes } from "core/Events/clipboardEvents";
+import type { PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 
 import { Control } from "./control";
-import { IFocusableControl } from "./focusableControl";
+import type { IFocusableControl } from "./focusableControl";
 import { ValueAndUnit } from "../valueAndUnit";
-import { VirtualKeyboard } from "./virtualKeyboard";
+import type { VirtualKeyboard } from "./virtualKeyboard";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Measure } from "../measure";
 import { TextWrapper } from "./textWrapper";
 import { serialize } from "core/Misc/decorators";
-import { IKeyboardEvent, IPointerEvent } from "core/Events/deviceInputEvents";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { IKeyboardEvent, IPointerEvent } from "core/Events/deviceInputEvents";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create input text control
@@ -785,6 +787,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param evt
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
@@ -876,7 +879,7 @@ export class InputText extends Control implements IFocusableControl {
         this._textHasChanged();
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

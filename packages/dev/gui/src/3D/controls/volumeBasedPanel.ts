@@ -1,9 +1,9 @@
 import { Tools } from "core/Misc/tools";
 import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector";
-import { int } from "core/types";
+import type { int } from "core/types";
 
 import { Container3D } from "./container3D";
-import { Control3D } from "./control3D";
+import type { Control3D } from "./control3D";
 
 /**
  * Abstract class used to create a container panel deployed on the surface of a volume
@@ -109,7 +109,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         const currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
 
         // Measure
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (!child.mesh) {
                 continue;
             }
@@ -150,8 +150,8 @@ export abstract class VolumeBasedPanel extends Container3D {
         let cellCounter = 0;
 
         if (this._rowThenColum) {
-            for (var r = 0; r < rows; r++) {
-                for (var c = 0; c < columns; c++) {
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < columns; c++) {
                     nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth / 2, r * this._cellHeight - startOffsetY + this._cellHeight / 2, 0));
                     cellCounter++;
                     if (cellCounter > controlCount) {
@@ -160,8 +160,8 @@ export abstract class VolumeBasedPanel extends Container3D {
                 }
             }
         } else {
-            for (var c = 0; c < columns; c++) {
-                for (var r = 0; r < rows; r++) {
+            for (let c = 0; c < columns; c++) {
+                for (let r = 0; r < rows; r++) {
                     nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth / 2, r * this._cellHeight - startOffsetY + this._cellHeight / 2, 0));
                     cellCounter++;
                     if (cellCounter > controlCount) {
@@ -172,7 +172,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         }
 
         cellCounter = 0;
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (!child.mesh) {
                 continue;
             }

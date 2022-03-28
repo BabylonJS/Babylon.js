@@ -1,25 +1,25 @@
-import { Nullable } from "../../types";
-import { IAnimatable } from "../../Animations/animatable.interface";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "../../types";
+import type { IAnimatable } from "../../Animations/animatable.interface";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math.color";
-import { SmartArray } from "../../Misc/smartArray";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { SmartArray } from "../../Misc/smartArray";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { EffectFallbacks } from "../effectFallbacks";
+import type { EffectFallbacks } from "../effectFallbacks";
 import { Scalar } from "../../Maths/math.scalar";
-import { CubeTexture } from "../Textures/cubeTexture";
+import type { CubeTexture } from "../Textures/cubeTexture";
 import { TmpVectors } from "../../Maths/math.vector";
-import { SubMesh } from "../../Meshes/subMesh";
+import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
-declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
@@ -326,7 +326,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
     }
 
-    public isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene, engine: Engine): boolean {
+    public isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
         }
@@ -351,7 +351,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_TRANSLUCENCY = false;

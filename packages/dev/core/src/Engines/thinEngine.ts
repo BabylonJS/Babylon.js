@@ -1,47 +1,49 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
-import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
-import { Effect, IEffectCreationOptions } from "../Materials/effect";
+import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
+import type { IEffectCreationOptions } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
-import { IShaderProcessor } from "./Processors/iShaderProcessor";
-import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
-import { UniformBuffer } from "../Materials/uniformBuffer";
-import { Nullable, DataArray, IndicesArray } from "../types";
-import { EngineCapabilities } from "./engineCapabilities";
+import type { IShaderProcessor } from "./Processors/iShaderProcessor";
+import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { UniformBuffer } from "../Materials/uniformBuffer";
+import type { Nullable, DataArray, IndicesArray } from "../types";
+import type { EngineCapabilities } from "./engineCapabilities";
 import { Observable } from "../Misc/observable";
 import { DepthCullingState } from "../States/depthCullingState";
 import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IViewportLike, IColor4Like } from "../Maths/math.like";
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { IFileRequest } from "../Misc/fileRequest";
+import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { IFileRequest } from "../Misc/fileRequest";
 import { Logger } from "../Misc/logger";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
-import { IPipelineContext } from "./IPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import { VertexBuffer } from "../Buffers/buffer";
-import { InstancingAttributeInfo } from "./instancingAttributeInfo";
-import { ThinTexture } from "../Materials/Textures/thinTexture";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { IEffectFallbacks } from "../Materials/iEffectFallbacks";
-import { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import type { VertexBuffer } from "../Buffers/buffer";
+import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
+import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { PerformanceConfigurator } from "./performanceConfigurator";
-import { EngineFeatures } from "./engineFeatures";
-import { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { EngineFeatures } from "./engineFeatures";
+import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { IMaterialContext } from "./IMaterialContext";
-import { IDrawContext } from "./IDrawContext";
-import { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
+import type { IMaterialContext } from "./IMaterialContext";
+import type { IDrawContext } from "./IDrawContext";
+import type { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
-import { StorageBuffer } from "../Buffers/storageBuffer";
-import { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
-import { IStencilState } from "../States/IStencilState";
-import { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { StorageBuffer } from "../Buffers/storageBuffer";
+import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
+import type { IStencilState } from "../States/IStencilState";
+import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
@@ -190,14 +192,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-rc.4";
+        return "babylonjs@5.0.0-rc.12";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-rc.4";
+        return "5.0.0-rc.12";
     }
 
     /**
@@ -278,7 +280,7 @@ export class ThinEngine {
     public cullBackFaces: Nullable<boolean> = null;
 
     /**
-     * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
+     * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foreground
      */
     public renderEvenInBackground = true;
 
@@ -657,7 +659,7 @@ export class ThinEngine {
     /** @hidden */
     protected _shaderPlatformName: string;
     /**
-     * Gets the shader platfrom name used by the effects.
+     * Gets the shader platform name used by the effects.
      */
     public get shaderPlatformName(): string {
         return this._shaderPlatformName;
@@ -696,7 +698,7 @@ export class ThinEngine {
 
     private _checkForMobile: () => void;
 
-    private static _createCanvas(width: number, height: number): ICanvas {
+    private static _CreateCanvas(width: number, height: number): ICanvas {
         if (typeof document === "undefined") {
             return <ICanvas>(<any>new OffscreenCanvas(width, height));
         }
@@ -707,13 +709,13 @@ export class ThinEngine {
     }
 
     /**
-     * Create a canvas. This method is overiden by other engines
+     * Create a canvas. This method is overridden by other engines
      * @param width width
      * @param height height
      * @return ICanvas interface
      */
     public createCanvas(width: number, height: number): ICanvas {
-        return ThinEngine._createCanvas(width, height);
+        return ThinEngine._CreateCanvas(width, height);
     }
 
     /**
@@ -726,7 +728,7 @@ export class ThinEngine {
 
     /**
      * Creates a new engine
-     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
+     * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
      * @param antialias defines enable antialiasing (default: false)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
@@ -1112,6 +1114,7 @@ export class ThinEngine {
             astc: this._gl.getExtension("WEBGL_compressed_texture_astc") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_astc"),
             bptc: this._gl.getExtension("EXT_texture_compression_bptc") || this._gl.getExtension("WEBKIT_EXT_texture_compression_bptc"),
             s3tc: this._gl.getExtension("WEBGL_compressed_texture_s3tc") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc"),
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             s3tc_srgb: this._gl.getExtension("WEBGL_compressed_texture_s3tc_srgb") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc_srgb"),
             pvrtc: this._gl.getExtension("WEBGL_compressed_texture_pvrtc") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_pvrtc"),
             etc1: this._gl.getExtension("WEBGL_compressed_texture_etc1") || this._gl.getExtension("WEBKIT_WEBGL_compressed_texture_etc1"),
@@ -1282,11 +1285,11 @@ export class ThinEngine {
         }
 
         if (this._gl.getShaderPrecisionFormat) {
-            const vertex_highp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.HIGH_FLOAT);
-            const fragment_highp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
+            const vertexhighp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.HIGH_FLOAT);
+            const fragmenthighp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.HIGH_FLOAT);
 
-            if (vertex_highp && fragment_highp) {
-                this._caps.highPrecisionShaderSupported = vertex_highp.precision !== 0 && fragment_highp.precision !== 0;
+            if (vertexhighp && fragmenthighp) {
+                this._caps.highPrecisionShaderSupported = vertexhighp.precision !== 0 && fragmenthighp.precision !== 0;
             }
         }
 
@@ -1403,7 +1406,7 @@ export class ThinEngine {
      */
     public resetTextureCache() {
         for (const key in this._boundTexturesCache) {
-            if (!this._boundTexturesCache.hasOwnProperty(key)) {
+            if (!Object.prototype.hasOwnProperty.call(this._boundTexturesCache, key)) {
                 continue;
             }
             this._boundTexturesCache[key] = null;
@@ -2093,7 +2096,7 @@ export class ThinEngine {
         if (!this._vaoRecordInProgress) {
             this._unbindVertexArrayObject();
         }
-        this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
+        this._bindBuffer(buffer, this._gl.ARRAY_BUFFER);
     }
 
     /**
@@ -2110,14 +2113,15 @@ export class ThinEngine {
         this._gl.uniformBlockBinding(program, uniformLocation, index);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected bindIndexBuffer(buffer: Nullable<DataBuffer>): void {
         if (!this._vaoRecordInProgress) {
             this._unbindVertexArrayObject();
         }
-        this.bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
+        this._bindBuffer(buffer, this._gl.ELEMENT_ARRAY_BUFFER);
     }
 
-    private bindBuffer(buffer: Nullable<DataBuffer>, target: number): void {
+    private _bindBuffer(buffer: Nullable<DataBuffer>, target: number): void {
         if (this._vaoRecordInProgress || this._currentBoundBuffer[target] !== buffer) {
             this._gl.bindBuffer(target, buffer ? buffer.underlyingResource : null);
             this._currentBoundBuffer[target] = buffer;
@@ -2762,6 +2766,7 @@ export class ThinEngine {
         return effect;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
         return shaderVersion + (defines ? defines + "\n" : "") + source;
     }
@@ -2773,6 +2778,7 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
+        // eslint-disable-next-line no-empty
         while (gl.getError() != gl.NO_ERROR) {}
 
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
@@ -2949,7 +2955,7 @@ export class ThinEngine {
                 }
             }
 
-            var error = context.getProgramInfoLog(program);
+            const error = context.getProgramInfoLog(program);
             if (error) {
                 pipelineContext.programLinkError = error;
                 throw new Error(error);
@@ -2961,7 +2967,7 @@ export class ThinEngine {
             const validated = context.getProgramParameter(program, context.VALIDATE_STATUS);
 
             if (!validated) {
-                var error = context.getProgramInfoLog(program);
+                const error = context.getProgramInfoLog(program);
                 if (error) {
                     pipelineContext.programValidationError = error;
                     throw new Error(error);
@@ -5110,13 +5116,13 @@ export class ThinEngine {
         if (this._mustWipeVertexAttributes) {
             this._mustWipeVertexAttributes = false;
 
-            for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
+            for (let i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this.disableAttributeByIndex(i);
             }
             return;
         }
 
-        for (var i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
+        for (let i = 0, ul = this._vertexAttribArraysEnabled.length; i < ul; i++) {
             if (i >= this._caps.maxVertexAttribs || !this._vertexAttribArraysEnabled[i]) {
                 continue;
             }
@@ -5248,6 +5254,7 @@ export class ThinEngine {
         const gl = this._gl;
 
         //clear existing errors
+        // eslint-disable-next-line no-empty
         while (gl.getError() !== gl.NO_ERROR) {}
 
         let successful = true;
@@ -5289,6 +5296,7 @@ export class ThinEngine {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         //clear accumulated errors
+        // eslint-disable-next-line no-empty
         while (!successful && gl.getError() !== gl.NO_ERROR) {}
 
         return successful;
@@ -5685,6 +5693,7 @@ export class ThinEngine {
      * @returns true if the engine can be created
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static isSupported(): boolean {
         if (this._HasMajorPerformanceCaveat !== null) {
             return !this._HasMajorPerformanceCaveat; // We know it is performant so WebGL is supported
@@ -5692,7 +5701,7 @@ export class ThinEngine {
 
         if (this._IsSupported === null) {
             try {
-                const tempcanvas = this._createCanvas(1, 1);
+                const tempcanvas = this._CreateCanvas(1, 1);
                 const gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
                 this._IsSupported = gl != null && !!window.WebGLRenderingContext;
@@ -5710,7 +5719,7 @@ export class ThinEngine {
     public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {
             try {
-                const tempcanvas = this._createCanvas(1, 1);
+                const tempcanvas = this._CreateCanvas(1, 1);
                 const gl =
                     tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) ||
                     (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });

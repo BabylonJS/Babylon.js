@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3 } from "../../Maths/math.vector";
-import { Color4 } from "../../Maths/math.color";
+import type { Color4 } from "../../Maths/math.color";
 import { _CreationDataStorage, Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { FloatArray, Nullable } from "../../types";
+import type { FloatArray, Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
 
 declare type Material = import("../../Materials/material").Material;
@@ -235,7 +236,6 @@ export function CreateLines(
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.points
- * @param scene defines the hosting scene
  * @param options.dashSize
  * @param options.gapSize
  * @param options.dashNb
@@ -243,6 +243,7 @@ export function CreateLines(
  * @param options.instance
  * @param options.useVertexAlpha
  * @param options.material
+ * @param scene defines the hosting scene
  * @returns the dashed line mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
  */

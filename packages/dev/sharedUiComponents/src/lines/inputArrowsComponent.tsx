@@ -16,8 +16,14 @@ export class InputArrowsComponent extends React.Component<IInputArrowsComponentP
     private _releaseListener = () => {
         this.props.setDragging(false);
         this._arrowsRef.current?.ownerDocument.exitPointerLock();
-        window.removeEventListener("pointerup", this._releaseListener);
-        this._arrowsRef.current?.ownerDocument.removeEventListener("mousemove", this._drag);
+        this._arrowsRef.current?.ownerDocument.defaultView!.removeEventListener("pointerup", this._releaseListener);
+        this._arrowsRef.current?.ownerDocument.removeEventListener("pointerlockchange", this._lockChangeListener);
+        this._arrowsRef.current?.ownerDocument.defaultView!.removeEventListener("mousemove", this._drag);
+    };
+    private _lockChangeListener = () => {
+        if (this._arrowsRef.current?.ownerDocument.pointerLockElement !== this._arrowsRef.current) {
+            this._releaseListener();
+        }
     };
 
     render() {
@@ -25,11 +31,12 @@ export class InputArrowsComponent extends React.Component<IInputArrowsComponentP
             <div
                 className="arrows"
                 ref={this._arrowsRef}
-                onPointerDown={(event) => {
+                onPointerDown={() => {
+                    this._arrowsRef.current?.ownerDocument.addEventListener("pointerlockchange", this._lockChangeListener);
+                    this._arrowsRef.current?.ownerDocument.defaultView!.addEventListener("pointerup", this._releaseListener);
+                    this._arrowsRef.current?.ownerDocument.defaultView!.addEventListener("mousemove", this._drag);
                     this.props.setDragging(true);
                     this._arrowsRef.current?.requestPointerLock();
-                    window.addEventListener("pointerup", this._releaseListener);
-                    this._arrowsRef.current?.ownerDocument.addEventListener("mousemove", this._drag);
                 }}
                 onDragStart={(evt) => evt.preventDefault()}
             >

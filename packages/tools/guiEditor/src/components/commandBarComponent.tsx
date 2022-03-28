@@ -53,6 +53,7 @@ const _sizeOptions = [
     { label: "Square (2048)", value: 11 },
 ];
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
@@ -244,28 +245,26 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     label="W"
                                     target={size}
                                     propertyName="width"
-                                    isInteger={true}
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
-                                    onChange={(newvalue) => {
-                                        if (!isNaN(newvalue)) {
-                                            this.props.globalState.workbench.guiSize = { width: newvalue, height: size.height };
-                                        }
+                                    onChange={(newValue) => {
+                                        this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
                                     }}
-                                ></FloatLineComponent>
+                                    arrows={true}
+                                    isInteger={true}
+                                />
                                 <FloatLineComponent
                                     label="H"
                                     target={size}
                                     propertyName="height"
-                                    isInteger={true}
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
-                                    onChange={(newvalue) => {
-                                        if (!isNaN(newvalue)) {
-                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newvalue };
-                                        }
+                                    onChange={(newValue) => {
+                                        this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
                                     }}
-                                ></FloatLineComponent>
+                                    arrows={true}
+                                    isInteger={true}
+                                />
                             </>
                         )}
                     </div>

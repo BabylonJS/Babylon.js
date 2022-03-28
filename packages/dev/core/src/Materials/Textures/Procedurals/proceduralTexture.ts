@@ -1,15 +1,15 @@
 import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
-import { Nullable } from "../../../types";
-import { Scene } from "../../../scene";
-import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
-import { Color4, Color3 } from "../../../Maths/math.color";
-import { Engine } from "../../../Engines/engine";
+import type { Nullable } from "../../../types";
+import type { Scene } from "../../../scene";
+import type { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
+import type { Color4, Color3 } from "../../../Maths/math.color";
+import type { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
 import { Material } from "../../../Materials/material";
-import { Effect } from "../../../Materials/effect";
+import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
@@ -17,14 +17,14 @@ import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneCompone
 import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
-import { DataBuffer } from "../../../Buffers/dataBuffer";
+import type { DataBuffer } from "../../../Buffers/dataBuffer";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeMaterial } from "../../Node/nodeMaterial";
-import { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import type { NodeMaterial } from "../../Node/nodeMaterial";
+import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { EngineStore } from "../../../Engines/engineStore";
 import { Constants } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
-import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -545,6 +545,7 @@ export class ProceduralTexture extends Texture {
      * Render the texture to its associated render target.
      * @param useCameraPostProcess Define if camera post process should be applied to the texture
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(useCameraPostProcess?: boolean): void {
         const scene = this.getScene();
 
@@ -561,48 +562,48 @@ export class ProceduralTexture extends Texture {
 
         if (!this.nodeMaterialSource) {
             // Texture
-            for (var name in this._textures) {
+            for (const name in this._textures) {
                 this._drawWrapper.effect!.setTexture(name, this._textures[name]);
             }
 
             // Float
-            for (name in this._ints) {
+            for (const name in this._ints) {
                 this._drawWrapper.effect!.setInt(name, this._ints[name]);
             }
 
             // Float
-            for (name in this._floats) {
+            for (const name in this._floats) {
                 this._drawWrapper.effect!.setFloat(name, this._floats[name]);
             }
 
             // Floats
-            for (name in this._floatsArrays) {
+            for (const name in this._floatsArrays) {
                 this._drawWrapper.effect!.setArray(name, this._floatsArrays[name]);
             }
 
             // Color3
-            for (name in this._colors3) {
+            for (const name in this._colors3) {
                 this._drawWrapper.effect!.setColor3(name, this._colors3[name]);
             }
 
             // Color4
-            for (name in this._colors4) {
+            for (const name in this._colors4) {
                 const color = this._colors4[name];
                 this._drawWrapper.effect!.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
             // Vector2
-            for (name in this._vectors2) {
+            for (const name in this._vectors2) {
                 this._drawWrapper.effect!.setVector2(name, this._vectors2[name]);
             }
 
             // Vector3
-            for (name in this._vectors3) {
+            for (const name in this._vectors3) {
                 this._drawWrapper.effect!.setVector3(name, this._vectors3[name]);
             }
 
             // Matrix
-            for (name in this._matrices) {
+            for (const name in this._matrices) {
                 this._drawWrapper.effect!.setMatrix(name, this._matrices[name]);
             }
         }

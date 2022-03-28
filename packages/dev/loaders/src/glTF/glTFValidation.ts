@@ -1,6 +1,7 @@
-import * as GLTF2 from "babylonjs-gltf2interface";
+import type * as GLTF2 from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let GLTFValidator: GLTF2.IGLTFValidator;
 
 // WorkerGlobalScope

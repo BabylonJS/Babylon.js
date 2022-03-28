@@ -1,13 +1,13 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
-import { IInspectable } from "../../Misc/iInspectable";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { IInspectable } from "../../Misc/iInspectable";
+import type { ThinEngine } from "../../Engines/thinEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
@@ -33,7 +33,7 @@ export interface ITextureCreationOptions {
     /** Defines the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...) (default: Texture.TRILINEAR_SAMPLINGMODE) */
     samplingMode?: number;
 
-    /** Ddefines a callback triggered when the texture has been loaded (default: null) */
+    /** Defines a callback triggered when the texture has been loaded (default: null) */
     onLoad?: Nullable<() => void>;
 
     /** Defines a callback triggered when an error occurred during the loading session (default: null) */
@@ -88,6 +88,7 @@ export class Texture extends BaseTexture {
      * @param rootUrl
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _WarnImport("CubeTexture");
     };
@@ -98,6 +99,7 @@ export class Texture extends BaseTexture {
      * @param generateMipMaps
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
         throw _WarnImport("MirrorTexture");
     };
@@ -109,6 +111,7 @@ export class Texture extends BaseTexture {
      * @param creationFlags
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
         throw _WarnImport("RenderTargetTexture");
     };
@@ -773,20 +776,22 @@ export class Texture extends BaseTexture {
         this._cachedCoordinatesMode = this.coordinatesMode;
 
         switch (this.coordinatesMode) {
-            case Texture.PLANAR_MODE:
+            case Texture.PLANAR_MODE: {
                 Matrix.IdentityToRef(this._cachedTextureMatrix);
                 (<any>this._cachedTextureMatrix)[0] = this.uScale;
                 (<any>this._cachedTextureMatrix)[5] = this.vScale;
                 (<any>this._cachedTextureMatrix)[12] = this.uOffset;
                 (<any>this._cachedTextureMatrix)[13] = this.vOffset;
                 break;
-            case Texture.PROJECTION_MODE:
+            }
+            case Texture.PROJECTION_MODE: {
                 Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, this._projectionModeMatrix);
 
                 const projectionMatrix = scene.getProjectionMatrix();
                 this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
                 projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                 break;
+            }
             default:
                 Matrix.IdentityToRef(this._cachedTextureMatrix);
                 break;
@@ -948,7 +953,7 @@ export class Texture extends BaseTexture {
             }
         };
 
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => {
                 let generateMipMaps: boolean = true;
                 if (parsedTexture.noMipmap) {
@@ -1054,7 +1059,6 @@ export class Texture extends BaseTexture {
 
     /**
      * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
-     * @param data Define the base64 payload without the data: prefix
      * @param name Define the name of the texture in the scene useful fo caching purpose for instance
      * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
      * @param scene Define the scene the texture should belong to

@@ -1,9 +1,10 @@
-import { Nullable } from "core/types";
-import { Material } from "core/Materials/material";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
+import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
-import { IMaterial } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { IMaterial } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "MSFT_sRGBFactors";

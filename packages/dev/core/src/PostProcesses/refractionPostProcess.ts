@@ -1,9 +1,10 @@
-import { Color3 } from "../Maths/math.color";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Color3 } from "../Maths/math.color";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Engine } from "../Engines/engine";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Engine } from "../Engines/engine";
 
 import "../Shaders/refraction.fragment";
 import { RegisterClass } from "../Misc/typeStore";
@@ -68,8 +69,8 @@ export class RefractionPostProcess extends PostProcess {
      * @param color the base color of the refraction (used to taint the rendering)
      * @param depth simulated refraction depth
      * @param colorLevel the coefficient of the base color (0 to remove base color tainting)
-     * @param camera The camera to apply the render pass to.
      * @param options The required width/height ratio to downsize to before computing the render pass.
+     * @param camera The camera to apply the render pass to.
      * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)

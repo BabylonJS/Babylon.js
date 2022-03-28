@@ -1,6 +1,7 @@
 import { NativeEngine } from "../nativeEngine";
-import { NativeDataStream, NativeData } from "./nativeDataStream";
-import { INative } from "./nativeInterfaces";
+import type { NativeData } from "./nativeDataStream";
+import { NativeDataStream } from "./nativeDataStream";
+import type { INative } from "./nativeInterfaces";
 
 declare const _native: INative;
 
@@ -12,7 +13,7 @@ NativeEngine._createNativeDataStream = function () {
     }
 };
 
-class ValidatedNativeDataStream extends NativeDataStream {
+export class ValidatedNativeDataStream extends NativeDataStream {
     constructor() {
         super();
     }

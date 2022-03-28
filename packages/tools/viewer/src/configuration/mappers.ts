@@ -1,6 +1,7 @@
 import { Tools } from "core/Misc/tools";
-import { ViewerConfiguration } from "./configuration";
+import type { ViewerConfiguration } from "./configuration";
 
+// eslint-disable-next-line import/no-internal-modules
 import { kebabToCamel } from "../helper/index";
 
 /**
@@ -93,7 +94,7 @@ class DOMMapper implements IMapper {
     /**
      * The mapping function that will convert HTML data to a viewer configuration object
      * @param baseElement the baseElement from which to start traversing
-     * @returns a ViewerCOnfiguration object from the provided HTML Element
+     * @returns a ViewerConfiguration object from the provided HTML Element
      */
     map(baseElement: HTMLElement): ViewerConfiguration {
         const htmlMapper = new HTMLMapper();
@@ -165,7 +166,7 @@ export class MapperManager {
     }
 
     /**
-     * Use this functio to register your own configuration mapper.
+     * Use this function to register your own configuration mapper.
      * After a mapper is registered, it can be used to parse the specific type fo configuration to the standard ViewerConfiguration.
      * @param type the name of the mapper. This will be used to define the configuration type and/or to get the mapper
      * @param mapper The implemented mapper

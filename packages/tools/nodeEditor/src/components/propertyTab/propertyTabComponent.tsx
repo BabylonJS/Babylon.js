@@ -1,6 +1,6 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
-import { Nullable } from "core/types";
+import type { GlobalState } from "../../globalState";
+import type { Nullable } from "core/types";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { StringTools } from "shared-ui-components/stringTools";
@@ -17,7 +17,7 @@ import { Engine } from "core/Engines/engine";
 import { FramePropertyTabComponent } from "../../diagram/properties/framePropertyComponent";
 import { FrameNodePortPropertyTabComponent } from "../../diagram/properties/frameNodePortPropertyComponent";
 import { NodePortPropertyTabComponent } from "../../diagram/properties/nodePortPropertyComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
@@ -25,9 +25,9 @@ import { Color4LineComponent } from "../../sharedComponents/color4LineComponent"
 import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
 import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponent";
 import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
-import { Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { FrameNodePort } from "../../diagram/frameNodePort";
+import type { FrameNodePort } from "../../diagram/frameNodePort";
 import { NodePort } from "../../diagram/nodePort";
 import { isFramePortData } from "../../diagram/graphCanvas";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
@@ -98,7 +98,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
+            case NodeMaterialBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.uniqueId}>
@@ -138,6 +138,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         )}
                     </div>
                 );
+            }
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent
@@ -294,7 +295,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         xmlHttp.open("POST", NodeMaterial.SnippetUrl + (material.snippetId ? "/" + material.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 nodeMaterial: json,
             }),
@@ -310,7 +311,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const material = this.props.globalState.nodeMaterial;
         const scene = material.getScene();
 
-        const snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = this.props.globalState.hostDocument.defaultView!.prompt("Please enter the snippet ID to use");
 
         if (!snippedId) {
             return;
@@ -438,7 +439,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ref={this._modeSelect}
                             label="Mode"
                             target={this}
-                            getSelection={(target) => this.props.globalState.mode}
+                            getSelection={() => this.props.globalState.mode}
                             options={modeList}
                             onSelect={(value) => this.changeMode(value)}
                         />
@@ -447,7 +448,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Help"
                             value="doc.babylonjs.com"
                             underline={true}
-                            onLink={() => window.open("https://doc.babylonjs.com/how_to/node_material", "_blank")}
+                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/how_to/node_material", "_blank")}
                         />
                         <TextInputLineComponent
                             label="Comment"

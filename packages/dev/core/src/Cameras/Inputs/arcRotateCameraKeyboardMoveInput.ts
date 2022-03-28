@@ -1,11 +1,13 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { Observer } from "../../Misc/observable";
-import { Scene } from "../../scene";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { Engine } from "../../Engines/engine";
-import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
+import type { Observer } from "../../Misc/observable";
+import type { Scene } from "../../scene";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { Engine } from "../../Engines/engine";
+import type { KeyboardInfo } from "../../Events/keyboardEvents";
+import { KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
 
 /**
@@ -90,6 +92,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      */
     public attachControl(noPreventDefault?: boolean): void {
         // was there a second variable defined?
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
         if (this._onCanvasBlurObserver) {
@@ -117,7 +120,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
@@ -137,7 +140,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         this.keysRight.indexOf(evt.keyCode) !== -1 ||
                         this.keysReset.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
                             this._keys.splice(index, 1);
@@ -161,9 +164,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);

@@ -1,10 +1,10 @@
-import { Analyser } from "./analyser";
+import type { Analyser } from "./analyser";
 
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import { Engine } from "../Engines/engine";
-import { IAudioEngine } from "./Interfaces/IAudioEngine";
+import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { IsWindowObjectExist } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
@@ -42,6 +42,7 @@ export class AudioEngine implements IAudioEngine {
      * Defines if Babylon should emit a warning if WebAudio is not supported.
      * @ignoreNaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public WarnedWebAudioUnsupported: boolean = false;
 
     /**

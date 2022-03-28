@@ -1,15 +1,15 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import { LogEntry } from "./components/log/logComponent";
+import type { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color3 } from "core/Maths/math.color";
-import { WorkbenchComponent } from "./diagram/workbench";
-import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { Scene } from "core/scene";
-import { Control } from "gui/2D/controls/control";
+import type { WorkbenchComponent } from "./diagram/workbench";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Scene } from "core/scene";
+import type { Control } from "gui/2D/controls/control";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { ISize } from "core/Maths/math";
+import type { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
 import { KeyboardManager } from "./keyboardManager";
 
@@ -108,28 +108,28 @@ export class GlobalState {
         this.backgroundColor = new Color3(r, g, b);
         this.onBackgroundColorChangeObservable.notifyObservers();
 
-        CoordinateHelper.globalState = this;
+        CoordinateHelper.GlobalState = this;
     }
 
     /** adds copy, cut and paste listeners to the host window */
     public registerEventListeners() {
+        const isElementEditable = (element: HTMLElement) => {
+            return element.isContentEditable || element.tagName === "INPUT" || element.tagName === "TEXTAREA";
+        };
         this.hostDocument.addEventListener("copy", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCopyObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("cut", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCutObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("paste", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "");
                 event.preventDefault();
             }
@@ -179,6 +179,15 @@ export class GlobalState {
     public setSelection(controls: Control[]) {
         this.selectedControls = [...controls];
         this.onSelectionChangedObservable.notifyObservers();
+    }
+
+    public deleteSelectedNodes() {
+        for (const control of this.selectedControls) {
+            this.guiTexture.removeControl(control);
+            this.liveGuiTexture?.removeControl(control);
+            control.dispose();
+        }
+        this.setSelection([]);
     }
 
     public isMultiSelectable(control: Control): boolean {

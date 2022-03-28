@@ -1,10 +1,10 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { WebXRSessionManager } from "../webXRSessionManager";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3, TmpVectors } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * The WebXR Eye Tracking feature grabs eye data from the device and provides it in an easy-access format.
@@ -134,7 +134,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
 
 WebXRFeaturesManager.AddWebXRFeature(
     WebXREyeTracking.Name,
-    (xrSessionManager, options) => {
+    (xrSessionManager) => {
         return () => new WebXREyeTracking(xrSessionManager);
     },
     WebXREyeTracking.Version,

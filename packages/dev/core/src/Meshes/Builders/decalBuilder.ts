@@ -1,10 +1,10 @@
-import { Nullable, IndicesArray } from "../../types";
+import type { Nullable, IndicesArray } from "../../types";
 import { Vector3, Matrix, Vector2 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import { AbstractMesh } from "../abstractMesh";
-import { Camera } from "../../Cameras/camera";
+import type { AbstractMesh } from "../abstractMesh";
+import type { Camera } from "../../Cameras/camera";
 import { PositionNormalTextureVertex } from "../../Maths/math.vertexFormat";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
@@ -19,7 +19,6 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @param name defines the name of the mesh
  * @param sourceMesh defines the mesh where the decal must be applied
  * @param options defines the options used to create the mesh
- * @param scene defines the hosting scene
  * @param options.position
  * @param options.normal
  * @param options.size
@@ -103,9 +102,6 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
         const result = new Array<PositionNormalTextureVertex>();
 
         for (let index = 0; index < vertices.length; index += 3) {
-            var v1Out: boolean;
-            var v2Out: boolean;
-            var v3Out: boolean;
             let total = 0;
             let nV1: Nullable<PositionNormalTextureVertex> = null;
             let nV2: Nullable<PositionNormalTextureVertex> = null;
@@ -116,9 +112,9 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
             const d2 = Vector3.Dot(vertices[index + 1].position, axis) - clipSize;
             const d3 = Vector3.Dot(vertices[index + 2].position, axis) - clipSize;
 
-            v1Out = d1 > 0;
-            v2Out = d2 > 0;
-            v3Out = d3 > 0;
+            const v1Out = d1 > 0;
+            const v2Out = d2 > 0;
+            const v3Out = d3 > 0;
 
             total = (v1Out ? 1 : 0) + (v2Out ? 1 : 0) + (v3Out ? 1 : 0);
 
@@ -255,6 +251,7 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
  * @deprecated use the function directly from the module
  */
 export const DecalBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateDecal,
 };
 

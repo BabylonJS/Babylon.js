@@ -1,20 +1,21 @@
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { Nullable } from "../../../../types";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
-import { BaseTexture } from "../../../Textures/baseTexture";
-import { Mesh } from "../../../../Meshes/mesh";
-import { SubMesh } from "../../../../Meshes/subMesh";
-import { Effect } from "../../../effect";
+import type { BaseTexture } from "../../../Textures/baseTexture";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { SubMesh } from "../../../../Meshes/subMesh";
+import type { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { Scene } from "../../../../scene";
+import type { Scene } from "../../../../scene";
 import { Scalar } from "../../../../Maths/math.scalar";
 
 /**
@@ -345,7 +346,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         const computeReflectionCoordsFunc = `
             vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
-                ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true)}
+                ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true, true)}
                 return ${this._reflectionVectorName};
             }\r\n`;
 

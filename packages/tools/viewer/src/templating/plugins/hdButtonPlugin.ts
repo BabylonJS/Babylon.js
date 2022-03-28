@@ -1,6 +1,6 @@
 import { AbstractViewerNavbarButton } from "../viewerTemplatePlugin";
-import { DefaultViewer } from "../../viewer/defaultViewer";
-import { EventCallback, Template } from "../templateManager";
+import type { DefaultViewer } from "../../viewer/defaultViewer";
+import type { EventCallback } from "../templateManager";
 
 export class HDButtonPlugin extends AbstractViewerNavbarButton {
     constructor(private _viewer: DefaultViewer) {
@@ -15,6 +15,7 @@ export class HDButtonPlugin extends AbstractViewerNavbarButton {
         this._viewer.toggleHD();
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static HtmlTemplate: string = `
 {{#unless hideHd}}
 <style>

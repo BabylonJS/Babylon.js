@@ -1,11 +1,11 @@
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
-import { ISize } from "../../Maths/math.size";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
-import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
+import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 /**
  * A class extending Texture allowing drawing on a texture
@@ -239,7 +239,7 @@ export class DynamicTexture extends Texture {
         }
 
         const serializationObject = super.serialize();
-        if (this._IsCanvasElement(this._canvas)) {
+        if (DynamicTexture._IsCanvasElement(this._canvas)) {
             serializationObject.base64String = this._canvas.toDataURL();
         }
 
@@ -249,7 +249,7 @@ export class DynamicTexture extends Texture {
         return serializationObject;
     }
 
-    private _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas | ICanvas): canvas is HTMLCanvasElement {
+    private static _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas | ICanvas): canvas is HTMLCanvasElement {
         return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 

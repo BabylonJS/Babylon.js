@@ -1,4 +1,4 @@
-import { Vector2 } from "core/Maths/math.vector";
+import type { Vector2 } from "core/Maths/math.vector";
 
 /**
  * Options for loading OBJ/MTL files
@@ -11,6 +11,7 @@ export type OBJLoadingOptions = {
     /**
      * Defines custom scaling of UV coordinates of loaded meshes.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     UVScaling: Vector2;
     /**
      * Invert model on y-axis (does a model scaling inversion)

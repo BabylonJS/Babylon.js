@@ -8,7 +8,8 @@
  *  - KTX-Software: https://github.com/KhronosGroup/KTX-Software
  */
 
-import { KTX2FileReader, SupercompressionScheme, IKTX2_ImageDesc } from "./ktx2FileReader";
+import type { IKTX2_ImageDesc } from "./ktx2FileReader";
+import { KTX2FileReader, SupercompressionScheme } from "./ktx2FileReader";
 import { TranscoderManager } from "./transcoderManager";
 import { LiteTranscoder_UASTC_ASTC } from "./Transcoders/liteTranscoder_UASTC_ASTC";
 import { LiteTranscoder_UASTC_BC7 } from "./Transcoders/liteTranscoder_UASTC_BC7";

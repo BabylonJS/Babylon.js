@@ -1,13 +1,11 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Effect } from "../../../effect";
-import { NodeMaterial } from "../../nodeMaterial";
-import { Mesh } from "../../../../Meshes/mesh";
-import { Scene } from "../../../../scene";
+import type { Effect } from "../../../effect";
+import type { Scene } from "../../../../scene";
 
 /**
  * Block used to get the screen sizes
@@ -57,12 +55,13 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect) {
         const engine = this._scene.getEngine();
 
         effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderHeight());
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected writeOutputs(state: NodeMaterialBuildState, varName: string): string {
         let code = "";
 

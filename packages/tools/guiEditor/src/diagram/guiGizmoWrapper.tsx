@@ -1,7 +1,7 @@
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { GuiGizmoComponent } from "./guiGizmo";
 
 export interface IGizmoWrapperProps {

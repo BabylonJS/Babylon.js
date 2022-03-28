@@ -1,5 +1,5 @@
-import { Control } from "gui/2D/controls/control";
-import { Grid } from "gui/2D/controls/grid";
+import type { Control } from "gui/2D/controls/control";
+import type { Grid } from "gui/2D/controls/grid";
 import { Vector2 } from "core/Maths/math";
 
 export class Tools {
@@ -52,7 +52,7 @@ export class Tools {
         return finalArray.reverse();
     }
 
-    public static getCellInfo(grid: Grid, control: Control) {
+    public static GetCellInfo(grid: Grid, control: Control) {
         const cellInfo = grid.getChildCellInfo(control);
         let rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
         if (isNaN(rowNumber)) {
@@ -65,14 +65,14 @@ export class Tools {
         return new Vector2(rowNumber, columnNumber);
     }
 
-    public static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2) {
+    public static ReorderGrid(grid: Grid, index: number, control: Control, cell: Vector2) {
         const tags: Vector2[] = [];
         const controls: Control[] = [];
         const length = grid.children.length;
         for (let i = index; i < length; ++i) {
             const control = grid.children[index];
             controls.push(control);
-            tags.push(Tools.getCellInfo(grid, control));
+            tags.push(Tools.GetCellInfo(grid, control));
             grid.removeControl(control);
         }
         grid.addControl(control, cell.x, cell.y);

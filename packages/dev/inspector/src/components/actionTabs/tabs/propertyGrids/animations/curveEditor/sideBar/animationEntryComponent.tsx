@@ -1,10 +1,10 @@
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "../context";
 import { Animation } from "core/Animations/animation";
 import { ActionButtonComponent } from "../controls/actionButtonComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { AnimationSubEntryComponent } from "./animationSubEntryComponent";
 
 import gearIcon from "../assets/animationOptionsIcon.svg";

@@ -1,24 +1,24 @@
 import * as React from "react";
-import { Observable, Observer } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
-import { Image } from "gui/2D/controls/image";
-import { TextBlock } from "gui/2D/controls/textBlock";
+import type { Image } from "gui/2D/controls/image";
+import type { TextBlock } from "gui/2D/controls/textBlock";
 import { Container } from "gui/2D/controls/container";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "shared-ui-components/lines/targetsProxy";
-import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
+import type { DimensionProperties } from "../../../../diagram/coordinateHelper";
+import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
 import { Vector2 } from "core/Maths/math";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
@@ -37,7 +37,6 @@ import shadowBlurIcon from "shared-ui-components/imgs/shadowBlurIcon.svg";
 import horizontalMarginIcon from "shared-ui-components/imgs/horizontalMarginIcon.svg";
 import shadowColorIcon from "shared-ui-components/imgs/shadowColorIcon.svg";
 import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
-import shadowOffsetYIcon from "shared-ui-components/imgs/shadowOffsetYIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 
@@ -48,11 +47,14 @@ import vAlignCenterIcon from "shared-ui-components/imgs/vAlignCenterIcon.svg";
 import vAlignTopIcon from "shared-ui-components/imgs/vAlignTopIcon.svg";
 import vAlignBottomIcon from "shared-ui-components/imgs/vAlignBottomIcon.svg";
 import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnlyPaddingIcon.svg";
+import { StackPanel } from "gui/2D/controls/stackPanel";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    hideDimensions?: boolean;
 }
 
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize";
@@ -93,7 +95,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
-        const nodeMatrix = CoordinateHelper.getNodeMatrix(control);
+        const nodeMatrix = CoordinateHelper.GetNodeMatrix(control);
         const transformed = new Vector2(1, 1);
         nodeMatrix.transformCoordinates(1, 1, transformed);
         return transformed;
@@ -128,7 +130,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 percentage = false;
             }
 
-            let newValue = value.match(/([\d\.\,]+)/g)?.[0];
+            let newValue = value.match(/([\d.,]+)/g)?.[0];
             if (!newValue) {
                 newValue = "0";
             }
@@ -214,7 +216,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 if (maximum !== undefined && newValue > maximum) newValue = maximum;
                 (control as any)[`${propertyName}InPixels`] = newValue;
                 if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
-                    CoordinateHelper.convertToPercentage(control, [propertyName]);
+                    CoordinateHelper.ConvertToPercentage(control, [propertyName]);
                 }
                 this.props.onPropertyChangedObservable?.notifyObservers({
                     object: control,
@@ -227,9 +229,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         const convertUnits = (unit: string, property: DimensionProperties) => {
             for (const control of controls) {
                 if (unit === "PX") {
-                    CoordinateHelper.convertToPercentage(control, [property], this.props.onPropertyChangedObservable);
+                    CoordinateHelper.ConvertToPercentage(control, [property], this.props.onPropertyChangedObservable);
                 } else {
-                    CoordinateHelper.convertToPixels(control, [property], this.props.onPropertyChangedObservable);
+                    CoordinateHelper.ConvertToPixels(control, [property]);
                 }
                 this.forceUpdate();
             }
@@ -241,282 +243,252 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
+        const horizontalDisabled = controls[0]?.parent?.getClassName() === "StackPanel" && !(controls[0]?.parent as StackPanel).isVertical;
+        const verticalDisabled = controls[0]?.parent?.getClassName() === "StackPanel" && (controls[0]?.parent as StackPanel).isVertical;
+
         return (
             <div>
-                <div className="ge-divider alignment-bar">
-                    <CommandButtonComponent
-                        tooltip="Left"
-                        icon={hAlignLeftIcon}
-                        shortcut=""
-                        isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT}
-                        onClick={() => {
-                            this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_LEFT);
-                        }}
-                    />
-                    <CommandButtonComponent
-                        tooltip="Center"
-                        icon={hAlignCenterIcon}
-                        shortcut=""
-                        isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER}
-                        onClick={() => {
-                            this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_CENTER);
-                        }}
-                    />
-                    <CommandButtonComponent
-                        tooltip="Right"
-                        icon={hAlignRightIcon}
-                        shortcut=""
-                        isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT}
-                        onClick={() => {
-                            this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_RIGHT);
-                        }}
-                    />
-                    <CommandButtonComponent
-                        tooltip="Top"
-                        icon={vAlignTopIcon}
-                        shortcut=""
-                        isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP}
-                        onClick={() => {
-                            this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_TOP);
-                        }}
-                    />
-                    <CommandButtonComponent
-                        tooltip="Center"
-                        icon={vAlignCenterIcon}
-                        shortcut=""
-                        isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER}
-                        onClick={() => {
-                            this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_CENTER);
-                        }}
-                    />
-                    <CommandButtonComponent
-                        tooltip="Bottom"
-                        icon={vAlignBottomIcon}
-                        shortcut=""
-                        isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM}
-                        onClick={() => {
-                            this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_BOTTOM);
-                        }}
-                    />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={positionIcon} label={"Position"} />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="X"
-                        delayInput={true}
-                        value={getValue("_left")}
-                        onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
-                        unit={getUnitString("_left")}
-                        onUnitClicked={(unit) => convertUnits(unit, "left")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("left", amount)}
-                    />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="Y"
-                        delayInput={true}
-                        value={getValue("_top")}
-                        onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        unit={getUnitString("_top")}
-                        onUnitClicked={(unit) => convertUnits(unit, "top")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("top", amount)}
-                    />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={sizeIcon} label={"Size"} />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="W"
-                        delayInput={true}
-                        value={getValue("_width")}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
-                            for (const control of controls) {
-                                if (control.typeName === "Image") {
-                                    (control as Image).autoScale = false;
-                                } else if (control instanceof Container) {
-                                    (control as Container).adaptWidthToChildren = false;
-                                } else if (control.typeName === "ColorPicker") {
-                                    if (newValue === "0" || newValue === "-") {
-                                        newValue = "1";
+                {!this.props.hideDimensions && (
+                    <>
+                        <div className="ge-divider alignment-bar">
+                            <CommandButtonComponent
+                                tooltip="Left"
+                                icon={hAlignLeftIcon}
+                                shortcut=""
+                                isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_LEFT}
+                                onClick={() => {
+                                    this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_LEFT);
+                                }}
+                                disabled={horizontalDisabled}
+                            />
+                            <CommandButtonComponent
+                                tooltip="Center"
+                                icon={hAlignCenterIcon}
+                                shortcut=""
+                                isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_CENTER}
+                                onClick={() => {
+                                    this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_CENTER);
+                                }}
+                                disabled={horizontalDisabled}
+                            />
+                            <CommandButtonComponent
+                                tooltip="Right"
+                                icon={hAlignRightIcon}
+                                shortcut=""
+                                isActive={horizontalAlignment === Control.HORIZONTAL_ALIGNMENT_RIGHT}
+                                onClick={() => {
+                                    this._updateAlignment("horizontalAlignment", Control.HORIZONTAL_ALIGNMENT_RIGHT);
+                                }}
+                                disabled={horizontalDisabled}
+                            />
+                            <CommandButtonComponent
+                                tooltip="Top"
+                                icon={vAlignTopIcon}
+                                shortcut=""
+                                isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_TOP}
+                                onClick={() => {
+                                    this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_TOP);
+                                }}
+                                disabled={verticalDisabled}
+                            />
+                            <CommandButtonComponent
+                                tooltip="Center"
+                                icon={vAlignCenterIcon}
+                                shortcut=""
+                                isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_CENTER}
+                                onClick={() => {
+                                    this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_CENTER);
+                                }}
+                                disabled={verticalDisabled}
+                            />
+                            <CommandButtonComponent
+                                tooltip="Bottom"
+                                icon={vAlignBottomIcon}
+                                shortcut=""
+                                isActive={verticalAlignment === Control.VERTICAL_ALIGNMENT_BOTTOM}
+                                onClick={() => {
+                                    this._updateAlignment("verticalAlignment", Control.VERTICAL_ALIGNMENT_BOTTOM);
+                                }}
+                                disabled={verticalDisabled}
+                            />
+                        </div>
+                        <div className="ge-divider double">
+                            <IconComponent icon={positionIcon} label={"Position"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="X"
+                                delayInput={true}
+                                value={getValue("_left")}
+                                onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
+                                unit={getUnitString("_left")}
+                                onUnitClicked={(unit) => convertUnits(unit, "left")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("left", amount)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="Y"
+                                delayInput={true}
+                                value={getValue("_top")}
+                                onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
+                                unit={getUnitString("_top")}
+                                onUnitClicked={(unit) => convertUnits(unit, "top")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("top", amount)}
+                            />
+                        </div>
+                        <div className="ge-divider double">
+                            <IconComponent icon={sizeIcon} label={"Size"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="W"
+                                delayInput={true}
+                                value={getValue("_width")}
+                                onChange={(newValue) => {
+                                    for (const control of controls) {
+                                        if (control.typeName === "Image") {
+                                            (control as Image).autoScale = false;
+                                        } else if (control instanceof Container) {
+                                            (control as Container).adaptWidthToChildren = false;
+                                        } else if (control.typeName === "ColorPicker") {
+                                            if (newValue === "0" || newValue === "-") {
+                                                newValue = "1";
+                                            }
+                                        }
                                     }
-                                }
-                            }
-                            this._checkAndUpdateValues("width", newValue);
-                        }}
-                        unit={getUnitString("_width")}
-                        onUnitClicked={(unit) => convertUnits(unit, "width")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("width", amount)}
-                    />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="H"
-                        delayInput={true}
-                        value={getValue("_height")}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
-                            for (const control of controls) {
-                                if (control.typeName === "Image") {
-                                    (control as Image).autoScale = false;
-                                } else if (control instanceof Container) {
-                                    (control as Container).adaptHeightToChildren = false;
-                                } else if (control.typeName === "ColorPicker") {
-                                    if (newValue === "0" || newValue === "-") {
-                                        newValue = "1";
+                                    this._checkAndUpdateValues("width", newValue);
+                                }}
+                                unit={getUnitString("_width")}
+                                onUnitClicked={(unit) => convertUnits(unit, "width")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("width", amount)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="H"
+                                delayInput={true}
+                                value={getValue("_height")}
+                                onChange={(newValue) => {
+                                    for (const control of controls) {
+                                        if (control.typeName === "Image") {
+                                            (control as Image).autoScale = false;
+                                        } else if (control instanceof Container) {
+                                            (control as Container).adaptHeightToChildren = false;
+                                        } else if (control.typeName === "ColorPicker") {
+                                            if (newValue === "0" || newValue === "-") {
+                                                newValue = "1";
+                                            }
+                                        }
                                     }
-                                }
-                            }
-                            this._checkAndUpdateValues("height", newValue);
-                        }}
-                        unit={getUnitString("_height")}
-                        onUnitClicked={(unit) => convertUnits(unit, "height")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("height", amount)}
-                    />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={verticalMarginIcon} label={"Vertical Padding"} />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="T"
-                        delayInput={true}
-                        value={getValue("_paddingTop")}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("paddingTop", newValue);
-                            this._markChildrenAsDirty();
-                        }}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        unit={getUnitString("_paddingTop")}
-                        onUnitClicked={(unit) => convertUnits(unit, "paddingTop")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("paddingTop", amount, 0)}
-                    />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="B"
-                        delayInput={true}
-                        value={getValue("_paddingBottom")}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("paddingBottom", newValue);
-                            this._markChildrenAsDirty();
-                        }}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        unit={getUnitString("_paddingBottom")}
-                        onUnitClicked={(unit) => convertUnits(unit, "paddingBottom")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("paddingBottom", amount, 0)}
-                    />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={horizontalMarginIcon} label={"Horizontal Padding"} />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="L"
-                        delayInput={true}
-                        value={getValue("_paddingLeft")}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("paddingLeft", newValue);
-                            this._markChildrenAsDirty();
-                        }}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        unit={getUnitString("_paddingLeft")}
-                        onUnitClicked={(unit) => convertUnits(unit, "paddingLeft")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("paddingLeft", amount)}
-                    />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
-                        label="R"
-                        delayInput={true}
-                        value={getValue("_paddingRight")}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("paddingRight", newValue);
-                            this._markChildrenAsDirty();
-                        }}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        unit={getUnitString("_paddingRight")}
-                        onUnitClicked={(unit) => convertUnits(unit, "paddingRight")}
-                        arrows={true}
-                        arrowsIncrement={(amount) => increment("paddingRight", amount)}
-                    />
-                </div>
+                                    this._checkAndUpdateValues("height", newValue);
+                                }}
+                                unit={getUnitString("_height")}
+                                onUnitClicked={(unit) => convertUnits(unit, "height")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("height", amount)}
+                            />
+                        </div>
+                        <div className="ge-divider double">
+                            <IconComponent icon={verticalMarginIcon} label={"Vertical Padding"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="T"
+                                delayInput={true}
+                                value={getValue("_paddingTop")}
+                                onChange={(newValue) => {
+                                    this._checkAndUpdateValues("paddingTop", newValue);
+                                    this._markChildrenAsDirty();
+                                }}
+                                unit={getUnitString("_paddingTop")}
+                                onUnitClicked={(unit) => convertUnits(unit, "paddingTop")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("paddingTop", amount, 0)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="B"
+                                delayInput={true}
+                                value={getValue("_paddingBottom")}
+                                onChange={(newValue) => {
+                                    this._checkAndUpdateValues("paddingBottom", newValue);
+                                    this._markChildrenAsDirty();
+                                }}
+                                unit={getUnitString("_paddingBottom")}
+                                onUnitClicked={(unit) => convertUnits(unit, "paddingBottom")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("paddingBottom", amount, 0)}
+                            />
+                        </div>
+                        <div className="ge-divider double">
+                            <IconComponent icon={horizontalMarginIcon} label={"Horizontal Padding"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="L"
+                                delayInput={true}
+                                value={getValue("_paddingLeft")}
+                                onChange={(newValue) => {
+                                    this._checkAndUpdateValues("paddingLeft", newValue);
+                                    this._markChildrenAsDirty();
+                                }}
+                                unit={getUnitString("_paddingLeft")}
+                                onUnitClicked={(unit) => convertUnits(unit, "paddingLeft")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("paddingLeft", amount)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="R"
+                                delayInput={true}
+                                value={getValue("_paddingRight")}
+                                onChange={(newValue) => {
+                                    this._checkAndUpdateValues("paddingRight", newValue);
+                                    this._markChildrenAsDirty();
+                                }}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                unit={getUnitString("_paddingRight")}
+                                onUnitClicked={(unit) => convertUnits(unit, "paddingRight")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("paddingRight", amount)}
+                            />
+                        </div>
+                    </>
+                )}
                 <div className="ge-divider">
                     <IconComponent icon={descendantsOnlyPaddingIcon} label={"Makes padding affect only the descendants of this control"} />
                     <CheckBoxLineComponent label="ONLY PAD DESCENDANTS" target={proxy} propertyName="descendentsOnlyPadding" />
                 </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="scaleX"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        arrows={true}
-                        step={0.0005}
-                        numbersOnly={true}
-                    />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Y"
-                        target={proxy}
-                        propertyName="scaleY"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        arrows={true}
-                        step={0.0005}
-                        numbersOnly={true}
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="X" target={proxy} propertyName="scaleX" arrows={true} digits={2} step="0.0005" />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={proxy} propertyName="scaleY" arrows={true} digits={2} step="0.0005" />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={pivotIcon} label={"Transform Center"} />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="transformCenterX"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        arrows={true}
-                        step={0.0005}
-                        numbersOnly={true}
-                    />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Y"
-                        target={proxy}
-                        propertyName="transformCenterY"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        arrows={true}
-                        step={0.0005}
-                        numbersOnly={true}
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="X" target={proxy} propertyName="transformCenterX" arrows={true} digits={2} step="0.0005" />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Y" target={proxy} propertyName="transformCenterY" arrows={true} digits={2} step="0.0005" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={rotationIcon} label={"Rotation"} />
                     <SliderLineComponent
                         iconLabel={"Rotation"}
                         lockObject={this.props.lockObject}
-                        label="R"
+                        label=""
                         target={proxy}
                         decimalCount={2}
                         propertyName="rotation"
                         minimum={0}
                         maximum={2 * Math.PI}
                         step={0.01}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
                 <hr className="ge" />
@@ -537,59 +509,40 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 )}
                 <div className="ge-divider">
                     <IconComponent icon={alphaIcon} label={"Alpha"} />
-                    <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        label="A"
-                        target={proxy}
-                        propertyName="alpha"
-                        minimum={0}
-                        maximum={1}
-                        step={0.01}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
+                    <SliderLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="alpha" minimum={0} maximum={1} step={0.01} />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={shadowColorIcon} label={"Shadow Color"} />
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="shadowColor"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        disableAlpha={true}
-                    />
+                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="shadowColor" disableAlpha={true} />
                 </div>
-                <div className="ge-divider">
-                    <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset X"} />
+                <div className="ge-divider double">
+                    <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset"} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="X"
                         target={proxy}
                         propertyName="shadowOffsetX"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
+                        arrows={true}
+                        step="0.1"
+                        digits={2}
                     />
-                    <IconComponent icon={shadowOffsetYIcon} label={"Shadow Offset Y"} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={proxy}
                         propertyName="shadowOffsetY"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
+                        arrows={true}
+                        step="0.1"
+                        digits={2}
                     />
                 </div>
-                <div className="ge-divider">
+                <div className="ge-divider double">
                     <IconComponent icon={shadowBlurIcon} label={"Shadow Blur"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=" "
-                        target={proxy}
-                        propertyName="shadowBlur"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
+                    <FloatLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="shadowBlur" arrows={true} min={0} digits={2} />
                 </div>
                 {showTextProperties && (
                     <>
@@ -597,23 +550,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                            <TextInputLineComponent
-                                lockObject={this.props.lockObject}
-                                label=""
-                                target={proxy}
-                                propertyName="fontFamily"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            />
+                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
-                            <TextInputLineComponent
-                                lockObject={this.props.lockObject}
-                                label=""
-                                target={proxy}
-                                propertyName="fontWeight"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            />
+                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontWeight" />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontStyleIcon} label={"Font Style"} />
@@ -637,7 +578,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 }}
                             />
                         </div>
-                        <div className="ge-divider">
+                        <div className="ge-divider double">
                             <IconComponent icon={fontSizeIcon} label={"Font Size"} />
                             <TextInputLineComponent
                                 lockObject={this.props.lockObject}
@@ -645,7 +586,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 numbersOnly={true}
                                 value={getValue("_fontSize")}
                                 onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 unit={getUnitString("_fontSize")}
                                 onUnitClicked={(unit) => convertUnits(unit, "fontSize")}
                                 arrows={true}

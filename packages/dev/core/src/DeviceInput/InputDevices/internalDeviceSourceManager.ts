@@ -1,13 +1,17 @@
-import { IDisposable } from "../../scene";
+import type { IDisposable } from "../../scene";
 import { DeviceType } from "./deviceEnums";
-import { Observable } from "../../Misc/observable";
-import { IDeviceInputSystem } from "./inputInterfaces";
+import type { Observable } from "../../Misc/observable";
+import type { IDeviceInputSystem } from "./inputInterfaces";
 import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
 import { WebDeviceInputSystem } from "./webDeviceInputSystem";
 import { DeviceSource } from "./deviceSource";
-import { INative } from "../../Engines/Native/nativeInterfaces";
-import { Engine } from "../../Engines/engine";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { INative } from "../../Engines/Native/nativeInterfaces";
+import type { Engine } from "../../Engines/engine";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
+
+type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
+
+export type DeviceSourceType = Distribute<DeviceType>;
 
 declare const _native: INative;
 
@@ -20,8 +24,8 @@ declare module "../../Engines/engine" {
 
 /** @hidden */
 export interface IObservableManager {
-    onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-    onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+    onDeviceConnectedObservable: Observable<DeviceSourceType>;
+    onDeviceDisconnectedObservable: Observable<DeviceSourceType>;
 
     // Functions
     _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void;

@@ -1,8 +1,8 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
@@ -220,6 +220,7 @@ export function CreateBox(
  * @deprecated please use CreateBox directly
  */
 export const BoxBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateBox,
 };
 

@@ -1,26 +1,30 @@
-import { PaneComponent, IPaneComponentProps } from "../paneComponent";
+/* eslint-disable import/no-internal-modules */
+import type { IPaneComponentProps } from "../paneComponent";
+import { PaneComponent } from "../paneComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { Node } from "core/node";
-import { Nullable } from "core/types";
+import type { Node } from "core/node";
+import type { Nullable } from "core/types";
 import { VideoRecorder } from "core/Misc/videoRecorder";
 import { Tools } from "core/Misc/tools";
 import { EnvironmentTextureTools } from "core/Misc/environmentTextureTools";
-import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import type { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import type { StandardMaterial } from "core/Materials/standardMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Mesh } from "core/Meshes/mesh";
 import { FilesInput } from "core/Misc/filesInput";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
-import { GLTFData, GLTF2Export } from "serializers/glTF/2.0/index";
+// TODO - does it still work if loading the modules from the correct files?
+import type { GLTFData } from "serializers/glTF/2.0/index";
+import { GLTF2Export } from "serializers/glTF/2.0/index";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
+import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { NumericInputComponent } from "shared-ui-components/lines/numericInputComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -33,11 +37,20 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import GIF from "gif.js.optimized";
+import { Camera } from "core/Cameras/camera";
+import { Light } from "core/Lights/light";
 
 const envExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
     { label: "WebP", value: 1, imageType: "image/webp" },
 ];
+
+interface IGlbExportOptions {
+    exportDisabledNodes: boolean;
+    exportSkyboxes: boolean;
+    exportCameras: boolean;
+    exportLights: boolean;
+}
 
 export class ToolsTabComponent extends PaneComponent {
     private _lockObject = new LockObject();
@@ -45,7 +58,8 @@ export class ToolsTabComponent extends PaneComponent {
     private _screenShotSize: IScreenshotSize = { precision: 1 };
     private _gifOptions = { width: 512, frequency: 200 };
     private _useWidthHeight = false;
-    private _isExporting = false;
+    private _isExportingGltf = false;
+    private _gltfExportOptions: IGlbExportOptions = { exportDisabledNodes: false, exportSkyboxes: false, exportCameras: false, exportLights: false };
     private _gifWorkerBlob: Blob;
     private _gifRecorder: any;
     private _previousRenderingScale: number;
@@ -211,7 +225,7 @@ export class ToolsTabComponent extends PaneComponent {
             () => {},
             () => {},
             () => {},
-            (remaining: number) => {},
+            () => {},
             () => {},
             reload,
             () => {}
@@ -220,43 +234,56 @@ export class ToolsTabComponent extends PaneComponent {
         filesInputAnimation.loadFiles(event);
     }
 
-    shouldExport(node: Node): boolean {
-        // Exclude disabled
-        if (!node.isEnabled()) {
-            return false;
-        }
+    exportGLTF() {
+        const scene = this.props.scene;
+        this._isExportingGltf = true;
+        this.forceUpdate();
 
-        // Exclude skybox
-        if (node instanceof Mesh) {
-            if (node.material) {
-                const material = node.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
-                const reflectionTexture = material.reflectionTexture;
-                if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
+        const shouldExport = (node: Node): boolean => {
+            if (!this._gltfExportOptions.exportDisabledNodes) {
+                if (!node.isEnabled()) {
                     return false;
                 }
             }
-        }
 
-        return true;
-    }
+            if (!this._gltfExportOptions.exportSkyboxes) {
+                if (node instanceof Mesh) {
+                    if (node.material) {
+                        const material = node.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
+                        const reflectionTexture = material.reflectionTexture;
+                        if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
+                            return false;
+                        }
+                    }
+                }
+            }
 
-    exportGLTF() {
-        const scene = this.props.scene;
-        this._isExporting = true;
-        this.forceUpdate();
+            if (!this._gltfExportOptions.exportCameras) {
+                if (node instanceof Camera) {
+                    return false;
+                }
+            }
 
-        GLTF2Export.GLBAsync(scene, "scene", {
-            shouldExportNode: (node) => this.shouldExport(node),
-        })
-            .then((glb: GLTFData) => {
+            if (!this._gltfExportOptions.exportLights) {
+                if (node instanceof Light) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) }).then(
+            (glb: GLTFData) => {
+                this._isExportingGltf = false;
+                this.forceUpdate();
                 glb.downloadFiles();
-                this._isExporting = false;
+            },
+            () => {
+                this._isExportingGltf = false;
                 this.forceUpdate();
-            })
-            .catch((reason) => {
-                this._isExporting = false;
-                this.forceUpdate();
-            });
+            }
+        );
     }
 
     exportBabylon() {
@@ -406,28 +433,50 @@ export class ToolsTabComponent extends PaneComponent {
                     )}
                 </LineContainerComponent>
                 <LineContainerComponent title="SCENE EXPORT" selection={this.props.globalState}>
-                    {this._isExporting && <TextLineComponent label="Please wait..exporting" ignoreValue={true} />}
-                    {!this._isExporting && (
+                    <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
+                    {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
                         <>
-                            <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
-                            <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
-                            {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
-                                <>
-                                    <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
-                                    <OptionsLineComponent
-                                        label="Image type"
-                                        options={envExportImageTypes}
-                                        target={this._envOptions}
-                                        propertyName="imageTypeIndex"
-                                        onSelect={() => {
-                                            this.forceUpdate();
-                                        }}
-                                    />
-                                    {this._envOptions.imageTypeIndex > 0 && (
-                                        <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
-                                    )}
-                                </>
+                            <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                            <OptionsLineComponent
+                                label="Image type"
+                                options={envExportImageTypes}
+                                target={this._envOptions}
+                                propertyName="imageTypeIndex"
+                                onSelect={() => {
+                                    this.forceUpdate();
+                                }}
+                            />
+                            {this._envOptions.imageTypeIndex > 0 && (
+                                <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
                             )}
+                        </>
+                    )}
+                </LineContainerComponent>
+                <LineContainerComponent title="GLTF EXPORT" selection={this.props.globalState}>
+                    {this._isExportingGltf && <TextLineComponent label="Please wait..exporting" ignoreValue={true} />}
+                    {!this._isExportingGltf && (
+                        <>
+                            <CheckBoxLineComponent
+                                label="Export Disabled Nodes"
+                                isSelected={() => this._gltfExportOptions.exportDisabledNodes}
+                                onSelect={(value) => (this._gltfExportOptions.exportDisabledNodes = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Export Skybox"
+                                isSelected={() => this._gltfExportOptions.exportSkyboxes}
+                                onSelect={(value) => (this._gltfExportOptions.exportSkyboxes = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Export Cameras"
+                                isSelected={() => this._gltfExportOptions.exportCameras}
+                                onSelect={(value) => (this._gltfExportOptions.exportCameras = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Export Lights"
+                                isSelected={() => this._gltfExportOptions.exportLights}
+                                onSelect={(value) => (this._gltfExportOptions.exportLights = value)}
+                            />
+                            <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                         </>
                     )}
                 </LineContainerComponent>

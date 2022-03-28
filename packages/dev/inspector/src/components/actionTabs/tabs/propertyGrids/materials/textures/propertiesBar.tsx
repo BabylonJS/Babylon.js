@@ -1,7 +1,7 @@
 import * as React from "react";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IPixelData } from "./textureCanvasManager";
-import { ISize } from "core/Maths/math.size";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IPixelData } from "./textureCanvasManager";
+import type { ISize } from "core/Maths/math.size";
 
 interface IPropertiesBarProps {
     texture: BaseTexture;
@@ -56,7 +56,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
         };
     }
 
-    private pixelData(props: IPixelDataProps) {
+    private _pixelData(props: IPixelDataProps) {
         return (
             <span className="pixel-data">
                 {props.name}: <span className="value">{props.data !== undefined ? props.data : "-"}</span>
@@ -64,7 +64,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
         );
     }
 
-    private getNewDimension(oldDim: number, newDim: any) {
+    private _getNewDimension(oldDim: number, newDim: any) {
         if (!isNaN(newDim)) {
             if (parseInt(newDim) > 0) {
                 if (Number.isInteger(parseInt(newDim))) return parseInt(newDim);
@@ -106,7 +106,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                                     type="text"
                                     value={this.state.width}
                                     readOnly={texture.isCube}
-                                    onChange={(evt) => this.setState({ width: this.getNewDimension(this.state.width, evt.target.value) })}
+                                    onChange={(evt) => this.setState({ width: this._getNewDimension(this.state.width, evt.target.value) })}
                                 />
                             </label>
                             <label className="dimensions">
@@ -115,7 +115,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                                     type="text"
                                     value={this.state.height}
                                     readOnly={texture.isCube}
-                                    onChange={(evt) => this.setState({ height: this.getNewDimension(this.state.height, evt.target.value) })}
+                                    onChange={(evt) => this.setState({ height: this._getNewDimension(this.state.height, evt.target.value) })}
                                 />
                             </label>
                             {!texture.isCube && (
@@ -131,14 +131,14 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                         </form>
                     </div>
                     <div className="tab" id="pixel-coords-tab">
-                        <this.pixelData name="X" data={pixelData.x} />
-                        <this.pixelData name="Y" data={pixelData.y} />
+                        <this._pixelData name="X" data={pixelData.x} />
+                        <this._pixelData name="Y" data={pixelData.y} />
                     </div>
                     <div className="tab" id="pixel-color-tab">
-                        <this.pixelData name="R" data={pixelData.r} />
-                        <this.pixelData name="G" data={pixelData.g} />
-                        <this.pixelData name="B" data={pixelData.b} />
-                        <this.pixelData name="A" data={pixelData.a} />
+                        <this._pixelData name="R" data={pixelData.r} />
+                        <this._pixelData name="G" data={pixelData.g} />
+                        <this._pixelData name="B" data={pixelData.b} />
+                        <this._pixelData name="A" data={pixelData.a} />
                     </div>
                     {texture.isCube && (
                         <div className="tab" id="face-tab">

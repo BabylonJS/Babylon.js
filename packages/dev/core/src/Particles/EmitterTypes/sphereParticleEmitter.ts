@@ -1,10 +1,11 @@
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Particle } from "../../Particles/particle";
-import { IParticleEmitterType } from "./IParticleEmitterType";
+import type { Particle } from "../../Particles/particle";
+import type { IParticleEmitterType } from "./IParticleEmitterType";
 import { DeepCopier } from "../../Misc/deepCopier";
-import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a sphere.
  * It emits the particles alongside the sphere radius. The emission direction might be randomized.
@@ -182,9 +183,8 @@ export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
      * Called by the particle System when the direction is computed for the created particle.
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
-     * @param particle is the particle we are computed the direction for
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3): void {
         const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
         const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
         const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);

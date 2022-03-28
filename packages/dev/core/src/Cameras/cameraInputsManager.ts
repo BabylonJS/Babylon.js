@@ -1,12 +1,13 @@
 import { Logger } from "../Misc/logger";
 import { SerializationHelper } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Camera } from "./camera";
 /**
  * @ignore
  * This is a list of all the different input types that are available in the application.
  * Fo instance: ArcRotateCameraGamepadInput...
  */
+// eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var CameraInputTypes = {};
 
 /**
@@ -182,7 +183,6 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Attach the current manager inputs controls to a specific dom element to listen the events from.
-     * @param element Defines the dom element to collect the events from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachElement(noPreventDefault: boolean = false): void {
@@ -201,7 +201,6 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Detach the current manager inputs controls from a specific dom element.
-     * @param element Defines the dom element to collect the events from
      * @param disconnect Defines whether the input should be removed from the current list of attached inputs
      */
     public detachElement(disconnect = false): void {
@@ -269,11 +268,11 @@ export class CameraInputsManager<TCamera extends Camera> {
         if (parsedInputs) {
             this.clear();
 
-            for (var n in parsedInputs) {
-                var construct = (<any>CameraInputTypes)[n];
+            for (const n in parsedInputs) {
+                const construct = (<any>CameraInputTypes)[n];
                 if (construct) {
                     const parsedinput = parsedInputs[n];
-                    var input = SerializationHelper.Parse(
+                    const input = SerializationHelper.Parse(
                         () => {
                             return new construct();
                         },
@@ -285,10 +284,10 @@ export class CameraInputsManager<TCamera extends Camera> {
             }
         } else {
             //2016-03-08 this part is for managing backward compatibility
-            for (var n in this.attached) {
-                var construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
+            for (const n in this.attached) {
+                const construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
                 if (construct) {
-                    var input = SerializationHelper.Parse(
+                    const input = SerializationHelper.Parse(
                         () => {
                             return new construct();
                         },

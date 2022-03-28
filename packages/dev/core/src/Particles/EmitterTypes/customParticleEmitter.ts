@@ -1,10 +1,11 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Particle } from "../particle";
-import { IParticleEmitterType } from "./IParticleEmitterType";
-import { Nullable } from "../../types";
-import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3, TmpVectors } from "../../Maths/math.vector";
+import type { Particle } from "../particle";
+import type { IParticleEmitterType } from "./IParticleEmitterType";
+import type { Nullable } from "../../types";
+import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from a custom list of positions.
  */
@@ -96,12 +97,14 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Called by the GPUParticleSystem to setup the update shader
      * @param uboOrEffect defines the update shader
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {}
 
     /**
      * Creates the structure of the ubo for this particle emitter
      * @param ubo ubo to create the structure for
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public buildUniformLayout(ubo: UniformBuffer): void {}
 
     /**
@@ -136,5 +139,6 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public parse(serializationObject: any): void {}
 }

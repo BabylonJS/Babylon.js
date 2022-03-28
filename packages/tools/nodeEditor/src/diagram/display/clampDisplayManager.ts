@@ -1,13 +1,13 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
 
 export class ClampDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return false;
     }
 
@@ -15,7 +15,7 @@ export class ClampDisplayManager implements IDisplayManager {
         return block.name;
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(): string {
         return "#4086BB";
     }
 

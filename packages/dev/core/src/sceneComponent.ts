@@ -1,9 +1,9 @@
-import { Scene } from "./scene";
-import { SmartArrayNoDuplicate } from "./Misc/smartArray";
-import { Nullable } from "./types";
-import { PickingInfo } from "./Collisions/pickingInfo";
-import { AbstractScene } from "./abstractScene";
-import { IPointerEvent } from "./Events/deviceInputEvents";
+import type { Scene } from "./scene";
+import type { SmartArrayNoDuplicate } from "./Misc/smartArray";
+import type { Nullable } from "./types";
+import type { PickingInfo } from "./Collisions/pickingInfo";
+import type { AbstractScene } from "./abstractScene";
+import type { IPointerEvent } from "./Events/deviceInputEvents";
 
 declare type Mesh = import("./Meshes/mesh").Mesh;
 declare type Effect = import("./Materials/effect").Effect;

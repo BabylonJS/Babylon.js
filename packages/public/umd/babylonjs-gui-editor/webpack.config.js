@@ -7,24 +7,10 @@ module.exports = (env) => {
         devPackageName: "gui-editor",
         devPackageAliasPath: `../../../tools/guiEditor/dist`,
         namespace: "GUIEDITOR",
+        outputPath: path.resolve(__dirname),
         maxMode: true,
         alias: {
             "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),
-        },
-        extendedWebpackConfig: {
-            module: {
-                rules: [
-                    {
-                        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-                        type: "asset/inline",
-                    },
-                    {
-                        sideEffects: true,
-                        test: /\.scss$/,
-                        use: ["style-loader", "css-loader", "sass-loader"],
-                    },
-                ],
-            },
         },
     });
     return commonConfig;

@@ -1,15 +1,15 @@
 import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../../Maths/math.vector";
-import { Node } from "../../node";
-import { TransformNode } from "../../Meshes/transformNode";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Node } from "../../node";
+import type { TransformNode } from "../../Meshes/transformNode";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
-import { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
-import { TargetCamera } from "../../Cameras/targetCamera";
+import type { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/webVRCamera";
+import type { TargetCamera } from "../../Cameras/targetCamera";
 
 /**
  * Defines the types of pose enabled controllers that are supported
@@ -79,6 +79,7 @@ export interface ExtendedGamepadButton extends GamepadButton {
 }
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _GamePadFactory {
     /**
      * Returns whether or not the current gamepad can be created for this type of controller.
@@ -228,7 +229,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
 
     private _workingMatrix = Matrix.Identity();
     /**
-     * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
+     * Updates the state of the pose enabled controller and mesh based on the current position and rotation of the controller
      */
     public update() {
         super.update();
@@ -251,12 +252,11 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
             EngineStore.LastCreatedScene.activeCamera &&
             (<WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera).devicePosition
         ) {
-            var camera = <WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera;
+            const camera = <WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera;
             camera._computeDevicePosition();
 
             this._deviceToWorld.setTranslation(camera.devicePosition);
             if (camera.deviceRotationQuaternion) {
-                var camera = camera;
                 camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(TmpVectors.Vector3[0]);
 
                 // Find the radian distance away that the headset is from the controllers rotation

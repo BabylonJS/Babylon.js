@@ -1,38 +1,41 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene, IDisposable } from "../scene";
-import { Quaternion, Matrix, Vector3, TmpVectors, Vector2 } from "../Maths/math.vector";
+import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene, IDisposable } from "../scene";
+import type { Vector2 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
-import { Node } from "../node";
+import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
-import { VertexData, IGetSetVerticesData } from "../Meshes/mesh.vertexData";
+import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
+import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
-import { SubMesh } from "../Meshes/subMesh";
+import type { SubMesh } from "../Meshes/subMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
-import { Material } from "../Materials/material";
-import { MaterialDefines } from "../Materials/materialDefines";
-import { Light } from "../Lights/light";
-import { Skeleton } from "../Bones/skeleton";
-import { MorphTargetManager } from "../Morph/morphTargetManager";
-import { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
-import { IEdgesRenderer } from "../Rendering/edgesRenderer";
-import { SolidParticle } from "../Particles/solidParticle";
+import type { IntersectionInfo } from "../Collisions/intersectionInfo";
+import type { ICullable } from "../Culling/boundingInfo";
+import { BoundingInfo } from "../Culling/boundingInfo";
+import type { Material } from "../Materials/material";
+import type { MaterialDefines } from "../Materials/materialDefines";
+import type { Light } from "../Lights/light";
+import type { Skeleton } from "../Bones/skeleton";
+import type { MorphTargetManager } from "../Morph/morphTargetManager";
+import type { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
+import type { IEdgesRenderer } from "../Rendering/edgesRenderer";
+import type { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
-import { AbstractActionManager } from "../Actions/abstractActionManager";
+import type { AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport } from "../Misc/devTools";
-import { RawTexture } from "../Materials/Textures/rawTexture";
+import type { RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Epsilon } from "../Maths/math.constants";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
-import { IParticleSystem } from "../Particles/IParticleSystem";
+import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RegisterClass } from "../Misc/typeStore";
 
 declare type Ray = import("../Culling/ray").Ray;
@@ -42,6 +45,7 @@ declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGro
 declare type IEdgesRendererOptions = import("../Rendering/edgesRenderer").IEdgesRendererOptions;
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 class _FacetDataStorage {
     // facetData private properties
     public facetPositions: Vector3[]; // facet local positions
@@ -56,8 +60,11 @@ class _FacetDataStorage {
     public subDiv = {
         // actual number of subdivisions per axis for ComputeNormals()
         max: 1,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         X: 1,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         Y: 1,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         Z: 1,
     };
 
@@ -75,6 +82,7 @@ class _FacetDataStorage {
 /**
  * @hidden
  **/
+// eslint-disable-next-line @typescript-eslint/naming-convention
 class _InternalAbstractMeshDataInfo {
     public _hasVertexAlpha = false;
     public _useVertexColors = true;
@@ -261,7 +269,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom = location;
     }
 
-    /** number of collision detection tries. Change this value if not all colisions are detected and handled properly */
+    /** number of collision detection tries. Change this value if not all collisions are detected and handled properly */
     public get collisionRetryCount(): number {
         return this._internalAbstractMeshDataInfo._collisionRetryCount;
     }
@@ -819,7 +827,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._resyncLightSources();
 
         // Mesh Uniform Buffer.
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
+        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name, !this.getScene().getEngine().isWebGPU);
         this._buildUniformLayout();
     }
 
@@ -916,6 +924,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param dispose
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _rebuild(dispose = false): void {
         this.onRebuildObservable.notifyObservers(this);
 
@@ -1036,6 +1045,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param property if set to "rotation" the objects rotationQuaternion will be set to null
      * @returns this AbstractMesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public markAsDirty(property?: string): AbstractMesh {
         this._currentRenderId = Number.MAX_VALUE;
         this._isDirty = true;
@@ -1080,6 +1090,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param camera defines the camera to use to pick the right LOD level
      * @returns the currentAbstractMesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getLOD(camera: Camera): Nullable<AbstractMesh> {
         return this;
     }
@@ -1113,6 +1124,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param kind defines the vertex data kind to use
      * @returns null
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getVerticesData(kind: string): Nullable<FloatArray> {
         return null;
     }
@@ -1140,6 +1152,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param stride defines the vertex stride (size of an entire vertex). Can be null and in this case will be deduced from vertex data kind
      * @returns the current mesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
         return this;
     }
@@ -1165,6 +1178,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param makeItUnique If true, a new global geometry is created from this data and is set to the mesh
      * @returns the current mesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
         return this;
     }
@@ -1176,6 +1190,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param totalVertices Defines the total number of vertices
      * @returns the current mesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setIndices(indices: IndicesArray, totalVertices: Nullable<number>): AbstractMesh {
         return this;
     }
@@ -1185,6 +1200,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param kind defines the vertex data kind to use
      * @returns true is data kind is present
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isVerticesDataPresent(kind: string): boolean {
         return false;
     }
@@ -1266,6 +1282,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param renderId
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _preActivateForIntermediateRendering(renderId: number): void {}
 
     /**
@@ -1273,6 +1290,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param intermediateRendering
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
         this._renderId = renderId;
         return true;
@@ -1491,8 +1509,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 for (let index = 0; index < data.length; index += 3, matWeightIdx += 4) {
                     finalMatrix.reset();
 
-                    var inf: number;
-                    var weight: number;
+                    let inf: number;
+                    let weight: number;
                     for (inf = 0; inf < 4; inf++) {
                         weight = matricesWeightsData[matWeightIdx + inf];
                         if (weight > 0) {
@@ -1858,8 +1876,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
         // if no submesh can be picked that way, then fallback to BBox picking
         let anySubmeshSupportIntersect = false;
-        for (var index = 0; index < len; index++) {
-            var subMesh = subMeshes.data[index];
+        for (let index = 0; index < len; index++) {
+            const subMesh = subMeshes.data[index];
             const material = subMesh.getMaterial();
             if (!material) {
                 continue;
@@ -1886,8 +1904,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // at least 1 submesh supports intersection, keep going
-        for (var index = 0; index < len; index++) {
-            var subMesh = subMeshes.data[index];
+        for (let index = 0; index < len; index++) {
+            const subMesh = subMeshes.data[index];
 
             // Bounding test
             if (len > 1 && !subMesh.canIntersects(ray)) {
@@ -1941,6 +1959,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param doNotCloneChildren defines a boolean indicating that children must not be cloned (false by default)
      * @returns the new mesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         return null;
     }
@@ -2189,7 +2208,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 data.facetDepthSortFrom = camera ? camera.position : Vector3.Zero();
             }
             data.depthSortedFacets = [];
-            for (var f = 0; f < data.facetNb; f++) {
+            for (let f = 0; f < data.facetNb; f++) {
                 const depthSortedFacet = { ind: f * 3, sqDistance: 0.0 };
                 data.depthSortedFacets.push(depthSortedFacet);
             }
@@ -2232,7 +2251,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (data.facetDepthSort && data.facetDepthSortEnabled) {
             data.depthSortedFacets.sort(data.facetDepthSortFunction);
             const l = (data.depthSortedIndices.length / 3) | 0;
-            for (var f = 0; f < l; f++) {
+            for (let f = 0; f < l; f++) {
                 const sind = data.depthSortedFacets[f].ind;
                 data.depthSortedIndices[f * 3] = indices![sind];
                 data.depthSortedIndices[f * 3 + 1] = indices![sind + 1];
@@ -2362,12 +2381,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Returns the closest mesh facet index at (x,y,z) World coordinates, null if not found
-     * @param projected sets as the (x,y,z) world projection on the facet
-     * @param checkFace if true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned
-     * @param facing if facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position. If facing si false and checkFace is true, only the facet "turning their backs" to (x, y, z) are returned : negative dot (x, y, z) * facet position
      * @param x defines x coordinate
      * @param y defines y coordinate
      * @param z defines z coordinate
+     * @param projected sets as the (x,y,z) world projection on the facet
+     * @param checkFace if true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned
+     * @param facing if facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position. If facing si false and checkFace is true, only the facet "turning their backs" to (x, y, z) are returned : negative dot (x, y, z) * facet position
      * @returns the face index if found (or null instead)
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
@@ -2387,12 +2406,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Returns the closest mesh facet index at (x,y,z) local coordinates, null if not found
-     * @param projected sets as the (x,y,z) local projection on the facet
-     * @param checkFace if true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned
-     * @param facing if facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position. If facing si false and checkFace is true, only the facet "turning their backs" to (x, y, z) are returned : negative dot (x, y, z) * facet position
      * @param x defines x coordinate
      * @param y defines y coordinate
      * @param z defines z coordinate
+     * @param projected sets as the (x,y,z) local projection on the facet
+     * @param checkFace if true (default false), only the facet "facing" to (x,y,z) or only the ones "turning their backs", according to the parameter "facing" are returned
+     * @param facing if facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position. If facing si false and checkFace is true, only the facet "turning their backs" to (x, y, z) are returned : negative dot (x, y, z) * facet position
      * @returns the face index if found (or null instead)
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
@@ -2487,6 +2506,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
         return this;
     }
@@ -2559,6 +2579,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the currentAbstractMesh
      * @see https://www.babylonjs-playground.com/#19O9TU#0
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean, options?: IEdgesRendererOptions): AbstractMesh {
         throw _WarnImport("EdgesRenderer");
     }

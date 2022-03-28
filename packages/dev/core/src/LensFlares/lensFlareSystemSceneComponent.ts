@@ -1,10 +1,11 @@
 import { Tools } from "../Misc/tools";
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
-import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
+import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { AbstractScene } from "../abstractScene";
-import { AssetContainer } from "../assetContainer";
+import type { AssetContainer } from "../assetContainer";
 import { LensFlareSystem } from "./lensFlareSystem";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {

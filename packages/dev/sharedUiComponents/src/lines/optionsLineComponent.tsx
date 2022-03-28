@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { IInspectableOptions } from "core/Misc/iInspectable";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
 
 export interface IOptionsLineComponentProps {
@@ -22,18 +23,18 @@ export interface IOptionsLineComponentProps {
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
     private _localChange = false;
 
-    private remapValueIn(value: number | null): number {
+    private _remapValueIn(value: number | null): number {
         return this.props.allowNullValue && value === null ? Null_Value : value!;
     }
 
-    private remapValueOut(value: number): number | null {
+    private _remapValueOut(value: number): number | null {
         return this.props.allowNullValue && value === Null_Value ? null : value;
     }
 
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: this.remapValueIn(this.props.extractValue ? this.props.extractValue() : props.target[props.propertyName]) };
+        this.state = { value: this._remapValueIn(this.props.extractValue ? this.props.extractValue() : props.target[props.propertyName]) };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
@@ -42,7 +43,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
-        const newValue = this.remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
+        const newValue = this._remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -71,7 +72,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         const store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
 
         if (!this.props.noDirectUpdate) {
-            this.props.target[this.props.propertyName] = this.remapValueOut(value);
+            this.props.target[this.props.propertyName] = this._remapValueOut(value);
         }
         this.setState({ value: value });
 

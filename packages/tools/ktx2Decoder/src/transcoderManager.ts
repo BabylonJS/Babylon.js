@@ -1,4 +1,5 @@
-import { transcodeTarget, sourceTextureFormat, Transcoder } from "./transcoder";
+import type { Transcoder } from "./transcoder";
+import { transcodeTarget, sourceTextureFormat } from "./transcoder";
 import { WASMMemoryManager } from "./wasmMemoryManager";
 
 /**
@@ -11,7 +12,7 @@ export class TranscoderManager {
         TranscoderManager._Transcoders.push(transcoder);
     }
 
-    private static _transcoderInstances: { [key: string]: Array<Transcoder> } = {};
+    private static _TranscoderInstances: { [key: string]: Array<Transcoder> } = {};
 
     private _wasmMemoryManager: WASMMemoryManager;
 
@@ -32,10 +33,10 @@ export class TranscoderManager {
                         }
                         transcoder!.setMemoryManager(this._wasmMemoryManager);
                     }
-                    if (!TranscoderManager._transcoderInstances[key]) {
-                        TranscoderManager._transcoderInstances[key] = [];
+                    if (!TranscoderManager._TranscoderInstances[key]) {
+                        TranscoderManager._TranscoderInstances[key] = [];
                     }
-                    TranscoderManager._transcoderInstances[key].push(transcoder);
+                    TranscoderManager._TranscoderInstances[key].push(transcoder);
                 }
                 break;
             }
@@ -45,7 +46,7 @@ export class TranscoderManager {
     }
 
     private _getExistingTranscoder(key: string, transcoderName: string): Transcoder | null {
-        const transcoders = TranscoderManager._transcoderInstances[key];
+        const transcoders = TranscoderManager._TranscoderInstances[key];
 
         if (transcoders) {
             for (let t = 0; t < transcoders.length; ++t) {

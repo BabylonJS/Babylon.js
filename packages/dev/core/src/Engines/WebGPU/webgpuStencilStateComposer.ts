@@ -1,4 +1,4 @@
-import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
+import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { StencilStateComposer } from "../../States/stencilStateComposer";
 
 /**
@@ -109,7 +109,7 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.resetStencilState();
     }
 
-    public apply(gl?: WebGLRenderingContext) {
+    public apply() {
         const stencilMaterialEnabled = this.stencilMaterial?.enabled;
 
         this.enabled = stencilMaterialEnabled ? this.stencilMaterial!.enabled : this.stencilGlobal.enabled;

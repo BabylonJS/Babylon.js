@@ -1,15 +1,17 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
-import { Vector3, Matrix, Quaternion } from "core/Maths/math.vector";
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector3, Quaternion } from "core/Maths/math.vector";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 
@@ -95,7 +97,7 @@ export class SkyMaterial extends PushMaterial {
 
     /**
      * Defines the sun position in the sky on (x,y,z). If the property .useSunPosition is set to false, then
-     * the property is overriden by the inclination and the azimuth and can be read at any moment.
+     * the property is overridden by the inclination and the azimuth and can be read at any moment.
      */
     @serializeAsVector3()
     public sunPosition: Vector3 = new Vector3(0, 100, 0);
@@ -165,10 +167,9 @@ export class SkyMaterial extends PushMaterial {
      * Child classes can use it to update shaders
      * @param mesh defines the mesh to check
      * @param subMesh defines which submesh to check
-     * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;

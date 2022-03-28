@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Material } from "core/Materials/material";
+import type { Nullable } from "core/types";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -79,7 +79,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         if (material.reservedDataStore && material.reservedDataStore.debugTexture === texture) {
             const debugMaterial = material.reservedDataStore.debugMaterial;
             texture.level = material.reservedDataStore.level;
-            for (var mesh of scene.meshes) {
+            for (const mesh of scene.meshes) {
                 if (mesh.material === debugMaterial) {
                     mesh.material = material;
                 }
@@ -106,7 +106,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         debugMaterial.forceDepthWrite = true;
         debugMaterial.reservedDataStore = { hidden: true };
 
-        for (var mesh of scene.meshes) {
+        for (const mesh of scene.meshes) {
             if (mesh.material === checkMaterial) {
                 mesh.material = debugMaterial;
             }

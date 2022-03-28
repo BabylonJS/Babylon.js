@@ -1,7 +1,8 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 /**
  * @hidden
  **/
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _TimeToken {
     public _startTimeQuery: Nullable<WebGLQuery>;
     public _endTimeQuery: Nullable<WebGLQuery>;

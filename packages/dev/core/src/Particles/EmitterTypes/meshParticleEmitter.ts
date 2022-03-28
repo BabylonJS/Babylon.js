@@ -1,14 +1,15 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3, TmpVectors } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Particle } from "../../Particles/particle";
-import { IParticleEmitterType } from "./IParticleEmitterType";
-import { IndicesArray, Nullable, FloatArray } from "../../types";
+import type { Particle } from "../../Particles/particle";
+import type { IParticleEmitterType } from "./IParticleEmitterType";
+import type { IndicesArray, Nullable, FloatArray } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a box.
  * It emits the particles randomly between 2 given directions.

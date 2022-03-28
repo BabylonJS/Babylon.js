@@ -1,20 +1,23 @@
 import * as React from "react";
-import { TextureCanvasManager, IPixelData } from "./textureCanvasManager";
-import { ITool, ToolBar } from "./toolBar";
+import type { IPixelData } from "./textureCanvasManager";
+import { TextureCanvasManager } from "./textureCanvasManager";
+import type { ITool } from "./toolBar";
+import { ToolBar } from "./toolBar";
 import { PropertiesBar } from "./propertiesBar";
-import { IChannel, ChannelsBar } from "./channelsBar";
+import type { IChannel } from "./channelsBar";
+import { ChannelsBar } from "./channelsBar";
 import { BottomBar } from "./bottomBar";
 import { TextureCanvasComponent } from "./textureCanvasComponent";
 import defaultTools from "./defaultTools/defaultTools";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Tools } from "core/Misc/tools";
-import { Scene } from "core/scene";
-import { ISize } from "core/Maths/math.size";
-import { Vector2 } from "core/Maths/math.vector";
-import { PointerInfo } from "core/Events/pointerEvents";
+import type { Scene } from "core/scene";
+import type { ISize } from "core/Maths/math.size";
+import type { Vector2 } from "core/Maths/math.vector";
+import type { PointerInfo } from "core/Events/pointerEvents";
 
-import { PopupComponent } from "../../../../../popupComponent";
+import type { PopupComponent } from "../../../../../popupComponent";
 import { ToolSettings } from "./toolSettings";
 import { Constants } from "core/Engines/constants";
 
@@ -56,6 +59,7 @@ export interface IToolParameters {
     /** Returns the texture coordinates under the cursor */
     getMouseCoordinates: (pointerInfo: PointerInfo) => Vector2;
     /** Provides access to the BABYLON namespace */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     BABYLON: any;
     /** Provides a canvas that you can use the canvas API to paint on. */
     startPainting: () => Promise<CanvasRenderingContext2D>;
@@ -94,7 +98,7 @@ export interface IToolType {
     onReset?: () => void;
 }
 
-/** For constructable types, TS requires that you define a seperate interface which constructs your actual interface */
+/** For constructable types, TS requires that you define a separate interface which constructs your actual interface */
 interface IToolConstructable {
     new (getParameters: () => IToolParameters): IToolType;
 }
@@ -112,17 +116,18 @@ export interface IMetadata {
 }
 
 declare global {
+    // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
     var _TOOL_DATA_: IToolData;
 }
 
 export class TextureEditorComponent extends React.Component<ITextureEditorComponentProps, ITextureEditorComponentState> {
     private _textureCanvasManager: TextureCanvasManager;
-    private _UICanvas = React.createRef<HTMLCanvasElement>();
+    private _uiCanvas = React.createRef<HTMLCanvasElement>();
     private _2DCanvas = React.createRef<HTMLCanvasElement>();
     private _3DCanvas = React.createRef<HTMLCanvasElement>();
     private _pickerRef = React.createRef<HTMLDivElement>();
     private _timer: number | null;
-    private static PREVIEW_UPDATE_DELAY_MS = 160;
+    private static _PREVIEW_UPDATE_DELAY_MS = 160;
 
     constructor(props: ITextureEditorComponentProps) {
         super(props);
@@ -170,7 +175,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this._textureCanvasManager = new TextureCanvasManager(
             this.props.texture,
             this.props.window.current!.getWindow()!,
-            this._UICanvas.current!,
+            this._uiCanvas.current!,
             this._2DCanvas.current!,
             this._3DCanvas.current!,
             (data: IPixelData) => {
@@ -203,7 +208,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this._timer = window.setTimeout(() => {
             this.props.onUpdate();
             this._timer = null;
-        }, TextureEditorComponent.PREVIEW_UPDATE_DELAY_MS);
+        }, TextureEditorComponent._PREVIEW_UPDATE_DELAY_MS);
     }
 
     loadToolFromURL(url: string) {
@@ -239,6 +244,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             setMetadata: (data: any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo: PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
             interactionEnabled: () => this._textureCanvasManager.toolInteractionEnabled(),
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             BABYLON: BABYLON,
         };
     }
@@ -331,7 +337,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                         this.setState({ channels });
                     }}
                 />
-                <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture} />
+                <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._uiCanvas} texture={this.props.texture} />
                 <ToolSettings tool={currentTool} />
                 <BottomBar texture={this.props.texture} mipLevel={this.state.mipLevel} />
             </div>

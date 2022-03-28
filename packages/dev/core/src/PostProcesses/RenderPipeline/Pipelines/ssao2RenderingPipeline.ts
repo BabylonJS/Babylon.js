@@ -1,22 +1,23 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Logger } from "../../../Misc/logger";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Vector3, TmpVectors } from "../../../Maths/math.vector";
 import { Camera } from "../../../Cameras/camera";
-import { Effect } from "../../../Materials/effect";
+import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { DynamicTexture } from "../../../Materials/Textures/dynamicTexture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
-import { Scene } from "../../../scene";
+import type { Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
-import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
-import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
+import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 

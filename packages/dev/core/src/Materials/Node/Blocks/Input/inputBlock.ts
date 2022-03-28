@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockConnectionPointMode } from "../../Enums/nodeMaterialBlockConnectionPointMode";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import { Nullable } from "../../../../types";
-import { Effect } from "../../../../Materials/effect";
+import type { Nullable } from "../../../../types";
+import type { Effect } from "../../../../Materials/effect";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
-import { Scene } from "../../../../scene";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { Scene } from "../../../../scene";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
-import { NodeMaterial } from "../../nodeMaterial";
+import type { NodeMaterial } from "../../nodeMaterial";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -386,7 +387,7 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\r\n`;
     }
 
-    public initialize(state: NodeMaterialBuildState) {
+    public initialize() {
         this.associatedVariableName = "";
     }
 

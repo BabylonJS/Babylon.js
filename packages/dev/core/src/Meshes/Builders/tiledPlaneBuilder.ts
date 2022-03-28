@@ -1,7 +1,7 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
-import { Vector4 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 
 /**
@@ -69,15 +69,15 @@ export function CreateTiledPlaneVertexData(options: {
     let adjustY = 0;
     let startX = 0;
     let startY = 0;
-    var endX = 0;
-    var endY = 0;
+    let endX = 0;
+    let endY = 0;
 
     //Part Tiles
     if (offsetX > 0 || offsetY > 0) {
         startX = -halfWidth;
         startY = -halfHeight;
-        var endX = halfWidth;
-        var endY = halfHeight;
+        endX = halfWidth;
+        endY = halfHeight;
 
         switch (alignH) {
             case Mesh.CENTER:
@@ -130,8 +130,8 @@ export function CreateTiledPlaneVertexData(options: {
     const colors = [];
     const indices = [];
     let index = 0;
-    for (var y = 0; y < tilesY; y++) {
-        for (var x = 0; x < tilesX; x++) {
+    for (let y = 0; y < tilesY; y++) {
+        for (let x = 0; x < tilesX; x++) {
             positions.push(-halfWidth + x * tileWidth + adjustX, -halfHeight + y * tileHeight + adjustY, 0);
             positions.push(-halfWidth + (x + 1) * tileWidth + adjustX, -halfHeight + y * tileHeight + adjustY, 0);
             positions.push(-halfWidth + (x + 1) * tileWidth + adjustX, -halfHeight + (y + 1) * tileHeight + adjustY, 0);
@@ -286,7 +286,7 @@ export function CreateTiledPlaneVertexData(options: {
             if (flipTile === Mesh.FLIP_N_ROTATE_TILE || flipTile === Mesh.FLIP_N_ROTATE_ROW) {
                 uvBaseBR[1] = [a, 1 - b, c, 1 - b, c, 1 - d, a, 1 - d];
             }
-            for (var x = 0; x < tilesX; x++) {
+            for (let x = 0; x < tilesX; x++) {
                 positions.push(-halfWidth + x * tileWidth + adjustX, startY + adjustY, 0);
                 positions.push(-halfWidth + (x + 1) * tileWidth + adjustX, startY + adjustY, 0);
                 positions.push(-halfWidth + (x + 1) * tileWidth + adjustX, startY + offsetY + adjustY, 0);
@@ -322,7 +322,7 @@ export function CreateTiledPlaneVertexData(options: {
             if (flipTile === Mesh.FLIP_N_ROTATE_TILE || flipTile === Mesh.FLIP_N_ROTATE_ROW) {
                 uvBaseTR[1] = [a, 1 - b, c, 1 - b, c, 1 - d, a, 1 - d];
             }
-            for (var x = 0; x < tilesX; x++) {
+            for (let x = 0; x < tilesX; x++) {
                 positions.push(-halfWidth + x * tileWidth + adjustX, endY - offsetY + adjustY, 0);
                 positions.push(-halfWidth + (x + 1) * tileWidth + adjustX, endY - offsetY + adjustY, 0);
                 positions.push(-halfWidth + (x + 1) * tileWidth + adjustX, endY + adjustY, 0);
@@ -358,7 +358,7 @@ export function CreateTiledPlaneVertexData(options: {
             if (flipTile === Mesh.FLIP_N_ROTATE_TILE || flipTile === Mesh.FLIP_N_ROTATE_ROW) {
                 uvBaseLC[1] = [a, 1 - b, c, 1 - b, c, 1 - d, a, 1 - d];
             }
-            for (var y = 0; y < tilesY; y++) {
+            for (let y = 0; y < tilesY; y++) {
                 positions.push(startX + adjustX, -halfHeight + y * tileHeight + adjustY, 0);
                 positions.push(startX + offsetX + adjustX, -halfHeight + y * tileHeight + adjustY, 0);
                 positions.push(startX + offsetX + adjustX, -halfHeight + (y + 1) * tileHeight + adjustY, 0);
@@ -394,7 +394,7 @@ export function CreateTiledPlaneVertexData(options: {
             if (flipTile === Mesh.FLIP_N_ROTATE_TILE || flipTile === Mesh.FLIP_N_ROTATE_ROW) {
                 uvBaseRC[1] = [a, 1 - b, c, 1 - b, c, 1 - d, a, 1 - d];
             }
-            for (var y = 0; y < tilesY; y++) {
+            for (let y = 0; y < tilesY; y++) {
                 positions.push(endX - offsetX + adjustX, -halfHeight + y * tileHeight + adjustY, 0);
                 positions.push(endX + adjustX, -halfHeight + y * tileHeight + adjustY, 0);
                 positions.push(endX + adjustX, -halfHeight + (y + 1) * tileHeight + adjustY, 0);
@@ -502,6 +502,7 @@ export function CreateTiledPlane(
  * @deprecated use CreateTiledPlane instead
  */
 export const TiledPlaneBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTiledPlane,
 };
 

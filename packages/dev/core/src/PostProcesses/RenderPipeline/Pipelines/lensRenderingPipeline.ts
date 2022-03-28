@@ -1,12 +1,13 @@
-import { Camera } from "../../../Cameras/camera";
-import { Effect } from "../../../Materials/effect";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Camera } from "../../../Cameras/camera";
+import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { DynamicTexture } from "../../../Materials/Textures/dynamicTexture";
-import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
+import type { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
-import { Scene } from "../../../scene";
+import type { Scene } from "../../../scene";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 

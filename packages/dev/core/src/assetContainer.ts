@@ -1,19 +1,19 @@
 import { AbstractScene } from "./abstractScene";
-import { Scene } from "./scene";
+import type { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
-import { TransformNode } from "./Meshes/transformNode";
-import { Skeleton } from "./Bones/skeleton";
-import { AnimationGroup } from "./Animations/animationGroup";
-import { Animatable } from "./Animations/animatable";
-import { AbstractMesh } from "./Meshes/abstractMesh";
-import { MultiMaterial } from "./Materials/multiMaterial";
-import { Material } from "./Materials/material";
+import type { TransformNode } from "./Meshes/transformNode";
+import type { Skeleton } from "./Bones/skeleton";
+import type { AnimationGroup } from "./Animations/animationGroup";
+import type { Animatable } from "./Animations/animatable";
+import type { AbstractMesh } from "./Meshes/abstractMesh";
+import type { MultiMaterial } from "./Materials/multiMaterial";
+import type { Material } from "./Materials/material";
 import { Logger } from "./Misc/logger";
 import { EngineStore } from "./Engines/engineStore";
-import { Nullable } from "./types";
-import { Node } from "./node";
-import { Observer } from "./Misc/observable";
-import { ThinEngine } from "./Engines/thinEngine";
+import type { Nullable } from "./types";
+import type { Node } from "./node";
+import type { Observer } from "./Misc/observable";
+import type { ThinEngine } from "./Engines/thinEngine";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -100,9 +100,9 @@ export class AssetContainer extends AbstractScene {
      * Skeletons and animation groups will all be cloned
      * @param nameFunction defines an optional function used to get new names for clones
      * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
-     * @param options defines an optional list of options to control how to instanciate / clone models
+     * @param options defines an optional list of options to control how to instantiate / clone models
      * @param options.doNotInstantiate
-     * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
+     * @returns a list of rootNodes, skeletons and animation groups that were duplicated
      */
     public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false, options?: { doNotInstantiate: boolean }): InstantiatedEntries {
         const convertionMap: { [key: number]: number } = {};
@@ -493,7 +493,7 @@ export class AssetContainer extends AbstractScene {
         }
 
         for (const key in this) {
-            if (this.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(this, key)) {
                 (<any>this)[key] = (<any>this)[key] || (key === "environmentTexture" ? null : []);
                 this._moveAssets((<any>this.scene)[key], (<any>this)[key], (<any>keepAssets)[key]);
             }

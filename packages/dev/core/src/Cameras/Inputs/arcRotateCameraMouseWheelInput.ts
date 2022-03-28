@@ -1,14 +1,17 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observer } from "../../Misc/observable";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { EventState, Observer } from "../../Misc/observable";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
-import { EventConstants, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
 
 /**
@@ -59,7 +62,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _observer: Nullable<Observer<PointerInfo>>;
     private _hitPlane: Nullable<Plane>;
 
-    protected computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
+    protected _computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
         let delta = 0;
         const wheelDelta = mouseWheelDelta * 0.01 * this.wheelDeltaPercentage * radius;
         if (mouseWheelDelta > 0) {
@@ -76,8 +79,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      */
     public attachControl(noPreventDefault?: boolean): void {
         // was there a second variable defined?
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        this._wheel = (p, s) => {
+        this._wheel = (p) => {
             //sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
@@ -101,7 +105,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                 delta = this.customComputeDeltaFromMouseWheel(wheelDelta, this, event);
             } else {
                 if (this.wheelDeltaPercentage) {
-                    delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
+                    delta = this._computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
 
                     // If zooming in, estimate the target radius and use that to compute the delta for inertia
                     // this will stop multiple scroll events zooming in from adding too much inertia
@@ -113,7 +117,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                             targetInertia *= this.camera.inertia;
                         }
                         estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
-                        delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
+                        delta = this._computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                     }
                 } else {
                     delta = wheelDelta / (this.wheelPrecision * 40);
@@ -149,9 +153,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;

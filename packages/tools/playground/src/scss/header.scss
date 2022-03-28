@@ -18,7 +18,7 @@
         grid-template-columns: 1fr auto;
         grid-template-rows: 100%;
         user-select: none;
-            
+
         svg {
             height: 100%;
             grid-column: 1;
@@ -39,12 +39,12 @@
 
             .version-number {
                 font-weight: bold;
-                color:white;
+                color: white;
             }
         }
     }
 
-    .command-bar {         
+    .command-bar {
         grid-row: 1;
         grid-column: 2;
         display: grid;
@@ -52,7 +52,7 @@
         grid-template-columns: 74px 144px 1fr;
         grid-template-rows: 100%;
 
-        .language-button {        
+        .language-button {
             grid-row: 1;
             grid-column: 2;
             color: white;
@@ -67,7 +67,7 @@
 
             &.active {
                 width: 74px;
-                cursor: pointer;            
+                cursor: pointer;
                 grid-column: 1;
                 margin-right: -5px;
                 transform: translateX(10px);
@@ -76,17 +76,16 @@
     }
 }
 
-
 @media screen and (max-width: 1280px) {
     #pg-header {
         .logo-area {
             width: 300px;
-                
+
             .version {
                 .version-text {
                     display: none;
                 }
-                
+
                 .version-number {
                     font-size: 16px;
                 }
@@ -101,15 +100,15 @@
 
         .logo-area {
             width: 100%;
-                
+
             .version {
                 .version-text {
                     display: none;
                 }
             }
         }
-        
-        .command-bar {  
+
+        .command-bar {
             display: none;
         }
     }

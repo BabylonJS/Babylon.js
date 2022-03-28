@@ -1,6 +1,7 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
+import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
 import { AbstractScene } from "../abstractScene";
 import { Color3 } from "../Maths/math.color";
@@ -132,18 +133,15 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
 
     /**
      * Adds all the elements from the container to the scene
-     * @param container the container holding the elements
      */
-    public addFromContainer(container: AbstractScene): void {
+    public addFromContainer(): void {
         // Nothing to do
     }
 
     /**
      * Removes all the elements in the container from the scene
-     * @param container contains the elements to remove
-     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
+    public removeFromContainer(): void {
         // Make sure nothing will be serialized
         if (!this.scene.prePassRenderer) {
             return;

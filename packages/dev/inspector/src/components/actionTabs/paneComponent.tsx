@@ -1,9 +1,9 @@
 import * as React from "react";
-import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { GlobalState } from "../../components/globalState";
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import type { Observable } from "core/Misc/observable";
+import type { Scene } from "core/scene";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { GlobalState } from "../../components/globalState";
 
 export interface IPaneComponentProps {
     title: string;

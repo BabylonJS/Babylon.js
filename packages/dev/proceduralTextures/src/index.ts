@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./brick/index";
 export * from "./cloud/index";
 export * from "./fire/index";

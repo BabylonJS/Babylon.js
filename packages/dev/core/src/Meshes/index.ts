@@ -1,3 +1,5 @@
+/* eslint-disable import/export */
+/* eslint-disable import/no-internal-modules */
 export * from "./abstractMesh";
 export * from "./Compression/index";
 export * from "./csg";
@@ -22,4 +24,5 @@ export * from "./Builders/index";
 export * from "./WebGL/webGLDataBuffer";
 export * from "./WebGPU/webgpuDataBuffer";
 import "./thinInstanceMesh";
+// eslint-disable-next-line no-duplicate-imports
 export * from "./thinInstanceMesh";

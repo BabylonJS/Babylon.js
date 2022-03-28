@@ -1,9 +1,9 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
@@ -34,7 +34,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
 
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
+            case NodeMaterialBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.uniqueId}>
@@ -74,6 +74,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                         )}
                     </div>
                 );
+            }
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent

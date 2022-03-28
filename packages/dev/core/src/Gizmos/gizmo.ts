@@ -1,21 +1,22 @@
-import { Observer } from "../Misc/observable";
-import { Nullable } from "../types";
-import { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
-import { Scene, IDisposable } from "../scene";
+import type { Observer } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
+import type { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Camera } from "../Cameras/camera";
-import { TargetCamera } from "../Cameras/targetCamera";
-import { Node } from "../node";
-import { Bone } from "../Bones/bone";
+import type { Camera } from "../Cameras/camera";
+import type { TargetCamera } from "../Cameras/targetCamera";
+import type { Node } from "../node";
+import type { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { TransformNode } from "../Meshes/transformNode";
-import { StandardMaterial } from "../Materials/standardMaterial";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { LinesMesh } from "../Meshes/linesMesh";
-import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { ShadowLight } from "../Lights/shadowLight";
+import type { TransformNode } from "../Meshes/transformNode";
+import type { StandardMaterial } from "../Materials/standardMaterial";
+import type { PointerInfo } from "../Events/pointerEvents";
+import { PointerEventTypes } from "../Events/pointerEvents";
+import type { LinesMesh } from "../Meshes/linesMesh";
+import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import type { ShadowLight } from "../Lights/shadowLight";
 import { Light } from "../Lights/light";
 
 /**
@@ -144,6 +145,7 @@ export class Gizmo implements IDisposable {
      */
     public updateScale = true;
     protected _interactionsEnabled = true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _attachedNodeChanged(value: Nullable<Node>) {}
 
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
@@ -248,7 +250,6 @@ export class Gizmo implements IDisposable {
     }
     /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
-     * @param value Node, TransformNode or mesh
      */
     protected _matrixChanged() {
         if (!this._attachedNode) {
@@ -260,7 +261,7 @@ export class Gizmo implements IDisposable {
             let worldMatrix;
             let worldMatrixUC;
             if (camera.parent) {
-                var parentInv = this._tempMatrix2;
+                const parentInv = this._tempMatrix2;
                 camera.parent._worldMatrix.invertToRef(parentInv);
                 this._attachedNode._worldMatrix.multiplyToRef(parentInv, this._tempMatrix1);
                 worldMatrix = this._tempMatrix1;
@@ -305,7 +306,7 @@ export class Gizmo implements IDisposable {
         ) {
             const transform = this._attachedNode as TransformNode;
             if (transform.parent) {
-                var parentInv = this._tempMatrix1;
+                const parentInv = this._tempMatrix1;
                 const localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
@@ -326,14 +327,14 @@ export class Gizmo implements IDisposable {
             const parent = bone.getParent();
 
             if (parent) {
-                var invParent = this._tempMatrix1;
+                const invParent = this._tempMatrix1;
                 const boneLocalMatrix = this._tempMatrix2;
                 parent.getWorldMatrix().invertToRef(invParent);
                 bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
-                var lmat = bone.getLocalMatrix();
+                const lmat = bone.getLocalMatrix();
                 lmat.copyFrom(boneLocalMatrix);
             } else {
-                var lmat = bone.getLocalMatrix();
+                const lmat = bone.getLocalMatrix();
                 lmat.copyFrom(bone.getWorldMatrix());
             }
             bone.markAsDirty();
@@ -345,7 +346,7 @@ export class Gizmo implements IDisposable {
                     const parent = light.parent;
 
                     if (parent) {
-                        var invParent = this._tempMatrix1;
+                        const invParent = this._tempMatrix1;
                         const nodeLocalMatrix = this._tempMatrix2;
                         parent.getWorldMatrix().invertToRef(invParent);
                         light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);
@@ -355,8 +356,7 @@ export class Gizmo implements IDisposable {
                     }
                     // setter doesn't copy values. Need a new Vector3
                     light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
-                    Vector3.Backward(false).rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
-                    light.direction = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                    light.direction = new Vector3(light.direction.x, light.direction.y, light.direction.z);
                 }
             }
         }

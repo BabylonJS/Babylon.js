@@ -1,8 +1,8 @@
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
 /**
@@ -249,6 +249,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param faceIndex The index of the face we are computed the direction to generate shadow
      * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getShadowDirection(faceIndex?: number): Vector3 {
         return this.transformedDirection ? this.transformedDirection : this.direction;
     }

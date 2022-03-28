@@ -1,12 +1,12 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { IMatrixLike } from "../Maths/math.like";
-import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { IMatrixLike } from "../Maths/math.like";
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { ThinSprite } from "./thinSprite";
-import { ISize } from "../Maths/math.size";
+import type { ThinSprite } from "./thinSprite";
+import type { ISize } from "../Maths/math.size";
 
 declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
 declare type Scene = import("../scene").Scene;
@@ -20,7 +20,7 @@ import "../Shaders/sprites.vertex";
 /**
  * Class used to render sprites.
  *
- * It can be used either to render Sprites or ThinSriptes with ThinEngine only.
+ * It can be used either to render Sprites or ThinSprites with ThinEngine only.
  */
 export class SpriteRenderer {
     /**

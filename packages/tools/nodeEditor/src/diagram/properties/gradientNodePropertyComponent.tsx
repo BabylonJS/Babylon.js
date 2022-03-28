@@ -1,17 +1,18 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GradientBlockColorStep, GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientStepComponent } from "./gradientStepComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { Color3 } from "core/Maths/math.color";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    private onValueChangedObserver: Nullable<Observer<GradientBlock>>;
+    private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -19,7 +20,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
     componentDidMount() {
         const gradientBlock = this.props.block as GradientBlock;
-        this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
+        this._onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
         });
@@ -27,9 +28,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
     componentWillUnmount() {
         const gradientBlock = this.props.block as GradientBlock;
-        if (this.onValueChangedObserver) {
-            gradientBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
-            this.onValueChangedObserver = null;
+        if (this._onValueChangedObserver) {
+            gradientBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
+            this._onValueChangedObserver = null;
         }
     }
 

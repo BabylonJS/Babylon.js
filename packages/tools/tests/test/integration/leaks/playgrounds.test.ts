@@ -10,32 +10,37 @@ import {
     getGlobalConfig,
     prepareLeakDetection,
     evaluateRenderSceneForVisualization,
+    logPageErrors
 } from "@tools/test-tools";
 
-const classesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
+const classesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.BaseTexture", "BABYLON.Material"];
 
 const playgrounds = [
     "#WIR77Z",
     "#WIR77Z#1165",
     "#WIR77Z#1166",
-    "#WIR77Z#1167",
-    "#WIR77Z#1168",
-    "#2AH4YH",
-    "#YEZPVT",
+    // "#WIR77Z#1167",
+    // "#WIR77Z#1168",
+    // "#2AH4YH",
+    // "#YEZPVT",
     // "#SRZRWV#6",
     "#XCPP9Y#1",
     "#XZ0TH6",
     "#JU1DZP",
     "#7V0Y1I#1523",
-    "#6FBD14#2004",
+    // "#6FBD14#2004",
     "#KQV9SA",
     "#7CBW04",
 ];
 
 // IN TESTS
 // declare const BABYLON: typeof import("core/index");
+const debug = false;
 
 describe("Playground Memory Leaks", () => {
+    beforeAll(async () => {
+        await logPageErrors(page);
+    });
     jest.setTimeout(30000);
 
     let init: CountValues;

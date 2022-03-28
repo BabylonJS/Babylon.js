@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import { AbstractViewer } from "./viewer";
+import type { AbstractViewer } from "./viewer";
 
 /**
  * The viewer manager is the container for all viewers currently registered on this page.
@@ -64,16 +64,18 @@ export class ViewerManager {
                 return this.getViewerById(id);
             }
         }
+
+        return null;
     }
 
     /**
-     * Get a promise that will fullfil when this viewer was initialized.
+     * Get a promise that will fulfill when this viewer was initialized.
      * Since viewer initialization and template injection is asynchronous, using the promise will guaranty that
      * you will get the viewer after everything was already configured.
      * @param id the viewer id to find
      */
     public getViewerPromiseById(id: string): Promise<AbstractViewer> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);

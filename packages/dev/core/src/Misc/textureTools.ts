@@ -1,11 +1,12 @@
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
@@ -157,21 +158,21 @@ export function ApplyPostProcess(
 }
 
 // ref: http://stackoverflow.com/questions/32633585/how-do-you-convert-to-half-floats-in-javascript
-let _FloatView: Float32Array;
-let _Int32View: Int32Array;
+let floatView: Float32Array;
+let int32View: Int32Array;
 /**
  * Converts a number to half float
  * @param value number to convert
  * @returns converted number
  */
 export function ToHalfFloat(value: number): number {
-    if (!_FloatView) {
-        _FloatView = new Float32Array(1);
-        _Int32View = new Int32Array(_FloatView.buffer);
+    if (!floatView) {
+        floatView = new Float32Array(1);
+        int32View = new Int32Array(floatView.buffer);
     }
 
-    _FloatView[0] = value;
-    const x = _Int32View[0];
+    floatView[0] = value;
+    const x = int32View[0];
 
     let bits = (x >> 16) & 0x8000; /* Get the sign */
     let m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */

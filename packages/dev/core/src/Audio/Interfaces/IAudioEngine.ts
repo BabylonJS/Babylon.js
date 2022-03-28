@@ -1,7 +1,7 @@
-import { Observable } from "../../Misc/observable";
-import { IDisposable } from "../../scene";
-import { Nullable } from "../../types";
-import { Analyser } from "../analyser";
+import type { Observable } from "../../Misc/observable";
+import type { IDisposable } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Analyser } from "../analyser";
 
 /**
  * This represents an audio engine and it is responsible
@@ -38,6 +38,7 @@ export interface IAudioEngine extends IDisposable {
      * Defines if Babylon should emit a warning if WebAudio is not supported.
      * @ignoreNaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     WarnedWebAudioUnsupported: boolean;
 
     /**

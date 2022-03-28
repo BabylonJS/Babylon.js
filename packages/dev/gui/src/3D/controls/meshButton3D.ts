@@ -1,7 +1,7 @@
-import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 
 import { Button3D } from "./button3D";
 
@@ -59,6 +59,7 @@ export class MeshButton3D extends Button3D {
     }
 
     // Mesh association
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _createNode(scene: Scene): TransformNode {
         this._currentMesh.getChildMeshes().forEach((mesh) => {
             this._injectGUI3DReservedDataStore(mesh).control = this;
@@ -66,5 +67,6 @@ export class MeshButton3D extends Button3D {
         return this._currentMesh;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _affectMaterial(mesh: AbstractMesh) {}
 }

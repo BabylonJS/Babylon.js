@@ -1,6 +1,7 @@
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRXmpJsonLd_Gltf, IKHRXmpJsonLd_Node } from "babylonjs-gltf2interface";
+import type { IKHRXmpJsonLd_Gltf, IKHRXmpJsonLd_Node } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_xmp_json_ld";
 

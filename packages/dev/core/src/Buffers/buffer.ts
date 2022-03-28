@@ -1,5 +1,5 @@
-import { Nullable, DataArray, FloatArray } from "../types";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { Nullable, DataArray, FloatArray } from "../types";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import { SliceTools } from "../Misc/sliceTools";
 
