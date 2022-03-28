@@ -1,9 +1,7 @@
 import { BaseSlider } from "./baseSlider";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
-import { Measure } from "../../measure";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -102,7 +100,7 @@ export class Slider extends BaseSlider {
         return "Slider";
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);

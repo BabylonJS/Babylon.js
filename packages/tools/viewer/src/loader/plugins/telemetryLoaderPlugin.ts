@@ -1,7 +1,7 @@
-import { ILoaderPlugin } from "./loaderPlugin";
+import type { ILoaderPlugin } from "./loaderPlugin";
 import { telemetryManager } from "../../managers/telemetryManager";
-import { ViewerModel } from "../../model/viewerModel";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { ViewerModel } from "../../model/viewerModel";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import { PrecisionDate } from "core/Misc/precisionDate";
 
 export class TelemetryLoaderPlugin implements ILoaderPlugin {
@@ -23,7 +23,7 @@ export class TelemetryLoaderPlugin implements ILoaderPlugin {
         telemetryManager.flushWebGLErrors(model.rootMesh.getEngine(), model.getViewerId());
     }
 
-    public onError(message: string, exception: any) {
+    public onError() {
         this._loadEnd = PrecisionDate.Now;
         telemetryManager.broadcast("Load Error", this._model.getViewerId(), {
             model: this._model,

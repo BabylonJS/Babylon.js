@@ -1,14 +1,11 @@
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
 
 export const conflictingValuesPlaceholder = "—";
 
 /**
  *
- * @param propertyName the property that the input changes
  * @param targets a list of selected targets
- * @param defaultValue the value that should be returned when two targets have conflicting values
- * @param setter an optional setter function to override the default setter behavior
  * @param onPropertyChangedObservable
  * @param getProperty
  * @returns a proxy object that can be passed as a target into the input

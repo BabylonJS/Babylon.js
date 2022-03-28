@@ -2,9 +2,9 @@ import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from "../webXRSessionManager";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Constants } from "../../Engines/constants";
 import { Color3 } from "../../Maths/math.color";
@@ -114,7 +114,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      * Once other systems support this feature we will need to change this to be dynamic.
      * see https://github.com/immersive-web/lighting-estimation/blob/main/lighting-estimation-explainer.md#cube-map-open-questions
      */
-    private _ReflectionCubeMapTextureSize: number = 16;
+    private _reflectionCubeMapTextureSize: number = 16;
 
     /**
      * If createDirectionalLightSource is set to true this light source will be created automatically.
@@ -220,8 +220,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 internalTexture.generateMipMaps = true;
                 internalTexture.type = this.options.reflectionFormat !== "srgba8" ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 internalTexture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
-                internalTexture.width = this._ReflectionCubeMapTextureSize;
-                internalTexture.height = this._ReflectionCubeMapTextureSize;
+                internalTexture.width = this._reflectionCubeMapTextureSize;
+                internalTexture.height = this._reflectionCubeMapTextureSize;
                 internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
                 internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
                 internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._getCanvasContext() as WebGLRenderingContext);

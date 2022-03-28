@@ -1,14 +1,16 @@
-import { Engine } from "../../Engines/engine";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { Engine } from "../../Engines/engine";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 import { DomManagement } from "../../Misc/domManagement";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
-import { IDeviceInputSystem } from "./inputInterfaces";
+import type { IDeviceInputSystem } from "./inputInterfaces";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_KEYCODES = 255;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
 /** @hidden */
@@ -26,15 +28,24 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _keyboardDownEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _keyboardUpEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _keyboardBlurEvent = (evt: any) => {};
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerMoveEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerDownEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerUpEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerCancelEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerWheelEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerBlurEvent = (evt: any) => {};
     private _wheelEventName: string;
     private _eventsAttached: boolean = false;
@@ -48,7 +59,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _pointerInputClearObserver: Nullable<Observer<Engine>> = null;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _gamepadConnectedEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _gamepadDisconnectedEvent = (evt: any) => {};
 
     private _eventPrefix: string;
@@ -79,7 +92,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     // Public functions
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      * @returns Current value of input
@@ -219,7 +232,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         // If the device in use has mouse capabilities, pre-register mouse
         if (matchMedia("(pointer:fine)").matches) {
-            // This will provide a dummy value for the cursor position and is expected to be overriden when the first mouse event happens.
+            // This will provide a dummy value for the cursor position and is expected to be overridden when the first mouse event happens.
             // There isn't any good way to get the current position outside of a pointer event so that's why this was done.
             this._addPointerDevice(DeviceType.Mouse, 0, 0, 0);
         }
@@ -259,7 +272,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     /**
      * Add device and inputs to device array
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param numberOfInputs Number of input entries to create for given device
      */
@@ -286,7 +299,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     /**
      * Given a specific device name, remove that device from the device map
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _unregisterDevice(deviceType: DeviceType, deviceSlot: number): void {
@@ -334,7 +347,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
         };
 
-        this._keyboardBlurEvent = (evt) => {
+        this._keyboardBlurEvent = () => {
             if (this._keyboardActive) {
                 const kbKey = this._inputs[DeviceType.Keyboard][0];
 
@@ -593,7 +606,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             /* */
         }
 
-        this._pointerBlurEvent = (evt) => {
+        this._pointerBlurEvent = () => {
             // Handle mouse buttons
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
@@ -716,7 +729,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     /**
      * Update all non-event based devices with each frame
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      */

@@ -1,5 +1,6 @@
 import * as React from "react";
-import { GlobalState, RuntimeMode } from "../globalState";
+import type { GlobalState } from "../globalState";
+import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { Engine, WebGPUEngine, UnregisterAllMaterialPlugins } from "@dev/core";
@@ -89,7 +90,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     };
 
     private async _loadScriptAsync(url: string): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const script = document.createElement("script");
             script.src = url;
             script.onload = () => {

@@ -1,15 +1,17 @@
-import { Scene } from "./scene";
-import { Nullable } from "./types";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Scene } from "./scene";
+import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
-import { Engine } from "./Engines/engine";
-import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
+import type { Engine } from "./Engines/engine";
+import type { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
-import { Observable, Observer } from "./Misc/observable";
+import type { Observer } from "./Misc/observable";
+import { Observable } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
 import { _WarnImport } from "./Misc/devTools";
-import { AbstractActionManager } from "./Actions/abstractActionManager";
-import { IInspectable } from "./Misc/iInspectable";
-import { AbstractScene } from "./abstractScene";
+import type { AbstractActionManager } from "./Actions/abstractActionManager";
+import type { IInspectable } from "./Misc/iInspectable";
+import type { AbstractScene } from "./abstractScene";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -46,6 +48,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param to
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
         throw _WarnImport("AnimationRange");
     };
@@ -469,6 +472,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param initialCall
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
         if (!this.parent) {
             return null;
@@ -483,6 +487,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param ignoreParentClass
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _updateCache(ignoreParentClass?: boolean): void {}
 
     // override it in derived class if you add new variables to the cache
@@ -513,7 +518,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @hidden */
     public isSynchronized(): boolean {
-        if (this._cache.parent != this._parentNode) {
+        if (this._cache.parent !== this._parentNode) {
             this._cache.parent = this._parentNode;
             return false;
         }

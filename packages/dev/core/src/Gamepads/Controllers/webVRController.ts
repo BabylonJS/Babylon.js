@@ -1,9 +1,10 @@
 import { Observable } from "../../Misc/observable";
-import { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { PoseEnabledController, ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
-import { StickValues, GamepadButtonChanges } from "../../Gamepads/gamepad";
-import { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
+import { PoseEnabledController } from "./poseEnabledController";
+import type { StickValues, GamepadButtonChanges } from "../../Gamepads/gamepad";
+import type { Nullable } from "../../types";
 
 /**
  * Defines the WebVRController object that represents controllers tracked in 3D space
@@ -38,7 +39,7 @@ export abstract class WebVRController extends PoseEnabledController {
     public onPadValuesChangedObservable = new Observable<StickValues>();
 
     /**
-     * Array of button availible on the controller
+     * Array of button available on the controller
      */
     protected _buttons: Array<MutableGamepadButton>;
 
@@ -151,7 +152,7 @@ export abstract class WebVRController extends PoseEnabledController {
     }
 
     /**
-     * Disposes of th webVRCOntroller
+     * Disposes of th webVRController
      */
     public dispose(): void {
         super.dispose();

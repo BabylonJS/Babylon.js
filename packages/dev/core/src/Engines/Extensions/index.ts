@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 export * from "./engine.alpha";
 export * from "./engine.debugging";
 export * from "./engine.query";
@@ -22,4 +23,5 @@ export * from "./engine.storageBuffer";
 
 // must import first since nothing references the exports
 import "./engine.textureSelector";
+// eslint-disable-next-line no-duplicate-imports
 export * from "./engine.textureSelector";

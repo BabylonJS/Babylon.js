@@ -1,11 +1,11 @@
-import { DeepImmutable, Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { BoundingSphere } from "../Culling/boundingSphere";
+import type { BoundingSphere } from "../Culling/boundingSphere";
 
-import { ICullable } from "./boundingInfo";
+import type { ICullable } from "./boundingInfo";
 import { Epsilon } from "../Maths/math.constants";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 
 declare type DrawWrapper = import("../Materials/drawWrapper").DrawWrapper;
 
@@ -59,7 +59,7 @@ export class BoundingBox implements ICullable {
     public readonly maximum: Vector3 = Vector3.Zero();
 
     private _worldMatrix: DeepImmutable<Matrix>;
-    private static readonly TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
+    private static readonly _TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
     /**
      * @hidden
@@ -124,7 +124,7 @@ export class BoundingBox implements ICullable {
      * @returns the current bounding box
      */
     public scale(factor: number): BoundingBox {
-        const tmpVectors = BoundingBox.TmpVector3;
+        const tmpVectors = BoundingBox._TmpVector3;
         const diff = this.maximum.subtractToRef(this.minimum, tmpVectors[0]);
         const len = diff.length();
         diff.normalizeFromLength(len);
@@ -317,7 +317,7 @@ export class BoundingBox implements ICullable {
      * @returns true if there is an intersection
      */
     public static IntersectsSphere(minPoint: DeepImmutable<Vector3>, maxPoint: DeepImmutable<Vector3>, sphereCenter: DeepImmutable<Vector3>, sphereRadius: number): boolean {
-        const vector = BoundingBox.TmpVector3[0];
+        const vector = BoundingBox._TmpVector3[0];
         Vector3.ClampToRef(sphereCenter, minPoint, maxPoint, vector);
         const num = Vector3.DistanceSquared(sphereCenter, vector);
         return num <= sphereRadius * sphereRadius;

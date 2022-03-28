@@ -1,10 +1,10 @@
-import { ImageMimeType, ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
+import type { ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
-import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 
 const NAME = "KHR_texture_transform";
@@ -14,6 +14,7 @@ import "../shaders/textureTransform.fragment";
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     private _recordedTextures: ProceduralTexture[] = [];
 
@@ -29,7 +30,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     /** Reference to the glTF exporter */
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {}
+    constructor() {}
 
     public dispose() {
         for (const texture of this._recordedTextures) {
@@ -84,7 +85,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
         }
     }
 
-    public preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture> {
+    public preExportTextureAsync(context: string, babylonTexture: Texture): Promise<Texture> {
         return new Promise((resolve, reject) => {
             const scene = babylonTexture.getScene();
             if (!scene) {
@@ -124,9 +125,6 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     /**
      * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
      * @param babylonTexture
-     * @param offset
-     * @param rotation
-     * @param scale
      * @param scene
      */
     private _textureTransformTextureAsync(babylonTexture: Texture, scene: Scene): Promise<Texture> {
@@ -162,4 +160,4 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_texture_transform(exporter));
+_Exporter.RegisterExtension(NAME, () => new KHR_texture_transform());

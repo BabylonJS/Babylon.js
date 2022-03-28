@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Color4, Color3 } from "core/Maths/math.color";
-import { GlobalState } from "../globalState";
+import type { Color4, Color3 } from "core/Maths/math.color";
+import type { GlobalState } from "../globalState";
 import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
 
 export interface IColorPickerComponentProps {

@@ -1,6 +1,7 @@
 import * as glob from "glob";
 import * as path from "path";
-import { UMDPackageName, umdPackageMapping } from "./packageMapping";
+import type { UMDPackageName } from "./packageMapping";
+import { umdPackageMapping } from "./packageMapping";
 import { copyFile, findRootDirectory } from "./utils";
 
 export const prepareSnapshot = () => {
@@ -8,8 +9,8 @@ export const prepareSnapshot = () => {
     const snapshotDirectory = path.join(baseDirectory, ".snapshot");
     Object.keys(umdPackageMapping).forEach((packageName) => {
         const metadata = umdPackageMapping[packageName as UMDPackageName];
-        const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName, "dist");
-        const coreUmd = glob.sync(`${corePath}/*.*`);
+        const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName);
+        const coreUmd = glob.sync(`${corePath}/*+(.js|.d.ts|.map)`);
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);
         }
@@ -26,6 +27,15 @@ export const prepareSnapshot = () => {
             }
             const relative = path.relative(baseLocation, file);
             copyFile(file, path.join(snapshotDirectory, relative), false);
+        }
+    }
+
+    // make sure the .d.ts files are also available, clone the .module.d.ts files
+    {
+        const baseLocation = path.join(baseDirectory, ".snapshot");
+        const staticFiles = glob.sync(`${baseLocation}/**/*.module.d.ts`);
+        for (const file of staticFiles) {
+            copyFile(file, file.replace(".module", ""), false);
         }
     }
 

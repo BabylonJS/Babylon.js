@@ -1,7 +1,7 @@
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Viewport } from "../Maths/math.viewport";
-import { Scene } from "../scene";
-import { Nullable } from "../types";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { Viewport } from "../Maths/math.viewport";
+import type { Scene } from "../scene";
+import type { Nullable } from "../types";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 
@@ -56,6 +56,7 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
         const layerWidth = this._layer.framebufferWidth;
         const layerHeight = this._layer.framebufferHeight;

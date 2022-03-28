@@ -102,7 +102,7 @@ export class DataReader {
         const right = this._dataView.getUint32(this._dataByteOffset + 4, true);
 
         // combine the two 32-bit values
-        const combined = true ? left + 2 ** 32 * right : 2 ** 32 * left + right;
+        const combined = left + 2 ** 32 * right; // That was weird..Keeping it for posterity: true ? left + 2 ** 32 * right : 2 ** 32 * left + right;
 
         /*if (!Number.isSafeInteger(combined)) {
             console.warn('DataReader: ' + combined + ' exceeds MAX_SAFE_INTEGER. Precision may be lost.');

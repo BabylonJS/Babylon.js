@@ -1,10 +1,11 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
-import { IDisposable, Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
+import type { IDisposable, Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
-import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
+import type { WebXRRenderTarget } from "./webXRTypes";
+import { WebXRState } from "./webXRTypes";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";
@@ -49,14 +50,14 @@ export class WebXRExperienceHelper implements IDisposable {
 
     /**
      * Creates a WebXRExperienceHelper
-     * @param scene The scene the helper should be created in
+     * @param _scene The scene the helper should be created in
      */
-    private constructor(private scene: Scene) {
-        this.sessionManager = new WebXRSessionManager(scene);
-        this.camera = new WebXRCamera("webxr", scene, this.sessionManager);
+    private constructor(private _scene: Scene) {
+        this.sessionManager = new WebXRSessionManager(_scene);
+        this.camera = new WebXRCamera("webxr", _scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
 
-        scene.onDisposeObservable.addOnce(() => {
+        _scene.onDisposeObservable.addOnce(() => {
             this.dispose();
         });
     }
@@ -92,7 +93,7 @@ export class WebXRExperienceHelper implements IDisposable {
         this.sessionManager.dispose();
         this._spectatorCamera?.dispose();
         if (this._nonVRCamera) {
-            this.scene.activeCamera = this._nonVRCamera;
+            this._scene.activeCamera = this._nonVRCamera;
         }
     }
 
@@ -143,18 +144,18 @@ export class WebXRExperienceHelper implements IDisposable {
             // run the render loop
             this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings
-            this._originalSceneAutoClear = this.scene.autoClear;
-            this._nonVRCamera = this.scene.activeCamera;
+            this._originalSceneAutoClear = this._scene.autoClear;
+            this._nonVRCamera = this._scene.activeCamera;
             this._attachedToElement = !!this._nonVRCamera?.inputs.attachedToElement;
             this._nonVRCamera?.detachControl();
 
-            this.scene.activeCamera = this.camera;
+            this._scene.activeCamera = this.camera;
             // do not compensate when AR session is used
             if (sessionMode !== "immersive-ar") {
                 this._nonXRToXRCamera();
             } else {
                 // Kept here, TODO - check if needed
-                this.scene.autoClear = false;
+                this._scene.autoClear = false;
                 this.camera.compensateOnFirstFrame = false;
                 // reset the camera's position to the origin
                 this.camera.position.set(0, 0, 0);
@@ -172,8 +173,8 @@ export class WebXRExperienceHelper implements IDisposable {
                 });
 
                 // Restore scene settings
-                this.scene.autoClear = this._originalSceneAutoClear;
-                this.scene.activeCamera = this._nonVRCamera;
+                this._scene.autoClear = this._originalSceneAutoClear;
+                this._scene.activeCamera = this._nonVRCamera;
                 if (this._attachedToElement && this._nonVRCamera) {
                     this._nonVRCamera.attachControl(!!this._nonVRCamera.inputs.noPreventDefault);
                 }
@@ -231,19 +232,19 @@ export class WebXRExperienceHelper implements IDisposable {
             };
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {
-                    this._spectatorCamera = new UniversalCamera("webxr-spectator", Vector3.Zero(), this.scene);
+                    this._spectatorCamera = new UniversalCamera("webxr-spectator", Vector3.Zero(), this._scene);
                     this._spectatorCamera.rotationQuaternion = new Quaternion();
-                    this.scene.activeCameras = [this.camera, this._spectatorCamera];
+                    this._scene.activeCameras = [this.camera, this._spectatorCamera];
                     this.sessionManager.onXRFrameObservable.add(updateSpectatorCamera);
-                    this.scene.onAfterRenderCameraObservable.add((camera) => {
+                    this._scene.onAfterRenderCameraObservable.add((camera) => {
                         if (camera === this.camera) {
                             // reset the dimensions object for correct resizing
-                            this.scene.getEngine().framebufferDimensionsObject = null;
+                            this._scene.getEngine().framebufferDimensionsObject = null;
                         }
                     });
                 } else if (this.state === WebXRState.EXITING_XR) {
                     this.sessionManager.onXRFrameObservable.removeCallback(updateSpectatorCamera);
-                    this.scene.activeCameras = null;
+                    this._scene.activeCameras = null;
                 }
             };
             this._spectatorMode = true;

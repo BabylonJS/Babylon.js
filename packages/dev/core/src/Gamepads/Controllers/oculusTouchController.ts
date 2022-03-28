@@ -1,10 +1,10 @@
 import { Observable } from "../../Misc/observable";
-import { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
-import { GamepadButtonChanges } from "../../Gamepads/gamepad";
+import type { ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { EngineStore } from "../../Engines/engineStore";
 /**
  * Oculus Touch Controller
@@ -149,9 +149,8 @@ export class OculusTouchController extends WebVRController {
      * 5) thumb rest
      * @param buttonIdx Which button index changed
      * @param state New state of the button
-     * @param changes Which properties on the state changed since last frame
      */
-    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton) {
         const notifyObject = state; //{ state: state, changes: changes };
         const triggerDirection = this.hand === "right" ? -1 : 1;
         switch (buttonIdx) {

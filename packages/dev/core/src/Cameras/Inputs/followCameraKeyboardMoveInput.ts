@@ -1,11 +1,13 @@
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FollowCamera } from "../../Cameras/followCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FollowCamera } from "../../Cameras/followCamera";
 import { serialize } from "../../Misc/decorators";
-import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { Engine } from "../../Engines/engine";
-import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { Engine } from "../../Engines/engine";
+import type { KeyboardInfo } from "../../Events/keyboardEvents";
+import { KeyboardEventTypes } from "../../Events/keyboardEvents";
+import type { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 
 /**
@@ -140,6 +142,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         if (this._onCanvasBlurObserver) {
             return;
@@ -168,7 +171,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
                             this._keys.push(evt.keyCode);
@@ -189,7 +192,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                         this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
                         this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
                     ) {
-                        var index = this._keys.indexOf(evt.keyCode);
+                        const index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
                             this._keys.splice(index, 1);
@@ -213,9 +216,8 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);

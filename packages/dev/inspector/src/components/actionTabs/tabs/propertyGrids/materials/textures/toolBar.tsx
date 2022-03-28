@@ -1,6 +1,7 @@
 import * as React from "react";
-import { IToolData, IToolType, IMetadata } from "./textureEditorComponent";
-import { Color3, Color4 } from "core/Maths/math.color";
+import type { IToolData, IToolType, IMetadata } from "./textureEditorComponent";
+import type { Color3 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
 
 export interface ITool extends IToolData {

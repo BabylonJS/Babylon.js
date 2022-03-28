@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { PostProcess } from "core/PostProcesses/postProcess";
 
 import { faMagic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";

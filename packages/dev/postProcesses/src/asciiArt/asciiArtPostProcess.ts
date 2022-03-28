@@ -1,11 +1,11 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { serialize, SerializationHelper } from "core/Misc/decorators";
-import { Camera } from "core/Cameras/camera";
+import type { Camera } from "core/Cameras/camera";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { Effect } from "core/Materials/effect";
+import type { Effect } from "core/Materials/effect";
 import { PostProcess } from "core/PostProcesses/postProcess";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import "core/Engines/Extensions/engine.dynamicTexture";
 import "./asciiart.fragment";
 
@@ -56,8 +56,8 @@ export class AsciiArtFontTexture extends BaseTexture {
         //this.anisotropicFilteringLevel = 1;
 
         // Get the font specific info.
-        const maxCharHeight = this.getFontHeight(font);
-        const maxCharWidth = this.getFontWidth(font);
+        const maxCharHeight = this._getFontHeight(font);
+        const maxCharWidth = this._getFontWidth(font);
 
         this._charSize = Math.max(maxCharHeight.height, maxCharWidth);
 
@@ -95,7 +95,7 @@ export class AsciiArtFontTexture extends BaseTexture {
      * @param font the font to use, use the W3C CSS notation
      * @return the max char width
      */
-    private getFontWidth(font: string): number {
+    private _getFontWidth(font: string): number {
         const fontDraw = document.createElement("canvas");
         const ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
         ctx.fillStyle = "white";
@@ -110,7 +110,7 @@ export class AsciiArtFontTexture extends BaseTexture {
      * @param font the font to use, use the W3C CSS notation
      * @return the max char height
      */
-    private getFontHeight(font: string): { height: number; offset: number } {
+    private _getFontHeight(font: string): { height: number; offset: number } {
         const fontDraw = document.createElement("canvas");
         const ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
         ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);

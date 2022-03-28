@@ -1,36 +1,36 @@
 import { Logger } from "../Misc/logger";
 import { IsWindowObjectExist } from "../Misc/domManagement";
-import { Nullable, DataArray, IndicesArray, Immutable } from "../types";
+import type { Nullable, DataArray, IndicesArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
-import { InstancingAttributeInfo } from "../Engines/instancingAttributeInfo";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IEffectCreationOptions, Effect } from "../Materials/effect";
-import { EffectFallbacks } from "../Materials/effectFallbacks";
-import { _TimeToken } from "../Instrumentation/timeToken";
+import type { IEffectCreationOptions } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
+import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
-import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
-import { IPipelineContext } from "./IPipelineContext";
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { IShaderProcessor } from "./Processors/iShaderProcessor";
+import type { IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
+import { WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
-import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
-import { ISceneLike } from "./thinEngine";
+import type { ISceneLike } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
-import { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import { IColor4Like } from "../Maths/math.like";
+import type { IColor4Like } from "../Maths/math.like";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPURenderPassWrapper } from "./WebGPU/webgpuRenderPassWrapper";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
-import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
+import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
@@ -39,21 +39,22 @@ import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
-import { IStencilState } from "../States/IStencilState";
+import type { IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
-import { ComputeEffect } from "../Compute/computeEffect";
+import type { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
-import { ExternalTexture } from "../Materials/Textures/externalTexture";
+import type { TwgslOptions } from "./WebGPU/webgpuTintWASM";
+import { WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
+import type { ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
-import { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
-import { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
+import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -182,7 +183,7 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
  */
 export class WebGPUEngine extends Engine {
     // Default glslang options.
-    private static readonly _glslangDefaultOptions: GlslangOptions = {
+    private static readonly _GLSLslangDefaultOptions: GlslangOptions = {
         jsPath: "https://preview.babylonjs.com/glslang/glslang.js",
         wasmPath: "https://preview.babylonjs.com/glslang/glslang.wasm",
     };
@@ -317,7 +318,7 @@ export class WebGPUEngine extends Engine {
     public _currentMaterialContext: WebGPUMaterialContext;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
-    private __colorWrite = true;
+    private _colorWriteLocal = true;
     private _forceEnableEffect = false;
 
     // TODO WEBGPU remove those variables when code stabilized
@@ -415,9 +416,9 @@ export class WebGPUEngine extends Engine {
                   .requestAdapter()
                   .then(
                       (adapter: GPUAdapter | null) => !!adapter,
-                      (rejected) => false
+                      () => false
                   )
-                  .catch((e) => false);
+                  .catch(() => false);
     }
 
     /**
@@ -723,7 +724,7 @@ export class WebGPUEngine extends Engine {
     private _initGlslang(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || {};
         glslangOptions = {
-            ...WebGPUEngine._glslangDefaultOptions,
+            ...WebGPUEngine._GLSLslangDefaultOptions,
             ...glslangOptions,
         };
 
@@ -1043,7 +1044,7 @@ export class WebGPUEngine extends Engine {
      * @param enable defines the state to set
      */
     public setColorWrite(enable: boolean): void {
-        this.__colorWrite = enable;
+        this._colorWriteLocal = enable;
         this._cacheRenderPipeline.setWriteMask(enable ? 0xf : 0);
     }
 
@@ -1052,7 +1053,7 @@ export class WebGPUEngine extends Engine {
      * @returns the current color writing state
      */
     public getColorWrite(): boolean {
-        return this.__colorWrite;
+        return this._colorWriteLocal;
     }
 
     //------------------------------------------------------------------------------
@@ -1408,10 +1409,9 @@ export class WebGPUEngine extends Engine {
     /**
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
-     * @param updatable defines if the index buffer must be updatable - not used in WebGPU
      * @returns a new buffer
      */
-    public createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer {
+    public createIndexBuffer(indices: IndicesArray): DataBuffer {
         let is32Bits = true;
         let view: ArrayBufferView;
 
@@ -1474,24 +1474,16 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param vertexBuffer
-     * @param indexBuffer
-     * @param vertexDeclaration
-     * @param vertexStrideSize
-     * @param effect
      * @hidden
      */
-    public bindBuffersDirectly(vertexBuffer: DataBuffer, indexBuffer: DataBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
+    public bindBuffersDirectly(): void {
         throw "Not implemented on WebGPU";
     }
 
     /**
-     * @param instancesBuffer
-     * @param data
-     * @param offsetLocations
      * @hidden
      */
-    public updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void {
+    public updateAndBindInstancesBuffer(): void {
         throw "Not implemented on WebGPU";
     }
 
@@ -1597,7 +1589,7 @@ export class WebGPUEngine extends Engine {
         return this._compileRawShaderToSpirV(shaderVersion + (defines ? defines + "\n" : "") + source, type);
     }
 
-    private _getWGSLShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): string {
+    private _getWGSLShader(source: string, type: string, defines: Nullable<string>): string {
         if (defines) {
             defines = "//" + defines.split("\n").join("\n//") + "\n";
         } else {
@@ -1649,13 +1641,11 @@ export class WebGPUEngine extends Engine {
 
         const shaderVersion = "#version 450\n";
         const vertexShader =
-            shaderLanguage === ShaderLanguage.GLSL
-                ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion)
-                : this._getWGSLShader(vertexCode, "vertex", defines, shaderVersion);
+            shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion) : this._getWGSLShader(vertexCode, "vertex", defines);
         const fragmentShader =
             shaderLanguage === ShaderLanguage.GLSL
                 ? this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion)
-                : this._getWGSLShader(fragmentCode, "fragment", defines, shaderVersion);
+                : this._getWGSLShader(fragmentCode, "fragment", defines);
 
         const program = this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
 
@@ -1665,40 +1655,16 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param pipelineContext
-     * @param vertexCode
-     * @param fragmentCode
-     * @param context
-     * @param transformFeedbackVaryings
      * @hidden
      */
-    public createRawShaderProgram(
-        pipelineContext: IPipelineContext,
-        vertexCode: string,
-        fragmentCode: string,
-        context?: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): WebGLProgram {
+    public createRawShaderProgram(): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
     /**
-     * @param pipelineContext
-     * @param vertexCode
-     * @param fragmentCode
-     * @param defines
-     * @param context
-     * @param transformFeedbackVaryings
      * @hidden
      */
-    public createShaderProgram(
-        pipelineContext: IPipelineContext,
-        vertexCode: string,
-        fragmentCode: string,
-        defines: Nullable<string>,
-        context?: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): WebGLProgram {
+    public createShaderProgram(): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
@@ -1748,8 +1714,6 @@ export class WebGPUEngine extends Engine {
      * @param rawFragmentSourceCode
      * @param rebuildRebind
      * @param defines
-     * @param transformFeedbackVaryings
-     * @param key
      * @hidden
      */
     public _preparePipelineContext(
@@ -1760,9 +1724,7 @@ export class WebGPUEngine extends Engine {
         rawVertexSourceCode: string,
         rawFragmentSourceCode: string,
         rebuildRebind: any,
-        defines: Nullable<string>,
-        transformFeedbackVaryings: Nullable<string[]>,
-        key: string
+        defines: Nullable<string>
     ) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
@@ -1933,11 +1895,9 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param type
-     * @param format
      * @hidden
      */
-    public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
+    public _getRGBABufferInternalSizedFormat(): number {
         return Constants.TEXTUREFORMAT_RGBA;
     }
 
@@ -2081,8 +2041,7 @@ export class WebGPUEngine extends Engine {
                     extension: string,
                     texture: InternalTexture,
                     continuationCallback: () => void
-                ) => boolean,
-                samplingMode: number
+                ) => boolean
             ) => {
                 const imageBitmap = img as ImageBitmap | { width: number; height: number }; // we will never get an HTMLImageElement in WebGPU
 
@@ -2141,7 +2100,7 @@ export class WebGPUEngine extends Engine {
         );
     }
 
-    public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
+    public generateMipMapsForCubemap(texture: InternalTexture) {
         if (texture.generateMipMaps) {
             const gpuTexture = texture._hardwareTexture?.underlyingResource;
 
@@ -2218,10 +2177,9 @@ export class WebGPUEngine extends Engine {
      * @param name
      * @param texture
      * @param baseName
-     * @param textureIndex
      * @hidden
      */
-    public _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string, textureIndex = 0): void {
+    public _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string): void {
         baseName = baseName ?? name;
         if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
@@ -2256,18 +2214,18 @@ export class WebGPUEngine extends Engine {
      */
     public setTextureArray(channel: number, unused: Nullable<WebGLUniformLocation>, textures: BaseTexture[], name: string): void {
         for (let index = 0; index < textures.length; index++) {
-            this._setTexture(-1, textures[index], true, false, name + index.toString(), name, index);
+            this._setTexture(-1, textures[index], true, false, name + index.toString(), name);
         }
     }
 
     protected _setTexture(
         channel: number,
         texture: Nullable<BaseTexture>,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isPartOfTextureArray = false,
         depthStencilTexture = false,
         name = "",
-        baseName?: string,
-        textureIndex = 0
+        baseName?: string
     ): boolean {
         // name == baseName for a texture that is not part of a texture array
         // Else, name is something like 'myTexture0' / 'myTexture1' / ... and baseName is 'myTexture'
@@ -2326,7 +2284,7 @@ export class WebGPUEngine extends Engine {
                 this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
             }
 
-            this._setInternalTexture(name, internalTexture, baseName, textureIndex);
+            this._setInternalTexture(name, internalTexture, baseName);
         } else {
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) {
@@ -2552,6 +2510,7 @@ export class WebGPUEngine extends Engine {
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
         const renderPassWrapper = this._rttRenderPassWrapper.renderPass ? this._rttRenderPassWrapper : this._mainRenderPassWrapper;
         const gpuTexture = renderPassWrapper.colorAttachmentGPUTextures![0].underlyingResource;
@@ -2608,13 +2567,13 @@ export class WebGPUEngine extends Engine {
                 }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                     const list: Array<string> = [];
-                    for (const name in UniformBuffer._updatedUbosInFrame) {
-                        list.push(name + ":" + UniformBuffer._updatedUbosInFrame[name]);
+                    for (const name in UniformBuffer._UpdatedUbosInFrame) {
+                        list.push(name + ":" + UniformBuffer._UpdatedUbosInFrame[name]);
                     }
                     console.log("frame #" + (this as any)._count + " - updated ubos -", list.join(", "));
                 }
             }
-            UniformBuffer._updatedUbosInFrame = {};
+            UniformBuffer._UpdatedUbosInFrame = {};
         }
 
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
@@ -2706,8 +2665,14 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(rtWrapper_: RenderTargetWrapper, setClearStates: boolean, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean) {
-        const rtWrapper = rtWrapper_ as WebGPURenderTargetWrapper;
+    private _startRenderTargetRenderPass(
+        renderTargetWrapper: RenderTargetWrapper,
+        setClearStates: boolean,
+        clearColor: Nullable<IColor4Like>,
+        clearDepth: boolean,
+        clearStencil: boolean
+    ) {
+        const rtWrapper = renderTargetWrapper as WebGPURenderTargetWrapper;
 
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
@@ -3171,11 +3136,11 @@ export class WebGPUEngine extends Engine {
         this._depthTextureFormat = wrapper.depthTextureFormat;
     }
 
-    public setDitheringState(value: boolean): void {
+    public setDitheringState(): void {
         // Does not exist in WebGPU
     }
 
-    public setRasterizerState(value: boolean): void {
+    public setRasterizerState(): void {
         // Does not exist in WebGPU
     }
 
@@ -3468,19 +3433,14 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /**
-     * @param effect
      * @hidden
      */
-    public bindSamplers(effect: Effect): void {}
+    public bindSamplers(): void {}
 
     /**
-     * @param target
-     * @param texture
-     * @param forTextureDataUpdate
-     * @param force
      * @hidden
      */
-    public _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate = false, force = false): boolean {
+    public _bindTextureDirectly(): boolean {
         return false;
     }
 
@@ -3504,10 +3464,9 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param pipelineContext
      * @hidden
      */
-    public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
+    public _isRenderingStateCompiled(): boolean {
         // No parallel shader compilation.
         return true;
     }
@@ -3518,177 +3477,135 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param value
      * @hidden
      */
-    public _unpackFlipY(value: boolean) {}
+    public _unpackFlipY() {}
 
     /**
-     * @param framebuffer
      * @hidden
      */
-    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+    public _bindUnboundFramebuffer() {
         throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
     }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
 
     /**
-     * @param samplingMode
-     * @param generateMipMaps
      * @hidden
      */
-    public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+    public _getSamplingParameters(): { min: number; mag: number } {
         throw "_getSamplingParameters is not available in WebGPU";
     }
 
     /**
-     * @param pipelineContext
-     * @param uniformsNames
      * @hidden
      */
-    public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
+    public getUniforms(): Nullable<WebGLUniformLocation>[] {
         return [];
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public setIntArray(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public setIntArray2(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public setIntArray3(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public setIntArray4(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public setArray(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public setArray2(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public setArray3(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param array
      * @hidden
      */
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public setArray4(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param matrices
      * @hidden
      */
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+    public setMatrices(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param matrix
      * @hidden
      */
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+    public setMatrix3x3(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param matrix
      * @hidden
      */
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+    public setMatrix2x2(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param value
      * @hidden
      */
-    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
+    public setFloat(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param x
-     * @param y
      * @hidden
      */
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
+    public setFloat2(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param x
-     * @param y
-     * @param z
      * @hidden
      */
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
+    public setFloat3(): boolean {
         return false;
     }
 
     /**
-     * @param uniform
-     * @param x
-     * @param y
-     * @param z
-     * @param w
      * @hidden
      */
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
+    public setFloat4(): boolean {
         return false;
     }
 }

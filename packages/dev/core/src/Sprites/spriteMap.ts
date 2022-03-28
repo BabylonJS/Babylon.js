@@ -1,13 +1,13 @@
 import { Engine } from "../Engines/engine";
-import { IDisposable, Scene } from "../scene";
-import { Nullable } from "../types";
+import type { IDisposable, Scene } from "../scene";
+import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
-import { Mesh } from "../Meshes/mesh";
-import { PickingInfo } from "../Collisions/pickingInfo";
-import { ISpriteJSONSprite, ISpriteJSONAtlas } from "./ISprites";
+import type { Mesh } from "../Meshes/mesh";
+import type { PickingInfo } from "../Collisions/pickingInfo";
+import type { ISpriteJSONSprite, ISpriteJSONAtlas } from "./ISprites";
 import { Effect } from "../Materials/effect";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
@@ -429,8 +429,7 @@ export class SpriteMap implements ISpriteMap {
      * @param tile The SpriteIndex of the new Tile
      */
     public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[], tile: number = 0): void {
-        let buffer: Nullable<ArrayBufferView>;
-        buffer = this._tileMaps[_layer]!._texture!._bufferView;
+        const buffer = this._tileMaps[_layer]!._texture!._bufferView;
         if (buffer === null) {
             return;
         }

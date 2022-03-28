@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { GlobalState } from "../../../../globalState";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { GlobalState } from "../../../../globalState";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import type { CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface ICylinderEmitterGridComponentProps {
     globalState: GlobalState;

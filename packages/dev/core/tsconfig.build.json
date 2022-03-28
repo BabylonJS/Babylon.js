@@ -4,8 +4,13 @@
     "compilerOptions": {
         "composite": true,
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "skipLibCheck": true,
     },
 
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+    ]
 }

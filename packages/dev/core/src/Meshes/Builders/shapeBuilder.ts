@@ -1,7 +1,8 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
-import { Vector3, TmpVectors, Vector4, Matrix } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Vector3, TmpVectors, Matrix } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
 import { Path3D } from "../../Maths/math.path";
 
@@ -23,7 +24,6 @@ import { Path3D } from "../../Maths/math.path";
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
- * @param scene defines the hosting scene
  * @param options.path
  * @param options.scale
  * @param options.rotation
@@ -36,6 +36,7 @@ import { Path3D } from "../../Maths/math.path";
  * @param options.backUVs
  * @param options.instance
  * @param options.invertUV
+ * @param scene defines the hosting scene
  * @returns the extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
@@ -116,7 +117,6 @@ export function ExtrudeShape(
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
- * @param scene defines the hosting scene
  * @param options.path
  * @param options.scaleFunction
  * @param options.rotationFunction
@@ -131,6 +131,7 @@ export function ExtrudeShape(
  * @param options.backUVs
  * @param options.instance
  * @param options.invertUV
+ * @param scene defines the hosting scene
  * @returns the custom extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
@@ -342,7 +343,9 @@ function _ExtrudeShapeGeneric(
  * @deprecated please use the functions directly from the module
  */
 export const ShapeBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ExtrudeShape,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ExtrudeShapeCustom,
 };
 

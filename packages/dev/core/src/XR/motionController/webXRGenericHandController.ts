@@ -1,6 +1,8 @@
-import { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness, WebXRAbstractMotionController } from "./webXRAbstractMotionController";
-import { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness } from "./webXRAbstractMotionController";
+import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
 
 /**
@@ -54,6 +56,7 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
     left: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
@@ -78,6 +81,7 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
     right: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
@@ -102,6 +106,7 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
     none: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {

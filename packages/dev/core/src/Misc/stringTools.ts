@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Checks for a matching suffix at the end of a string (for ES5 and lower)
  * @param str Source string

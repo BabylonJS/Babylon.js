@@ -1,19 +1,19 @@
 import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVector2 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { AutoRotationBehavior } from "../Behaviors/Cameras/autoRotationBehavior";
 import { BouncingBehavior } from "../Behaviors/Cameras/bouncingBehavior";
 import { FramingBehavior } from "../Behaviors/Cameras/framingBehavior";
 import { Camera } from "./camera";
 import { TargetCamera } from "./targetCamera";
-import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
-import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
-import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
+import type { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
+import type { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
+import type { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
@@ -100,7 +100,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     protected _upToYMatrix: Matrix;
-    protected _YToUpMatrix: Matrix;
+    protected _yToUpMatrix: Matrix;
 
     /**
      * The vector the camera should consider as up. (default is Vector3(0, 1, 0) as returned by Vector3.Up())
@@ -109,7 +109,7 @@ export class ArcRotateCamera extends TargetCamera {
      */
     set upVector(vec: Vector3) {
         if (!this._upToYMatrix) {
-            this._YToUpMatrix = new Matrix();
+            this._yToUpMatrix = new Matrix();
             this._upToYMatrix = new Matrix();
 
             this._upVector = Vector3.Zero();
@@ -129,7 +129,7 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public setMatUp() {
         // from y-up to custom-up (used in _getViewMatrix)
-        Matrix.RotationAlignToRef(Vector3.UpReadOnly, this._upVector, this._YToUpMatrix);
+        Matrix.RotationAlignToRef(Vector3.UpReadOnly, this._upVector, this._yToUpMatrix);
 
         // from custom-up to y-up (used in rebuildAnglesAndRadius)
         Matrix.RotationAlignToRef(this._upVector, Vector3.UpReadOnly, this._upToYMatrix);
@@ -233,7 +233,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the value of the inertia used during panning.
-     * 0 would mean stop inertia and one would mean no decelleration at all.
+     * 0 would mean stop inertia and one would mean no deceleration at all.
      */
     @serialize()
     public panningInertia = 0.9;
@@ -856,16 +856,19 @@ export class ArcRotateCamera extends TargetCamera {
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
-        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+        // eslint-disable-next-line prefer-rest-params
+        const args = arguments;
+
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(args);
         this._useCtrlForPanning = useCtrlForPanning as boolean;
         this._panningMouseButton = panningMouseButton;
         // backwards compatibility
-        if (typeof arguments[0] === "boolean") {
-            if (arguments.length > 1) {
-                this._useCtrlForPanning = arguments[1];
+        if (typeof args[0] === "boolean") {
+            if (args.length > 1) {
+                this._useCtrlForPanning = args[1];
             }
-            if (arguments.length > 2) {
-                this._panningMouseButton = arguments[2];
+            if (args.length > 2) {
+                this._panningMouseButton = args[2];
             }
         }
 
@@ -891,9 +894,8 @@ export class ArcRotateCamera extends TargetCamera {
     public detachControl(ignored: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.inputs.detachElement();
 
         if (this._reset) {
@@ -1131,7 +1133,7 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Rotate according to up vector
         if (this._upVector.x !== 0 || this._upVector.y !== 1.0 || this._upVector.z !== 0) {
-            Vector3.TransformCoordinatesToRef(this._computationVector, this._YToUpMatrix, this._computationVector);
+            Vector3.TransformCoordinatesToRef(this._computationVector, this._yToUpMatrix, this._computationVector);
         }
 
         target.addToRef(this._computationVector, this._newPosition);

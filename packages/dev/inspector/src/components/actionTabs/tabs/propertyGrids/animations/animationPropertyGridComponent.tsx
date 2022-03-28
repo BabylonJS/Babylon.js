@@ -1,23 +1,23 @@
 import * as React from "react";
 
-import { Observable, Observer } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
-import { Animation } from "core/Animations/animation";
-import { Animatable } from "core/Animations/animatable";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
+import type { Animation } from "core/Animations/animation";
+import type { Animatable } from "core/Animations/animatable";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
-import { AnimationRange } from "core/Animations/animationRange";
+import type { AnimationRange } from "core/Animations/animationRange";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 import { Context } from "./curveEditor/context";
 
@@ -35,7 +35,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _mainAnimatable: Nullable<Animatable>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
-    private timelineRef: React.RefObject<SliderLineComponent>;
+    private _timelineRef: React.RefObject<SliderLineComponent>;
     private _animationCurveEditorContext: Nullable<Context>;
     private _animationControl = {
         from: 0,
@@ -84,7 +84,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             }
         }
 
-        this.timelineRef = React.createRef();
+        this._timelineRef = React.createRef();
     }
 
     playOrPause() {
@@ -228,7 +228,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 />
                                 {this._isPlaying && (
                                     <SliderLineComponent
-                                        ref={this.timelineRef}
+                                        ref={this._timelineRef}
                                         label="Current frame"
                                         minimum={this._animationControl.from}
                                         maximum={this._animationControl.to}

@@ -1,17 +1,17 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { AnimationGroup } from "core/Animations/animationGroup";
-import { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { AnimationGroup } from "core/Animations/animationGroup";
+import type { Scene } from "core/scene";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Context } from "./curveEditor/context";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
@@ -28,7 +28,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     private _onAnimationGroupPlayObserver: Nullable<Observer<AnimationGroup>>;
     private _onAnimationGroupPauseObserver: Nullable<Observer<AnimationGroup>>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private timelineRef: React.RefObject<SliderLineComponent>;
+    private _timelineRef: React.RefObject<SliderLineComponent>;
     private _animationCurveEditorContext: Context;
 
     constructor(props: IAnimationGroupGridComponentProps) {
@@ -43,7 +43,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
             this.updateCurrentFrame(this.props.animationGroup);
         });
 
-        this.timelineRef = React.createRef();
+        this._timelineRef = React.createRef();
     }
 
     disconnect(animationGroup: AnimationGroup) {
@@ -164,7 +164,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        ref={this.timelineRef}
+                        ref={this._timelineRef}
                         label="Current frame"
                         minimum={animationGroup.from}
                         maximum={animationGroup.to}

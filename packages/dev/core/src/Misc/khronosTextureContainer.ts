@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Logger } from "../Misc/logger";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 
 /**
  * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
@@ -76,15 +77,11 @@ export class KhronosTextureContainer {
      * Creates a new KhronosTextureContainer
      * @param data contents of the KTX container file
      * @param facesExpected should be either 1 or 6, based whether a cube texture or or
-     * @param threeDExpected provision for indicating that data should be a 3D texture, not implemented
-     * @param textureArrayExpected provision for indicating that data should be a texture array, not implemented
      */
     public constructor(
         /** contents of the KTX container file */
         public data: ArrayBufferView,
-        facesExpected: number,
-        threeDExpected?: boolean,
-        textureArrayExpected?: boolean
+        facesExpected: number
     ) {
         if (!KhronosTextureContainer.IsValid(data)) {
             this.isInvalid = true;

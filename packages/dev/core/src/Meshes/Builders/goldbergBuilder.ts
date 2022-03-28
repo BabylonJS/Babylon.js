@@ -1,11 +1,12 @@
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
-import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
+import type { PolyhedronData } from "../geodesicMesh";
+import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
@@ -55,10 +56,8 @@ export type GoldbergCreationOption = {
 
 /**
  * Creates the Mesh for a Goldberg Polyhedron
- * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
- * @param goldBergData polyhedronData defining the Goldberg polyhedron
- * @param goldbergData
+ * @param goldbergData polyhedronData defining the Goldberg polyhedron
  * @returns GoldbergSphere mesh
  */
 export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, goldbergData: PolyhedronData): VertexData {

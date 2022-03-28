@@ -1,7 +1,7 @@
-import { Matrix } from "../Maths/math.vector";
-import { Mesh } from "../Meshes/mesh";
-import { Scene } from "../scene";
-import { Effect } from "../Materials/effect";
+import type { Matrix } from "../Maths/math.vector";
+import type { Mesh } from "../Meshes/mesh";
+import type { Scene } from "../scene";
+import type { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
 /**
@@ -43,6 +43,7 @@ export class PrePassConfiguration {
      * Add the required samplers to the current list.
      * @param samplers defines the current sampler list.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static AddSamplers(samplers: string[]): void {
         // pass
     }
@@ -55,6 +56,7 @@ export class PrePassConfiguration {
      * @param world World matrix of this mesh
      * @param isFrozen Is the material frozen
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bindForSubMesh(effect: Effect, scene: Scene, mesh: Mesh, world: Matrix, isFrozen: boolean): void {
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.currentRTisSceneRT) {
             if (scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE) !== -1) {

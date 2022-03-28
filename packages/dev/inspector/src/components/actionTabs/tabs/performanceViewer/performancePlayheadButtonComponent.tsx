@@ -1,4 +1,4 @@
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import * as React from "react";
 
 interface IPerformancePlayheadButtonProps {

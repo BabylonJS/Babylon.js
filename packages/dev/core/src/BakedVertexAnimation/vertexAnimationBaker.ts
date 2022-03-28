@@ -1,9 +1,9 @@
-import { AnimationRange } from "../Animations/animationRange";
+import type { AnimationRange } from "../Animations/animationRange";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
 /**
@@ -18,7 +18,6 @@ export class VertexAnimationBaker {
      * Create a new VertexAnimationBaker object which can help baking animations into a texture.
      * @param scene Defines the scene the VAT belongs to
      * @param mesh Defines the mesh the VAT belongs to
-     * @param skeleton Defines the skeleton the VAT belongs to
      */
     constructor(scene: Scene, mesh: Mesh) {
         this._scene = scene;

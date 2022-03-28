@@ -1,14 +1,14 @@
 import * as React from "react";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { GlobalState } from "../../../../../globalState";
+import type { GlobalState } from "../../../../../globalState";
 import { PopupComponent } from "../../../../../popupComponent";
 import { BottomBarComponent } from "./bottomBar/bottomBarComponent";
-import { Context } from "./context";
+import type { Context } from "./context";
 import { TopBarComponent } from "./topBarComponent";
 import { CanvasComponent } from "./graph/canvasComponent";
 import { SideBarComponent } from "./sideBar/sideBarComponent";
-import { Animation } from "core/Animations/animation";
-import { TargetedAnimation } from "core/Animations/animationGroup";
+import type { Animation } from "core/Animations/animation";
+import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import "./scss/curveEditor.scss";
 
@@ -89,17 +89,19 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     this.props.context.onMoveToFrameRequired.notifyObservers(Math.min(this.props.context.clipLength, this.props.context.activeFrame + 1));
                 }
                 break;
-            case "ArrowDown":
+            case "ArrowDown": {
                 const prevKey = this.props.context.getPrevKey();
                 if (prevKey !== null) {
                     this.props.context.onMoveToFrameRequired.notifyObservers(prevKey);
                 }
                 break;
-            case "ArrowUp":
+            }
+            case "ArrowUp": {
                 const nextKey = this.props.context.getNextKey();
                 if (nextKey !== null) {
                     this.props.context.onMoveToFrameRequired.notifyObservers(nextKey);
                 }
+            }
         }
     }
 

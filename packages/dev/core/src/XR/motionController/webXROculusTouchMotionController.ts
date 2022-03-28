@@ -1,7 +1,9 @@
-import { WebXRAbstractMotionController, IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
+import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
 import { Mesh } from "../../Meshes/mesh";
 import { Quaternion } from "../../Maths/math.vector";
 
@@ -35,7 +37,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         scene: Scene,
         gamepadObject: IMinimalMotionControllerObject,
         handedness: MotionControllerHandedness,
-        legacyMapping: boolean = false,
+        _legacyMapping: boolean = false,
         private _forceLegacyControllers: boolean = false
     ) {
         super(scene, OculusTouchLayouts[handedness], gamepadObject, handedness);

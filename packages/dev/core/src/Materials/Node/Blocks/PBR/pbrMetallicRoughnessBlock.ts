@@ -1,32 +1,33 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { MaterialHelper } from "../../../materialHelper";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import { Light } from "../../../../Lights/light";
-import { Nullable } from "../../../../types";
+import type { Light } from "../../../../Lights/light";
+import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Effect } from "../../../effect";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
-import { Scene } from "../../../../scene";
+import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { SheenBlock } from "./sheenBlock";
-import { BaseTexture } from "../../../Textures/baseTexture";
+import type { BaseTexture } from "../../../Textures/baseTexture";
 import { GetEnvironmentBRDFTexture } from "../../../../Misc/brdfTextureTools";
 import { MaterialFlags } from "../../../materialFlags";
 import { AnisotropyBlock } from "./anisotropyBlock";
 import { ReflectionBlock } from "./reflectionBlock";
 import { ClearCoatBlock } from "./clearCoatBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
-import { RefractionBlock } from "./refractionBlock";
-import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import type { RefractionBlock } from "./refractionBlock";
+import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
 import { Color3, TmpColors } from "../../../../Maths/math.color";
 
@@ -799,13 +800,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * this._scene.environmentIntensity, this.specularIntensity);
 
         // reflectivity bindings
-        const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
+        const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
         const ior = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
 
         // We are here deriving our default reflectance from a common value for none metallic surface.
         // Based of the schlick fresnel approximation model
         // for dielectrics.
-        const f0 = Math.pow((ior - outside_ior) / (ior + outside_ior), 2);
+        const f0 = Math.pow((ior - outsideIOR) / (ior + outsideIOR), 2);
 
         // Tweak the default F0 and F90 based on our given setup
         this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);

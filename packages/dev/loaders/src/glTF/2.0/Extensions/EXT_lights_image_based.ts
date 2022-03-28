@@ -1,13 +1,14 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { Scalar } from "core/Maths/math.scalar";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { Quaternion, Matrix } from "core/Maths/math.vector";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
 
-import { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBased_LightImageBased, IEXTLightsImageBased } from "babylonjs-gltf2interface";
-import { IScene } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBased_LightImageBased, IEXTLightsImageBased } from "babylonjs-gltf2interface";
+import type { IScene } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "EXT_lights_image_based";

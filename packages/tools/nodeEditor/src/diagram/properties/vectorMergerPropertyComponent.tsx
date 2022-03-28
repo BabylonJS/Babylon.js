@@ -1,9 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
+import type { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
 
 export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -30,7 +30,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="xSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -42,7 +42,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="ySwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -54,7 +54,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="zSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -66,7 +66,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                         target={vectorMergerBlock}
                         propertyName="wSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();

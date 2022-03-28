@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable import/no-internal-modules */
 import * as BABYLON from "core/index";
 import * as DebugImport from "core/Debug/index";
 

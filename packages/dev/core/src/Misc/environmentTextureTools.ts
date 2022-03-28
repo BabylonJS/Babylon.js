@@ -1,4 +1,5 @@
-import { Nullable } from "../types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "../types";
 import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
@@ -9,9 +10,9 @@ import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { RGBDTextureTools } from "./rgbdTextureTools";
-import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 import "../Engines/Extensions/engine.renderTargetCube";
 import "../Engines/Extensions/engine.readTexture";
@@ -20,8 +21,8 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
-const defaultEnvironmentTextureImageType = "image/png";
-const currentVersion = 2;
+const DefaultEnvironmentTextureImageType = "image/png";
+const CurrentVersion = 2;
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -152,7 +153,7 @@ export interface CreateEnvTextureOptions {
 /**
  * Magic number identifying the env file.
  */
-const _MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
+const MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
 
 /**
  * Gets the environment info from an env file.
@@ -163,8 +164,8 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
     const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
     let pos = 0;
 
-    for (let i = 0; i < _MagicBytes.length; i++) {
-        if (dataView.getUint8(pos++) !== _MagicBytes[i]) {
+    for (let i = 0; i < MagicBytes.length; i++) {
+        if (dataView.getUint8(pos++) !== MagicBytes[i]) {
             Logger.Error("Not a babylon environment map");
             return null;
         }
@@ -196,8 +197,8 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
  * @private
  */
 export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextureInfoV2 {
-    if (info.version > currentVersion) {
-        throw new Error(`Unsupported babylon environment map version "${info.version}". Latest supported version is "${currentVersion}".`);
+    if (info.version > CurrentVersion) {
+        throw new Error(`Unsupported babylon environment map version "${info.version}". Latest supported version is "${CurrentVersion}".`);
     }
 
     if (info.version === 2) {
@@ -205,7 +206,7 @@ export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextu
     }
 
     // Migrate a v1 info to v2
-    info = { ...info, version: 2, imageType: defaultEnvironmentTextureImageType };
+    info = { ...info, version: 2, imageType: DefaultEnvironmentTextureImageType };
 
     return info;
 }
@@ -224,7 +225,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         return Promise.reject("The cube texture is invalid.");
     }
 
-    const imageType = options.imageType ?? defaultEnvironmentTextureImageType;
+    const imageType = options.imageType ?? DefaultEnvironmentTextureImageType;
 
     const engine = internalTexture.getEngine() as Engine;
 
@@ -301,7 +302,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
     // Creates the json header for the env texture
     const info: EnvironmentTextureInfo = {
-        version: currentVersion,
+        version: CurrentVersion,
         width: cubeWidth,
         imageType,
         irradiance: _CreateEnvTextureIrradiance(texture),
@@ -335,15 +336,15 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     infoView[infoString.length] = 0x00;
 
     // Computes the final required size and creates the storage
-    const totalSize = _MagicBytes.length + position + infoBuffer.byteLength;
+    const totalSize = MagicBytes.length + position + infoBuffer.byteLength;
     const finalBuffer = new ArrayBuffer(totalSize);
     const finalBufferView = new Uint8Array(finalBuffer);
     const dataView = new DataView(finalBuffer);
 
     // Copy the magic bytes identifying the file in
     let pos = 0;
-    for (let i = 0; i < _MagicBytes.length; i++) {
-        dataView.setUint8(pos++, _MagicBytes[i]);
+    for (let i = 0; i < MagicBytes.length; i++) {
+        dataView.setUint8(pos++, MagicBytes[i]);
     }
 
     // Add the json info
@@ -512,7 +513,7 @@ function _OnImageReadyAsync(
  * @param imageType the mime type of the image data
  * @returns a promise
  */
-export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = defaultEnvironmentTextureImageType): Promise<void> {
+export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
     if (!Tools.IsExponentOfTwo(texture.width)) {
         throw new Error("Texture size must be a power of two");
     }

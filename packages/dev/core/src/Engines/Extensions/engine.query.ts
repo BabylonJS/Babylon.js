@@ -1,14 +1,15 @@
-import { Nullable, int } from "../../types";
+import type { Nullable, int } from "../../types";
 import { Engine } from "../../Engines/engine";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 
 /** @hidden */
 export type OcclusionQuery = WebGLQuery | number;
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _OcclusionDataStorage {
     /** @hidden */
     public occlusionInternalRetryCounter = 0;
@@ -352,6 +353,7 @@ declare module "../../Meshes/abstractMesh" {
          * Backing filed
          * @hidden
          */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         __occlusionDataStorage: _OcclusionDataStorage;
 
         /**
@@ -361,7 +363,7 @@ declare module "../../Meshes/abstractMesh" {
         _occlusionDataStorage: _OcclusionDataStorage;
 
         /**
-         * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retireved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decides to show or hide the object.
+         * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retrieved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decides to show or hide the object.
          * The default value is -1 which means don't break the query and wait till the result
          * @see https://doc.babylonjs.com/features/occlusionquery
          */

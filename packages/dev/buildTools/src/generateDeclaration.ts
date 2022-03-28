@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chokidar from "chokidar";
 
-import { camelize, checkArgs, checkDirectorySync, debounce } from "./utils";
+import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile } from "./utils";
 import { BuildType, DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
 
 export interface IGenerateDeclarationConfig {
@@ -20,13 +20,14 @@ export interface IGenerateDeclarationConfig {
 function getModuleDeclaration(source: string, filename: string, config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
     const distPosition = filename.indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
-    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
+    const moduleName = getPublicPackageName(packageVariables[buildType], undefined, filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
     const mapping = getAllPackageMappingsByDevNames();
     let processedLines = lines
         .map((line: string) => {
+            line = line.replace("import type ", "import ");
             // Replace Type Imports
             const regexTypeImport = /(.*)type ([A-Za-z0-9]*) = import\("(.*)"\)\.(.*);/g;
             let match = regexTypeImport.exec(line);
@@ -75,12 +76,13 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
                                 if (match[1].startsWith(devPackageName)) {
                                     line = line.replace(
                                         match[1],
-                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], match[1]) + match[1].substr(devPackageName.length)
+                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], undefined, match[1]) + match[1].substr(devPackageName.length)
                                     );
                                 }
                             });
                         }
                     }
+                    line = line.replace("declare ", "");
                 });
             }
 
@@ -118,6 +120,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             }
         }
     }
+    processedLines = processedLines.replace(/export declare /g, "export ");
     return `declare module "${moduleName}" {
 ${processedLines}
 }
@@ -187,9 +190,17 @@ function getPackageDeclaration(
     let removeNext = false;
     const packageMapping = getPackageMappingByDevName(devPackageName);
     const defaultModuleName = getPublicPackageName(packageMapping.namespace);
-    const thisFileModuleName = getPublicPackageName(packageMapping.namespace, sourceFilePath);
+    const thisFileModuleName = getPublicPackageName(packageMapping.namespace /*, undefined, sourceFilePath*/);
     while (i < lines.length) {
         let line = lines[i];
+
+        if (/import\("\.(.*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
+            line = line.replace(/import\((.*)\)./, "");
+        }
+
+        if (!line.includes("const enum") && !line.includes("=")) {
+            line = line.replace("const ", "var ");
+        }
 
         //Exclude empty lines
         let excludeLine /*:boolean */ = line === "";
@@ -198,9 +209,10 @@ function getPackageDeclaration(
         excludeLine = excludeLine || line.indexOf("export =") !== -1;
 
         //Exclude import statements
-        excludeLine = excludeLine || /import[ (]/.test(line);
+        excludeLine = excludeLine || /^import[ (]/.test(line);
         excludeLine = excludeLine || /export \{/.test(line);
         excludeLine = excludeLine || /export \* from "/.test(line);
+        excludeLine = excludeLine || /^declare type (.*) import/.test(line);
 
         const match = line.match(/(\s*)declare module "(.*)" \{/);
         if (match) {
@@ -239,7 +251,7 @@ function getPackageDeclaration(
     // replaces classes definitions with namespace definitions
     classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName: DevPackageName; fullPath: string }) => {
         const { alias, realClassName, devPackageName, fullPath } = classMapping;
-        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, fullPath);
+        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, undefined, fullPath);
         const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
         processedSource = processedSource.replace(matchRegex, `$1${namespace}.${realClassName}$3`);
     });
@@ -257,25 +269,25 @@ declare module ${defaultModuleName} {
     return processedSource;
 }
 
-export function generateDefaultModuleDeclaration(declarationFiles: string[], devPackageName: DevPackageName) {
-    let declarations = "";
-    for (const fileName in declarationFiles) {
-        const declarationFile = declarationFiles[fileName];
-        // The lines of the files now come as a Function inside declaration file.
-        const data = fs.readFileSync(declarationFile, "utf8");
-        declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), devPackageName);
-    }
-    const packageVariables = getPackageMappingByDevName(devPackageName);
-    const defaultModuleName = getPublicPackageName(packageVariables.namespace);
+// export function generateDefaultModuleDeclaration(declarationFiles: string[], devPackageName: DevPackageName) {
+//     let declarations = "";
+//     for (const fileName in declarationFiles) {
+//         const declarationFile = declarationFiles[fileName];
+//         // The lines of the files now come as a Function inside declaration file.
+//         const data = fs.readFileSync(declarationFile, "utf8");
+//         declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), devPackageName);
+//     }
+//     const packageVariables = getPackageMappingByDevName(devPackageName);
+//     const defaultModuleName = getPublicPackageName(packageVariables.namespace);
 
-    return `
-declare module ${defaultModuleName} {
-    ${declarations}
-}
-`;
-}
+//     return `
+// declare module ${defaultModuleName} {
+//     ${declarations}
+// }
+// `;
+// }
 
-export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
+export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, loseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
     for (const fileName in declarationFiles) {
@@ -288,6 +300,12 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
         }
         declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), config.devPackageName);
     }
+    const loseDeclarationsString = loseDeclarations
+        .map((declarationFile) => {
+            const data = fs.readFileSync(declarationFile, "utf8");
+            return `\n${data}`;
+        })
+        .join("\n");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const defaultModuleName = getPublicPackageName(packageVariables.namespace);
     const packageName = getPublicPackageName(packageVariables[buildType]);
@@ -309,6 +327,7 @@ declare module ${defaultModuleName} {
 `
         : ""
 }
+${loseDeclarationsString}
 `;
     return output;
 }
@@ -319,6 +338,7 @@ export function generateDeclaration() {
         throw new Error("--config path to config file is required");
     }
     const asJSON = checkArgs("--json", true) as boolean;
+    const rootDir = findRootDirectory();
     // import { createRequire } from "module";
     // const requireRequest = createRequire(import.meta.url);
     // // a hack to load JSON!
@@ -339,23 +359,65 @@ export function generateDeclaration() {
         }
         const outputDir = config.outputDirectory || "./dist";
         checkDirectorySync(outputDir);
-        const files = config.declarationLibs.map((lib: string) => {
-            // load the declarations from the root directory of the requested lib
-            const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
-            return glob.sync(p);
-        });
+        const directoriesToWatch = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`));
+        const looseDeclarations = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`));
+        // const files = config.declarationLibs.map((lib: string) => {
+        //     // load the declarations from the root directory of the requested lib
+        //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
+        //     console.log(p);
+        //     return glob.sync(p);
+        // });
+
+        // check if there are .d.ts files in LibDeclaration in the source directory
+        // const decFiles = config.declarationLibs.map((lib: string) => {
+        //     // load the declarations from the root directory of the requested lib
+        //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`);
+        //     return glob.sync(p);
+        // });
 
         const debounced = debounce(() => {
-            const output = generateCombinedDeclaration(files.flat(), config, config.buildType);
-            fs.writeFileSync(`${outputDir}/${config.filename || "index.d.ts"}`, output);
+            const output = generateCombinedDeclaration(
+                directoriesToWatch.map((dir) => glob.sync(dir)).flat(),
+                config,
+                looseDeclarations.map((dir) => glob.sync(dir)).flat(),
+                config.buildType
+            );
+            const filename = `${outputDir}/${config.filename || "index.d.ts"}`;
+            // check hash
+            if (fs.existsSync(filename)) {
+                const hash = getHashOfFile(filename);
+                const newHash = getHashOfContent(output);
+                if (hash === newHash) {
+                    return;
+                }
+            }
+            fs.writeFileSync(filename, output);
             console.log("declaration file generated", config.declarationLibs);
-        }, 200);
+        }, 250);
 
-        debounced();
+        // debounced();
         if (checkArgs("--watch")) {
-            chokidar.watch(files.flat(), { ignoreInitial: true, awaitWriteFinish: true }).on("all", () => {
-                debounced();
-            });
+            const watchSize: { [path: string]: number } = {};
+            chokidar
+                .watch(directoriesToWatch, {
+                    ignoreInitial: false,
+                    awaitWriteFinish: {
+                        stabilityThreshold: 300,
+                        pollInterval: 100,
+                    },
+                    alwaysStat: true,
+                })
+                .on("all", (e, p, stats) => {
+                    if (stats) {
+                        if (watchSize[p] === stats.size) {
+                            return;
+                        }
+                        watchSize[p] = stats.size;
+                    }
+                    debounced();
+                });
+        } else {
+            debounced();
         }
     });
 }

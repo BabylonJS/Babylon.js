@@ -1,16 +1,16 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Effect } from "../Materials/effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Effect } from "../Materials/effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { Texture } from "../Materials/Textures/texture";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { Camera } from "../Cameras/camera";
+import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { Camera } from "../Cameras/camera";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -281,6 +281,7 @@ export class SpotLight extends ShadowLight {
      * @param viewMatrix
      * @param renderList
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
         const activeCamera = this.getScene().activeCamera;
 
@@ -321,11 +322,11 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureProjectionLightDirty = false;
         this._projectionTextureDirty = true;
 
-        const light_far = this.projectionTextureLightFar;
-        const light_near = this.projectionTextureLightNear;
+        const lightFar = this.projectionTextureLightFar;
+        const lightNear = this.projectionTextureLightNear;
 
-        const P = light_far / (light_far - light_near);
-        const Q = -P * light_near;
+        const P = lightFar / (lightFar - lightNear);
+        const Q = -P * lightNear;
         const S = 1.0 / Math.tan(this._angle / 2.0);
         const A = 1.0;
 

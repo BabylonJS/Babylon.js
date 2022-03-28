@@ -5,7 +5,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/languageFeatures";
 
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { CompilationError } from "../components/errorDisplayComponent";
 import { Observable } from "@dev/core";
@@ -245,7 +245,9 @@ class Playground {
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot).replace(".d.ts", ".module.d.ts");
+                declarations[index] = declarations[index]
+                    .replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot)
+                    .replace(".d.ts", ".module.d.ts");
             }
         }
 
@@ -255,7 +257,7 @@ class Playground {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com/", "//localhost:1337/");
             }
         }
-        
+
         declarations.push("https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts");
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
@@ -266,12 +268,19 @@ class Playground {
 
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
+        const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
-                return;
+                // attempt a fallback
+                const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
+                if (fallbackResponse.ok) {
+                    libContent += await fallbackResponse.text();
+                } else {
+                    console.log("missing declaration", response.url);
+                }
+            } else {
+                libContent += await response.text();
             }
-
-            libContent += await response.text();
         }
 
         this._createEditor();
@@ -279,7 +288,7 @@ class Playground {
         // Definition worker
         this._setupDefinitionWorker(libContent);
 
-        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
+        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scripting needs
         this._setupMonacoCompilationPipeline(libContent);
 
         // This is used for a vscode-like color preview for ColorX types

@@ -1,10 +1,10 @@
-import { Mesh } from "../../Meshes/mesh";
-import { Behavior } from "../behavior";
+import type { Mesh } from "../../Meshes/mesh";
+import type { Behavior } from "../behavior";
 import { PointerDragBehavior } from "./pointerDragBehavior";
 import { Vector3 } from "../../Maths/math.vector";
-import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { Scene } from "../../scene";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be scaled
@@ -52,7 +52,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         this._ownerNode = ownerNode;
 
         // Create 2 drag behaviors such that each will only be triggered by a separate pointer
-        this._dragBehaviorA.onDragStartObservable.add((e) => {
+        this._dragBehaviorA.onDragStartObservable.add(() => {
             if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
                 if (this._dragBehaviorA.currentDraggingPointerId == this._dragBehaviorB.currentDraggingPointerId) {
                     this._dragBehaviorA.releaseDrag();
@@ -62,7 +62,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
                 }
             }
         });
-        this._dragBehaviorB.onDragStartObservable.add((e) => {
+        this._dragBehaviorB.onDragStartObservable.add(() => {
             if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
                 if (this._dragBehaviorA.currentDraggingPointerId == this._dragBehaviorB.currentDraggingPointerId) {
                     this._dragBehaviorB.releaseDrag();

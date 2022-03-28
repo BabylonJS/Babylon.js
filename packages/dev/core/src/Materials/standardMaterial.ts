@@ -1,31 +1,34 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
-import { Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration } from "./prePassConfiguration";
 
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
-import { ColorCurves } from "./colorCurves";
-import { FresnelParameters } from "./fresnelParameters";
-import { Material, ICustomShaderNameResolveOptions } from "../Materials/material";
+import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
+import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
+import type { ColorCurves } from "./colorCurves";
+import type { FresnelParameters } from "./fresnelParameters";
+import type { ICustomShaderNameResolveOptions } from "../Materials/material";
+import { Material } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
 
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { CubeTexture } from "../Materials/Textures/cubeTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
@@ -33,7 +36,7 @@ import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
-import { Effect, IEffectCreationOptions } from "./effect";
+import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -1639,7 +1642,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        var depth = 1.0;
+                        let depth = 1.0;
                         if (!this._refractionTexture.isCube) {
                             ubo.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
 
@@ -1713,7 +1716,6 @@ export class StandardMaterial extends PushMaterial {
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                    var depth = 1.0;
                     if (this._refractionTexture.isCube) {
                         effect.setTexture("refractionCubeSampler", this._refractionTexture);
                     } else {

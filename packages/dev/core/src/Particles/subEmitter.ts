@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
 import { _WarnImport } from "../Misc/devTools";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { GetClass } from "../Misc/typeStore";
 
 declare type Scene = import("../scene").Scene;
@@ -108,6 +108,7 @@ export class SubEmitter {
      * @param doNotStart
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
         throw _WarnImport("ParseParticle");
     }

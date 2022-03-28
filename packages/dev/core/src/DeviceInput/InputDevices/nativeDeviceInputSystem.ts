@@ -1,8 +1,8 @@
-import { INative } from "../../Engines/Native/nativeInterfaces";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { INative } from "../../Engines/Native/nativeInterfaces";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, NativePointerInput, PointerInput } from "./deviceEnums";
-import { IDeviceInputSystem } from "./inputInterfaces";
+import type { IDeviceInputSystem } from "./inputInterfaces";
 
 declare const _native: INative;
 
@@ -34,7 +34,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
     // Public functions
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      * @returns Current value of input

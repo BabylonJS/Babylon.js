@@ -1,7 +1,7 @@
-import { IMaterial } from "babylonjs-gltf2interface";
-import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import type { IMaterial } from "babylonjs-gltf2interface";
+import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
@@ -10,6 +10,7 @@ const NAME = "KHR_materials_unlit";
 /**
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
@@ -22,7 +23,7 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {}
+    constructor() {}
 
     /** @hidden */
     public get wasUsed() {
@@ -32,7 +33,7 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
     public dispose() {}
 
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let unlitMaterial = false;
 
             if (babylonMaterial instanceof PBRMaterial) {
@@ -56,4 +57,4 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_unlit(exporter));
+_Exporter.RegisterExtension(NAME, () => new KHR_materials_unlit());

@@ -1,5 +1,7 @@
 dist
 .temp
+.tempChromeCanaryProfileForDebug
+.tempChromeProfileForDebug
 node_modules
 .tsbuildinfo
 .snapshot

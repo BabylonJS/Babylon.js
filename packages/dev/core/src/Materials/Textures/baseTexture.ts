@@ -1,18 +1,19 @@
 import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
-import { Observer, Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
-import { IAnimatable } from "../../Animations/animatable.interface";
+import type { IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
 import "../../Misc/fileTools";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 import { ThinTexture } from "./thinTexture";
-import { AbstractScene } from "../../abstractScene";
+import type { AbstractScene } from "../../abstractScene";
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -514,7 +515,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         super(null);
 
         if (sceneOrEngine) {
-            if (BaseTexture._isScene(sceneOrEngine)) {
+            if (BaseTexture._IsScene(sceneOrEngine)) {
                 this._scene = sceneOrEngine;
             } else {
                 this._engine = sceneOrEngine;
@@ -582,6 +583,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Scales the texture if is `canRescale()`
      * @param ratio the resize factor we want to use to rescale
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public scale(ratio: number): void {}
 
     /**
@@ -869,7 +871,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
     }
 
-    private static _isScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
+    private static _IsScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
         return sceneOrEngine.getClassName() === "Scene";
     }
 }

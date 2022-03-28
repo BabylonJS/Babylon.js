@@ -1,8 +1,8 @@
-import { Nullable } from "../types";
-import { Scene } from "../scene";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SubMesh } from "../Meshes/subMesh";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
 import { RegisterClass } from "../Misc/typeStore";
@@ -227,7 +227,7 @@ export class MultiMaterial extends Material {
         }
 
         if (forceDisposeChildren) {
-            for (var index = 0; index < this.subMaterials.length; index++) {
+            for (let index = 0; index < this.subMaterials.length; index++) {
                 const subMaterial = this.subMaterials[index];
                 if (subMaterial) {
                     subMaterial.dispose(forceDisposeEffect, forceDisposeTextures);
@@ -235,7 +235,7 @@ export class MultiMaterial extends Material {
             }
         }
 
-        var index = scene.multiMaterials.indexOf(this);
+        const index = scene.multiMaterials.indexOf(this);
         if (index >= 0) {
             scene.multiMaterials.splice(index, 1);
         }

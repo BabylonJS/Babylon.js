@@ -1,8 +1,8 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
-import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
-import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
+import type { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
+import type { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
@@ -12,11 +12,11 @@ export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
     private _previewImage: HTMLImageElement;
 
-    public getHeaderClass(block: NodeMaterialBlock) {
+    public getHeaderClass() {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return true;
     }
 

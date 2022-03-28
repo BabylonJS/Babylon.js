@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Vector2 } from "core/Maths/math.vector";
-import { Observable } from "core/Misc/observable";
+import type { Vector2 } from "core/Maths/math.vector";
+import type { Observable } from "core/Misc/observable";
 
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
 
 interface IVector2LineComponentProps {
     label: string;
@@ -19,6 +19,7 @@ interface IVector2LineComponentProps {
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean; value: Vector2 }> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static defaultProps = {
         step: 0.001, // cm
     };

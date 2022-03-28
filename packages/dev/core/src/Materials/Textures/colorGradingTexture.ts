@@ -1,11 +1,11 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 // Ensures Raw texture are included
 import "../../Engines/Extensions/engine.rawTexture";
@@ -27,7 +27,7 @@ export class ColorGradingTexture extends BaseTexture {
     /**
      * Empty line regex stored for GC.
      */
-    private static _noneEmptyLineRegex = /\S+/;
+    private static _NoneEmptyLineRegex = /\S+/;
 
     private _textureMatrix: Matrix;
     private _onLoad: Nullable<() => void>;
@@ -57,12 +57,12 @@ export class ColorGradingTexture extends BaseTexture {
             const scene = this.getScene();
             if (scene) {
                 if (!scene.useDelayedTextureLoading) {
-                    this.loadTexture();
+                    this._loadTexture();
                 } else {
                     this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 }
             } else {
-                this.loadTexture();
+                this._loadTexture();
             }
         } else {
             this._triggerOnLoad();
@@ -89,7 +89,7 @@ export class ColorGradingTexture extends BaseTexture {
     /**
      * Occurs when the file being loaded is a .3dl LUT file.
      */
-    private load3dlTexture() {
+    private _load3dlTexture() {
         const engine = this._getEngine()!;
         let texture: InternalTexture;
         if (!engine._features.support3DTextures) {
@@ -148,7 +148,7 @@ export class ColorGradingTexture extends BaseTexture {
             for (let i = 0; i < lines.length; i++) {
                 line = lines[i];
 
-                if (!ColorGradingTexture._noneEmptyLineRegex.test(line)) {
+                if (!ColorGradingTexture._NoneEmptyLineRegex.test(line)) {
                     continue;
                 }
 
@@ -241,9 +241,9 @@ export class ColorGradingTexture extends BaseTexture {
     /**
      * Starts the loading process of the texture.
      */
-    private loadTexture() {
+    private _loadTexture() {
         if (this.url && this.url.toLocaleLowerCase().indexOf(".3dl") == this.url.length - 4) {
-            this.load3dlTexture();
+            this._load3dlTexture();
         }
     }
 
@@ -271,7 +271,7 @@ export class ColorGradingTexture extends BaseTexture {
         this._texture = this._getFromCache(this.url, true);
 
         if (!this._texture) {
-            this.loadTexture();
+            this._loadTexture();
         }
     }
 
@@ -279,7 +279,6 @@ export class ColorGradingTexture extends BaseTexture {
      * Parses a color grading texture serialized by Babylon.
      * @param parsedTexture The texture information being parsedTexture
      * @param scene The scene to load the texture in
-     * @param rootUrl The root url of the data assets to load
      * @return A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {

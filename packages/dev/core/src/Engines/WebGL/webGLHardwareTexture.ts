@@ -1,11 +1,12 @@
-import { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import { Nullable } from "../../types";
+import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { Nullable } from "../../types";
 
 /** @hidden */
 export class WebGLHardwareTexture implements HardwareTextureWrapper {
     private _webGLTexture: WebGLTexture;
     private _context: WebGLRenderingContext;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public _MSAARenderBuffer: Nullable<WebGLRenderbuffer> = null;
 
     public get underlyingResource(): Nullable<WebGLTexture> {
@@ -23,7 +24,7 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
         this.set(existingTexture);
     }
 
-    public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {}
+    public setUsage(): void {}
 
     public set(hardwareTexture: WebGLTexture) {
         this._webGLTexture = hardwareTexture;

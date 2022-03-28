@@ -1,12 +1,12 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget";
+import type { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../../Misc/logger";
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
-import { RenderTargetWrapper } from "../../renderTargetWrapper";
+import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
-import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
+import type { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
 WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     rtWrapper: RenderTargetWrapper,

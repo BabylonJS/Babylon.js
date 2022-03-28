@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
 import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { PhysicsImpostor } from "core/Physics/physicsImpostor";
 import { Scene } from "core/scene";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -18,12 +18,12 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import { MorphTarget } from "core/Morph/morphTarget";
+import type { MorphTarget } from "core/Morph/morphTarget";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
@@ -34,8 +34,8 @@ import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { IInspectableOptions } from "core/Misc/iInspectable";
+import type { ShaderMaterial } from "core/Materials/shaderMaterial";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import "core/Physics/physicsEngineComponent";
 
@@ -390,7 +390,7 @@ export class MeshPropertyGridComponent extends React.Component<
             ? mesh.skeleton.bones
                   .filter((bone) => bone.getIndex() >= 0)
                   .sort((bone1, bone2) => bone1.getIndex() - bone2.getIndex())
-                  .map((bone, idx) => {
+                  .map((bone) => {
                       return {
                           label: bone.name,
                           value: bone.getIndex(),

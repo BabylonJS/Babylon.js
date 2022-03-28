@@ -1,27 +1,27 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
-import { Nullable } from "core/types";
+import type { GlobalState } from "../../globalState";
+import type { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
-import { Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import { StringTools } from "shared-ui-components/stringTools";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { SliderGenericPropertyGridComponent } from "./propertyGrids/gui/sliderGenericPropertyGridComponent";
-import { Slider } from "gui/2D/controls/sliders/slider";
+import type { Slider } from "gui/2D/controls/sliders/slider";
 import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
 import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
-import { TextBlock } from "gui/2D/controls/textBlock";
-import { InputText } from "gui/2D/controls/inputText";
-import { ColorPicker } from "gui/2D/controls/colorpicker";
-import { Image } from "gui/2D/controls/image";
-import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
-import { Rectangle } from "gui/2D/controls/rectangle";
-import { Ellipse } from "gui/2D/controls/ellipse";
-import { Checkbox } from "gui/2D/controls/checkbox";
-import { RadioButton } from "gui/2D/controls/radioButton";
-import { Line } from "gui/2D/controls/line";
-import { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
-import { Grid } from "gui/2D/controls/grid";
-import { StackPanel } from "gui/2D/controls/stackPanel";
+import type { TextBlock } from "gui/2D/controls/textBlock";
+import type { InputText } from "gui/2D/controls/inputText";
+import type { ColorPicker } from "gui/2D/controls/colorpicker";
+import type { Image } from "gui/2D/controls/image";
+import type { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import type { Rectangle } from "gui/2D/controls/rectangle";
+import type { Ellipse } from "gui/2D/controls/ellipse";
+import type { Checkbox } from "gui/2D/controls/checkbox";
+import type { RadioButton } from "gui/2D/controls/radioButton";
+import type { Line } from "gui/2D/controls/line";
+import type { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
+import type { Grid } from "gui/2D/controls/grid";
+import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPropertyGridComponent";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
@@ -33,38 +33,22 @@ import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridC
 import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
 import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
 import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
-import { DisplayGrid } from "gui/2D/controls/displayGrid";
-import { Button } from "gui/2D/controls/button";
+import type { DisplayGrid } from "gui/2D/controls/displayGrid";
+import type { Button } from "gui/2D/controls/button";
 import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
 import { GUINodeTools } from "../../guiNodeTools";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 import "./propertyTab.scss";
 import adtIcon from "../../imgs/adtIcon.svg";
-import rectangleIcon from "../../imgs/rectangleIconDark.svg";
-import ellipseIcon from "../../imgs/ellipseIconDark.svg";
-import gridIcon from "../../imgs/gridIconDark.svg";
-import stackPanelIcon from "../../imgs/stackPanelIconDark.svg";
-import textBoxIcon from "../../imgs/textBoxIconDark.svg";
-import sliderIcon from "../../imgs/sliderIconDark.svg";
-import buttonIcon from "../../imgs/buttonIconDark.svg";
-import checkboxIcon from "../../imgs/checkboxIconDark.svg";
-import imageIcon from "../../imgs/imageIconDark.svg";
-import keyboardIcon from "../../imgs/keyboardIconDark.svg";
-import inputFieldIcon from "../../imgs/inputFieldIconDark.svg";
-import lineIcon from "../../imgs/lineIconDark.svg";
-import displaygridIcon from "../../imgs/displaygridIconDark.svg";
-import colorPickerIcon from "../../imgs/colorPickerIconDark.svg";
-import scrollbarIcon from "../../imgs/scrollbarIconDark.svg";
-import imageSliderIcon from "../../imgs/imageSliderIconDark.svg";
-import radioButtonIcon from "../../imgs/radioButtonIconDark.svg";
+import { ControlTypes } from "../../controlTypes";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -101,7 +85,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
-        this.props.globalState.onResizeObservable.add((newSize) => {
+        this.props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
 
@@ -162,7 +146,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         if (windowAsAny.Playground && oldId) {
                             windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                 regex: new RegExp(oldId, "g"),
-                                replace: `parseFromSnippetAsync("${adt.snippetId})`,
+                                replace: adt.snippetId,
                             });
                         }
                         resolve(adt.snippetId);
@@ -201,7 +185,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         .then(() => {
                             this.props.globalState.hostWindow.alert(`${alertMessage}. The ID was copied to your clipboard.`);
                         })
-                        .catch((err: any) => {
+                        .catch(() => {
                             this.props.globalState.hostWindow.alert(alertMessage);
                         });
                 } else {
@@ -432,63 +416,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     renderControlIcon(nodes: Control[]) {
         const node = nodes[0];
         const className = node.getClassName();
-        switch (className) {
-            case "TextBlock": {
-                return textBoxIcon;
-            }
-            case "InputText": {
-                return inputFieldIcon;
-            }
-            case "ColorPicker": {
-                return colorPickerIcon;
-            }
-            case "Image": {
-                return imageIcon;
-            }
-            case "Slider": {
-                return sliderIcon;
-            }
-            case "ImageBasedSlider": {
-                return imageSliderIcon;
-            }
-            case "Rectangle": {
-                return rectangleIcon;
-            }
-            case "StackPanel": {
-                return stackPanelIcon;
-            }
-            case "Grid": {
-                return gridIcon;
-            }
-            case "ScrollViewer": {
-                return scrollbarIcon;
-            }
-            case "Ellipse": {
-                return ellipseIcon;
-            }
-            case "Checkbox": {
-                return checkboxIcon;
-            }
-            case "RadioButton": {
-                return radioButtonIcon;
-            }
-            case "Line": {
-                return lineIcon;
-            }
-            case "DisplayGrid": {
-                return displaygridIcon;
-            }
-            case "VirtualKeyboard": {
-                return keyboardIcon;
-            }
-            case "Button": {
-                return buttonIcon;
-            }
-            case "Container": {
-                return rectangleIcon;
+        for (const node of nodes) {
+            if (node.getClassName() !== className) {
+                return adtIcon;
             }
         }
-        return adtIcon;
+        const type = ControlTypes.find((control) => control.className === className);
+        return type ? type.icon : adtIcon;
     }
 
     render() {

@@ -1,37 +1,39 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Vector3, Vector2 } from "core/Maths/math.vector";
 import { Color4, Color3 } from "core/Maths/math.color";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { Camera } from "core/Cameras/camera";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { HtmlElementTexture } from "core/Materials/Textures/htmlElementTexture";
-import { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import type { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
+import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
-import { ISize } from "core/Maths/math.size";
+import type { ISize } from "core/Maths/math.size";
 import { Tools } from "core/Misc/tools";
 
-import { PointerEventTypes, PointerInfo } from "core/Events/pointerEvents";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 
 import { TextureHelper } from "../../../../../../textureHelper";
 
-import { ITool } from "./toolBar";
-import { IChannel } from "./channelsBar";
-import { IMetadata } from "./textureEditorComponent";
+import type { ITool } from "./toolBar";
+import type { IChannel } from "./channelsBar";
+import type { IMetadata } from "./textureEditorComponent";
 
 import { canvasShader } from "./canvasShader";
 
-import { IWheelEvent } from "core/Events/deviceInputEvents";
+import type { IWheelEvent } from "core/Events/deviceInputEvents";
 
 export interface IPixelData {
     x?: number;
@@ -53,7 +55,7 @@ export class TextureCanvasManager {
     private _mouseX: number;
     private _mouseY: number;
 
-    private _UICanvas: HTMLCanvasElement;
+    private _uiCanvas: HTMLCanvasElement;
 
     private _size: ISize;
 
@@ -146,7 +148,7 @@ export class TextureCanvasManager {
     ) {
         this._window = window;
 
-        this._UICanvas = canvasUI;
+        this._uiCanvas = canvasUI;
         this._2DCanvas = canvas2D;
         this._3DCanvas = canvas3D;
         this._paintCanvas = document.createElement("canvas");
@@ -162,7 +164,7 @@ export class TextureCanvasManager {
             url: (this._originalTexture as Texture).url,
             _forceSerialize: this._originalTexture._forceSerialize,
         };
-        this._engine = new Engine(this._UICanvas, true);
+        this._engine = new Engine(this._uiCanvas, true);
         this._scene = new Scene(this._engine, { virtual: true });
         this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
 
@@ -268,7 +270,7 @@ export class TextureCanvasManager {
             } else {
                 this._planeMaterial.setFloat("showGrid", 0.0);
             }
-            const ratio = this._UICanvas?.width / this._UICanvas?.height;
+            const ratio = this._uiCanvas?.width / this._uiCanvas?.height;
             const { x, y } = this._cameraPos;
             this._camera.orthoBottom = y - 1 / this._scale;
             this._camera.orthoTop = y + 1 / this._scale;
@@ -292,10 +294,11 @@ export class TextureCanvasManager {
                 this._isPanning = false;
             }
             switch (pointerInfo.type) {
-                case PointerEventTypes.POINTERWHEEL:
+                case PointerEventTypes.POINTERWHEEL: {
                     const event = pointerInfo.event as IWheelEvent;
                     this._scale -= event.deltaY * this.ZOOM_MOUSE_SPEED * this._scale;
                     break;
+                }
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
                         this._cameraPos.x -= ((pointerInfo.event.x - this._mouseX) * this.PAN_SPEED) / this._scale;

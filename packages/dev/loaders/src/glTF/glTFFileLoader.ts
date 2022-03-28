@@ -1,13 +1,15 @@
-import * as GLTF2 from "babylonjs-gltf2interface";
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/naming-convention */
+import type * as GLTF2 from "babylonjs-gltf2interface";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
-import { Camera } from "core/Cameras/camera";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Material } from "core/Materials/material";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import {
-    SceneLoader,
+import type { Camera } from "core/Cameras/camera";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Material } from "core/Materials/material";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type {
     ISceneLoaderPluginFactory,
     ISceneLoaderPlugin,
     ISceneLoaderPluginAsync,
@@ -15,14 +17,17 @@ import {
     ISceneLoaderPluginExtensions,
     ISceneLoaderAsyncResult,
 } from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
-import { Scene, IDisposable } from "core/scene";
-import { WebRequest } from "core/Misc/webRequest";
-import { IFileRequest } from "core/Misc/fileRequest";
+import type { Scene, IDisposable } from "core/scene";
+import type { WebRequest } from "core/Misc/webRequest";
+import type { IFileRequest } from "core/Misc/fileRequest";
 import { Logger } from "core/Misc/logger";
-import { DataReader, IDataBuffer } from "core/Misc/dataReader";
+import type { IDataBuffer } from "core/Misc/dataReader";
+import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
-import { DecodeBase64UrlToBinary, LoadFileError } from "core/Misc/fileTools";
+import type { LoadFileError } from "core/Misc/fileTools";
+import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { StringTools } from "core/Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
 
@@ -499,7 +504,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     private _progressCallback?: (event: ISceneLoaderProgressEvent) => void;
     private _requests = new Array<IFileRequestInfo>();
 
-    private static magicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
+    private static _MagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
 
     /**
      * Name of the loader ("gltf")
@@ -744,10 +749,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public canDirectLoad(data: string): boolean {
         return (
             (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
-            StringTools.StartsWith(data, "data:base64," + GLTFFileLoader.magicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader.magicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)
+            StringTools.StartsWith(data, "data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         );
     }
 
@@ -758,10 +763,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public directLoad(scene: Scene, data: string): Promise<any> {
         if (
-            StringTools.StartsWith(data, "base64," + GLTFFileLoader.magicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, ";base64," + GLTFFileLoader.magicBase64Encoded) ||
-            StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
-            StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)
+            StringTools.StartsWith(data, "base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            StringTools.StartsWith(data, ";base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 

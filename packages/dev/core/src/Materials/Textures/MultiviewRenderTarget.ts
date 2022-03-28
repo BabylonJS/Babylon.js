@@ -1,5 +1,5 @@
 import { RenderTargetTexture } from "../Textures/renderTargetTexture";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
 
 /**
@@ -28,9 +28,8 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
 
     /**
      * @hidden
-     * @param faceIndex the face index, if its a cube texture
      */
-    public _bindFrameBuffer(faceIndex: number = 0) {
+    public _bindFrameBuffer() {
         if (!this._renderTarget) {
             return;
         }

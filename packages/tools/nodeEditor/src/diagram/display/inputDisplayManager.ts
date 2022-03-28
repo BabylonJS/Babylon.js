@@ -1,11 +1,12 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { Color3 } from "core/Maths/math.color";
+import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import type { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
 
 const inputNameToAttributeValue: { [name: string]: string } = {
@@ -39,7 +40,7 @@ export class InputDisplayManager implements IDisplayManager {
         return "";
     }
 
-    public shouldDisplayPortLabels(block: NodeMaterialBlock): boolean {
+    public shouldDisplayPortLabels(): boolean {
         return false;
     }
 
@@ -70,6 +71,7 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 }
             }
+            // eslint-disable-next-line no-fallthrough
             default:
                 color = BlockTools.GetColorFromConnectionNodeType(inputBlock.type);
                 break;
@@ -131,18 +133,21 @@ export class InputDisplayManager implements IDisplayManager {
                         value = inputBlock.value.toFixed(4);
                     }
                     break;
-                case NodeMaterialBlockConnectionPointTypes.Vector2:
+                case NodeMaterialBlockConnectionPointTypes.Vector2: {
                     const vec2Value = inputBlock.value as Vector2;
                     value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
                     break;
-                case NodeMaterialBlockConnectionPointTypes.Vector3:
+                }
+                case NodeMaterialBlockConnectionPointTypes.Vector3: {
                     const vec3Value = inputBlock.value as Vector3;
                     value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                     break;
-                case NodeMaterialBlockConnectionPointTypes.Vector4:
+                }
+                case NodeMaterialBlockConnectionPointTypes.Vector4: {
                     const vec4Value = inputBlock.value as Vector4;
                     value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
                     break;
+                }
             }
         }
 

@@ -1,11 +1,12 @@
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";
 import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import { Nullable } from "../types";
-import { Observer, Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
 
@@ -137,6 +138,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     public set halfDome(enabled: boolean) {
         this._halfDome = enabled;
         this._halfDomeMask.setEnabled(enabled);
+        this._changeTextureMode(this._textureMode);
     }
 
     /**
@@ -144,6 +146,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
      */
     public set crossEye(enabled: boolean) {
         this._crossEye = enabled;
+        this._changeTextureMode(this._textureMode);
     }
 
     /**
@@ -211,6 +214,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             mesh?: Mesh;
         },
         scene: Scene,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         protected onError: Nullable<(message?: string, exception?: any) => void> = null
     ) {
         super(name, scene);
@@ -304,7 +308,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
                     this._texture.uOffset = -1;
                 }
                 break;
-            case TextureDome.MODE_SIDEBYSIDE:
+            case TextureDome.MODE_SIDEBYSIDE: {
                 // in half-dome mode the uScale should be double of 360 texture
                 // Use 0.99999 to boost perf by not switching program
                 this._texture.uScale = this._halfDome ? 0.99999 : 0.5;
@@ -322,6 +326,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
                     }
                 });
                 break;
+            }
             case TextureDome.MODE_TOPBOTTOM:
                 // in half-dome mode the vScale should be double of 360 texture
                 // Use 0.99999 to boost perf by not switching program

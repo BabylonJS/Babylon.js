@@ -2,20 +2,20 @@ import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/deco
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { CameraInputsManager } from "./cameraInputsManager";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { CameraInputsManager } from "./cameraInputsManager";
+import type { Scene } from "../scene";
 import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
-import { Mesh } from "../Meshes/mesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { ICullable } from "../Culling/boundingInfo";
+import type { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -34,7 +34,8 @@ export class Camera extends Node {
      * @param scene
      * @hidden
      */
-    public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _CreateDefaultParsedCamera = (name: string, scene: Scene): Camera => {
         throw _WarnImport("UniversalCamera");
     };
 
@@ -432,7 +433,7 @@ export class Camera extends Node {
 
     /**
      * Gets a string representation of the camera useful for debug purpose.
-     * @param fullDetails Defines that a more verboe level of logging is required
+     * @param fullDetails Defines that a more verbose level of logging is required
      * @returns the string representation
      */
     public toString(fullDetails?: boolean): string {
@@ -442,8 +443,6 @@ export class Camera extends Node {
             for (let i = 0; i < this.animations.length; i++) {
                 ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
             }
-        }
-        if (fullDetails) {
         }
         return ret;
     }
@@ -593,6 +592,7 @@ export class Camera extends Node {
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
 
     /**
@@ -608,6 +608,7 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public detachControl(ignored?: any): void {}
 
     /**
@@ -963,6 +964,7 @@ export class Camera extends Node {
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
         throw _WarnImport("Ray");
     }
@@ -975,6 +977,7 @@ export class Camera extends Node {
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
         throw _WarnImport("Ray");
     }
@@ -1025,7 +1028,7 @@ export class Camera extends Node {
             this._rigPostProcess = null;
             this._postProcesses = [];
         } else {
-            var i = this._postProcesses.length;
+            let i = this._postProcesses.length;
             while (--i >= 0) {
                 const postProcess = this._postProcesses[i];
                 if (postProcess) {
@@ -1035,7 +1038,7 @@ export class Camera extends Node {
         }
 
         // Render targets
-        var i = this.customRenderTargets.length;
+        let i = this.customRenderTargets.length;
         while (--i >= 0) {
             this.customRenderTargets[i].dispose();
         }
@@ -1155,6 +1158,7 @@ export class Camera extends Node {
         this.update();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _setRigMode(rigParams: any) {
         // no-op
     }
@@ -1222,6 +1226,7 @@ export class Camera extends Node {
      * @param cameraIndex
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         return null;
     }
@@ -1332,8 +1337,10 @@ export class Camera extends Node {
      * @param isStereoscopicSideBySide In case of stereoscopic setup, should the sereo be side b side
      * @returns a factory method to construct the camera
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
         const constructorFunc = Node.Construct(type, name, scene, {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             interaxial_distance: interaxial_distance,
             isStereoscopicSideBySide: isStereoscopicSideBySide,
         });
@@ -1343,7 +1350,7 @@ export class Camera extends Node {
         }
 
         // Default to universal camera
-        return () => Camera._createDefaultParsedCamera(name, scene);
+        return () => Camera._CreateDefaultParsedCamera(name, scene);
     }
 
     /**

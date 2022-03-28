@@ -1,11 +1,11 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from "../webXRSessionManager";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from "./WebXRHitTestLegacy";
+import type { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from "./WebXRHitTestLegacy";
 import { Tools } from "../../Misc/tools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * Options used for hit testing (version 2)
@@ -84,7 +84,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     private _transientXrHitTestSource: Nullable<XRTransientInputHitTestSource>;
     // in XR space z-forward is negative
     private _xrHitTestSource: Nullable<XRHitTestSource>;
-    private initHitTestSource = (referenceSpace: XRReferenceSpace) => {
+    private _initHitTestSource = (referenceSpace: XRReferenceSpace) => {
         if (!referenceSpace) {
             return;
         }
@@ -170,9 +170,9 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
 
         if (!this.options.disablePermanentHitTest) {
             if (this._xrSessionManager.referenceSpace) {
-                this.initHitTestSource(this._xrSessionManager.referenceSpace);
+                this._initHitTestSource(this._xrSessionManager.referenceSpace);
             }
-            this._xrSessionManager.onXRReferenceSpaceChanged.add(this.initHitTestSource);
+            this._xrSessionManager.onXRReferenceSpaceChanged.add(this._initHitTestSource);
         }
         if (this.options.enableTransientHitTest) {
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
@@ -202,7 +202,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             this._xrHitTestSource.cancel();
             this._xrHitTestSource = null;
         }
-        this._xrSessionManager.onXRReferenceSpaceChanged.removeCallback(this.initHitTestSource);
+        this._xrSessionManager.onXRReferenceSpaceChanged.removeCallback(this._initHitTestSource);
         if (this._transientXrHitTestSource) {
             this._transientXrHitTestSource.cancel();
             this._transientXrHitTestSource = null;

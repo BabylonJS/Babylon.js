@@ -1,12 +1,12 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from "../webXRSessionManager";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Observer } from "../../Misc/observable";
-import { WebXRInput } from "../webXRInput";
-import { WebXRInputSource } from "../webXRInputSource";
-import { Scene } from "../../scene";
-import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
-import { Nullable } from "../../types";
+import type { WebXRSessionManager } from "../webXRSessionManager";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Observer } from "../../Misc/observable";
+import type { WebXRInput } from "../webXRInput";
+import type { WebXRInputSource } from "../webXRInputSource";
+import type { Scene } from "../../scene";
+import type { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import type { Nullable } from "../../types";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
@@ -17,11 +17,11 @@ import { Ray } from "../../Culling/ray";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
-import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
-import { WebXRCamera } from "../webXRCamera";
-import { Node } from "../../node";
+import type { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
+import type { WebXRCamera } from "../webXRCamera";
+import type { Node } from "../../node";
 import { Viewport } from "../../Maths/math.viewport";
-import { Mesh } from "../../Meshes/mesh";
+import type { Mesh } from "../../Meshes/mesh";
 import { Tools } from "../../Misc/tools";
 
 /**
@@ -125,7 +125,7 @@ export interface IWebXRControllerPointerSelectionOptions {
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
 export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
-    private static _idCounter = 200;
+    private static _IdCounter = 200;
 
     private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
@@ -144,7 +144,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: null,
             tmpRay: new Ray(new Vector3(), new Vector3()),
             disabledByNearInteraction: false,
-            id: WebXRControllerPointerSelection._idCounter++,
+            id: WebXRControllerPointerSelection._IdCounter++,
         };
 
         if (this._attachedController) {
@@ -290,7 +290,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 pick: null,
                 tmpRay: new Ray(new Vector3(), new Vector3()),
                 disabledByNearInteraction: false,
-                id: WebXRControllerPointerSelection._idCounter++,
+                id: WebXRControllerPointerSelection._IdCounter++,
             };
             this._attachGazeMode();
         }
@@ -658,7 +658,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                                 }
-                            } else {
                             }
                         } else {
                             if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {

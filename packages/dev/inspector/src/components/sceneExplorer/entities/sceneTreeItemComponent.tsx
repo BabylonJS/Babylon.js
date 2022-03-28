@@ -1,20 +1,21 @@
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { Observer, Observable } from "core/Misc/observable";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from "@fortawesome/free-solid-svg-icons";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
-import { LightGizmo } from "core/Gizmos/lightGizmo";
-import { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import type { LightGizmo } from "core/Gizmos/lightGizmo";
+import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import { TmpVectors, Vector3 } from "core/Maths/math";
 
 interface ISceneTreeItemComponentProps {
@@ -179,7 +180,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
                 // Pick light gizmos first
                 if (this.props.globalState.lightGizmos.length > 0) {
-                    var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
+                    const gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
                     const pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
                         for (const g of this.props.globalState.lightGizmos as any) {
                             if (g.attachedNode == m) {
@@ -195,7 +196,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 }
                 // Pick camera gizmos
                 if (this.props.globalState.cameraGizmos.length > 0) {
-                    var gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
+                    const gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
                     const pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
                         for (const g of this.props.globalState.cameraGizmos as any) {
                             if (g.attachedNode == m) {
@@ -276,7 +277,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                                 const objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
 
                                 if (objLight.position) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = objLight;
                                     e.property = "position";
                                     e.value = objLight.position;
@@ -288,7 +289,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                                     const objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
 
                                     if (objCamera.position) {
-                                        var e = new PropertyChangedEvent();
+                                        const e = new PropertyChangedEvent();
                                         e.object = objCamera;
                                         e.property = "position";
                                         e.value = objCamera.position;
@@ -316,31 +317,31 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                                 const objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
 
                                 if (objLight.rotationQuaternion) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = objLight;
                                     e.property = "rotationQuaternion";
                                     e.value = objLight.rotationQuaternion;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 } else if (objLight.rotation) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = objLight;
                                     e.property = "rotation";
                                     e.value = objLight.rotation;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 } else if (objLight.direction) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = objLight;
                                     e.property = "direction";
                                     e.value = objLight.direction;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 } else if (objCamera.rotationQuaternion) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = objCamera;
                                     e.property = "rotationQuaternion";
                                     e.value = objCamera.rotationQuaternion;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 } else if (objCamera.rotation) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = objCamera;
                                     e.property = "rotation";
                                     e.value = objCamera.rotation;

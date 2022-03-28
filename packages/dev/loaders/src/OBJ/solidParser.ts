@@ -1,16 +1,16 @@
-import { AssetContainer } from "core/assetContainer";
+import type { AssetContainer } from "core/assetContainer";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Geometry } from "core/Meshes/geometry";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
-import { Scene } from "core/scene";
-import { FloatArray, IndicesArray, Nullable } from "core/types";
-import { OBJLoadingOptions } from "./objLoadingOptions";
+import type { Scene } from "core/scene";
+import type { FloatArray, IndicesArray, Nullable } from "core/types";
+import type { OBJLoadingOptions } from "./objLoadingOptions";
 
 type MeshObject = {
     name: string;
@@ -41,11 +41,11 @@ export class SolidParser {
 
     // Patterns
     /** Pattern used to detect a vertex */
-    public static VertexPattern = /v(\s+[\d|\.|\+|\-|e|E]+){3,7}/;
+    public static VertexPattern = /v(\s+[\d|.|+|\-|e|E]+){3,7}/;
     /** Pattern used to detect a normal */
-    public static NormalPattern = /vn(\s+[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+    public static NormalPattern = /vn(\s+[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)/;
     /** Pattern used to detect a UV set */
-    public static UVPattern = /vt(\s+[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+    public static UVPattern = /vt(\s+[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)/;
     /** Pattern used to detect a first kind of face (f vertex vertex vertex) */
     public static FacePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
     /** Pattern used to detect a second kind of face (f vertex/uvs vertex/uvs vertex/uvs) */
@@ -233,8 +233,7 @@ export class SolidParser {
      * facePattern4 = ["1//1","2//2","3//3","4//4","5//5","6//6"]
      * facePattern5 = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-4/-4/-4","-5/-5/-5","-6/-6/-6"]
      * Each pattern is divided by the same method
-     * @param face Array[String] The indices of elements
-     * @param faces
+     * @param faces Array[String] The indices of elements
      * @param v Integer The variable to increment
      */
     private _getTriangles(faces: Array<string>, v: number) {
@@ -511,7 +510,7 @@ export class SolidParser {
         // Look at each line
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim().replace(/\s\s/g, " ");
-            var result;
+            let result;
 
             // Comment or newLine
             if (line.length === 0 || line.charAt(0) === "#") {
@@ -606,7 +605,7 @@ export class SolidParser {
             } else if (SolidParser.GroupDescriptor.test(line) || SolidParser.ObjectDescriptor.test(line)) {
                 // Create a new mesh corresponding to the name of the group.
                 // Definition of the mesh
-                var objMesh: MeshObject = {
+                const objMesh: MeshObject = {
                     name: line.substring(2).trim(), //Set the name of the current obj mesh
                     indices: undefined,
                     positions: undefined,
@@ -635,7 +634,7 @@ export class SolidParser {
                     //Set the data for the previous mesh
                     this._addPreviousObjMesh();
                     //Create a new mesh
-                    var objMesh: MeshObject =
+                    const objMesh: MeshObject =
                         //Set the name of the current obj mesh
                         {
                             name: (this._objMeshName || "mesh") + "_mm" + this._increment.toString(), //Set the name of the current obj mesh

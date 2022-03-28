@@ -1,9 +1,10 @@
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { ITexture } from "../glTFLoaderInterfaces";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Nullable } from "core/types";
-import { IKHRTextureBasisU } from "babylonjs-gltf2interface";
+import type { ITexture } from "../glTFLoaderInterfaces";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Nullable } from "core/types";
+import type { IKHRTextureBasisU } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_texture_basisu";
 

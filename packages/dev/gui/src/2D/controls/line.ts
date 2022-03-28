@@ -1,15 +1,15 @@
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { Vector3, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
-import { Measure } from "../measure";
+import type { Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to render 2D lines */
 export class Line extends Control {
@@ -205,7 +205,7 @@ export class Line extends Control {
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
     }
 
-    protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected _computeAlignment(parentMeasure: Measure): void {
         this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
         this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
     }

@@ -1,8 +1,9 @@
-import { PBREnvironment, EnvironmentDeserializer } from "./environmentSerializer";
-import { Scene } from "core/scene";
+import type { PBREnvironment } from "./environmentSerializer";
+import { EnvironmentDeserializer } from "./environmentSerializer";
+import type { Scene } from "core/scene";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
-import { ShadowLight } from "core/Lights/shadowLight";
+import type { ShadowLight } from "core/Lights/shadowLight";
 import { TextureUtils } from "./texture";
 import { Axis } from "core/Maths/math.axis";
 
@@ -117,7 +118,6 @@ export class ViewerLabs {
 
     /**
      * Applies an `EnvironmentMapConfiguration` to the scene
-     * @param environmentMapConfiguration Environment map configuration to apply
      * @param rotationY
      */
     public applyEnvironmentMapConfiguration(rotationY?: number) {

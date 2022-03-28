@@ -1,13 +1,13 @@
 import { SerializationHelper } from "../../Misc/decorators";
 import { _UpdateRGBDAsync as UpdateRGBDAsyncEnvTools } from "../../Misc/environmentTextureTools";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
-import { Engine } from "../../Engines/engine";
+import type { Engine } from "../../Engines/engine";
 
 /**
  * Raw cube texture where the raw buffers are passed in
@@ -48,7 +48,6 @@ export class RawCubeTexture extends CubeTexture {
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
-     * @param level defines which level of the texture to update
      */
     public update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null): void {
         (this._texture!.getEngine() as Engine).updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);

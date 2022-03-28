@@ -1,9 +1,10 @@
-import { Texture } from "core/Materials/Textures/texture";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Texture } from "core/Materials/Textures/texture";
 import { Effect } from "core/Materials/effect";
-import { MaterialDefines } from "core/Materials/materialDefines";
+import type { MaterialDefines } from "core/Materials/materialDefines";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 
 export class CustomShaderStructure {
@@ -92,14 +93,14 @@ export class CustomMaterial extends StandardMaterial {
 
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform" && this._newUniforms) {
-            for (var ind = 0; ind < this._newUniforms.length; ind++) {
+            for (let ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf("sampler") == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
         if (name == "sampler" && this._newUniforms) {
-            for (var ind = 0; ind < this._newUniforms.length; ind++) {
+            for (let ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf("sampler") != -1) {
                     arr.push(this._newUniforms[ind]);
                 }

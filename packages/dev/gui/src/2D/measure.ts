@@ -1,4 +1,4 @@
-import { Matrix2D } from "./math2D";
+import type { Matrix2D } from "./math2D";
 import { Vector2 } from "core/Maths/math.vector";
 
 const tmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];

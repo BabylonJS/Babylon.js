@@ -2,10 +2,10 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { GraphEditor } from "./graphEditor";
-import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Popup } from "./sharedComponents/popup";
 import { SerializationTools } from "./serializationTools";
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
@@ -31,7 +31,7 @@ export class NodeEditor {
      */
     public static Show(options: INodeEditorOptions) {
         if (this._CurrentState) {
-            var popupWindow = (Popup as any)["node-editor"];
+            const popupWindow = (Popup as any)["node-editor"];
             if (popupWindow) {
                 popupWindow.close();
             }
@@ -73,7 +73,7 @@ export class NodeEditor {
         });
 
         // Close the popup window when the page is refreshed or scene is disposed
-        var popupWindow = (Popup as any)["node-editor"];
+        const popupWindow = (Popup as any)["node-editor"];
         if (globalState.nodeMaterial && popupWindow) {
             globalState.nodeMaterial.getScene().onDisposeObservable.addOnce(() => {
                 if (popupWindow) {

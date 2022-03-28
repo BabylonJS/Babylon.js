@@ -1,6 +1,5 @@
 import { Constants } from "../Engines/constants";
-import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import { _WarnImport } from "../Misc/devTools";
+import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
 /**
  * Contains all parameters needed for the prepass to perform

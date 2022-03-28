@@ -1,10 +1,12 @@
-import { Vector2 } from "../Maths/math.vector";
-import { Nullable } from "../types";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Vector2 } from "../Maths/math.vector";
+import type { Nullable } from "../types";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";
@@ -41,7 +43,7 @@ export class BlurPostProcess extends PostProcess {
         v = Math.max(v, 1);
         this._idealKernel = v;
         this._kernel = this._nearestBestKernel(v);
-        if (!this.blockCompilation) {
+        if (!this._blockCompilation) {
             this._updateParameters();
         }
     }
@@ -61,7 +63,7 @@ export class BlurPostProcess extends PostProcess {
             return;
         }
         this._packedFloat = v;
-        if (!this.blockCompilation) {
+        if (!this._blockCompilation) {
             this._updateParameters();
         }
     }
@@ -93,7 +95,7 @@ export class BlurPostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param defines
-     * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
     constructor(
         name: string,
@@ -106,7 +108,7 @@ export class BlurPostProcess extends PostProcess {
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
-        private blockCompilation = false
+        private _blockCompilation = false
     ) {
         super(
             name,
@@ -227,7 +229,7 @@ export class BlurPostProcess extends PostProcess {
         let defines = "";
         defines += this._staticDefines;
 
-        // The DOF fragment should ignore the center pixel when looping as it is handled manualy in the fragment shader.
+        // The DOF fragment should ignore the center pixel when looping as it is handled manually in the fragment shader.
         if (this._staticDefines.indexOf("DOF") != -1) {
             defines += `#define CENTER_WEIGHT ${this._glslFloat(weights[varyingCount - 1])}\r\n`;
             varyingCount--;
@@ -249,7 +251,7 @@ export class BlurPostProcess extends PostProcess {
             defines += `#define PACKEDFLOAT 1`;
         }
 
-        this.blockCompilation = false;
+        this._blockCompilation = false;
         super.updateEffect(
             defines,
             null,

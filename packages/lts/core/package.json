@@ -10,15 +10,14 @@
         "src"
     ],
     "scripts": {
-        "build": "npm run compile",
+        "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "precompile": "build-tools -c transform-lts --path ./**/*.js",
         "compile": "tsc -b tsconfig.build.json",
         "watch:source": "build-tools -c transform-lts --path ./**/*.js --watch",
         "watch:generated": "tsc -b tsconfig.build.json -w",
         "watch": "concurrently \"npm run watch:source\" \"npm run watch:generated\" --kill-other",
-        "watch:lts": "npm run watch",
-        "prepublishOnly": "nx build"
+        "watch:lts": "npm run watch"
     },
     "dependencies": {
     },

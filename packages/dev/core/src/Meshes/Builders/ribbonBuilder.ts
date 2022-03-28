@@ -1,7 +1,8 @@
-import { Nullable, FloatArray } from "../../types";
-import { Scene } from "../../scene";
-import { Vector3, Vector2, TmpVectors, Vector4 } from "../../Maths/math.vector";
-import { Color4 } from "../../Maths/math.color";
+import type { Nullable, FloatArray } from "../../types";
+import type { Scene } from "../../scene";
+import type { Vector3, Vector2, Vector4 } from "../../Maths/math.vector";
+import { TmpVectors } from "../../Maths/math.vector";
+import type { Color4 } from "../../Maths/math.color";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
@@ -295,7 +296,6 @@ export function CreateRibbonVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.pathArray
- * @param scene defines the hosting scene
  * @param options.closeArray
  * @param options.closePath
  * @param options.offset
@@ -307,6 +307,7 @@ export function CreateRibbonVertexData(options: {
  * @param options.invertUV
  * @param options.uvs
  * @param options.colors
+ * @param scene defines the hosting scene
  * @returns the ribbon mesh
  * @see https://doc.babylonjs.com/how_to/ribbon_tutorial
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
@@ -452,6 +453,7 @@ export function CreateRibbon(
  * @deprecated use CreateRibbon directly
  */
 export const RibbonBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateRibbon,
 };
 

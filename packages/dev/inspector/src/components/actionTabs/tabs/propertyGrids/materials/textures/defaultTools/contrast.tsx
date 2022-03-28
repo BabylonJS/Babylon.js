@@ -1,7 +1,7 @@
 import * as React from "react";
-import { IToolData, IToolParameters, IToolType, IToolGUIProps } from "../textureEditorComponent";
+import type { IToolData, IToolParameters, IToolType, IToolGUIProps } from "../textureEditorComponent";
 
-class contrastTool implements IToolType {
+class ContrastTool implements IToolType {
     getParameters: () => IToolParameters;
     contrast: number = 1.0;
     exposure: number = 1.0;
@@ -59,7 +59,7 @@ class contrastTool implements IToolType {
 
 class Settings extends React.Component<IToolGUIProps> {
     render() {
-        const instance = this.props.instance as contrastTool;
+        const instance = this.props.instance as ContrastTool;
         return (
             <div>
                 <div>
@@ -100,7 +100,7 @@ class Settings extends React.Component<IToolGUIProps> {
 
 export const Contrast: IToolData = {
     name: "Contrast/Exposure",
-    type: contrastTool,
+    type: ContrastTool,
     is3D: true,
     settingsComponent: Settings,
     icon: `PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0i

@@ -1,10 +1,10 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { faGhost } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Sprite } from "core/Sprites/sprite";
+import type { Sprite } from "core/Sprites/sprite";
 
 interface ISpriteTreeItemComponentProps {
     sprite: Sprite;

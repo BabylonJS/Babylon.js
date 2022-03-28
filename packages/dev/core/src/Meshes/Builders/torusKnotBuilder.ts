@@ -1,7 +1,8 @@
-import { Vector4, Vector3 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
@@ -144,7 +145,6 @@ export function CreateTorusKnotVertexData(options: {
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.radius
- * @param scene defines the hosting scene
  * @param options.tube
  * @param options.radialSegments
  * @param options.tubularSegments
@@ -154,6 +154,7 @@ export function CreateTorusKnotVertexData(options: {
  * @param options.sideOrientation
  * @param options.frontUVs
  * @param options.backUVs
+ * @param scene defines the hosting scene
  * @returns the torus knot mesh
  * @see  https://doc.babylonjs.com/how_to/set_shapes#torus-knot
  */
@@ -171,7 +172,7 @@ export function CreateTorusKnot(
         frontUVs?: Vector4;
         backUVs?: Vector4;
     } = {},
-    scene: any
+    scene?: Scene
 ): Mesh {
     const torusKnot = new Mesh(name, scene);
 
@@ -189,6 +190,7 @@ export function CreateTorusKnot(
  * @deprecated use CreateTorusKnot instead
  */
 export const TorusKnotBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTorusKnot,
 };
 

@@ -1,12 +1,12 @@
-import { Nullable } from "../types";
-import { Vector2 } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Nullable } from "../types";
+import type { Vector2 } from "../Maths/math.vector";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import { PostProcess, PostProcessOptions } from "./postProcess";
+import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
-import { Engine } from "../Engines/engine";
-import { Scene } from "../scene";
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
@@ -69,9 +69,11 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             kernel,
             options,
             camera,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (textureType = Constants.TEXTURETYPE_UNSIGNED_INT),
             `#define DOF 1\r\n`,
             blockCompilation

@@ -1,15 +1,15 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
-import { IInternalTextureLoader } from "../../Materials/Textures/internalTextureLoader";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { IInternalTextureLoader } from "../../Materials/Textures/internalTextureLoader";
 import { LoadImage } from "../../Misc/fileTools";
 import { RandomGUID } from "../../Misc/guid";
-import { IWebRequest } from "../../Misc/interfaces/iWebRequest";
+import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { Constants } from "../constants";
-import { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
+import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import type { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -470,7 +470,7 @@ ThinEngine.prototype.createCubeTexture = function (
         lodScale,
         lodOffset,
         fallback,
-        (texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true),
+        (texture: InternalTexture) => this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true),
         (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
             const width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             const height = width;

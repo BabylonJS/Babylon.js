@@ -1,7 +1,7 @@
 import * as React from "react";
-import { GlobalState } from "../../../globalState";
+import type { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "../../../sharedComponents/floatLineComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 
 interface IFloatPropertyTabComponentProps {
     globalState: GlobalState;

@@ -1,11 +1,11 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { Scene } from "../../../scene";
-import { Nullable } from "../../../types";
-import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import type { Scene } from "../../../scene";
+import type { Nullable } from "../../../types";
+import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 
 /**
  * Custom block created from user-defined json

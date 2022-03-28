@@ -1,11 +1,9 @@
-import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import type { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import { Scalar } from "core/Maths/math.scalar";
-import { SceneManager } from "../../managers/sceneManager";
+import type { SceneManager } from "../../managers/sceneManager";
 
 /**
  * A custom upgrade-oriented function configuration for the scene optimizer.
- *
- * @param viewer the viewer to optimize
  * @param sceneManager
  */
 export function extendedUpgrade(sceneManager: SceneManager): boolean {
@@ -56,8 +54,6 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
 
 /**
  * A custom degrade-oriented function configuration for the scene optimizer.
- *
- * @param viewer the viewer to optimize
  * @param sceneManager
  */
 export function extendedDegrade(sceneManager: SceneManager): boolean {

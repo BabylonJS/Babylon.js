@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
@@ -82,6 +82,7 @@ export class FragCoordBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected writeOutputs(state: NodeMaterialBuildState): string {
         let code = "";
 

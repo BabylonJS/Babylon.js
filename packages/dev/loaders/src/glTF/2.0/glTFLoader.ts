@@ -1,4 +1,4 @@
-import { IndicesArray, Nullable } from "core/types";
+import type { IndicesArray, Nullable } from "core/types";
 import { Deferred } from "core/Misc/deferred";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
@@ -11,20 +11,21 @@ import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Texture, ITextureCreationOptions } from "core/Materials/Textures/texture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Buffer, VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { InstancedMesh } from "core/Meshes/instancedMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
-import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import { Scene } from "core/scene";
+import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import type { Scene } from "core/scene";
+import type { IProperty } from "babylonjs-gltf2interface";
 import {
-    IProperty,
     AccessorType,
     CameraType,
     AnimationChannelTargetPath,
@@ -36,7 +37,7 @@ import {
     TextureMagFilter,
     MeshPrimitiveMode,
 } from "babylonjs-gltf2interface";
-import {
+import type {
     _IAnimationSamplerData,
     IGLTF,
     ISampler,
@@ -60,18 +61,20 @@ import {
     IArrayItem as IArrItem,
     _ISamplerData,
 } from "./glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
-import { IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { IDataBuffer } from "core/Misc/dataReader";
+import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
+import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
+import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import type { IAnimationKey } from "core/Animations/animationKey";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
-import { Light } from "core/Lights/light";
+import type { Light } from "core/Lights/light";
 
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { StringTools } from "core/Misc/stringTools";
-import { AssetContainer } from "core/assetContainer";
+import type { AssetContainer } from "core/assetContainer";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -381,7 +384,7 @@ export class GLTFLoader implements IGLTFLoader {
                         const context = "/materials/" + m;
                         const babylonDrawMode = Material.TriangleFillMode;
 
-                        promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, (material) => {}));
+                        promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, () => {}));
                     }
                 }
 
@@ -1899,7 +1902,7 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data as Promise<IndicesArray>;
     }
 
-    private _loadVertexBufferViewAsync(bufferView: IBufferView, kind: string): Promise<Buffer> {
+    private _loadVertexBufferViewAsync(bufferView: IBufferView): Promise<Buffer> {
         if (bufferView._babylonBuffer) {
             return bufferView._babylonBuffer;
         }
@@ -1933,7 +1936,7 @@ export class GLTFLoader implements IGLTFLoader {
             });
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
-            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView, kind).then((babylonBuffer) => {
+            accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView).then((babylonBuffer) => {
                 const size = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(
                     this._babylonScene.getEngine(),

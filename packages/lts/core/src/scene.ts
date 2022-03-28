@@ -1,14 +1,14 @@
-import { Material } from "core/Materials/material";
-import { Camera } from "core/Cameras/camera";
-import { Nullable } from "core/types";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Bone } from "core/Bones/bone";
-import { Light } from "core/Lights/light";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
-import { Geometry } from "core/Meshes/geometry";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Skeleton } from "core/Bones/skeleton";
+import type { Material } from "core/Materials/material";
+import type { Camera } from "core/Cameras/camera";
+import type { Nullable } from "core/types";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Bone } from "core/Bones/bone";
+import type { Light } from "core/Lights/light";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { Geometry } from "core/Meshes/geometry";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Skeleton } from "core/Bones/skeleton";
 import { Scene } from "core/scene";
 
 declare type Node = import("core/node").Node;
@@ -130,7 +130,7 @@ declare module "core/scene" {
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
          * Gets a transform node with its auto-generated unique Id
-         * @param uniqueId efines the unique Id to search for
+         * @param uniqueId defines the unique Id to search for
          * @return the found transform node or null if not found at all.
          * @deprecated Please use getTransformNodeByUniqueId instead
          */

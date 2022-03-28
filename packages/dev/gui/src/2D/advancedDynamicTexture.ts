@@ -1,17 +1,21 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import type { PointerInfoPre, PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { ClipboardEventTypes, ClipboardInfo } from "core/Events/clipboardEvents";
-import { KeyboardInfoPre, KeyboardEventTypes } from "core/Events/keyboardEvents";
-import { Camera } from "core/Cameras/camera";
+import type { KeyboardInfoPre } from "core/Events/keyboardEvents";
+import { KeyboardEventTypes } from "core/Events/keyboardEvents";
+import type { Camera } from "core/Cameras/camera";
 import { Texture } from "core/Materials/Textures/texture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
-import { Engine } from "core/Engines/engine";
-import { Scene } from "core/scene";
+import type { Engine } from "core/Engines/engine";
+import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
@@ -22,7 +26,7 @@ import { Constants } from "core/Engines/constants";
 import { Viewport } from "core/Maths/math.viewport";
 import { Color3 } from "core/Maths/math.color";
 import { WebRequest } from "core/Misc/webRequest";
-import { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
+import type { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
 import { RandomGUID } from "core/Misc/guid";
 import { GetClass } from "core/Misc/typeStore";
 
@@ -790,12 +794,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._manageFocus();
     }
     /**
+     * @param list
      * @param control
      * @hidden
      */
     public _cleanControlAfterRemovalFromList(list: { [pointerId: number]: Control }, control: Control) {
         for (const pointerId in list) {
-            if (!list.hasOwnProperty(pointerId)) {
+            if (!Object.prototype.hasOwnProperty.call(list, pointerId)) {
                 continue;
             }
             const lastControlOver = list[pointerId];
@@ -877,7 +882,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const tempViewport = new Viewport(0, 0, 0, 0);
 
-        this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
+        this._pointerMoveObserver = scene.onPrePointerObservable.add((pi) => {
             if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
                 return;
             }
@@ -905,7 +910,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param rawEvt
      * @hidden
      */
-    private onClipboardCopy = (rawEvt: Event) => {
+    private _onClipboardCopy = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         const ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -915,7 +920,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param rawEvt
      * @hidden
      */
-    private onClipboardCut = (rawEvt: Event) => {
+    private _onClipboardCut = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         const ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -925,7 +930,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param rawEvt
      * @hidden
      */
-    private onClipboardPaste = (rawEvt: Event) => {
+    private _onClipboardPaste = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
         const ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
@@ -935,17 +940,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Register the clipboard Events onto the canvas
      */
     public registerClipboardEvents(): void {
-        self.addEventListener("copy", this.onClipboardCopy, false);
-        self.addEventListener("cut", this.onClipboardCut, false);
-        self.addEventListener("paste", this.onClipboardPaste, false);
+        self.addEventListener("copy", this._onClipboardCopy, false);
+        self.addEventListener("cut", this._onClipboardCut, false);
+        self.addEventListener("paste", this._onClipboardPaste, false);
     }
     /**
      * Unregister the clipboard Events from the canvas
      */
     public unRegisterClipboardEvents(): void {
-        self.removeEventListener("copy", this.onClipboardCopy);
-        self.removeEventListener("cut", this.onClipboardCut);
-        self.removeEventListener("paste", this.onClipboardPaste);
+        self.removeEventListener("copy", this._onClipboardCopy);
+        self.removeEventListener("cut", this._onClipboardCut);
+        self.removeEventListener("paste", this._onClipboardPaste);
     }
     /**
      * Connect the texture to a hosting mesh to enable interactions
@@ -957,7 +962,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
-        this._pointerObserver = scene.onPointerObservable.add((pi, state) => {
+        this._pointerObserver = scene.onPointerObservable.add((pi) => {
             if (
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
@@ -1092,8 +1097,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
     }
     private _attachToOnBlur(scene: Scene): void {
-        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add((pointerEvent) => {
-            Object.entries(this._lastControlDown).forEach(([key, value]) => {
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(() => {
+            Object.entries(this._lastControlDown).forEach(([, value]) => {
                 value._onCanvasBlur();
             });
             this.focusedControl = null;
@@ -1226,7 +1231,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
-     * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
+     * @param materialSetupCallback defines a custom way of creating and setting up the material on the mesh
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMesh(

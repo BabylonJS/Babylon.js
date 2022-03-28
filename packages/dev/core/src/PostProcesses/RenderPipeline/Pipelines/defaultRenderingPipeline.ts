@@ -1,17 +1,19 @@
-import { Nullable } from "../../../types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "../../../types";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
-import { Observable, Observer } from "../../../Misc/observable";
-import { IAnimatable } from "../../../Animations/animatable.interface";
+import type { Observer } from "../../../Misc/observable";
+import { Observable } from "../../../Misc/observable";
+import type { IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
-import { Camera } from "../../../Cameras/camera";
-import { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
+import type { Camera } from "../../../Cameras/camera";
+import type { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
 import { Texture } from "../../../Materials/Textures/texture";
-import { Engine } from "../../../Engines/engine";
+import type { Engine } from "../../../Engines/engine";
 import { Constants } from "../../../Engines/constants";
-import { IDisposable, Scene } from "../../../scene";
+import type { IDisposable, Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 
-import { PostProcess } from "../../../PostProcesses/postProcess";
+import type { PostProcess } from "../../../PostProcesses/postProcess";
 import { SharpenPostProcess } from "../../../PostProcesses/sharpenPostProcess";
 import { ImageProcessingPostProcess } from "../../../PostProcesses/imageProcessingPostProcess";
 import { ChromaticAberrationPostProcess } from "../../../PostProcesses/chromaticAberrationPostProcess";
@@ -490,7 +492,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             this._hardwareScaleLevel = engine.getHardwareScalingLevel();
-            this.bloomKernel = this.bloomKernel;
+            this.bloomKernel = this._bloomKernel;
         });
 
         this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
@@ -608,7 +610,16 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         }
 
         if (this._imageProcessingEnabled) {
-            this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            this.imageProcessing = new ImageProcessingPostProcess(
+                "imageProcessing",
+                1.0,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                engine,
+                false,
+                this._defaultPipelineTextureType,
+                this.scene.imageProcessingConfiguration
+            );
             if (this._hdr) {
                 this.addEffect(
                     new PostProcessRenderEffect(

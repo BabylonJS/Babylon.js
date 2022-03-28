@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 /**
@@ -50,13 +50,10 @@ export class ElbowBlock extends NodeMaterialBlock {
         const input = this._inputs[0];
         if (input.isConnected) {
             const block = input.connectedPoint!.ownerBlock;
-            // Use input type
-
+            // Return vertex if connected to an input node
             if (block.isInput) {
                 return NodeMaterialBlockTargets.Vertex;
             }
-
-            return block.target;
         }
 
         return this._target;

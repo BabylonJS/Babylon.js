@@ -1,7 +1,7 @@
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { Color3, TmpColors } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 

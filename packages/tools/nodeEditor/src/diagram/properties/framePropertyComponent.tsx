@@ -1,14 +1,14 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GraphFrame } from "../graphFrame";
-import { GlobalState } from "../../globalState";
+import type { GraphFrame } from "../graphFrame";
+import type { GlobalState } from "../../globalState";
 import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;
@@ -16,20 +16,20 @@ export interface IFramePropertyTabComponentProps {
 }
 
 export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
-    private onFrameExpandStateChangedObserver: Nullable<Observer<GraphFrame>>;
+    private _onFrameExpandStateChangedObserver: Nullable<Observer<GraphFrame>>;
 
     constructor(props: IFramePropertyTabComponentProps) {
         super(props);
     }
 
     componentDidMount() {
-        this.onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
+        this._onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
     }
 
     componentWillUnmount() {
-        if (this.onFrameExpandStateChangedObserver) {
-            this.props.frame.onExpandStateChanged.remove(this.onFrameExpandStateChangedObserver);
-            this.onFrameExpandStateChangedObserver = null;
+        if (this._onFrameExpandStateChangedObserver) {
+            this.props.frame.onExpandStateChanged.remove(this._onFrameExpandStateChangedObserver);
+            this._onFrameExpandStateChangedObserver = null;
         }
     }
 

@@ -1,8 +1,8 @@
 import { Camera } from "../../Cameras/camera";
 import { UniversalCamera } from "../../Cameras/universalCamera";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { TargetCamera } from "../targetCamera";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Viewport } from "../../Maths/math.viewport";
@@ -65,10 +65,9 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
 
     /**
      * @param name
-     * @param cameraIndex
      * @hidden
      */
-    public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
+    public createRigCamera(name: string): Nullable<Camera> {
         const camera = new TargetCamera(name, Vector3.Zero(), this.getScene());
         const transform = new TransformNode("tm_" + name, this.getScene());
         camera.parent = transform;

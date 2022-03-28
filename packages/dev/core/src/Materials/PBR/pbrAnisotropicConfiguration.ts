@@ -1,19 +1,18 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, serializeAsVector2, serializeAsTexture } from "../../Misc/decorators";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Vector2 } from "../../Maths/math.vector";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Nullable } from "../../types";
-import { SubMesh } from "../../Meshes/subMesh";
-import { IAnimatable } from "../../Animations/animatable.interface";
-import { EffectFallbacks } from "../effectFallbacks";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { Nullable } from "../../types";
+import type { IAnimatable } from "../../Animations/animatable.interface";
+import type { EffectFallbacks } from "../effectFallbacks";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
-declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
 declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
@@ -78,7 +77,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene, engine: Engine): boolean {
+    public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -119,7 +118,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         }
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
         }

@@ -1,7 +1,9 @@
-import { WebXRAbstractMotionController, IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
+import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
 import { Mesh } from "../../Meshes/mesh";
 import { Quaternion } from "../../Maths/math.vector";
 import { SceneLoader } from "../../Loading/sceneLoader";
@@ -156,7 +158,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         });
 
         // Axis Meshes
-        this.getComponentIds().forEach((id, i) => {
+        this.getComponentIds().forEach((id) => {
             const comp = this.getComponent(id);
             if (!comp.isAxes()) {
                 return;

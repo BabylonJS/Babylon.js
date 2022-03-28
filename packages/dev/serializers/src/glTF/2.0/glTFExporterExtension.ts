@@ -1,17 +1,18 @@
-import { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
-import { Node } from "core/node";
-import { Nullable } from "core/types";
+import type { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
+import type { Node } from "core/node";
+import type { Nullable } from "core/types";
 
-import { Texture } from "core/Materials/Textures/texture";
-import { SubMesh } from "core/Meshes/subMesh";
-import { IDisposable } from "core/scene";
+import type { Texture } from "core/Materials/Textures/texture";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { IDisposable } from "core/scene";
 
-import { _BinaryWriter } from "./glTFExporter";
-import { IGLTFExporterExtension } from "../glTFFileExporter";
-import { Material } from "core/Materials/material";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { _BinaryWriter } from "./glTFExporter";
+import type { IGLTFExporterExtension } from "../glTFFileExporter";
+import type { Material } from "core/Materials/material";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 /** @hidden */
+// eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
 
 /**

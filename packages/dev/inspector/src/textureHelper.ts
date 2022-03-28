@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { PostProcess } from "core/PostProcesses/postProcess";
 import { Texture } from "core/Materials/Textures/texture";
-import { GlobalState } from "./components/globalState";
+import type { GlobalState } from "./components/globalState";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Nullable } from "core/types";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Nullable } from "core/types";
 
 import "./lod";
 import "./lodCube";
@@ -79,7 +80,7 @@ export class TextureHelper {
             const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
 
             if (!channels.R || !channels.G || !channels.B || !channels.A) {
-                for (var i = 0; i < width * height * 4; i += 4) {
+                for (let i = 0; i < width * height * 4; i += 4) {
                     // If alpha is the only channel, just display alpha across all channels
                     if (channels.A && !channels.R && !channels.G && !channels.B) {
                         data[i] = data[i + 3];
@@ -133,7 +134,7 @@ export class TextureHelper {
 
             //To flip image on Y axis.
             if ((texture as Texture).invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
+                for (let i = 0; i < halfHeight; i++) {
                     for (let j = 0; j < numberOfChannelsByLine; j++) {
                         const currentCell = j + i * numberOfChannelsByLine;
                         const targetLine = height - i - 1;

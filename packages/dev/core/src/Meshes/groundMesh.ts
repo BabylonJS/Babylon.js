@@ -1,4 +1,4 @@
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";

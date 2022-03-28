@@ -1,14 +1,14 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Color3 } from "../Maths/math.color";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import { IParticleSystem } from "./IParticleSystem";
+import type { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
-import { Scene, IDisposable } from "../scene";
+import type { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Vector3 } from "../Maths/math.vector";
+import type { Vector3 } from "../Maths/math.vector";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -61,10 +61,10 @@ export class ParticleSystemSet implements IDisposable {
      * Creates a new emitter mesh as a sphere
      * @param options defines the options used to create the sphere
      * @param options.diameter
-     * @param renderingGroupId defines the renderingGroupId to use for the sphere
      * @param options.segments
-     * @param scene defines the hosting scene
      * @param options.color
+     * @param renderingGroupId defines the renderingGroupId to use for the sphere
+     * @param scene defines the hosting scene
      */
     public setEmitterAsSphere(options: { diameter: number; segments: number; color: Color3 }, renderingGroupId: number, scene: Scene) {
         if (this._emitterNodeIsOwned && this._emitterNode) {

@@ -1,6 +1,6 @@
-import { Control } from "../../2D/controls/control";
+import type { Control } from "../../2D/controls/control";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Control3D } from "./control3D";
 import { Texture } from "core/Materials/Textures/texture";
 
@@ -81,5 +81,6 @@ export class ContentDisplay3D extends Control3D {
      * This function can be overloaded by child classes
      * @param facadeTexture defines the AdvancedDynamicTexture to use
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {}
 }

@@ -1,22 +1,25 @@
-import { NodeMaterialBlock } from "./nodeMaterialBlock";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
-import { Mesh } from "../../Meshes/mesh";
+import type { Mesh } from "../../Meshes/mesh";
 import { Engine } from "../../Engines/engine";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import { IEffectCreationOptions, Effect } from "../effect";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Observable, Observer } from "../../Misc/observable";
+import type { IEffectCreationOptions } from "../effect";
+import { Effect } from "../effect";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
-import { SubMesh } from "../../Meshes/subMesh";
+import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
-import { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration";
-import { Nullable } from "../../types";
+import type { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
+import type { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration";
+import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
 import { TransformBlock } from "./Blocks/transformBlock";
@@ -25,9 +28,9 @@ import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "./Blocks/Input/inputBlock";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { serialize, SerializationHelper } from "../../Misc/decorators";
-import { TextureBlock } from "./Blocks/Dual/textureBlock";
-import { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
-import { RefractionBlock } from "./Blocks/PBR/refractionBlock";
+import type { TextureBlock } from "./Blocks/Dual/textureBlock";
+import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
+import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
 import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradientBlock";
@@ -35,15 +38,16 @@ import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMulti
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
 
-import { PostProcess, PostProcessOptions } from "../../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../../PostProcesses/postProcess";
+import { PostProcess } from "../../PostProcesses/postProcess";
 import { Constants } from "../../Engines/constants";
-import { Camera } from "../../Cameras/camera";
+import type { Camera } from "../../Cameras/camera";
 import { VectorMergerBlock } from "./Blocks/vectorMergerBlock";
 import { RemapBlock } from "./Blocks/remapBlock";
 import { MultiplyBlock } from "./Blocks/multiplyBlock";
 import { NodeMaterialModes } from "./Enums/nodeMaterialModes";
 import { Texture } from "../Textures/texture";
-import { IParticleSystem } from "../../Particles/IParticleSystem";
+import type { IParticleSystem } from "../../Particles/IParticleSystem";
 import { BaseParticleSystem } from "../../Particles/baseParticleSystem";
 import { ColorSplitterBlock } from "./Blocks/colorSplitterBlock";
 import { TimingTools } from "../../Misc/timingTools";
@@ -51,7 +55,7 @@ import { ProceduralTexture } from "../Textures/Procedurals/proceduralTexture";
 import { AnimatedInputBlockTypes } from "./Blocks/Input/animatedInputBlockTypes";
 import { TrigonometryBlock, TrigonometryBlockOperations } from "./Blocks/trigonometryBlock";
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
-import { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
+import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -678,12 +682,12 @@ export class NodeMaterial extends PushMaterial {
         const vertexNodes: NodeMaterialBlock[] = [];
         const fragmentNodes: NodeMaterialBlock[] = [];
 
-        for (var vertexOutputNode of this._vertexOutputNodes) {
+        for (const vertexOutputNode of this._vertexOutputNodes) {
             vertexNodes.push(vertexOutputNode);
             this._initializeBlock(vertexOutputNode, this._vertexCompilationState, fragmentNodes, autoConfigure);
         }
 
-        for (var fragmentOutputNode of this._fragmentOutputNodes) {
+        for (const fragmentOutputNode of this._fragmentOutputNodes) {
             fragmentNodes.push(fragmentOutputNode);
             this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes, autoConfigure);
         }
@@ -692,7 +696,7 @@ export class NodeMaterial extends PushMaterial {
         this.optimize();
 
         // Vertex
-        for (var vertexOutputNode of vertexNodes) {
+        for (const vertexOutputNode of vertexNodes) {
             vertexOutputNode.build(this._vertexCompilationState, vertexNodes);
         }
 
@@ -702,11 +706,11 @@ export class NodeMaterial extends PushMaterial {
         this._fragmentCompilationState._constantDeclaration = this._vertexCompilationState._constantDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
-        for (var fragmentOutputNode of fragmentNodes) {
+        for (const fragmentOutputNode of fragmentNodes) {
             this._resetDualBlocks(fragmentOutputNode, this._buildId - 1);
         }
 
-        for (var fragmentOutputNode of fragmentNodes) {
+        for (const fragmentOutputNode of fragmentNodes) {
             fragmentOutputNode.build(this._fragmentCompilationState, fragmentNodes);
         }
 
@@ -1000,7 +1004,7 @@ export class NodeMaterial extends PushMaterial {
         effect?: Effect,
         defines?: NodeMaterialDefines,
         dummyMesh?: Nullable<AbstractMesh>,
-        particleSystemDefinesJoined_ = ""
+        particleSystemDefinesJoined = ""
     ) {
         let tempName = this.name + this._buildId + "_" + blendMode;
 
@@ -1021,7 +1025,7 @@ export class NodeMaterial extends PushMaterial {
         let buildId = this._buildId;
 
         const particleSystemDefines: Array<string> = [];
-        let particleSystemDefinesJoined = particleSystemDefinesJoined_;
+        let join = particleSystemDefinesJoined;
 
         if (!effect) {
             const result = this._processDefines(dummyMesh, defines);
@@ -1030,7 +1034,7 @@ export class NodeMaterial extends PushMaterial {
 
             particleSystem.fillDefines(particleSystemDefines, blendMode);
 
-            particleSystemDefinesJoined = particleSystemDefines.join("\n");
+            join = particleSystemDefines.join("\n");
 
             effect = this.getScene()
                 .getEngine()
@@ -1038,7 +1042,7 @@ export class NodeMaterial extends PushMaterial {
                     tempName,
                     this._fragmentCompilationState.uniforms,
                     this._fragmentCompilationState.samplers,
-                    defines.toString() + "\n" + particleSystemDefinesJoined,
+                    defines.toString() + "\n" + join,
                     result?.fallbacks,
                     onCompiled,
                     onError,
@@ -1065,9 +1069,9 @@ export class NodeMaterial extends PushMaterial {
 
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
-            if (particleSystemDefinesJoinedCurrent !== particleSystemDefinesJoined) {
+            if (particleSystemDefinesJoinedCurrent !== join) {
                 defines!.markAllAsDirty();
-                particleSystemDefinesJoined = particleSystemDefinesJoinedCurrent;
+                join = particleSystemDefinesJoinedCurrent;
             }
 
             const result = this._processDefines(dummyMesh!, defines!);
@@ -1081,7 +1085,7 @@ export class NodeMaterial extends PushMaterial {
                         tempName,
                         this._fragmentCompilationState.uniforms,
                         this._fragmentCompilationState.samplers,
-                        defines!.toString() + "\n" + particleSystemDefinesJoined,
+                        defines!.toString() + "\n" + join,
                         result?.fallbacks,
                         onCompiled,
                         onError,
@@ -1387,20 +1391,20 @@ export class NodeMaterial extends PushMaterial {
 
         if (mustRebind) {
             // Bindable blocks
-            for (var block of sharedData.bindableBlocks) {
+            for (const block of sharedData.bindableBlocks) {
                 block.bind(effect, this, mesh, subMesh);
             }
 
-            for (var block of sharedData.forcedBindableBlocks) {
+            for (const block of sharedData.forcedBindableBlocks) {
                 block.bind(effect, this, mesh, subMesh);
             }
 
             // Connection points
-            for (var inputBlock of sharedData.inputBlocks) {
+            for (const inputBlock of sharedData.inputBlocks) {
                 inputBlock._transmit(effect, scene, this);
             }
         } else if (!this.isFrozen) {
-            for (var block of sharedData.forcedBindableBlocks) {
+            for (const block of sharedData.forcedBindableBlocks) {
                 block.bind(effect, this, mesh, subMesh);
             }
         }
@@ -1504,7 +1508,7 @@ export class NodeMaterial extends PushMaterial {
      * @return a promise fulfilled when the node editor is visible
      */
     public edit(config?: INodeMaterialEditorOptions): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
             if (typeof this.BJSNODEMATERIALEDITOR == "undefined") {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
@@ -1763,25 +1767,25 @@ export class NodeMaterial extends PushMaterial {
         const vertexBlocks: NodeMaterialBlock[] = [];
         const uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
-        for (var outputNode of this._vertexOutputNodes) {
+        for (const outputNode of this._vertexOutputNodes) {
             this._gatherBlocks(outputNode, vertexBlocks);
         }
 
         const fragmentBlocks: NodeMaterialBlock[] = [];
-        for (var outputNode of this._fragmentOutputNodes) {
+        for (const outputNode of this._fragmentOutputNodes) {
             this._gatherBlocks(outputNode, fragmentBlocks);
         }
 
         // Generate vertex shader
         let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
-        for (var node of vertexBlocks) {
+        for (const node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
             }
         }
 
         // Generate fragment shader
-        for (var node of fragmentBlocks) {
+        for (const node of fragmentBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
             }
@@ -1790,20 +1794,20 @@ export class NodeMaterial extends PushMaterial {
         // Connections
         alreadyDumped = [];
         codeString += "\r\n// Connections\r\n";
-        for (var node of this._vertexOutputNodes) {
+        for (const node of this._vertexOutputNodes) {
             codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
-        for (var node of this._fragmentOutputNodes) {
+        for (const node of this._fragmentOutputNodes) {
             codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
 
         // Output nodes
         codeString += "\r\n// Output nodes\r\n";
-        for (var node of this._vertexOutputNodes) {
+        for (const node of this._vertexOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
 
-        for (var node of this._fragmentOutputNodes) {
+        for (const node of this._fragmentOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
 
@@ -1830,12 +1834,12 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.outputNodes = [];
 
             // Outputs
-            for (var outputNode of this._vertexOutputNodes) {
+            for (const outputNode of this._vertexOutputNodes) {
                 this._gatherBlocks(outputNode, blocks);
                 serializationObject.outputNodes.push(outputNode.uniqueId);
             }
 
-            for (var outputNode of this._fragmentOutputNodes) {
+            for (const outputNode of this._fragmentOutputNodes) {
                 this._gatherBlocks(outputNode, blocks);
 
                 if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
@@ -1847,12 +1851,12 @@ export class NodeMaterial extends PushMaterial {
         // Blocks
         serializationObject.blocks = [];
 
-        for (var block of blocks) {
+        for (const block of blocks) {
             serializationObject.blocks.push(block.serialize());
         }
 
         if (!selectedBlocks) {
-            for (var block of this.attachedBlocks) {
+            for (const block of this.attachedBlocks) {
                 if (blocks.indexOf(block) !== -1) {
                     continue;
                 }

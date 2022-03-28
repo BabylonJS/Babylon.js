@@ -1,8 +1,8 @@
 import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { BaseTexture } from "./baseTexture";
 import { Texture } from "./texture";
-import { Scene } from "../../scene";
-import { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import "../../Engines/Extensions/engine.rawTexture";
 import { Constants } from "../../Engines/constants";
@@ -76,7 +76,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
-                this.loadImage(this.loadTexture.bind(this), this._onError);
+                this._loadImage(this._loadTexture.bind(this), this._onError);
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
@@ -94,7 +94,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * @param loadTextureCallback
      * @param onError
      */
-    private loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
+    private _loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
         const canvas = document.createElement("canvas");
         LoadImage(
             this.url,
@@ -125,10 +125,10 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     /**
      * Convert the image buffer into a cubemap and create a CubeTexture.
      */
-    private loadTexture(): void {
+    private _loadTexture(): void {
         const scene = this.getScene();
         const callback = (): Nullable<ArrayBufferView[]> => {
-            const imageData = this.getFloat32ArrayFromArrayBuffer(this._buffer);
+            const imageData = this._getFloat32ArrayFromArrayBuffer(this._buffer);
 
             // Extract the raw linear data.
             const data = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(imageData, this._width, this._height, this._size);
@@ -168,7 +168,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * @param buffer The ArrayBuffer that should be converted.
      * @returns The buffer as Float32Array.
      */
-    private getFloat32ArrayFromArrayBuffer(buffer: ArrayBuffer): Float32Array {
+    private _getFloat32ArrayFromArrayBuffer(buffer: ArrayBuffer): Float32Array {
         const dataView = new DataView(buffer);
         const floatImageData = new Float32Array((buffer.byteLength * 3) / 4);
 

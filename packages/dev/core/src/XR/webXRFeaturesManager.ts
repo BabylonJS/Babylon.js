@@ -1,5 +1,5 @@
-import { WebXRSessionManager } from "./webXRSessionManager";
-import { IDisposable } from "../scene";
+import type { WebXRSessionManager } from "./webXRSessionManager";
+import type { IDisposable } from "../scene";
 import { Tools } from "../Misc/tools";
 
 /**
@@ -307,6 +307,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param featureName the feature to disable
      * @returns true if disable was successful
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public disableFeature(featureName: string | { Name: string }): boolean {
         const name = typeof featureName === "string" ? featureName : featureName.Name;
         const feature = this._features[name];
@@ -341,6 +342,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @returns a new constructed feature or throws an error if feature not found or conflicts with another enabled feature.
      */
     public enableFeature(
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         featureName: string | { Name: string },
         version: number | string = "latest",
         moduleOptions: any = {},

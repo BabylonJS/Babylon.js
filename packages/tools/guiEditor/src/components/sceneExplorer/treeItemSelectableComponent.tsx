@@ -1,16 +1,18 @@
-import { Nullable } from "core/types";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
-import { DragOverLocation, GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
+import { DragOverLocation } from "../../globalState";
 import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
-import { Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import { Container } from "gui/2D/controls/container";
 
 import expandedIcon from "../../imgs/expandedIcon.svg";
 import collapsedIcon from "../../imgs/collapsedIcon.svg";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CONTROL_HEIGHT = 32;
 
 export interface ITreeItemSelectableComponentProps {
@@ -86,8 +88,8 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
     componentWillUnmount() {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
-        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingEndObservable);
-        this.props.globalState.onParentingChangeObservable.remove(this._onDraggingStartObservable);
+        this.props.globalState.onDraggingEndObservable.remove(this._onDraggingEndObservable);
+        this.props.globalState.onDraggingStartObservable.remove(this._onDraggingStartObservable);
     }
 
     onSelect() {

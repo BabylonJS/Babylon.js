@@ -1,7 +1,7 @@
-import { ViewerModel } from "../../model/viewerModel";
-import { ILoaderPlugin } from "./loaderPlugin";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import { Material } from "core/Materials/material";
+import type { ViewerModel } from "../../model/viewerModel";
+import type { ILoaderPlugin } from "./loaderPlugin";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { Material } from "core/Materials/material";
 
 /**
  * Force-apply material configuration right after a material was loaded.

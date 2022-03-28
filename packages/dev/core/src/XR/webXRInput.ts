@@ -1,9 +1,11 @@
-import { Nullable } from "../types";
-import { Observer, Observable } from "../Misc/observable";
-import { IDisposable } from "../scene";
-import { WebXRInputSource, IWebXRControllerOptions } from "./webXRInputSource";
-import { WebXRSessionManager } from "./webXRSessionManager";
-import { WebXRCamera } from "./webXRCamera";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { IDisposable } from "../scene";
+import type { IWebXRControllerOptions } from "./webXRInputSource";
+import { WebXRInputSource } from "./webXRInputSource";
+import type { WebXRSessionManager } from "./webXRSessionManager";
+import type { WebXRCamera } from "./webXRCamera";
 import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
 
 /**
@@ -68,7 +70,7 @@ export class WebXRInput implements IDisposable {
      * Initializes the WebXRInput
      * @param xrSessionManager the xr session manager for this session
      * @param xrCamera the WebXR camera for this session. Mainly used for teleportation
-     * @param options = initialization options for this xr input
+     * @param _options = initialization options for this xr input
      */
     public constructor(
         /**
@@ -79,7 +81,7 @@ export class WebXRInput implements IDisposable {
          * the WebXR camera for this session. Mainly used for teleportation
          */
         public xrCamera: WebXRCamera,
-        private readonly options: IWebXRInputOptions = {}
+        private readonly _options: IWebXRInputOptions = {}
     ) {
         // Remove controllers when exiting XR
         this._sessionEndedObserver = this.xrSessionManager.onXRSessionEnded.add(() => {
@@ -102,11 +104,11 @@ export class WebXRInput implements IDisposable {
             });
         });
 
-        if (this.options.customControllersRepositoryURL) {
-            WebXRMotionControllerManager.BaseRepositoryUrl = this.options.customControllersRepositoryURL;
+        if (this._options.customControllersRepositoryURL) {
+            WebXRMotionControllerManager.BaseRepositoryUrl = this._options.customControllersRepositoryURL;
         }
 
-        WebXRMotionControllerManager.UseOnlineRepository = !this.options.disableOnlineControllerRepository;
+        WebXRMotionControllerManager.UseOnlineRepository = !this._options.disableOnlineControllerRepository;
         if (WebXRMotionControllerManager.UseOnlineRepository) {
             // pre-load the profiles list to load the controllers quicker afterwards
             try {
@@ -131,10 +133,10 @@ export class WebXRInput implements IDisposable {
         for (const input of addInputs) {
             if (sources.indexOf(input) === -1) {
                 const controller = new WebXRInputSource(this.xrSessionManager.scene, input, {
-                    ...(this.options.controllerOptions || {}),
-                    forceControllerProfile: this.options.forceInputProfile,
-                    doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
-                    disableMotionControllerAnimation: this.options.disableControllerAnimation,
+                    ...(this._options.controllerOptions || {}),
+                    forceControllerProfile: this._options.forceInputProfile,
+                    doNotLoadControllerMesh: this._options.doNotLoadControllerMeshes,
+                    disableMotionControllerAnimation: this._options.disableControllerAnimation,
                 });
                 this.controllers.push(controller);
                 this.onControllerAddedObservable.notifyObservers(controller);

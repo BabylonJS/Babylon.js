@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./light";
 export * from "./shadowLight";
 export * from "./Shadows/index";

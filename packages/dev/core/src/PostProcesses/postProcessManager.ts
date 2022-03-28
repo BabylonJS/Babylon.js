@@ -1,10 +1,10 @@
-import { Nullable } from "../types";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { PostProcess } from "./postProcess";
+import type { Nullable } from "../types";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "../Engines/constants";
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 declare type Scene = import("../scene").Scene;
 

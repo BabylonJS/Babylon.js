@@ -1,4 +1,4 @@
-import { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
+import type { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
 
 /**
  * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
@@ -49,7 +49,7 @@ export interface IPerfCustomEvent {
      */
     name: string;
     /**
-     * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+     * The value for the event, if set we will use it as the value, otherwise we will count the number of occurrences.
      */
     value?: number;
 }

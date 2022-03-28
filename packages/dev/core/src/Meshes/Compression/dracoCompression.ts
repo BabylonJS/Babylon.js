@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Tools } from "../../Misc/tools";
 import { AutoReleaseWorkerPool } from "../../Misc/workerPool";
-import { Nullable } from "../../types";
-import { IDisposable } from "../../scene";
+import type { Nullable } from "../../types";
+import type { IDisposable } from "../../scene";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 
 declare let DracoDecoderModule: any;

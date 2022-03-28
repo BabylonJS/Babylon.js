@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
@@ -8,8 +8,8 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
-import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
+import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
@@ -27,6 +27,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data" };
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.block !== this.props.block) {
             const texture = (nextProps.block as ImageSourceBlock).texture as BaseTexture;
@@ -37,7 +38,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     private _generateRandomForCache() {
-        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, (c) => {
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, () => {
             const r = (Math.random() * 10) | 0;
             return r.toString();
         });

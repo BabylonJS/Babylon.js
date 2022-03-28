@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * From https://github.com/donmccurdy/zstddec by Don McCurdy
  */
@@ -16,7 +17,7 @@ let heap: Uint8Array;
 
 const IMPORT_OBJECT = {
     env: {
-        emscripten_notify_memory_growth: function (index: number): void {
+        emscripten_notify_memory_growth: function (): void {
             heap = new Uint8Array(instance.exports.memory.buffer);
         },
     },
@@ -57,7 +58,7 @@ export class ZSTDDecoder {
     _init(result: WebAssembly.WebAssemblyInstantiatedSource): void {
         instance = result.instance as unknown as { exports: DecoderExports };
 
-        IMPORT_OBJECT.env.emscripten_notify_memory_growth(0); // initialize heap.
+        IMPORT_OBJECT.env.emscripten_notify_memory_growth(); // initialize heap.
     }
 
     decode(array: Uint8Array, uncompressedSize = 0): Uint8Array {

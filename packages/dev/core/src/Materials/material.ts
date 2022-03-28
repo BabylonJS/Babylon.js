@@ -1,32 +1,32 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import { IAnimatable } from "../Animations/animatable.interface";
-import { SmartArray } from "../Misc/smartArray";
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Matrix } from "../Maths/math.vector";
+import type { IAnimatable } from "../Animations/animatable.interface";
+import type { SmartArray } from "../Misc/smartArray";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import { Geometry } from "../Meshes/geometry";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Geometry } from "../Meshes/geometry";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect } from "./effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { MaterialDefines } from "./materialDefines";
+import type { Effect } from "./effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { IInspectable } from "../Misc/iInspectable";
+import type { IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
-import { ShadowDepthWrapper } from "./shadowDepthWrapper";
+import type { ShadowDepthWrapper } from "./shadowDepthWrapper";
 import { MaterialHelper } from "./materialHelper";
-import { IMaterialContext } from "../Engines/IMaterialContext";
+import type { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
-import { Scene } from "../scene";
-import { AbstractScene } from "../abstractScene";
-import {
-    MaterialPluginEvent,
+import type { Scene } from "../scene";
+import type { AbstractScene } from "../abstractScene";
+import type {
     MaterialPluginDisposed,
     MaterialPluginIsReadyForSubMesh,
     MaterialPluginGetDefineNames,
@@ -42,7 +42,8 @@ import {
     MaterialPluginHasRenderTargetTextures,
     MaterialPluginHardBindForSubMesh,
 } from "./materialPluginEvent";
-import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import { MaterialPluginEvent } from "./materialPluginEvent";
+import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -854,10 +855,9 @@ export class Material implements IAnimatable {
      * @param fullDetails defines a boolean indicating which levels of logging is desired
      * @returns a string with material information
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public toString(fullDetails?: boolean): string {
         const ret = "Name: " + this.name;
-        if (fullDetails) {
-        }
         return ret;
     }
 
@@ -898,6 +898,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies if instances should be used
      * @returns a boolean indicating if the material is ready to be used
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         return true;
     }
@@ -909,6 +910,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const defines = subMesh.materialDefines;
         if (!defines) {
@@ -1084,6 +1086,7 @@ export class Material implements IAnimatable {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh to bind the material to
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bind(world: Matrix, mesh?: Mesh): void {}
 
     /**
@@ -1120,6 +1123,7 @@ export class Material implements IAnimatable {
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bindOnlyWorldMatrix(world: Matrix): void {}
 
     /**
@@ -1185,19 +1189,19 @@ export class Material implements IAnimatable {
         }
 
         if (this.disableDepthWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedDepthWriteState = engine.getDepthWrite();
             engine.setDepthWrite(false);
         }
 
         if (this.disableColorWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedColorWriteState = engine.getColorWrite();
             engine.setColorWrite(false);
         }
 
         if (this.depthFunction !== 0) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             this._cachedDepthFunctionState = engine.getDepthFunction() || 0;
             engine.setDepthFunction(this.depthFunction);
         }
@@ -1212,17 +1216,17 @@ export class Material implements IAnimatable {
         }
 
         if (this.depthFunction !== 0) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setDepthFunction(this._cachedDepthFunctionState);
         }
 
         if (this.disableDepthWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setDepthWrite(this._cachedDepthWriteState);
         }
 
         if (this.disableColorWrite) {
-            var engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
             engine.setColorWrite(this._cachedColorWriteState);
         }
     }
@@ -1264,6 +1268,7 @@ export class Material implements IAnimatable {
      * @param name defines the new name for the duplicated material
      * @returns the cloned material
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public clone(name: string): Nullable<Material> {
         return null;
     }
@@ -1311,7 +1316,7 @@ export class Material implements IAnimatable {
         const currentHotSwapingState = this.allowShaderHotSwapping;
         this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
-        var checkReady = () => {
+        const checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
             }
@@ -1598,6 +1603,7 @@ export class Material implements IAnimatable {
      * @param prePassRenderer defines the prepass renderer to setup.
      * @returns true if the pre pass is needed.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         // Do Nothing by default
         return false;
@@ -1685,6 +1691,7 @@ export class Material implements IAnimatable {
      * @param forceDisposeEffect
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
         if ((<Mesh>mesh).geometry) {
             const geometry = <Geometry>(<Mesh>mesh).geometry;

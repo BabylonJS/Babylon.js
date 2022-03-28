@@ -1,11 +1,12 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 
-import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_clearcoat";
 

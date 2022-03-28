@@ -10,6 +10,10 @@ import { processAssets } from "./copyAssets";
 import { prepareSnapshot } from "./prepareSnapshot";
 import { umdPackageMapping } from "./packageMapping";
 import { updateEngineVersion } from "./updateEngineVersion";
+import { declarationsEs6 } from "./declarationsEs6";
+// public API
+import transformer from "./pathTransform";
+import * as webpackTools from "./webpackTools";
 
 runCommand();
 
@@ -37,7 +41,10 @@ function runCommand() {
                 break;
             case "prepare-es6-build":
             case "peb":
-                prepareES6Build();
+                prepareES6Build().catch((e) => {
+                    console.error(e);
+                    process.exit(1);
+                });
                 break;
             case "dev-watch":
             case "dw":
@@ -55,6 +62,10 @@ function runCommand() {
             case "uev":
                 updateEngineVersion();
                 break;
+            case "declarations-es6":
+            case "des6":
+                declarationsEs6();
+                break;
             default:
                 console.log(`Unknown command: ${command}`);
                 break;
@@ -62,7 +73,4 @@ function runCommand() {
     }
 }
 
-// public API
-import transformer from "./pathTransform";
-import * as webpackTools from "./webpackTools";
 export { transformer, webpackTools, checkArgs, umdPackageMapping, populateEnvironment };

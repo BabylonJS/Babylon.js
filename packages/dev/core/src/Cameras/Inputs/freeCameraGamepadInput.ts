@@ -1,8 +1,9 @@
 import { serialize } from "../../Misc/decorators";
-import { Observer } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
+import type { Observer } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 
@@ -22,14 +23,14 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     public gamepad: Nullable<Gamepad>;
 
     /**
-     * Defines the gamepad rotation sensiblity.
+     * Defines the gamepad rotation sensibility.
      * This is the threshold from when rotation starts to be accounted for to prevent jittering.
      */
     @serialize()
     public gamepadAngularSensibility = 200;
 
     /**
-     * Defines the gamepad move sensiblity.
+     * Defines the gamepad move sensibility.
      * This is the threshold from when moving starts to be accounted for for to prevent jittering.
      */
     @serialize()
@@ -97,9 +98,8 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
         this.gamepad = null;
@@ -112,18 +112,18 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     public checkInputs(): void {
         if (this.gamepad && this.gamepad.leftStick) {
             const camera = this.camera;
-            const LSValues = this.gamepad.leftStick;
+            const lsValues = this.gamepad.leftStick;
             if (this.gamepadMoveSensibility !== 0) {
-                LSValues.x = Math.abs(LSValues.x) > this.deadzoneDelta ? LSValues.x / this.gamepadMoveSensibility : 0;
-                LSValues.y = Math.abs(LSValues.y) > this.deadzoneDelta ? LSValues.y / this.gamepadMoveSensibility : 0;
+                lsValues.x = Math.abs(lsValues.x) > this.deadzoneDelta ? lsValues.x / this.gamepadMoveSensibility : 0;
+                lsValues.y = Math.abs(lsValues.y) > this.deadzoneDelta ? lsValues.y / this.gamepadMoveSensibility : 0;
             }
 
-            let RSValues = this.gamepad.rightStick;
-            if (RSValues && this.gamepadAngularSensibility !== 0) {
-                RSValues.x = Math.abs(RSValues.x) > this.deadzoneDelta ? RSValues.x / this.gamepadAngularSensibility : 0;
-                RSValues.y = (Math.abs(RSValues.y) > this.deadzoneDelta ? RSValues.y / this.gamepadAngularSensibility : 0) * this._yAxisScale;
+            let rsValues = this.gamepad.rightStick;
+            if (rsValues && this.gamepadAngularSensibility !== 0) {
+                rsValues.x = Math.abs(rsValues.x) > this.deadzoneDelta ? rsValues.x / this.gamepadAngularSensibility : 0;
+                rsValues.y = (Math.abs(rsValues.y) > this.deadzoneDelta ? rsValues.y / this.gamepadAngularSensibility : 0) * this._yAxisScale;
             } else {
-                RSValues = { x: 0, y: 0 };
+                rsValues = { x: 0, y: 0 };
             }
 
             if (!camera.rotationQuaternion) {
@@ -133,11 +133,11 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             }
 
             const speed = camera._computeLocalCameraSpeed() * 50.0;
-            this._vector3.copyFromFloats(LSValues.x * speed, 0, -LSValues.y * speed);
+            this._vector3.copyFromFloats(lsValues.x * speed, 0, -lsValues.y * speed);
 
             Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
             camera.cameraDirection.addInPlace(this._deltaTransform);
-            this._vector2.copyFromFloats(RSValues.y, RSValues.x);
+            this._vector2.copyFromFloats(rsValues.y, rsValues.x);
             camera.cameraRotation.addInPlace(this._vector2);
         }
     }

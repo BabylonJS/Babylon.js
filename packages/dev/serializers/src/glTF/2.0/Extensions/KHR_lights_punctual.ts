@@ -1,13 +1,14 @@
-import { SpotLight } from "core/Lights/spotLight";
-import { Nullable } from "core/types";
+import type { SpotLight } from "core/Lights/spotLight";
+import type { Nullable } from "core/types";
 import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Light } from "core/Lights/light";
 import { DirectionalLight } from "core/Lights/directionalLight";
-import { Node } from "core/node";
+import type { Node } from "core/node";
 import { ShadowLight } from "core/Lights/shadowLight";
-import { INode, IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
-import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import type { INode, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
+import { IKHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
+import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
 import { _GLTFUtilities } from "../glTFUtilities";
@@ -17,6 +18,7 @@ const NAME = "KHR_lights_punctual";
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
     /** The name of this extension. */
     public readonly name = NAME;
@@ -63,7 +65,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @returns nullable INode promise
      */
     public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: { [key: number]: number }): Promise<Nullable<INode>> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (node && babylonNode instanceof ShadowLight) {
                 const babylonLight: ShadowLight = babylonNode;
                 let light: IKHRLightsPunctual_Light;

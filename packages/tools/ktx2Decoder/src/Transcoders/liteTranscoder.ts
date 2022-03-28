@@ -1,6 +1,7 @@
-import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
+import type { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import { Transcoder } from "../transcoder";
 import { WASMMemoryManager } from "../wasmMemoryManager";
-import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @hidden
@@ -27,10 +28,12 @@ export class LiteTranscoder extends Transcoder {
         return this._modulePromise;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected get memoryManager(): WASMMemoryManager {
         return this._memoryManager;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected setModulePath(modulePath: string): void {
         this._modulePath = modulePath;
     }

@@ -1,6 +1,6 @@
-import { Nullable } from "../../types";
-import { WebGPUEngine } from "../webgpuEngine";
-import { WebGPUBufferManager } from "./webgpuBufferManager";
+import type { Nullable } from "../../types";
+import type { WebGPUEngine } from "../webgpuEngine";
+import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 

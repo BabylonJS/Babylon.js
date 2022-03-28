@@ -1,11 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Constants } from "../../Engines/constants";
 import { serialize, expandToProperty } from "../../Misc/decorators";
-import { Scene } from "../../scene";
 import { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
-
-declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
+import type { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 /**
  * @hidden
@@ -106,7 +104,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
         this._enable(true);
     }
 
-    public prepareDefines(defines: MaterialBRDFDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefines(defines: MaterialBRDFDefines): void {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;

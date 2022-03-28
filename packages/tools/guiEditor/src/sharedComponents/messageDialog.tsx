@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 interface IMessageDialogComponentProps {
     globalState: GlobalState;

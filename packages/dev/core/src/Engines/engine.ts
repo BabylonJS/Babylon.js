@@ -1,30 +1,31 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { ILoadingScreen } from "../Loading/loadingScreen";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
 import { _WarnImport } from "../Misc/devTools";
-import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import { IPipelineContext } from "./IPipelineContext";
-import { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
-import { ThinEngine, EngineOptions } from "./thinEngine";
+import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
+import type { EngineOptions } from "./thinEngine";
+import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import { IViewportLike, IColor4Like } from "../Maths/math.like";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { PerfCounter } from "../Misc/perfCounter";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
-import { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
-import { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
+import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -371,6 +372,7 @@ export class Engine extends ThinEngine {
      * @param canvas The rendering canvas element
      * @returns The loading screen
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
         throw _WarnImport("LoadingScreen");
     }
@@ -467,6 +469,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static audioEngine: Nullable<IAudioEngine>;
 
     /**
@@ -1141,6 +1144,7 @@ export class Engine extends ThinEngine {
      * @param document
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
         // Do nothing as the engine side effect will overload it
     }
@@ -1278,13 +1282,13 @@ export class Engine extends ThinEngine {
 
     protected _rebuildBuffers(): void {
         // Index / Vertex
-        for (var scene of this.scenes) {
+        for (const scene of this.scenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
             scene._rebuildTextures();
         }
 
-        for (var scene of this._virtualScenes) {
+        for (const scene of this._virtualScenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
             scene._rebuildTextures();
@@ -1570,6 +1574,7 @@ export class Engine extends ThinEngine {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _RenderPassIdCounter = 0;
     /**
      * Gets or sets the current render pass id
@@ -1811,7 +1816,7 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
         const gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             const check = () => {
@@ -1821,7 +1826,7 @@ export class Engine extends ThinEngine {
                     return;
                 }
                 if (res == gl.TIMEOUT_EXPIRED) {
-                    setTimeout(check, interval_ms);
+                    setTimeout(check, intervalms);
                     return;
                 }
                 resolve();
@@ -2026,6 +2031,7 @@ export class Engine extends ThinEngine {
      * @param constraints video constraints
      * @returns video element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createVideoElement(constraints: MediaTrackConstraints): any {
         return document.createElement("video");
     }

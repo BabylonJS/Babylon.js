@@ -1,7 +1,7 @@
-import { Bone } from "./bone";
+import type { Bone } from "./bone";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
-import { TransformNode } from "../Meshes/transformNode";
-import { Nullable } from "../types";
+import type { TransformNode } from "../Meshes/transformNode";
+import type { Nullable } from "../types";
 import { Space } from "../Maths/math.axis";
 
 /**
@@ -9,13 +9,13 @@ import { Space } from "../Maths/math.axis";
  * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
  */
 export class BoneIKController {
-    private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-    private static _tmpQuat = Quaternion.Identity();
-    private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
+    private static _TmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+    private static _TmpQuat = Quaternion.Identity();
+    private static _TmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
 
     /**
      * Gets or sets the target TransformNode
-     * Name kept as mesh for back compability
+     * Name kept as mesh for back compatibility
      */
     public targetMesh: TransformNode;
 
@@ -49,7 +49,7 @@ export class BoneIKController {
 
     /**
      * Gets or sets the TransformNode associated with the controller
-     * Name kept as mesh for back compability
+     * Name kept as mesh for back compatibility
      */
     public mesh: TransformNode;
 
@@ -225,8 +225,8 @@ export class BoneIKController {
         const target = this.targetPosition;
         const poleTarget = this.poleTargetPosition;
 
-        const mat1 = BoneIKController._tmpMats[0];
-        const mat2 = BoneIKController._tmpMats[1];
+        const mat1 = BoneIKController._TmpMats[0];
+        const mat2 = BoneIKController._TmpMats[1];
 
         if (this.targetMesh) {
             target.copyFrom(this.targetMesh.getAbsolutePosition());
@@ -238,13 +238,13 @@ export class BoneIKController {
             Vector3.TransformCoordinatesToRef(this.poleTargetLocalOffset, this.poleTargetMesh.getWorldMatrix(), poleTarget);
         }
 
-        const bonePos = BoneIKController._tmpVecs[0];
-        const zaxis = BoneIKController._tmpVecs[1];
-        const xaxis = BoneIKController._tmpVecs[2];
-        const yaxis = BoneIKController._tmpVecs[3];
-        const upAxis = BoneIKController._tmpVecs[4];
+        const bonePos = BoneIKController._TmpVecs[0];
+        const zaxis = BoneIKController._TmpVecs[1];
+        const xaxis = BoneIKController._TmpVecs[2];
+        const yaxis = BoneIKController._TmpVecs[3];
+        const upAxis = BoneIKController._TmpVecs[4];
 
-        const _tmpQuat = BoneIKController._tmpQuat;
+        const tmpQuat = BoneIKController._TmpQuat;
 
         bone1.getAbsolutePositionToRef(this.mesh, bonePos);
 
@@ -307,7 +307,7 @@ export class BoneIKController {
             Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);
             mat2.multiplyToRef(mat1, mat1);
         } else {
-            const _tmpVec = BoneIKController._tmpVecs[5];
+            const _tmpVec = BoneIKController._TmpVecs[5];
 
             _tmpVec.copyFrom(this._bendAxis);
             _tmpVec.x *= -1;
@@ -326,8 +326,8 @@ export class BoneIKController {
                 if (!this._slerping) {
                     Quaternion.FromRotationMatrixToRef(this._bone1Mat, this._bone1Quat);
                 }
-                Quaternion.FromRotationMatrixToRef(mat1, _tmpQuat);
-                Quaternion.SlerpToRef(this._bone1Quat, _tmpQuat, this.slerpAmount, this._bone1Quat);
+                Quaternion.FromRotationMatrixToRef(mat1, tmpQuat);
+                Quaternion.SlerpToRef(this._bone1Quat, tmpQuat, this.slerpAmount, this._bone1Quat);
                 angC = this._bone2Ang * (1.0 - this.slerpAmount) + angC * this.slerpAmount;
 
                 this._bone1.setRotationQuaternion(this._bone1Quat, Space.WORLD, this.mesh);

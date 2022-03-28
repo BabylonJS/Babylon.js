@@ -19,7 +19,8 @@
         "build:declaration": "build-tools -c pud --config ./declarationConfigDev.json",
         "build:declaration:lts": "build-tools -c pud --config ./declarationConfigLTS.json",
         "watch:declaration:dev": "build-tools -c pud --config ./declarationConfigDev.json --watch",
-        "watch:declaration:lts": "build-tools -c pud --config ./declarationConfigLTS.json --watch"
+        "watch:declaration:lts": "build-tools -c pud --config ./declarationConfigLTS.json --watch",
+        "prepare": "node ./scripts/generateScripts.js"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

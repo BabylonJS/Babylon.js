@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { CreateRibbon } from "./Builders/ribbonBuilder";
 import { CreateDisc } from "./Builders/discBuilder";
 import { CreateBox } from "./Builders/boxBuilder";

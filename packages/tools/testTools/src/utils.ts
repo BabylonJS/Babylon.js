@@ -1,5 +1,5 @@
-import { Page } from "puppeteer";
-import { StacktracedObject } from "./window";
+import type { Page } from "puppeteer";
+import type { StacktracedObject } from "./window";
 
 declare const BABYLON: typeof window.BABYLON;
 
@@ -117,8 +117,19 @@ export const evaluateEventListenerAugmentation = async () => {
         window.eventsRegistered[a] = window.eventsRegistered[a] || {
             numberAdded: 0,
             numberRemoved: 0,
+            registeredFunctions: [],
         };
         window.eventsRegistered[a].numberAdded++;
+        // find if this function was registered already
+        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f && f.eventListener === b);
+        if (registered === -1) {
+            window.eventsRegistered[a].registeredFunctions.push({
+                eventListener: b,
+                timesAdded: 1,
+            });
+        } else {
+            window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded++;
+        }
         try {
             throw new Error();
         } catch (err) {
@@ -154,8 +165,16 @@ export const evaluateEventListenerAugmentation = async () => {
         window.eventsRegistered[a] = window.eventsRegistered[a] || {
             numberAdded: 0,
             numberRemoved: 0,
+            registeredFunctions: [],
         };
-        window.eventsRegistered[a].numberRemoved++;
+        // find the registered
+        const registered = window.eventsRegistered[a].registeredFunctions.findIndex((f) => f && f.eventListener === b);
+        if (registered !== -1) {
+            window.eventsRegistered[a].numberRemoved += window.eventsRegistered[a].registeredFunctions[registered]!.timesAdded;
+            window.eventsRegistered[a].registeredFunctions[registered] = null;
+        } else {
+            // console.error("could not find registered function");
+        }
     };
 };
 
@@ -372,4 +391,30 @@ export const checkPerformanceOfScene = async (
     time.shift();
     // return the average rendering time
     return time.reduce((partialSum, a) => partialSum + a, 0) / (numberOfPasses - 2);
+};
+
+export const logPageErrors = async (page: Page, debug?: boolean) => {
+    page.on("console", async (msg) => {
+        // serialize my args the way I want
+        const args = await Promise.all(
+            msg.args().map((arg) =>
+                arg.executionContext().evaluate((argument: string | Error) => {
+                    // I'm in a page context now. If my arg is an error - get me its message.
+                    if (argument instanceof Error) return `[ERR] ${argument.message}`;
+                    //Return the argument if it is just a message
+                    return `[STR] ${argument}`;
+                }, arg)
+            )
+        );
+        args.filter((arg) => arg !== null).forEach((arg) => console.log(arg));
+        // fallback
+        if (!debug) {
+            if (args.filter((arg) => arg !== null).length === 0 && msg.type().substring(0, 3).toUpperCase() === "ERR") {
+                console.log(`${msg.type().substring(0, 3).toUpperCase()} ${msg.text()}`);
+            }
+        } else {
+            console.log(`${msg.type().substring(0, 3).toUpperCase()} ${msg.text()}`);
+        }
+    });
+    page.on("pageerror", ({ message }) => console.log(message)).on("requestfailed", (request) => console.log(`${request.failure().errorText} ${request.url()}`));
 };

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
+import type { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
 
 export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -30,7 +30,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         target={colorMergerBlock}
                         propertyName="rSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -42,7 +42,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         target={colorMergerBlock}
                         propertyName="gSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -54,7 +54,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         target={colorMergerBlock}
                         propertyName="bSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
@@ -66,7 +66,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         target={colorMergerBlock}
                         propertyName="aSwizzle"
                         valuesAreStrings={true}
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();

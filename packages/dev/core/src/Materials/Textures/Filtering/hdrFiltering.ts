@@ -1,12 +1,12 @@
 import { Vector3 } from "../../../Maths/math";
 import { Scalar } from "../../../Maths/math.scalar";
-import { BaseTexture } from "../baseTexture";
-import { ThinEngine } from "../../../Engines/thinEngine";
-import { Effect } from "../../../Materials/effect";
+import type { BaseTexture } from "../baseTexture";
+import type { ThinEngine } from "../../../Engines/thinEngine";
+import type { Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
-import { Nullable } from "../../../types";
-import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import type { Nullable } from "../../../types";
+import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
@@ -59,7 +59,7 @@ export class HDRFiltering {
         // pass
         this._engine = engine;
         this.hdrScale = options.hdrScale || this.hdrScale;
-        this.quality = options.hdrScale || this.quality;
+        this.quality = options.quality || this.quality;
     }
 
     private _createRenderTarget(size: number): RenderTargetWrapper {

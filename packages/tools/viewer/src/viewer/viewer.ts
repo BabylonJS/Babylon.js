@@ -1,26 +1,28 @@
 import { Engine } from "core/Engines/engine";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from "core/Loading/sceneLoader";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import type { Observable } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 import { RenderingManager } from "core/Rendering/renderingManager";
-import { TargetCamera } from "core/Cameras/targetCamera";
+import type { TargetCamera } from "core/Cameras/targetCamera";
 import { Tools } from "core/Misc/tools";
 import { Effect } from "core/Materials/effect";
 import { processConfigurationCompatibility } from "../configuration/configurationCompatibility";
 import { ConfigurationContainer } from "../configuration/configurationContainer";
 import { viewerGlobals } from "../configuration/globals";
 import { RenderOnlyConfigurationLoader } from "../configuration/renderOnlyLoader";
+// eslint-disable-next-line import/no-internal-modules
 import { deepmerge } from "../helper/index";
 import { ModelLoader } from "../loader/modelLoader";
 import { ObservablesManager } from "../managers/observablesManager";
 import { SceneManager } from "../managers/sceneManager";
 import { telemetryManager } from "../managers/telemetryManager";
-import { ViewerModel } from "../model/viewerModel";
+import type { ViewerModel } from "../model/viewerModel";
 import { viewerManager } from "./viewerManager";
-import { ViewerConfiguration } from "../configuration/configuration";
-import { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import type { ViewerConfiguration } from "../configuration/configuration";
+import type { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.
@@ -72,7 +74,7 @@ export abstract class AbstractViewer {
 
     /**
      * Will notify when a new model was added to the scene.
-     * Note that added does not neccessarily mean loaded!
+     * Note that added does not necessarily mean loaded!
      */
     public get onModelAddedObservable(): Observable<ViewerModel> {
         return this.observablesManager.onModelAddedObservable;
@@ -175,6 +177,7 @@ export abstract class AbstractViewer {
         return this._configurationContainer;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected getConfigurationLoader() {
         return new RenderOnlyConfigurationLoader();
     }
@@ -233,7 +236,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Is the engine currently set to rende even when the page is in background
+     * Is the engine currently set to render even when the page is in background
      */
     public get renderInBackground() {
         return this.engine && this.engine.renderEvenInBackground;
@@ -380,7 +383,7 @@ export abstract class AbstractViewer {
                         this.sceneManager.defaultRenderingPipeline.prepare();
                     }
 
-                    // clear set height and eidth
+                    // clear set height and width
                     this.canvas.removeAttribute("height");
                     this.canvas.removeAttribute("width");
                     this.engine.resize();
@@ -643,7 +646,7 @@ export abstract class AbstractViewer {
     }
 
     /**
-     * Initialize the engine. Retruns a promise in case async calls are needed.
+     * Initialize the engine. Returns a promise in case async calls are needed.
      *
      * @protected
      * @returns {Promise<Engine>}
@@ -770,7 +773,7 @@ export abstract class AbstractViewer {
     /**
      * load a model using the provided configuration.
      * This function, as opposed to initModel, will return a promise that resolves when the model is loaded, and rejects with error.
-     * If you want to attach to the observables of the model, use initModle instead.
+     * If you want to attach to the observables of the model, use initModel instead.
      *
      * @param modelConfig the model configuration or URL to load.
      * @param clearScene Should the scene be cleared before loading the model

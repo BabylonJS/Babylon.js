@@ -1,9 +1,9 @@
-import { Observer } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 import * as React from "react";
-import { GlobalState } from "../../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "../context";
+import type { GlobalState } from "../../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "../context";
 
 interface IPlayHeadComponentProps {
     globalState: GlobalState;
@@ -13,7 +13,7 @@ interface IPlayHeadComponentProps {
 interface IPlayHeadComponentState {}
 
 export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, IPlayHeadComponentState> {
-    private readonly _GraphAbsoluteWidth = 788;
+    private readonly _graphAbsoluteWidth = 788;
     private _playHead: React.RefObject<HTMLDivElement>;
     private _playHeadCircle: React.RefObject<HTMLDivElement>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
@@ -89,7 +89,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         const minFrame = this.props.context.referenceMinFrame;
         const maxFrame = this.props.context.referenceMaxFrame;
 
-        return (((frame - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) * this._viewScale;
+        return (((frame - minFrame) / (maxFrame - minFrame)) * this._graphAbsoluteWidth + this._offsetX) * this._viewScale;
     }
 
     private _pixelToFrame(pixel: number) {
@@ -98,7 +98,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         const minFrame = this.props.context.referenceMinFrame;
         const maxFrame = this.props.context.referenceMaxFrame;
 
-        return Math.max(((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame, keys[0].frame);
+        return Math.max(((pixel / this._viewScale - this._offsetX) / this._graphAbsoluteWidth) * (maxFrame - minFrame) + minFrame, keys[0].frame);
     }
 
     componentWillUnmount() {

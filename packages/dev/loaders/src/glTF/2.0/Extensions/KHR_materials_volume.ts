@@ -1,9 +1,10 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Material } from "core/Materials/material";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { Material } from "core/Materials/material";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_materials_volume";

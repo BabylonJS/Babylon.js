@@ -1,20 +1,20 @@
-import { Scene } from "./scene";
-import { Nullable } from "./types";
-import { AbstractMesh } from "./Meshes/abstractMesh";
-import { TransformNode } from "./Meshes/transformNode";
-import { Geometry } from "./Meshes/geometry";
-import { Skeleton } from "./Bones/skeleton";
-import { MorphTargetManager } from "./Morph/morphTargetManager";
-import { AssetContainer } from "./assetContainer";
-import { IParticleSystem } from "./Particles/IParticleSystem";
-import { AnimationGroup } from "./Animations/animationGroup";
-import { BaseTexture } from "./Materials/Textures/baseTexture";
-import { Material } from "./Materials/material";
-import { MultiMaterial } from "./Materials/multiMaterial";
-import { AbstractActionManager } from "./Actions/abstractActionManager";
-import { Camera } from "./Cameras/camera";
-import { Light } from "./Lights/light";
-import { Node } from "./node";
+import type { Scene } from "./scene";
+import type { Nullable } from "./types";
+import type { AbstractMesh } from "./Meshes/abstractMesh";
+import type { TransformNode } from "./Meshes/transformNode";
+import type { Geometry } from "./Meshes/geometry";
+import type { Skeleton } from "./Bones/skeleton";
+import type { MorphTargetManager } from "./Morph/morphTargetManager";
+import type { AssetContainer } from "./assetContainer";
+import type { IParticleSystem } from "./Particles/IParticleSystem";
+import type { AnimationGroup } from "./Animations/animationGroup";
+import type { BaseTexture } from "./Materials/Textures/baseTexture";
+import type { Material } from "./Materials/material";
+import type { MultiMaterial } from "./Materials/multiMaterial";
+import type { AbstractActionManager } from "./Actions/abstractActionManager";
+import type { Camera } from "./Cameras/camera";
+import type { Light } from "./Lights/light";
+import type { Node } from "./node";
 
 declare type Animation = import("./Animations/animation").Animation;
 declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
@@ -57,7 +57,7 @@ export abstract class AbstractScene {
     }
 
     /**
-     * Gets a general parser from the list of avaialble ones
+     * Gets a general parser from the list of available ones
      * @param name Defines the name of the parser
      * @returns the requested parser or null
      */
@@ -79,7 +79,7 @@ export abstract class AbstractScene {
     }
 
     /**
-     * Gets an individual parser from the list of avaialble ones
+     * Gets an individual parser from the list of available ones
      * @param name Defines the name of the parser
      * @returns the requested parser or null
      */
@@ -100,7 +100,7 @@ export abstract class AbstractScene {
      */
     public static Parse(jsonData: any, scene: Scene, container: AssetContainer, rootUrl: string): void {
         for (const parserName in this._BabylonFileParsers) {
-            if (this._BabylonFileParsers.hasOwnProperty(parserName)) {
+            if (Object.prototype.hasOwnProperty.call(this._BabylonFileParsers, parserName)) {
                 this._BabylonFileParsers[parserName](jsonData, scene, container, rootUrl);
             }
         }
@@ -177,10 +177,10 @@ export abstract class AbstractScene {
     public geometries = new Array<Geometry>();
 
     /**
-     * All of the tranform nodes added to this scene
+     * All of the transform nodes added to this scene
      * In the context of a Scene, it is not supposed to be modified manually.
      * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
-     * Note also that the order of the TransformNode wihin the array is not significant and might change.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
      * @see https://doc.babylonjs.com/how_to/transformnode
      */
     public transformNodes = new Array<TransformNode>();

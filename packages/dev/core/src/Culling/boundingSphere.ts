@@ -1,7 +1,7 @@
-import { DeepImmutable } from "../types";
+import type { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 
 /**
  * Class used to store bounding sphere information
@@ -33,7 +33,7 @@ export class BoundingSphere {
     public readonly maximum = Vector3.Zero();
 
     private _worldMatrix: DeepImmutable<Matrix>;
-    private static readonly TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
+    private static readonly _TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
     /**
      * Creates a new bounding sphere
@@ -70,7 +70,7 @@ export class BoundingSphere {
      */
     public scale(factor: number): BoundingSphere {
         const newRadius = this.radius * factor;
-        const tmpVectors = BoundingSphere.TmpVector3;
+        const tmpVectors = BoundingSphere._TmpVector3;
         const tempRadiusVector = tmpVectors[0].setAll(newRadius);
         const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
         const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
@@ -96,7 +96,7 @@ export class BoundingSphere {
     public _update(worldMatrix: DeepImmutable<Matrix>): void {
         if (!worldMatrix.isIdentity()) {
             Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
-            const tempVector = BoundingSphere.TmpVector3[0];
+            const tempVector = BoundingSphere._TmpVector3[0];
             Vector3.TransformNormalFromFloatsToRef(1.0, 1.0, 1.0, worldMatrix, tempVector);
             this.radiusWorld = Math.max(Math.abs(tempVector.x), Math.abs(tempVector.y), Math.abs(tempVector.z)) * this.radius;
         } else {
@@ -177,13 +177,13 @@ export class BoundingSphere {
      * @returns The sphere
      */
     public static CreateFromCenterAndRadius(center: DeepImmutable<Vector3>, radius: number, matrix?: DeepImmutable<Matrix>): BoundingSphere {
-        this.TmpVector3[0].copyFrom(center);
-        this.TmpVector3[1].copyFromFloats(0, 0, radius);
-        this.TmpVector3[2].copyFrom(center);
-        this.TmpVector3[0].addInPlace(this.TmpVector3[1]);
-        this.TmpVector3[2].subtractInPlace(this.TmpVector3[1]);
+        this._TmpVector3[0].copyFrom(center);
+        this._TmpVector3[1].copyFromFloats(0, 0, radius);
+        this._TmpVector3[2].copyFrom(center);
+        this._TmpVector3[0].addInPlace(this._TmpVector3[1]);
+        this._TmpVector3[2].subtractInPlace(this._TmpVector3[1]);
 
-        const sphere = new BoundingSphere(this.TmpVector3[0], this.TmpVector3[2]);
+        const sphere = new BoundingSphere(this._TmpVector3[0], this._TmpVector3[2]);
 
         if (matrix) {
             sphere._worldMatrix = matrix;

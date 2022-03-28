@@ -8,10 +8,10 @@ import * as Validation from "loaders/glTF/glTFValidation";
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (var key in FileLoader) {
+    for (const key in FileLoader) {
         (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
     }
-    for (var key in Validation) {
+    for (const key in Validation) {
         (<any>globalObject).BABYLON[key] = (<any>Validation)[key];
     }
 }

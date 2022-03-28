@@ -1,9 +1,10 @@
-import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import { Scene } from "../../scene";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { SmartArrayNoDuplicate } from "../../Misc/smartArray";
+import type { Scene } from "../../scene";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
-import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
+import type { ISceneSerializableComponent } from "../../sceneComponent";
+import { SceneComponentConstants } from "../../sceneComponent";
 import { AbstractScene } from "../../abstractScene";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
@@ -79,6 +80,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
      * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public addFromContainer(container: AbstractScene): void {
         // Nothing To Do Here. (directly attached to a light)
     }
@@ -88,6 +90,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
      * @param container contains the elements to remove
      * @param dispose if the removed element should be disposed (default: false)
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
         // Nothing To Do Here. (directly attached to a light)
     }

@@ -1,4 +1,4 @@
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { Vector3 } from "../Maths/math.vector";
 
 /**
@@ -47,9 +47,9 @@ export class MeshExploder {
         let averageCenter = Vector3.Zero();
         const totalCenters = Vector3.Zero();
         let shortestToCenter = Number.MAX_VALUE;
-        for (var index = 0; index < this._meshes.length; index++) {
+        for (let index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
-                var mesh = this._meshes[index];
+                const mesh = this._meshes[index];
                 const boundingInfo = mesh.getBoundingInfo();
                 if (boundingInfo) {
                     totalCenters.addInPlace(boundingInfo.boundingBox.centerWorld);
@@ -57,9 +57,9 @@ export class MeshExploder {
             }
         }
         averageCenter = totalCenters.scale(1 / this._meshes.length);
-        for (var index = 0; index < this._meshes.length; index++) {
+        for (let index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
-                var mesh = this._meshes[index];
+                const mesh = this._meshes[index];
                 const boundingInfo = mesh.getBoundingInfo();
                 if (boundingInfo) {
                     const distanceToCenter = boundingInfo.boundingBox.centerWorld.subtract(averageCenter).lengthSquared();

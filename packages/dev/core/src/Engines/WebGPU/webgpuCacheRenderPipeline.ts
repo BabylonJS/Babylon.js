@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Constants } from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
-import { Effect } from "../../Materials/effect";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Effect } from "../../Materials/effect";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { Nullable } from "../../types";
-import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
+import type { Nullable } from "../../types";
+import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 
@@ -330,8 +331,8 @@ export abstract class WebGPUCacheRenderPipeline {
 
         this._mrtEnabledMask = 0xffff; // all textures are enabled at start (meaning we can write to them). Calls to setMRTAttachments may disable some
 
-        let bits: number[] = [0, 0],
-            indexBits = 0,
+        const bits: number[] = [0, 0];
+        let indexBits = 0,
             mask = 0,
             numRT = 0;
         for (let i = 0; i < textureCount; ++i) {
@@ -895,7 +896,7 @@ export abstract class WebGPUCacheRenderPipeline {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getVertexInputDescriptor(effect: Effect, topology: GPUPrimitiveTopology): GPUVertexBufferLayout[] {
+    private _getVertexInputDescriptor(effect: Effect): GPUVertexBufferLayout[] {
         const descriptors: GPUVertexBufferLayout[] = [];
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const attributes = webgpuPipelineContext.shaderProcessingContext.attributeNamesFromEffect;
@@ -946,7 +947,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
     private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipeline {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
-        const inputStateDescriptor = this._getVertexInputDescriptor(effect, topology);
+        const inputStateDescriptor = this._getVertexInputDescriptor(effect);
         const pipelineLayout = this._createPipelineLayout(webgpuPipelineContext);
 
         const colorStates: Array<GPUColorTargetState> = [];

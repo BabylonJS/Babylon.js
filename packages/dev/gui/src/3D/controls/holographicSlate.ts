@@ -1,5 +1,5 @@
 import { ContentDisplay3D } from "./contentDisplay3D";
-import { Control3D } from "./control3D";
+import type { Control3D } from "./control3D";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control } from "../../2D/controls/control";
@@ -9,21 +9,22 @@ import { SlateGizmo } from "../gizmos/slateGizmo";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { Vector4 } from "core/Maths/math";
 import { Epsilon } from "core/Maths/math.constants";
 import { Scalar } from "core/Maths/math.scalar";
-import { Matrix, Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
+import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { TransformNode } from "core/Meshes/transformNode";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
-import { Observer } from "core/Misc/observable";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 
 /**
  * Class used to create a holographic slate
@@ -43,7 +44,7 @@ export class HolographicSlate extends ContentDisplay3D {
      */
     public static FOLLOW_ICON_FILENAME: string = "IconFollowMe.png";
 
-    private static DEFAULT_TEXT_RESOLUTION_Y = 102.4;
+    private static _DEFAULT_TEXT_RESOLUTION_Y = 102.4;
 
     /**
      * Margin between title bar and contentplate
@@ -239,8 +240,8 @@ export class HolographicSlate extends ContentDisplay3D {
 
             // Update the title's AdvancedDynamicTexture scale to avoid visual stretching
             this._titleTextComponent.host.scaleTo(
-                (HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x) / titleBarTitle.scaling.y,
-                HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y
+                (HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x) / titleBarTitle.scaling.y,
+                HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y
             );
 
             const aspectRatio = this.dimensions.x / contentPlateHeight;
@@ -306,8 +307,8 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleTextComponent.textWrapping = TextWrapping.Ellipsis;
         this._titleTextComponent.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._titleTextComponent.color = "white";
-        this._titleTextComponent.fontSize = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 2;
-        this._titleTextComponent.paddingLeft = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 4;
+        this._titleTextComponent.fontSize = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y / 2;
+        this._titleTextComponent.paddingLeft = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y / 4;
         adt.addControl(this._titleTextComponent);
 
         if (scene.useRightHandedSystem) {
