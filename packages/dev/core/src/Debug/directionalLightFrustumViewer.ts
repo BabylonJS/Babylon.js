@@ -1,14 +1,14 @@
-import { Camera } from "../Cameras/camera";
-import { DirectionalLight } from "../Lights/directionalLight";
+import type { Camera } from "../Cameras/camera";
+import type { DirectionalLight } from "../Lights/directionalLight";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Color3 } from "../Maths/math.color";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
-import { LinesMesh } from "../Meshes/linesMesh";
+import type { LinesMesh } from "../Meshes/linesMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 
 /**
  * Class used to render a debug view of the frustum for a directional light

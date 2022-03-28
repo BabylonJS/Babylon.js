@@ -1,9 +1,10 @@
 import * as React from "react";
-import { GradientBlockColorStep, GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
+import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientStepComponent } from "./gradientStepComponent";
 import { Color3 } from "core/Maths/math.color";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _gradientBlock: GradientBlock;

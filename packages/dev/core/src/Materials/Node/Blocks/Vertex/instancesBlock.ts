@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { SubMesh } from "../../../../Meshes/subMesh";
+import type { SubMesh } from "../../../../Meshes/subMesh";
 
 /**
  * Block used to add support for instances

@@ -1,5 +1,5 @@
 import { ShaderCodeNode } from "./shaderCodeNode";
-import { ProcessingOptions } from "./shaderProcessingOptions";
+import type { ProcessingOptions } from "./shaderProcessingOptions";
 
 /** @hidden */
 export class ShaderCodeConditionNode extends ShaderCodeNode {

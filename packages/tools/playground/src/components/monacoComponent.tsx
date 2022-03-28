@@ -1,6 +1,6 @@
 import * as React from "react";
 import { MonacoManager } from "../tools/monacoManager";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 import "../scss/monaco.scss";
 

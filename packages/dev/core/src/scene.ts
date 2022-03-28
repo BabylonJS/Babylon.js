@@ -1,29 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Nullable } from "./types";
+import type { Nullable } from "./types";
 import { Tools } from "./Misc/tools";
-import { IAnimatable } from "./Animations/animatable.interface";
+import type { IAnimatable } from "./Animations/animatable.interface";
 import { PrecisionDate } from "./Misc/precisionDate";
-import { Observable, Observer } from "./Misc/observable";
-import { SmartArrayNoDuplicate, SmartArray, ISmartArrayLike } from "./Misc/smartArray";
+import type { Observer } from "./Misc/observable";
+import { Observable } from "./Misc/observable";
+import type { ISmartArrayLike } from "./Misc/smartArray";
+import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import { Vector2, Vector3, Matrix, TmpVectors, Vector4 } from "./Maths/math.vector";
-import { IParticleSystem } from "./Particles/IParticleSystem";
+import type { Vector2, Vector4 } from "./Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
+import type { IParticleSystem } from "./Particles/IParticleSystem";
 import { AbstractScene } from "./abstractScene";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
-import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
-import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
-import { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
+import type { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
+import type { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
+import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
-import { IOfflineProvider } from "./Offline/IOfflineProvider";
-import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import {
+import type { IOfflineProvider } from "./Offline/IOfflineProvider";
+import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
+import { RenderingManager } from "./Rendering/renderingManager";
+import type {
     ISceneComponent,
     ISceneSerializableComponent,
-    Stage,
     SimpleStageAction,
     RenderTargetsStageAction,
     RenderTargetStageAction,
@@ -37,25 +40,28 @@ import {
     PointerUpDownStageAction,
     CameraStageFrameBufferAction,
 } from "./sceneComponent";
-import { Engine } from "./Engines/engine";
+import { Stage } from "./sceneComponent";
+import type { Engine } from "./Engines/engine";
 import { Constants } from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
-import { AbstractActionManager } from "./Actions/abstractActionManager";
+import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import { _WarnImport } from "./Misc/devTools";
-import { WebRequest } from "./Misc/webRequest";
+import type { WebRequest } from "./Misc/webRequest";
 import { InputManager } from "./Inputs/scene.inputManager";
 import { PerfCounter } from "./Misc/perfCounter";
-import { IFileRequest } from "./Misc/fileRequest";
+import type { IFileRequest } from "./Misc/fileRequest";
 import { Color4, Color3 } from "./Maths/math.color";
-import { Plane } from "./Maths/math.plane";
+import type { Plane } from "./Maths/math.plane";
 import { Frustum } from "./Maths/math.frustum";
 import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
-import { LoadFileError, RequestFileError, ReadFileError, ReadFile, RequestFile, LoadFile } from "./Misc/fileTools";
-import { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
-import { IPointerEvent } from "./Events/deviceInputEvents";
+import type { LoadFileError, RequestFileError, ReadFileError } from "./Misc/fileTools";
+import { ReadFile, RequestFile, LoadFile } from "./Misc/fileTools";
+import type { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
+import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
-import { IComputePressureData, ComputePressureObserverWrapper } from "./Misc/computePressure";
+import type { IComputePressureData } from "./Misc/computePressure";
+import { ComputePressureObserverWrapper } from "./Misc/computePressure";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;

@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-inspector",
-    "version": "5.0.0-rc.7",
+    "version": "5.0.0-rc.12",
     "main": "babylon.inspector.bundle.max.js",
     "types": "babylon.inspector.module.d.ts",
     "files": [
@@ -14,7 +14,11 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.0.0-rc.7"
+        "babylonjs": "^5.0.0-rc.12",
+        "babylonjs-gui": "^5.0.0-rc.12",
+        "babylonjs-loaders": "^5.0.0-rc.12",
+        "babylonjs-materials": "^5.0.0-rc.12",
+        "babylonjs-serializers": "^5.0.0-rc.12"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -35,5 +39,21 @@
         "webpack-cli": "^4.9.1",
         "webpack-merge": "^5.8.0"
     },
-    "sideEffects": true
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
 }

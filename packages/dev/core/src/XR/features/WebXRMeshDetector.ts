@@ -1,7 +1,7 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { WebXRSessionManager } from "../webXRSessionManager";
-import { TransformNode } from "../../Meshes/transformNode";
+import type { WebXRSessionManager } from "../webXRSessionManager";
+import type { TransformNode } from "../../Meshes/transformNode";
 import { Matrix } from "../../Maths/math";
 import { Observable } from "../../Misc/observable";
 

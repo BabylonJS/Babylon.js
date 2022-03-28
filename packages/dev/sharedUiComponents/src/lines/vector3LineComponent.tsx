@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Vector3 } from "core/Maths/math.vector";
-import { Observable } from "core/Misc/observable";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { Observable } from "core/Misc/observable";
 
 import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 

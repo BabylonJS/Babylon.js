@@ -1,15 +1,16 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { ReflectionBlock } from "./reflectionBlock";
-import { Nullable } from "../../../../types";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { ReflectionBlock } from "./reflectionBlock";
+import type { Nullable } from "../../../../types";
 import { RefractionBlock } from "./refractionBlock";
 
 /**

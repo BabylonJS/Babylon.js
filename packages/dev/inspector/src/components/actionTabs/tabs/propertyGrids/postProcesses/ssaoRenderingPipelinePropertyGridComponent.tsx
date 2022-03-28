@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { SSAORenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
-import { GlobalState } from "../../../../globalState";
+import type { SSAORenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
+import type { GlobalState } from "../../../../globalState";
 
 interface ISSAORenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;

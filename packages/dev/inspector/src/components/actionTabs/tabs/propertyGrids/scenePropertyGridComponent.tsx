@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
-import { Vector3 } from "core/Maths/math.vector";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { RadioButtonLineComponent } from "shared-ui-components/lines/radioLineComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
@@ -21,8 +21,8 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { AnimationGridComponent } from "./animations/animationPropertyGridComponent";
 

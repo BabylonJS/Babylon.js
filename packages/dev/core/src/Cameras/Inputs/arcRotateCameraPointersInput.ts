@@ -1,10 +1,10 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
-import { PointerTouch } from "../../Events/pointerEvents";
-import { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { PointerTouch } from "../../Events/pointerEvents";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.

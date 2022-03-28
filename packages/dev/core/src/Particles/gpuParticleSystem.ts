@@ -1,30 +1,32 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable, float, DataArray } from "../types";
-import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
+import type { Nullable, float, DataArray } from "../types";
+import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
+import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import type { Vector3 } from "../Maths/math.vector";
+import { Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
-import { IParticleSystem } from "./IParticleSystem";
+import type { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
-import { IDisposable } from "../scene";
-import { Effect } from "../Materials/effect";
+import type { IDisposable } from "../scene";
+import type { Effect } from "../Materials/effect";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
+import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;

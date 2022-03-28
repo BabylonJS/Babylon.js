@@ -1,9 +1,11 @@
-import { Nullable } from "../types";
-import { Observer, Observable } from "../Misc/observable";
-import { IDisposable } from "../scene";
-import { WebXRInputSource, IWebXRControllerOptions } from "./webXRInputSource";
-import { WebXRSessionManager } from "./webXRSessionManager";
-import { WebXRCamera } from "./webXRCamera";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { IDisposable } from "../scene";
+import type { IWebXRControllerOptions } from "./webXRInputSource";
+import { WebXRInputSource } from "./webXRInputSource";
+import type { WebXRSessionManager } from "./webXRSessionManager";
+import type { WebXRCamera } from "./webXRCamera";
 import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
 
 /**

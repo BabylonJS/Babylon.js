@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
-import { IInspectableOptions } from "core/Misc/iInspectable";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 interface IOptionsLineComponentProps {
     label: string;

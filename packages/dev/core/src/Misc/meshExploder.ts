@@ -1,4 +1,4 @@
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { Vector3 } from "../Maths/math.vector";
 
 /**

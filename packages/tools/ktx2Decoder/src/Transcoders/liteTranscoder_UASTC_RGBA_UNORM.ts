@@ -1,6 +1,6 @@
 import { sourceTextureFormat, transcodeTarget } from "../transcoder";
 import { LiteTranscoder } from "./liteTranscoder";
-import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @hidden

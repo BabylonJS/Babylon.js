@@ -1,5 +1,5 @@
 import { Vector3, Matrix } from "../Maths/math.vector";
-import { TransformNode } from "../Meshes/transformNode";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Class containing a set of static utilities functions for managing Pivots

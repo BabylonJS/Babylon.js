@@ -1,5 +1,5 @@
-import { Camera } from "../../Cameras/camera";
-import { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
+import type { Camera } from "../../Cameras/camera";
+import type { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
 /**
  * PostProcessRenderPipelineManager class
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline

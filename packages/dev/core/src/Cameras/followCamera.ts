@@ -1,11 +1,11 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import { TargetCamera } from "./targetCamera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from "./followCameraInputsManager";
 Node.AddNodeConstructor("FollowCamera", (name, scene) => {
     return () => new FollowCamera(name, Vector3.Zero(), scene);

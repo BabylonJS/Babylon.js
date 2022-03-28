@@ -1,10 +1,10 @@
-import { Nullable } from "../types";
-import { ThinEngine } from "../Engines/thinEngine";
-import { WebXRRenderTarget } from "./webXRTypes";
-import { WebXRSessionManager } from "./webXRSessionManager";
+import type { Nullable } from "../types";
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { WebXRRenderTarget } from "./webXRTypes";
+import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
-import { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
 
 /**

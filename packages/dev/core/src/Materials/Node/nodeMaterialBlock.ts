@@ -1,18 +1,18 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import { Nullable } from "../../types";
+import type { NodeMaterialBuildState } from "./nodeMaterialBuildState";
+import type { Nullable } from "../../types";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "./nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
-import { Effect } from "../effect";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
-import { SubMesh } from "../../Meshes/subMesh";
-import { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
-import { InputBlock } from "./Blocks/Input/inputBlock";
+import type { Effect } from "../effect";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
+import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
-import { EffectFallbacks } from "../effectFallbacks";
+import type { EffectFallbacks } from "../effectFallbacks";
 
 /**
  * Defines a block that can be used inside a node based material

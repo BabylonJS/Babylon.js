@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import { Tools } from "./tools";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 declare let KTX2DECODER: any;
 

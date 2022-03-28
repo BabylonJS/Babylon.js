@@ -1,8 +1,8 @@
-import { IPipelineContext } from "../IPipelineContext";
-import { Nullable } from "../../types";
-import { Effect } from "../../Materials/effect";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
-import { ThinEngine } from "../thinEngine";
+import type { IPipelineContext } from "../IPipelineContext";
+import type { Nullable } from "../../types";
+import type { Effect } from "../../Materials/effect";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { ThinEngine } from "../thinEngine";
 
 /** @hidden */
 export class WebGLPipelineContext implements IPipelineContext {

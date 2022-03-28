@@ -1,4 +1,4 @@
-import { IStencilState } from "./IStencilState";
+import type { IStencilState } from "./IStencilState";
 
 /**
  * @hidden

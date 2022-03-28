@@ -1,9 +1,9 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { AxesViewer } from "../Debug/axesViewer";
 import { Vector3 } from "../Maths/math.vector";
-import { Mesh } from "../Meshes/mesh";
-import { Bone } from "../Bones/bone";
-import { Scene } from "../scene";
+import type { Mesh } from "../Meshes/mesh";
+import type { Bone } from "../Bones/bone";
+import type { Scene } from "../scene";
 import { Axis } from "../Maths/math.axis";
 
 /**

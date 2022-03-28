@@ -1,9 +1,9 @@
-import { Nullable } from "../types";
-import { Vector3, Quaternion } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
-import { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
-import { PhysicsRaycastResult } from "./physicsRaycastResult";
+import type { Nullable } from "../types";
+import type { Vector3, Quaternion } from "../Maths/math.vector";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
+import type { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
+import type { PhysicsRaycastResult } from "./physicsRaycastResult";
 
 /**
  * Interface used to describe a physics joint

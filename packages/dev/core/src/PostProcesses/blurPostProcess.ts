@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Vector2 } from "../Maths/math.vector";
-import { Nullable } from "../types";
-import { PostProcess, PostProcessOptions } from "./postProcess";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Vector2 } from "../Maths/math.vector";
+import type { Nullable } from "../types";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";

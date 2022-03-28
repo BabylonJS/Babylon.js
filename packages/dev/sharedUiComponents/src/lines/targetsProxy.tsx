@@ -1,5 +1,5 @@
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
 
 export const conflictingValuesPlaceholder = "—";
 

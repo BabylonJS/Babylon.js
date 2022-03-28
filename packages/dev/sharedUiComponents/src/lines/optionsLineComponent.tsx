@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { IInspectableOptions } from "core/Misc/iInspectable";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;

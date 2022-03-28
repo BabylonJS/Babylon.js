@@ -419,6 +419,7 @@
 - Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
 - Fix caching of parented node ([carolhmj](https://github.com/carolhmj))
 - Fix glTF exporter when exporting meshes with no material specified. ([bghgary](https://github.com/bghgary))
+- Fix InputPassword serialization ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
