@@ -464,7 +464,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             <CheckBoxLineComponent label="ONLY PAD DESCENDANTS" target={proxy} propertyName="descendentsOnlyPadding" />
                         </div>
                         <hr className="ge" />
-                    </>)}
+                    </>
+                )}
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />
