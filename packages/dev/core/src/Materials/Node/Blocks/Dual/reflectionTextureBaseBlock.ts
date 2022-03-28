@@ -336,9 +336,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * @param worldNormalVarName name of the world normal variable
      * @param worldPos name of the world position variable. If not provided, will use the world position connected to this block
      * @param onlyReflectionVector if true, generates code only for the reflection vector computation, not for the reflection coordinates
+     * @param doNotEmitInvertZ if true, does not emit the invertZ code
      * @returns the shader code
      */
-    public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string, worldPos?: string, onlyReflectionVector = false): string {
+    public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string, worldPos?: string, onlyReflectionVector = false, doNotEmitInvertZ = false): string {
         if (!worldPos) {
             worldPos = `v_${this.worldPosition.associatedVariableName}`;
         }
@@ -389,11 +390,13 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
             #ifdef ${this._defineExplicitName}
                 vec3 ${this._reflectionVectorName} = vec3(0, 0, 0);
-            #endif
+            #endif\r\n`;
 
-            #ifdef ${this._defineOppositeZ}
+        if (!doNotEmitInvertZ) {
+            code += `#ifdef ${this._defineOppositeZ}
                 ${this._reflectionVectorName}.z *= -1.0;
             #endif\r\n`;
+        }
 
         if (!onlyReflectionVector) {
             code += `
