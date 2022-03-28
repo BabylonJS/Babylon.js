@@ -2,6 +2,6 @@
     "declarationLibs": ["@lts/gui"],
     "devPackageName": "gui",
     "filename": "babylon.gui.module.d.ts",
-    "outputDirectory": "./"
-
+    "outputDirectory": "./",
+    "addToDocumentation": true
 }
