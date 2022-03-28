@@ -7,6 +7,8 @@ import type { Container } from "gui/2D/controls/container";
 
 import clipContentsIcon from "shared-ui-components/imgs/clipContentsIcon.svg";
 import clipChildrenIcon from "shared-ui-components/imgs/clipChildrenIcon.svg";
+import autoStretchWidthIcon from "shared-ui-components/imgs/autoStretchWidthIcon.svg";
+import autoStretchHeightIcon from "shared-ui-components/imgs/autoStretchHeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IContainerPropertyGridComponentProps {
@@ -16,16 +18,24 @@ interface IContainerPropertyGridComponentProps {
 
 export class ContainerPropertyGridComponent extends React.Component<IContainerPropertyGridComponentProps> {
     render() {
-        const containers = this.props.containers;
+        const { containers, onPropertyChangedObservable } = this.props;
         return (
             <>
                 <div className="ge-divider">
-                    <IconComponent icon={clipContentsIcon} label={"Clip Content"} />
-                    <CheckBoxLineComponent label="CLIP CONTENT" target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)} propertyName="clipContent" />
+                    <IconComponent icon={clipContentsIcon} label={"Clips content outside the bounding box of this control"} />
+                    <CheckBoxLineComponent label="CLIP CONTENT" target={makeTargetsProxy(containers, onPropertyChangedObservable)} propertyName="clipContent" />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent icon={clipChildrenIcon} label={"Clip Children"} />
-                    <CheckBoxLineComponent label="CLIP CHILDREN" target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)} propertyName="clipChildren" />
+                    <IconComponent icon={clipChildrenIcon} label={"Clips child controls to this control's shape"} />
+                    <CheckBoxLineComponent label="CLIP CHILDREN" target={makeTargetsProxy(containers, onPropertyChangedObservable)} propertyName="clipChildren" />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={autoStretchWidthIcon} label={"Makes the container's width automatically adapt to its children"} />
+                    <CheckBoxLineComponent label="ADAPT WIDTH TO CHILDREN" target={makeTargetsProxy(containers, onPropertyChangedObservable)} propertyName="adaptWidthToChildren" />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={autoStretchHeightIcon} label={"Makes the container's height automatically adapt to its children"} />
+                    <CheckBoxLineComponent label="ADAPT HEIGHT TO CHILDREN" target={makeTargetsProxy(containers, onPropertyChangedObservable)} propertyName="adaptHeightToChildren" />
                 </div>
             </>
         );
