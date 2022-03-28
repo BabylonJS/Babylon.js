@@ -1,5 +1,6 @@
 import * as glob from "glob";
 import * as path from "path";
+import * as fs from "fs";
 import type { UMDPackageName } from "./packageMapping";
 import { umdPackageMapping } from "./packageMapping";
 import { copyFile, findRootDirectory } from "./utils";
@@ -35,7 +36,10 @@ export const prepareSnapshot = () => {
         const baseLocation = path.join(baseDirectory, ".snapshot");
         const staticFiles = glob.sync(`${baseLocation}/**/*.module.d.ts`);
         for (const file of staticFiles) {
-            copyFile(file, file.replace(".module", ""), false);
+            // check if the file already exists. if it isn't, copy it
+            if (!fs.existsSync(file.replace(".module", ""))) {
+                copyFile(file, file.replace(".module", ""), false);
+            }
         }
     }
 
