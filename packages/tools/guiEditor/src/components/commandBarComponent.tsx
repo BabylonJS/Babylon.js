@@ -1,6 +1,6 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
-import { GlobalState, Tool } from "../globalState";
+import { GlobalState, GUIEditorTool } from "../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
@@ -159,27 +159,27 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             tooltip="Select"
                             icon={pointerIcon}
                             shortcut="S"
-                            isActive={this.props.globalState.tool === Tool.SELECT}
+                            isActive={this.props.globalState.tool === GUIEditorTool.SELECT}
                             onClick={() => {
-                                this.props.globalState.tool = Tool.SELECT;
+                                this.props.globalState.tool = GUIEditorTool.SELECT;
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Pan"
                             icon={handIcon}
                             shortcut="P"
-                            isActive={this.props.globalState.tool === Tool.PAN}
+                            isActive={this.props.globalState.tool === GUIEditorTool.PAN}
                             onClick={() => {
-                                this.props.globalState.tool = Tool.PAN;
+                                this.props.globalState.tool = GUIEditorTool.PAN;
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Zoom"
                             shortcut="Z"
                             icon={zoomIcon}
-                            isActive={this.props.globalState.tool === Tool.ZOOM}
+                            isActive={this.props.globalState.tool === GUIEditorTool.ZOOM}
                             onClick={() => {
-                                this.props.globalState.tool = Tool.ZOOM;
+                                this.props.globalState.tool = GUIEditorTool.ZOOM;
                             }}
                         />
                     </div>

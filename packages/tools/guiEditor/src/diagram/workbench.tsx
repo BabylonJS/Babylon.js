@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DragOverLocation, GlobalState, Tool } from "../globalState";
+import { DragOverLocation, GlobalState, GUIEditorTool } from "../globalState";
 import { Nullable } from "core/types";
 import { Control } from "gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
@@ -134,27 +134,27 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         globalState.onToolChangeObservable.add(() => {
             this.forceUpdate();
-        })
+        });
         // Get the canvas element from the DOM.
 
         globalState.onFitToWindowObservable.add(() => {
             if (globalState.selectedControls.length) {
                 let minX = Number.MAX_SAFE_INTEGER;
                 let minY = Number.MAX_SAFE_INTEGER;
-                
+
                 let maxX = -Number.MAX_SAFE_INTEGER;
                 let maxY = -Number.MAX_SAFE_INTEGER;
 
                 // Find bounding box of selected controls
                 for (const selectedControl of globalState.selectedControls) {
-                    let left : number, top : number, right : number, bottom : number;
-                    
+                    let left: number, top: number, right: number, bottom: number;
+
                     left = -selectedControl.widthInPixels / 2;
                     top = -selectedControl.heightInPixels / 2;
 
                     right = left! + selectedControl.widthInPixels;
                     bottom = top! + selectedControl.heightInPixels;
-                    
+
                     // Compute all four corners of the control in root space
                     const leftTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, top, new Vector2(), undefined, this.trueRootContainer);
                     const rightBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, bottom, new Vector2(), undefined, this.trueRootContainer);
@@ -182,7 +182,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 const xFactor = this._engine.getRenderWidth() / width;
                 const yFactor = this._engine.getRenderHeight() / height;
                 this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
-
             } else {
                 this._panningOffset = new Vector2(0, 0);
                 const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
@@ -421,7 +420,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
-            if (evt.buttonIndex > 0 || this.props.globalState.tool !== Tool.SELECT) return;
+            if (evt.buttonIndex > 0 || this.props.globalState.tool !== GUIEditorTool.SELECT) return;
             this._controlsHit.push(guiControl);
         });
 
@@ -712,13 +711,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._pointerTravelDistance = 0;
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
 
-        if (this.props.globalState.tool === Tool.SELECT) {
+        if (this.props.globalState.tool === GUIEditorTool.SELECT) {
             this._mouseStartPoint = this.getScaledPointerPosition();
         }
-        if (evt.buttons & 4 || this.props.globalState.tool === Tool.PAN ) {
+        if (evt.buttons & 4 || this.props.globalState.tool === GUIEditorTool.PAN) {
             this.startPanning();
         } else {
-            if (this.props.globalState.tool === Tool.ZOOM) {
+            if (this.props.globalState.tool === GUIEditorTool.ZOOM) {
                 this.zooming(1.0 + (this.props.globalState.keys.isKeyDown("alt") ? -this._zoomModeIncrement : this._zoomModeIncrement));
             }
             this.endPanning();
@@ -861,15 +860,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             switch (k.event.key) {
                 case "s": //select
                 case "S":
-                    this.props.globalState.tool = Tool.SELECT;
+                    this.props.globalState.tool = GUIEditorTool.SELECT;
                     break;
                 case "p": //pan
                 case "P":
-                    this.props.globalState.tool = Tool.PAN;
+                    this.props.globalState.tool = GUIEditorTool.PAN;
                     break;
                 case "z": //zoom
                 case "Z":
-                    this.props.globalState.tool = Tool.ZOOM;
+                    this.props.globalState.tool = GUIEditorTool.ZOOM;
                     break;
                 case "g": //outlines
                 case "G":
@@ -982,9 +981,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     render() {
         let cursor = "default";
-        if (this.props.globalState.tool === Tool.PAN) {
+        if (this.props.globalState.tool === GUIEditorTool.PAN) {
             cursor = "grab";
-        } else if (this.props.globalState.tool === Tool.ZOOM) {
+        } else if (this.props.globalState.tool === GUIEditorTool.ZOOM) {
             cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
         }
         return (
@@ -1004,7 +1003,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onWheel={(evt) => this.zoomWheel(evt)}
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
-                style={{cursor}}
+                style={{ cursor }}
             ></canvas>
         );
     }

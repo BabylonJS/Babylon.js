@@ -20,10 +20,10 @@ export enum DragOverLocation {
     NONE = 3,
 }
 
-export enum Tool {
+export enum GUIEditorTool {
     SELECT = 0,
     PAN = 1,
-    ZOOM = 2
+    ZOOM = 2,
 }
 
 export class GlobalState {
@@ -54,18 +54,18 @@ export class GlobalState {
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
-    private _tool: Tool = Tool.SELECT;
+    private _tool: GUIEditorTool = GUIEditorTool.SELECT;
     onToolChangeObservable = new Observable<void>();
-    public get tool(): Tool {
-        if (this._tool === Tool.ZOOM) {
-            return Tool.ZOOM;
-        } else if (this._tool === Tool.PAN || this.keys.isKeyDown("space")) {
-            return Tool.PAN;
+    public get tool(): GUIEditorTool {
+        if (this._tool === GUIEditorTool.ZOOM) {
+            return GUIEditorTool.ZOOM;
+        } else if (this._tool === GUIEditorTool.PAN || this.keys.isKeyDown("space")) {
+            return GUIEditorTool.PAN;
         } else {
-            return Tool.SELECT
+            return GUIEditorTool.SELECT;
         }
     }
-    public set tool(newTool: Tool) {
+    public set tool(newTool: GUIEditorTool) {
         if (this._tool === newTool) return;
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
@@ -139,7 +139,7 @@ export class GlobalState {
             // trigger a tool update (in case space is now pressed)
             // we should really have a state management system to handle this for us
             this.onToolChangeObservable.notifyObservers();
-        })
+        });
     }
 
     public get backgroundColor() {
