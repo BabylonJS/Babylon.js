@@ -76,9 +76,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return true;
         }
 
-        if (nextState.dragging != this.state.dragging) {
+        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit || nextProps.unitLocked !== this.props.unitLocked) {
             return true;
         }
+        
         return false;
     }
 
