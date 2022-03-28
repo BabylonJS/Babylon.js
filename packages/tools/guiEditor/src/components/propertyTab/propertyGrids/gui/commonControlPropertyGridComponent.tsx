@@ -459,13 +459,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 arrowsIncrement={(amount) => increment("paddingRight", amount)}
                             />
                         </div>
-                    </>
-                )}
-                <div className="ge-divider">
-                    <IconComponent icon={descendantsOnlyPaddingIcon} label={"Makes padding affect only the descendants of this control"} />
-                    <CheckBoxLineComponent label="ONLY PAD DESCENDANTS" target={proxy} propertyName="descendentsOnlyPadding" />
-                </div>
-                <hr className="ge" />
+                        <div className="ge-divider">
+                            <IconComponent icon={descendantsOnlyPaddingIcon} label={"Makes padding affect only the descendants of this control"} />
+                            <CheckBoxLineComponent label="ONLY PAD DESCENDANTS" target={proxy} propertyName="descendentsOnlyPadding" />
+                        </div>
+                        <hr className="ge" />
+                    </>)}
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />

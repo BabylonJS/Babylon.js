@@ -9,7 +9,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-import positionIcon from "shared-ui-components/imgs/positionIcon.svg"; // TODO: replace
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import linePoint1Icon from "shared-ui-components/imgs/linePoint1Icon.svg";
 import linePoint2Icon from "shared-ui-components/imgs/linePoint2Icon.svg";
 import lineDashIcon from "shared-ui-components/imgs/lineDashIcon.svg";
@@ -45,7 +45,8 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
     }
 
     render() {
-        const lines = this.props.lines;
+        const {lines,onPropertyChangedObservable,lockObject} = this.props;
+        const proxy = makeTargetsProxy(lines, onPropertyChangedObservable);
         let dashes = lines[0].dash;
         for (const line of lines) {
             if (dashes.length === 0) break;
@@ -66,39 +67,39 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 <div className="ge-divider double">
                     <IconComponent icon={linePoint1Icon} label={"Position 1"} />
                     <TextInputLineComponent
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label="X"
-                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="x1"
                     />
                     <TextInputLineComponent
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label="Y"
-                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="y1"
                     />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={linePoint2Icon} label={"Position 2"} />
                     <TextInputLineComponent
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label="X"
-                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="x2"
                     />
                     <TextInputLineComponent
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label="Y"
-                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="y2"
                     />
                 </div>
                 <div className="ge-divider double">
-                    <IconComponent icon={positionIcon} label={"Line Width"} />
+                    <IconComponent icon={strokeWeightIcon} label={"Line Width"} />
                     <FloatLineComponent
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label=""
-                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="lineWidth"
                         unit="PX"
                         unitLocked={true}
@@ -109,9 +110,9 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 <div className="ge-divider">
                     <IconComponent icon={lineDashIcon} label={"Dash Pattern"} />
                     <TextInputLineComponent
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label=""
-                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         value={dashString}
                         onChange={(newValue) => this.onDashChange(newValue)}
                     />
@@ -119,9 +120,9 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 <hr />
                 <CommonControlPropertyGridComponent
                     hideDimensions
-                    lockObject={this.props.lockObject}
+                    lockObject={lockObject}
                     controls={lines}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
                 />
             </div>
         );
