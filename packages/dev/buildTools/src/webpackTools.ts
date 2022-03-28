@@ -167,7 +167,7 @@ export const commonUMDWebpackConfiguration = (options: {
                         console.log("generating transformers...");
                         return transformer(_program, {
                             basePackage: packageName,
-                            buildType: "umd",
+                            buildType: options.es6Mode ? "es6" : "umd",
                             packageOnly: false,
                             keepDev: true,
                         });
