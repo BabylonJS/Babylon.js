@@ -5,13 +5,15 @@ interface IUnitButtonProps {
 }
 
 export function UnitButton(props: IUnitButtonProps) {
-    return <button
-            className={props.locked ? "unit disabled" : "unit"}
+    return (
+        <button
+            className={"unit"}
             onClick={() => {
                 if (props.onClick && !props.locked) props.onClick(props.unit || "");
             }}
             disabled={props.locked}
         >
             {props.unit}
-        </button>;
+        </button>
+    );
 }

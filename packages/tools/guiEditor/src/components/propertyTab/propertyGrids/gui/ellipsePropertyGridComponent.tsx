@@ -35,7 +35,16 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
-                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="thickness" unit={<UnitButton unit="PX" locked/>} arrows={true} min={0} digits={2} />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="thickness"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows={true}
+                        min={0}
+                        digits={2}
+                    />
                 </div>
                 <ContainerPropertyGridComponent containers={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>

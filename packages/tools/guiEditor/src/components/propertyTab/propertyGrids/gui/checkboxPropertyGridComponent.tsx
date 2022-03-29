@@ -64,7 +64,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                         target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         label=""
-                        unit={<UnitButton unit="PX" locked/>}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         min={0}
                         digits={2}

@@ -134,16 +134,16 @@
         align-items: center;
     }
 
-    .unit.disabled {
+    .unit:disabled {
         background-color: var(--buttonDisabledBackground);
         cursor: not-allowed;
     }
 
-    .unit:not(.disabled):hover {
+    .unit:not(:disabled):hover {
         background-color: var(--buttonHoverBackground);
     }
 
-    .unit:not(.disabled):active {
+    .unit:not(:disabled):active {
         color: var(--buttonPressed);
         background-color: var(--buttonPressedBackground);
     }
