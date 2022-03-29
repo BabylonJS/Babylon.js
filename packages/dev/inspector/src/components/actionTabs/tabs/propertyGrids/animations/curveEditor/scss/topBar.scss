@@ -1,0 +1,77 @@
+#top-bar {
+    display: grid;
+    grid-template-columns: 40px 200px 75px 8px 75px 8px 40px 40px 40px 40px 40px 40px 40px 40px 1fr 40px;
+    grid-template-rows: 100%;
+
+    .disabled {
+        opacity: 20%;
+        pointer-events: none;
+    }
+
+    #top-bar-logo {
+        grid-row: 1;
+        grid-column: 1;
+    }
+
+    #top-bar-parent-name {
+        grid-row: 1;
+        grid-column: 2;
+        font-family: "acumin-pro-condensed";
+        font-size: 15pt;
+        color: white;
+        display: grid;
+        align-content: center;
+        padding-bottom: 5px;
+    }
+
+    #key-frame {
+        grid-row: 1;
+        grid-column: 3;
+        height: 24px;
+        display: grid;
+        align-self: center;
+    }
+
+    #key-value {
+        grid-row: 1;
+        grid-column: 5;
+        height: 24px;
+        display: grid;
+        align-self: center;
+    }
+
+    #new-key {
+        grid-row: 1;
+        grid-column: 7;
+    }
+
+    #frame-canvas {
+        grid-row: 1;
+        grid-column: 8;
+    }
+
+    #flatten-tangent {
+        grid-row: 1;
+        grid-column: 9;
+    }
+
+    #linear-tangent {
+        grid-row: 1;
+        grid-column: 10;
+    }
+
+    #break-tangent {
+        grid-row: 1;
+        grid-column: 11;
+    }
+
+    #unify-tangent {
+        grid-row: 1;
+        grid-column: 12;
+    }
+
+    #step-tangent {
+        grid-row: 1;
+        grid-column: 13;
+    }
+}

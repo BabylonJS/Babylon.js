@@ -1,0 +1,48 @@
+{
+    "author": {
+        "name": "Raanan Weber"
+    },
+    "name": "babylonjs-viewer-assets",
+    "description": "Compiled resources for the Babylon viewer.",
+    "version": "5.0.0-rc.12",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "dist/babylon.viewer.assets.js",
+    "files": [
+        "dist/babylon.viewer.assets.js",
+        "dist/*.d.ts",
+        "readme.md",
+        "package.json",
+        "license.md"
+    ],
+    "typings": "dist/index.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "viewer"
+    ],
+    "scripts": {
+        "build": "webpack --env=production",
+        "clean": "rimraf dist"
+    },
+    "license": "Apache-2.0",
+    "engines": {
+        "node": "*"
+    },
+    "devDependencies": {
+        "html-loader": "^3.1.0",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.4.4",
+        "webpack": "^5.59.1",
+        "webpack-cli": "^4.9.1",
+        "webpack-merge": "^5.8.0"
+    },
+    "homepage": "https://www.babylonjs.com",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

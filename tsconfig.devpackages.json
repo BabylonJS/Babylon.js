@@ -1,0 +1,49 @@
+{
+    "extends": "./tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./.temp/"
+    },
+
+    "references": [
+        {
+            "path": "packages/dev/core/tsconfig.build.json"
+        },
+        {
+            "path": "packages/dev/gui/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/sharedUiComponents/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/materials/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/loaders/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/serializers/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/postProcesses/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/proceduralTextures/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/dev/inspector/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/tools/nodeEditor/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/tools/guiEditor/tsconfig.nocomposite.json"
+        },
+        {
+            "path": "packages/tools/ktx2Decoder/tsconfig.build.json"
+        }
+
+    ],
+    "include": []
+}

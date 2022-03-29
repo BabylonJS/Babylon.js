@@ -1,0 +1,62 @@
+[
+    {
+        "declarationLibs": ["@lts/core"],
+        "devPackageName": "core",
+        "filename": "core.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@lts/gui"],
+        "devPackageName": "gui",
+        "filename": "gui.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@lts/loaders"],
+        "devPackageName": "loaders",
+        "filename": "loaders.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@lts/serializers"],
+        "devPackageName": "serializers",
+        "filename": "serializers.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@lts/materials"],
+        "devPackageName": "materials",
+        "filename": "materials.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@lts/post-processes"],
+        "devPackageName": "post-processes",
+        "filename": "post-processes.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@lts/procedural-textures"],
+        "devPackageName": "procedural-textures",
+        "filename": "procedural-textures.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@tools/node-editor"],
+        "devPackageName": "node-editor",
+        "filename": "node-editor.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@tools/gui-editor"],
+        "devPackageName": "gui-editor",
+        "filename": "gui-editor.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@tools/ktx2decoder"],
+        "devPackageName": "ktx2decoder",
+        "filename": "ktx2decoder.d.ts",
+        "outputDirectory": "./declarations"
+    }
+]

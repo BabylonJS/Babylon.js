@@ -1,0 +1,258 @@
+import * as React from "react";
+
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { SliderLineComponent } from "./sliderLineComponent";
+import { Tools } from "core/Misc/tools";
+import { conflictingValuesPlaceholder } from "./targetsProxy";
+import { InputArrowsComponent } from "./inputArrowsComponent";
+
+interface IFloatLineComponentProps {
+    label: string;
+    target: any;
+    propertyName: string;
+    lockObject?: LockObject;
+    onChange?: (newValue: number) => void;
+    isInteger?: boolean;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    additionalClass?: string;
+    step?: string;
+    digits?: number;
+    useEuler?: boolean;
+    min?: number;
+    max?: number;
+    smallUI?: boolean;
+    onEnter?: (newValue: number) => void;
+    icon?: string;
+    iconLabel?: string;
+    defaultValue?: number;
+    unit?: string;
+    onUnitClicked?: (unit: string) => void;
+    unitLocked?: boolean;
+    arrows?: boolean;
+}
+
+export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string; dragging: boolean }> {
+    private _localChange = false;
+    private _store: number;
+
+    constructor(props: IFloatLineComponentProps) {
+        super(props);
+
+        const currentValue = this.props.target[this.props.propertyName];
+        this.state = { value: this.getValueString(currentValue), dragging: false };
+        this._store = currentValue;
+    }
+
+    componentWillUnmount() {
+        this.unlock();
+    }
+
+    getValueString(value: any): string {
+        if (value) {
+            if (value === conflictingValuesPlaceholder) {
+                return conflictingValuesPlaceholder;
+            } else if (this.props.isInteger) {
+                return value.toFixed(0);
+            } else {
+                return value.toFixed(this.props.digits || 4);
+            }
+        }
+        return "0";
+    }
+
+    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string; dragging: boolean }) {
+        if (this._localChange) {
+            this._localChange = false;
+            return true;
+        }
+
+        const newValue = nextProps.target[nextProps.propertyName];
+        const newValueString = this.getValueString(newValue);
+
+        if (newValueString !== nextState.value) {
+            nextState.value = newValueString;
+            return true;
+        }
+
+        if (nextState.dragging != this.state.dragging) {
+            return true;
+        }
+        return false;
+    }
+
+    raiseOnPropertyChanged(newValue: number, previousValue: number) {
+        if (this.props.onChange) {
+            this.props.onChange(newValue);
+        }
+
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue,
+        });
+    }
+
+    updateValue(valueString: string) {
+        if (/[^0-9.-]/g.test(valueString)) {
+            return;
+        }
+
+        let valueAsNumber: number;
+
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(valueString);
+        } else {
+            valueAsNumber = parseFloat(valueString);
+        }
+
+        if (!isNaN(valueAsNumber)) {
+            if (this.props.min !== undefined) {
+                if (valueAsNumber < this.props.min) {
+                    valueAsNumber = this.props.min;
+                    valueString = valueAsNumber.toString();
+                }
+            }
+            if (this.props.max !== undefined) {
+                if (valueAsNumber > this.props.max) {
+                    valueAsNumber = this.props.max;
+                    valueString = valueAsNumber.toString();
+                }
+            }
+        } else if (this.props.defaultValue != null) {
+            valueAsNumber = this.props.defaultValue;
+        }
+
+        this._localChange = true;
+        this.setState({ value: valueString });
+
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+
+        this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
+
+        this._store = valueAsNumber;
+    }
+
+    lock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    }
+
+    unlock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    }
+
+    incrementValue(amount: number) {
+        if (this.props.step) {
+            amount *= parseFloat(this.props.step);
+        }
+        let currentValue = parseFloat(this.state.value);
+        if (isNaN(currentValue)) {
+            currentValue = 0;
+        }
+        this.updateValue((currentValue + amount).toFixed(2));
+    }
+
+    onKeyDown(event: React.KeyboardEvent) {
+        if (this.props.arrows) {
+            if (event.key === "ArrowUp") {
+                this.incrementValue(1);
+                event.preventDefault();
+            }
+            if (event.key === "ArrowDown") {
+                this.incrementValue(-1);
+                event.preventDefault();
+            }
+        }
+        if (event.key === "Enter" && this.props.onEnter) {
+            this.props.onEnter(this._store);
+        }
+    }
+
+    render() {
+        let valueAsNumber: number;
+
+        if (this.props.isInteger) {
+            valueAsNumber = parseInt(this.state.value);
+        } else {
+            valueAsNumber = parseFloat(this.state.value);
+        }
+
+        let className = this.props.smallUI ? "short" : "value";
+        if (this.state.dragging) {
+            className += " dragging";
+        }
+        if (this.props.arrows) {
+            className += " hasArrows";
+        }
+
+        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
+        return (
+            <>
+                {!this.props.useEuler && (
+                    <div className={this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine"}>
+                        {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
+                        {(!this.props.icon || this.props.label != "") && (
+                            <div className="label" title={this.props.label}>
+                                {this.props.label}
+                            </div>
+                        )}
+                        <div className={className}>
+                            <input
+                                type={"number"}
+                                step={this.props.step || this.props.isInteger ? "1" : "0.01"}
+                                className="numeric-input"
+                                onKeyDown={(evt) => this.onKeyDown(evt)}
+                                value={value}
+                                onBlur={() => {
+                                    this.unlock();
+                                    if (this.props.onEnter) {
+                                        this.props.onEnter(this._store);
+                                    }
+                                }}
+                                placeholder={placeholder}
+                                onFocus={() => this.lock()}
+                                onChange={(evt) => this.updateValue(evt.target.value)}
+                            />
+                            {this.props.arrows && (
+                                <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />
+                            )}
+                        </div>
+                        {this.props.unit && (
+                            <button
+                                className={this.props.unitLocked ? "unit disabled" : "unit"}
+                                onClick={() => {
+                                    if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "");
+                                }}
+                            >
+                                {this.props.unit}
+                            </button>
+                        )}
+                    </div>
+                )}
+                {this.props.useEuler && (
+                    <SliderLineComponent
+                        label={this.props.label}
+                        minimum={0}
+                        maximum={360}
+                        step={0.1}
+                        directValue={Tools.ToDegrees(valueAsNumber)}
+                        onChange={(value) => this.updateValue(Tools.ToRadians(value).toString())}
+                    />
+                )}
+            </>
+        );
+    }
+}
