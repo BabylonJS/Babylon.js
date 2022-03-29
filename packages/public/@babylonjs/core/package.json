@@ -36,7 +36,6 @@
     ],
     "license": "Apache-2.0",
     "esnext": "index.js",
-    "type": "module",
     "sideEffects": true,
     "homepage": "https://www.babylonjs.com",
     "repository": {
