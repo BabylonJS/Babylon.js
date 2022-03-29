@@ -27,17 +27,17 @@ import toggleMixedIcon_30px from "../imgs/toggleMixedIcon_30px.svg";
 import toggleOffIcon_30px from "../imgs/toggleOffIcon_30px.svg";
 
 const Icons = {
-    Size30: {
-        On: toggleOnIcon_30px,
-        Mixed: toggleMixedIcon_30px,
-        Off: toggleOffIcon_30px 
+    size30: {
+        on: toggleOnIcon_30px,
+        mixed: toggleMixedIcon_30px,
+        off: toggleOffIcon_30px,
     },
-    Size40: {
-        On: toggleOnIcon_40px,
-        Mixed: "", // unneeded
-        Off: toggleOffIcon_40px
-    }
-}
+    size40: {
+        on: toggleOnIcon_40px,
+        mixed: "", // unneeded
+        off: toggleOffIcon_40px,
+    },
+};
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean; isConflict: boolean }> {
     private _localChange = false;
@@ -110,8 +110,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     }
 
     render() {
-        const icons = this.props.large ? Icons.Size40 : Icons.Size30;
-        const icon = this.state.isConflict ? icons.Mixed : this.state.isSelected ? icons.On : icons.Off;
+        const icons = this.props.large ? Icons.size40 : Icons.size30;
+        const icon = this.state.isConflict ? icons.mixed : this.state.isSelected ? icons.on : icons.off;
         return (
             <div className="checkBoxLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
