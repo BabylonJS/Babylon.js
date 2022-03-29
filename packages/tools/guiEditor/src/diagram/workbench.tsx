@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
-import { DragOverLocation } from "../globalState";
+import { DragOverLocation, GUIEditorTool } from "../globalState";
 import type { Nullable } from "core/types";
 import { Control } from "gui/2D/controls/control";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
@@ -17,13 +17,12 @@ import { Container } from "gui/2D/controls/container";
 import type { KeyboardInfo } from "core/Events/keyboardEvents";
 import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Line } from "gui/2D/controls/line";
-import { DataStorage } from "core/Misc/dataStorage";
 import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
 import type { Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
-import { CoordinateHelper } from "./coordinateHelper";
+import { CoordinateHelper, DimensionProperties } from "./coordinateHelper";
 import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
@@ -49,15 +48,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
     public _scene: Scene;
-    private _ctrlKeyIsPressed = false;
-    private _altKeyIsPressed = false;
     private _constraintDirection = ConstraintDirection.NONE;
-    private _forcePanning = false;
-    private _forceZooming = false;
-    private _forceSelecting = true;
     private _panning: boolean;
-    private _canvas: HTMLCanvasElement;
-    private _responsive: boolean;
     private _isOverGUINode: Control[] = [];
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
@@ -139,38 +131,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         super(props);
         const { globalState } = props;
         this._rootContainer = React.createRef();
-        this._responsive = DataStorage.ReadBoolean("Responsive", true);
 
         globalState.onSelectionChangedObservable.add(() => this.updateNodeOutlines());
 
-        globalState.onPanObservable.add(() => {
-            this._forcePanning = !this._forcePanning;
-            this._forceSelecting = false;
-            this._forceZooming = false;
-            if (!this._forcePanning) {
-                this.props.globalState.onSelectionButtonObservable.notifyObservers();
-            } else {
-                this._canvas.style.cursor = "grab";
-            }
+        globalState.onToolChangeObservable.add(() => {
+            this.forceUpdate();
         });
-
-        globalState.onSelectionButtonObservable.add(() => {
-            this._forceSelecting = !this._forceSelecting;
-            this._forcePanning = false;
-            this._forceZooming = false;
-            this._canvas.style.cursor = "default";
-        });
-
-        globalState.onZoomObservable.add(() => {
-            this._forceZooming = !this._forceZooming;
-            this._forcePanning = false;
-            this._forceSelecting = false;
-            if (!this._forceZooming) {
-                this.props.globalState.onSelectionButtonObservable.notifyObservers();
-            } else {
-                this._canvas.style.cursor = "zoom-in";
-            }
-        });
+        // Get the canvas element from the DOM.
 
         globalState.onFitToWindowObservable.add(() => {
             if (globalState.selectedControls.length) {
@@ -235,10 +202,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.parent(control);
         });
 
-        globalState.onResponsiveChangeObservable.add((value) => {
-            this._responsive = value;
-        });
-
         globalState.hostDocument!.addEventListener("keyup", this.keyEvent, false);
 
         // Hotkey shortcuts
@@ -257,12 +220,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         globalState.workbench = this;
         globalState.onResizeObservable.notifyObservers(this._guiSize);
+
+        globalState.onPopupClosedObservable.add(() => {
+            this.dispose();
+        });
     }
 
     keyEvent = (evt: KeyboardEvent) => {
-        if ((evt.target as HTMLElement).localName === "input") return;
-        this._ctrlKeyIsPressed = evt.ctrlKey;
-        this._altKeyIsPressed = evt.altKey;
+        if ((evt.target as HTMLElement).nodeName === "INPUT") return;
         if (evt.shiftKey) {
             this._setConstraintDirection = this._constraintDirection === ConstraintDirection.NONE;
         } else {
@@ -276,14 +241,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
 
-        if (this._ctrlKeyIsPressed && !this.props.globalState.lockObject.lock) {
+        if (this.props.globalState.keys.isKeyDown("control") && !this.props.globalState.lockObject.lock) {
             if (evt.key === "a") {
+                evt.preventDefault();
                 this.props.globalState.setSelection(this.trueRootContainer.children);
             }
-        }
-
-        if (this._forceZooming) {
-            this._canvas.style.cursor = this._altKeyIsPressed ? "zoom-out" : "zoom-in";
         }
     };
 
@@ -355,12 +317,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     blurEvent = () => {
-        this._ctrlKeyIsPressed = false;
         this._constraintDirection = ConstraintDirection.NONE;
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
     };
 
-    componentWillUnmount() {
+    dispose() {
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
@@ -376,10 +337,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
                 control.onPointerOutObservable.remove(control.metadata.onPointerOut);
                 control.onDisposeObservable.remove(control.metadata.onDispose);
+
                 control.highlightLineWidth = control.metadata.highlightLineWidth;
                 control.isHighlighted = control.metadata.isHighlighted;
                 control.isPointerBlocker = control.metadata.isPointerBlocker;
+                control.isHitTestVisible = control.metadata.isHitTestVisible;
+                control.isReadOnly = control.metadata.isReadOnly;
+
+                this.props.globalState.guiTexture.removeControl(control);
+                control.parent = control.metadata.parent;
+
                 control.metadata = control.metadata.metadata;
+                control._host = this.props.globalState.liveGuiTexture!;
+            });
+            this.props.globalState.liveGuiTexture.markAsDirty();
+            this.props.globalState.guiTexture.getDescendants(true).forEach((control) => {
+                this.props.globalState.guiTexture.removeControl(control);
             });
         }
         this._engine.dispose();
@@ -450,7 +423,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
-            if (evt.buttonIndex > 0 || !this._forceSelecting) return;
+            if (evt.buttonIndex > 0 || this.props.globalState.tool !== GUIEditorTool.SELECT) return;
             this._controlsHit.push(guiControl);
         });
 
@@ -488,6 +461,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             onPointerEnter,
             onPointerOut,
             onDispose,
+            parent: guiControl.parent,
         };
         guiControl.highlightLineWidth = 5;
         guiControl.isHighlighted = false;
@@ -604,6 +578,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2) {
+        const toConvert: DimensionProperties[] = [];
+        if (guiControl._top.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+            toConvert.push("top");
+        }
+        if (guiControl._left.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+            toConvert.push("left");
+        }
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -651,10 +632,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.leftInPixels += rotatedReferenceAxis.x;
         guiControl.topInPixels += rotatedReferenceAxis.y;
 
-        //convert to percentage
-        if (this._responsive) {
-            CoordinateHelper.ConvertToPercentage(guiControl, ["left", "top"]);
-        }
+        CoordinateHelper.ConvertToPercentage(guiControl, toConvert);
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
     }
@@ -739,15 +717,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._pointerTravelDistance = 0;
         this._rootContainer.current?.setPointerCapture(evt.pointerId);
 
-        if (this._forceSelecting) {
+        if (this.props.globalState.tool === GUIEditorTool.SELECT) {
             this._mouseStartPoint = this.getScaledPointerPosition();
         }
-
-        if (evt.button !== 0 || this._forcePanning) {
+        if (evt.buttons & 4 || this.props.globalState.tool === GUIEditorTool.PAN) {
             this.startPanning();
         } else {
-            if (this._forceZooming) {
-                this.zooming(1.0 + (this._altKeyIsPressed ? -this._zoomModeIncrement : this._zoomModeIncrement));
+            if (this.props.globalState.tool === GUIEditorTool.ZOOM) {
+                this.zooming(1.0 + (this.props.globalState.keys.isKeyDown("alt") ? -this._zoomModeIncrement : this._zoomModeIncrement));
             }
             this.endPanning();
             // process selection
@@ -782,7 +759,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public createGUICanvas() {
         // Get the canvas element from the DOM.
         const canvas = this._rootContainer.current as HTMLCanvasElement;
-        this._canvas = canvas;
         // Associate a Babylon Engine to it.
         this._engine = new Engine(canvas);
 
@@ -892,15 +868,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             switch (k.event.key) {
                 case "s": //select
                 case "S":
-                    if (!this._forceSelecting) this.props.globalState.onSelectionButtonObservable.notifyObservers();
+                    this.props.globalState.tool = GUIEditorTool.SELECT;
                     break;
                 case "p": //pan
                 case "P":
-                    if (!this._forcePanning) this.props.globalState.onPanObservable.notifyObservers();
+                    this.props.globalState.tool = GUIEditorTool.PAN;
                     break;
                 case "z": //zoom
                 case "Z":
-                    if (!this._forceZooming) this.props.globalState.onZoomObservable.notifyObservers();
+                    this.props.globalState.tool = GUIEditorTool.ZOOM;
                     break;
                 case "g": //outlines
                 case "G":
@@ -1012,6 +988,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     render() {
+        let cursor = "default";
+        if (this.props.globalState.tool === GUIEditorTool.PAN) {
+            cursor = "grab";
+        } else if (this.props.globalState.tool === GUIEditorTool.ZOOM) {
+            cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
+        }
         return (
             <canvas
                 id="workbench-canvas"
@@ -1029,6 +1011,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onWheel={(evt) => this.zoomWheel(evt)}
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
+                style={{ cursor }}
             ></canvas>
         );
     }

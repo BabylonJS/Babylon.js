@@ -5,42 +5,42 @@
 #endif
 
 #ifdef CLIPPLANE
-	elseif (fClipDistance > 0.0)
+	else if (fClipDistance > 0.0)
 	{
 		discard;
 	}
 #endif
 
 #ifdef CLIPPLANE2
-	elseif (fClipDistance2 > 0.0)
+	else if (fClipDistance2 > 0.0)
 	{
 		discard;
 	}
 #endif
 
 #ifdef CLIPPLANE3
-	elseif (fClipDistance3 > 0.0)
+	else if (fClipDistance3 > 0.0)
 	{
 		discard;
 	}
 #endif
 
 #ifdef CLIPPLANE4
-	elseif (fClipDistance4 > 0.0)
+	else if (fClipDistance4 > 0.0)
 	{
 		discard;
 	}
 #endif
 
 #ifdef CLIPPLANE5
-	elseif (fClipDistance5 > 0.0)
+	else if (fClipDistance5 > 0.0)
 	{
 		discard;
 	}
 #endif
 
 #ifdef CLIPPLANE6
-	elseif (fClipDistance6 > 0.0)
+	else if (fClipDistance6 > 0.0)
 	{
 		discard;
 	}
