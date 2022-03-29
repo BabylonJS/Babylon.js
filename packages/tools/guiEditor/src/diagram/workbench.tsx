@@ -95,7 +95,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._visibleRegionContainer.widthInPixels = this._guiSize.width;
         this._visibleRegionContainer.heightInPixels = this._guiSize.height;
         this.props.globalState.onResizeObservable.notifyObservers(this._guiSize);
-        this.props.globalState.onFitToWindowObservable.notifyObservers();
+        this.props.globalState.onReframeWindowObservable.notifyObservers();
         this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
     }
 
@@ -126,6 +126,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._trueRootContainer.clipChildren = true;
     }
 
+    private _reframeWindow() {
+        this._panningOffset = new Vector2(0, 0);
+        const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
+        const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
+        this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+    }
+
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         const { globalState } = props;
@@ -138,7 +145,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
         // Get the canvas element from the DOM.
 
-        globalState.onFitToWindowObservable.add(() => {
+        globalState.onFitControlsToWindowObservable.add(() => {
             if (globalState.selectedControls.length) {
                 let minX = Number.MAX_SAFE_INTEGER;
                 let minY = Number.MAX_SAFE_INTEGER;
@@ -182,11 +189,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 const yFactor = this._engine.getRenderHeight() / height;
                 this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
             } else {
-                this._panningOffset = new Vector2(0, 0);
-                const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
-                const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
-                this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+               this._reframeWindow();
             }
+        });
+
+        globalState.onReframeWindowObservable.add(() => {
+            this._reframeWindow();
         });
 
         globalState.onOutlineChangedObservable.add(() => {
@@ -397,7 +405,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this._isOverGUINode = [];
         this.props.globalState.setSelection([]);
-        this.props.globalState.onFitToWindowObservable.notifyObservers();
+        this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
     }
 
     public updateNodeOutlines() {
@@ -848,7 +856,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
         this.props.globalState.onNewSceneObservable.notifyObservers(this.props.globalState.guiTexture.getScene());
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-        this.props.globalState.onFitToWindowObservable.notifyObservers();
+        this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
     }
 
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
@@ -885,7 +893,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     break;
                 case "f": //fit to window
                 case "F":
-                    this.props.globalState.onFitToWindowObservable.notifyObservers();
+                    this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                     break;
                 case "ArrowUp": // move up
                     this.moveControls(false, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);

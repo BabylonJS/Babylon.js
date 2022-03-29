@@ -72,7 +72,8 @@ export class GlobalState {
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
     }
-    onFitToWindowObservable = new Observable<void>();
+    onFitControlsToWindowObservable = new Observable<void>();
+    onReframeWindowObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
