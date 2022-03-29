@@ -1,16 +1,16 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from 'core/Misc/typeStore';
 import { Measure } from '../measure';
 import { InputText } from "./inputText";
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
-import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
-import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { PointerInfoBase } from "core/Events/pointerEvents";
+import { IKeyboardEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to create input text control
