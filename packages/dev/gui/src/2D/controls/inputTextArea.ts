@@ -376,7 +376,7 @@ export class InputTextArea extends InputText {
 
                 if (this._cursorInfo.currentLineIndex === this._lines.length - 1) {
                     // Last line
-                    this._cursorInfo.globalEndIndex = this.text.length;
+                    this._cursorInfo.globalStartIndex = this.text.length;
                 } else {
                     const currentLine = this._lines[this._cursorInfo.currentLineIndex];
                     const underLine = this._lines[this._cursorInfo.currentLineIndex + 1];
