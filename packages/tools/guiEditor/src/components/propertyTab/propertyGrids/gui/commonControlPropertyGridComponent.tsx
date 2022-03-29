@@ -89,8 +89,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 }
 
                 control.metadata._previousCenter = transformed;
+
+                if (control.getClassName() === "TextBlock" && (event.property === "width" || event.property === "height")) {
+                    (control as TextBlock).resizeToFit = false;
+                }
             }
-            this.forceUpdate();
         });
     }
 
@@ -137,9 +140,15 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             newValue = (negative ? "-" : "") + newValue;
             newValue += percentage ? "%" : "px";
 
+            const initialValue = (control as any)[propertyName];
             (control as any)[propertyName] = newValue;
+            this.props.onPropertyChangedObservable?.notifyObservers({
+                object: control,
+                property: propertyName,
+                initialValue: initialValue,
+                value: (control as any)[propertyName],
+            });
         }
-        this.forceUpdate();
     }
 
     private _markChildrenAsDirty() {
@@ -231,9 +240,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 if (unit === "PX") {
                     CoordinateHelper.ConvertToPercentage(control, [property], this.props.onPropertyChangedObservable);
                 } else {
-                    CoordinateHelper.ConvertToPixels(control, [property]);
+                    CoordinateHelper.ConvertToPixels(control, [property], this.props.onPropertyChangedObservable);
                 }
-                this.forceUpdate();
             }
         };
 
