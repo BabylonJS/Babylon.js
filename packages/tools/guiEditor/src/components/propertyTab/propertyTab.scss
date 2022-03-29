@@ -132,6 +132,7 @@
 
     .unit.disabled {
         background-color: var(--buttonDisabledBackground);
+        cursor: not-allowed;
     }
 
     .unit:not(.disabled):hover {

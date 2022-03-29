@@ -17,15 +17,16 @@ import { Container } from "gui/2D/controls/container";
 import type { KeyboardInfo } from "core/Events/keyboardEvents";
 import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Line } from "gui/2D/controls/line";
-import { DataStorage } from "core/Misc/dataStorage";
 import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
 import type { Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
-import { CoordinateHelper } from "./coordinateHelper";
+import { CoordinateHelper, DimensionProperties } from "./coordinateHelper";
 import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
+import { ValueAndUnit } from "gui/2D/valueAndUnit";
+import { StackPanel } from "gui/2D/controls/stackPanel";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -49,7 +50,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _scene: Scene;
     private _constraintDirection = ConstraintDirection.NONE;
     private _panning: boolean;
-    private _responsive: boolean;
     private _isOverGUINode: Control[] = [];
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
@@ -131,7 +131,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         super(props);
         const { globalState } = props;
         this._rootContainer = React.createRef();
-        this._responsive = DataStorage.ReadBoolean("Responsive", true);
 
         globalState.onSelectionChangedObservable.add(() => this.updateNodeOutlines());
 
@@ -201,10 +200,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         globalState.onParentingChangeObservable.add((control) => {
             this.parent(control);
-        });
-
-        globalState.onResponsiveChangeObservable.add((value) => {
-            this._responsive = value;
         });
 
         globalState.hostDocument!.addEventListener("keyup", this.keyEvent, false);
@@ -495,24 +490,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     ) {
                         draggedControlParent.removeControl(draggedControl);
                         (dropLocationControl as Container).addControl(draggedControl);
-                        const stackPanel = dropLocationControl.typeName === "StackPanel" || dropLocationControl.typeName === "VirtualKeyboard";
-                        if (stackPanel) {
-                            this._convertToPixels(draggedControl);
-                        }
                     } else if (dropLocationControl.parent) {
                         //dropping inside the controls parent container
                         if (dropLocationControl.parent.typeName !== "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
-                            const reversed = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
+                            const reverse = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
 
-                            index = this._adjustParentingIndex(index, reversed); //adjusting index to be before or after based on where the control is over
+                            index = this._adjustParentingIndex(index, reverse); //adjusting index to be before or after based on where the control is over
 
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
-                            if (reversed) {
-                                this._convertToPixels(draggedControl);
-                            }
                         } else if (dropLocationControl.parent === draggedControlParent) {
                             //special case for grid
                             this._reorderGrid(dropLocationControl.parent as Grid, draggedControl, dropLocationControl);
@@ -533,18 +521,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 }
             }
         }
+
+        if (draggedControl) {
+            const newParent = draggedControl.parent;
+            if (newParent?.typeName === "StackPanel" || newParent?.typeName === "VirtualKeyboard") {
+                const isVertical = (newParent as StackPanel).isVertical;
+                if (draggedControl._width.unit === ValueAndUnit.UNITMODE_PERCENTAGE && !isVertical) {
+                    CoordinateHelper.ConvertToPixels(draggedControl, ["width"]);
+                    this.props.globalState.hostWindow.alert("Warning: Parenting to horizontal stack panel converts width to pixel values");
+                }
+                if (draggedControl._height.unit === ValueAndUnit.UNITMODE_PERCENTAGE && isVertical) {
+                    CoordinateHelper.ConvertToPixels(draggedControl, ["height"]);
+                    this.props.globalState.hostWindow.alert("Warning: Parenting to vertical stack panel converts height to pixel values");
+                }
+            }
+        }
         this.props.globalState.draggedControl = null;
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-    }
-
-    private _convertToPixels(draggedControl: Control) {
-        const width = draggedControl.widthInPixels + "px";
-        const height = draggedControl.heightInPixels + "px";
-        if (draggedControl.width !== width || draggedControl.height !== height) {
-            draggedControl.width = width;
-            draggedControl.height = height;
-            this.props.globalState.hostWindow.alert("Warning: Parenting to stack panel will convert control to pixel value");
-        }
     }
 
     private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
@@ -585,6 +578,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2) {
+        const toConvert: DimensionProperties[] = [];
+        if (guiControl._top.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+            toConvert.push("top");
+        }
+        if (guiControl._left.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+            toConvert.push("left");
+        }
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -606,11 +606,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             const x2 = (line.x2 as string).substr(0, (line.x2 as string).length - 2);
             const y1 = (line.y1 as string).substr(0, (line.y1 as string).length - 2);
             const y2 = (line.y2 as string).substr(0, (line.y2 as string).length - 2);
-            line.x1 = Number(x1) + newX;
-            line.x2 = Number(x2) + newX;
-            line.y1 = Number(y1) + newY;
-            line.y2 = Number(y2) + newY;
-            return true;
+            line.x1 = (Number(x1) + newX).toFixed(2);
+            line.x2 = (Number(x2) + newX).toFixed(2);
+            line.y1 = (Number(y1) + newY).toFixed(2);
+            line.y2 = (Number(y2) + newY).toFixed(2);
+            this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            return;
         }
 
         let totalRotation = 0;
@@ -632,22 +633,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.leftInPixels += rotatedReferenceAxis.x;
         guiControl.topInPixels += rotatedReferenceAxis.y;
 
-        //convert to percentage
-        if (this._responsive) {
-            CoordinateHelper.ConvertToPercentage(guiControl, ["left", "top"]);
-        }
+        CoordinateHelper.ConvertToPercentage(guiControl, toConvert);
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-        return true;
     }
 
     onMove(evt: React.PointerEvent) {
         const pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPoint != null && !this._panning) {
-            let selected = false;
             this.props.globalState.selectedControls.forEach((element) => {
                 if (pos) {
-                    selected = this._onMove(element, new Vector2(pos.x, pos.y), this._mouseStartPoint!) || selected;
+                    this._onMove(element, pos, this._mouseStartPoint!);
                 }
             });
 
