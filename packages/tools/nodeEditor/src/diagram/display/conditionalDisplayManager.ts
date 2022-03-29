@@ -1,0 +1,57 @@
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
+import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
+
+export class ConditionalDisplayManager implements IDisplayManager {
+    public getHeaderClass() {
+        return "";
+    }
+
+    public shouldDisplayPortLabels(): boolean {
+        return true;
+    }
+
+    public getHeaderText(block: NodeMaterialBlock): string {
+        const conditionBlock = block as ConditionalBlock;
+        let desc = "";
+
+        switch (conditionBlock.condition) {
+            case ConditionalBlockConditions.Equal:
+                desc = "=";
+                break;
+            case ConditionalBlockConditions.NotEqual:
+                desc = "!=";
+                break;
+            case ConditionalBlockConditions.LessThan:
+                desc = "<";
+                break;
+            case ConditionalBlockConditions.LessOrEqual:
+                desc = "<=";
+                break;
+            case ConditionalBlockConditions.GreaterThan:
+                desc = ">";
+                break;
+            case ConditionalBlockConditions.GreaterOrEqual:
+                desc = ">=";
+                break;
+            case ConditionalBlockConditions.Xor:
+                desc = "xor";
+                break;
+            case ConditionalBlockConditions.Or:
+                desc = "|";
+                break;
+            case ConditionalBlockConditions.And:
+                desc = "&";
+                break;
+        }
+
+        return block.name + " (" + desc + ")";
+    }
+
+    public getBackgroundColor(): string {
+        return "#00A080";
+    }
+
+    public updatePreviewContent(): void {}
+}

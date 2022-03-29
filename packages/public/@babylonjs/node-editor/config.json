@@ -1,0 +1,6 @@
+{
+    "declarationLibs": ["@tools/node-editor", "@dev/shared-ui-components"],
+    "devPackageName": "nodeEditor",
+    "filename": "babylon.nodeEditor.module.d.ts",
+    "buildType": "es6"
+}

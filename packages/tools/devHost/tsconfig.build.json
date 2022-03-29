@@ -1,0 +1,17 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": true,
+        "allowJs": true, 
+        "paths": {
+        }
+    },
+    // "references": [
+    //     { "path": "../../../lts/core/tsconfig.build.json" }
+    // ],
+
+    "include": ["./src/**/*"]
+}

@@ -1,0 +1,27 @@
+{
+    "name": "@dev/loaders",
+    "version": "1.0.0",
+    "types": "dist/index",
+    "main": "dist/index",
+    "module": "dist/index",
+    "private": true,
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "compile": "tsc -b tsconfig.build.json",
+        "watch": "tsc -b tsconfig.build.json -w",
+        "watch:dev": "npm run watch"
+    },
+    "devDependencies": {
+        "@dev/core": "^1.0.0",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.4.4"
+    },
+    "sideEffects": false,
+    "dependencies": {
+    }
+}

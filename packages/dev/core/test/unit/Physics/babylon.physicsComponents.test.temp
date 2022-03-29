@@ -1,0 +1,214 @@
+/**
+ * @jest-environment jsdom
+ */
+
+// 'physicsEngineComponents.ts' injects methods and properties into Scene and AbstractMesh
+// these tests only check that Scene and AbstractMesh have the expected methods.
+
+import { Engine, NullEngine } from "core/Engines";
+import { Vector3 } from "core/Maths";
+import { MeshBuilder } from "core/Meshes";
+import { PromisePolyfill } from "core/Misc";
+import { AmmoJSPlugin, PhysicsImpostor } from "core/Physics";
+import { Scene } from "core/scene";
+
+declare const Ammo: any;
+
+function loadScript(src: string) {
+    return new Promise(function (resolve, reject) {
+        console.log(src);
+        const s = document.createElement("script");
+        s.type = "text/javascript";
+        s.src = src;
+        // s.async = true;
+        s.onerror = function (err) {
+            console.log("error", err);
+            reject(err);
+        };
+        s.onload = function () {
+            console.log("loaded");
+            resolve(true);
+        };
+        document.body.appendChild(s);
+        console.log("appended");
+    });
+}
+
+/**
+ * Describes the test suite.
+ */
+describe("Babylon physicsComponents", () => {
+    let engine: Engine;
+    let scene: Scene;
+    let gravityVector: Vector3;
+    let noGravityVector: Vector3;
+    let physicsPlugin: AmmoJSPlugin; // only testing Ammo for now
+
+    beforeAll(async () => {
+        await loadScript("https://preview.babylonjs.com/ammo.js");
+        console.log(Ammo);
+        PromisePolyfill.Apply(true);
+
+        await Ammo();
+    }, 100000);
+
+    /**
+     * Create a new engine and scene before each test.
+     */
+    beforeEach(function () {
+        engine = new NullEngine({
+            renderHeight: 256,
+            renderWidth: 256,
+            textureSize: 256,
+            deterministicLockstep: false,
+            lockstepMaxSteps: 1,
+        });
+        scene = new Scene(engine);
+
+        gravityVector = new Vector3(0, -9.81, 0);
+        noGravityVector = Vector3.Zero();
+        physicsPlugin = new AmmoJSPlugin(); // only testing Ammo for now
+    });
+
+    describe('#exercise the functions "physicsEngineComponents"', () => {
+        it("enables and disables the scene's physics engine", () => {
+            // scene starts off without a physics engine
+            let physicsEngine = scene.getPhysicsEngine();
+            expect(physicsEngine).toBeUndefined();
+
+            // specify an engine, and ask again
+            scene.enablePhysics(gravityVector, physicsPlugin);
+            physicsEngine = scene.getPhysicsEngine();
+            expect(physicsEngine).toBeInstanceOf(Object); // an iPhysicsEngine
+
+            // good, we have an plugin plugged in.  let's ask for it's name
+            const name = physicsEngine!.getPhysicsPluginName();
+            expect(name).toEqual("AmmoJSPlugin");
+
+            // we can get the entire plugin back, which should be identical to physicsPlugin
+            const myPhysicsPlugin = physicsEngine!.getPhysicsPlugin();
+            expect(myPhysicsPlugin).toBeInstanceOf("object"); // an iPhysicsEnginePlugin
+            expect(myPhysicsPlugin.name).toEqual("AmmoJSPlugin");
+
+            // disable the scene physicsEngine, and see whether still there
+            scene.disablePhysicsEngine();
+            physicsEngine = scene.getPhysicsEngine();
+            expect(physicsEngine).toBeNull(); // note that physicsEngine is now null, not undefined
+        });
+
+        it("set and get timestep parameters", () => {
+            expect(scene.isPhysicsEnabled()).toBe(false);
+            scene.enablePhysics(gravityVector, physicsPlugin);
+            expect(scene.isPhysicsEnabled()).toBe(true);
+
+            // quick test to see if our physicsPlugin is really an  IPhysicsEnginePlugin
+            let timestep = physicsPlugin.getTimeStep();
+            expect(timestep).toBeInstanceOf("number");
+            expect(timestep).toBeCloseTo(1 / 60, 0.0001); // default is 1/60th of a second
+
+            // let's slow down the timestep to 1/30
+            physicsPlugin.setTimeStep(1 / 30);
+            timestep = physicsPlugin.getTimeStep();
+            expect(timestep).toBeCloseTo(1 / 30, 0.0001);
+        });
+
+        it("sets up and disposes of an imposter on a mesh", () => {
+            scene.enablePhysics(gravityVector, physicsPlugin);
+
+            // The built-in 'sphere' shape. Params: name, subdivs, size, scene
+            const sphere = MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
+
+            sphere.physicsImpostor = new PhysicsImpostor(sphere, PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+            expect(sphere.physicsImpostor).toBeInstanceOf("object");
+
+            const sphereMass = sphere.physicsImpostor.mass;
+            expect(sphereMass).toEqual(1); // no surprise, we created it with mass: 1
+
+            // make sure it has a unique ID
+            expect(sphere.physicsImpostor.uniqueId).toBeInstanceOf("number");
+
+            // if we create another sphere, it should have a different ID
+            const sphere2 = MeshBuilder.CreateSphere("sphere2", { segments: 16, diameter: 2 }, scene);
+            sphere2.physicsImpostor = new PhysicsImpostor(sphere, PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+
+            expect(sphere.physicsImpostor.uniqueId).not.toEqual(sphere2.physicsImpostor.uniqueId);
+        });
+    });
+
+    // test 'Scene.onBeforePhysicsObservable' and 'Scene.onAfterPhysicsObservable' callbacks
+    describe("observables should fire before and after", function () {
+        let obWasCalled = false;
+
+        // only going to test onBefore for now
+        it("onBefore should trigger as soon as I animate", function () {
+            scene.enablePhysics(gravityVector, physicsPlugin);
+
+            scene.onBeforePhysicsObservable.add(function () {
+                expect(obWasCalled).toBe(false);
+                obWasCalled = true;
+            });
+
+            expect(obWasCalled).toBe(false);
+            scene.animate(); // rather than call hidden  _advancePhysicsEngineStep
+            expect(obWasCalled).toBe(true);
+        });
+    });
+
+    // previous tests were on injected properties of Scene.
+    // now test 'applyImpulse' which is an injected property of AbstractMesh
+    describe("applyImpulse should move a mesh", function () {
+        it("if an impulse is applied", function () {
+            scene.enablePhysics(noGravityVector, physicsPlugin); // NO gravity
+            const getGravity = scene.getPhysicsEngine()!.gravity;
+            expect(getGravity).toStrictEqual(Vector3.Zero());
+
+            const sphere = MeshBuilder.CreateSphere("mySphere", { diameter: 1 }, scene); // use MeshBuilder instead of Mesh
+            sphere.physicsImpostor = new PhysicsImpostor(sphere, PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+
+            let getPosition = sphere.position.asArray();
+            expect(getPosition).toStrictEqual([0, 0, 0]);
+
+            let linearVelocity = sphere.physicsImpostor!.getLinearVelocity()!.asArray();
+            expect(linearVelocity).toStrictEqual([0, 0, 0]);
+
+            let angularVelocity = sphere.physicsImpostor!.getAngularVelocity()!.asArray();
+            expect(linearVelocity).toStrictEqual([0, 0, 0]);
+
+            //////////////////////////////`/////////////////////
+            // so far, so good.  let's run the physics engine.  nothing should change.
+
+            scene.animate();
+
+            getPosition = sphere.position.asArray();
+            expect(getPosition).toStrictEqual([0, 0, 0]);
+
+            linearVelocity = sphere.physicsImpostor.getLinearVelocity()!.asArray();
+            expect(linearVelocity).toStrictEqual([0, 0, 0]);
+
+            angularVelocity = sphere.physicsImpostor.getAngularVelocity()!.asArray();
+            expect(angularVelocity).toStrictEqual([0, 0, 0]);
+
+            ///////////////////////////////////////////////////
+            // now give an impulse, and run the physics engine again.  the sphere should start moving.
+
+            const force = new Vector3(10, 0, 0);
+            const contact = new Vector3(-1, 0, 0); // we know sphere has diameter 1.  so kick straight down x axis.
+            sphere.applyImpulse(force, contact); // give the sphere its kick
+            scene.animate(); // and run the physics engine
+
+            const getPosition2 = sphere.position;
+            expect(getPosition2.x).toBeGreaterThan(0); // moved about 0.01, I'm clueless how that was calculated
+            expect(getPosition2.y).toEqual(0);
+            expect(getPosition2.z).toEqual(0);
+
+            const linearVelocity2 = sphere.physicsImpostor.getLinearVelocity()!;
+            expect(linearVelocity2.x).toBeCloseTo(10, 0.001); // mass of 1, whack of 10, sounds right
+            expect(linearVelocity2.y).toEqual(0);
+            expect(linearVelocity2.z).toEqual(0);
+
+            // we whacked it right along the axis, so don't expect any angular velocity
+            const angularVelocity2 = sphere.physicsImpostor.getAngularVelocity()!;
+            expect(angularVelocity2.asArray()).toStrictEqual([0, 0, 0]);
+        });
+    });
+});
