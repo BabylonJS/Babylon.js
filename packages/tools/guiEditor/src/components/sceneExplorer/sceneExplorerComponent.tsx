@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Scene } from "core/scene";
 import { TreeItemComponent } from "./treeItemComponent";
 import { Tools } from "../../tools";
-import { GlobalState } from "../../globalState";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { GlobalState } from "../../globalState";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 import "./sceneExplorer.scss";
 
@@ -181,15 +181,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 return;
             case "Delete":
             case "Backspace":
-                if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
-                    this.state.selectedEntity.dispose();
-                    this.props.globalState.selectedControls.forEach((node) => {
-                        if (node !== this.props.globalState.guiTexture.getChildren()[0]) {
-                            node.dispose();
-                        }
-                        this.forceUpdate();
-                    });
-                }
+                this.props.globalState.deleteSelectedNodes();
+                this.forceUpdate();
                 break;
         }
 
@@ -221,14 +214,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return (
             <div
                 id="tree"
-                onDrop={(event) => {
+                onDrop={() => {
                     this.props.globalState.onDropObservable.notifyObservers();
                     this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                 }}
                 onDragOver={(event) => {
                     event.preventDefault();
                 }}
-                onClick={(event) => {
+                onClick={() => {
                     if (!this.props.globalState.selectionLock) {
                         this.props.globalState.setSelection([]);
                     } else {

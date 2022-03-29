@@ -1,13 +1,14 @@
-import { Nullable } from "core/types";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { Mesh } from "core/Meshes/mesh";
-import { Node } from "core/node";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
-import { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
+import type { Node } from "core/node";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
+import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_variants";
 
@@ -245,13 +246,13 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                             if (root && metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
                                                 // Copy main metadata
                                                 newRoot.metadata = {};
-                                                for (var key in root.metadata) {
+                                                for (const key in root.metadata) {
                                                     newRoot.metadata[key] = root.metadata[key];
                                                 }
 
                                                 // Copy the gltf metadata
                                                 newRoot.metadata.gltf = [];
-                                                for (var key in root.metadata.gltf) {
+                                                for (const key in root.metadata.gltf) {
                                                     newRoot.metadata.gltf[key] = root.metadata.gltf[key];
                                                 }
 
@@ -263,8 +264,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                                         material: original.material,
                                                     });
                                                 }
-                                                for (var key in metadata.variants) {
-                                                    if (metadata.variants.hasOwnProperty(key)) {
+                                                for (const key in metadata.variants) {
+                                                    if (Object.prototype.hasOwnProperty.call(metadata.variants, key)) {
                                                         newRoot.metadata.gltf[NAME].variants[key] = [];
                                                         for (const variantEntry of metadata.variants[key]) {
                                                             newRoot.metadata.gltf[NAME].variants[key].push({
@@ -279,12 +280,12 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                             }
 
                                             // Relocate
-                                            for (var target of metadata!.original) {
+                                            for (const target of metadata!.original) {
                                                 if (target.mesh === babylonMesh) {
                                                     target.mesh = newMesh;
                                                 }
                                             }
-                                            for (var target of metadata!.variants[variant.name]) {
+                                            for (const target of metadata!.variants[variant.name]) {
                                                 if (target.mesh === babylonMesh) {
                                                     target.mesh = newMesh;
                                                 }

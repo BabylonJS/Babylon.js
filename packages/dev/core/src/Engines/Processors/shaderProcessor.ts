@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ShaderCodeNode } from "./shaderCodeNode";
 import { ShaderCodeCursor } from "./shaderCodeCursor";
 import { ShaderCodeConditionNode } from "./shaderCodeConditionNode";
@@ -7,7 +8,7 @@ import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
-import { ProcessingOptions } from "./shaderProcessingOptions";
+import type { ProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
@@ -367,7 +368,7 @@ export class ShaderProcessor {
         let keepProcessing = false;
 
         while (match != null) {
-            var includeFile = match[1];
+            let includeFile = match[1];
 
             // Uniform declaration
             if (includeFile.indexOf("__decl__") !== -1) {

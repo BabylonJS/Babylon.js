@@ -1,23 +1,24 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { SmartArray } from "../Misc/smartArray";
-import { Observable, Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Vector2 } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
-import { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import "../Shaders/postprocess.vertex";
-import { IInspectable } from "../Misc/iInspectable";
+import type { IInspectable } from "../Misc/iInspectable";
 import { Engine } from "../Engines/engine";
-import { Color4 } from "../Maths/math.color";
+import type { Color4 } from "../Maths/math.color";
 
 import "../Engines/Extensions/engine.renderTarget";
-import { NodeMaterial } from "../Materials/Node/nodeMaterial";
+import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
 import { serialize, serializeAsColor4, SerializationHelper } from "../Misc/decorators";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { AbstractScene } from "../abstractScene";
-import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import type { AbstractScene } from "../abstractScene";
+import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;

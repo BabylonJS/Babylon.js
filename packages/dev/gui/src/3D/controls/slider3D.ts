@@ -1,12 +1,13 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Scene } from "core/scene";
 import { Control3D } from "./control3D";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial";
 import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial";
@@ -245,7 +246,7 @@ export class Slider3D extends Control3D {
         const pointerDragBehavior = new PointerDragBehavior({ dragAxis: Vector3.Right() });
         pointerDragBehavior.moveAttached = false;
 
-        pointerDragBehavior.onDragStartObservable.add((event) => {
+        pointerDragBehavior.onDragStartObservable.add(() => {
             this._draggedPosition = this._sliderThumb.position.x;
         });
 

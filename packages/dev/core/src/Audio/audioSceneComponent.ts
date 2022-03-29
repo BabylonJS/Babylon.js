@@ -1,13 +1,14 @@
 import { Sound } from "./sound";
 import { SoundTrack } from "./soundTrack";
 import { Engine } from "../Engines/engine";
-import { Camera } from "../Cameras/camera";
-import { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
+import type { ISceneSerializableComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
-import { AssetContainer } from "../assetContainer";
+import type { AssetContainer } from "../assetContainer";
 
 import "./audioEngine";
 import { PrecisionDate } from "../Misc/precisionDate";
@@ -555,7 +556,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
             let i: number;
             for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
-                var sound = scene.mainSoundTrack.soundCollection[i];
+                const sound = scene.mainSoundTrack.soundCollection[i];
                 if (sound.useCustomAttenuation) {
                     sound.updateDistanceFromListener();
                 }
@@ -563,7 +564,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             if (scene.soundTracks) {
                 for (i = 0; i < scene.soundTracks.length; i++) {
                     for (let j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
-                        sound = scene.soundTracks[i].soundCollection[j];
+                        const sound = scene.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();
                         }

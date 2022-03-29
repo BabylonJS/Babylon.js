@@ -1,41 +1,47 @@
-import { Nullable, IndicesArray, DataArray } from "../types";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
+import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { VideoTexture } from "../Materials/Textures/videoTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { VideoTexture } from "../Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { Effect } from "../Materials/effect";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { Tools } from "../Misc/tools";
-import { Observable, Observer } from "../Misc/observable";
-import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
-import { Scene } from "../scene";
-import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import { IPipelineContext } from "./IPipelineContext";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
+import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
+import type { Scene } from "../scene";
+import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import { ThinEngine, ISceneLike } from "./thinEngine";
-import { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import type { ISceneLike } from "./thinEngine";
+import { ThinEngine } from "./thinEngine";
+import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { WebGL2ShaderProcessor } from "../Engines/WebGL/webGL2ShaderProcessors";
-import { IMaterialContext } from "./IMaterialContext";
-import { IDrawContext } from "./IDrawContext";
-import { ICanvas, IImage } from "./ICanvas";
-import { IStencilState } from "../States/IStencilState";
+import type { IMaterialContext } from "./IMaterialContext";
+import type { IDrawContext } from "./IDrawContext";
+import type { ICanvas, IImage } from "./ICanvas";
+import type { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
-import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
-import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
+import type { NativeData } from "./Native/nativeDataStream";
+import { NativeDataStream } from "./Native/nativeDataStream";
+import type { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
-if (typeof self !== "undefined" && !self.hasOwnProperty("_native")) {
+if (typeof self !== "undefined" && !Object.prototype.hasOwnProperty.call(self, "_native")) {
     let __native: INative;
     Object.defineProperty(self, "_native", {
         get: () => __native,
@@ -301,8 +307,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param x First int in int3.
      * @param y Second int in int3.
-     * @param y Third int in int3.
-     * @param z
+     * @param z Third int in int3.
      */
     public setInt3(uniformName: string, x: number, y: number, z: number): void {
         if (this._cacheFloat3(uniformName, x, y, z)) {
@@ -317,8 +322,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param x First int in int4.
      * @param y Second int in int4.
-     * @param y Third int in int4.
-     * @param z
+     * @param z Third int in int4.
      * @param w Fourth int in int4.
      */
     public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
@@ -478,7 +482,7 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+     * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
@@ -488,7 +492,7 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+     * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
@@ -1002,10 +1006,6 @@ export class NativeEngine extends Engine {
 
     /**
      * Override default engine behavior.
-     * @param color
-     * @param backBuffer
-     * @param depth
-     * @param stencil
      * @param framebuffer
      */
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
@@ -1737,10 +1737,10 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        mode = this._getNativeAlphaMode(mode);
+        const nativeMode = this._getNativeAlphaMode(mode);
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(mode);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeMode);
         this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
@@ -2045,7 +2045,6 @@ export class NativeEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param premulAlpha defines if alpha is stored as premultiplied
      * @param format defines the format of the data
-     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: any, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
         if (premulAlpha === void 0) {

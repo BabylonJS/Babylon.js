@@ -1,10 +1,10 @@
 import * as React from "react";
 
 import { Observable } from "core/Misc/observable";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Constants } from "core/Engines/constants";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -12,8 +12,8 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 
 import "core/Rendering/prePassRendererSceneComponent";

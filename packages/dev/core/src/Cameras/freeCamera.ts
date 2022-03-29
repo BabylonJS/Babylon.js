@@ -1,13 +1,13 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { serializeAsVector3, serialize } from "../Misc/decorators";
 import { Vector3, Vector2 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
-import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
-import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
+import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
+import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools";
 
 declare type Collider = import("../Collisions/collider").Collider;
@@ -277,6 +277,7 @@ export class FreeCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored?: any, noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
     }
@@ -292,9 +293,8 @@ export class FreeCamera extends TargetCamera {
     public detachControl(ignored: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);

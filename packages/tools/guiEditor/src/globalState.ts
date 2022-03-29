@@ -1,22 +1,29 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import { LogEntry } from "./components/log/logComponent";
+import type { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color3 } from "core/Maths/math.color";
-import { WorkbenchComponent } from "./diagram/workbench";
-import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { Scene } from "core/scene";
-import { Control } from "gui/2D/controls/control";
+import type { WorkbenchComponent } from "./diagram/workbench";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Scene } from "core/scene";
+import type { Control } from "gui/2D/controls/control";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { ISize } from "core/Maths/math";
+import type { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
+import { KeyboardManager } from "./keyboardManager";
 
 export enum DragOverLocation {
     ABOVE = 0,
     BELOW = 1,
     CENTER = 2,
     NONE = 3,
+}
+
+export enum GUIEditorTool {
+    SELECT = 0,
+    PAN = 1,
+    ZOOM = 2,
 }
 
 export class GlobalState {
@@ -40,18 +47,32 @@ export class GlobalState {
     onPopupClosedObservable = new Observable<void>();
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
-    isMultiSelecting: boolean = false;
+    public keys: KeyboardManager;
+    /** DO NOT USE: in the process of removing */
+    public blockKeyboardEvents = false;
     onOutlineChangedObservable = new Observable<void>();
-    blockKeyboardEvents = false;
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
-    onZoomObservable = new Observable<void>();
+    private _tool: GUIEditorTool = GUIEditorTool.SELECT;
+    onToolChangeObservable = new Observable<void>();
+    public get tool(): GUIEditorTool {
+        if (this._tool === GUIEditorTool.ZOOM) {
+            return GUIEditorTool.ZOOM;
+        } else if (this._tool === GUIEditorTool.PAN || this.keys.isKeyDown("space")) {
+            return GUIEditorTool.PAN;
+        } else {
+            return GUIEditorTool.SELECT;
+        }
+    }
+    public set tool(newTool: GUIEditorTool) {
+        if (this._tool === newTool) return;
+        this._tool = newTool;
+        this.onToolChangeObservable.notifyObservers();
+    }
     onFitToWindowObservable = new Observable<void>();
-    onPanObservable = new Observable<void>();
-    onSelectionButtonObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
@@ -89,39 +110,38 @@ export class GlobalState {
         this.backgroundColor = new Color3(r, g, b);
         this.onBackgroundColorChangeObservable.notifyObservers();
 
-        CoordinateHelper.globalState = this;
+        CoordinateHelper.GlobalState = this;
     }
 
     /** adds copy, cut and paste listeners to the host window */
     public registerEventListeners() {
+        const isElementEditable = (element: HTMLElement) => {
+            return element.isContentEditable || element.tagName === "INPUT" || element.tagName === "TEXTAREA";
+        };
         this.hostDocument.addEventListener("copy", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCopyObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("cut", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onCutObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("paste", (event) => {
-            const target = event.target as HTMLElement;
-            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+            if (!isElementEditable(event.target as HTMLElement)) {
                 this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "");
                 event.preventDefault();
             }
         });
-        this.hostDocument.addEventListener("keydown", (evt) => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keyup", (evt) => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keypress", (evt) => this._updateKeys(evt));
-    }
-
-    private _updateKeys(event: KeyboardEvent) {
-        this.isMultiSelecting = event.ctrlKey;
+        this.keys = new KeyboardManager(this.hostDocument);
+        this.keys.onKeyPressedObservable.add(() => {
+            // trigger a tool update (in case space is now pressed)
+            // we should really have a state management system to handle this for us
+            this.onToolChangeObservable.notifyObservers();
+        });
     }
 
     public get backgroundColor() {
@@ -146,7 +166,7 @@ export class GlobalState {
     }
 
     public select(control: Control) {
-        if (this.isMultiSelecting && this.isMultiSelectable(control)) {
+        if (this.keys.isKeyDown("control") && this.isMultiSelectable(control)) {
             const index = this.selectedControls.indexOf(control);
             if (index === -1) {
                 this.setSelection([...this.selectedControls, control]);
@@ -163,9 +183,22 @@ export class GlobalState {
         this.onSelectionChangedObservable.notifyObservers();
     }
 
+    public deleteSelectedNodes() {
+        for (const control of this.selectedControls) {
+            this.guiTexture.removeControl(control);
+            this.liveGuiTexture?.removeControl(control);
+            control.dispose();
+        }
+        this.setSelection([]);
+    }
+
     public isMultiSelectable(control: Control): boolean {
         if (this.selectedControls.length === 0) return true;
         if (this.selectedControls[0].parent === control.parent) return true;
         return false;
+    }
+
+    public dispose() {
+        this.keys.dispose();
     }
 }

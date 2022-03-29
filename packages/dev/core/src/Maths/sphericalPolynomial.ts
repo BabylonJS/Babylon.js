@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3 } from "../Maths/math.vector";
-import { Nullable } from "../types";
-import { Color3 } from "../Maths/math.color";
+import type { Nullable } from "../types";
+import type { Color3 } from "../Maths/math.color";
 import { TmpVectors } from "./math";
 
 // https://dickyjim.wordpress.com/2013/09/04/spherical-harmonics-for-beginners/
@@ -58,7 +59,7 @@ const SH3ylmBasisConstants = [
 // {x,y,z} = {cos(phi)sin(theta), sin(phi)sin(theta), cos(theta)}
 // By recursion on using trigo identities:
 const SH3ylmBasisTrigonometricTerms = [
-    (direction: Vector3) => 1, // l00
+    () => 1, // l00
 
     (direction: Vector3) => direction.y, // l1_1
     (direction: Vector3) => direction.z, // l10

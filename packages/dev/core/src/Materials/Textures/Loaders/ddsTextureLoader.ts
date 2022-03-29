@@ -1,14 +1,16 @@
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial";
 import { Engine } from "../../../Engines/engine";
-import { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { DDSTools, DDSInfo } from "../../../Misc/dds";
+import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
+import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import type { DDSInfo } from "../../../Misc/dds";
+import { DDSTools } from "../../../Misc/dds";
 import { EndsWith } from "../../../Misc/stringTools";
 /**
  * Implementation of the DDS Texture Loader.
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _DDSTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
@@ -26,20 +28,12 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
-     * @param data contains the texture data
-     * @param imgs
+     * @param imgs contains the cube maps
      * @param texture defines the BabylonJS internal texture
      * @param createPolynomials will be true if polynomials have been requested
      * @param onLoad defines the callback to trigger once the texture is ready
-     * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(
-        imgs: ArrayBufferView | ArrayBufferView[],
-        texture: InternalTexture,
-        createPolynomials: boolean,
-        onLoad: Nullable<(data?: any) => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>
-    ): void {
+    public loadCubeData(imgs: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>): void {
         const engine = texture.getEngine() as Engine;
         let info: DDSInfo | undefined;
         let loadMipmap: boolean = false;

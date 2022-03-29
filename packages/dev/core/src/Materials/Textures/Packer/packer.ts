@@ -1,11 +1,11 @@
 import { Engine } from "../../../Engines/engine";
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../../Buffers/buffer";
-import { Scene } from "../../../scene";
-import { Material } from "../../material";
+import type { Scene } from "../../../scene";
+import type { Material } from "../../material";
 import { Texture } from "../texture";
 import { DynamicTexture } from "../dynamicTexture";
-import { Nullable } from "../../../types";
+import type { Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
 import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";
@@ -386,22 +386,22 @@ export class TexturePacker {
         const padding: number = this._paddingValue || 0;
 
         switch (this.options.layout) {
-            case 0:
+            case 0: {
                 //STRIP_LAYOUT
                 return new Vector2(baseSize * meshLength + 2 * padding * meshLength, baseSize + 2 * padding);
-                break;
-            case 1:
+            }
+            case 1: {
                 //POWER2
                 const sqrtCount = Math.max(2, Math.ceil(Math.sqrt(meshLength)));
                 const size = baseSize * sqrtCount + 2 * padding * sqrtCount;
                 return new Vector2(size, size);
-                break;
-            case 2:
+            }
+            case 2: {
                 //COLNUM
                 const cols = this.options.colnum || 1;
                 const rowCnt = Math.max(1, Math.ceil(meshLength / cols));
                 return new Vector2(baseSize * cols + 2 * padding * cols, baseSize * rowCnt + 2 * padding * rowCnt);
-                break;
+            }
         }
 
         return Vector2.Zero();
@@ -449,20 +449,20 @@ export class TexturePacker {
         let uvStep, yStep, xStep;
 
         switch (this.options.layout) {
-            case 0:
+            case 0: {
                 //STRIP_LAYOUT
                 uvStep = 1 / meshLength;
                 return new Vector2(index * uvStep, 0);
-                break;
-            case 1:
+            }
+            case 1: {
                 //POWER2
                 const sqrtCount = Math.max(2, Math.ceil(Math.sqrt(meshLength)));
                 yStep = Math.floor(index / sqrtCount);
                 xStep = index - yStep * sqrtCount;
                 uvStep = 1 / sqrtCount;
                 return new Vector2(xStep * uvStep, yStep * uvStep);
-                break;
-            case 2:
+            }
+            case 2: {
                 //COLNUM
                 const cols = this.options.colnum || 1;
                 const rowCnt = Math.max(1, Math.ceil(meshLength / cols));
@@ -470,7 +470,7 @@ export class TexturePacker {
                 yStep = index - xStep * rowCnt;
                 uvStep = new Vector2(1 / cols, 1 / rowCnt);
                 return new Vector2(xStep * uvStep.x, yStep * uvStep.y);
-                break;
+            }
         }
 
         return Vector2.Zero();

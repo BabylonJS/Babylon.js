@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { GlobalState } from "../../../../globalState";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
+import type { Observable } from "core/Misc/observable";
+import type { GlobalState } from "../../../../globalState";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 
 interface IBoxEmitterGridComponentProps {

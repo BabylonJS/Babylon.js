@@ -1,21 +1,25 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
-import { PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import type { PointerInfoBase } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Scene } from "core/scene";
 
-import { Container } from "./container";
-import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import type { Container } from "./container";
+import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
-import { Style } from "../style";
+import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**
@@ -1373,7 +1377,7 @@ export class Control {
     }
 
     /**
-     * Shorthand funtion to set the top, right, bottom, and left padding values on the control.
+     * Shorthand function to set the top, right, bottom, and left padding values on the control.
      * @param { string | number} paddingTop - The value of the top padding.
      * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
      * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
@@ -1513,6 +1517,7 @@ export class Control {
     }
 
     /** @hidden */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
@@ -2489,16 +2494,6 @@ export class Control {
         return control;
     }
 
-    /**
-     * Creates a stack panel that can be used to render headers
-     * @param control defines the control to associate with the header
-     * @param text defines the text of the header
-     * @param size defines the size of the header
-     * @param options defines options used to configure the header
-     * @returns a new StackPanel
-     * @ignore
-     * @hidden
-     */
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
 
     /**

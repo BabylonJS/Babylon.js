@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./glTFAnimation";
 export * from "./glTFData";
 export * from "./glTFExporter";

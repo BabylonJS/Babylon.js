@@ -1,11 +1,12 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { FreeCamera } from "../../Cameras/freeCamera";
+import type { FreeCamera } from "../../Cameras/freeCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraMouseWheelInput } from "../../Cameras/Inputs/BaseCameraMouseWheelInput";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Coordinate } from "../../Maths/math.axis";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 enum _CameraProperty {
     MoveRelative,
     RotateRelative,

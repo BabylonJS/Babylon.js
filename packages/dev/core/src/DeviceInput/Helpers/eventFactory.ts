@@ -1,8 +1,9 @@
 import { Constants } from "../../Engines/constants";
-import { EventConstants, IUIEvent } from "../../Events/deviceInputEvents";
-import { Nullable } from "../../types";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
+import { EventConstants } from "../../Events/deviceInputEvents";
+import type { Nullable } from "../../types";
 import { DeviceType, NativePointerInput, PointerInput } from "../InputDevices/deviceEnums";
-import { IDeviceInputSystem } from "../InputDevices/inputInterfaces";
+import type { IDeviceInputSystem } from "../InputDevices/inputInterfaces";
 
 /**
  * Class to wrap DeviceInputSystem data into an event object
@@ -29,13 +30,14 @@ export class DeviceEventFactory {
     ): IUIEvent {
         switch (deviceType) {
             case DeviceType.Keyboard:
-                return this._createKeyboardEvent(inputIndex, currentState, deviceInputSystem, elementToAttachTo);
+                return this._CreateKeyboardEvent(inputIndex, currentState, deviceInputSystem, elementToAttachTo);
             case DeviceType.Mouse:
                 if (inputIndex === PointerInput.MouseWheelX || inputIndex === PointerInput.MouseWheelY || inputIndex === PointerInput.MouseWheelZ) {
-                    return this._createWheelEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
+                    return this._CreateWheelEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
                 }
+            // eslint-disable-next-line no-fallthrough
             case DeviceType.Touch:
-                return this._createPointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
+                return this._CreatePointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
             default:
                 throw `Unable to generate event for device ${DeviceType[deviceType]}`;
         }
@@ -52,7 +54,7 @@ export class DeviceEventFactory {
      * @param elementToAttachTo HTMLElement to reference as target for inputs
      * @returns IUIEvent object (Pointer)
      */
-    private static _createPointerEvent(
+    private static _CreatePointerEvent(
         deviceType: DeviceType,
         deviceSlot: number,
         inputIndex: number,
@@ -60,7 +62,7 @@ export class DeviceEventFactory {
         deviceInputSystem: IDeviceInputSystem,
         elementToAttachTo?: any
     ): any {
-        const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
+        const evt = this._CreateMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
         if (deviceType === DeviceType.Mouse) {
             evt.deviceType = DeviceType.Mouse;
@@ -92,7 +94,7 @@ export class DeviceEventFactory {
      * @param elementToAttachTo HTMLElement to reference as target for inputs
      * @returns IUIEvent object (Wheel)
      */
-    private static _createWheelEvent(
+    private static _CreateWheelEvent(
         deviceType: DeviceType,
         deviceSlot: number,
         inputIndex: number,
@@ -100,7 +102,7 @@ export class DeviceEventFactory {
         deviceInputSystem: IDeviceInputSystem,
         elementToAttachTo: any
     ): any {
-        const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
+        const evt = this._CreateMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
         evt.type = "wheel";
         evt.deltaMode = EventConstants.DOM_DELTA_PIXEL;
@@ -121,7 +123,7 @@ export class DeviceEventFactory {
      * @param elementToAttachTo HTMLElement to reference as target for inputs
      * @returns IUIEvent object (Mouse)
      */
-    private static _createMouseEvent(
+    private static _CreateMouseEvent(
         deviceType: DeviceType,
         deviceSlot: number,
         inputIndex: number,
@@ -129,7 +131,7 @@ export class DeviceEventFactory {
         deviceInputSystem: IDeviceInputSystem,
         elementToAttachTo?: any
     ): any {
-        const evt = this._createEvent(elementToAttachTo);
+        const evt = this._CreateEvent(elementToAttachTo);
         const pointerX = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.Horizontal);
         const pointerY = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.Vertical);
 
@@ -145,7 +147,7 @@ export class DeviceEventFactory {
             evt.offsetX = 0;
             evt.offsetY = 0;
         }
-        this._checkNonCharacterKeys(evt, deviceInputSystem);
+        this._CheckNonCharacterKeys(evt, deviceInputSystem);
 
         evt.clientX = pointerX;
         evt.clientY = pointerY;
@@ -167,9 +169,9 @@ export class DeviceEventFactory {
      * @param elementToAttachTo HTMLElement to reference as target for inputs
      * @returns IEvent object (Keyboard)
      */
-    private static _createKeyboardEvent(inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
-        const evt = this._createEvent(elementToAttachTo);
-        this._checkNonCharacterKeys(evt, deviceInputSystem);
+    private static _CreateKeyboardEvent(inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
+        const evt = this._CreateEvent(elementToAttachTo);
+        this._CheckNonCharacterKeys(evt, deviceInputSystem);
         evt.deviceType = DeviceType.Keyboard;
         evt.deviceSlot = 0;
         evt.inputIndex = inputIndex;
@@ -186,7 +188,7 @@ export class DeviceEventFactory {
      * @param evt Event object to add parameters to
      * @param deviceInputSystem DeviceInputSystem to pull values from
      */
-    private static _checkNonCharacterKeys(evt: any, deviceInputSystem: IDeviceInputSystem): void {
+    private static _CheckNonCharacterKeys(evt: any, deviceInputSystem: IDeviceInputSystem): void {
         const isKeyboardActive = deviceInputSystem.isDeviceAvailable(DeviceType.Keyboard);
         const altKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_ALT_KEY) === 1;
         const ctrlKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, Constants.INPUT_CTRL_KEY) === 1;
@@ -208,7 +210,7 @@ export class DeviceEventFactory {
      * @param elementToAttachTo Value to use as event target
      * @returns
      */
-    private static _createEvent(elementToAttachTo: any): any {
+    private static _CreateEvent(elementToAttachTo: any): any {
         const evt: { [k: string]: any } = {};
         evt.preventDefault = () => {};
         evt.target = elementToAttachTo;

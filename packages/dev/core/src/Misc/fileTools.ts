@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { WebRequest } from "./webRequest";
 import { IsWindowObjectExist } from "./domManagement";
-import { Nullable } from "../types";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { IFileRequest } from "./fileRequest";
+import type { Nullable } from "../types";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { IFileRequest } from "./fileRequest";
 import { Observable } from "./observable";
 import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";
@@ -14,7 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 
-const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
+const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
 /** @ignore */
 export class LoadFileError extends RuntimeError {
@@ -24,8 +25,7 @@ export class LoadFileError extends RuntimeError {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
-     * @param request defines the optional web request
-     * @param file defines the optional file
+     * @param object defines the optional web request
      */
     constructor(message: string, object?: WebRequest | File) {
         super(message, ErrorCodes.LoadFileError);
@@ -306,9 +306,9 @@ export const ReadFile = (
         abort: () => reader.abort(),
     };
 
-    reader.onloadend = (e) => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+    reader.onloadend = () => fileRequest.onCompleteObservable.notifyObservers(fileRequest);
     if (onError) {
-        reader.onerror = (e) => {
+        reader.onerror = () => {
             onError(new ReadFileError(`Unable to read ${file.name}`, file));
         };
     }
@@ -341,6 +341,7 @@ export const ReadFile = (
  * @returns a file request object
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
     fileOrUrl: File | string,
     onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
@@ -433,7 +434,7 @@ export const LoadFile = (
  */
 export const RequestFile = (
     url: string,
-    onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
+    onSuccess?: (data: string | ArrayBuffer, request?: WebRequest) => void,
     onProgress?: (event: ProgressEvent) => void,
     offlineProvider?: IOfflineProvider,
     useArrayBuffer?: boolean,
@@ -454,26 +455,42 @@ export const RequestFile = (
     const requestFile = () => {
         let request: Nullable<WebRequest> = new WebRequest();
         let retryHandle: Nullable<ReturnType<typeof setTimeout>> = null;
-        let onReadyStateChange: () => void;
+        let onReadyStateChange: Nullable<() => void>;
 
-        const onLoadEnd = () => {
-            if (request) {
-                if (onProgress) {
-                    request.removeEventListener("progress", onProgress);
-                }
-                if (onReadyStateChange) {
-                    request.removeEventListener("readystatechange", onReadyStateChange);
-                }
-                request.removeEventListener("loadend", onLoadEnd);
+        const unbindEvents = () => {
+            if (!request) {
+                return;
             }
+
+            if (onProgress) {
+                request.removeEventListener("progress", onProgress);
+            }
+            if (onReadyStateChange) {
+                request.removeEventListener("readystatechange", onReadyStateChange);
+            }
+            request.removeEventListener("loadend", onLoadEnd!);
+        };
+
+        let onLoadEnd: Nullable<() => void> = () => {
+            unbindEvents();
+
             fileRequest.onCompleteObservable.notifyObservers(fileRequest);
             fileRequest.onCompleteObservable.clear();
+
+            onProgress = undefined;
+            onReadyStateChange = null;
+            onLoadEnd = null;
+            onError = undefined;
+            onOpened = undefined;
+            onSuccess = undefined;
         };
 
         fileRequest.abort = () => {
             aborted = true;
 
-            onLoadEnd();
+            if (onLoadEnd) {
+                onLoadEnd();
+            }
 
             if (request && request.readyState !== (XMLHttpRequest.DONE || 4)) {
                 request.abort();
@@ -519,7 +536,9 @@ export const RequestFile = (
                 request.addEventListener("progress", onProgress);
             }
 
-            request.addEventListener("loadend", onLoadEnd);
+            if (onLoadEnd) {
+                request.addEventListener("loadend", onLoadEnd);
+            }
 
             onReadyStateChange = () => {
                 if (aborted || !request) {
@@ -529,11 +548,15 @@ export const RequestFile = (
                 // In case of undefined state in some browsers.
                 if (request.readyState === (XMLHttpRequest.DONE || 4)) {
                     // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
-                    request.removeEventListener("readystatechange", onReadyStateChange);
+                    if (onReadyStateChange) {
+                        request.removeEventListener("readystatechange", onReadyStateChange);
+                    }
 
                     if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!IsWindowObjectExist() || IsFileURL()))) {
                         try {
-                            onSuccess(useArrayBuffer ? request.response : request.responseText, request);
+                            if (onSuccess) {
+                                onSuccess(useArrayBuffer ? request.response : request.responseText, request);
+                            }
                         } catch (e) {
                             handleError(e);
                         }
@@ -545,7 +568,8 @@ export const RequestFile = (
                         const waitTime = retryStrategy(loadUrl, request, retryIndex);
                         if (waitTime !== -1) {
                             // Prevent the request from completing for retry.
-                            request.removeEventListener("loadend", onLoadEnd);
+                            unbindEvents();
+
                             request = new WebRequest();
                             retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
                             return;
@@ -586,7 +610,7 @@ export const RequestFile = (
                 offlineProvider.loadFile(
                     FileToolsOptions.BaseUrl + url,
                     (data) => {
-                        if (!aborted) {
+                        if (!aborted && onSuccess) {
                             onSuccess(data);
                         }
 
@@ -594,7 +618,7 @@ export const RequestFile = (
                     },
                     onProgress
                         ? (event) => {
-                              if (!aborted) {
+                              if (!aborted && onProgress) {
                                   onProgress(event);
                               }
                           }
@@ -629,7 +653,7 @@ export const IsFileURL = (): boolean => {
  * @hidden
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
-    return base64DataUrlRegEx.test(uri);
+    return Base64DataUrlRegEx.test(uri);
 };
 
 /**

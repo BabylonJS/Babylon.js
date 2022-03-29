@@ -1,21 +1,22 @@
-import { Observable } from "../Misc/observable";
+import type { Observable } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { Vector2, Matrix } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
-import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 
 /** @hidden */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 class _ClickInfo {
     private _singleClick = false;
     private _doubleClick = false;
@@ -114,7 +115,7 @@ export class InputManager {
 
     /**
      * Creates a new InputManager
-     * @param scene defines the hosting scene
+     * @param scene - defines the hosting scene
      */
     constructor(scene?: Scene) {
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
@@ -125,6 +126,7 @@ export class InputManager {
 
     /**
      * Gets the mesh that is currently under the pointer
+     * @returns Mesh that the pointer is pointer is hovering over
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
         return this._pointerOverMesh;
@@ -132,7 +134,7 @@ export class InputManager {
 
     /**
      * When using more than one pointer (for example in XR) you can get the mesh under the specific pointer
-     * @param pointerId the pointer id to use
+     * @param pointerId - the pointer id to use
      * @returns The mesh under this pointer id or null if not found
      */
     public getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh> {
@@ -141,6 +143,7 @@ export class InputManager {
 
     /**
      * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
+     * @returns Vector with X/Y values directly from pointer event
      */
     public get unTranslatedPointer(): Vector2 {
         return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -148,6 +151,7 @@ export class InputManager {
 
     /**
      * Gets or sets the current on-screen X position of the pointer
+     * @returns Translated X with respect to screen
      */
     public get pointerX(): number {
         return this._pointerX;
@@ -159,6 +163,7 @@ export class InputManager {
 
     /**
      * Gets or sets the current on-screen Y position of the pointer
+     * @returns Translated Y with respect to screen
      */
     public get pointerY(): number {
         return this._pointerY;
@@ -263,8 +268,8 @@ export class InputManager {
     /**
      * Use this method to simulate a pointer move on a mesh
      * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
-     * @param pickResult pickingInfo of the object wished to simulate pointer event on
-     * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+     * @param pickResult - pickingInfo of the object wished to simulate pointer event on
+     * @param pointerEventInit - pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
         const evt = new PointerEvent("pointermove", pointerEventInit);
@@ -279,8 +284,8 @@ export class InputManager {
     /**
      * Use this method to simulate a pointer down on a mesh
      * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
-     * @param pickResult pickingInfo of the object wished to simulate pointer event on
-     * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+     * @param pickResult - pickingInfo of the object wished to simulate pointer event on
+     * @param pointerEventInit - pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
         const evt = new PointerEvent("pointerdown", pointerEventInit);
@@ -362,7 +367,10 @@ export class InputManager {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @returns Boolean if delta for pointer exceeds drag movement threshold
+     */
     public _isPointerSwiping(): boolean {
         return (
             Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
@@ -373,9 +381,9 @@ export class InputManager {
     /**
      * Use this method to simulate a pointer up on a mesh
      * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
-     * @param pickResult pickingInfo of the object wished to simulate pointer event on
-     * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
-     * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
+     * @param pickResult - pickingInfo of the object wished to simulate pointer event on
+     * @param pointerEventInit - pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
+     * @param doubleTap - indicates that the pointer up event should be considered as part of a double click (false by default)
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
         const evt = new PointerEvent("pointerup", pointerEventInit);
@@ -469,7 +477,7 @@ export class InputManager {
 
     /**
      * Gets a boolean indicating if the current pointer event is captured (meaning that the scene has already handled the pointer down)
-     * @param pointerId defines the pointer id to use in a multi-touch scenario (0 by default)
+     * @param pointerId - defines the pointer id to use in a multi-touch scenario (0 by default)
      * @returns true if the pointer was captured
      */
     public isPointerCaptured(pointerId = 0): boolean {
@@ -478,10 +486,10 @@ export class InputManager {
 
     /**
      * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
-     * @param attachUp defines if you want to attach events to pointerup
-     * @param attachDown defines if you want to attach events to pointerdown
-     * @param attachMove defines if you want to attach events to pointermove
-     * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
+     * @param attachUp - defines if you want to attach events to pointerup
+     * @param attachDown - defines if you want to attach events to pointerdown
+     * @param attachMove - defines if you want to attach events to pointermove
+     * @param elementToAttachTo - defines the target DOM element to attach to (will use the canvas by default)
      */
     public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
         const scene = this._scene;
@@ -500,7 +508,7 @@ export class InputManager {
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
-        this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
+        this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -866,46 +874,43 @@ export class InputManager {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     if (eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick) {
-                        const evt = eventData as IPointerEvent;
-                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
-                            this._onPointerDown(evt);
-                        } else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
-                            this._onPointerUp(evt);
+                        if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
+                            this._onPointerDown(eventData);
+                        } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
+                            this._onPointerUp(eventData);
                         }
                     } else if (attachMove) {
                         if (eventData.inputIndex === PointerInput.Move) {
-                            this._onPointerMove(eventData as IPointerEvent);
+                            this._onPointerMove(eventData);
                         } else if (
                             eventData.inputIndex === PointerInput.MouseWheelX ||
                             eventData.inputIndex === PointerInput.MouseWheelY ||
                             eventData.inputIndex === PointerInput.MouseWheelZ
                         ) {
-                            this._onPointerMove(eventData as IWheelEvent);
+                            this._onPointerMove(eventData);
                         }
                     }
                 });
             } else if (deviceSource.deviceType === DeviceType.Touch) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    const evt = eventData as IPointerEvent;
                     if (eventData.inputIndex === PointerInput.LeftClick) {
-                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
-                            this._onPointerDown(eventData as IPointerEvent);
-                        } else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
-                            this._onPointerUp(eventData as IPointerEvent);
+                        if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
+                            this._onPointerDown(eventData);
+                        } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
+                            this._onPointerUp(eventData);
                         }
                     }
 
                     if (attachMove && eventData.inputIndex === PointerInput.Move) {
-                        this._onPointerMove(eventData as IPointerEvent);
+                        this._onPointerMove(eventData);
                     }
                 });
             } else if (deviceSource.deviceType === DeviceType.Keyboard) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    const evt = eventData as IKeyboardEvent;
-                    if (evt.type === "keydown") {
-                        this._onKeyDown(evt);
-                    } else if (evt.type === "keyup") {
-                        this._onKeyUp(evt);
+                    if (eventData.type === "keydown") {
+                        this._onKeyDown(eventData);
+                    } else if (eventData.type === "keyup") {
+                        this._onKeyUp(eventData);
                     }
                 });
             }
@@ -934,9 +939,9 @@ export class InputManager {
 
     /**
      * Force the value of meshUnderPointer
-     * @param mesh defines the mesh to use
-     * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
-     * @param pickResult optional pickingInfo data used to find mesh
+     * @param mesh - defines the mesh to use
+     * @param pointerId - optional pointer id when using more than one pointer. Defaults to 0
+     * @param pickResult - optional pickingInfo data used to find mesh
      */
     public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
         if (this._meshUnderPointerId[pointerId] === mesh) {
@@ -976,7 +981,7 @@ export class InputManager {
     }
 
     /**
-     * @param mesh
+     * @param mesh - Mesh to invalidate
      * @hidden
      */
     public _invalidateMesh(mesh: AbstractMesh) {

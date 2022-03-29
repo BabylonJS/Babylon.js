@@ -1,10 +1,12 @@
-import { Scene } from "../../scene";
-import { Vector3, Vector2, Vector4 } from "../../Maths/math.vector";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Scene } from "../../scene";
+import type { Vector3 } from "../../Maths/math.vector";
+import { Vector2, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { PolygonMeshBuilder } from "../polygonMesh";
-import { FloatArray, IndicesArray, Nullable } from "../../types";
+import type { FloatArray, IndicesArray, Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { EngineStore } from "../../Engines/engineStore";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
@@ -20,8 +22,7 @@ declare let earcut: any;
  * @param fColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
  * @param frontUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * @param backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @param wrap a boolean, default false, when true and fUVs used texture is wrapped around all sides, when false texture is applied side
- * @param wrp
+ * @param wrp a boolean, default false, when true and fUVs used texture is wrapped around all sides, when false texture is applied side
  * @returns the VertexData of the Polygon
  */
 export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrp?: boolean) {
@@ -52,7 +53,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
     let totalLen = 0;
     const cumulate = [0];
     if (wrap) {
-        for (var idx = startIndex; idx < positions.length / 3; idx += 4) {
+        for (let idx = startIndex; idx < positions.length / 3; idx += 4) {
             distX = positions[3 * (idx + 2)] - positions[3 * idx];
             distZ = positions[3 * (idx + 2) + 2] - positions[3 * idx + 2];
             dist = Math.sqrt(distX * distX + distZ * distZ);
@@ -61,7 +62,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
         }
     }
     // set face colours and textures
-    var idx: number = 0;
+    let idx: number = 0;
     let face: number = 0;
     for (let index = 0; index < normals.length; index += 3) {
         //Edge Face  no. 1
@@ -139,9 +140,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
- * @param scene defines the hosting scene
  * @param options.holes
- * @param earcutInjection can be used to inject your own earcut reference
  * @param options.depth
  * @param options.smoothingThreshold
  * @param options.faceUV
@@ -151,6 +150,8 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
  * @param options.frontUVs
  * @param options.backUVs
  * @param options.wrap
+ * @param scene defines the hosting scene
+ * @param earcutInjection can be used to inject your own earcut reference
  * @returns the polygon mesh
  */
 export function CreatePolygon(
@@ -211,7 +212,6 @@ export function CreatePolygon(
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
- * @param scene defines the hosting scene
  * @param options.holes
  * @param options.depth
  * @param options.faceUV
@@ -221,6 +221,7 @@ export function CreatePolygon(
  * @param options.frontUVs
  * @param options.backUVs
  * @param options.wrap
+ * @param scene defines the hosting scene
  * @param earcutInjection can be used to inject your own earcut reference
  * @returns the polygon mesh
  */

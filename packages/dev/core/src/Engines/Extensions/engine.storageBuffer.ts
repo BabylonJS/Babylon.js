@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { DataArray, Nullable } from "../../types";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
+import type { DataArray, Nullable } from "../../types";
 
 declare type StorageBuffer = import("../../Buffers/storageBuffer").StorageBuffer;
 
@@ -42,16 +42,20 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.createStorageBuffer = function (data: DataArray | number, creationFlags: number): DataBuffer {
     throw new Error("createStorageBuffer: Unsupported method in this engine!");
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {};
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
     throw new Error("readFromStorageBuffer: Unsupported method in this engine!");
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.setStorageBuffer = function (name: string, buffer: Nullable<StorageBuffer>): void {
     throw new Error("setStorageBuffer: Unsupported method in this engine!");
 };

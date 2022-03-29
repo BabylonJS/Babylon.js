@@ -1,23 +1,23 @@
 import { serialize, serializeAsColor4, serializeAsCameraReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import { SmartArray } from "../Misc/smartArray";
+import type { SmartArray } from "../Misc/smartArray";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
-import { ISize } from "../Maths/math.size";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
+import type { ISize } from "../Maths/math.size";
 import { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { PostProcess } from "../PostProcesses/postProcess";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
+import type { PostProcess } from "../PostProcesses/postProcess";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Constants } from "../Engines/constants";
@@ -25,7 +25,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
 import { _WarnImport } from "../Misc/devTools";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
@@ -189,11 +189,11 @@ export abstract class EffectLayer {
         this._mainTexture.setMaterialForRendering(mesh, material);
         if (Array.isArray(mesh)) {
             for (let i = 0; i < mesh.length; ++i) {
-                const mesh_ = mesh[i];
+                const currentMesh = mesh[i];
                 if (!material) {
-                    delete this._materialForRendering[mesh_.uniqueId];
+                    delete this._materialForRendering[currentMesh.uniqueId];
                 } else {
-                    this._materialForRendering[mesh_.uniqueId] = [mesh_, material];
+                    this._materialForRendering[currentMesh.uniqueId] = [currentMesh, material];
                 }
             }
         } else {
@@ -489,6 +489,7 @@ export abstract class EffectLayer {
      * Adds specific effects defines.
      * @param defines The defines to add specifics to.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _addCustomEffectDefines(defines: string[]): void {
         // Nothing to add by default.
     }
@@ -781,6 +782,7 @@ export abstract class EffectLayer {
      * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _shouldRenderMesh(mesh: AbstractMesh): boolean {
         return true;
     }
@@ -797,7 +799,6 @@ export abstract class EffectLayer {
 
     /**
      * Returns true if the mesh should render, otherwise false.
-     * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
     protected _shouldRenderEmissiveTextureForMesh(): boolean {
@@ -973,6 +974,7 @@ export abstract class EffectLayer {
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         return false;
     }
@@ -997,14 +999,14 @@ export abstract class EffectLayer {
     private _disposeTextureAndPostProcesses(): void {
         this._mainTexture.dispose();
 
-        for (var i = 0; i < this._postProcesses.length; i++) {
+        for (let i = 0; i < this._postProcesses.length; i++) {
             if (this._postProcesses[i]) {
                 this._postProcesses[i].dispose();
             }
         }
         this._postProcesses = [];
 
-        for (var i = 0; i < this._textures.length; i++) {
+        for (let i = 0; i < this._textures.length; i++) {
             if (this._textures[i]) {
                 this._textures[i].dispose();
             }

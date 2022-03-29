@@ -1,11 +1,13 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observer } from "../../Misc/observable";
-import { FollowCamera } from "../../Cameras/followCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { EventState, Observer } from "../../Misc/observable";
+import type { FollowCamera } from "../../Cameras/followCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
-import { IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
@@ -57,8 +59,9 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        this._wheel = (p, s) => {
+        this._wheel = (p) => {
             // sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
@@ -122,9 +125,8 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;

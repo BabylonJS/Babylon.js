@@ -4,8 +4,13 @@
     ],
     "files.exclude": {
         "**/node_modules": true,
-        "**/dist": false,
+        "**/dist": true,
         "**/@babylonjs/**/*.{js|ts|map}": true,
-        "**/.rollup.cache": true
+        "**/.rollup.cache": true,
+        "**/packages/dev/**/Shaders/**/*.ts": true,
+        "**/packages/dev/**/shaders/**/*.ts": true,
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
     },
 }

@@ -1,5 +1,5 @@
 import { Utilities } from "./tools/utilities";
-import { CompilationError } from "./components/errorDisplayComponent";
+import type { CompilationError } from "./components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
@@ -17,7 +17,9 @@ export enum RuntimeMode {
 }
 
 export class GlobalState {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly MobileSizeTrigger = 1024;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly SnippetServerUrl = "https://snippet.babylonjs.com";
 
     public currentCode: string;
@@ -64,7 +66,7 @@ export class GlobalState {
     public onNavigateRequiredObservable = new Observable<{ lineNumber: number; column: number }>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
-    public OnNewDropdownButtonClicked = new Observable<any>();
+    public onNewDropdownButtonClicked = new Observable<any>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

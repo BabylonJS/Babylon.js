@@ -1,6 +1,7 @@
 import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
 
@@ -101,9 +102,8 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this._leftjoystick.releaseCanvas();
         this._rightjoystick.releaseCanvas();
     }

@@ -1,15 +1,16 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
 import { PrePassRenderer } from "./prePassRenderer";
 import { Logger } from "../Misc/logger";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { SubMesh } from "../Meshes/subMesh";
-import { _InstancesBatch } from "../Meshes/mesh";
-import { Effect } from "../Materials/effect";
-import { Camera } from "../Cameras/camera";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { _InstancesBatch } from "../Meshes/mesh";
+import type { Effect } from "../Materials/effect";
+import type { Camera } from "../Cameras/camera";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -130,7 +131,7 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         }
     }
 
-    private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
+    private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture) {
         if (this.scene.prePassRenderer) {
             if (!renderTarget._prePassRenderTarget) {
                 renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
@@ -147,7 +148,7 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         }
     }
 
-    private _afterCameraDraw(camera: Camera) {
+    private _afterCameraDraw() {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer._afterDraw();
         }

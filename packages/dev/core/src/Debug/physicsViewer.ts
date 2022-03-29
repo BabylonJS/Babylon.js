@@ -1,19 +1,20 @@
-import { Nullable } from "../types";
-import { Scene } from "../scene";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import { Material } from "../Materials/material";
+import type { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
+import type { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
-import { CreateCapsule, ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
+import type { ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
+import { CreateCapsule } from "../Meshes/Builders/capsuleBuilder";
 
 /**
  * Used to show the physics impostor around the specific mesh
@@ -251,20 +252,22 @@ export class PhysicsViewer {
                 mesh = this._getDebugBoxMesh(utilityLayerScene);
                 impostor.getBoxSizeToRef(mesh.scaling);
                 break;
-            case PhysicsImpostor.SphereImpostor:
+            case PhysicsImpostor.SphereImpostor: {
                 mesh = this._getDebugSphereMesh(utilityLayerScene);
-                var radius = impostor.getRadius();
+                const radius = impostor.getRadius();
                 mesh.scaling.x = radius * 2;
                 mesh.scaling.y = radius * 2;
                 mesh.scaling.z = radius * 2;
                 break;
-            case PhysicsImpostor.CapsuleImpostor:
+            }
+            case PhysicsImpostor.CapsuleImpostor: {
                 mesh = this._getDebugCapsuleMesh(utilityLayerScene);
-                var bi = impostor.object.getBoundingInfo();
+                const bi = impostor.object.getBoundingInfo();
                 mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * 2 * impostor.object.scaling.x;
                 mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
                 mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * 2 * impostor.object.scaling.z;
                 break;
+            }
             case PhysicsImpostor.MeshImpostor:
                 if (targetMesh) {
                     mesh = this._getDebugMeshMesh(targetMesh, utilityLayerScene);
@@ -309,13 +312,14 @@ export class PhysicsViewer {
                 }
                 mesh = null;
                 break;
-            case PhysicsImpostor.CylinderImpostor:
+            case PhysicsImpostor.CylinderImpostor: {
                 mesh = this._getDebugCylinderMesh(utilityLayerScene);
-                var bi = impostor.object.getBoundingInfo();
+                const bi = impostor.object.getBoundingInfo();
                 mesh.scaling.x = (bi.boundingBox.maximum.x - bi.boundingBox.minimum.x) * impostor.object.scaling.x;
                 mesh.scaling.y = (bi.boundingBox.maximum.y - bi.boundingBox.minimum.y) * impostor.object.scaling.y;
                 mesh.scaling.z = (bi.boundingBox.maximum.z - bi.boundingBox.minimum.z) * impostor.object.scaling.z;
                 break;
+            }
         }
         return mesh;
     }

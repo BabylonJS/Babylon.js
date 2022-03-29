@@ -1,12 +1,12 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { Effect } from "../../../effect";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { MaterialHelper } from "../../../materialHelper";
 import { VertexBuffer } from "../../../../Buffers/buffer";
 import { InputBlock } from "../Input/inputBlock";
@@ -194,7 +194,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             injectionCode += `float vertexID;\r\n`;
         }
 
-        for (var index = 0; index < repeatCount; index++) {
+        for (let index = 0; index < repeatCount; index++) {
             injectionCode += `#ifdef MORPHTARGETS\r\n`;
             if (manager?.isUsingTextureForTargets) {
                 injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\r\n`;
@@ -242,7 +242,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString = state.compilationString.replace(this._repeatableContentAnchor, injectionCode);
 
         if (repeatCount > 0) {
-            for (var index = 0; index < repeatCount; index++) {
+            for (let index = 0; index < repeatCount; index++) {
                 state.attributes.push(VertexBuffer.PositionKind + index);
 
                 if (hasNormals) {

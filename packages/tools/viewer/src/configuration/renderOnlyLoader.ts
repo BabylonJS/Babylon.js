@@ -1,12 +1,13 @@
 import { mapperManager } from "./mappers";
-import { ViewerConfiguration } from "./configuration";
+import type { ViewerConfiguration } from "./configuration";
 import { processConfigurationCompatibility } from "./configurationCompatibility";
 
+// eslint-disable-next-line import/no-internal-modules
 import { deepmerge } from "../helper/index";
 import { Tools } from "core/Misc/tools";
 import { extendedConfiguration } from "./types/extended";
 import { renderOnlyDefaultConfiguration } from "./types/renderOnlyDefault";
-import { IFileRequest } from "core/Misc/fileRequest";
+import type { IFileRequest } from "core/Misc/fileRequest";
 
 /**
  * The configuration loader will load the configuration object from any source and will use the defined mapper to
@@ -45,6 +46,7 @@ export class RenderOnlyConfigurationLoader {
         return config;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected getExtendedConfig(type: string | undefined) {
         return this._getConfigurationTypeExcludeTemplate(type || "extended");
     }

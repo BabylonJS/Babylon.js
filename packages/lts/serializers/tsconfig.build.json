@@ -3,12 +3,9 @@
 
     "compilerOptions": {
         "composite": true,
+        "target": "es5",
         "outDir": "./dist",
-        "rootDir": "./generated",
-        "paths": {
-            "core/*": ["lts/core/dist/*"],
-            "serializers/*": ["lts/serializers/generated/*"],
-        }
+        "rootDir": "./generated"
     },
 
     "references": [

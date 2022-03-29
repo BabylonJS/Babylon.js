@@ -1,7 +1,7 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Color3 } from "../Maths/math.color";
 import { Texture } from "../Materials/Textures/texture";
-import { LensFlareSystem } from "./lensFlareSystem";
+import type { LensFlareSystem } from "./lensFlareSystem";
 import { Constants } from "../Engines/constants";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { VertexBuffer } from "../Buffers/buffer";

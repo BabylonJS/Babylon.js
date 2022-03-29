@@ -1,22 +1,22 @@
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
-import { PrePassConfiguration } from "../Materials/prePassConfiguration";
+import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
-import { UniformBuffer } from "./uniformBuffer";
-import { Effect, IEffectCreationOptions } from "./effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { MaterialDefines } from "./materialDefines";
+import type { UniformBuffer } from "./uniformBuffer";
+import type { Effect, IEffectCreationOptions } from "./effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { MaterialDefines } from "./materialDefines";
 import { Color3 } from "../Maths/math.color";
-import { EffectFallbacks } from "./effectFallbacks";
+import type { EffectFallbacks } from "./effectFallbacks";
 import { ThinMaterialHelper } from "./thinMaterialHelper";
 
 /**
@@ -111,7 +111,6 @@ export class MaterialHelper {
      * @param defines specifies the list of active defines
      * @param useInstances defines if instances have to be turned on
      * @param useClipPlane defines if clip plane have to be turned on
-     * @param useInstances defines if instances have to be turned on
      * @param useThinInstances defines if thin instances have to be turned on
      */
     public static PrepareDefinesForFrameBoundValues(
@@ -769,6 +768,7 @@ export class MaterialHelper {
         return lightFallbackRank++;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private static _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
@@ -924,7 +924,7 @@ export class MaterialHelper {
         }
     }
 
-    private static _tempFogColor = Color3.Black();
+    private static _TempFogColor = Color3.Black();
     /**
      * Binds the fog information from the scene to the effect for the given mesh.
      * @param scene The scene the lights belongs to
@@ -937,8 +937,8 @@ export class MaterialHelper {
             effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
             // Convert fog color to linear space if used in a linear space computed shader.
             if (linearSpace) {
-                scene.fogColor.toLinearSpaceToRef(this._tempFogColor);
-                effect.setColor3("vFogColor", this._tempFogColor);
+                scene.fogColor.toLinearSpaceToRef(this._TempFogColor);
+                effect.setColor3("vFogColor", this._TempFogColor);
             } else {
                 effect.setColor3("vFogColor", scene.fogColor);
             }
@@ -1022,8 +1022,8 @@ export class MaterialHelper {
 
     /**
      * Binds the clip plane information from the scene to the effect.
-     * @param scene The scene the clip plane information are extracted from
      * @param effect The effect we are binding the data to
+     * @param scene The scene the clip plane information are extracted from
      */
     public static BindClipPlane(effect: Effect, scene: Scene): void {
         ThinMaterialHelper.BindClipPlane(effect, scene);

@@ -1,8 +1,8 @@
 import { VertexData } from "../mesh.vertexData";
 import { Vector2, Vector3, Matrix } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import { Mesh } from "../mesh";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 /**
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
@@ -10,6 +10,7 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @returns the capsule VertexData
  * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/capsule
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateCapsuleVertexData(
     options: ICreateCapsuleOptions = {
         subdivisions: 2,
@@ -46,8 +47,8 @@ export function CreateCapsuleVertexData(
     const normals = [];
     const uvs = [];
 
-    let index = 0,
-        indexArray = [],
+    let index = 0;
+    const indexArray = [],
         halfHeight = heightMinusCaps * 0.5;
     const pi2 = Math.PI * 0.5;
 
@@ -58,32 +59,32 @@ export function CreateCapsuleVertexData(
     const cosAlpha = Math.cos(alpha);
     const sinAlpha = Math.sin(alpha);
 
-    const cone_length = new Vector2(radiusTop * sinAlpha, halfHeight + radiusTop * cosAlpha)
+    const coneLength = new Vector2(radiusTop * sinAlpha, halfHeight + radiusTop * cosAlpha)
         .subtract(new Vector2(radiusBottom * sinAlpha, -halfHeight + radiusBottom * cosAlpha))
         .length();
 
     // Total length for v texture coord
-    const vl = radiusTop * alpha + cone_length + radiusBottom * (pi2 - alpha);
+    const vl = radiusTop * alpha + coneLength + radiusBottom * (pi2 - alpha);
 
     let v = 0;
     for (y = 0; y <= capsTopSegments; y++) {
-        var indexRow = [];
+        const indexRow = [];
 
-        var a = pi2 - alpha * (y / capsTopSegments);
+        const a = pi2 - alpha * (y / capsTopSegments);
 
         v += (radiusTop * alpha) / capsTopSegments;
 
-        var cosA = Math.cos(a);
-        var sinA = Math.sin(a);
+        const cosA = Math.cos(a);
+        const sinA = Math.sin(a);
 
         // calculate the radius of the current row
-        var _radius = cosA * radiusTop;
+        const _radius = cosA * radiusTop;
 
         for (x = 0; x <= radialSegments; x++) {
-            var u = x / radialSegments;
-            var theta = u * thetaLength + thetaStart;
-            var sinTheta = Math.sin(theta);
-            var cosTheta = Math.cos(theta);
+            const u = x / radialSegments;
+            const theta = u * thetaLength + thetaStart;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = halfHeight + sinA * radiusTop;
@@ -103,22 +104,22 @@ export function CreateCapsuleVertexData(
         indexArray.push(indexRow);
     }
 
-    const cone_height = height - radiusTop - radiusBottom + cosAlpha * radiusTop - cosAlpha * radiusBottom;
-    const slope = (sinAlpha * (radiusBottom - radiusTop)) / cone_height;
+    const coneHeight = height - radiusTop - radiusBottom + cosAlpha * radiusTop - cosAlpha * radiusBottom;
+    const slope = (sinAlpha * (radiusBottom - radiusTop)) / coneHeight;
 
     for (y = 1; y <= heightSegments; y++) {
-        var indexRow = [];
-        v += cone_length / heightSegments;
+        const indexRow = [];
+        v += coneLength / heightSegments;
         // calculate the radius of the current row
-        var _radius = sinAlpha * ((y * (radiusBottom - radiusTop)) / heightSegments + radiusTop);
+        const _radius = sinAlpha * ((y * (radiusBottom - radiusTop)) / heightSegments + radiusTop);
         for (x = 0; x <= radialSegments; x++) {
-            var u = x / radialSegments;
-            var theta = u * thetaLength + thetaStart;
-            var sinTheta = Math.sin(theta);
-            var cosTheta = Math.cos(theta);
+            const u = x / radialSegments;
+            const theta = u * thetaLength + thetaStart;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
-            vertex.y = halfHeight + cosAlpha * radiusTop - (y * cone_height) / heightSegments;
+            vertex.y = halfHeight + cosAlpha * radiusTop - (y * coneHeight) / heightSegments;
             vertex.z = _radius * cosTheta;
             vertices.push(vertex.x, vertex.y, vertex.z);
             // normal
@@ -136,18 +137,18 @@ export function CreateCapsuleVertexData(
     }
 
     for (y = 1; y <= capsBottomSegments; y++) {
-        var indexRow = [];
-        var a = pi2 - alpha - (Math.PI - alpha) * (y / capsBottomSegments);
+        const indexRow = [];
+        const a = pi2 - alpha - (Math.PI - alpha) * (y / capsBottomSegments);
         v += (radiusBottom * alpha) / capsBottomSegments;
-        var cosA = Math.cos(a);
-        var sinA = Math.sin(a);
+        const cosA = Math.cos(a);
+        const sinA = Math.sin(a);
         // calculate the radius of the current row
-        var _radius = cosA * radiusBottom;
+        const _radius = cosA * radiusBottom;
         for (x = 0; x <= radialSegments; x++) {
-            var u = x / radialSegments;
-            var theta = u * thetaLength + thetaStart;
-            var sinTheta = Math.sin(theta);
-            var cosTheta = Math.cos(theta);
+            const u = x / radialSegments;
+            const theta = u * thetaLength + thetaStart;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = -halfHeight + sinA * radiusBottom;
@@ -259,6 +260,7 @@ export interface ICreateCapsuleOptions {
  * @param scene The scene the mesh is scoped to.
  * @returns Capsule Mesh
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateCapsule(
     name: string,
     options: ICreateCapsuleOptions = {
@@ -282,7 +284,9 @@ export function CreateCapsule(
  * Class containing static functions to help procedurally build meshes
  * @deprecated please use CreateCapsule directly
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const CapsuleBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateCapsule,
 };
 

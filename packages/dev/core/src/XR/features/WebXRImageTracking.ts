@@ -1,9 +1,9 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
-import { WebXRSessionManager } from "../webXRSessionManager";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 
 /**

@@ -1,12 +1,12 @@
 import { serializeAsColor3, serializeAsVector3 } from "../Misc/decorators";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { Node } from "../node";
-import { Effect } from "../Materials/effect";
+import type { Effect } from "../Materials/effect";
 import { Light } from "./light";
-import { IShadowGenerator } from "./Shadows/shadowGenerator";
+import type { IShadowGenerator } from "./Shadows/shadowGenerator";
 
 Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
     return () => new HemisphericLight(name, Vector3.Zero(), scene);
@@ -83,11 +83,11 @@ export class HemisphericLight extends Light {
 
     /**
      * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
-     * @param effect The effect to update
+     * @param _effect The effect to update
      * @param lightIndex The index of the light in the effect to update
      * @returns The hemispheric light
      */
-    public transferToEffect(effect: Effect, lightIndex: string): HemisphericLight {
+    public transferToEffect(_effect: Effect, lightIndex: string): HemisphericLight {
         const normalizeDirection = Vector3.Normalize(this.direction);
         this._uniformBuffer.updateFloat4("vLightData", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0.0, lightIndex);
         this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
@@ -102,8 +102,6 @@ export class HemisphericLight extends Light {
 
     /**
      * Computes the world matrix of the node
-     * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-     * @param useWasUpdatedFlag defines a reserved property
      * @returns the world matrix
      */
     public computeWorldMatrix(): Matrix {

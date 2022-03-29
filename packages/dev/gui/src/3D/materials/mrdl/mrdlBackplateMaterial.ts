@@ -1,18 +1,20 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
-import { Matrix, Vector4 } from "core/Maths/math.vector";
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector4 } from "core/Maths/math.vector";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialHelper } from "core/Materials/materialHelper";
-import { IEffectCreationOptions } from "core/Materials/effect";
+import type { IEffectCreationOptions } from "core/Materials/effect";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color4 } from "core/Maths/math.color";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
@@ -230,7 +232,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;

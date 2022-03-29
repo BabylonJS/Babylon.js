@@ -1,8 +1,8 @@
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
@@ -72,7 +72,7 @@ export function CreateTiledBoxVertexData(options: {
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     // default face colors and UV if undefined
-    for (var f = 0; f < nbFaces; f++) {
+    for (let f = 0; f < nbFaces; f++) {
         if (faceUV[f] === undefined) {
             faceUV[f] = new Vector4(0, 0, 1, 1);
         }
@@ -87,7 +87,7 @@ export function CreateTiledBoxVertexData(options: {
 
     const faceVertexData: Array<VertexData> = [];
 
-    for (var f = 0; f < 2; f++) {
+    for (let f = 0; f < 2; f++) {
         //front and back
         faceVertexData[f] = CreateTiledPlaneVertexData({
             pattern: flipTile,
@@ -101,7 +101,7 @@ export function CreateTiledBoxVertexData(options: {
         });
     }
 
-    for (var f = 2; f < 4; f++) {
+    for (let f = 2; f < 4; f++) {
         //sides
         faceVertexData[f] = CreateTiledPlaneVertexData({
             pattern: flipTile,
@@ -122,7 +122,7 @@ export function CreateTiledBoxVertexData(options: {
         baseAlignV = Mesh.BOTTOM;
     }
 
-    for (var f = 4; f < 6; f++) {
+    for (let f = 4; f < 6; f++) {
         //top and bottom
         faceVertexData[f] = CreateTiledPlaneVertexData({
             pattern: flipTile,
@@ -145,13 +145,12 @@ export function CreateTiledBoxVertexData(options: {
     const faceNormals: Array<Array<Vector3>> = [];
 
     const newFaceUV: Array<Array<number>> = [];
-    var len: number = 0;
     let lu: number = 0;
 
     let li: number = 0;
 
-    for (var f = 0; f < nbFaces; f++) {
-        var len = faceVertexData[f].positions!.length;
+    for (let f = 0; f < nbFaces; f++) {
+        const len = faceVertexData[f].positions!.length;
         facePositions[f] = [];
         faceNormals[f] = [];
         for (let p = 0; p < len / 3; p++) {
@@ -343,6 +342,7 @@ export function CreateTiledBox(
  * @deprecated use CreateTiledBox instead
  */
 export const TiledBoxBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTiledBox,
 };
 

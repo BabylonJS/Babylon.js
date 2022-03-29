@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { IndicesArray, DataArray } from "../../types";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
+import type { IndicesArray, DataArray } from "../../types";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -23,6 +23,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
     // Force cache update
     this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;

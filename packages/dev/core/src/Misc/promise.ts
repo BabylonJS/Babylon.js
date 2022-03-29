@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 enum PromiseStates {
     Pending,
@@ -88,11 +88,11 @@ class InternalPromise<T> {
         });
 
         if (this._state === PromiseStates.Fulfilled) {
-            for (var child of this._children) {
+            for (const child of this._children) {
                 child._resolve(this._result);
             }
         } else if (this._state === PromiseStates.Rejected) {
-            for (var child of this._children) {
+            for (const child of this._children) {
                 child._reject(this._reason);
             }
         }
@@ -160,6 +160,7 @@ class InternalPromise<T> {
         delete this._onRejected;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static resolve<T>(value: T): InternalPromise<T> {
         const newPromise = new InternalPromise<T>();
 
@@ -187,6 +188,7 @@ class InternalPromise<T> {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static all<T>(promises: InternalPromise<T>[]): InternalPromise<T[]> {
         const newPromise = new InternalPromise<T[]>();
         const agregator = new FulFillmentAgregator<T[]>();
@@ -204,6 +206,7 @@ class InternalPromise<T> {
         return newPromise;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static race<T>(promises: InternalPromise<T>[]): InternalPromise<T> {
         let newPromise: Nullable<InternalPromise<T>> = new InternalPromise();
 

@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
-import { GlobalState } from "../../../components/globalState";
+import type { GlobalState } from "../../../components/globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { TextureHelper, TextureChannelsToDisplay } from "../../../textureHelper";
+import type { TextureChannelsToDisplay } from "../../../textureHelper";
+import { TextureHelper } from "../../../textureHelper";
 
 interface ITextureLineComponentProps {
     texture: BaseTexture;
@@ -15,9 +17,9 @@ interface ITextureLineComponentProps {
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { channels: TextureChannelsToDisplay; face: number }> {
-    private canvasRef: React.RefObject<HTMLCanvasElement>;
+    private _canvasRef: React.RefObject<HTMLCanvasElement>;
 
-    private static TextureChannelStates = {
+    private static _TextureChannelStates = {
         R: { R: true, G: false, B: false, A: false },
         G: { R: false, G: true, B: false, A: false },
         B: { R: false, G: false, B: true, A: false },
@@ -29,11 +31,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         super(props);
 
         this.state = {
-            channels: TextureLineComponent.TextureChannelStates.ALL,
+            channels: TextureLineComponent._TextureChannelStates.ALL,
             face: 0,
         };
 
-        this.canvasRef = React.createRef();
+        this._canvasRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { channels: TextureChannelsToDisplay; face: number }): boolean {
@@ -49,7 +51,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     async updatePreview() {
-        const previewCanvas = this.canvasRef.current!;
+        const previewCanvas = this._canvasRef.current!;
         const texture = this.props.texture;
         const size = texture.getSize();
         const ratio = size.width / size.height;
@@ -116,38 +118,38 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                     {!this.props.hideChannelSelect && !texture.isCube && (
                         <div className="control">
                             <button
-                                className={this.state.channels === TextureLineComponent.TextureChannelStates.R ? "red command selected" : "red command"}
-                                onClick={() => this.setState({ channels: TextureLineComponent.TextureChannelStates.R })}
+                                className={this.state.channels === TextureLineComponent._TextureChannelStates.R ? "red command selected" : "red command"}
+                                onClick={() => this.setState({ channels: TextureLineComponent._TextureChannelStates.R })}
                             >
                                 R
                             </button>
                             <button
-                                className={this.state.channels === TextureLineComponent.TextureChannelStates.G ? "green command selected" : "green command"}
-                                onClick={() => this.setState({ channels: TextureLineComponent.TextureChannelStates.G })}
+                                className={this.state.channels === TextureLineComponent._TextureChannelStates.G ? "green command selected" : "green command"}
+                                onClick={() => this.setState({ channels: TextureLineComponent._TextureChannelStates.G })}
                             >
                                 G
                             </button>
                             <button
-                                className={this.state.channels === TextureLineComponent.TextureChannelStates.B ? "blue command selected" : "blue command"}
-                                onClick={() => this.setState({ channels: TextureLineComponent.TextureChannelStates.B })}
+                                className={this.state.channels === TextureLineComponent._TextureChannelStates.B ? "blue command selected" : "blue command"}
+                                onClick={() => this.setState({ channels: TextureLineComponent._TextureChannelStates.B })}
                             >
                                 B
                             </button>
                             <button
-                                className={this.state.channels === TextureLineComponent.TextureChannelStates.A ? "alpha command selected" : "alpha command"}
-                                onClick={() => this.setState({ channels: TextureLineComponent.TextureChannelStates.A })}
+                                className={this.state.channels === TextureLineComponent._TextureChannelStates.A ? "alpha command selected" : "alpha command"}
+                                onClick={() => this.setState({ channels: TextureLineComponent._TextureChannelStates.A })}
                             >
                                 A
                             </button>
                             <button
-                                className={this.state.channels === TextureLineComponent.TextureChannelStates.ALL ? "all command selected" : "all command"}
-                                onClick={() => this.setState({ channels: TextureLineComponent.TextureChannelStates.ALL })}
+                                className={this.state.channels === TextureLineComponent._TextureChannelStates.ALL ? "all command selected" : "all command"}
+                                onClick={() => this.setState({ channels: TextureLineComponent._TextureChannelStates.ALL })}
                             >
                                 ALL
                             </button>
                         </div>
                     )}
-                    <canvas ref={this.canvasRef} className="preview" />
+                    <canvas ref={this._canvasRef} className="preview" />
                 </div>
                 {texture.isRenderTarget && (
                     <ButtonLineComponent

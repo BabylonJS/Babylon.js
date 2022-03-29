@@ -1,8 +1,9 @@
-import { Scene } from "../../scene";
-import { Vector3, Vector4 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * Creates lathe mesh.
@@ -21,7 +22,6 @@ import { Nullable } from "../../types";
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
- * @param scene defines the hosting scene
  * @param options.radius
  * @param options.tessellation
  * @param options.clip
@@ -33,6 +33,7 @@ import { Nullable } from "../../types";
  * @param options.backUVs
  * @param options.cap
  * @param options.invertUV
+ * @param scene defines the hosting scene
  * @returns the lathe mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#lathe
  */
@@ -71,9 +72,9 @@ export function CreateLathe(
     let p = 0;
     const step = (pi2 / tessellation) * arc;
     let rotated;
-    var path = new Array<Vector3>();
+    let path: Array<Vector3>;
     for (i = 0; i <= tessellation - clip; i++) {
-        var path: Vector3[] = [];
+        path = [];
         if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
             path.push(new Vector3(0, shape[0].y, 0));
             path.push(new Vector3(Math.cos(i * step) * shape[0].x * radius, shape[0].y, Math.sin(i * step) * shape[0].x * radius));
@@ -103,6 +104,7 @@ export function CreateLathe(
  * @deprecated use the function direction from the module
  */
 export const LatheBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateLathe,
 };
 

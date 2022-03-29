@@ -1,9 +1,7 @@
 import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Nullable } from "core/types";
-import { Measure } from "../measure";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -160,7 +158,7 @@ export class DisplayGrid extends Control {
         super(name);
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -182,7 +180,7 @@ export class DisplayGrid extends Control {
                 context.strokeStyle = this._minorLineColor;
                 context.lineWidth = this._minorLineTickness;
 
-                for (var x = -cellCountX / 2 + 1; x < cellCountX / 2; x++) {
+                for (let x = -cellCountX / 2 + 1; x < cellCountX / 2; x++) {
                     const cellX = left + x * this.cellWidth;
 
                     context.beginPath();
@@ -192,7 +190,7 @@ export class DisplayGrid extends Control {
                     context.stroke();
                 }
 
-                for (var y = -cellCountY / 2 + 1; y < cellCountY / 2; y++) {
+                for (let y = -cellCountY / 2 + 1; y < cellCountY / 2; y++) {
                     const cellY = top + y * this.cellHeight;
 
                     context.beginPath();
@@ -207,7 +205,7 @@ export class DisplayGrid extends Control {
                 context.strokeStyle = this._majorLineColor;
                 context.lineWidth = this._majorLineTickness;
 
-                for (var x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
+                for (let x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
                     const cellX = left + x * this.cellWidth;
 
                     context.beginPath();
@@ -216,7 +214,7 @@ export class DisplayGrid extends Control {
                     context.stroke();
                 }
 
-                for (var y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
+                for (let y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
                     const cellY = top + y * this.cellHeight;
                     context.moveTo(this._currentMeasure.left, cellY);
                     context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);

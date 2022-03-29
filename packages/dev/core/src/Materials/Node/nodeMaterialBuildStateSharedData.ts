@@ -1,14 +1,14 @@
-import { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
-import { NodeMaterialBlock } from "./nodeMaterialBlock";
-import { InputBlock } from "./Blocks/Input/inputBlock";
-import { TextureBlock } from "./Blocks/Dual/textureBlock";
-import { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
-import { RefractionBlock } from "./Blocks/PBR/refractionBlock";
-import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
-import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
-import { Scene } from "../../scene";
-import { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
-import { Immutable } from "../../types";
+import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import type { InputBlock } from "./Blocks/Input/inputBlock";
+import type { TextureBlock } from "./Blocks/Dual/textureBlock";
+import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
+import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
+import type { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
+import type { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
+import type { Scene } from "../../scene";
+import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
+import type { Immutable } from "../../types";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState

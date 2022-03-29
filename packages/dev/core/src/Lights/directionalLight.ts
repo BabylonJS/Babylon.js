@@ -1,12 +1,12 @@
 import { serialize } from "../Misc/decorators";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { Effect } from "../Materials/effect";
+import type { Effect } from "../Materials/effect";
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
 });
@@ -322,6 +322,7 @@ export class DirectionalLight extends ShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getDepthMinZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         return !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
@@ -336,6 +337,7 @@ export class DirectionalLight extends ShadowLight {
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getDepthMaxZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;

@@ -1,17 +1,17 @@
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { GlobalState, ISelectionChangedOptions } from "../globalState";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { GraphCanvasComponent } from "./graphCanvas";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GlobalState, ISelectionChangedOptions } from "../globalState";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { GraphCanvasComponent } from "./graphCanvas";
 import { PropertyLedger } from "./propertyLedger";
 import * as React from "react";
 import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent";
 import { DisplayLedger } from "./displayLedger";
-import { IDisplayManager } from "./display/displayManager";
-import { NodeLink } from "./nodeLink";
+import type { IDisplayManager } from "./display/displayManager";
+import type { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
-import { GraphFrame } from "./graphFrame";
+import type { GraphFrame } from "./graphFrame";
 
 import triangle from "../imgs/triangle.svg";
 
@@ -234,7 +234,7 @@ export class GraphNode {
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
-        for (var port of this._inputPorts) {
+        for (const port of this._inputPorts) {
             const attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
@@ -242,7 +242,7 @@ export class GraphNode {
             }
         }
 
-        for (var port of this._outputPorts) {
+        for (const port of this._outputPorts) {
             const attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
@@ -292,11 +292,11 @@ export class GraphNode {
             this._header.innerHTML = this.block.name;
         }
 
-        for (var port of this._inputPorts) {
+        for (const port of this._inputPorts) {
             port.refresh();
         }
 
-        for (var port of this._outputPorts) {
+        for (const port of this._outputPorts) {
             port.refresh();
         }
 
@@ -492,11 +492,11 @@ export class GraphNode {
             this._globalState.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
         }
 
-        for (var port of this._inputPorts) {
+        for (const port of this._inputPorts) {
             port.dispose();
         }
 
-        for (var port of this._outputPorts) {
+        for (const port of this._outputPorts) {
             port.dispose();
         }
 

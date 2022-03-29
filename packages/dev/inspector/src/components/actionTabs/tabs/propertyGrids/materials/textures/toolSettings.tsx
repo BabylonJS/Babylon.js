@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ITool } from "./toolBar";
+import type { ITool } from "./toolBar";
 
 interface IToolSettingsProps {
     tool: ITool | undefined;

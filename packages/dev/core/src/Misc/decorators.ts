@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Tags } from "../Misc/tags";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { _WarnImport } from "./devTools";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { Color4, Color3 } from "../Maths/math.color";
 
 declare type Scene = import("../scene").Scene;
@@ -70,8 +72,7 @@ function getDirectStore(target: any): any {
 
 /**
  * Return the list of properties flagged as serializable
- * @param target: host object
- * @param target
+ * @param target host object
  */
 function getMergedStore(target: any): any {
     const classKey = target.getClassName();

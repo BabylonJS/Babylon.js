@@ -1,8 +1,8 @@
-import { Nullable } from "../types";
-import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
-import { Color3, Color4 } from "../Maths/math.color";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import {
+import type { Nullable } from "../types";
+import type { Vector2, Vector3, Matrix } from "../Maths/math.vector";
+import type { Color3, Color4 } from "../Maths/math.color";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type {
     BoxParticleEmitter,
     IParticleEmitterType,
     PointParticleEmitter,
@@ -11,11 +11,12 @@ import {
     SphereDirectedParticleEmitter,
     CylinderParticleEmitter,
     ConeParticleEmitter,
+    // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
-import { Scene } from "../scene";
-import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
-import { Effect } from "../Materials/effect";
-import { Observable } from "../Misc/observable";
+import type { Scene } from "../scene";
+import type { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
+import type { Effect } from "../Materials/effect";
+import type { Observable } from "../Misc/observable";
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -190,7 +191,7 @@ export interface IParticleSystem {
      */
     endSpriteCellID: number;
     /**
-     * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+     * If using a spritesheet (isAnimationSheetEnabled), defines whether the sprite animation is looping
      */
     spriteCellLoop: boolean;
     /**

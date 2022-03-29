@@ -1,17 +1,19 @@
 import { Logger } from "../Misc/logger";
-import { Observable, Observer } from "../Misc/observable";
-import { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { Gizmo, GizmoAxisCache } from "./gizmo";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
+import type { GizmoAxisCache } from "./gizmo";
+import { Gizmo } from "./gizmo";
 import { PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Node } from "../node";
-import { PointerInfo } from "../Events/pointerEvents";
-import { TransformNode } from "../Meshes/transformNode";
-import { GizmoManager } from "./gizmoManager";
+import type { Node } from "../node";
+import type { PointerInfo } from "../Events/pointerEvents";
+import type { TransformNode } from "../Meshes/transformNode";
+import type { GizmoManager } from "./gizmoManager";
 
 /**
  * Options for each individual plane rotation gizmo contained within RotationGizmo
@@ -241,9 +243,8 @@ export class RotationGizmo extends Gizmo {
 
     /**
      * CustomMeshes are not supported by this gizmo
-     * @param mesh The mesh to replace the default mesh of the gizmo
      */
-    public setCustomMesh(mesh: Mesh) {
+    public setCustomMesh() {
         Logger.Error(
             "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)"
         );

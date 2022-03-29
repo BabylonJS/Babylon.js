@@ -1,4 +1,4 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Epsilon } from "core/Maths/math.constants";
 

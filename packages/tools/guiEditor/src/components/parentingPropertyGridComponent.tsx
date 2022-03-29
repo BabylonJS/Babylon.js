@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { Observable } from "core/Misc/observable";
-import { Grid } from "gui/2D/controls/grid";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
 import { Vector2 } from "core/Maths/math.vector";
 
@@ -30,7 +30,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     }
 
     getCellInfo() {
-        const cellInfo = Tools.getCellInfo(this.props.control.parent as Grid, this.props.control);
+        const cellInfo = Tools.GetCellInfo(this.props.control.parent as Grid, this.props.control);
         this._rowNumber = cellInfo.x;
         this._columnNumber = cellInfo.y;
     }
@@ -38,7 +38,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     private _changeCell(grid: Grid, draggedControl: Control, newCell: Vector2) {
         const index = grid.children.indexOf(draggedControl);
         grid.removeControl(draggedControl);
-        Tools.reorderGrid(grid, index, draggedControl, newCell);
+        Tools.ReorderGrid(grid, index, draggedControl, newCell);
     }
 
     render() {
@@ -56,7 +56,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         isInteger={true}
                         min={0}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
+                        onChange={() => {
                             this.updateGridPosition();
                         }}
                     />
@@ -68,7 +68,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
                         isInteger={true}
                         min={0}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={(newValue) => {
+                        onChange={() => {
                             this.updateGridPosition();
                         }}
                     />

@@ -1,4 +1,4 @@
-import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import type { NodeMaterialBlock } from "../nodeMaterialBlock";
 
 /**
  * Root class for all node material optimizers
@@ -6,10 +6,10 @@ import { NodeMaterialBlock } from "../nodeMaterialBlock";
 export class NodeMaterialOptimizer {
     /**
      * Function used to optimize a NodeMaterial graph
-     * @param vertexOutputNodes defines the list of output nodes for the vertex shader
-     * @param fragmentOutputNodes defines the list of output nodes for the fragment shader
+     * @param _vertexOutputNodes defines the list of output nodes for the vertex shader
+     * @param _fragmentOutputNodes defines the list of output nodes for the fragment shader
      */
-    public optimize(vertexOutputNodes: NodeMaterialBlock[], fragmentOutputNodes: NodeMaterialBlock[]) {
+    public optimize(_vertexOutputNodes: NodeMaterialBlock[], _fragmentOutputNodes: NodeMaterialBlock[]) {
         // Do nothing by default
     }
 }

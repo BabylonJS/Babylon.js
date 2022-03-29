@@ -1,4 +1,4 @@
-import { ProcessingOptions } from "./shaderProcessingOptions";
+import type { ProcessingOptions } from "./shaderProcessingOptions";
 import { StartsWith } from "../../Misc/stringTools";
 
 /** @hidden */
@@ -8,6 +8,7 @@ export class ShaderCodeNode {
     additionalDefineKey?: string;
     additionalDefineValue?: string;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isValid(preprocessors: { [key: string]: string }): boolean {
         return true;
     }

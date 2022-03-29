@@ -1,18 +1,18 @@
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { Vector2 } from "core/Maths/math";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Vector2 } from "core/Maths/math";
 import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
-import { Image } from "../image";
+import type { Image } from "../image";
 import { Control } from "../control";
-import { Container } from "../container";
-import { Measure } from "../../measure";
-import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
+import type { Container } from "../container";
+import type { Measure } from "../../measure";
+import type { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -524,9 +524,6 @@ export class ScrollViewer extends Rectangle {
     }
 
     public set barImage(value: Image) {
-        if (this._barBackgroundImage === value) {
-        }
-
         this._barBackgroundImage = value;
         const hb = <ImageScrollBar>this._horizontalBar;
         const vb = <ImageScrollBar>this._verticalBar;
@@ -540,9 +537,6 @@ export class ScrollViewer extends Rectangle {
     }
 
     public set horizontalBarImage(value: Image) {
-        if (this._horizontalBarBackgroundImage === value) {
-        }
-
         this._horizontalBarBackgroundImage = value;
         const hb = <ImageScrollBar>this._horizontalBar;
         hb.backgroundImage = value;
@@ -554,9 +548,6 @@ export class ScrollViewer extends Rectangle {
     }
 
     public set verticalBarImage(value: Image) {
-        if (this._verticalBarBackgroundImage === value) {
-        }
-
         this._verticalBarBackgroundImage = value;
         const vb = <ImageScrollBar>this._verticalBar;
         vb.backgroundImage = value;
@@ -658,7 +649,7 @@ export class ScrollViewer extends Rectangle {
 
         barContainer.addControl(barControl);
 
-        barControl.onValueChangedObservable.add((value) => {
+        barControl.onValueChangedObservable.add(() => {
             this._setWindowPosition();
         });
     }

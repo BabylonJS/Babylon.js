@@ -1,16 +1,17 @@
-import { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
-import { Matrix, Vector3 } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
+import type { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
+import type { Matrix, Vector3 } from "../Maths/math.vector";
+import type { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
-import { Effect } from "../Materials/effect";
+import type { ICullable } from "../Culling/boundingInfo";
+import { BoundingInfo } from "../Culling/boundingInfo";
+import type { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMaxIndexed } from "../Maths/math.functions";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { IMaterialContext } from "../Engines/IMaterialContext";
+import type { IMaterialContext } from "../Engines/IMaterialContext";
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -232,6 +233,7 @@ export class SubMesh implements ICullable {
      * Returns true if this submesh covers the entire parent mesh
      * @ignorenaming
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get IsGlobal(): boolean {
         return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices();
     }
@@ -301,7 +303,7 @@ export class SubMesh implements ICullable {
 
         if (rootMaterial === null || rootMaterial === undefined) {
             return this._mesh.getScene().defaultMaterial;
-        } else if (this._IsMultiMaterial(rootMaterial)) {
+        } else if (this._isMultiMaterial(rootMaterial)) {
             const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 
             if (this._currentMaterial !== effectiveMaterial) {
@@ -315,7 +317,7 @@ export class SubMesh implements ICullable {
         return rootMaterial;
     }
 
-    private _IsMultiMaterial(material: Material): material is MultiMaterial {
+    private _isMultiMaterial(material: Material): material is MultiMaterial {
         return (material as MultiMaterial).getSubMaterial !== undefined;
     }
 

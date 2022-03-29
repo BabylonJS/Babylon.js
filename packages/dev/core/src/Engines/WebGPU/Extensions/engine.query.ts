@@ -1,4 +1,4 @@
-import { OcclusionQuery } from "../../Extensions/engine.query";
+import type { OcclusionQuery } from "../../Extensions/engine.query";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
 
@@ -46,7 +46,7 @@ WebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, qu
     return false;
 };
 
-WebGPUEngine.prototype.endOcclusionQuery = function (algorithmType: number): WebGPUEngine {
+WebGPUEngine.prototype.endOcclusionQuery = function (): WebGPUEngine {
     if (this.compatibilityMode) {
         this._currentRenderPass?.endOcclusionQuery();
     } else {

@@ -43,19 +43,20 @@ export class GUINodeTools {
                 return element;
             case "Ellipse":
                 element = new Ellipse("Ellipse");
-                element.color = "#cccccc";
+                element.color = "#000000";
+                element.background = "#cccccc";
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
             case "Rectangle":
                 element = new Rectangle("Rectangle");
-                element.color = "#cccccc";
-                element.background = "transparent";
+                element.color = "#000000";
+                element.background = "#cccccc";
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;
             case "Line":
-                element = new Line();
+                element = new Line("Line");
                 element.x1 = 0;
                 element.y1 = 1024;
                 element.y2 = 512;
@@ -65,7 +66,7 @@ export class GUINodeTools {
                 element.isHitTestVisible = true;
                 element.color = "#000000";
                 return element;
-            case "Text":
+            case "TextBlock":
                 element = new TextBlock("Textblock");
                 element.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sed.";
                 element.color = "#000000";
@@ -159,7 +160,7 @@ export class GUINodeTools {
                 element.color = "#CCCCCC";
                 element.background = "#333333";
                 return element;
-            default:
+            case "Button":
                 element = Button.CreateSimpleButton("Button", "Click Me");
                 element.background = "#333333";
                 element.color = "#ffffff";
@@ -167,6 +168,8 @@ export class GUINodeTools {
                 element.width = "120px";
                 element.height = "40px";
                 return element;
+            default:
+                throw "Error: control type not recognized";
         }
     }
 }

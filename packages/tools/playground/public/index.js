@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // Version
 var Versions = {
     Latest: [
@@ -71,15 +72,28 @@ var Versions = {
     ],
 };
 
+const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
-        let script = document.createElement("script");
+        const script = document.createElement("script");
         script.src = url;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
             }
         };
+        script.onerror = () => {
+            // fallback
+            const fallbackScript = document.createElement("script");
+            fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
+            fallbackScript.onload = () => {
+                if (!instantResolve) {
+                    resolve();
+                }
+            }
+            document.head.appendChild(fallbackScript);
+        }
         document.head.appendChild(script);
         if (instantResolve) {
             resolve();
@@ -108,11 +122,37 @@ let checkBabylonVersionAsync = function () {
     let activeVersion = readStringFromStore("version", "Latest");
 
     if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {
+        console.log("Using local version. To use preview add ?dist=true to the url");
         activeVersion = "local";
     }
 
+    let snapshot = "";
+    // see if a snapshot should be used
+    if (window.location.search.indexOf("snapshot=") !== -1) {
+        snapshot = window.location.search.split("=")[1];
+        // cleanup, just in case
+        snapshot = snapshot.split("&")[0];
+        activeVersion = "Latest";
+    }
+
+    let versions = Versions[activeVersion] || Versions["Latest"];
+    if (snapshot) {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    } else if (window.location.href.includes("debug.html") && activeVersion === "Latest") {
+        versions = versions.map((v) => {
+            if (!v.includes("https://preview.babylonjs.com")) {
+                return v;
+            }
+            if (v.includes(".min")) {
+                return v.replace(".min", "");
+            } else {
+                return v.replace(".js", ".max.js");
+            }
+        });
+    }
+
     return new Promise((resolve) => {
-        loadInSequence(Versions[activeVersion], 0, resolve);
+        loadInSequence(versions, 0, resolve);
     });
 };
 
@@ -120,9 +160,9 @@ checkBabylonVersionAsync().then(() => {
     loadScriptAsync("babylon.playground.js").then(() => {
         var hostElement = document.getElementById("host-element");
         let mode = undefined;
-        if(window.location.href.includes("full.html")) {
+        if (window.location.href.includes("full.html")) {
             mode = 1;
-        } else if(window.location.href.includes("frame.html")) {
+        } else if (window.location.href.includes("frame.html")) {
             mode = 2;
         }
         // eslint-disable-next-line no-undef

@@ -1,8 +1,8 @@
-import { Vector3, Matrix } from "../../Maths/math.vector";
-import { Particle } from "../../Particles/particle";
-import { Nullable } from "../../types";
-import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { Vector3, Matrix } from "../../Maths/math.vector";
+import type { Particle } from "../../Particles/particle";
+import type { Nullable } from "../../types";
+import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 
 declare type Scene = import("../../scene").Scene;
 

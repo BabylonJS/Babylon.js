@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
@@ -11,11 +11,11 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
-import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
+import type { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
@@ -38,6 +38,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube, textureIsPrefiltered: true };
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.block !== this.props.block) {
             const texture = (nextProps.block as AnyTexture).texture as BaseTexture;
@@ -48,7 +49,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     private _generateRandomForCache() {
-        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, (c) => {
+        return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, () => {
             const r = (Math.random() * 10) | 0;
             return r.toString();
         });

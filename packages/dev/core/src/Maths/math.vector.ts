@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
-import { Viewport } from "./math.viewport";
-import { DeepImmutable, Nullable, FloatArray, float } from "../types";
+import type { Viewport } from "./math.viewport";
+import type { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { IPlaneLike } from "./math.like";
+import type { IPlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
-import { Plane } from "./math.plane";
+import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 
 type TransformNode = import("../Meshes/transformNode").TransformNode;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
@@ -666,7 +668,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors
+     * Gets a new Vector2 set with the maximal coordinate values from the "left" and "right" vectors
      * @param left defines 1st vector
      * @param right defines 2nd vector
      * @returns a new Vector2
@@ -709,7 +711,7 @@ export class Vector2 {
      * @param p0 defines 1st triangle point
      * @param p1 defines 2nd triangle point
      * @param p2 defines 3rd triangle point
-     * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
+     * @returns true if the point "p" is in the triangle defined by the vectors "p0", "p1", "p2"
      */
     public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>) {
         const a = (1 / 2) * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
@@ -785,7 +787,7 @@ export class Vector2 {
 /**
  * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
- * It can represent etiher the coordinates of a point the space, either a direction
+ * It can represent either the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
  */
 export class Vector3 {
@@ -1092,8 +1094,8 @@ export class Vector3 {
 
     /**
      * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
-     * @param origin defines the origin of the projection ray
      * @param plane defines the plane to project to
+     * @param origin defines the origin of the projection ray
      * @returns the projected vector3
      */
     public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
@@ -1106,8 +1108,8 @@ export class Vector3 {
 
     /**
      * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
-     * @param origin defines the origin of the projection ray
      * @param plane defines the plane to project to
+     * @param origin defines the origin of the projection ray
      * @param result defines the Vector3 where to store the result
      */
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
@@ -1196,7 +1198,7 @@ export class Vector3 {
     }
 
     /**
-     * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the given floats
+     * Returns a new Vector3 set with the result of the multiplication of the current Vector3 coordinates by the given floats
      * @param x defines the x coordinate of the operand
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
@@ -1599,15 +1601,13 @@ export class Vector3 {
         slerp = Scalar.Clamp(slerp, 0, 1);
         const vector0Dir = MathTmp.Vector3[0];
         const vector1Dir = MathTmp.Vector3[1];
-        let vector0Length;
-        let vector1Length;
 
         vector0Dir.copyFrom(vector0);
-        vector0Length = vector0Dir.length();
+        const vector0Length = vector0Dir.length();
         vector0Dir.normalizeFromLength(vector0Length);
 
         vector1Dir.copyFrom(vector1);
-        vector1Length = vector1Dir.length();
+        const vector1Length = vector1Dir.length();
         vector1Dir.normalizeFromLength(vector1Length);
 
         const dot = Vector3.Dot(vector0Dir, vector1Dir);
@@ -1803,7 +1803,7 @@ export class Vector3 {
 
     /**
      * Returns a new Vector3 set with the result of the transformation by the given matrix of the given vector.
-     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @returns the transformed Vector3
@@ -1816,7 +1816,7 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
-     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
@@ -1827,7 +1827,7 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
-     * This method computes tranformed coordinates only, not transformed direction vectors
+     * This method computes transformed coordinates only, not transformed direction vectors
      * @param x define the x coordinate of the source vector
      * @param y define the y coordinate of the source vector
      * @param z define the z coordinate of the source vector
@@ -2430,21 +2430,20 @@ export class Vector3 {
         // Determines which edge of the triangle is closest to "proj"
         const projP = MathTmp.Vector3[9];
         let dot;
-        let s0, s1, s2;
         projP.copyFrom(proj).subtractInPlace(p0);
         Vector3.CrossToRef(v0, projP, tmp);
         dot = Vector3.Dot(tmp, normal);
-        s0 = dot;
+        const s0 = dot;
 
         projP.copyFrom(proj).subtractInPlace(p1);
         Vector3.CrossToRef(v1, projP, tmp);
         dot = Vector3.Dot(tmp, normal);
-        s1 = dot;
+        const s1 = dot;
 
         projP.copyFrom(proj).subtractInPlace(p2);
         Vector3.CrossToRef(v2, projP, tmp);
         dot = Vector3.Dot(tmp, normal);
-        s2 = dot;
+        const s2 = dot;
 
         const edge = MathTmp.Vector3[10];
         let e0, e1;
@@ -4346,8 +4345,8 @@ export class Matrix {
         return PerformanceConfigurator.MatrixUse64Bits;
     }
 
-    private static _updateFlagSeed = 0;
-    private static _identityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
+    private static _UpdateFlagSeed = 0;
+    private static _IdentityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
 
     private _isIdentity = false;
     private _isIdentityDirty = true;
@@ -4373,7 +4372,7 @@ export class Matrix {
      * Update the updateFlag to indicate that the matrix has been updated
      */
     public markAsUpdated() {
-        this.updateFlag = Matrix._updateFlagSeed++;
+        this.updateFlag = Matrix._UpdateFlagSeed++;
         this._isIdentity = false;
         this._isIdentity3x2 = false;
         this._isIdentityDirty = true;
@@ -5304,7 +5303,7 @@ export class Matrix {
      * Gets an identity matrix that must not be updated
      */
     public static get IdentityReadOnly(): DeepImmutable<Matrix> {
-        return Matrix._identityReadOnly;
+        return Matrix._IdentityReadOnly;
     }
 
     /**
@@ -6387,12 +6386,12 @@ export class Matrix {
      * Stores a perspective projection for WebVR info a given matrix
      * @param fov defines the field of view
      * @param fov.upDegrees
-     * @param znear defines the near clip plane
      * @param fov.downDegrees
-     * @param zfar defines the far clip plane
      * @param fov.leftDegrees
-     * @param result defines the target matrix
      * @param fov.rightDegrees
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param result defines the target matrix
      * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)

@@ -1,9 +1,10 @@
-import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { ThinEngine } from "../Engines/thinEngine";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import { Tools } from "./tools";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 declare let KTX2DECODER: any;
 
@@ -325,7 +326,7 @@ function workerFunc(): void {
             return;
         }
         switch (event.data.action) {
-            case "init":
+            case "init": {
                 const urls = event.data.urls;
                 importScripts(urls.jsDecoderModule);
                 if (urls.wasmUASTCToASTC !== null) {
@@ -352,6 +353,7 @@ function workerFunc(): void {
                 ktx2Decoder = new KTX2DECODER.KTX2Decoder();
                 postMessage({ action: "init" });
                 break;
+            }
             case "decode":
                 ktx2Decoder
                     .decode(event.data.data, event.data.caps, event.data.options)

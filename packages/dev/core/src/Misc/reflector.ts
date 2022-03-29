@@ -1,4 +1,4 @@
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Logger } from "./logger";
 import { SceneSerializer } from "./sceneSerializer";
 import { StartsWith } from "./stringTools";
@@ -8,7 +8,7 @@ import { StartsWith } from "./stringTools";
  * @since 5.0.0
  */
 export class Reflector {
-    private static readonly SERVER_PREFIX = "$$";
+    private static readonly _SERVER_PREFIX = "$$";
 
     private _scene: Scene;
     private _webSocket: WebSocket;
@@ -27,14 +27,14 @@ export class Reflector {
 
         this._webSocket.onmessage = (event) => {
             const message: string = event.data;
-            if (StartsWith(message, Reflector.SERVER_PREFIX)) {
-                const serverMessage = message.substr(Reflector.SERVER_PREFIX.length);
+            if (StartsWith(message, Reflector._SERVER_PREFIX)) {
+                const serverMessage = message.substr(Reflector._SERVER_PREFIX.length);
                 Logger.Log(`[Reflector] Received server message: ${serverMessage.substr(0, 64)}`);
                 this._handleServerMessage(serverMessage);
                 return;
             } else {
                 Logger.Log(`[Reflector] Received client message: ${message.substr(0, 64)}`);
-                this._handleClientMessage(message);
+                this._handleClientMessage();
             }
         };
 
@@ -61,7 +61,7 @@ export class Reflector {
         }
     }
 
-    private _handleClientMessage(message: string): void {
+    private _handleClientMessage(): void {
         // do nothing
     }
 }

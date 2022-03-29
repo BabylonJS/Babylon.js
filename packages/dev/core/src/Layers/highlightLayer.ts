@@ -1,19 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { Effect } from "../Materials/effect";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
+import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { PostProcess, PostProcessOptions } from "../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../PostProcesses/postProcess";
+import { PostProcess } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
@@ -26,6 +29,7 @@ import { Color4, Color3 } from "../Maths/math.color";
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Shaders/glowBlurPostProcess.fragment";
+import "../Layers/effectLayerSceneComponent";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -472,8 +476,7 @@ export class HighlightLayer extends EffectLayer {
     /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
-     * @param useInstances specify wether or not to use instances to render the mesh
-     * @param emissiveTexture the associated emissive texture used to generate the glow
+     * @param useInstances specify whether or not to use instances to render the mesh
      * @return true if ready otherwise, false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
@@ -750,7 +753,7 @@ export class HighlightLayer extends EffectLayer {
         }
 
         for (const uniqueId in this._meshes) {
-            if (this._meshes.hasOwnProperty(uniqueId)) {
+            if (Object.prototype.hasOwnProperty.call(this._meshes, uniqueId)) {
                 const mesh = this._meshes[uniqueId];
                 if (mesh) {
                     this.removeMesh(mesh.mesh);
@@ -880,7 +883,7 @@ export class HighlightLayer extends EffectLayer {
 
         // Excluded meshes
         for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
-            var mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
+            const mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
             if (mesh) {
                 hl.addExcludedMesh(<Mesh>mesh);
             }
@@ -889,7 +892,7 @@ export class HighlightLayer extends EffectLayer {
         // Included meshes
         for (index = 0; index < parsedHightlightLayer.meshes.length; index++) {
             const highlightedMesh = parsedHightlightLayer.meshes[index];
-            var mesh = scene.getMeshById(highlightedMesh.meshId);
+            const mesh = scene.getMeshById(highlightedMesh.meshId);
 
             if (mesh) {
                 hl.addMesh(<Mesh>mesh, Color3.FromArray(highlightedMesh.color), highlightedMesh.glowEmissiveOnly);

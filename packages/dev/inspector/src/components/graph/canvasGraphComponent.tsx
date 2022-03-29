@@ -1,11 +1,11 @@
-import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import { Observable } from "core/Misc/observable";
+import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import type { Observable } from "core/Misc/observable";
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import { CanvasGraphService } from "./canvasGraphService";
-import { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
-import { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import { Scene } from "core/scene";
+import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import type { Scene } from "core/scene";
 
 interface ICanvasGraphComponentProps {
     id: string;

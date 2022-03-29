@@ -1,11 +1,12 @@
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
+// eslint-disable-next-line import/no-internal-modules
 import { isUrl, camelToKebab, kebabToCamel, deepmerge } from "../helper/index";
 
 import * as Handlebars from "handlebars/dist/handlebars";
 import { EventManager } from "./eventManager";
-import { ITemplateConfiguration } from "../configuration/interfaces/templateConfiguration";
-import { IFileRequest } from "core/Misc/fileRequest";
+import type { ITemplateConfiguration } from "../configuration/interfaces/templateConfiguration";
+import type { IFileRequest } from "core/Misc/fileRequest";
 
 /**
  * The object sent when an event is triggered
@@ -48,7 +49,7 @@ export class TemplateManager {
      */
     public eventManager: EventManager;
 
-    private templates: { [name: string]: Template };
+    private _templates: { [name: string]: Template };
 
     constructor(public containerElement: Element) {
         this.templates = {};
@@ -69,8 +70,9 @@ export class TemplateManager {
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
         const internalInit = (dependencyMap, name: string, parentTemplate?: Template) => {
             //init template
-            const template = this.templates[name];
+            const template = this._templates[name];
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const childrenTemplates = Object.keys(dependencyMap).map((childName) => {
                 return internalInit(dependencyMap[childName], childName, template);
             });
@@ -98,7 +100,7 @@ export class TemplateManager {
 
         //build the html tree
         return this._buildHTMLTree(templates).then((htmlTree) => {
-            if (this.templates["main"]) {
+            if (this._templates["main"]) {
                 internalInit(htmlTree, "main");
             } else {
                 this._checkLoadedState();
@@ -132,7 +134,7 @@ export class TemplateManager {
             this.onTemplateInit.notifyObservers(template);
             // make sure the global onEventTriggered is called as well
             template.onEventTriggered.add((eventData) => this.onEventTriggered.notifyObservers(eventData));
-            this.templates[name] = template;
+            this._templates[name] = template;
             return template.initPromise;
         });
 
@@ -140,14 +142,14 @@ export class TemplateManager {
             const templateStructure = {};
             // now iterate through all templates and check for children:
             const buildTree = (parentObject, name) => {
-                this.templates[name].isInHtmlTree = true;
-                const childNodes = this.templates[name].getChildElements().filter((n) => !!this.templates[n]);
+                this._templates[name].isInHtmlTree = true;
+                const childNodes = this._templates[name].getChildElements().filter((n) => !!this._templates[n]);
                 childNodes.forEach((element) => {
                     parentObject[element] = {};
                     buildTree(parentObject[element], element);
                 });
             };
-            if (this.templates["main"]) {
+            if (this._templates["main"]) {
                 buildTree(templateStructure, "main");
             }
             return templateStructure;
@@ -167,14 +169,14 @@ export class TemplateManager {
      * @param name the name of the template to load
      */
     public getTemplate(name: string): Template | undefined {
-        return this.templates[name];
+        return this._templates[name];
     }
 
     private _checkLoadedState() {
         const done =
-            Object.keys(this.templates).length === 0 ||
-            Object.keys(this.templates).every((key) => {
-                return (this.templates[key].isLoaded && !!this.templates[key].parent) || !this.templates[key].isInHtmlTree;
+            Object.keys(this._templates).length === 0 ||
+            Object.keys(this._templates).every((key) => {
+                return (this._templates[key].isLoaded && !!this._templates[key].parent) || !this._templates[key].isInHtmlTree;
             });
 
         if (done) {
@@ -187,10 +189,10 @@ export class TemplateManager {
      */
     public dispose() {
         // dispose all templates
-        Object.keys(this.templates).forEach((template) => {
-            this.templates[template].dispose();
+        Object.keys(this._templates).forEach((template) => {
+            this._templates[template].dispose();
         });
-        this.templates = {};
+        this._templates = {};
         this.eventManager.dispose();
 
         this.onTemplateInit.clear();
@@ -306,7 +308,7 @@ export class Template {
     private _htmlTemplate: string;
     private _rawHtml: string;
 
-    private loadRequests: Array<IFileRequest>;
+    private _loadRequests: Array<IFileRequest>;
 
     constructor(public name: string, private _configuration: ITemplateConfiguration) {
         this.onLoaded = new Observable<Template>();
@@ -316,7 +318,7 @@ export class Template {
         this.onParamsUpdated = new Observable<Template>();
         this.onHTMLRendered = new Observable<Template>();
 
-        this.loadRequests = [];
+        this._loadRequests = [];
 
         this.isLoaded = false;
         this.isShown = false;
@@ -461,7 +463,7 @@ export class Template {
 
     /**
      * Show the template using the provided visibilityFunction, or natively using display: flex.
-     * The provided function returns a promise that should be fullfilled when the element is shown.
+     * The provided function returns a promise that should be fulfilled when the element is shown.
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
      * @param visibilityFunction The function to execute to show the template.
@@ -495,7 +497,7 @@ export class Template {
 
     /**
      * Hide the template using the provided visibilityFunction, or natively using display: none.
-     * The provided function returns a promise that should be fullfilled when the element is hidden.
+     * The provided function returns a promise that should be fulfilled when the element is hidden.
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
      * @param visibilityFunction The function to execute to show the template.
@@ -539,7 +541,7 @@ export class Template {
             //noop
         }
 
-        this.loadRequests.forEach((request) => {
+        this._loadRequests.forEach((request) => {
             request.abort();
         });
 
@@ -571,7 +573,7 @@ export class Template {
                             reject(error);
                         }
                     );
-                    this.loadRequests.push(fileRequest);
+                    this._loadRequests.push(fileRequest);
                 });
             } else {
                 location = location.replace("#", "");

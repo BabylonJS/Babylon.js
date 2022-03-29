@@ -1,6 +1,6 @@
-import { Nullable, IndicesArray } from "../types";
+import type { Nullable, IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Plane } from "../Maths/math.plane";
 
 const intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
@@ -341,7 +341,7 @@ export class Collider {
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
-                var f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
+                const f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
 
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;
@@ -362,7 +362,7 @@ export class Collider {
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
-                f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
+                const f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
 
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;
@@ -384,7 +384,7 @@ export class Collider {
 
             lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
-                f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
+                const f = (edgeDotVelocity * lowestRoot.root - edgeDotBaseToVertex) / edgeSquaredLength;
 
                 if (f >= 0.0 && f <= 1.0) {
                     t = lowestRoot.root;

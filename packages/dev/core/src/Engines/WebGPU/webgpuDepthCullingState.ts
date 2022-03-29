@@ -1,5 +1,5 @@
-import { Nullable } from "../../types";
-import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
+import type { Nullable } from "../../types";
+import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { DepthCullingState } from "../../States/depthCullingState";
 
 /**
@@ -135,7 +135,7 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.resetDepthCullingState();
     }
 
-    public apply(gl: WebGLRenderingContext) {
+    public apply() {
         // nothing to do
     }
 }

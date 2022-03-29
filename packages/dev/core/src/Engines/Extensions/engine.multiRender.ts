@@ -1,13 +1,13 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
+import type { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine";
-import { RenderTargetWrapper } from "../renderTargetWrapper";
-import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import type { RenderTargetWrapper } from "../renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
+import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -118,8 +118,8 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, rtWrapper._MSAAFramebuffer);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, rtWrapper._framebuffer);
 
-        for (var i = 0; i < count; i++) {
-            var texture = rtWrapper.textures![i];
+        for (let i = 0; i < count; i++) {
+            const texture = rtWrapper.textures![i];
 
             for (let j = 0; j < count; j++) {
                 attachments[j] = gl.NONE;
@@ -131,15 +131,15 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
             gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
         }
 
-        for (var i = 0; i < count; i++) {
+        for (let i = 0; i < count; i++) {
             attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
         }
 
         gl.drawBuffers(attachments);
     }
 
-    for (var i = 0; i < count; i++) {
-        var texture = rtWrapper.textures![i];
+    for (let i = 0; i < count; i++) {
+        const texture = rtWrapper.textures![i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
             gl.generateMipmap(gl.TEXTURE_2D);

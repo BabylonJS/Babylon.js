@@ -8,7 +8,7 @@ import { viewerGlobals } from "./configuration/globals";
  */
 export function initListeners() {
     document.addEventListener("DOMContentLoaded", init);
-    function init(event) {
+    function init() {
         document.removeEventListener("DOMContentLoaded", init);
         if (viewerGlobals.disableInit) {
             return;
@@ -31,6 +31,7 @@ export function InitTags(selector: string = "babylon") {
         const configMapper = mapperManager.getMapper("dom");
         const config = configMapper.map(element);
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const viewer = new DefaultViewer(element, config);
     }
 }

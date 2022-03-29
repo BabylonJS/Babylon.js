@@ -1,7 +1,8 @@
-import { Vector4, Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
@@ -99,20 +100,20 @@ export function CreateTorusVertexData(options: { diameter?: number; thickness?: 
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.diameter
- * @param scene defines the hosting scene
  * @param options.thickness
  * @param options.tessellation
  * @param options.updatable
  * @param options.sideOrientation
  * @param options.frontUVs
  * @param options.backUVs
+ * @param scene defines the hosting scene
  * @returns the torus mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#torus
  */
 export function CreateTorus(
     name: string,
     options: { diameter?: number; thickness?: number; tessellation?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {},
-    scene: any
+    scene?: Scene
 ): Mesh {
     const torus = new Mesh(name, scene);
 
@@ -131,6 +132,7 @@ export function CreateTorus(
  * @deprecated use CreateTorus instead
  */
 export const TorusBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateTorus,
 };
 

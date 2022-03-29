@@ -17,13 +17,16 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
     }
 
     public render() {
-        let divClassName = this.props.altStyle ? `command-button-alt${this.props.disabled ? "-disabled" : ""}${this.props.isActive ? "-" : ""}` : `command-button `;
+        let divClassName = this.props.altStyle ? `command-button-alt${this.props.disabled ? "-disabled" : ""}${this.props.isActive ? "-" : ""}` : `command-button`;
 
         let iconClassName = `command-button-icon `;
 
         if (this.props.isActive) {
-            divClassName += "active";
-            iconClassName += "active";
+            divClassName += " active";
+            iconClassName += " active";
+        }
+        if (this.props.disabled) {
+            divClassName += " disabled";
         }
 
         return (

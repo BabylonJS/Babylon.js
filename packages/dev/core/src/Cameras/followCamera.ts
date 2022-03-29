@@ -1,11 +1,11 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import { TargetCamera } from "./targetCamera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from "./followCameraInputsManager";
 Node.AddNodeConstructor("FollowCamera", (name, scene) => {
     return () => new FollowCamera(name, Vector3.Zero(), scene);
@@ -173,6 +173,7 @@ export class FollowCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored: any, noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
 
@@ -186,9 +187,8 @@ export class FollowCamera extends TargetCamera {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         this.inputs.detachElement();
 
         if (this._reset) {

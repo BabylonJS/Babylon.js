@@ -1,14 +1,14 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
+import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { PostProcess } from "./postProcess";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { PostProcess } from "./postProcess";
 import { PostProcessRenderEffect } from "../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
 import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
@@ -143,7 +143,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         }
         const adjustedKernelSize = kernelSize / Math.pow(2, blurCount - 1);
         let ratio = 1.0;
-        for (var i = 0; i < blurCount; i++) {
+        for (let i = 0; i < blurCount; i++) {
             const blurY = new DepthOfFieldBlurPostProcess(
                 "vertical blur",
                 scene,
@@ -183,7 +183,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
 
         // Set all post processes on the effect.
         this._effects = [this._circleOfConfusion];
-        for (var i = 0; i < this._depthOfFieldBlurX.length; i++) {
+        for (let i = 0; i < this._depthOfFieldBlurX.length; i++) {
             this._effects.push(this._depthOfFieldBlurY[i]);
             this._effects.push(this._depthOfFieldBlurX[i]);
         }

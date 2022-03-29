@@ -1,4 +1,4 @@
-import { IndicesArray, FloatArray } from "../types";
+import type { IndicesArray, FloatArray } from "../types";
 import { Color4, Color3 } from "../Maths/math";
 import { Vector2, Vector3, Vector4, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
@@ -6,14 +6,14 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Mesh } from "../Meshes/mesh";
 import { EngineStore } from "../Engines/engineStore";
-import { Scene, IDisposable } from "../scene";
+import type { Scene, IDisposable } from "../scene";
 import { CloudPoint, PointsGroup } from "./cloudPoint";
 import { Ray } from "../Culling/ray";
-import { PickingInfo } from "../Collisions/pickingInfo";
+import type { PickingInfo } from "../Collisions/pickingInfo";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { BaseTexture } from "./../Materials/Textures/baseTexture";
 import { Scalar } from "../Maths/math.scalar";
-import { Material } from "../Materials/material";
+import type { Material } from "../Materials/material";
 
 /** Defines the 4 color options */
 export enum PointColor {
@@ -229,7 +229,6 @@ export class PointsCloudSystem implements IDisposable {
 
         let idxPoints: number = 0;
 
-        var index: number = 0;
         let id0: number = 0;
         let id1: number = 0;
         let id2: number = 0;
@@ -298,7 +297,7 @@ export class PointsCloudSystem implements IDisposable {
         let pickInfo: PickingInfo;
         let direction = Vector3.Zero();
 
-        for (var index = 0; index < meshInd.length / 3; index++) {
+        for (let index = 0; index < meshInd.length / 3; index++) {
             id0 = meshInd[3 * index];
             id1 = meshInd[3 * index + 1];
             id2 = meshInd[3 * index + 2];
@@ -351,18 +350,18 @@ export class PointsCloudSystem implements IDisposable {
                 col2.subtractToRef(col1, colvec1);
             }
 
-            var width: number;
-            var height: number;
-            var deltaS: number;
-            var deltaV: number;
-            var h: number;
-            var s: number;
-            var v: number;
-            var hsvCol: Color3;
+            let width: number;
+            let height: number;
+            let deltaS: number;
+            let deltaV: number;
+            let h: number;
+            let s: number;
+            let v: number;
+            let hsvCol: Color3;
             const statedColor: Color3 = new Color3(0, 0, 0);
             const colPoint3: Color3 = new Color3(0, 0, 0);
-            var pointColors: Color4;
-            var particle: CloudPoint;
+            let pointColors: Color4;
+            let particle: CloudPoint;
 
             for (let i = 0; i < pointsGroup._groupDensity[index]; i++) {
                 idxPoints = this.particles.length;
@@ -511,7 +510,6 @@ export class PointsCloudSystem implements IDisposable {
     // calculates the point density per facet of a mesh for surface points
     private _calculateDensity(nbPoints: number, positions: FloatArray, indices: IndicesArray): number[] {
         let density: number[] = new Array<number>();
-        var index: number;
         let id0: number;
         let id1: number;
         let id2: number;
@@ -542,7 +540,7 @@ export class PointsCloudSystem implements IDisposable {
         const nbFacets = indices.length / 3;
 
         //surface area
-        for (var index = 0; index < nbFacets; index++) {
+        for (let index = 0; index < nbFacets; index++) {
             id0 = indices[3 * index];
             id1 = indices[3 * index + 1];
             id2 = indices[3 * index + 2];
@@ -570,7 +568,7 @@ export class PointsCloudSystem implements IDisposable {
             areas[index] = area;
         }
         let pointCount: number = 0;
-        for (var index = 0; index < nbFacets; index++) {
+        for (let index = 0; index < nbFacets; index++) {
             density[index] = Math.floor((nbPoints * areas[index]) / surfaceArea);
             pointCount += density[index];
         }
@@ -583,7 +581,7 @@ export class PointsCloudSystem implements IDisposable {
             density = density.map((x) => x + pointsPerFacet);
         }
 
-        for (var index = 0; index < extraPoints; index++) {
+        for (let index = 0; index < extraPoints; index++) {
             density[index] += 1;
         }
 
@@ -744,7 +742,7 @@ export class PointsCloudSystem implements IDisposable {
         const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
 
         Matrix.IdentityToRef(rotMatrix);
-        var idx = 0; // current index of the particle
+        let idx = 0; // current index of the particle
 
         if (this.mesh.isFacetDataEnabled) {
             this._computeBoundingBox = true;
@@ -762,7 +760,7 @@ export class PointsCloudSystem implements IDisposable {
             }
         }
 
-        var idx = 0; // particle index
+        idx = 0; // particle index
         let pindex = 0; //index in positions array
         let cindex = 0; //index in color array
         let uindex = 0; //index in uv array
@@ -1059,6 +1057,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {}
     /**
      * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
@@ -1068,5 +1067,6 @@ export class PointsCloudSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {}
 }

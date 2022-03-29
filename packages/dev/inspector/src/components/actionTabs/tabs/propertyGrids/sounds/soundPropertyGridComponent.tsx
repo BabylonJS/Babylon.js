@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
-import { Sound } from "core/Audio/sound";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
+import type { Sound } from "core/Audio/sound";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";

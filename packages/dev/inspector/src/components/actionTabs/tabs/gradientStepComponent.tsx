@@ -1,7 +1,7 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { Color3 } from "core/Maths/math.color";
-import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
+import type { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
 
 import deleteButton from "../lines/delete.svg";
@@ -66,7 +66,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                         min={0}
                         max={1.0}
                         value={step.step}
-                        onPointerUp={(evt) => this.onPointerUp()}
+                        onPointerUp={() => this.onPointerUp()}
                         onChange={(evt) => this.updateStep(parseFloat(evt.target.value))}
                     />
                 </div>

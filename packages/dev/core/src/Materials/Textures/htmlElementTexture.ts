@@ -1,4 +1,4 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from "../../Maths/math.vector";
@@ -46,7 +46,7 @@ export class HtmlElementTexture extends BaseTexture {
      */
     public element: HTMLVideoElement | HTMLCanvasElement;
 
-    private static readonly DefaultOptions: IHtmlElementTextureOptions = {
+    private static readonly _DefaultOptions: IHtmlElementTextureOptions = {
         generateMipMaps: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
         engine: null,
@@ -73,7 +73,7 @@ export class HtmlElementTexture extends BaseTexture {
         }
 
         options = {
-            ...HtmlElementTexture.DefaultOptions,
+            ...HtmlElementTexture._DefaultOptions,
             ...options,
         };
 

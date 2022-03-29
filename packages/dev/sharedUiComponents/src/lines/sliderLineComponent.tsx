@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "./floatLineComponent";
-import { LockObject } from "../tabs/propertyGrids/lockObject";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ISliderLineComponentProps {
     label: string;
@@ -133,7 +133,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                         const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
                     }}
-                    onChange={(evt) => {
+                    onChange={() => {
                         const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
                     }}

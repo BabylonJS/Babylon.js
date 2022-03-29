@@ -1,6 +1,8 @@
-import { Nullable } from "../types";
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-var */
+import type { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 
 interface MediaRecorder {
     /** Starts recording */
@@ -68,7 +70,7 @@ export interface VideoRecorderOptions {
  * @see https://doc.babylonjs.com/how_to/render_scene_on_a_video
  */
 export class VideoRecorder {
-    private static readonly _defaultOptions = {
+    private static readonly _DefaultOptions = {
         mimeType: "video/webm",
         fps: 25,
         recordChunckSize: 3000,
@@ -119,7 +121,7 @@ export class VideoRecorder {
         this._canvas.isRecording = false;
 
         this._options = {
-            ...VideoRecorder._defaultOptions,
+            ...VideoRecorder._DefaultOptions,
             ...options,
         };
 

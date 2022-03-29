@@ -1,9 +1,9 @@
-import { Scene } from "../../scene";
-import { Vector4 } from "../../Maths/math.vector";
-import { Mesh, _CreationDataStorage } from "../mesh";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable } from "../../types";
-import { Plane } from "../../Maths/math.plane";
+import type { Nullable } from "../../types";
+import type { Plane } from "../../Maths/math.plane";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
@@ -87,7 +87,6 @@ export function CreatePlaneVertexData(options: { size?: number; width?: number; 
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.size
- * @param scene defines the hosting scene
  * @param options.width
  * @param options.height
  * @param options.sideOrientation
@@ -95,6 +94,7 @@ export function CreatePlaneVertexData(options: { size?: number; width?: number; 
  * @param options.backUVs
  * @param options.updatable
  * @param options.sourcePlane
+ * @param scene defines the hosting scene
  * @returns the plane mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#plane
  */
@@ -125,6 +125,7 @@ export function CreatePlane(
  * @deprecated use the function directly from the module
  */
 export const PlaneBuilder = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CreatePlane,
 };
 

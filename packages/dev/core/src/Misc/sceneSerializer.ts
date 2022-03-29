@@ -1,16 +1,16 @@
-import { Geometry } from "../Meshes/geometry";
+import type { Geometry } from "../Meshes/geometry";
 import { Mesh } from "../Meshes/mesh";
 import { Constants } from "../Engines/constants";
 import { MultiMaterial } from "../Materials/multiMaterial";
-import { Material } from "../Materials/material";
-import { Scene } from "../scene";
-import { Light } from "../Lights/light";
+import type { Material } from "../Materials/material";
+import type { Scene } from "../scene";
+import type { Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators";
 import { Texture } from "../Materials/Textures/texture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 
 let serializedGeometries: Geometry[] = [];
-const serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
+const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
     if (geometry.doNotSerialize) {
         return;
     }
@@ -20,7 +20,7 @@ const serializeGeometry = (geometry: Geometry, serializationGeometries: any): an
     (<any>serializedGeometries)[geometry.id] = true;
 };
 
-const serializeMesh = (mesh: Mesh, serializationScene: any): any => {
+const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
     const serializationObject: any = {};
 
     // Geometry
@@ -28,7 +28,7 @@ const serializeMesh = (mesh: Mesh, serializationScene: any): any => {
     if (geometry) {
         if (!mesh.getScene().getGeometryById(geometry.id)) {
             // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
-            serializeGeometry(geometry, serializationScene.geometries);
+            SerializeGeometry(geometry, serializationScene.geometries);
         }
     }
 
@@ -40,7 +40,7 @@ const serializeMesh = (mesh: Mesh, serializationScene: any): any => {
     return serializationObject;
 };
 
-const finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
+const FinalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     //only works if the mesh is already loaded
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
         const serializeMaterial = (material: Material) => {
@@ -85,7 +85,7 @@ const finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
                 serializationObject.geometries.vertexData = [];
             }
 
-            serializeGeometry(geometry, serializationObject.geometries);
+            SerializeGeometry(geometry, serializationObject.geometries);
         }
         // Skeletons
         if (mesh.skeleton && !mesh.skeleton.doNotSerialize) {
@@ -95,7 +95,7 @@ const finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
 
         //serialize the actual mesh
         serializationObject.meshes = serializationObject.meshes || [];
-        serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+        serializationObject.meshes.push(SerializeMesh(mesh, serializationObject));
     }
 };
 
@@ -166,7 +166,7 @@ export class SceneSerializer {
 
         // Morph targets
         serializationObject.morphTargetManagers = [];
-        for (var abstractMesh of scene.meshes) {
+        for (const abstractMesh of scene.meshes) {
             const manager = (<Mesh>abstractMesh).morphTargetManager;
 
             if (manager) {
@@ -285,20 +285,20 @@ export class SceneSerializer {
             const geometry = geometries[index];
 
             if (geometry.isReady()) {
-                serializeGeometry(geometry, serializationObject.geometries);
+                SerializeGeometry(geometry, serializationObject.geometries);
             }
         }
 
         // Meshes
         serializationObject.meshes = [];
         for (index = 0; index < scene.meshes.length; index++) {
-            var abstractMesh = scene.meshes[index];
+            const abstractMesh = scene.meshes[index];
 
             if (abstractMesh instanceof Mesh) {
                 const mesh = abstractMesh;
                 if (!mesh.doNotSerialize) {
                     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
-                        serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
+                        serializationObject.meshes.push(SerializeMesh(mesh, serializationObject));
                     }
                 }
             }
@@ -356,7 +356,7 @@ export class SceneSerializer {
             }
         } else if (obj instanceof Object) {
             for (const name in obj) {
-                if (obj.hasOwnProperty(name)) {
+                if (Object.prototype.hasOwnProperty.call(obj, name)) {
                     const o = obj[name];
                     if (o instanceof Promise) {
                         promises.push(o.then((res: any) => (obj[name] = res)));
@@ -400,7 +400,7 @@ export class SceneSerializer {
         }
 
         toSerialize.forEach((mesh: Mesh) => {
-            finalizeSingleMesh(mesh, serializationObject);
+            FinalizeSingleMesh(mesh, serializationObject);
         });
 
         return serializationObject;

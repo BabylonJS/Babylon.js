@@ -1,5 +1,6 @@
-import { Vector3 } from "core/Maths/math.vector";
-import { AnimationGroup, Animatable } from "core/Animations/index";
+import type { Vector3 } from "core/Maths/math.vector";
+// eslint-disable-next-line import/no-internal-modules
+import type { AnimationGroup, Animatable } from "core/Animations/index";
 
 /**
  * Animation play mode enum - is the animation looping or playing once
@@ -80,12 +81,12 @@ export interface IModelAnimation {
     /**
      * Get the max numbers of frame available in the animation group
      *
-     * In correlation to an arry, this would be ".length"
+     * In correlation to an array, this would be ".length"
      */
     readonly frames: number;
     /**
      * Get the current frame playing right now.
-     * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
+     * This can be used to poll the frame currently playing (and, for example, display a progress bar with the data)
      *
      * In correlation to an array, this would be the current index
      */
@@ -105,34 +106,34 @@ export interface IModelAnimation {
     /**
      * Start the animation
      */
-    start();
+    start(): void;
     /**
      * Stop the animation.
      * This will fail silently if the animation group is already stopped.
      */
-    stop();
+    stop(): void;
     /**
      * Pause the animation
      * This will fail silently if the animation is not currently playing
      */
-    pause();
+    pause(): void;
     /**
      * Reset this animation
      */
-    reset();
+    reset(): void;
     /**
      * Restart the animation
      */
-    restart();
+    restart(): void;
     /**
      * Go to a specific
      * @param frameNumber the frame number to go to
      */
-    goToFrame(frameNumber: number);
+    goToFrame(frameNumber: number): void;
     /**
      * Dispose this animation
      */
-    dispose();
+    dispose(): void;
 }
 
 /**
@@ -145,7 +146,7 @@ export class GroupModelAnimation implements IModelAnimation {
 
     /**
      * Create a new GroupModelAnimation object using an AnimationGroup object
-     * @param _animationGroup The aniamtion group to base the class on
+     * @param _animationGroup The animation group to base the class on
      */
     constructor(private _animationGroup: AnimationGroup) {
         this._state = AnimationState.INIT;
@@ -188,7 +189,7 @@ export class GroupModelAnimation implements IModelAnimation {
     /**
      * Get the max numbers of frame available in the animation group
      *
-     * In correlation to an arry, this would be ".length"
+     * In correlation to an array, this would be ".length"
      */
     public get frames(): number {
         return this._animationGroup.to - this._animationGroup.from;
@@ -196,7 +197,7 @@ export class GroupModelAnimation implements IModelAnimation {
 
     /**
      * Get the current frame playing right now.
-     * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
+     * This can be used to poll the frame currently playing (and, for example, display a progress bar with the data)
      *
      * In correlation to an array, this would be the current index
      */

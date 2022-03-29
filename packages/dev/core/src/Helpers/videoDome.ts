@@ -1,12 +1,12 @@
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
-import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
+import type { VideoTextureSettings } from "../Materials/Textures/videoTexture";
+import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { TextureDome } from "./textureDome";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { Nullable } from "../types";
-import { Observer } from "../Misc/observable";
-
-declare type Camera = import("../Cameras/camera").Camera;
+import type { PointerInfo } from "../Events/pointerEvents";
+import { PointerEventTypes } from "../Events/pointerEvents";
+import type { Nullable } from "../types";
+import type { Observer } from "../Misc/observable";
 
 /**
  * Display a 360/180 degree video on an approximately spherical surface, useful for VR applications or skyboxes.

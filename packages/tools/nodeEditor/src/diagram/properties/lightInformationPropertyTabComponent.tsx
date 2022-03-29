@@ -1,8 +1,8 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { IPropertyComponentProps } from "./propertyComponentProps";
-import { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
+import type { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {

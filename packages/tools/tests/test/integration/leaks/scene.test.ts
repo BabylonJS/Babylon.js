@@ -10,9 +10,13 @@ import {
     evaluateInitEngine,
     evaluateRenderScene,
     getGlobalConfig,
+    logPageErrors,
 } from "@tools/test-tools";
 
 describe("Memory Leaks", () => {
+    beforeAll(async () => {
+        await logPageErrors(page);
+    });
     jest.setTimeout(30000);
 
     let init: CountValues;

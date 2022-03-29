@@ -1,18 +1,18 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import { Nullable } from "../../types";
+import type { NodeMaterialBuildState } from "./nodeMaterialBuildState";
+import type { Nullable } from "../../types";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "./nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
-import { Effect } from "../effect";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
-import { SubMesh } from "../../Meshes/subMesh";
-import { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
-import { InputBlock } from "./Blocks/Input/inputBlock";
+import type { Effect } from "../effect";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
+import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
-import { EffectFallbacks } from "../effectFallbacks";
+import type { EffectFallbacks } from "../effectFallbacks";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -185,6 +185,7 @@ export class NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public initialize(state: NodeMaterialBuildState) {
         // Do nothing
     }
@@ -196,6 +197,7 @@ export class NodeMaterialBlock {
      * @param mesh defines the mesh that will be rendered
      * @param subMesh defines the submesh that will be rendered
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         // Do nothing
     }
@@ -390,6 +392,7 @@ export class NodeMaterialBlock {
         return this;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _buildBlock(state: NodeMaterialBuildState) {
         // Empty. Must be defined by child nodes
     }
@@ -401,6 +404,7 @@ export class NodeMaterialBlock {
      * @param defines defines the material defines to update
      * @param uniformBuffers defines the list of uniform buffer names
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         // Do nothing
     }
@@ -410,6 +414,7 @@ export class NodeMaterialBlock {
      * @param mesh defines the mesh to be rendered
      * @param fallbacks defines the current prioritized list of fallbacks
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
         // Do nothing
     }
@@ -421,6 +426,7 @@ export class NodeMaterialBlock {
      * @param defines defines the material defines to update
      * @param useInstances specifies that instances should be used
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {}
 
     /**
@@ -431,6 +437,7 @@ export class NodeMaterialBlock {
      * @param useInstances specifies that instances should be used
      * @param subMesh defines which submesh to render
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
         // Do nothing
     }
@@ -439,6 +446,7 @@ export class NodeMaterialBlock {
      * Lets the block try to connect some inputs automatically
      * @param material defines the hosting NodeMaterial
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public autoConfigure(material: NodeMaterial) {
         // Do nothing
     }
@@ -450,6 +458,7 @@ export class NodeMaterialBlock {
      * @param mesh defines the mesh to be rendered
      * @param defines defines the material defines to update
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
         // Do nothing
     }
@@ -485,6 +494,7 @@ export class NodeMaterialBlock {
      * @param useInstances specifies that instances should be used
      * @returns true if the block is ready
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
         return true;
     }
@@ -574,7 +584,7 @@ export class NodeMaterialBlock {
 
         if (!this.isInput) {
             /** Prepare outputs */
-            for (var output of this._outputs) {
+            for (const output of this._outputs) {
                 if (!output.associatedVariableName) {
                     output.associatedVariableName = state._getFreeVariableName(output.name);
                 }
@@ -638,7 +648,7 @@ export class NodeMaterialBlock {
         this._buildTarget = state.target;
 
         // Compile connected blocks
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if ((output.target & state.target) === 0) {
                 continue;
             }
@@ -708,7 +718,7 @@ export class NodeMaterialBlock {
             }
 
             const connectedOutput = input.connectedPoint!;
-            var connectedBlock = connectedOutput.ownerBlock;
+            const connectedBlock = connectedOutput.ownerBlock;
 
             if (alreadyDumped.indexOf(connectedBlock) === -1) {
                 codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
@@ -722,7 +732,7 @@ export class NodeMaterialBlock {
             }
 
             for (const endpoint of output.endpoints) {
-                var connectedBlock = endpoint.ownerBlock;
+                const connectedBlock = endpoint.ownerBlock;
                 if (connectedBlock && alreadyDumped.indexOf(connectedBlock) === -1) {
                     codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
                 }
@@ -816,6 +826,7 @@ export class NodeMaterialBlock {
      * @param rootUrl
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;

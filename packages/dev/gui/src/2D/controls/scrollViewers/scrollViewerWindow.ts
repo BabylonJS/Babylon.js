@@ -2,7 +2,7 @@ import { Measure } from "../../measure";
 import { Container } from "../container";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { Control } from "../control";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a the container for ScrollViewer
@@ -100,15 +100,15 @@ export class _ScrollViewerWindow extends Container {
         for (let i = 0; i < children.length; ++i) {
             const child = children[i];
 
-            let bStartX = Math.max(0, Math.floor((child._customData._origLeft - this._customData.origLeft) / this._bucketWidth)),
+            const bStartX = Math.max(0, Math.floor((child._customData._origLeft - this._customData.origLeft) / this._bucketWidth)),
                 bEndX = Math.floor((child._customData._origLeft - this._customData.origLeft + child._currentMeasure.width - 1) / this._bucketWidth),
-                bStartY = Math.max(0, Math.floor((child._customData._origTop - this._customData.origTop) / this._bucketHeight)),
                 bEndY = Math.floor((child._customData._origTop - this._customData.origTop + child._currentMeasure.height - 1) / this._bucketHeight);
+            let bStartY = Math.max(0, Math.floor((child._customData._origTop - this._customData.origTop) / this._bucketHeight));
 
             while (bStartY <= bEndY) {
                 for (let x = bStartX; x <= bEndX; ++x) {
-                    let bucket = bStartY * this._bucketLen + x,
-                        lstc = this._buckets[bucket];
+                    const bucket = bStartY * this._bucketLen + x;
+                    let lstc = this._buckets[bucket];
 
                     if (!lstc) {
                         lstc = [];
@@ -228,10 +228,10 @@ export class _ScrollViewerWindow extends Container {
     }
 
     private _scrollChildrenWithBuckets(left: number, top: number, scrollLeft: number, scrollTop: number): void {
-        let bStartX = Math.max(0, Math.floor(-left / this._bucketWidth)),
+        const bStartX = Math.max(0, Math.floor(-left / this._bucketWidth)),
             bEndX = Math.floor((-left + this._parentMeasure.width - 1) / this._bucketWidth),
-            bStartY = Math.max(0, Math.floor(-top / this._bucketHeight)),
             bEndY = Math.floor((-top + this._parentMeasure.height - 1) / this._bucketHeight);
+        let bStartY = Math.max(0, Math.floor(-top / this._bucketHeight));
 
         while (bStartY <= bEndY) {
             for (let x = bStartX; x <= bEndX; ++x) {

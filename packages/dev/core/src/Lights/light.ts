@@ -1,15 +1,16 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "../Misc/decorators";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3, TmpColors } from "../Maths/math.color";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Effect } from "../Materials/effect";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
-import { IShadowGenerator } from "./Shadows/shadowGenerator";
+import type { IShadowGenerator } from "./Shadows/shadowGenerator";
 import { GetClass } from "../Misc/typeStore";
-import { ISortableLight, LightConstants } from "./lightConstants";
+import type { ISortableLight } from "./lightConstants";
+import { LightConstants } from "./lightConstants";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
@@ -373,6 +374,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param lightIndex The index of the light in the effect to update
      * @returns The light
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         // Do nothing by default.
         return this;
@@ -459,8 +461,6 @@ export abstract class Light extends Node implements ISortableLight {
             for (let i = 0; i < this.animations.length; i++) {
                 ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
             }
-        }
-        if (fullDetails) {
         }
         return ret;
     }
@@ -841,7 +841,7 @@ export abstract class Light extends Node implements ISortableLight {
                     case Light.INTENSITYMODE_ILLUMINANCE:
                         photometricScale = 1.0;
                         break;
-                    case Light.INTENSITYMODE_LUMINANCE:
+                    case Light.INTENSITYMODE_LUMINANCE: {
                         // When radius (and therefore solid angle) is non-zero a directional lights brightness can be specified via central (peak) luminance.
                         // For a directional light the 'radius' defines the angular radius (in radians) rather than world-space radius (e.g. in metres).
                         let apexAngleRadians = this.radius;
@@ -850,6 +850,7 @@ export abstract class Light extends Node implements ISortableLight {
                         const solidAngle = 2.0 * Math.PI * (1.0 - Math.cos(apexAngleRadians));
                         photometricScale = solidAngle;
                         break;
+                    }
                 }
                 break;
 

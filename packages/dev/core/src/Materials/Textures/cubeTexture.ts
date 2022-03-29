@@ -1,13 +1,13 @@
 import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 import "../../Engines/Extensions/engine.cubeTexture";
 import { StartsWith } from "../../Misc/stringTools";
@@ -154,8 +154,7 @@ export class CubeTexture extends BaseTexture {
      * Creates a cube texture to use with reflection for instance. It can be based upon dds or six images as well
      * as prefiltered data.
      * @param rootUrl defines the url of the texture or the root name of the six images
-     * @param null defines the scene or engine the texture is attached to
-     * @param sceneOrEngine
+     * @param sceneOrEngine defines the scene or engine the texture is attached to
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param noMipmap defines if mipmaps should be created or not
      * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz

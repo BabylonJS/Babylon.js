@@ -1,19 +1,20 @@
-import { Nullable } from "core/types";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable } from "core/types";
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
-import { Matrix } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IEffectCreationOptions } from "core/Materials/effect";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SubMesh } from "core/Meshes/subMesh";
-import { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SubMesh } from "core/Meshes/subMesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 
@@ -154,10 +155,10 @@ export class TriPlanarMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             if (scene.texturesEnabled) {
                 if (MaterialFlags.DiffuseTextureEnabled) {
-                    var textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
-                    var textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
+                    const textures = [this.diffuseTextureX, this.diffuseTextureY, this.diffuseTextureZ];
+                    const textureDefines = ["DIFFUSEX", "DIFFUSEY", "DIFFUSEZ"];
 
-                    for (var i = 0; i < textures.length; i++) {
+                    for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
                             if (!textures[i].isReady()) {
                                 return false;
@@ -168,10 +169,10 @@ export class TriPlanarMaterial extends PushMaterial {
                     }
                 }
                 if (MaterialFlags.BumpTextureEnabled) {
-                    var textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
-                    var textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
+                    const textures = [this.normalTextureX, this.normalTextureY, this.normalTextureZ];
+                    const textureDefines = ["BUMPX", "BUMPY", "BUMPZ"];
 
-                    for (var i = 0; i < textures.length; i++) {
+                    for (let i = 0; i < textures.length; i++) {
                         if (textures[i]) {
                             if (!textures[i].isReady()) {
                                 return false;

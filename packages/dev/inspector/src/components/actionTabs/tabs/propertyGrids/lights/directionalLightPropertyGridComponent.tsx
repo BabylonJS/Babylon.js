@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { DirectionalLight } from "core/Lights/directionalLight";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { DirectionalLight } from "core/Lights/directionalLight";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
+import type { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { DirectionalLightFrustumViewer } from "core/Debug/directionalLightFrustumViewer";
 

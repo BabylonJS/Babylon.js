@@ -1,7 +1,7 @@
 import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Camera } from "./camera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
@@ -490,6 +490,7 @@ export class TargetCamera extends Camera {
      * @param cameraIndex
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             const rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
@@ -521,14 +522,14 @@ export class TargetCamera extends Camera {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED: {
                 //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
-                var leftSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? 1 : -1;
-                var rightSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? -1 : 1;
+                const leftSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? 1 : -1;
+                const rightSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? -1 : 1;
                 this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * leftSign, camLeft);
                 this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * rightSign, camRight);
                 break;
-
+            }
             case Camera.RIG_MODE_VR:
                 if (camLeft.rotationQuaternion) {
                     camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);

@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../globalState";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTextLineComponent";
 
@@ -35,14 +35,14 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
                     break;
                 case "[object Array]":
                     components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
-                    for (var entry of value) {
+                    for (const entry of value) {
                         components.push(<IndentedTextLineComponent key={data + entry} value={entry} />);
                     }
                     break;
                 case "[object Object]":
                     components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
                     for (const entryKey in value) {
-                        components.push(<TextLineComponent key={data + entry} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />);
+                        components.push(<TextLineComponent key={data + entryKey} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />);
                     }
                     break;
             }

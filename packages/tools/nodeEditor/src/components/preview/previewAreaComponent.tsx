@@ -1,8 +1,8 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { DataStorage } from "core/Misc/dataStorage";
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import { ParticleSystem } from "core/Particles/particleSystem";

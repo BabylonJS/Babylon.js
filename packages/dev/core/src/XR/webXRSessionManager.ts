@@ -1,17 +1,18 @@
 import { Logger } from "../Misc/logger";
-import { Observable, Observer } from "../Misc/observable";
-import { Nullable } from "../types";
-import { IDisposable, Scene } from "../scene";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { WebXRRenderTarget } from "./webXRTypes";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { IDisposable, Scene } from "../scene";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
-import { Engine } from "../Engines/engine";
-import { IWebXRRenderTargetTextureProvider, WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
-import { Viewport } from "../Maths/math.viewport";
-import { WebXRLayerWrapper } from "./webXRLayerWrapper";
+import type { Engine } from "../Engines/engine";
+import type { IWebXRRenderTargetTextureProvider, WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import type { Viewport } from "../Maths/math.viewport";
+import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -140,7 +141,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     public exitXRAsync() {
         if (this.session && this.inXRSession) {
             this.inXRSession = false;
-            return this.session.end().catch((e) => {
+            return this.session.end().catch(() => {
                 Logger.Warn("Could not end XR session.");
             });
         }
@@ -178,7 +179,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
 
     /**
      * Creates a WebXRRenderTarget object for the XR session
-     * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
      * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */

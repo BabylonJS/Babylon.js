@@ -1,8 +1,8 @@
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 
 import "../../Engines/Extensions/engine.videoTexture";
@@ -183,7 +183,7 @@ export class VideoTexture extends Texture {
         this.video.setAttribute("playsinline", "");
         this.video.addEventListener("paused", this._updateInternalTexture);
         this.video.addEventListener("seeked", this._updateInternalTexture);
-        this.video.addEventListener("emptied", this.reset);
+        this.video.addEventListener("emptied", this._reset);
         this._createInternalTextureOnEvent = settings.poster && !settings.autoPlay ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
@@ -293,7 +293,7 @@ export class VideoTexture extends Texture {
         }
     };
 
-    private reset = (): void => {
+    private _reset = (): void => {
         if (this._texture == null) {
             return;
         }
@@ -392,7 +392,7 @@ export class VideoTexture extends Texture {
         this.video.removeEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
         this.video.removeEventListener("paused", this._updateInternalTexture);
         this.video.removeEventListener("seeked", this._updateInternalTexture);
-        this.video.removeEventListener("emptied", this.reset);
+        this.video.removeEventListener("emptied", this._reset);
         this.video.pause();
     }
 

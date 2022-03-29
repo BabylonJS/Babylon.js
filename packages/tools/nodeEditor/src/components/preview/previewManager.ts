@@ -1,7 +1,7 @@
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math.vector";
@@ -11,27 +11,27 @@ import { PreviewType } from "./previewType";
 import { Animation } from "core/Animations/animation";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { LogEntry } from "../log/logComponent";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import type { PostProcess } from "core/PostProcesses/postProcess";
 import { Constants } from "core/Engines/constants";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Texture } from "core/Materials/Textures/texture";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { ReadFile } from "core/Misc/fileTools";
-import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { StandardMaterial } from "core/Materials/standardMaterial";
+import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { StandardMaterial } from "core/Materials/standardMaterial";
 import { Layer } from "core/Layers/layer";
 import { DataStorage } from "core/Misc/dataStorage";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
@@ -315,12 +315,13 @@ export class PreviewManager {
                             this._prepareScene();
                         });
                         return;
-                    case PreviewType.Plane:
+                    case PreviewType.Plane: {
                         const plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);
                         break;
+                    }
                     case PreviewType.ShaderBall:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);

@@ -13,7 +13,7 @@ npm install --save @babylonjs/core @babylonjs/procedural-textures
 
 # How to use
 
-Afterwards it can be imported to the your project using:
+Afterwards it can be imported to your project using:
 
 ```
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
@@ -31,4 +31,4 @@ fireMaterial.opacityTexture = fireTexture;
 // Some more awesome code
 ```
 
-For more information you can have a look at our [our ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).
+For more information you can have a look at our [ES6 dedicated documentation](https://doc.babylonjs.com/features/es6_support).

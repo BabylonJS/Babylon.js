@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { ColorCurves } from "../Materials/colorCurves";

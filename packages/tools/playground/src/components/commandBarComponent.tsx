@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { Utilities } from "../tools/utilities";
@@ -7,6 +7,7 @@ import { WebGPUEngine } from "@dev/core";
 
 import "../scss/commandBar.scss";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Versions: any;
 
 interface ICommandBarComponentProps {
@@ -14,7 +15,7 @@ interface ICommandBarComponentProps {
 }
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
-    private webGPUSupported: boolean = false;
+    private _webGPUSupported: boolean = false;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
@@ -24,8 +25,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
         if (typeof WebGPUEngine !== "undefined") {
             WebGPUEngine.IsSupportedAsync.then((result) => {
-                this.webGPUSupported = result;
-                if (location.search.indexOf("webgpu") !== -1 && this.webGPUSupported) {
+                this._webGPUSupported = result;
+                if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {
                     Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                 }
                 this.forceUpdate();
@@ -65,18 +66,20 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
         const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
-        const versionOptions = Object.keys(Versions).map((key) => {
-            return {
-                label: key,
-                tooltip: `Use Babylon.js version: ${key}`,
-                storeKey: "version",
-                isActive: activeVersion === key,
-                onClick: () => {
-                    Utilities.StoreStringToStore("version", key, true);
-                    window.location.reload();
-                },
-            };
-        });
+        const versionOptions = Object.keys(Versions)
+            .filter((key) => key !== "local")
+            .map((key) => {
+                return {
+                    label: key,
+                    tooltip: `Use Babylon.js version: ${key}`,
+                    storeKey: "version",
+                    isActive: activeVersion === key,
+                    onClick: () => {
+                        Utilities.StoreStringToStore("version", key, true);
+                        window.location.reload();
+                    },
+                };
+            });
 
         const engineOptions = [
             {
@@ -112,7 +115,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             },
         ];
 
-        if (this.webGPUSupported) {
+        if (this._webGPUSupported) {
             engineOptions.splice(0, 0, {
                 label: "WebGPU",
                 tooltip: "Use WebGPU Renderer (experimental)",

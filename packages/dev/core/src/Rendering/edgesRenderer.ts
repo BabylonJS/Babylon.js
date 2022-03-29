@@ -1,21 +1,22 @@
-import { Immutable, Nullable } from "../types";
+import type { Immutable, Nullable } from "../types";
 import { VertexBuffer } from "../Buffers/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
-import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
-import { IDisposable, Scene } from "../scene";
-import { Observer } from "../Misc/observable";
-import { Effect } from "../Materials/effect";
+import type { Matrix } from "../Maths/math.vector";
+import { Vector3, TmpVectors } from "../Maths/math.vector";
+import type { IDisposable, Scene } from "../scene";
+import type { Observer } from "../Misc/observable";
+import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { Node } from "../node";
+import type { Node } from "../node";
 
 import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -90,6 +91,7 @@ declare module "../Meshes/linesMesh" {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVerticesInsteadOfIndices = false): InstancedLinesMesh {
     LinesMesh.prototype.enableEdgesRendering.apply(this, arguments);
     return this;
@@ -244,7 +246,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      */
     public customInstances = new SmartArray<Matrix>(32);
 
-    private static GetShader(scene: Scene): ShaderMaterial {
+    private static _GetShader(scene: Scene): ShaderMaterial {
         if (!scene._edgeRenderLineShader) {
             const shader = new ShaderMaterial(
                 "lineShader",
@@ -309,7 +311,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             return;
         }
 
-        this._lineShader = EdgesRenderer.GetShader(this._source.getScene());
+        this._lineShader = EdgesRenderer._GetShader(this._source.getScene());
     }
 
     /** @hidden */
@@ -420,6 +422,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      * @param offset
      * @protected
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected createLine(p0: Vector3, p1: Vector3, offset: number) {
         // Positions
         this._linesPositions.push(p0.x, p0.y, p0.z, p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p1.x, p1.y, p1.z);

@@ -1,14 +1,15 @@
 import * as React from "react";
-import { GlobalState } from "../../../../globalState";
-import { IValueGradient, FactorGradient, ColorGradient, Color3Gradient } from "core/Misc/gradients";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
+import type { IValueGradient } from "core/Misc/gradients";
+import { FactorGradient, ColorGradient, Color3Gradient } from "core/Misc/gradients";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { FactorGradientStepGridComponent } from "./factorGradientStepGridComponent";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { ColorGradientStepGridComponent } from "./colorGradientStepGridComponent";
 import { Color4, Color3 } from "core/Maths/math.color";
 import { LinkButtonComponent } from "shared-ui-components/lines/linkButtonComponent";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export enum GradientGridMode {
@@ -49,18 +50,21 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
         const gradients = this.props.gradients as Array<IValueGradient>;
 
         switch (this.props.mode) {
-            case GradientGridMode.Factor:
+            case GradientGridMode.Factor: {
                 const newStep = new FactorGradient(1, 1, 1);
                 gradients.push(newStep);
                 break;
-            case GradientGridMode.Color4:
+            }
+            case GradientGridMode.Color4: {
                 const newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                 gradients.push(newStepColor);
                 break;
-            case GradientGridMode.Color3:
+            }
+            case GradientGridMode.Color3: {
                 const newStepColor3 = new Color3Gradient(1, Color3.White());
                 gradients.push(newStepColor3);
                 break;
+            }
         }
 
         this.props.host.forceRefreshGradients();

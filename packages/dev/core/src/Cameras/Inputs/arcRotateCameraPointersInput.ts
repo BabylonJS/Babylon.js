@@ -1,10 +1,10 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
-import { PointerTouch } from "../../Events/pointerEvents";
-import { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { PointerTouch } from "../../Events/pointerEvents";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
@@ -145,7 +145,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * @param offsetX
      * @param offsetY
      */
-    protected onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
+    public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         if (this.panningSensibility !== 0 && ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
             this.camera.inertialPanningX += -offsetX / this.panningSensibility;
             this.camera.inertialPanningY += offsetY / this.panningSensibility;
@@ -157,9 +157,8 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
 
     /**
      * Called on pointer POINTERDOUBLETAP event.
-     * @param type
      */
-    protected onDoubleTap(type: string) {
+    public onDoubleTap() {
         if (this.camera.useInputToRestoreState) {
             this.camera.restoreState();
         }
@@ -174,7 +173,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * @param previousMultiTouchPanPosition
      * @param multiTouchPanPosition
      */
-    protected onMultiTouch(
+    public onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,
@@ -231,16 +230,15 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      * press.
      * @param evt
      */
-    protected onButtonDown(evt: IPointerEvent): void {
+    public onButtonDown(evt: IPointerEvent): void {
         this._isPanClick = evt.button === this.camera._panningMouseButton;
     }
 
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
-     * @param evt
      */
-    protected onButtonUp(evt: IPointerEvent): void {
+    public onButtonUp(): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }
@@ -248,7 +246,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Called when window becomes inactive.
      */
-    protected onLostFocus(): void {
+    public onLostFocus(): void {
         this._isPanClick = false;
         this._twoFingerActivityCount = 0;
         this._isPinching = false;

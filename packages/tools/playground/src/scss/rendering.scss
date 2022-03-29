@@ -4,12 +4,13 @@
     padding: 0;
     margin: 0;
     overflow: unset;
-    border:none !important;
-    outline:none !important;
+    border: none !important;
+    outline: none !important;
     display: block;
 }
 
-#pg-root-frame, #pg-root-full {
+#pg-root-frame,
+#pg-root-full {
     #renderCanvas {
         grid-column: 1;
         grid-row: 1;

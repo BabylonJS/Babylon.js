@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 
 import copyIcon from "./copy.svg";
@@ -75,19 +75,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     copyToClipboard() {
-        const element = document.createElement("div");
-        element.textContent = this.getCurrentColor().toHexString();
-        document.body.appendChild(element);
-
-        if (window.getSelection) {
-            const range = document.createRange();
-            range.selectNode(element);
-            window.getSelection()!.removeAllRanges();
-            window.getSelection()!.addRange(range);
+        const { navigator } = this.props.globalState.hostWindow;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(this.getCurrentColor().toHexString());
         }
-
-        document.execCommand("copy");
-        element.remove();
     }
 
     render() {

@@ -1,8 +1,8 @@
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import * as React from "react";
-import { GlobalState } from "../../../../../globalState";
-import { Context, IActiveAnimationChangedOptions } from "./context";
+import type { GlobalState } from "../../../../../globalState";
+import type { Context, IActiveAnimationChangedOptions } from "./context";
 import { ActionButtonComponent } from "./controls/actionButtonComponent";
 import { TextInputComponent } from "./controls/textInputComponent";
 
@@ -33,7 +33,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
     private _onFrameSetObserver: Nullable<Observer<number>>;
     private _onValueSetObserver: Nullable<Observer<number>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
-    private onActiveKeyPointChanged: Nullable<Observer<void>>;
+    private _onActiveKeyPointChanged: Nullable<Observer<void>>;
 
     constructor(props: ITopBarComponentProps) {
         super(props);
@@ -52,7 +52,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
             this.setState({ keyFrameValue: "", keyValue: "" });
         });
 
-        this.onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
+        this._onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
             const numKeys = this.props.context.activeKeyPoints?.length || 0;
             const numAnims = new Set(this.props.context.activeKeyPoints?.map((keyPointComponent) => keyPointComponent.props.curve.animation.uniqueId)).size;
 
@@ -80,8 +80,8 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
-        if (this.onActiveKeyPointChanged) {
-            this.props.context.onActiveKeyPointChanged.remove(this.onActiveKeyPointChanged);
+        if (this._onActiveKeyPointChanged) {
+            this.props.context.onActiveKeyPointChanged.remove(this._onActiveKeyPointChanged);
         }
     }
 

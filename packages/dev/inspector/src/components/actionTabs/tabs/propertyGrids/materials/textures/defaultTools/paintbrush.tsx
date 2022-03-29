@@ -1,12 +1,13 @@
 import * as React from "react";
-import { IToolParameters, IToolData, IToolType, IToolGUIProps } from "../textureEditorComponent";
-import { PointerEventTypes, PointerInfo } from "core/Events/pointerEvents";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { IToolParameters, IToolData, IToolType, IToolGUIProps } from "../textureEditorComponent";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 
-class paintbrushTool implements IToolType {
+class PaintbrushTool implements IToolType {
     getParameters: () => IToolParameters;
     pointerObserver: Nullable<Observer<PointerInfo>>;
     isPainting: boolean;
@@ -124,7 +125,7 @@ class paintbrushTool implements IToolType {
 
 class Settings extends React.Component<IToolGUIProps> {
     render() {
-        const instance = this.props.instance as paintbrushTool;
+        const instance = this.props.instance as PaintbrushTool;
         return (
             <div>
                 <label className="tool-slider-input">
@@ -148,7 +149,7 @@ class Settings extends React.Component<IToolGUIProps> {
 
 export const Paintbrush: IToolData = {
     name: "Paintbrush",
-    type: paintbrushTool,
+    type: PaintbrushTool,
     settingsComponent: Settings,
     icon: `PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHN0eWxlPSJmaWxsOm5vbmUiLz48cGF0aCBkPSJNMjksMTFhMy41NywzLjU3LDAsMCwxLDAsNS4wNkwxNywyOGEyLjM0LDIuMzQsMCwwLDEtMSwuNThMMTAuOTEsMzBhLjc1Ljc1LDAsMCwxLS45Mi0uOTJMMTEuMzgsMjRBMi4zNCwyLjM0LDAsMCwxLDEyLDIzbDEyLTEyQTMuNTcsMy41NywwLDAsMSwyOSwxMVpNMjMsMTQuMSwxMywyNGEuNjkuNjksMCwwLDAtLjE5LjMzbC0xLjA1LDMuODUsMy44NS0xQS42OS42OSwwLDAsMCwxNiwyN0wyNS45LDE3Wm0yLTItMSwxTDI3LDE2bDEtMUEyLjA4LDIuMDgsMCwxLDAsMjUsMTIuMDdaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+`,
     cursor: `iVBORw0KGgoAAAANSUhEUgAAABUAAAAVAgMAAADUeU0FAAAACVBMVEUAAAAAAAD///+D3c/SAAAAAXRSTlMAQObYZgAAAAFiS0dEAmYLfGQAAAA3SURBVAjXY2CAgVUNYGoqhFJjwE2BgQYDBwMXUGiFGtcyBgbVkKmtYXAeVA4O8BkGtQ9qOwgAAEPfC1QJPmWqAAAAAElFTkSuQmCC`,

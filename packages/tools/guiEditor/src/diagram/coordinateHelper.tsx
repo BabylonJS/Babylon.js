@@ -1,12 +1,12 @@
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { Control } from "gui/2D/controls/control";
-import { Grid } from "gui/2D/controls/grid";
-import { Rectangle } from "gui/2D/controls/rectangle";
+import type { Grid } from "gui/2D/controls/grid";
+import type { Rectangle } from "gui/2D/controls/rectangle";
 import { Matrix2D } from "gui/2D/math2D";
 import { Vector2 } from "core/Maths/math.vector";
-import { Observable } from "core/Misc/observable";
-import { GlobalState } from "../globalState";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { GlobalState } from "../globalState";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
 
@@ -44,8 +44,8 @@ const roundFactor = 100;
 const round = (value: number) => Math.round(value * roundFactor) / roundFactor;
 
 export class CoordinateHelper {
-    private static _matrixCache: Matrix2D[] = [Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity()];
-    public static globalState: GlobalState;
+    private static _MatrixCache: Matrix2D[] = [Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity(), Matrix2D.Identity()];
+    public static GlobalState: GlobalState;
 
     /**
      * Get the scaling of a specific GUI control
@@ -53,7 +53,7 @@ export class CoordinateHelper {
      * @param relative should we return only the relative scaling (relative to the parent)
      * @returns an X,Y vector of the scaling
      */
-    public static getScale(node: Control, relative?: boolean): Vector2 {
+    public static GetScale(node: Control, relative?: boolean): Vector2 {
         let x = node.scaleX;
         let y = node.scaleY;
         if (relative) {
@@ -68,7 +68,7 @@ export class CoordinateHelper {
         return new Vector2(x, y);
     }
 
-    public static getRotation(node: Control, relative?: boolean): number {
+    public static GetRotation(node: Control, relative?: boolean): number {
         // Gets rotate of a control account for all of it's parents rotations
         let rotation = node.rotation;
         if (relative) {
@@ -86,12 +86,11 @@ export class CoordinateHelper {
      * This function calculates a local matrix for a node, including it's full transformation and pivot point
      *
      * @param node the node to calculate the matrix for
-     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
-     * @param storedValues
+     * @param storedValues should the stored (cached) values be used to calculate the matrix
      * @returns a new matrix for the control
      */
-    public static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
-        const size = this.globalState.guiTexture.getSize();
+    public static GetNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
+        const size = this.GlobalState.guiTexture.getSize();
         // parent should always be defined, but stay safe
         const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
         const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
@@ -126,10 +125,10 @@ export class CoordinateHelper {
                 y = 0;
                 break;
         }
-        this.resetMatrixArray();
+        this._ResetMatrixArray();
 
-        const m2d = this._matrixCache[0];
-        const translateTo = this._matrixCache[1];
+        const m2d = this._MatrixCache[0];
+        const translateTo = this._MatrixCache[1];
         // as this is used later it needs to persist
         const resultMatrix = Matrix2D.Identity();
 
@@ -146,8 +145,8 @@ export class CoordinateHelper {
         // Set the translation
         Matrix2D.TranslationToRef(x + left, y + top, translateTo);
         // without parents scaling and rotation, calculate world matrix for each
-        const rotation = this.getRotation(node, true);
-        const scaling = this.getScale(node, true);
+        const rotation = this.GetRotation(node, true);
+        const scaling = this.GetScale(node, true);
         // COmpose doesn't actually translate, but creates a form of pivot in a specific position
         Matrix2D.ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
         // actually compose the matrix
@@ -159,15 +158,15 @@ export class CoordinateHelper {
     /**
      * Using the node's tree, calculate its world matrix and return it
      * @param node the node to calculate the matrix for
-     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
-     * @param storedValues
+     * @param storedValues used stored valued (cached when pointer down is clicked)
+     * @param stopAt stop looking when this node is found
      * @returns the world matrix for this node
      */
-    public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D {
+    public static NodeToRTTWorldMatrix(node: Control, storedValues?: Rect, stopAt?: Control): Matrix2D {
         const listOfNodes = [node];
         let parent = node.parent;
         let child = node;
-        while (parent) {
+        while (parent && child !== stopAt) {
             if (parent.typeName === "Grid") {
                 const cellInfo = (parent as Grid).getChildCellInfo(child);
                 const cell = (parent as Grid).cells[cellInfo];
@@ -177,16 +176,16 @@ export class CoordinateHelper {
             child = parent;
             parent = parent.parent;
         }
-        this.resetMatrixArray();
-        const matrices = listOfNodes.map((node, index) => this.getNodeMatrix(node, index === 0 ? storedValues : undefined));
+        this._ResetMatrixArray();
+        const matrices = listOfNodes.map((node, index) => this.GetNodeMatrix(node, index === 0 ? storedValues : undefined));
         return matrices.reduce((acc, cur) => {
             acc.multiplyToRef(cur, acc);
             return acc;
-        }, this._matrixCache[2]);
+        }, this._MatrixCache[2]);
     }
 
-    public static nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect) {
-        const worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
+    public static NodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect, stopAt?: Control) {
+        const worldMatrix = this.NodeToRTTWorldMatrix(node, storedValues, stopAt);
         worldMatrix.transformCoordinates(x, y, reference);
         // round
         reference.x = round(reference.x);
@@ -194,9 +193,9 @@ export class CoordinateHelper {
         return reference;
     }
 
-    public static rttToLocalNodeSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect) {
-        const worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
-        const inv = this._matrixCache[3];
+    public static RttToLocalNodeSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect) {
+        const worldMatrix = this.NodeToRTTWorldMatrix(node, storedValues);
+        const inv = this._MatrixCache[3];
         worldMatrix.invertToRef(inv);
         inv.transformCoordinates(x, y, reference);
         // round
@@ -205,24 +204,24 @@ export class CoordinateHelper {
         return reference;
     }
 
-    public static rttToCanvasSpace(x: number, y: number) {
-        const engine = this.globalState.workbench._scene.getEngine();
+    public static RttToCanvasSpace(x: number, y: number) {
+        const engine = this.GlobalState.workbench._scene.getEngine();
         return new Vector2(x + engine.getRenderWidth() / 2, y + engine.getRenderHeight() / 2);
     }
 
-    public static mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
-        const scene = this.globalState.workbench._scene;
+    public static MousePointerToRTTSpace(node: Control, x?: number, y?: number) {
+        const scene = this.GlobalState.workbench._scene;
         const engine = scene.getEngine();
         return new Vector2((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY) - engine.getRenderHeight() / 2);
     }
 
-    private static resetMatrixArray() {
-        this._matrixCache.forEach((matrix) => {
+    private static _ResetMatrixArray() {
+        this._MatrixCache.forEach((matrix) => {
             Matrix2D.IdentityToRef(matrix);
         });
     }
 
-    public static computeLocalBounds(node: Control) {
+    public static ComputeLocalBounds(node: Control) {
         return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
     }
 
@@ -232,7 +231,7 @@ export class CoordinateHelper {
      * @param properties
      * @param onPropertyChangedObservable
      */
-    public static convertToPercentage(
+    public static ConvertToPercentage(
         guiControl: Control,
         properties: DimensionProperties[] = ["left", "top", "width", "height"],
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -268,17 +267,13 @@ export class CoordinateHelper {
         }
     }
 
-    public static round(value: number) {
+    public static Round(value: number) {
         return Math.floor(value * 100) / 100;
     }
 
-    public static convertToPixels(
-        guiControl: Control,
-        properties: DimensionProperties[] = ["left", "top", "width", "height"],
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>
-    ) {
+    public static ConvertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"]) {
         for (const property of properties) {
-            guiControl[`_${property}`] = new ValueAndUnit(this.round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
+            guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
         }
     }
 }

@@ -1,4 +1,4 @@
-import { INative, INativeDataStream } from "./nativeInterfaces";
+import type { INative, INativeDataStream } from "./nativeInterfaces";
 
 declare const _native: INative;
 
@@ -15,6 +15,7 @@ export class NativeDataStream {
     private readonly _nativeDataStream: INativeDataStream;
 
     // Must be multiple of 4!
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private static readonly DEFAULT_BUFFER_SIZE = 65536;
 
     constructor() {

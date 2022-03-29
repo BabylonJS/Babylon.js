@@ -1,29 +1,32 @@
-import { Nullable, float, DataArray } from "../types";
-import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { Nullable, float, DataArray } from "../types";
+import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
+import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import { Color4, Color3, TmpColors } from "../Maths/math.color";
+import type { Vector3 } from "../Maths/math.vector";
+import { Matrix, TmpVectors } from "../Maths/math.vector";
+import { Color4, TmpColors } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
-import { IParticleSystem } from "./IParticleSystem";
+import type { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
-import { IDisposable } from "../scene";
-import { Effect } from "../Materials/effect";
+import type { IDisposable } from "../scene";
+import type { Effect } from "../Materials/effect";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { ThinEngine } from "../Engines/thinEngine";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
+import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
+import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -310,10 +313,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Adds a new color gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param color1 defines the color to affect to the specified gradient
-     * @param color2 defines an additional color used to define a range ([color, color2]) with main color to pick the final color from
      * @returns the current particle system
      */
-    public addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem {
+    public addColorGradient(gradient: number, color1: Color4): GPUParticleSystem {
         if (!this._colorGradients) {
             this._colorGradients = [];
         }
@@ -583,56 +585,45 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param factor defines the emit rate value to affect to the specified gradient
-     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addEmitRateGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+    public addEmitRateGradient(): IParticleSystem {
         // Do nothing as emit rate is not supported by GPUParticleSystem
         return this;
     }
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
-    public removeEmitRateGradient(gradient: number): IParticleSystem {
+    public removeEmitRateGradient(): IParticleSystem {
         // Do nothing as emit rate is not supported by GPUParticleSystem
         return this;
     }
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param factor defines the start size value to affect to the specified gradient
-     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addStartSizeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+    public addStartSizeGradient(): IParticleSystem {
         // Do nothing as start size is not supported by GPUParticleSystem
         return this;
     }
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
-    public removeStartSizeGradient(gradient: number): IParticleSystem {
+    public removeStartSizeGradient(): IParticleSystem {
         // Do nothing as start size is not supported by GPUParticleSystem
         return this;
     }
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param min defines the color remap minimal range
-     * @param max defines the color remap maximal range
      * @returns the current particle system
      */
-    public addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+    public addColorRemapGradient(): IParticleSystem {
         // Do nothing as start size is not supported by GPUParticleSystem
 
         return this;
@@ -640,7 +631,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
     public removeColorRemapGradient(): IParticleSystem {
@@ -651,12 +641,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param min defines the alpha remap minimal range
-     * @param max defines the alpha remap maximal range
      * @returns the current particle system
      */
-    public addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem {
+    public addAlphaRemapGradient(): IParticleSystem {
         // Do nothing as start size is not supported by GPUParticleSystem
 
         return this;
@@ -664,7 +651,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
     public removeAlphaRemapGradient(): IParticleSystem {
@@ -675,11 +661,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param color defines the color to affect to the specified gradient
      * @returns the current particle system
      */
-    public addRampGradient(gradient: number, color: Color3): IParticleSystem {
+    public addRampGradient(): IParticleSystem {
         //Not supported by GPUParticleSystem
 
         return this;
@@ -687,7 +671,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
     public removeRampGradient(): IParticleSystem {
@@ -720,12 +703,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to use (between 0 and 1)
-     * @param factor defines the life time factor to affect to the specified gradient
-     * @param factor2 defines an additional factor used to define a range ([factor, factor2]) with main value to pick the final value from
      * @returns the current particle system
      */
-    public addLifeTimeGradient(gradient: number, factor: number, factor2?: number): IParticleSystem {
+    public addLifeTimeGradient(): IParticleSystem {
         //Not supported by GPUParticleSystem
 
         return this;
@@ -733,10 +713,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * @param gradient defines the gradient to remove
      * @returns the current particle system
      */
-    public removeLifeTimeGradient(gradient: number): IParticleSystem {
+    public removeLifeTimeGradient(): IParticleSystem {
         //Not supported by GPUParticleSystem
 
         return this;
@@ -823,7 +802,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Random data
         const maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
         let d = [];
-        for (var i = 0; i < maxTextureSize; ++i) {
+        for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
             d.push(Math.random());
@@ -845,7 +824,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
         d = [];
-        for (var i = 0; i < maxTextureSize; ++i) {
+        for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
             d.push(Math.random());
@@ -1415,7 +1394,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         const data = new Float32Array(this._rawTextureWidth);
 
-        for (var x = 0; x < this._rawTextureWidth; x++) {
+        for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
@@ -1454,7 +1433,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const data = new Uint8Array(this._rawTextureWidth * 4);
         const tmpColor = TmpColors.Color4[0];
 
-        for (var x = 0; x < this._rawTextureWidth; x++) {
+        for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {

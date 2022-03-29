@@ -2,15 +2,28 @@
 
 var hostElement = document.getElementById("host-element");
 
+const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+
 let loadScriptAsync = function (url, instantResolve) {
-    return new Promise((resolve, _reject) => {
-        let script = document.createElement("script");
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
         script.src = url;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
             }
         };
+        script.onerror = () => {
+            // fallback
+            const fallbackScript = document.createElement("script");
+            fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
+            fallbackScript.onload = () => {
+                if (!instantResolve) {
+                    resolve();
+                }
+            }
+            document.head.appendChild(fallbackScript);
+        }
         document.head.appendChild(script);
         if (instantResolve) {
             resolve();
@@ -49,12 +62,26 @@ let loadInSequence = async function (versions, index, resolve) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {
+    if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1)) {
         activeVersion = "local";
     }
 
+    let snapshot = "";
+    // see if a snapshot should be used
+    if (window.location.search.indexOf("snapshot=") !== -1) {
+        snapshot = window.location.search.split("=")[1];
+        // cleanup, just in case
+        snapshot = snapshot.split("&")[0];
+        activeVersion = "dist";
+    }
+
+    let versions = Versions[activeVersion] || Versions["dist"];
+    if (snapshot && activeVersion === "dist") {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    }
+
     return new Promise((resolve, _reject) => {
-        loadInSequence(Versions[activeVersion], 0, resolve);
+        loadInSequence(versions, 0, resolve);
     });
 };
 

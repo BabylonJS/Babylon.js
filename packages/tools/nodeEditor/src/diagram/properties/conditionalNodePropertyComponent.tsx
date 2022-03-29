@@ -1,8 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import { ConditionalBlockConditions, ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
-import { IPropertyComponentProps } from "./propertyComponentProps";
+import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
+import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
+import type { IPropertyComponentProps } from "./propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class ConditionalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
@@ -38,7 +39,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
                         options={conditionOptions}
                         target={conditionBlock}
                         propertyName="condition"
-                        onSelect={(value: any) => {
+                        onSelect={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();

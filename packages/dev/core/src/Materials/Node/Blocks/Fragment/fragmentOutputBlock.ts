@@ -1,12 +1,12 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Scene } from "../../../../scene";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterialDefines } from "../../nodeMaterial";
+import type { Scene } from "../../../../scene";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { MaterialHelper } from "../../../materialHelper";
 

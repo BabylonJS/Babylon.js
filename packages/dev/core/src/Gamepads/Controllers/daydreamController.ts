@@ -1,11 +1,11 @@
 import { Logger } from "../../Misc/logger";
-import { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SceneLoader } from "../../Loading/sceneLoader";
 
-import { GamepadButtonChanges } from "../../Gamepads/gamepad";
 import { WebVRController } from "./webVRController";
-import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
+import type { ExtendedGamepadButton } from "./poseEnabledController";
+import { PoseEnabledControllerType, PoseEnabledControllerHelper } from "./poseEnabledController";
 
 /**
  * Google Daydream controller
@@ -55,9 +55,8 @@ export class DaydreamController extends WebVRController {
      * Called once for each button that changed state since the last frame
      * @param buttonIdx Which button index changed
      * @param state New state of the button
-     * @param changes Which properties on the state changed since last frame
      */
-    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+    protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton) {
         // Daydream controller only has 1 GamepadButton (on the trackpad).
         if (buttonIdx === 0) {
             const observable = this.onTriggerStateChangedObservable;

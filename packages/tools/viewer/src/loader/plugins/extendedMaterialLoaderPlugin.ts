@@ -1,6 +1,6 @@
-import { Material } from "core/Materials/material";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { ILoaderPlugin } from "./loaderPlugin";
+import type { Material } from "core/Materials/material";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { ILoaderPlugin } from "./loaderPlugin";
 import { Constants } from "core/Engines/constants";
 
 /**

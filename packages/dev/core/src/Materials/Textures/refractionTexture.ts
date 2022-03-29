@@ -1,4 +1,4 @@
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Plane } from "../../Maths/math.plane";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 /**

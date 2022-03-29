@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Grid } from "gui/2D/controls/grid";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Grid } from "gui/2D/controls/grid";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 
 import gridColumnIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg";
-import gridRowIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg"; //needs change
+import gridRowIconDark from "shared-ui-components/imgs/gridRowIconDark.svg";
 import confirmGridElementDark from "shared-ui-components/imgs/confirmGridElementDark.svg";
 import subtractGridElementDark from "shared-ui-components/imgs/subtractGridElementDark.svg";
 import addGridElementDark from "shared-ui-components/imgs/addGridElementDark.svg";

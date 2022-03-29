@@ -1,21 +1,21 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { ReflectionBlock } from "./reflectionBlock";
-import { Scene } from "../../../../scene";
-import { Nullable } from "../../../../types";
-import { Mesh } from "../../../../Meshes/mesh";
-import { SubMesh } from "../../../../Meshes/subMesh";
-import { Effect } from "../../../effect";
-import { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
-import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { ReflectionBlock } from "./reflectionBlock";
+import type { Scene } from "../../../../scene";
+import type { Nullable } from "../../../../types";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { Effect } from "../../../effect";
+import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
+import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
@@ -148,7 +148,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure() {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("ClearCoat intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
@@ -172,7 +172,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         // Clear Coat Refraction params

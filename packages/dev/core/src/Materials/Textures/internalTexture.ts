@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
-import { Nullable, int } from "../../types";
-import { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
-import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
+import type { Nullable, int } from "../../types";
+import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
+import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
@@ -540,12 +540,12 @@ export class InternalTexture extends TextureSampler {
         }
 
         const cache = this._engine.getLoadedTexturesCache();
-        var index = cache.indexOf(this);
+        let index = cache.indexOf(this);
         if (index !== -1) {
             cache.splice(index, 1);
         }
 
-        var index = cache.indexOf(target);
+        index = cache.indexOf(target);
         if (index === -1) {
             cache.push(target);
         }

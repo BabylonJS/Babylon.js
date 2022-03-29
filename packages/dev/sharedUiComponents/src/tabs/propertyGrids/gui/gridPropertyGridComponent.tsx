@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../tabs/propertyGrids/lockObject";
-import { Grid } from "gui/2D/controls/grid";
+import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
+import type { Grid } from "gui/2D/controls/grid";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
 

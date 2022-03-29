@@ -1,15 +1,15 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../Culling/ray";
-import { Scene } from "../scene";
-import { IPhysicsEngine } from "./IPhysicsEngine";
-import { PhysicsEngine } from "./physicsEngine";
-import { PhysicsImpostor } from "./physicsImpostor";
+import type { Scene } from "../scene";
+import type { IPhysicsEngine } from "./IPhysicsEngine";
+import type { PhysicsEngine } from "./physicsEngine";
+import type { PhysicsImpostor } from "./physicsImpostor";
 
 /**
  * A helper for physics simulations
@@ -535,7 +535,7 @@ class PhysicsUpdraftEvent {
         }
     }
 
-    private getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
+    private _getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
         if (impostor.mass === 0) {
             return null;
         }
@@ -546,10 +546,11 @@ class PhysicsUpdraftEvent {
 
         const impostorObjectCenter = impostor.getObjectCenter();
 
+        let direction: Vector3;
         if (this._options.updraftMode === PhysicsUpdraftMode.Perpendicular) {
-            var direction = this._originDirection;
+            direction = this._originDirection;
         } else {
-            var direction = impostorObjectCenter.subtract(this._originTop);
+            direction = impostorObjectCenter.subtract(this._originTop);
         }
 
         const distanceFromOrigin = Vector3.Distance(this._origin, impostorObjectCenter);
@@ -563,7 +564,7 @@ class PhysicsUpdraftEvent {
 
     private _tick() {
         this._physicsEngine.getImpostors().forEach((impostor) => {
-            const impostorHitData = this.getImpostorHitData(impostor);
+            const impostorHitData = this._getImpostorHitData(impostor);
             if (!impostorHitData) {
                 return;
             }
@@ -669,7 +670,7 @@ class PhysicsVortexEvent {
         }
     }
 
-    private getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
+    private _getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
         if (impostor.mass === 0) {
             return null;
         }
@@ -699,16 +700,20 @@ class PhysicsVortexEvent {
             directionToOrigin = directionToOrigin.negate();
         }
 
+        let forceX: number;
+        let forceY: number;
+        let forceZ: number;
+
         if (absoluteDistanceFromOrigin > this._options.centripetalForceThreshold) {
-            var forceX = directionToOrigin.x * this._options.centripetalForceMultiplier;
-            var forceY = directionToOrigin.y * this._options.updraftForceMultiplier;
-            var forceZ = directionToOrigin.z * this._options.centripetalForceMultiplier;
+            forceX = directionToOrigin.x * this._options.centripetalForceMultiplier;
+            forceY = directionToOrigin.y * this._options.updraftForceMultiplier;
+            forceZ = directionToOrigin.z * this._options.centripetalForceMultiplier;
         } else {
             const perpendicularDirection = Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
 
-            var forceX = (perpendicularDirection.x + directionToOrigin.x) * this._options.centrifugalForceMultiplier;
-            var forceY = this._originTop.y * this._options.updraftForceMultiplier;
-            var forceZ = (perpendicularDirection.z + directionToOrigin.z) * this._options.centrifugalForceMultiplier;
+            forceX = (perpendicularDirection.x + directionToOrigin.x) * this._options.centrifugalForceMultiplier;
+            forceY = this._originTop.y * this._options.updraftForceMultiplier;
+            forceZ = (perpendicularDirection.z + directionToOrigin.z) * this._options.centrifugalForceMultiplier;
         }
 
         let force = new Vector3(forceX, forceY, forceZ);
@@ -719,7 +724,7 @@ class PhysicsVortexEvent {
 
     private _tick() {
         this._physicsEngine.getImpostors().forEach((impostor) => {
-            const impostorHitData = this.getImpostorHitData(impostor);
+            const impostorHitData = this._getImpostorHitData(impostor);
             if (!impostorHitData) {
                 return;
             }

@@ -1,11 +1,11 @@
-import { Scene } from "../../scene";
-import { Engine } from "../../Engines/engine";
+import type { Scene } from "../../scene";
+import type { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
-import { InternalTexture } from "./internalTexture";
+import type { InternalTexture } from "./internalTexture";
 
 /**
  * Creation options of the multi render target texture.
@@ -325,7 +325,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._rebuild(true, textureNames);
     }
 
-    protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+    protected _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
         if (this._renderTarget) {
             engine.unBindMultiColorAttachmentFramebuffer(this._renderTarget, this.isCube, () => {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);

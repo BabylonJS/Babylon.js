@@ -1,7 +1,7 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { GlobalState } from "../globalState";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 import iconUp from "../img/icon-up.svg";
 import iconDown from "../img/icon-down.svg";

@@ -1,12 +1,14 @@
 import { serialize } from "../../Misc/decorators";
-import { Observer, EventState } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { Observer, EventState } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
-import { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -61,6 +63,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         let previousPosition: Nullable<{ x: number; y: number }> = null;
 
@@ -99,7 +102,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                         evt.preventDefault();
                     }
 
-                    var index: number = this._pointerPressed.indexOf(evt.pointerId);
+                    const index: number = this._pointerPressed.indexOf(evt.pointerId);
 
                     if (index === -1) {
                         return;
@@ -121,7 +124,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                         return;
                     }
 
-                    var index: number = this._pointerPressed.indexOf(evt.pointerId);
+                    const index: number = this._pointerPressed.indexOf(evt.pointerId);
 
                     if (index != 0) {
                         return;
@@ -151,9 +154,8 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
+    public detachControl(): void {
         if (this._pointerInput) {
             if (this._observer) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);

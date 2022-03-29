@@ -1,9 +1,9 @@
-import { Scene } from "../../scene";
-import { Vector4 } from "../../Maths/math.vector";
-import { Color4 } from "../../Maths/math.color";
-import { Mesh } from "../../Meshes/mesh";
+import type { Scene } from "../../scene";
+import type { Vector4 } from "../../Maths/math.vector";
+import type { Color4 } from "../../Maths/math.color";
+import type { Mesh } from "../../Meshes/mesh";
 import { CreatePolyhedron } from "./polyhedronBuilder";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 

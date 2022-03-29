@@ -1,17 +1,18 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
+import { NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
-import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
-import { Nullable } from "../../../../types";
+import type { Effect } from "../../../effect";
+import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
-import { Scene } from "../../../../scene";
+import type { Scene } from "../../../../scene";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
 import { Constants } from "../../../../Engines/constants";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
@@ -308,7 +309,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -331,8 +332,13 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
-        defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
+        const toGamma = this.convertToGammaSpace && this.texture && !this.texture.gammaSpace;
+        const toLinear = this.convertToLinearSpace && this.texture && this.texture.gammaSpace;
+
+        // Not a bug... Name defines the texture space not the required conversion
+        defines.setValue(this._linearDefineName, toGamma, true);
+        defines.setValue(this._gammaDefineName, toLinear, true);
+
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
@@ -354,7 +360,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect) {
         if (!this.texture) {
             return;
         }
@@ -451,12 +457,10 @@ export class TextureBlock extends NodeMaterialBlock {
                 `;
             }
 
-            if (!this.texture || this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._gammaDefineName}
-                    ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
-                    #endif
-                `;
-            }
+            state.compilationString += `#ifdef ${this._gammaDefineName}
+                ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
+                #endif
+            `;
         }
     }
 

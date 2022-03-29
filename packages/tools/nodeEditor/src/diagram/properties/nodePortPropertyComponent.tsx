@@ -1,10 +1,10 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GlobalState, ISelectionChangedOptions } from "../../globalState";
+import type { GlobalState, ISelectionChangedOptions } from "../../globalState";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { NodePort } from "../nodePort";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { NodePort } from "../nodePort";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 

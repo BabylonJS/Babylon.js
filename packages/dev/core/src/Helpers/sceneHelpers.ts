@@ -1,26 +1,30 @@
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { Mesh } from "../Meshes/mesh";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { Mesh } from "../Meshes/mesh";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 import { HemisphericLight } from "../Lights/hemisphericLight";
-import { IEnvironmentHelperOptions, EnvironmentHelper } from "./environmentHelper";
+import type { IEnvironmentHelperOptions } from "./environmentHelper";
+import { EnvironmentHelper } from "./environmentHelper";
 import { FreeCamera } from "../Cameras/freeCamera";
 import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
-import { TargetCamera } from "../Cameras/targetCamera";
-import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper";
+import type { TargetCamera } from "../Cameras/targetCamera";
+import type { VRExperienceHelperOptions } from "../Cameras/VR/vrExperienceHelper";
+import { VRExperienceHelper } from "../Cameras/VR/vrExperienceHelper";
 
 import "../Materials/Textures/Loaders/ddsTextureLoader";
 import "../Materials/Textures/Loaders/envTextureLoader";
 import "../Materials/Textures/Loaders/ktxTextureLoader";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
-import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
+import type { WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
+import { WebXRDefaultExperience } from "../XR/webXRDefaultExperience";
 
 /** @hidden */
+// eslint-disable-next-line no-var
 export var _forceSceneHelpersToBundle = true;
 
 declare module "../scene" {

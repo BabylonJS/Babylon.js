@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /** Defines the cross module used constants to avoid circular dependencies */
 export class Constants {
     /** Defines that alpha blending is disabled */

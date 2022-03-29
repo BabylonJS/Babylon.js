@@ -1,18 +1,20 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Matrix } from "../Maths/math";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { Observer, Observable } from "../Misc/observable";
+import type { PointerInfo } from "../Events/pointerEvents";
+import { PointerEventTypes } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 
 /**
  * Gizmo that enables viewing a camera
@@ -196,15 +198,15 @@ export class CameraGizmo extends Gizmo {
 
         for (let y = 0; y < 4; y += 2) {
             for (let x = 0; x < 4; x += 2) {
-                var line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
+                let line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                var line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
+                line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                var line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)] }, scene);
+                line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;

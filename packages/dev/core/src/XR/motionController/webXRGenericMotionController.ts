@@ -1,6 +1,7 @@
-import { WebXRAbstractMotionController, IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Scene } from "../../scene";
+import type { IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from "./webXRAbstractMotionController";
+import { WebXRAbstractMotionController } from "./webXRAbstractMotionController";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
 import { Mesh } from "../../Meshes/mesh";
 import { Quaternion } from "../../Maths/math.vector";
 
@@ -30,6 +31,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _processLoadedModel(meshes: AbstractMesh[]): void {
         // nothing to do
     }
@@ -57,6 +59,7 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
     left: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
@@ -73,6 +76,7 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
     right: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
@@ -89,6 +93,7 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
     none: {
         selectComponentId: "xr-standard-trigger",
         components: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             "xr-standard-trigger": {
                 type: "trigger",
                 gamepadIndices: {
