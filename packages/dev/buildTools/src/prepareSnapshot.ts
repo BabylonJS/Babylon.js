@@ -63,16 +63,17 @@ export const prepareSnapshot = () => {
     }
 
     // copy the es6 builds
-    {
-        const baseLocationDist = path.join(baseDirectory, "packages", "public", "@babylonjs");
-        const staticFilesDist = glob.sync(`${baseLocationDist}/**/*.*`);
-        for (const file of staticFilesDist) {
-            // ignore directories
-            if (fs.lstatSync(file).isDirectory()) {
-                continue;
-            }
-            const relative = path.relative(baseLocationDist, file);
-            copyFile(file, path.join(snapshotDirectory, "es6", relative), true);
-        }
-    }
+    // removed for now
+    // {
+    //     const baseLocationDist = path.join(baseDirectory, "packages", "public", "@babylonjs");
+    //     const staticFilesDist = glob.sync(`${baseLocationDist}/**/*.*`);
+    //     for (const file of staticFilesDist) {
+    //         // ignore directories
+    //         if (fs.lstatSync(file).isDirectory()) {
+    //             continue;
+    //         }
+    //         const relative = path.relative(baseLocationDist, file);
+    //         copyFile(file, path.join(snapshotDirectory, "es6", relative), true);
+    //     }
+    // }
 };
