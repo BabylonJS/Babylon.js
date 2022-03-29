@@ -665,7 +665,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (this._mouseStartPoint != null && !this._panning) {
             this.props.globalState.selectedControls.forEach((element) => {
                 if (pos) {
-                    this._onMove(element, new Vector2(pos.x, pos.y), this._mouseStartPoint!);
+                    this._onMove(element, pos, this._mouseStartPoint!);
                 }
             });
 
