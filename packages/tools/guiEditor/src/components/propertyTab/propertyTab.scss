@@ -67,6 +67,7 @@
         opacity: 0.7;
         -webkit-transition: 0.2s;
         transition: opacity 0.2s;
+        padding: 0;
     }
 
     .range:hover {
@@ -128,6 +129,9 @@
         font-family: "atten-round-new", sans-serif;
         font-weight: 500;
         font-style: normal;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .unit.disabled {
@@ -174,7 +178,7 @@
         height: var(--spacingHeight);
         display: grid;
         grid-template-rows: 100%;
-        grid-template-columns: auto 1fr 75px 1fr;
+        grid-template-columns: auto 1fr 20px 1fr;
         flex-grow: 1;
 
         .label {
@@ -203,7 +207,7 @@
         .floatLine {
             grid-column: 2;
             padding-left: 0px;
-            grid-template-columns: auto;
+            grid-template-columns: 1fr auto;
 
             .label {
                 grid-column: 1;
@@ -220,7 +224,7 @@
                 input {
                     width: 100%;
                     background-color: white;
-                    height: 26px;
+                    height: 24px;
                 }
 
                 input::-webkit-outer-spin-button,
