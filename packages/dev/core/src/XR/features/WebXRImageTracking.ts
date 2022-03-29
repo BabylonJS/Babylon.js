@@ -70,8 +70,8 @@ enum ImageTrackingScoreStatus {
     // A request to retrieve trackability scores has been sent, but no response has been received.
     Waiting,
     // Image trackability scores have been received for this session
-    Received
-};
+    Received,
+}
 
 /**
  * Image tracking for immersive AR sessions.
