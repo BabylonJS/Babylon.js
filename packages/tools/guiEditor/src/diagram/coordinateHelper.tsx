@@ -271,9 +271,20 @@ export class CoordinateHelper {
         return Math.floor(value * 100) / 100;
     }
 
-    public static ConvertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"]) {
+    public static ConvertToPixels(
+        guiControl: Control,
+        properties: DimensionProperties[] = ["left", "top", "width", "height"],
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    ) {
         for (const property of properties) {
+            const initialValue = guiControl[property];
             guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
+            onPropertyChangedObservable?.notifyObservers({
+                object: guiControl,
+                initialValue,
+                value: guiControl[property],
+                property,
+            });
         }
     }
 }
