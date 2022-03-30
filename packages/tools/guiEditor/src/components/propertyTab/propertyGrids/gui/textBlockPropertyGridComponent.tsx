@@ -26,6 +26,7 @@ import wordWrapIcon from "shared-ui-components/imgs/wordWrapIcon.svg";
 import lineSpacingIcon from "shared-ui-components/imgs/LineSpacingIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
     constructor(props: ITextBlockPropertyGridComponentProps) {
@@ -68,7 +69,16 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 <TextLineComponent label="OUTLINE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label="Outline Width" />
-                    <FloatLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="outlineWidth" arrows min={0} unit="PX" unitLocked step="0.01" />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={proxy}
+                        propertyName="outlineWidth"
+                        arrows
+                        min={0}
+                        unit={<UnitButton unit="PX" locked />}
+                        step="0.01"
+                    />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label="Outline Color" />
