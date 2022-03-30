@@ -62,6 +62,7 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
+import { SliceTools } from "./Misc/sliceTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -4704,8 +4705,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _disposeList<T extends IDisposable>(items: T[], callback?: (item: T) => void): void {
-        const itemsCopy = items.slice(0);
-        callback = callback ?? (item => item.dispose());
+        const itemsCopy = SliceTools.Slice(items, 0);
+        callback = callback ?? ((item) => item.dispose());
         for (const item of itemsCopy) {
             callback(item);
         }
