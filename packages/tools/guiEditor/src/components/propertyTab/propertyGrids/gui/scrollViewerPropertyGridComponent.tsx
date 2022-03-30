@@ -16,6 +16,7 @@ import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import scrollViewerPrecisionIcon from "shared-ui-components/imgs/scrollViewerPrecisionIcon.svg"; // TODO: replace
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface IScrollViewerPropertyGridComponentProps {
     scrollViewers: ScrollViewer[];
@@ -43,7 +44,16 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={widthIcon} label={"Bar Size"} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barSize" unit="PX" unitLocked arrows min={0} digits={2} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="barSize"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
                 </div>
                 <div className="e-divider">
                     <IconComponent icon={colorIcon} label="Bar Color" />
@@ -60,8 +70,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         label=""
                         target={proxy}
                         propertyName="thickness"
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         min={0}
                         digits={2}
@@ -74,8 +83,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         label=""
                         target={makeTargetsProxy(scrollViewers, onPropertyChangedObservable)}
                         propertyName="cornerRadius"
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         min={0}
                         digits={2}

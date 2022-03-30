@@ -27,10 +27,8 @@ interface IFloatLineComponentProps {
     icon?: string;
     iconLabel?: string;
     defaultValue?: number;
-    unit?: string;
-    onUnitClicked?: (unit: string) => void;
-    unitLocked?: boolean;
     arrows?: boolean;
+    unit?: React.ReactNode;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string; dragging: boolean }> {
@@ -76,9 +74,10 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return true;
         }
 
-        if (nextState.dragging != this.state.dragging) {
+        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit || nextProps.unitLocked !== this.props.unitLocked) {
             return true;
         }
+
         return false;
     }
 
@@ -230,16 +229,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />
                             )}
                         </div>
-                        {this.props.unit && (
-                            <button
-                                className={this.props.unitLocked ? "unit disabled" : "unit"}
-                                onClick={() => {
-                                    if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "");
-                                }}
-                            >
-                                {this.props.unit}
-                            </button>
-                        )}
+                        {this.props.unit}
                     </div>
                 )}
                 {this.props.useEuler && (

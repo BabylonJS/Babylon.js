@@ -356,7 +356,7 @@ interface XRSession {
     updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
 
     // image tracking
-    getTrackedImageScores?(): XRImageTrackingScore[];
+    getTrackedImageScores?(): Promise<XRImageTrackingScore[]>;
 
     /**
      * Provided when the optional 'dom-overlay' feature is requested.
