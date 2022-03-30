@@ -6,6 +6,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { Rectangle } from "gui/2D/controls/rectangle";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
@@ -64,16 +65,23 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         label=""
                         target={proxy}
                         propertyName="thickness"
-                        unit="PX"
-                        unitLocked={true}
-                        arrows={true}
+                        unit={<UnitButton unit="PX" locked />}
                         min={0}
                         digits={2}
                     />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
-                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="cornerRadius" unit="PX" unitLocked={true} arrows={true} min={0} digits={2} />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="cornerRadius"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows={true}
+                        min={0}
+                        digits={2}
+                    />
                 </div>
                 <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
