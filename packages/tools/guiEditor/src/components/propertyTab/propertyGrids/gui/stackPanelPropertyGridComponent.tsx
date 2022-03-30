@@ -15,6 +15,7 @@ import stackPanelSpacingIcon from "shared-ui-components/imgs/stackPanelSpacingIc
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];
@@ -72,8 +73,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                         target={proxy}
                         propertyName="spacing"
                         onChange={() => stackPanels.forEach((panel) => panel._markAsDirty())}
-                        unit={"PX"}
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         min={0}
                     />
