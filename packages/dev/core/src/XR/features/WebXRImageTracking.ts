@@ -62,6 +62,18 @@ export interface IWebXRTrackedImage {
 }
 
 /**
+ * Enum that describes the state of the image trackability score status for this session.
+ */
+enum ImageTrackingScoreStatus {
+    // AR Session has not yet assessed image trackability scores.
+    NotReceived,
+    // A request to retrieve trackability scores has been sent, but no response has been received.
+    Waiting,
+    // Image trackability scores have been received for this session
+    Received,
+}
+
+/**
  * Image tracking for immersive AR sessions.
  * Providing a list of images and their estimated widths will enable tracking those images in the real world.
  */
@@ -91,7 +103,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      */
     public onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage> = new Observable();
 
-    private _trackableScoresReceived: boolean = false;
+    private _trackableScoreStatus: ImageTrackingScoreStatus = ImageTrackingScoreStatus.NotReceived;
     private _trackedImages: IWebXRTrackedImage[] = [];
 
     private _originalTrackingRequest: XRTrackedImageInit[];
@@ -200,18 +212,15 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
-        if (!_xrFrame.getImageTrackingResults) {
+        if (!_xrFrame.getImageTrackingResults || this._trackableScoreStatus === ImageTrackingScoreStatus.Waiting) {
             return;
         }
 
         // Image tracking scores may be generated a few frames after the XR Session initializes.
-        // If we haven't received scores yet, then check scores first then bail out if necessary.
-        if (!this._trackableScoresReceived) {
-            this._checkScores();
-
-            if (!this._trackableScoresReceived) {
-                return;
-            }
+        // If we haven't received scores yet, then kick off the task to check scores and return immediately.
+        if (this._trackableScoreStatus === ImageTrackingScoreStatus.NotReceived) {
+            this._checkScoresAsync();
+            return;
         }
 
         const imageTrackedResults = _xrFrame.getImageTrackingResults();
@@ -256,12 +265,14 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         }
     }
 
-    private _checkScores(): void {
-        if (!this._xrSessionManager.session.getTrackedImageScores || this._trackableScoresReceived) {
+    private async _checkScoresAsync(): Promise<void> {
+        if (!this._xrSessionManager.session.getTrackedImageScores || this._trackableScoreStatus !== ImageTrackingScoreStatus.NotReceived) {
             return;
         }
 
-        const imageScores = this._xrSessionManager.session.getTrackedImageScores();
+        this._trackableScoreStatus = ImageTrackingScoreStatus.Waiting;
+        const imageScores = await this._xrSessionManager.session.getTrackedImageScores();
+
         // check the scores for all
         for (let idx = 0; idx < imageScores.length; ++idx) {
             if (imageScores[idx] == "untrackable") {
@@ -279,7 +290,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
             }
         }
 
-        this._trackableScoresReceived ||= imageScores.length > 0;
+        this._trackableScoreStatus = imageScores.length > 0 ? ImageTrackingScoreStatus.Received : ImageTrackingScoreStatus.NotReceived;
     }
 }
 
