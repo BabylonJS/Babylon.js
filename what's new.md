@@ -451,7 +451,7 @@
 - When updating the `m` array of the `Matrix` class directly, you must call `markAsUpdated()` explicitly or the matrix changes may not take effect ([Popov72](https://github.com/Popov72), [Deltakosh](https://github.com/deltakosh), [bghgary](https://github.com/bghgary), [Sebavan](https://github.com/sebavan))
 - Loading glTF assets with skins now places skinned meshes as siblings of the corresponding skeleton root nodes instead of using `skeleton.overrideMesh`. ([bghgary](https://github.com/bghgary))
 - The `overrideMesh` of the `Skeleton` class has been removed. ([bghgary](https://github.com/bghgary))
-- Cloning a mesh now copies skeletons. ([bghgary](https://github.com/bghgary))
+- Cloning a mesh now assigns the `skeleton` property to the source skeleton. ([bghgary](https://github.com/bghgary))
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
 - `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))
 - GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))

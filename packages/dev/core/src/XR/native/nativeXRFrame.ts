@@ -79,7 +79,7 @@ export class NativeXRFrame implements XRFrame {
 
     public readonly getImageTrackingResults = (): XRImageTrackingResult[] => {
         return this._nativeImpl._imageTrackingResults ?? [];
-    }
+    };
 }
 
 RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);

@@ -14,6 +14,7 @@ import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import checkboxIcon from "shared-ui-components/imgs/checkboxIconDark.svg";
 import scaleIcon from "shared-ui-components/imgs/scaleIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface IRadioButtonPropertyGridComponentProps {
     radioButtons: RadioButton[];
@@ -45,8 +46,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         label=""
                         target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
-                        unit="PX"
-                        unitLocked
+                        unit={<UnitButton unit="PX" locked />}
                         arrows
                         min={0}
                         digits={2}
@@ -59,8 +59,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         label=""
                         target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                         propertyName="checkSizeRatio"
-                        unit="PX"
-                        unitLocked
+                        unit={<UnitButton unit="PX" locked />}
                         arrows
                         min={0}
                         digits={2}

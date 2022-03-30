@@ -298,7 +298,7 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap.
      */
-     public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = new Image();
             image.onload = () => {

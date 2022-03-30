@@ -59,11 +59,17 @@ export interface IWebXRTrackedImage {
     ratio?: number;
 }
 
-enum ImageScoreStatus {
+/**
+ * Enum that describes the state of the image trackability score status for this session.
+ */
+enum ImageTrackingScoreStatus {
+    // AR Session has not yet assessed image trackability scores.
     NotReceived,
+    // A request to retrieve trackability scores has been sent, but no response has been received.
     Waiting,
-    Received
-};
+    // Image trackability scores have been received for this session
+    Received,
+}
 
 /**
  * Image tracking for immersive AR sessions.
@@ -95,7 +101,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      */
     public onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage> = new Observable();
 
-    private _trackableScoreStatus: ImageScoreStatus = ImageScoreStatus.NotReceived;
+    private _trackableScoreStatus: ImageTrackingScoreStatus = ImageTrackingScoreStatus.NotReceived;
     private _trackedImages: IWebXRTrackedImage[] = [];
 
     private _originalTrackingRequest: XRTrackedImageInit[];
@@ -196,13 +202,13 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
-        if (!_xrFrame.getImageTrackingResults || this._trackableScoreStatus === ImageScoreStatus.Waiting) {
+        if (!_xrFrame.getImageTrackingResults || this._trackableScoreStatus === ImageTrackingScoreStatus.Waiting) {
             return;
         }
 
         // Image tracking scores may be generated a few frames after the XR Session initializes.
-        // If we haven't received scores yet, then kick off the task to check scores and bail out if necessary.
-        if (this._trackableScoreStatus === ImageScoreStatus.NotReceived) {
+        // If we haven't received scores yet, then kick off the task to check scores and return immediately.
+        if (this._trackableScoreStatus === ImageTrackingScoreStatus.NotReceived) {
             this._checkScoresAsync();
             return;
         }
@@ -250,11 +256,11 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
     }
 
     private async _checkScoresAsync(): Promise<void> {
-        if (!this._xrSessionManager.session.getTrackedImageScores || this._trackableScoreStatus !== ImageScoreStatus.NotReceived) {
+        if (!this._xrSessionManager.session.getTrackedImageScores || this._trackableScoreStatus !== ImageTrackingScoreStatus.NotReceived) {
             return;
         }
 
-        this._trackableScoreStatus = ImageScoreStatus.Waiting;
+        this._trackableScoreStatus = ImageTrackingScoreStatus.Waiting;
         const imageScores = await this._xrSessionManager.session.getTrackedImageScores();
 
         // check the scores for all
@@ -274,7 +280,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
             }
         }
 
-        this._trackableScoreStatus = imageScores.length > 0 ? ImageScoreStatus.Received : ImageScoreStatus.NotReceived;
+        this._trackableScoreStatus = imageScores.length > 0 ? ImageTrackingScoreStatus.Received : ImageTrackingScoreStatus.NotReceived;
     }
 }
 

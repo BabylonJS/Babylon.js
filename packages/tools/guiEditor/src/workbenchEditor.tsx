@@ -9,7 +9,7 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
-import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
+import { GizmoWrapper } from "./diagram/gizmoWrapper";
 import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
 import type { Control } from "gui/2D/controls/control";
