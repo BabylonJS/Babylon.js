@@ -20,7 +20,7 @@
         "@dev/build-tools": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
         "@dev/core": "1.0.0",
-        "@dev/loader": "1.0.0",
+        "@dev/loaders": "1.0.0",
         "@tools/viewer": "1.0.0",
         "rimraf": "^3.0.2",
         "sass-loader": "^12.4.0",
