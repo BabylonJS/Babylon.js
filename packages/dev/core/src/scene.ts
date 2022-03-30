@@ -2304,7 +2304,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (newTransformNode._indexInSceneTransformNodesArray !== -1) { // Already there?
+        if (newTransformNode.getScene() === this && newTransformNode._indexInSceneTransformNodesArray !== -1) {
+            // Already there?
             return;
         }
 
@@ -2674,7 +2675,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (newMaterial._indexInSceneMaterialArray !== -1) { // Already there?? 
+        if (newMaterial.getScene() === this && newMaterial._indexInSceneMaterialArray !== -1) {
+            // Already there??
             return;
         }
 
