@@ -272,6 +272,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._metaKey = false;
         this._shiftKey = false;
         this._buttonsPressed = 0;
+        this._currentActiveButton = -1;
     }
 
     /**
