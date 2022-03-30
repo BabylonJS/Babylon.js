@@ -60,6 +60,11 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             this._localChange = false;
             return true;
         }
+
+        if (nextProps.unit !== this.props.unit) {
+            return true;
+        }
+        
         return false;
     }
 
