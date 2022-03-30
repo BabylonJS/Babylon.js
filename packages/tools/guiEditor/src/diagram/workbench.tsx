@@ -524,16 +524,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (draggedControl) {
             const newParent = draggedControl.parent;
-            if (newParent?.typeName === "StackPanel" || newParent?.typeName === "VirtualKeyboard") {
-                const isVertical = (newParent as StackPanel).isVertical;
-                if (draggedControl._width.unit === ValueAndUnit.UNITMODE_PERCENTAGE && !isVertical) {
-                    CoordinateHelper.ConvertToPixels(draggedControl, ["width"]);
-                    this.props.globalState.hostWindow.alert("Warning: Parenting to horizontal stack panel converts width to pixel values");
+            if (newParent) {
+                if (newParent.typeName === "StackPanel" || newParent.typeName === "VirtualKeyboard") {
+                    const isVertical = (newParent as StackPanel).isVertical;
+                    if (draggedControl._width.unit === ValueAndUnit.UNITMODE_PERCENTAGE && !isVertical) {
+                        CoordinateHelper.ConvertToPixels(draggedControl, ["width"]);
+                        this.props.globalState.hostWindow.alert("Warning: Parenting to horizontal stack panel converts width to pixel values");
+                    }
+                    if (draggedControl._height.unit === ValueAndUnit.UNITMODE_PERCENTAGE && isVertical) {
+                        CoordinateHelper.ConvertToPixels(draggedControl, ["height"]);
+                        this.props.globalState.hostWindow.alert("Warning: Parenting to vertical stack panel converts height to pixel values");
+                    }
                 }
-                if (draggedControl._height.unit === ValueAndUnit.UNITMODE_PERCENTAGE && isVertical) {
-                    CoordinateHelper.ConvertToPixels(draggedControl, ["height"]);
-                    this.props.globalState.hostWindow.alert("Warning: Parenting to vertical stack panel converts height to pixel values");
-                }
+                // Force containers to re-render if we added a new child
+                newParent.markAsDirty();
             }
         }
         this.props.globalState.draggedControl = null;
