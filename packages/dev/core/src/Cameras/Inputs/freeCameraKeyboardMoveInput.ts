@@ -149,11 +149,6 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {

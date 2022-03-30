@@ -149,11 +149,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
