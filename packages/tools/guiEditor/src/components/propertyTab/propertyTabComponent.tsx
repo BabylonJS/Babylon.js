@@ -116,9 +116,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     save(saveCallback: () => void) {
         this.props.globalState.workbench.removeEditorTransformation();
+        const allControls = this.props.globalState.guiTexture.rootContainer.getDescendants();
+        for (const control of allControls) {
+            this.props.globalState.workbench.removeEditorBehavior(control);
+        }
         const size = this.props.globalState.workbench.guiSize;
         this.props.globalState.guiTexture.scaleTo(size.width, size.height);
         saveCallback();
+        for (const control of allControls) {
+            this.props.globalState.workbench.addEditorBehavior(control);
+        }
     }
 
     saveLocally = () => {
@@ -400,9 +407,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onAddComponent={(value) => {
                             for (const button of buttons) {
                                 const guiElement = GUINodeTools.CreateControlFromString(value);
-                                const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
-                                button.addControl(newGuiNode);
-                                this.props.globalState.select(newGuiNode);
+                                this.props.globalState.workbench.addEditorBehavior(guiElement);
+                                button.addControl(guiElement);
+                                this.props.globalState.select(guiElement);
                             }
                         }}
                     />
