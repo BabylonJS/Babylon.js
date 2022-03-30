@@ -14,6 +14,7 @@ export type DevPackageName =
     | "procedural-textures"
     | "node-editor"
     | "gui-editor"
+    | "viewer"
     | "ktx2decoder";
 export type UMDPackageName =
     | "babylonjs"
@@ -25,6 +26,7 @@ export type UMDPackageName =
     | "babylonjs-inspector"
     | "babylonjs-node-editor"
     | "babylonjs-gui-editor"
+    | "babylonjs-viewer"
     | "babylonjs-post-process"
     | "babylonjs-ktx2decoder";
 export type NamespacePackageName =
@@ -38,6 +40,7 @@ export type NamespacePackageName =
     | "BABYLON.NodeEditor"
     | "BABYLON.GuiEditor"
     | "INSPECTOR"
+    | "BabylonViewer"
     | "KTX2DECODER";
 export type ES6PackageName =
     | "@babylonjs/core"
@@ -50,6 +53,7 @@ export type ES6PackageName =
     | "@babylonjs/node-editor"
     | "@babylonjs/gui-editor"
     | "@babylonjs/post-processes"
+    | "@babylonjs/viewer"
     | "@babylonjs/ktx2decoder";
 
 export const PrivateDevPackagesDirectoryMapping: { [key in PrivateDevPackageName]: string } = {
@@ -102,6 +106,10 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
         baseDir: "",
         baseFilename: "babylon.ktx2Decoder",
     },
+    "babylonjs-viewer": {
+        baseDir: "",
+        baseFilename: "babylon.viewer",
+    },
 };
 export type ESMPackageName = "@babylonjs/esm";
 
@@ -128,6 +136,7 @@ const packageMapping: {
         "post-processes": "babylonjs-post-process",
         "procedural-textures": "babylonjs-procedural-textures",
         ktx2decoder: "babylonjs-ktx2decoder",
+        viewer: "babylonjs-viewer",
     },
     es6: {
         core: "@babylonjs/core",
@@ -141,6 +150,7 @@ const packageMapping: {
         "post-processes": "@babylonjs/post-processes",
         "procedural-textures": "@babylonjs/procedural-textures",
         ktx2decoder: "@babylonjs/ktx2decoder",
+        viewer: "@babylonjs/viewer",
     },
     esm: {
         core: "@babylonjs/esm",
@@ -154,6 +164,7 @@ const packageMapping: {
         "post-processes": "@babylonjs/esm",
         "procedural-textures": "@babylonjs/esm",
         ktx2decoder: "@babylonjs/esm",
+        viewer: "@babylonjs/esm",
     },
     // lts: {
     //     core: "@babylonjs/esm",
@@ -199,6 +210,7 @@ const packageMapping: {
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
         ktx2decoder: "KTX2DECODER",
+        viewer: "BabylonViewer",
     },
 };
 
