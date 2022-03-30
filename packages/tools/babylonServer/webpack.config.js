@@ -102,7 +102,7 @@ module.exports = (env) => {
             static: ["public", "declarations", "../playground/public"],
             webSocketServer: production ? false : "ws",
             compress: production,
-            port: env.cdnPort ?? env.CDN_PORT ?? 1337,
+            port: env.cdnPort || env.CDN_PORT || 1337,
             server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
             hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
             liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,

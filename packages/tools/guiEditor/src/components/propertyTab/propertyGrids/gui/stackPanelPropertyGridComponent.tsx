@@ -13,6 +13,8 @@ import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent
 import alignVerticalIcon from "shared-ui-components/imgs/alignVerticalIcon.svg";
 import stackPanelSpacingIcon from "shared-ui-components/imgs/stackPanelSpacingIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { ValueAndUnit } from "gui/2D/valueAndUnit";
+import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];
@@ -34,7 +36,6 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
-                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <div className="ge-divider">
                     <IconComponent icon={alignVerticalIcon} label={"Determines if children are stacked horizontally or vertically"} />
                     <CheckBoxLineComponent
@@ -47,12 +48,19 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                                     if (proxy.isVertical) {
                                         child.horizontalAlignment = StackPanel.HORIZONTAL_ALIGNMENT_CENTER;
                                         child._left.value = 0;
+                                        if (child._height.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                                            CoordinateHelper.ConvertToPixels(child, ["height"]);
+                                        }
                                     } else {
                                         child.verticalAlignment = StackPanel.VERTICAL_ALIGNMENT_CENTER;
                                         child._top.value = 0;
+                                        if (child._width.unit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                                            CoordinateHelper.ConvertToPixels(child, ["width"]);
+                                        }
                                     }
                                 }
                             }
+                            this.forceUpdate();
                         }}
                     />
                 </div>
@@ -70,6 +78,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                         min={0}
                     />
                 </div>
+                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );
     }
