@@ -69,8 +69,8 @@ export {
     AbstractViewerNavbarButton,
     registerCustomOptimizer,
 };
-// eslint-disable-next-line no-duplicate-imports
-export { GLTF2 } from "babylonjs-loaders";
+// eslint-disable-next-line import/no-internal-modules
+export { GLTF2 } from "loaders/glTF/index";
 // export publicliy all configuration interfaces
 // eslint-disable-next-line import/no-internal-modules
 export * from "./configuration/index";
