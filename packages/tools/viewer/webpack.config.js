@@ -15,6 +15,7 @@ module.exports = (env) => {
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "[name].js",
+            library: "BabylonViewer",
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
@@ -33,7 +34,7 @@ module.exports = (env) => {
             rules: webpackTools.getRules({
                 sideEffects: true,
                 includeCSS: true,
-                
+
             }),
         },
         ignoreWarnings: [/Failed to parse source map/],

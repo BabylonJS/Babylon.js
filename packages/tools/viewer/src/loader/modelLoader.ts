@@ -13,6 +13,7 @@ import { ModelState, ViewerModel } from "../model/viewerModel";
 import type { ILoaderPlugin } from "./plugins/index";
 import { getLoaderPluginByName } from "./plugins/index";
 import "loaders/glTF/index";
+import "core/Loading/Plugins/babylonFileLoader";
 
 /**
  * An instance of the class is in charge of loading the model correctly.
