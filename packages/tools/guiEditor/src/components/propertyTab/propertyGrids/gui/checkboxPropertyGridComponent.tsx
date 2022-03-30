@@ -13,6 +13,7 @@ import checkBoxIconDark from "shared-ui-components/imgs/checkboxIconDark.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface ICheckboxPropertyGridComponentProps {
     checkboxes: Checkbox[];
@@ -62,9 +63,8 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                         lockObject={this.props.lockObject}
                         target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
-                        unit="PX"
                         label=""
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         min={0}
                         digits={2}
