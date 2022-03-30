@@ -49,7 +49,7 @@ export class KeyboardManager {
     }
 
     private _clearKeys() {
-        for(const key of this._keys) {
+        for (const key of this._keys) {
             this._keys.delete(key);
             this.onKeyPressedObservable.notifyObservers(key);
         }
