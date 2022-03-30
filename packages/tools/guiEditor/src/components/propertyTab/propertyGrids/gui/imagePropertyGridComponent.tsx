@@ -19,6 +19,7 @@ import autoResizeIcon from "shared-ui-components/imgs/autoResizeIcon.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import animationSheetIcon from "shared-ui-components/imgs/animationSheetIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface IImagePropertyGridComponentProps {
     images: Image[];
@@ -129,8 +130,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         arrows={true}
                         min={0}
                         placeholder="0"
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -141,8 +141,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         arrows={true}
                         min={0}
                         placeholder="0"
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                     />
                 </div>
                 <div className="ge-divider double">
@@ -156,8 +155,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         arrows={true}
                         min={0}
                         placeholder={Math.max(...images.map((image) => image.imageWidth)).toString()}
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -168,8 +166,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         arrows={true}
                         min={0}
                         placeholder={Math.max(...images.map((image) => image.imageHeight)).toString()}
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                     />
                 </div>
                 <div className="ge-divider">
