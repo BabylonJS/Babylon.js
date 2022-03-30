@@ -4,7 +4,6 @@ import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { Tools } from "core/Misc/tools";
-
 import { Tags } from "core/Misc/tags";
 
 import type { ConfigurationContainer } from "../configuration/configurationContainer";
@@ -13,6 +12,7 @@ import type { ObservablesManager } from "../managers/observablesManager";
 import { ModelState, ViewerModel } from "../model/viewerModel";
 import type { ILoaderPlugin } from "./plugins/index";
 import { getLoaderPluginByName } from "./plugins/index";
+import "loaders/glTF/index";
 
 /**
  * An instance of the class is in charge of loading the model correctly.
@@ -151,14 +151,14 @@ export class ModelLoader {
             Object.keys(gltfLoader)
                 .filter((name) => name.indexOf("on") === 0 && name.indexOf("Observable") !== -1)
                 .forEach((functionName) => {
-                    gltfLoader[functionName].add((payload) => {
+                    (gltfLoader as any)[functionName].add((payload: any[]) => {
                         this._checkAndRun(functionName.replace("Observable", ""), payload);
                     });
                 });
 
             gltfLoader.onParsedObservable.add((data) => {
-                if (data && data.json && data.json["asset"]) {
-                    model.loadInfo = data.json["asset"];
+                if (data && data.json && (data.json as any)["asset"]) {
+                    model.loadInfo = (data.json as any)["asset"];
                 }
             });
 
@@ -207,10 +207,10 @@ export class ModelLoader {
             return;
         }
         this._plugins
-            .filter((p) => p[functionName])
+            .filter((p) => p[functionName as keyof ILoaderPlugin])
             .forEach((plugin) => {
                 try {
-                    plugin[functionName].apply(this, payload);
+                    (plugin as any)[functionName as keyof ILoaderPlugin].apply(this, payload);
                 } catch (e) {}
             });
     }

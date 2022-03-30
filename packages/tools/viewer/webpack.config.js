@@ -30,7 +30,11 @@ module.exports = (env) => {
             fs: true,
         },
         module: {
-            rules: webpackTools.getRules(),
+            rules: webpackTools.getRules({
+                sideEffects: true,
+                includeCSS: true,
+                
+            }),
         },
         ignoreWarnings: [/Failed to parse source map/],
         devServer: {
