@@ -285,15 +285,6 @@ export class FreeCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     */
-    public detachControl(ignored: any): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         this.inputs.detachElement();
 
