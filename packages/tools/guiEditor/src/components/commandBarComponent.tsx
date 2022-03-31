@@ -191,7 +191,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={canvasFitIcon}
                             isActive={false}
                             onClick={() => {
-                                this.props.globalState.onFitToWindowObservable.notifyObservers();
+                                this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                             }}
                         />
                         <CommandButtonComponent
@@ -220,6 +220,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 }
                                 this.forceUpdate();
                             }}
+                            large
                         />
                         {DataStorage.ReadBoolean("Responsive", true) && (
                             <OptionsLineComponent

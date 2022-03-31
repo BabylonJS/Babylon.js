@@ -4,20 +4,19 @@ type Key = "control" | "shift" | "alt" | "space" | "meta";
 
 export class KeyboardManager {
     private _hostElement: HTMLElement | HTMLDocument;
-    private _kdListener: EventListener;
-    private _kuListener: EventListener;
-    private _moveListener: EventListener;
+    private _kdListener = (evt: Event) => this._keyEvent(evt as KeyboardEvent, true);
+    private _kuListener = (evt: Event) => this._keyEvent(evt as KeyboardEvent, false);
+    private _moveListener = (evt: Event) => this._updateModifierKeys(evt as MouseEvent);
+    private _focusOutListener = () => this._clearKeys();
     private _keys = new Set<Key>();
     public onKeyPressedObservable: Observable<Key>;
     constructor(hostElement: HTMLElement | HTMLDocument) {
         this._hostElement = hostElement;
-        this._kdListener = (evt) => this._keyEvent(evt as KeyboardEvent, true);
-        this._kuListener = (evt) => this._keyEvent(evt as KeyboardEvent, false);
-        this._moveListener = (evt) => this._updateModifierKeys(evt as MouseEvent);
         hostElement.addEventListener("keydown", this._kdListener);
         hostElement.addEventListener("keypress", this._kdListener);
         hostElement.addEventListener("keyup", this._kuListener);
         hostElement.addEventListener("mousemove", this._moveListener);
+        hostElement.addEventListener("focusout", this._focusOutListener);
         this.onKeyPressedObservable = new Observable<Key>();
     }
 
@@ -49,6 +48,13 @@ export class KeyboardManager {
         }
     }
 
+    private _clearKeys() {
+        for (const key of this._keys) {
+            this._keys.delete(key);
+            this.onKeyPressedObservable.notifyObservers(key);
+        }
+    }
+
     public isKeyDown(key: Key) {
         return this._keys.has(key);
     }
@@ -58,5 +64,6 @@ export class KeyboardManager {
         this._hostElement.removeEventListener("keypress", this._kdListener);
         this._hostElement.removeEventListener("keyup", this._kuListener);
         this._hostElement.removeEventListener("mousemove", this._moveListener);
+        this._hostElement.removeEventListener("focusout", this._focusOutListener);
     }
 }
