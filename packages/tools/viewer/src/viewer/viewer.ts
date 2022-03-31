@@ -540,24 +540,24 @@ export abstract class AbstractViewer {
      */
     protected _configureObservers(observersConfiguration: IObserversConfiguration) {
         if (observersConfiguration.onEngineInit) {
-            this.onEngineInitObservable.add(window[observersConfiguration.onEngineInit]);
+            this.onEngineInitObservable.add((window as any)[observersConfiguration.onEngineInit]);
         } else {
             if (observersConfiguration.onEngineInit === "" && this.configuration.observers && this.configuration.observers!.onEngineInit) {
-                this.onEngineInitObservable.removeCallback(window[this.configuration.observers!.onEngineInit!]);
+                this.onEngineInitObservable.removeCallback((window as any)[this.configuration.observers!.onEngineInit!]);
             }
         }
         if (observersConfiguration.onSceneInit) {
-            this.onSceneInitObservable.add(window[observersConfiguration.onSceneInit]);
+            this.onSceneInitObservable.add((window as any)[observersConfiguration.onSceneInit]);
         } else {
             if (observersConfiguration.onSceneInit === "" && this.configuration.observers && this.configuration.observers!.onSceneInit) {
-                this.onSceneInitObservable.removeCallback(window[this.configuration.observers!.onSceneInit!]);
+                this.onSceneInitObservable.removeCallback((window as any)[this.configuration.observers!.onSceneInit!]);
             }
         }
         if (observersConfiguration.onModelLoaded) {
-            this.onModelLoadedObservable.add(window[observersConfiguration.onModelLoaded]);
+            this.onModelLoadedObservable.add((window as any)[observersConfiguration.onModelLoaded]);
         } else {
             if (observersConfiguration.onModelLoaded === "" && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
-                this.onModelLoadedObservable.removeCallback(window[this.configuration.observers!.onModelLoaded!]);
+                this.onModelLoadedObservable.removeCallback((window as any)[this.configuration.observers!.onModelLoaded!]);
             }
         }
     }
@@ -595,7 +595,7 @@ export abstract class AbstractViewer {
     /**
      * This will prepare the container element for the viewer
      */
-    protected abstract _prepareContainerElement();
+    protected abstract _prepareContainerElement(): void;
 
     /**
      * This function will execute when the HTML templates finished initializing.
@@ -788,7 +788,7 @@ export abstract class AbstractViewer {
         return Promise.resolve(this.sceneManager.scene)
             .then((scene) => {
                 if (!scene) {
-                    return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer);
+                    return this.sceneManager.initScene(this.configuration.scene);
                 }
                 return scene;
             })
