@@ -322,19 +322,19 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     /**
-     * Adds editor behavior to control
+     * Adds editor observers to control and stores old data in metadata
      * @param guiControl
      */
     addEditorBehavior(guiControl: Control) {
-        const onPointerUpStored = guiControl.onPointerUpObservable.observers;
+        const onPointerUpStored = guiControl.onPointerUpObservable.observers.slice();
         guiControl.onPointerUpObservable.clear();
-        const onPointerDownStored = guiControl.onPointerDownObservable.observers;
+        const onPointerDownStored = guiControl.onPointerDownObservable.observers.slice();
         guiControl.onPointerDownObservable.clear();
-        const onPointerEnterStored = guiControl.onPointerEnterObservable.observers;
+        const onPointerEnterStored = guiControl.onPointerEnterObservable.observers.slice();
         guiControl.onPointerEnterObservable.clear();
-        const onPointerOutStored = guiControl.onPointerOutObservable.observers;
+        const onPointerOutStored = guiControl.onPointerOutObservable.observers.slice();
         guiControl.onPointerOutObservable.clear();
-        const onDisposeStored = guiControl.onDisposeObservable.observers;
+        const onDisposeStored = guiControl.onDisposeObservable.observers.slice();
         guiControl.onDisposeObservable.clear();
 
         guiControl.onPointerUpObservable.add(() => {
