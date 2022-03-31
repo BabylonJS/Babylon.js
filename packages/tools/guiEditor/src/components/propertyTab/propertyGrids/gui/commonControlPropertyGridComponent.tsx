@@ -49,6 +49,7 @@ import vAlignBottomIcon from "shared-ui-components/imgs/vAlignBottomIcon.svg";
 import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnlyPaddingIcon.svg";
 import { StackPanel } from "gui/2D/controls/stackPanel";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -342,8 +343,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 delayInput={true}
                                 value={getValue("_left")}
                                 onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
-                                unit={getUnitString("_left")}
-                                onUnitClicked={(unit) => convertUnits(unit, "left")}
+                                unit={<UnitButton unit={getUnitString("_left")} onClick={(unit) => convertUnits(unit, "left")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("left", amount)}
                             />
@@ -354,8 +354,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 delayInput={true}
                                 value={getValue("_top")}
                                 onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
-                                unit={getUnitString("_top")}
-                                onUnitClicked={(unit) => convertUnits(unit, "top")}
+                                unit={<UnitButton unit={getUnitString("_top")} onClick={(unit) => convertUnits(unit, "top")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("top", amount)}
                             />
@@ -382,9 +381,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     }
                                     this._checkAndUpdateValues("width", newValue);
                                 }}
-                                unit={getUnitString("_width")}
-                                unitLocked={widthUnitsLocked}
-                                onUnitClicked={(unit) => !widthUnitsLocked && convertUnits(unit, "width")}
+                                unit={<UnitButton unit={getUnitString("_width")} locked={widthUnitsLocked} onClick={(unit) => convertUnits(unit, "width")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("width", amount)}
                             />
@@ -408,9 +405,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     }
                                     this._checkAndUpdateValues("height", newValue);
                                 }}
-                                unit={getUnitString("_height")}
-                                unitLocked={heightUnitsLocked}
-                                onUnitClicked={(unit) => !heightUnitsLocked && convertUnits(unit, "height")}
+                                unit={<UnitButton unit={getUnitString("_height")} locked={heightUnitsLocked} onClick={(unit) => convertUnits(unit, "height")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("height", amount)}
                             />
@@ -427,8 +422,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     this._checkAndUpdateValues("paddingTop", newValue);
                                     this._markChildrenAsDirty();
                                 }}
-                                unit={getUnitString("_paddingTop")}
-                                onUnitClicked={(unit) => convertUnits(unit, "paddingTop")}
+                                unit={<UnitButton unit={getUnitString("_paddingTop")} onClick={(unit) => convertUnits(unit, "paddingTop")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("paddingTop", amount, 0)}
                             />
@@ -442,8 +436,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     this._checkAndUpdateValues("paddingBottom", newValue);
                                     this._markChildrenAsDirty();
                                 }}
-                                unit={getUnitString("_paddingBottom")}
-                                onUnitClicked={(unit) => convertUnits(unit, "paddingBottom")}
+                                unit={<UnitButton unit={getUnitString("_paddingBottom")} onClick={(unit) => convertUnits(unit, "paddingBottom")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("paddingBottom", amount, 0)}
                             />
@@ -460,8 +453,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     this._checkAndUpdateValues("paddingLeft", newValue);
                                     this._markChildrenAsDirty();
                                 }}
-                                unit={getUnitString("_paddingLeft")}
-                                onUnitClicked={(unit) => convertUnits(unit, "paddingLeft")}
+                                unit={<UnitButton unit={getUnitString("_paddingLeft")} onClick={(unit) => convertUnits(unit, "paddingLeft")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("paddingLeft", amount)}
                             />
@@ -476,8 +468,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     this._markChildrenAsDirty();
                                 }}
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                unit={getUnitString("_paddingRight")}
-                                onUnitClicked={(unit) => convertUnits(unit, "paddingRight")}
+                                unit={<UnitButton unit={getUnitString("_paddingRight")} onClick={(unit) => convertUnits(unit, "paddingRight")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("paddingRight", amount)}
                             />
@@ -512,6 +503,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         minimum={0}
                         maximum={2 * Math.PI}
                         step={0.01}
+                        unit={<UnitButton unit="RAD" locked />}
                     />
                 </div>
                 <hr className="ge" />
@@ -545,8 +537,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="X"
                         target={proxy}
                         propertyName="shadowOffsetX"
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         step="0.1"
                         digits={2}
@@ -556,8 +547,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="Y"
                         target={proxy}
                         propertyName="shadowOffsetY"
-                        unit="PX"
-                        unitLocked={true}
+                        unit={<UnitButton unit="PX" locked />}
                         arrows={true}
                         step="0.1"
                         digits={2}
@@ -609,8 +599,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 numbersOnly={true}
                                 value={getValue("_fontSize")}
                                 onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
-                                unit={getUnitString("_fontSize")}
-                                onUnitClicked={(unit) => convertUnits(unit, "fontSize")}
+                                unit={<UnitButton unit={getUnitString("_fontSize")} onClick={(unit) => convertUnits(unit, "fontSize")} />}
                                 arrows={true}
                                 arrowsIncrement={(amount) => increment("fontSize", amount, 0)}
                             />

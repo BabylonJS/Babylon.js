@@ -220,6 +220,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 }
                                 this.forceUpdate();
                             }}
+                            large
                         />
                         {DataStorage.ReadBoolean("Responsive", true) && (
                             <OptionsLineComponent

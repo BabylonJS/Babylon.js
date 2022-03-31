@@ -14,6 +14,7 @@ import linePoint1Icon from "shared-ui-components/imgs/linePoint1Icon.svg";
 import linePoint2Icon from "shared-ui-components/imgs/linePoint2Icon.svg";
 import lineDashIcon from "shared-ui-components/imgs/lineDashIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface ILinePropertyGridComponentProps {
     lines: Line[];
@@ -76,7 +77,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label={"Line Width"} />
-                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="lineWidth" unit="PX" unitLocked={true} min={0} arrows={true} />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="lineWidth" unit={<UnitButton unit="PX" locked />} min={0} arrows={true} />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={lineDashIcon} label={"Dash Pattern"} />
