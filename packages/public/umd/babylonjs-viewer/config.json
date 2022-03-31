@@ -1,0 +1,20 @@
+[
+    {
+        "declarationLibs": ["@tools/viewer"],
+        "devPackageName": "viewer",
+        "filename": "babylon.viewer.module.d.ts",
+        "outputDirectory": "./"
+    },
+    {
+        "declarationLibs": ["@dev/core"],
+        "devPackageName": "core",
+        "filename": "babylon.module.d.ts",
+        "outputDirectory": "./"
+    },
+    {
+        "declarationLibs": ["@dev/loaders"],
+        "devPackageName": "core",
+        "filename": "babylonjs.loaders.module.d.ts",
+        "outputDirectory": "./"
+    }
+]

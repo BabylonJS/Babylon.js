@@ -1,6 +1,6 @@
 import type { IImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { IColorGradingConfiguration } from "./colorGradingConfiguration";
-import type { IGlowLayerOptions } from "babylonjs";
+import type { IGlowLayerOptions } from "core/Layers/glowLayer";
 
 export interface ISceneConfiguration {
     debug?: boolean;
