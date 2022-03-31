@@ -122,13 +122,11 @@ export class ViewerModel implements IDisposable {
     public loadId: number;
 
     public loadInfo: IAsset;
-    private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
     private _loaderDone: boolean = false;
 
     private _entryAnimation: ModelAnimationConfiguration;
-    private _exitAnimation: ModelAnimationConfiguration;
     private _scaleTransition: Animation;
     private _animatables: Array<Animatable> = [];
     private _frameRate: number = 60;
@@ -240,6 +238,7 @@ export class ViewerModel implements IDisposable {
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);
         }
+        return Promise.resolve(this);
     }
 
     /**
@@ -339,18 +338,18 @@ export class ViewerModel implements IDisposable {
         this._applyAnimation(this._entryAnimation, true, callback);
     }
 
-    /**
-     * Animates the model from the current position to the exit-screen position
-     * @param completeCallback A function to call when the animation has completed
-     */
-    private _exitScene(completeCallback: () => void): void {
-        if (!this._exitAnimation) {
-            completeCallback();
-            return;
-        }
+    // /**
+    //  * Animates the model from the current position to the exit-screen position
+    //  * @param completeCallback A function to call when the animation has completed
+    //  */
+    // private _exitScene(completeCallback: () => void): void {
+    //     if (!this._exitAnimation) {
+    //         completeCallback();
+    //         return;
+    //     }
 
-        this._applyAnimation(this._exitAnimation, false, completeCallback);
-    }
+    //     this._applyAnimation(this._exitAnimation, false, completeCallback);
+    // }
 
     private _modelComplete() {
         //reapply material defines to be sure:
@@ -433,9 +432,9 @@ export class ViewerModel implements IDisposable {
         const updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach((mesh) => {
                 if (param) {
-                    mesh[variable][param] = value;
+                    mesh[variable as keyof AbstractMesh][param] = value;
                 } else {
-                    mesh[variable] = value;
+                    (mesh as any)[variable] = value;
                 }
             });
         };
@@ -551,9 +550,9 @@ export class ViewerModel implements IDisposable {
             this._entryAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.entryAnimation);
         }
 
-        if (this._modelConfiguration.exitAnimation) {
-            this._exitAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.exitAnimation);
-        }
+        // if (this._modelConfiguration.exitAnimation) {
+        //     this._exitAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.exitAnimation);
+        // }
 
         this.onAfterConfigure.notifyObservers(this);
     }
