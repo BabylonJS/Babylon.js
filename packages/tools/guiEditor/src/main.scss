@@ -53,7 +53,7 @@
     grid-row: 1 / span 3;
     grid-column: 2;
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     .blackLine {
         height: 5px;
