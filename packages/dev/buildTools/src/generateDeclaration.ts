@@ -192,7 +192,7 @@ function getPackageDeclaration(
     let removeNext = false;
     const packageMapping = getPackageMappingByDevName(devPackageName);
     const defaultModuleName = getPublicPackageName(packageMapping.namespace);
-    const thisFileModuleName = getPublicPackageName(packageMapping.namespace , sourceFilePath);
+    const thisFileModuleName = getPublicPackageName(packageMapping.namespace, sourceFilePath);
     while (i < lines.length) {
         let line = lines[i];
 
