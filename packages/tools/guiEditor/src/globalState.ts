@@ -11,6 +11,7 @@ import type { Control } from "gui/2D/controls/control";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
+import { Container } from "gui/2D/controls/container";
 import { KeyboardManager } from "./keyboardManager";
 
 export enum DragOverLocation {
@@ -72,7 +73,8 @@ export class GlobalState {
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
     }
-    onFitToWindowObservable = new Observable<void>();
+    onFitControlsToWindowObservable = new Observable<void>();
+    onReframeWindowObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
@@ -183,10 +185,37 @@ export class GlobalState {
         this.onSelectionChangedObservable.notifyObservers();
     }
 
+    private _findParentControlInTexture(texture: AdvancedDynamicTexture, searchedControl: Control) {
+        const searchList = [texture.rootContainer];
+        while (searchList.length > 0) {
+            const current = searchList.splice(0, 1)[0];
+            const children = current._children;
+            if (children.indexOf(searchedControl) !== -1) {
+                return current;
+            }
+            for (const child of children) {
+                if (child instanceof Container) {
+                    searchList.push(child);
+                }
+            }
+        }
+        return null;
+    }
+
     public deleteSelectedNodes() {
         for (const control of this.selectedControls) {
-            this.guiTexture.removeControl(control);
-            this.liveGuiTexture?.removeControl(control);
+            const guiTextureParent = this._findParentControlInTexture(this.guiTexture, control);
+            guiTextureParent?.removeControl(control);
+            if (this.liveGuiTexture) {
+                const allDescendants = control.getDescendants();
+                for (const descendant of allDescendants) {
+                    const liveGuiTextureDescendantParent = this._findParentControlInTexture(this.liveGuiTexture, descendant);
+                    liveGuiTextureDescendantParent?.removeControl(descendant);
+                    descendant.dispose();
+                }
+                const liveGuiTextureParent = this._findParentControlInTexture(this.liveGuiTexture, control);
+                liveGuiTextureParent?.removeControl(control);
+            }
             control.dispose();
         }
         this.setSelection([]);

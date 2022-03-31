@@ -32,6 +32,6 @@ export function InitTags(selector: string = "babylon") {
         const config = configMapper.map(element);
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const viewer = new DefaultViewer(element, config);
+        new DefaultViewer(element, config);
     }
 }
