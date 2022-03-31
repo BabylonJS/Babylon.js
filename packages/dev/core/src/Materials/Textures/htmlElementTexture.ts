@@ -2,6 +2,7 @@ import type { Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from "../../Maths/math.vector";
+import { Observable } from "../../Misc/observable";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
@@ -45,6 +46,11 @@ export class HtmlElementTexture extends BaseTexture {
      * The texture URL.
      */
     public element: HTMLVideoElement | HTMLCanvasElement;
+
+    /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<HtmlElementTexture> = new Observable<HtmlElementTexture>();
 
     private static readonly _DefaultOptions: IHtmlElementTextureOptions = {
         generateMipMaps: false,
@@ -126,6 +132,7 @@ export class HtmlElementTexture extends BaseTexture {
             return;
         }
 
+        const wasReady = this.isReady();
         if (this._isVideo) {
             const videoElement = this.element as HTMLVideoElement;
             if (videoElement.readyState < videoElement.HAVE_CURRENT_DATA) {
@@ -137,5 +144,17 @@ export class HtmlElementTexture extends BaseTexture {
             const canvasElement = this.element as HTMLCanvasElement;
             engine.updateDynamicTexture(this._texture, canvasElement, invertY === null ? true : invertY, false);
         }
+
+        if (!wasReady && this.isReady()) {
+            this.onLoadObservable.notifyObservers(this);
+        }
+    }
+
+    /**
+     * Dispose the texture and release its associated resources.
+     */
+    public dispose(): void {
+        this.onLoadObservable.clear();
+        super.dispose();
     }
 }
