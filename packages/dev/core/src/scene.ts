@@ -2304,6 +2304,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this._blockEntityCollection) {
             return;
         }
+
+        if (newTransformNode.getScene() === this && newTransformNode._indexInSceneTransformNodesArray !== -1) {
+            // Already there?
+            return;
+        }
+
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
 
@@ -2667,6 +2673,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public addMaterial(newMaterial: Material): void {
         if (this._blockEntityCollection) {
+            return;
+        }
+
+        if (newMaterial.getScene() === this && newMaterial._indexInSceneMaterialArray !== -1) {
+            // Already there??
             return;
         }
 
