@@ -61,7 +61,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
-        if (nextState.dragging != this.state.dragging) return true;
+        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit) {
+            return true;
+        }
 
         return false;
     }
