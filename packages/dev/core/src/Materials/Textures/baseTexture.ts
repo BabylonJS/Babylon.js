@@ -866,8 +866,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
                             callback();
                         }
                     });
-                }
-                else {
+                } else {
                     if (--numRemaining === 0) {
                         callback();
                     }
