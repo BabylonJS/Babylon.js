@@ -58,6 +58,7 @@ const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _sizeOption: number = 0;
+    private _stopUpdating: boolean = false;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
@@ -249,6 +250,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                        }
+                                    }}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
                                     }}
                                     arrows={true}
@@ -261,6 +271,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                        }
+                                    }}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
                                     }}
                                     arrows={true}
