@@ -190,7 +190,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 const yFactor = this._engine.getRenderHeight() / height;
                 this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
             } else {
-               this._reframeWindow();
+                this._reframeWindow();
             }
         });
 
