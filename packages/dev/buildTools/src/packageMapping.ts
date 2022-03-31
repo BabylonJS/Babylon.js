@@ -190,14 +190,14 @@ const packageMapping: {
         materials: "BABYLON",
         loaders: (filePath?: string) => {
             if (filePath) {
-                if (filePath.includes("loaders/glTF/1.0")) {
+                if (filePath.includes("/glTF/1.0")) {
                     // was .endsWith
                     return "BABYLON.GLTF1";
-                } else if (filePath.includes("loaders/glTF/2.0/Extensions")) {
+                } else if (filePath.includes("/glTF/2.0/Extensions")) {
                     return "BABYLON.GLTF2.Loader.Extensions";
-                } else if (filePath.includes("loaders/glTF/2.0/glTFLoaderInterfaces")) {
+                } else if (filePath.includes("/glTF/2.0/glTFLoaderInterfaces")) {
                     return "BABYLON.GLTF2.Loader";
-                } else if (filePath.includes("loaders/glTF/2.0")) {
+                } else if (filePath.includes("/glTF/2.0")) {
                     return "BABYLON.GLTF2";
                 }
             }

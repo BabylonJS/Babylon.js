@@ -2,6 +2,5 @@
     "declarationLibs": ["@lts/loaders"],
     "devPackageName": "loaders",
     "filename": "babylonjs.loaders.module.d.ts",
-    "outputDirectory": "./",
-    "addToDocumentation": true
+    "outputDirectory": "./"
 }
