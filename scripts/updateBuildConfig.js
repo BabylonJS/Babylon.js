@@ -10,6 +10,8 @@ const fs = require("fs");
  * When prerelease the second argument is the prerelease id (alpha, beta, rc). keep empty to keep the same one.
  * 
  * This will be triggered by the CI when running the right pipeline (publish minor, publish major, publish patch)
+ * 
+ * Commit the file change afterwards and submit a pull request to first allow the tests to run.
  */
 
 
