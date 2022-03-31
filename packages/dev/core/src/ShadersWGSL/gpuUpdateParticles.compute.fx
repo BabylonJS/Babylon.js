@@ -1,126 +1,126 @@
 struct Particle {
-    position : vec3<f32>;
-    age : f32;
-    size : vec3<f32>;
-    life : f32;
-    seed : vec4<f32>;
-    direction : vec3<f32>;
-    dummy0: f32;
+    position : vec3<f32>,
+    age : f32,
+    size : vec3<f32>,
+    life : f32,
+    seed : vec4<f32>,
+    direction : vec3<f32>,
+    dummy0: f32,
 
     #ifdef CUSTOMEMITTER
-        initialPosition : vec3<f32>;
-        dummy1: f32;
+        initialPosition : vec3<f32>,
+        dummy1: f32,
     #endif
     #ifndef COLORGRADIENTS
-        color : vec4<f32>;
+        color : vec4<f32>,
     #endif
     #ifndef BILLBOARD
-        initialDirection : vec3<f32>;
-        dummy2: f32;
+        initialDirection : vec3<f32>,
+        dummy2: f32,
     #endif
     #ifdef NOISE
-        noiseCoordinates1 : vec3<f32>;
-        dummy3: f32;
-        noiseCoordinates2 : vec3<f32>;
-        dummy4: f32;
+        noiseCoordinates1 : vec3<f32>,
+        dummy3: f32,
+        noiseCoordinates2 : vec3<f32>,
+        dummy4: f32,
     #endif
     #ifdef ANGULARSPEEDGRADIENTS
-        angle : f32;
+        angle : f32,
     #else
-        angle : vec2<f32>;
+        angle : vec2<f32>,
     #endif
     #ifdef ANIMATESHEET
-        cellIndex : f32;
+        cellIndex : f32,
         #ifdef ANIMATESHEETRANDOMSTART
-            cellStartOffset : f32;
+            cellStartOffset : f32,
         #endif
     #endif
 };
 struct Particles {
-    particles : array<Particle>;
+    particles : array<Particle>,
 };
 
 struct SimParams {
-    currentCount : f32;
-    timeDelta : f32;
-    stopFactor : f32;
-    randomTextureSize: i32;
-    lifeTime : vec2<f32>;
-    emitPower : vec2<f32>;
+    currentCount : f32,
+    timeDelta : f32,
+    stopFactor : f32,
+    randomTextureSize: i32,
+    lifeTime : vec2<f32>,
+    emitPower : vec2<f32>,
 
     #ifndef COLORGRADIENTS
-        color1 : vec4<f32>;
-        color2 : vec4<f32>;
+        color1 : vec4<f32>,
+        color2 : vec4<f32>,
     #endif
 
-    sizeRange : vec2<f32>;
-    scaleRange : vec4<f32>;
-    angleRange : vec4<f32>;
-    gravity : vec3<f32>;
+    sizeRange : vec2<f32>,
+    scaleRange : vec4<f32>,
+    angleRange : vec4<f32>,
+    gravity : vec3<f32>,
 
     #ifdef LIMITVELOCITYGRADIENTS
-        limitVelocityDamping : f32;
+        limitVelocityDamping : f32,
     #endif
 
     #ifdef ANIMATESHEET
-        cellInfos : vec4<f32>;
+        cellInfos : vec4<f32>,
     #endif
 
     #ifdef NOISE
-        noiseStrength : vec3<f32>;
+        noiseStrength : vec3<f32>,
     #endif
 
     #ifndef LOCAL
-        emitterWM : mat4x4<f32>;
+        emitterWM : mat4x4<f32>,
     #endif
 
     // Emitter types
 
     #ifdef BOXEMITTER
-        direction1 : vec3<f32>;
-        direction2 : vec3<f32>;
-        minEmitBox : vec3<f32>;
-        maxEmitBox : vec3<f32>;
+        direction1 : vec3<f32>,
+        direction2 : vec3<f32>,
+        minEmitBox : vec3<f32>,
+        maxEmitBox : vec3<f32>,
     #endif
 
     #ifdef CONEEMITTER
-        radius : vec2<f32>;
-        coneAngle : f32;
-        height : vec2<f32>;
-        directionRandomizer : f32;
+        radius : vec2<f32>,
+        coneAngle : f32,
+        height : vec2<f32>,
+        directionRandomizer : f32,
     #endif
 
     #ifdef CYLINDEREMITTER
-        radius : f32;
-        height : f32;
-        radiusRange : f32;
+        radius : f32,
+        height : f32,
+        radiusRange : f32,
         #ifdef DIRECTEDCYLINDEREMITTER
-            direction1 : vec3<f32>;
-            direction2 : vec3<f32>;
+            direction1 : vec3<f32>,
+            direction2 : vec3<f32>,
         #else
-            directionRandomizer : f32;
+            directionRandomizer : f32,
         #endif
     #endif
 
     #ifdef HEMISPHERICEMITTER
-        radius : f32;
-        radiusRange : f32;
-        directionRandomizer : f32;
+        radius : f32,
+        radiusRange : f32,
+        directionRandomizer : f32,
     #endif
 
     #ifdef POINTEMITTER
-        direction1 : vec3<f32>;
-        direction2 : vec3<f32>;
+        direction1 : vec3<f32>,
+        direction2 : vec3<f32>,
     #endif
 
     #ifdef SPHEREEMITTER
-        radius : f32;
-        radiusRange : f32;
+        radius : f32,
+        radiusRange : f32,
         #ifdef DIRECTEDSPHEREEMITTER
-            direction1 : vec3<f32>;
-            direction2 : vec3<f32>;
+            direction1 : vec3<f32>,
+            direction2 : vec3<f32>,
         #else
-            directionRandomizer : f32;
+            directionRandomizer : f32,
         #endif
     #endif
 };
