@@ -13,7 +13,7 @@ import type { ITemplateConfiguration } from "./interfaces/templateConfiguration"
 import type { IVRConfiguration } from "./interfaces/vrConfiguration";
 import type { IDefaultRenderingPipelineConfiguration } from "./interfaces/defaultRenderingPipelineConfiguration";
 
-export function getConfigurationKey(key: string, configObject: any) {
+export function getConfigurationKey(key: string, configObject: any): any {
     const splits = key.split(".");
 
     if (splits.length === 0 || !configObject) {
