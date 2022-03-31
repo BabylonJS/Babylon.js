@@ -187,7 +187,7 @@ export class GlobalState {
     private _findParentControlInTexture(texture: AdvancedDynamicTexture, searchedControl: Control) {
         const searchList = [texture.rootContainer];
         while (searchList.length > 0) {
-            const current = searchList.splice(0,1)[0];
+            const current = searchList.splice(0, 1)[0];
             const children = current._children;
             if (children.indexOf(searchedControl) !== -1) {
                 return current;
