@@ -76,11 +76,6 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
