@@ -125,11 +125,6 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         window.removeEventListener("deviceorientation", this._deviceOrientationHandler);
     }
