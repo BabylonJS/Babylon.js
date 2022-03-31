@@ -55,11 +55,12 @@ async function runTagsUpdate() {
     await runCommand("npm install");
     const version = getNewVersion();
     await updateEngineVersion(version);
-    await runCommand("git add .");
-    await runCommand(`git commit -m "Version update ${version}"`);
     if (dryRun) {
+        console.log("skipping", `git commit -m "Version update ${version}"`);
         console.log("skipping", `git tag -a ${version} -m ${version}`);
     } else {
+        await runCommand("git add .");
+        await runCommand(`git commit -m "Version update ${version}"`);
         await runCommand(`git tag -a ${version} -m ${version}`);
     }
     // this is done in the CI (or should be done manually if executed locally).
