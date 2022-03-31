@@ -398,32 +398,32 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     /**
      * Removes editor behavior (observables, metadata) from control
-     * @param control 
+     * @param control
      */
     removeEditorBehavior(control: Control) {
-            if (!control.metadata || !control.metadata.guiEditor) {
-                return;
+        if (!control.metadata || !control.metadata.guiEditor) {
+            return;
+        }
+        const restoreObservers = (observable: Observable<any>, storedObservers: Observer<any>[]) => {
+            observable.clear();
+            for (const observer of storedObservers) {
+                const obs = observer as Observer<any>;
+                observable.add(obs.callback, obs.mask, false, obs.scope, obs.unregisterOnNextCall);
             }
-            const restoreObservers = (observable: Observable<any>, storedObservers: Observer<any>[]) => {
-                observable.clear();
-                for(const observer of storedObservers) {
-                    const obs = observer as Observer<any>;
-                    observable.add(obs.callback, obs.mask, false, obs.scope, obs.unregisterOnNextCall);
-                }
-            }
-            restoreObservers(control.onPointerUpObservable, control.metadata.onPointerUpStored);
-            restoreObservers(control.onPointerDownObservable, control.metadata.onPointerDownStored);
-            restoreObservers(control.onPointerEnterObservable, control.metadata.onPointerEnterStored);
-            restoreObservers(control.onPointerOutObservable, control.metadata.onPointerOutStored);
-            restoreObservers(control.onDisposeObservable, control.metadata.onDisposeStored);
+        };
+        restoreObservers(control.onPointerUpObservable, control.metadata.onPointerUpStored);
+        restoreObservers(control.onPointerDownObservable, control.metadata.onPointerDownStored);
+        restoreObservers(control.onPointerEnterObservable, control.metadata.onPointerEnterStored);
+        restoreObservers(control.onPointerOutObservable, control.metadata.onPointerOutStored);
+        restoreObservers(control.onDisposeObservable, control.metadata.onDisposeStored);
 
-            control.highlightLineWidth = control.metadata.highlightLineWidth;
-            control.isHighlighted = control.metadata.isHighlighted;
-            control.isPointerBlocker = control.metadata.isPointerBlocker;
-            control.isHitTestVisible = control.metadata.isHitTestVisible;
-            control.isReadOnly = control.metadata.isReadOnly;
+        control.highlightLineWidth = control.metadata.highlightLineWidth;
+        control.isHighlighted = control.metadata.isHighlighted;
+        control.isPointerBlocker = control.metadata.isPointerBlocker;
+        control.isHitTestVisible = control.metadata.isHitTestVisible;
+        control.isReadOnly = control.metadata.isReadOnly;
 
-            control.metadata = control.metadata.metadata;
+        control.metadata = control.metadata.metadata;
     }
 
     dispose() {
@@ -504,7 +504,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.props.globalState.liveGuiTexture.addControl(guiElement);
         }
         this.addEditorBehavior(guiElement);
-        guiElement.getDescendants(true).forEach(desc => this.addEditorBehavior(desc));
+        guiElement.getDescendants(true).forEach((desc) => this.addEditorBehavior(desc));
         this.trueRootContainer.addControl(guiElement);
         return guiElement;
     }
