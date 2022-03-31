@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui-editor",
-    "version": "5.0.0-rc.12",
+    "version": "5.0.0",
     "main": "dist/babylon.guiEditor.max.js",
     "module": "dist/babylon.guiEditor.max.js",
     "esnext": "dist/babylon.guiEditor.max.js",
@@ -18,8 +18,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.12",
-        "@babylonjs/gui": "^5.0.0-rc.12"
+        "@babylonjs/core": "^5.0.0",
+        "@babylonjs/gui": "^5.0.0"
     },
     "peerDependencies": {
         "@types/react": ">=16.7.3",

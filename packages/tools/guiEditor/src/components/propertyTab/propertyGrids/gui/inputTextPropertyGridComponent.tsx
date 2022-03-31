@@ -25,6 +25,7 @@ import selectAllIcon from "shared-ui-components/imgs/selectAllIcon.svg";
 import highlightIcon from "shared-ui-components/imgs/highlightIcon.svg";
 import textPlaceholderIcon from "shared-ui-components/imgs/textPlaceholderIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface IInputTextPropertyGridComponentProps {
     inputTexts: InputText[];
@@ -64,7 +65,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label="Border Thickness" />
-                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="thickness" unit="PX" unitLocked arrows min={0} digits={2} />
+                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="thickness" unit={<UnitButton unit="PX" locked />} arrows min={0} digits={2} />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={autoStretchWidthIcon} label="Automatically Stretch Width" />

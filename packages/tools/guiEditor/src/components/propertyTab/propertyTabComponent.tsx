@@ -92,6 +92,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
+        this.props.globalState.onPropertyChangedObservable.add(() => this.forceUpdate());
     }
 
     componentWillUnmount() {

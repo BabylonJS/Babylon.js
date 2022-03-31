@@ -15,6 +15,8 @@ export interface IGenerateDeclarationConfig {
     filename?: string;
     declarationLibs: string[];
     buildType?: BuildType;
+    addToDocumentation?: boolean;
+    initDocumentation?: boolean;
 }
 
 function getModuleDeclaration(source: string, filename: string, config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
@@ -190,7 +192,7 @@ function getPackageDeclaration(
     let removeNext = false;
     const packageMapping = getPackageMappingByDevName(devPackageName);
     const defaultModuleName = getPublicPackageName(packageMapping.namespace);
-    const thisFileModuleName = getPublicPackageName(packageMapping.namespace /*, undefined, sourceFilePath*/);
+    const thisFileModuleName = getPublicPackageName(packageMapping.namespace, sourceFilePath);
     while (i < lines.length) {
         let line = lines[i];
 
@@ -287,7 +289,7 @@ declare module ${defaultModuleName} {
 // `;
 // }
 
-export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, loseDeclarations: string[] = [], buildType: BuildType = "umd") {
+export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, looseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
     for (const fileName in declarationFiles) {
@@ -300,7 +302,7 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
         }
         declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), config.devPackageName);
     }
-    const loseDeclarationsString = loseDeclarations
+    const looseDeclarationsString = looseDeclarations
         .map((declarationFile) => {
             const data = fs.readFileSync(declarationFile, "utf8");
             return `\n${data}`;
@@ -312,24 +314,28 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
     // search for legacy export
     const legacyRegex = new RegExp(`${packageName}/(legacy/legacy)`, "mi");
     const legacy = moduleDeclaration.match(legacyRegex);
+    const namespaceDeclaration =
+        buildType === "umd"
+            ? `
+declare module ${defaultModuleName} {
+${declarations}
+}
+`
+            : "";
     const output = `
 ${moduleDeclaration}
 declare module "${packageName}" {
     export * from "${packageName}/${legacy ? legacy[1] : "index"}";
 }
 
-${
-    buildType === "umd"
-        ? `
-declare module ${defaultModuleName} {
-    ${declarations}
-}
-`
-        : ""
-}
-${loseDeclarationsString}
+${namespaceDeclaration}
+${looseDeclarationsString}
 `;
-    return output;
+    return {
+        output,
+        namespaceDeclaration,
+        looseDeclarationsString,
+    };
 }
 
 export function generateDeclaration() {
@@ -361,28 +367,36 @@ export function generateDeclaration() {
         checkDirectorySync(outputDir);
         const directoriesToWatch = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`));
         const looseDeclarations = config.declarationLibs.map((lib: string) => path.join(rootDir, "packages", `${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`));
-        // const files = config.declarationLibs.map((lib: string) => {
-        //     // load the declarations from the root directory of the requested lib
-        //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/dist/**/*.d.ts`);
-        //     console.log(p);
-        //     return glob.sync(p);
-        // });
-
-        // check if there are .d.ts files in LibDeclaration in the source directory
-        // const decFiles = config.declarationLibs.map((lib: string) => {
-        //     // load the declarations from the root directory of the requested lib
-        //     const p = path.join(__dirname, "../../../", `/${camelize(lib).replace(/@/g, "")}/**/LibDeclarations/**/*.d.ts`);
-        //     return glob.sync(p);
-        // });
 
         const debounced = debounce(() => {
-            const output = generateCombinedDeclaration(
+            const { output, namespaceDeclaration, looseDeclarationsString } = generateCombinedDeclaration(
                 directoriesToWatch.map((dir) => glob.sync(dir)).flat(),
                 config,
                 looseDeclarations.map((dir) => glob.sync(dir)).flat(),
                 config.buildType
             );
             const filename = `${outputDir}/${config.filename || "index.d.ts"}`;
+            if (!checkArgs("--watch") && namespaceDeclaration && config.filename?.includes(".module.d.ts")) {
+                fs.writeFileSync(
+                    filename.replace(".module", ""),
+                    `${namespaceDeclaration}
+${looseDeclarationsString || ""}
+                `
+                );
+                // check documentation flags
+                if (config.addToDocumentation) {
+                    // make sure snapshot directory exists
+                    checkDirectorySync(path.join(rootDir, ".snapshot"));
+                    const documentationFile = path.join(rootDir, ".snapshot", "documentation.d.ts");
+                    const originalFile = fs.existsSync(documentationFile) && !config.initDocumentation ? fs.readFileSync(documentationFile, "utf8") : "";
+                    fs.writeFileSync(
+                        documentationFile,
+                        `${originalFile}
+${namespaceDeclaration}
+${looseDeclarationsString || ""}`
+                    );
+                }
+            }
             // check hash
             if (fs.existsSync(filename)) {
                 const hash = getHashOfFile(filename);

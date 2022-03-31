@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui",
-    "version": "5.0.0-rc.12",
+    "version": "5.0.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -15,11 +15,11 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
         "compile": "tsc -b tsconfig.build.json --verbose",
-        "postcompile": "build-tools -c add-js-to-es6 --path ./dist/**/*.js",
+        "postcompile": "build-tools -c add-js-to-es6",
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.12",
+        "@babylonjs/core": "^5.0.0",
         "tslib": "^2.3.1"
     },
     "devDependencies": {

@@ -9,7 +9,7 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
-import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
+import { GizmoWrapper } from "./diagram/gizmoWrapper";
 import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
 import type { Control } from "gui/2D/controls/control";
@@ -49,25 +49,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.state = {
             showPreviewPopUp: false,
         };
-
-        this.props.globalState.hostDocument!.addEventListener(
-            "keydown",
-            (evt) => {
-                if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) {
-                    // Delete
-                }
-
-                if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
-                    return;
-                }
-
-                if (evt.key === "a") {
-                    //all
-                    evt.preventDefault();
-                }
-            },
-            false
-        );
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
         this.props.globalState.onDropObservable.add(() => {
@@ -228,7 +209,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {
                             return;
                         }
-                        this.props.globalState.blockKeyboardEvents = false;
                     }}
                     ref={this._rootRef}
                     onPointerUp={(evt) => this.onPointerUp(evt)}
