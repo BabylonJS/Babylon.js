@@ -210,11 +210,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
@@ -233,6 +228,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             this._onMouseMove = null;
             this._previousPosition = null;
         }
+
+        this._currentActiveButton = -1;
     }
 
     /**

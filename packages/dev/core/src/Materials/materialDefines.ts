@@ -172,7 +172,9 @@ export class MaterialDefines {
 
         if (this._externalProperties) {
             for (const name in this._externalProperties) {
-                this._keys.push(name);
+                if (this._keys.indexOf(name) === -1) {
+                    this._keys.push(name);
+                }
             }
         }
     }
