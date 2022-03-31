@@ -19,7 +19,7 @@ import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Line } from "gui/2D/controls/line";
 import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import type { Observer } from "core/Misc/observable";
+import type { Observable, Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
 import { CoordinateHelper, DimensionProperties } from "./coordinateHelper";
@@ -329,6 +329,103 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
     };
 
+    /**
+     * Adds editor observers to control and stores old data in metadata
+     * @param guiControl
+     */
+    addEditorBehavior(guiControl: Control) {
+        const onPointerUpStored = guiControl.onPointerUpObservable.observers.slice();
+        guiControl.onPointerUpObservable.clear();
+        const onPointerDownStored = guiControl.onPointerDownObservable.observers.slice();
+        guiControl.onPointerDownObservable.clear();
+        const onPointerEnterStored = guiControl.onPointerEnterObservable.observers.slice();
+        guiControl.onPointerEnterObservable.clear();
+        const onPointerOutStored = guiControl.onPointerOutObservable.observers.slice();
+        guiControl.onPointerOutObservable.clear();
+        const onDisposeStored = guiControl.onDisposeObservable.observers.slice();
+        guiControl.onDisposeObservable.clear();
+
+        guiControl.onPointerUpObservable.add(() => {
+            this.clicked = false;
+        });
+
+        guiControl.onPointerDownObservable.add((evt) => {
+            if (evt.buttonIndex > 0 || this.props.globalState.tool !== GUIEditorTool.SELECT) return;
+            this._controlsHit.push(guiControl);
+        });
+
+        guiControl.onPointerEnterObservable.add(() => {
+            if (this._isOverGUINode.indexOf(guiControl) === -1) {
+                this._isOverGUINode.push(guiControl);
+            }
+        });
+
+        guiControl.onPointerOutObservable.add(() => {
+            const index = this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                this._isOverGUINode.splice(index, 1);
+            }
+        });
+
+        guiControl.onDisposeObservable.add(() => {
+            const index = this._isOverGUINode.indexOf(guiControl);
+            if (index !== -1) {
+                this._isOverGUINode.splice(index, 1);
+            }
+        });
+        // use metadata to keep track of things we need to cleanup/restore when the gui editor closes
+        // also stores the old metadata
+        guiControl.metadata = {
+            guiEditor: true,
+            metadata: guiControl.metadata,
+            isHighlighted: guiControl.isHighlighted,
+            highlightLineWidth: guiControl.highlightLineWidth,
+            isReadOnly: guiControl.isReadOnly,
+            isHitTestVisible: guiControl.isHitTestVisible,
+            isPointerBlocker: guiControl.isPointerBlocker,
+            onPointerUpStored,
+            onPointerDownStored,
+            onPointerEnterStored,
+            onPointerOutStored,
+            onDisposeStored,
+        };
+        guiControl.highlightLineWidth = 5;
+        guiControl.isHighlighted = false;
+        guiControl.isReadOnly = true;
+        guiControl.isHitTestVisible = true;
+        guiControl.isPointerBlocker = true;
+    }
+
+    /**
+     * Removes editor behavior (observables, metadata) from control
+     * @param control
+     */
+    removeEditorBehavior(control: Control) {
+        if (!control.metadata || !control.metadata.guiEditor) {
+            return;
+        }
+        const restoreObservers = (observable: Observable<any>, storedObservers: Observer<any>[]) => {
+            observable.clear();
+            for (const observer of storedObservers) {
+                const obs = observer as Observer<any>;
+                observable.add(obs.callback, obs.mask, false, obs.scope, obs.unregisterOnNextCall);
+            }
+        };
+        restoreObservers(control.onPointerUpObservable, control.metadata.onPointerUpStored);
+        restoreObservers(control.onPointerDownObservable, control.metadata.onPointerDownStored);
+        restoreObservers(control.onPointerEnterObservable, control.metadata.onPointerEnterStored);
+        restoreObservers(control.onPointerOutObservable, control.metadata.onPointerOutStored);
+        restoreObservers(control.onDisposeObservable, control.metadata.onDisposeStored);
+
+        control.highlightLineWidth = control.metadata.highlightLineWidth;
+        control.isHighlighted = control.metadata.isHighlighted;
+        control.isPointerBlocker = control.metadata.isPointerBlocker;
+        control.isHitTestVisible = control.metadata.isHitTestVisible;
+        control.isReadOnly = control.metadata.isReadOnly;
+
+        control.metadata = control.metadata.metadata;
+    }
+
     dispose() {
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
@@ -336,26 +433,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (this.props.globalState.liveGuiTexture) {
             this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
             this.props.globalState.guiTexture.onBeginRenderObservable.remove(this._guiRenderObserver);
-            this.props.globalState.guiTexture.getDescendants(false).forEach((control) => {
-                if (!control.metadata || !control.metadata.guiEditor) {
-                    return;
-                }
-                control.onPointerUpObservable.remove(control.metadata.onPointerUp);
-                control.onPointerDownObservable.remove(control.metadata.onPointerDown);
-                control.onPointerEnterObservable.remove(control.metadata.onPointerEnter);
-                control.onPointerOutObservable.remove(control.metadata.onPointerOut);
-                control.onDisposeObservable.remove(control.metadata.onDispose);
-
-                control.highlightLineWidth = control.metadata.highlightLineWidth;
-                control.isHighlighted = control.metadata.isHighlighted;
-                control.isPointerBlocker = control.metadata.isPointerBlocker;
-                control.isHitTestVisible = control.metadata.isHitTestVisible;
-                control.isReadOnly = control.metadata.isReadOnly;
-
+            this.props.globalState.guiTexture.getDescendants().forEach((control) => {
+                this.removeEditorBehavior(control);
                 this.props.globalState.guiTexture.removeControl(control);
-                control.parent = control.metadata.parent;
-
-                control.metadata = control.metadata.metadata;
+                if (control.parent === this._trueRootContainer) {
+                    control.parent = this.props.globalState.liveGuiTexture!.rootContainer;
+                }
                 control._host = this.props.globalState.liveGuiTexture!;
             });
             this.props.globalState.liveGuiTexture.markAsDirty();
@@ -400,8 +483,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     loadToEditor() {
-        this.props.globalState.guiTexture.rootContainer.children.forEach((guiElement) => {
-            this.createNewGuiNode(guiElement);
+        this.props.globalState.guiTexture.rootContainer.getDescendants().forEach((guiElement) => {
+            this.addEditorBehavior(guiElement);
         });
 
         this._isOverGUINode = [];
@@ -420,68 +503,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (this.props.globalState.liveGuiTexture) {
             this.props.globalState.liveGuiTexture.addControl(guiElement);
         }
-        const newGuiNode = this.createNewGuiNode(guiElement);
+        this.addEditorBehavior(guiElement);
+        guiElement.getDescendants(true).forEach((desc) => this.addEditorBehavior(desc));
         this.trueRootContainer.addControl(guiElement);
-        return newGuiNode;
+        return guiElement;
     }
-
-    createNewGuiNode(guiControl: Control) {
-        const onPointerUp = guiControl.onPointerUpObservable.add(() => {
-            this.clicked = false;
-        });
-
-        const onPointerDown = guiControl.onPointerDownObservable.add((evt) => {
-            if (evt.buttonIndex > 0 || this.props.globalState.tool !== GUIEditorTool.SELECT) return;
-            this._controlsHit.push(guiControl);
-        });
-
-        const onPointerEnter = guiControl.onPointerEnterObservable.add(() => {
-            if (this._isOverGUINode.indexOf(guiControl) === -1) {
-                this._isOverGUINode.push(guiControl);
-            }
-        });
-
-        const onPointerOut = guiControl.onPointerOutObservable.add(() => {
-            const index = this._isOverGUINode.indexOf(guiControl);
-            if (index !== -1) {
-                this._isOverGUINode.splice(index, 1);
-            }
-        });
-
-        const onDispose = guiControl.onDisposeObservable.add(() => {
-            const index = this._isOverGUINode.indexOf(guiControl);
-            if (index !== -1) {
-                this._isOverGUINode.splice(index, 1);
-            }
-        });
-        // use metadata to keep track of things we need to cleanup/restore when the gui editor closes
-        // also stores the old metadata
-        guiControl.metadata = {
-            guiEditor: true,
-            metadata: guiControl.metadata,
-            isHighlighted: guiControl.isHighlighted,
-            highlightLineWidth: guiControl.highlightLineWidth,
-            isReadOnly: guiControl.isReadOnly,
-            isHitTestVisible: guiControl.isHitTestVisible,
-            isPointerBlocker: guiControl.isPointerBlocker,
-            onPointerUp,
-            onPointerDown,
-            onPointerEnter,
-            onPointerOut,
-            onDispose,
-            parent: guiControl.parent,
-        };
-        guiControl.highlightLineWidth = 5;
-        guiControl.isHighlighted = false;
-        guiControl.isReadOnly = true;
-        guiControl.isHitTestVisible = true;
-        guiControl.isPointerBlocker = true;
-        guiControl.getDescendants(true).forEach((child) => {
-            this.createNewGuiNode(child);
-        });
-        return guiControl;
-    }
-
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
@@ -850,9 +876,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             });
         }
 
-        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(
-            `Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the "Give feedback" button in the menu. `
-        );
         this._engine.runRenderLoop(() => {
             this._scene.render();
         });

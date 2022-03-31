@@ -20,6 +20,11 @@
     .commands-right {
         float: right;
         display: flex;
+        .beta-flag {
+            height: 30px;
+            position: relative;
+            left: -15px;
+        }
     }
 
     &.background-ts {
