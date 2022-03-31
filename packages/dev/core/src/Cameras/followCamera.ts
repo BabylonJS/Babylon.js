@@ -183,11 +183,6 @@ export class FollowCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         this.inputs.detachElement();
 
