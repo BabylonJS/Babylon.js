@@ -2388,6 +2388,14 @@ export class NativeEngine extends Engine {
         return internalTexture;
     }
 
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapNativeTexture instead.");
+    }
+
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
