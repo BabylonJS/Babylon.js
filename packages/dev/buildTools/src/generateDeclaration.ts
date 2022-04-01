@@ -22,7 +22,8 @@ export interface IGenerateDeclarationConfig {
 function getModuleDeclaration(source: string, filename: string, config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
     const distPosition = filename.indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
-    const moduleName = getPublicPackageName(packageVariables[buildType], undefined, filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
+    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
+    console.log(`Module Name: ${moduleName}`, filename);
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
@@ -78,7 +79,8 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
                                 if (match[1].startsWith(devPackageName)) {
                                     line = line.replace(
                                         match[1],
-                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], undefined, match[1]) + match[1].substr(devPackageName.length)
+                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], /*undefined, */ match[1]) +
+                                            match[1].substring(devPackageName.length)
                                     );
                                 }
                             });
@@ -132,19 +134,21 @@ ${processedLines}
 /**
  *
  * @param source - the source code of the file
+ * @param originalDevPackageName - the dev package name of the file
+ * @param originalSourcefilePath
  * @returns an array of objects with alias, realClassName and package
  */
-function getClassesMap(source: string) {
-    const regex = /import {(.*)} from ['"](.*)['"];/g;
+function getClassesMap(source: string, originalDevPackageName: string, originalSourcefilePath: string) {
+    const regex = /import .*{([^}]*)} from ['"](.*)['"];/g;
     let matches = regex.exec(source);
     const mappingArray: {
         alias: string;
         realClassName: string;
-        devPackageName: DevPackageName;
+        devPackageName?: DevPackageName;
         fullPath: string;
     }[] = [];
     while (matches !== null) {
-        const classes = matches[1].split(",");
+        const classes = matches[1].split(","); //.map((className) => className.trim());
         classes.forEach((className) => {
             // just a typescript thing...
             if (!matches) {
@@ -156,18 +160,35 @@ function getClassesMap(source: string) {
             }
             const realClassName = parts[0].trim();
             const alias = parts[1] ? parts[1].trim() : realClassName;
-            const devPackageName = matches[2]!.split("/")[0];
-            if (alias !== realClassName) {
-                console.log(alias, realClassName, devPackageName, matches[2]);
-            }
+            const firstSplit = matches[2]!.split("/")[0];
+            const devPackageName = firstSplit[0] === "." ? originalDevPackageName : firstSplit;
+            // if (alias !== realClassName) {
+            //     console.log(
+            //         alias,
+            //         realClassName,
+            //         devPackageName,
+            //         matches[2],
+            //         isValidDevPackageName(devPackageName),
+            //         path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/")
+            //     );
+            // }
             // only internals
             if (isValidDevPackageName(devPackageName)) {
                 mappingArray.push({
                     alias,
                     realClassName,
                     devPackageName,
-                    fullPath: matches[2]!,
+                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
                 });
+            } else {
+                if (!devPackageName.startsWith("babylonjs")) {
+                    console.log(`Not a Dev Package Name: ${devPackageName}`);
+                    mappingArray.push({
+                        alias,
+                        realClassName,
+                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                    });
+                }
             }
         });
         matches = regex.exec(source);
@@ -181,7 +202,7 @@ function getPackageDeclaration(
     classesMappingArray: {
         alias: string;
         realClassName: string;
-        devPackageName: DevPackageName;
+        devPackageName?: DevPackageName;
         fullPath: string;
     }[],
     devPackageName: DevPackageName
@@ -213,6 +234,7 @@ function getPackageDeclaration(
         //Exclude import statements
         excludeLine = excludeLine || /^import[ (]/.test(line);
         excludeLine = excludeLine || /export \{/.test(line);
+        excludeLine = excludeLine || /export default/.test(line);
         excludeLine = excludeLine || /export \* from "/.test(line);
         excludeLine = excludeLine || /^declare type (.*) import/.test(line);
 
@@ -251,12 +273,30 @@ function getPackageDeclaration(
     let processedSource = lines.join("\n").replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, "") + "\n\n";
 
     // replaces classes definitions with namespace definitions
-    classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName: DevPackageName; fullPath: string }) => {
+    classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; fullPath: string }) => {
         const { alias, realClassName, devPackageName, fullPath } = classMapping;
-        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, undefined, fullPath);
-        const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
-        processedSource = processedSource.replace(matchRegex, `$1${namespace}.${realClassName}$3`);
+        if (!devPackageName) {
+            // replace with any
+            const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
+            processedSource = processedSource.replace(matchRegex, `$1any$3`);
+            return;
+        }
+        const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace);
+        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, fullPath /*, fullPath*/);
+        if (namespace !== defaultModuleName || originalNamespace !== namespace || alias !== realClassName) {
+            const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
+            processedSource = processedSource.replace(matchRegex, `$1${namespace}.${realClassName}$3`);
+        }
     });
+
+    processedSource = processedSource.replace(
+        / global {([^}]*)}/gm,
+        `
+}
+$1
+declare module ${thisFileModuleName} {
+    `
+    );
 
     if (defaultModuleName !== thisFileModuleName) {
         return `
@@ -292,16 +332,17 @@ declare module ${defaultModuleName} {
 export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, looseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
-    for (const fileName in declarationFiles) {
-        const declarationFile = declarationFiles[fileName];
+    declarationFiles.forEach((declarationFile) => {
         // The lines of the files now come as a Function inside declaration file.
         const data = fs.readFileSync(declarationFile, "utf8");
         moduleDeclaration += getModuleDeclaration(data, declarationFile, config, config.buildType);
         if (declarationFile.indexOf("legacy.d.ts") !== -1) {
-            continue;
+            return;
         }
-        declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data), config.devPackageName);
-    }
+        // const packageMapping = getPackageMappingByDevName(config.devPackageName);
+        // const thisFileModuleName = getPublicPackageName(packageMapping.namespace, declarationFile);
+        declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data, config.devPackageName, declarationFile), config.devPackageName);
+    });
     const looseDeclarationsString = looseDeclarations
         .map((declarationFile) => {
             const data = fs.readFileSync(declarationFile, "utf8");
