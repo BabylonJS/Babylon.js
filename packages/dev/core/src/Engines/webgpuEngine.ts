@@ -2100,6 +2100,19 @@ export class WebGPUEngine extends Engine {
         );
     }
 
+    /**
+     * Wraps an external web gpu texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
+        const hardwareTexture = new WebGPUHardwareTexture(texture);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
     public generateMipMapsForCubemap(texture: InternalTexture) {
         if (texture.generateMipMaps) {
             const gpuTexture = texture._hardwareTexture?.underlyingResource;
@@ -2380,6 +2393,7 @@ export class WebGPUEngine extends Engine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -2389,7 +2403,8 @@ export class WebGPUEngine extends Engine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
@@ -2400,6 +2415,10 @@ export class WebGPUEngine extends Engine {
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
         this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset);
+
+        if (generateMipMaps) {
+            this._generateMipmaps(texture, this._renderTargetEncoder);
+        }
     }
 
     /**

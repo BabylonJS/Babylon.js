@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
@@ -21,6 +21,7 @@ import { PerfCounter } from "../Misc/perfCounter";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
@@ -1711,6 +1712,19 @@ export class Engine extends ThinEngine {
         this._performanceMonitor.sampleFrame();
         this._fps = this._performanceMonitor.averageFPS;
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+     wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
     }
 
     /**
