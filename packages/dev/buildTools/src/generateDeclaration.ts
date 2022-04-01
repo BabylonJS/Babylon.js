@@ -23,7 +23,6 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
     const distPosition = filename.indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
-    console.log(`Module Name: ${moduleName}`, filename);
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
