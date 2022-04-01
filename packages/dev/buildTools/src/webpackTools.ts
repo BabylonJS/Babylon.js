@@ -15,8 +15,8 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
         const importParts = request.split("/");
         const devPackageName = importParts[0].replace(/^babylonjs/, "") || "core";
         // check if this request needs to be ignored or transformed
-        if (excludePackages.indexOf(devPackageName) === -1 && isValidDevPackageName(devPackageName)) {
-            const packages = getPackageMappingByDevName(devPackageName);
+        if (excludePackages.indexOf(devPackageName) === -1 && isValidDevPackageName(devPackageName, true)) {
+            const packages = getPackageMappingByDevName(devPackageName, true);
             const buildTypePackage = getPublicPackageName(packages[type], request);
             const namespaceName = getPublicPackageName(packages.namespace, request);
             if (type === "umd" || type === "es6") {
@@ -130,9 +130,10 @@ export const commonUMDWebpackConfiguration = (options: {
 }) => {
     const packageMapping = getPackageMappingByDevName(options.devPackageName);
     const packageName = getPublicPackageName(options.es6Mode ? packageMapping.es6 : packageMapping.umd);
+    const umdPackageName = getPublicPackageName(packageMapping.umd);
     const filename = `${
-        options.overrideFilename && typeof options.overrideFilename === "string" ? options.overrideFilename : umdPackageMapping[packageMapping.umd as UMDPackageName].baseFilename
-    }${umdPackageMapping[packageMapping.umd as UMDPackageName].isBundle ? ".bundle" : ""}${
+        options.overrideFilename && typeof options.overrideFilename === "string" ? options.overrideFilename : umdPackageMapping[umdPackageName as UMDPackageName].baseFilename
+    }${umdPackageMapping[umdPackageName as UMDPackageName].isBundle ? ".bundle" : ""}${
         options.maxMode ? (options.mode && options.mode === "development" ? ".max" : "") : options.mode && options.mode === "production" ? ".min" : ""
     }.js`;
     return {

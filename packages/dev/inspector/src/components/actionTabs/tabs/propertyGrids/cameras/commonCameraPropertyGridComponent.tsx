@@ -14,6 +14,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -63,6 +64,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         propertyName="minZ"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={camera} lockObject={this.props.lockObject} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Far plane"
