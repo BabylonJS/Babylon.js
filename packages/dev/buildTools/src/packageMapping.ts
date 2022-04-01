@@ -147,16 +147,16 @@ const packageMapping: {
             }
             return "babylonjs-inspector";
         },
-        "node-editor": (filePath?: string) => {
-            if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
-                return "babylonjs-shared-ui-components";
-            }
+        "node-editor": (_filePath?: string) => {
+            // if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
+            //     return "babylonjs-shared-ui-components";
+            // }
             return "babylonjs-node-editor";
         },
-        "gui-editor": (filePath?: string) => {
-            if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
-                return "babylonjs-shared-ui-components";
-            }
+        "gui-editor": (_filePath?: string) => {
+            // if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
+            //     return "babylonjs-shared-ui-components";
+            // }
             return "babylonjs-gui-editor";
         },
         "post-processes": "babylonjs-post-process",

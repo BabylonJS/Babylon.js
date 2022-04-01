@@ -274,10 +274,14 @@ function getPackageDeclaration(
     // replaces classes definitions with namespace definitions
     classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; fullPath: string }) => {
         const { alias, realClassName, devPackageName, fullPath } = classMapping;
-        if (!devPackageName) {
+        // TODO - make a list of dependencies that are accepted by each package
+        if (!devPackageName && !fullPath.includes("react")) {
             // replace with any
             const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
             processedSource = processedSource.replace(matchRegex, `$1any$3`);
+            return;
+        }
+        if (!devPackageName) {
             return;
         }
         const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace);
