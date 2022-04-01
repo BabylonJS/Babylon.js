@@ -266,7 +266,7 @@ export function getAllBuildTypes(): BuildType[] {
     return Object.keys(packageMapping) as BuildType[];
 }
 
-export function isValidPackageMap(packageMap: { [key: string]: string | ((data?: any) => string) }): packageMap is PackageMap {
+export function isValidPackageMap(packageMap: { [key: string]: string | ((data?: any) => string) }, publicOnly?: boolean): packageMap is PackageMap {
     const packageNames = Object.keys(packageMap);
     const buildTypes = getAllBuildTypes();
 
@@ -309,7 +309,10 @@ export function getPublicPackageName(publicVariable: PublicPackageVariable, data
     }
 }
 
-export function isValidDevPackageName(devName: string): devName is DevPackageName {
+export function isValidDevPackageName(devName: string, publicOnly?: boolean): devName is DevPackageName {
+    if (publicOnly && privatePackages.includes(kebabize(devName) as DevPackageName)) {
+        return false;
+    }
     return Object.keys(packageMapping).some((buildType) => {
         if (isValidBuildType(buildType)) {
             return packageMapping[buildType][kebabize(devName) as DevPackageName] !== undefined;
