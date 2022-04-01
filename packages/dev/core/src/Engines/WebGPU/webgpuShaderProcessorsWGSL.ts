@@ -66,6 +66,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     protected _varyingsWGSL: string[];
     protected _varyingsDeclWGSL: string[];
     protected _varyingNamesWGSL: string[];
+    protected _stridedUniformArrays: string[];
 
     public shaderLanguage = ShaderLanguage.WGSL;
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
@@ -104,6 +105,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         this._varyingsWGSL = [];
         this._varyingsDeclWGSL = [];
         this._varyingNamesWGSL = [];
+        this._stridedUniformArrays = [];
     }
 
     public preProcessShaderCode(code: string): string {
@@ -260,6 +262,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         // Vertex code
         vertexCode = vertexCode.replace(/#define /g, "//#define ");
+        vertexCode = this._processStridedUniformArrays(vertexCode);
 
         const varyingsDecl = this._varyingsDeclWGSL.join("\n") + "\n";
 
@@ -301,6 +304,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
+        fragmentCode = this._processStridedUniformArrays(fragmentCode);
         fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor__)*dpdy"); // will also handle dpdyCoarse and dpdyFine
 
         const fragmentBuiltinDecl = `var<private> ${builtInName_position_frag} : vec4<f32>;\nvar<private> ${builtInName_front_facing} : bool;\nvar<private> ${builtInName_FragColor} : vec4<f32>;\nvar<private> ${builtInName_frag_depth} : f32;\n`;
@@ -365,6 +369,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string {
+        let stridedArrays = "";
+        let stridedArraysLength = 0;
         let ubo = `struct ${name} {\n`;
         for (const leftOverUniform of this._webgpuProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
@@ -372,7 +378,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
             if (leftOverUniform.length > 0) {
                 if (size <= 2) {
-                    ubo += ` @align(16) ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>,\n`;
+                    const stridedArrayType = `${name}_${stridedArraysLength}_strided_arr`;
+                    stridedArrays += `struct ${name}_${stridedArraysLength}_strided_arr {
+                        @size(16)
+                        el: ${type},
+                    }`;
+                    stridedArraysLength++;
+                    this._stridedUniformArrays.push(leftOverUniform.name);
+
+                    ubo += ` @align(16) ${leftOverUniform.name} : array<${stridedArrayType}, ${leftOverUniform.length}>,\n`;
                 } else {
                     ubo += ` ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>,\n`;
                 }
@@ -381,7 +395,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             }
         }
         ubo += "};\n";
-
+        ubo = `${stridedArrays}\n${ubo}`;
         ubo += `@group(${uniformBufferDescription.binding.groupIndex}) @binding(${uniformBufferDescription.binding.bindingIndex}) var<uniform> ${leftOverVarName} : ${name};\n`;
 
         return ubo;
@@ -492,6 +506,13 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             instantiateBufferRegexp.lastIndex += insertPart.length;
         }
 
+        return code;
+    }
+
+    private _processStridedUniformArrays(code: string): string {
+        for (const uniformArrayName of this._stridedUniformArrays) {
+            code = code.replace(new RegExp(`${uniformArrayName}\\[(.*)\\]`, "g"), `${uniformArrayName}[$1].el`);
+        }
         return code;
     }
 }
