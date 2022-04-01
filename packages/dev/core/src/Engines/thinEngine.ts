@@ -2778,16 +2778,19 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
-        // eslint-disable-next-line no-empty
-        while (gl.getError() != gl.NO_ERROR) {}
-
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
+            let error = gl.NO_ERROR;
+            let currentError = gl.NO_ERROR;
+
+            // eslint-disable-next-line no-empty
+            while ((currentError = gl.getError()) !== gl.NO_ERROR) {
+                error = currentError;
+            }
+
             throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${
-                    this._contextWasLost
-                }`
+                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
             );
         }
 
