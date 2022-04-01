@@ -192,14 +192,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.1";
+        return "babylonjs@5.0.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.1";
+        return "5.0.2";
     }
 
     /**
@@ -2778,16 +2778,17 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
-        // eslint-disable-next-line no-empty
-        while (gl.getError() != gl.NO_ERROR) {}
-
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
+            let error = gl.NO_ERROR;
+            let tempError = gl.NO_ERROR;
+            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
+                error = tempError;
+            }
+
             throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${
-                    this._contextWasLost
-                }`
+                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
             );
         }
 
