@@ -253,7 +253,7 @@ export class Collider {
         const signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
         const normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
 
-        // if DoubleSidedCheck is false(default), a double sided face will be consided 2 times. 
+        // if DoubleSidedCheck is false(default), a double sided face will be consided 2 times.
         // if true, it discard the faces having normal not facing velocity
         if (Collider.DoubleSidedCheck && normalDotVelocity > 0.0001) {
             return;
