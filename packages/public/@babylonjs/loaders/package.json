@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/loaders",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -19,8 +19,8 @@
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0",
-        "babylonjs-gltf2interface": "^5.0.0",
+        "@babylonjs/core": "^5.0.1",
+        "babylonjs-gltf2interface": "^5.0.1",
         "tslib": "^2.3.1"
     },
     "devDependencies": {
