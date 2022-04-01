@@ -1719,7 +1719,7 @@ export class Engine extends ThinEngine {
      * @param texture defines the external texture
      * @returns the babylon internal texture
      */
-     wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+    wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
