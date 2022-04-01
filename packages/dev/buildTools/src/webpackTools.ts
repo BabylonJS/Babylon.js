@@ -15,8 +15,8 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
         const importParts = request.split("/");
         const devPackageName = importParts[0].replace(/^babylonjs/, "") || "core";
         // check if this request needs to be ignored or transformed
-        if (excludePackages.indexOf(devPackageName) === -1 && isValidDevPackageName(devPackageName)) {
-            const packages = getPackageMappingByDevName(devPackageName);
+        if (excludePackages.indexOf(devPackageName) === -1 && isValidDevPackageName(devPackageName, true)) {
+            const packages = getPackageMappingByDevName(devPackageName, true);
             const buildTypePackage = getPublicPackageName(packages[type], request);
             const namespaceName = getPublicPackageName(packages.namespace, request);
             if (type === "umd" || type === "es6") {
