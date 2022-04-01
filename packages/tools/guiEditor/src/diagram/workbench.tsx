@@ -523,7 +523,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER
                     ) {
                         draggedControlParent.removeControl(draggedControl);
-                        const liveGui = this.props.globalState.liveGuiTexture
+                        const liveGui = this.props.globalState.liveGuiTexture;
                         if (liveGui) {
                             if (liveGui.rootContainer.children.indexOf(draggedControl) !== -1) {
                                 liveGui.rootContainer.removeControl(draggedControl);
