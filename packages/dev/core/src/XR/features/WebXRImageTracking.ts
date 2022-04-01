@@ -262,8 +262,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
 
         this._trackableScoreStatus = ImageTrackingScoreStatus.Waiting;
         const imageScores = await this._xrSessionManager.session.getTrackedImageScores();
-        if (!imageScores || imageScores.length === 0)
-        {
+        if (!imageScores || imageScores.length === 0) {
             return;
         }
 
