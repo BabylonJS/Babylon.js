@@ -23,6 +23,11 @@ import { Constants } from "core/Engines/constants";
 
 import "./textureEditor.scss";
 
+declare global {
+    // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
+    var _TOOL_DATA_: IToolData;
+}
+
 interface ITextureEditorComponentProps {
     texture: BaseTexture;
     url: string;
@@ -113,11 +118,6 @@ export interface IMetadata {
         y2: number;
     };
     [key: string]: any;
-}
-
-declare global {
-    // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
-    var _TOOL_DATA_: IToolData;
 }
 
 export class TextureEditorComponent extends React.Component<ITextureEditorComponentProps, ITextureEditorComponentState> {
