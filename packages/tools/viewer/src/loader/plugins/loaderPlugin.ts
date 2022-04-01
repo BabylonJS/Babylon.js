@@ -1,5 +1,6 @@
 import type { ViewerModel } from "../../model/viewerModel";
-import type { IGLTFLoaderExtension, IGLTFLoaderData } from "loaders/glTF/glTFFileLoader";
+import type { IGLTFLoaderExtension } from "loaders/glTF/2.0/glTFLoaderExtension";
+import type { IGLTFLoaderData } from "loaders/glTF/glTFFileLoader";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 
 import type { AbstractMesh } from "core/Meshes/abstractMesh";

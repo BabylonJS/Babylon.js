@@ -152,7 +152,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Give feedback",
                                     onClick: () => {
-                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
+                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-beta/28943", "_blank");
                                     },
                                 },
                             ]}
@@ -192,7 +192,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={canvasFitIcon}
                             isActive={false}
                             onClick={() => {
-                                this.props.globalState.onFitToWindowObservable.notifyObservers();
+                                this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                             }}
                         />
                         <CommandButtonComponent
