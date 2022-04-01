@@ -971,6 +971,8 @@ export class NullEngine extends Engine {
 
     public hideLoadingUI(): void {}
 
+    public set loadingUIText(_: string) {}
+
     /**
      * @param texture
      * @param internalFormat
