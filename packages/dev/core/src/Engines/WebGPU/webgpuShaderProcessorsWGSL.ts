@@ -370,7 +370,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string {
         let stridedArrays = "";
-        let stridedArraysLength = 0;
         let ubo = `struct ${name} {\n`;
         for (const leftOverUniform of this._webgpuProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
@@ -378,12 +377,11 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
             if (leftOverUniform.length > 0) {
                 if (size <= 2) {
-                    const stridedArrayType = `${name}_${stridedArraysLength}_strided_arr`;
-                    stridedArrays += `struct ${name}_${stridedArraysLength}_strided_arr {
+                    const stridedArrayType = `${name}_${this._stridedUniformArrays.length}_strided_arr`;
+                    stridedArrays += `struct ${stridedArrayType} {
                         @size(16)
                         el: ${type},
                     }`;
-                    stridedArraysLength++;
                     this._stridedUniformArrays.push(leftOverUniform.name);
 
                     ubo += ` @align(16) ${leftOverUniform.name} : array<${stridedArrayType}, ${leftOverUniform.length}>,\n`;
@@ -511,7 +509,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     private _processStridedUniformArrays(code: string): string {
         for (const uniformArrayName of this._stridedUniformArrays) {
-            code = code.replace(new RegExp(`${uniformArrayName}\\[(.*)\\]`, "g"), `${uniformArrayName}[$1].el`);
+            code = code.replace(new RegExp(`${uniformArrayName}\\s*\\[(.*)\\]`, "g"), `${uniformArrayName}[$1].el`);
         }
         return code;
     }
