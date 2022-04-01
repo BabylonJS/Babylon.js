@@ -1,6 +1,6 @@
 {
     "name": "babylonjs",
-    "version": "5.0.0-rc.13",
+    "version": "5.0.0",
     "main": "babylon.js",
     "types": "babylon.module.d.ts",
     "files": [
