@@ -2113,6 +2113,14 @@ export class WebGPUEngine extends Engine {
         return internalTexture;
     }
 
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
+    }
+
     public generateMipMapsForCubemap(texture: InternalTexture) {
         if (texture.generateMipMaps) {
             const gpuTexture = texture._hardwareTexture?.underlyingResource;
