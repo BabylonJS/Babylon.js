@@ -2782,11 +2782,9 @@ export class ThinEngine {
 
         if (!shader) {
             let error = gl.NO_ERROR;
-            let currentError = gl.NO_ERROR;
-
-            // eslint-disable-next-line no-empty
-            while ((currentError = gl.getError()) !== gl.NO_ERROR) {
-                error = currentError;
+            let tempError = gl.NO_ERROR;
+            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
+                error = tempError;
             }
 
             throw new Error(
