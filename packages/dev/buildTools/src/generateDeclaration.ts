@@ -19,7 +19,19 @@ export interface IGenerateDeclarationConfig {
     initDocumentation?: boolean;
 }
 
-function getModuleDeclaration(source: string, filename: string, config: IGenerateDeclarationConfig, buildType: BuildType = "umd") {
+function getModuleDeclaration(
+    source: string,
+    filename: string,
+    config: IGenerateDeclarationConfig,
+    buildType: BuildType = "umd",
+    classesMappingArray: {
+        alias: string;
+        realClassName: string;
+        devPackageName?: DevPackageName;
+        externalName?: string;
+        fullPath: string;
+    }[]
+) {
     const distPosition = filename.indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
@@ -53,7 +65,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             if (!externalModule) {
                 // SKIP known named exports that are for backwards compatibility
                 if (namedExportPathsToExcludeRegExp && namedExportPathsToExcludeRegExp.test(line)) {
-                    line = line.startsWith("    ") ? "    //" + line.substr(3) : "// " + line;
+                    line = line.startsWith("    ") ? "    //" + line.substring(3) : "// " + line;
                 }
 
                 [
@@ -74,6 +86,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
                             const newLocation = path.join(sourceDir, match[1]).replace(/\\/g, "/");
                             line = line.replace(match[1], newLocation);
                         } else {
+                            let found = false;
                             Object.keys(mapping).forEach((devPackageName) => {
                                 if (match[1].startsWith(devPackageName)) {
                                     line = line.replace(
@@ -81,8 +94,18 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
                                         getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], /*undefined, */ match[1]) +
                                             match[1].substring(devPackageName.length)
                                     );
+                                    found = true;
                                 }
                             });
+                            if (!found) {
+                                // not a dev dependency
+                                // TODO - make a list of external dependencies per package
+                                // for now - we support react
+                                if (match[1] !== "react") {
+                                    // check what the line imports
+                                    line = "";
+                                }
+                            }
                         }
                     }
                     line = line.replace("declare ", "");
@@ -123,6 +146,23 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             }
         }
     }
+    // replaces classes definitions with namespace definitions
+    classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; externalName?: string; fullPath: string }) => {
+        const { alias, devPackageName, externalName } = classMapping;
+        // TODO - make a list of dependencies that are accepted by each package
+        if (!devPackageName) {
+            if (externalName) {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
+                    // replace with any
+                    const matchRegex = new RegExp(`([ <])(${alias}[^;\n ]*)([^\\w])`, "g");
+                    processedLines = processedLines.replace(matchRegex, `$1any$3`);
+                    return;
+                }
+            }
+
+            return;
+        }
+    });
     processedLines = processedLines.replace(/export declare /g, "export ");
     return `declare module "${moduleName}" {
 ${processedLines}
@@ -144,6 +184,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
         alias: string;
         realClassName: string;
         devPackageName?: DevPackageName;
+        externalName?: string;
         fullPath: string;
     }[] = [];
     while (matches !== null) {
@@ -184,6 +225,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                     console.log(`Not a Dev Package Name: ${devPackageName}`);
                     mappingArray.push({
                         alias,
+                        externalName: devPackageName,
                         realClassName,
                         fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
                     });
@@ -202,6 +244,7 @@ function getPackageDeclaration(
         alias: string;
         realClassName: string;
         devPackageName?: DevPackageName;
+        externalName?: string;
         fullPath: string;
     }[],
     devPackageName: DevPackageName
@@ -272,16 +315,22 @@ function getPackageDeclaration(
     let processedSource = lines.join("\n").replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, "") + "\n\n";
 
     // replaces classes definitions with namespace definitions
-    classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; fullPath: string }) => {
-        const { alias, realClassName, devPackageName, fullPath } = classMapping;
+    classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; externalName?: string; fullPath: string }) => {
+        const { alias, realClassName, devPackageName, fullPath, externalName } = classMapping;
         // TODO - make a list of dependencies that are accepted by each package
-        if (!devPackageName && !fullPath.includes("react")) {
-            // replace with any
-            const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
-            processedSource = processedSource.replace(matchRegex, `$1any$3`);
-            return;
-        }
         if (!devPackageName) {
+            if (externalName) {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
+                    // replace with any
+                    const matchRegex = new RegExp(`([ <])(${alias}[^;\n ]*)([^\\w])`, "g");
+                    processedSource = processedSource.replace(matchRegex, `$1any$3`);
+                    return;
+                } else if (externalName === "react") {
+                    const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
+                    processedSource = processedSource.replace(matchRegex, `$1React.${realClassName}$3`);
+                }
+            }
+
             return;
         }
         const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace);
@@ -338,13 +387,14 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
     declarationFiles.forEach((declarationFile) => {
         // The lines of the files now come as a Function inside declaration file.
         const data = fs.readFileSync(declarationFile, "utf8");
-        moduleDeclaration += getModuleDeclaration(data, declarationFile, config, config.buildType);
+        const classMap = getClassesMap(data, config.devPackageName, declarationFile);
+        moduleDeclaration += getModuleDeclaration(data, declarationFile, config, config.buildType, classMap);
         if (declarationFile.indexOf("legacy.d.ts") !== -1) {
             return;
         }
         // const packageMapping = getPackageMappingByDevName(config.devPackageName);
         // const thisFileModuleName = getPublicPackageName(packageMapping.namespace, declarationFile);
-        declarations += getPackageDeclaration(data, declarationFile, getClassesMap(data, config.devPackageName, declarationFile), config.devPackageName);
+        declarations += getPackageDeclaration(data, declarationFile, classMap, config.devPackageName);
     });
     const looseDeclarationsString = looseDeclarations
         .map((declarationFile) => {
