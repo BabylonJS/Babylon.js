@@ -38,6 +38,7 @@ import type { ShaderMaterial } from "core/Materials/shaderMaterial";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import "core/Physics/physicsEngineComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -420,13 +421,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
-                    {mesh.parent && (
-                        <TextLineComponent
-                            label="Parent"
-                            value={mesh.parent.name}
-                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}
-                        />
-                    )}
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={mesh} lockObject={this.props.lockObject} />
                     {mesh.skeleton && <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()} />}
                     <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
