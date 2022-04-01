@@ -11,6 +11,7 @@ import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ICommonLightPropertyGridComponentProps {
     globalState: GlobalState;
@@ -46,6 +47,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
                     />
                     <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={light.getClassName()} />
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={light} lockObject={this.props.lockObject} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Intensity"
