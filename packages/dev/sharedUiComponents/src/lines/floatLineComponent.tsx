@@ -29,7 +29,7 @@ interface IFloatLineComponentProps {
     defaultValue?: number;
     arrows?: boolean;
     unit?: React.ReactNode;
-    onDragStart?: (newValue: number) => void; 
+    onDragStart?: (newValue: number) => void;
     onDragStop?: (newValue: number) => void;
 }
 
@@ -228,16 +228,19 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />
                             {this.props.arrows && (
-                                <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(newDragging) => {
-                                    const currentDragging = this.state.dragging;
-                                    // drag stopped
-                                    if (!currentDragging && newDragging && this.props.onDragStart) {
-                                        this.props.onDragStart(valueAsNumber);
-                                    } else if (currentDragging && !newDragging && this.props.onDragStop) {
-                                        this.props.onDragStop(valueAsNumber);
-                                    }
-                                    this.setState({ dragging: newDragging });
-                                }} />
+                                <InputArrowsComponent
+                                    incrementValue={(amount) => this.incrementValue(amount)}
+                                    setDragging={(newDragging) => {
+                                        const currentDragging = this.state.dragging;
+                                        // drag stopped
+                                        if (!currentDragging && newDragging && this.props.onDragStart) {
+                                            this.props.onDragStart(valueAsNumber);
+                                        } else if (currentDragging && !newDragging && this.props.onDragStop) {
+                                            this.props.onDragStop(valueAsNumber);
+                                        }
+                                        this.setState({ dragging: newDragging });
+                                    }}
+                                />
                             )}
                         </div>
                         {this.props.unit}
