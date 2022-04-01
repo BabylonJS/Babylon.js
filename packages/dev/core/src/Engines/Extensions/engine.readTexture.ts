@@ -14,7 +14,9 @@ declare module "../../Engines/thinEngine" {
             level?: number,
             buffer?: Nullable<ArrayBufferView>,
             flushRenderer?: boolean,
-            noDataConversion?: boolean
+            noDataConversion?: boolean,
+            x?: number,
+            y?: number
         ): Promise<ArrayBufferView>;
 
         /** @hidden */
@@ -26,7 +28,9 @@ declare module "../../Engines/thinEngine" {
             level?: number,
             buffer?: Nullable<ArrayBufferView>,
             flushRenderer?: boolean,
-            noDataConversion?: boolean
+            noDataConversion?: boolean,
+            x?: number,
+            y?: number
         ): ArrayBufferView;
     }
 }
@@ -116,7 +120,9 @@ ThinEngine.prototype._readTexturePixelsSync = function (
     level = 0,
     buffer: Nullable<ArrayBufferView> = null,
     flushRenderer = true,
-    noDataConversion = false
+    noDataConversion = false,
+    x = 0,
+    y = 0
 ): ArrayBufferView {
     const gl = this._gl;
     if (!gl) {
@@ -164,7 +170,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (
         this.flushFramebuffer();
     }
 
-    gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
+    gl.readPixels(x, y, width, height, gl.RGBA, readType, <DataView>buffer);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
 
     return buffer;
@@ -178,7 +184,9 @@ ThinEngine.prototype._readTexturePixels = function (
     level = 0,
     buffer: Nullable<ArrayBufferView> = null,
     flushRenderer = true,
-    noDataConversion = false
+    noDataConversion = false,
+    x = 0,
+    y = 0
 ): Promise<ArrayBufferView> {
-    return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion));
+    return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion, x, y));
 };

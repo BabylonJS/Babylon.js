@@ -4541,6 +4541,7 @@ export class ThinEngine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -4550,7 +4551,8 @@ export class ThinEngine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         const gl = this._gl;
 
@@ -4564,7 +4566,15 @@ export class ThinEngine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
+        this._bindTextureDirectly(target, texture, true);
+
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
+
+        if (generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
+
+        this._bindTextureDirectly(target, null);
     }
 
     /**
