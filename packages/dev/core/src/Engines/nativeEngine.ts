@@ -37,6 +37,7 @@ import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
 import type { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 declare const _native: INative;
 
@@ -2373,6 +2374,28 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Wraps an external native texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapNativeTexture(texture: any): InternalTexture {
+        // Currently native is using the WebGL wrapper
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapNativeTexture instead.");
+    }
+
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
@@ -2907,6 +2930,32 @@ export class NativeEngine extends Engine {
         }
         const image = new _native.Image();
         return image;
+    }
+
+    /**
+     * Update a portion of an internal texture
+     * @param texture defines the texture to update
+     * @param imageData defines the data to store into the texture
+     * @param xOffset defines the x coordinates of the update rectangle
+     * @param yOffset defines the y coordinates of the update rectangle
+     * @param width defines the width of the update rectangle
+     * @param height defines the height of the update rectangle
+     * @param faceIndex defines the face index if texture is a cube (0 by default)
+     * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
+     */
+    public updateTextureData(
+        texture: InternalTexture,
+        imageData: ArrayBufferView,
+        xOffset: number,
+        yOffset: number,
+        width: number,
+        height: number,
+        faceIndex: number = 0,
+        lod: number = 0,
+        generateMipMaps = false
+    ): void {
+        throw new Error("updateTextureData not implemented.");
     }
 
     /**
