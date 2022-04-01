@@ -18,6 +18,7 @@ import { AnimationGridComponent } from "../animations/animationPropertyGridCompo
 import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
 import type { Mesh } from "core/Meshes/mesh";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -54,13 +55,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     <TextLineComponent label="Unique ID" value={transformNode.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={transformNode.getClassName()} />
                     <CheckBoxLineComponent label="IsEnabled" isSelected={() => transformNode.isEnabled()} onSelect={(value) => transformNode.setEnabled(value)} />
-                    {transformNode.parent && (
-                        <TextLineComponent
-                            label="Parent"
-                            value={transformNode.parent.name}
-                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent)}
-                        />
-                    )}
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={transformNode} lockObject={this.props.lockObject} />
                     <ButtonLineComponent
                         label="Dispose"
                         onClick={() => {
