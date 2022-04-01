@@ -2936,7 +2936,7 @@ export class NativeEngine extends Engine {
      * @param lod defines the lod level to update (0 by default)
      * @param generateMipMaps defines whether to generate mipmaps or not
      */
-     public updateTextureData(
+    public updateTextureData(
         texture: InternalTexture,
         imageData: ArrayBufferView,
         xOffset: number,

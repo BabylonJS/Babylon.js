@@ -698,9 +698,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         x = 0,
         y = 0,
         width = Number.MAX_VALUE,
-        height = Number.MAX_VALUE,
-        ): Nullable<Promise<ArrayBufferView>> {
-
+        height = Number.MAX_VALUE
+    ): Nullable<Promise<ArrayBufferView>> {
         if (!this._texture) {
             return null;
         }
