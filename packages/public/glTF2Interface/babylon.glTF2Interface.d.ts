@@ -1090,10 +1090,10 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRMaterialsSpecular extends IMaterialExtension {
-        specularFactor: number;
-        specularColorFactor: number[];
-        specularTexture: ITextureInfo;
-        specularColorTexture: ITextureInfo;
+        specularFactor?: number;
+        specularColorFactor?: number[];
+        specularTexture?: ITextureInfo;
+        specularColorTexture?: ITextureInfo;
     }
 
     /**
