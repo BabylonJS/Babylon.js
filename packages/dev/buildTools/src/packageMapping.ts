@@ -3,6 +3,7 @@ import { kebabize } from "./utils";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";
 const privatePackages: DevPackageName[] = ["shared-ui-components"];
+export const declarationsOnlyPackages: DevPackageName[] = ["babylonjs-gltf2interface"];
 export type DevPackageName =
     | "core"
     | "gui"
