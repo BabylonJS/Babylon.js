@@ -54,15 +54,17 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
         return additionalTextures;
     }
 
-    private _isExtensionEnabled(mat: PBRMaterial):boolean{
-       return  (mat.metallicF0Factor != undefined && mat.metallicF0Factor != 1.0) || 
-               (mat.metallicReflectanceColor  != undefined && !mat.metallicReflectanceColor.equalsFloats(1.0,1.0,1.0)) ||
-               this._hasTexturesExtension(mat) ;
+    private _isExtensionEnabled(mat: PBRMaterial): boolean {
+        return (
+            (mat.metallicF0Factor != undefined && mat.metallicF0Factor != 1.0) ||
+            (mat.metallicReflectanceColor != undefined && !mat.metallicReflectanceColor.equalsFloats(1.0, 1.0, 1.0)) ||
+            this._hasTexturesExtension(mat)
+        );
     }
 
-    private _hasTexturesExtension(mat: PBRMaterial):boolean{
-        return  mat.metallicReflectanceTexture != null  || mat.reflectanceTexture != null ;
-     }
+    private _hasTexturesExtension(mat: PBRMaterial): boolean {
+        return mat.metallicReflectanceTexture != null || mat.reflectanceTexture != null;
+    }
 
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
@@ -75,21 +77,23 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
                 this._wasUsed = true;
 
                 node.extensions = node.extensions || {};
-                
+
                 const metallicReflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.metallicReflectanceTexture) ?? undefined;
                 const reflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.reflectanceTexture) ?? undefined;
-                const metallicF0Factor = babylonMaterial.metallicF0Factor == 1.0 ? undefined : babylonMaterial.metallicF0Factor
-                const metallicReflectanceColor = babylonMaterial.metallicReflectanceColor.equalsFloats(1.0,1.0,1.0) ? undefined : babylonMaterial.metallicReflectanceColor.asArray();
- 
-                const specularInfo : IKHRMaterialsSpecular = {
-                    specularFactor : metallicF0Factor, 
-                    specularTexture : metallicReflectanceTexture ,
-                    specularColorFactor : metallicReflectanceColor,
-                    specularColorTexture : reflectanceTexture,
+                const metallicF0Factor = babylonMaterial.metallicF0Factor == 1.0 ? undefined : babylonMaterial.metallicF0Factor;
+                const metallicReflectanceColor = babylonMaterial.metallicReflectanceColor.equalsFloats(1.0, 1.0, 1.0)
+                    ? undefined
+                    : babylonMaterial.metallicReflectanceColor.asArray();
+
+                const specularInfo: IKHRMaterialsSpecular = {
+                    specularFactor: metallicF0Factor,
+                    specularTexture: metallicReflectanceTexture,
+                    specularColorFactor: metallicReflectanceColor,
+                    specularColorTexture: reflectanceTexture,
                     hasTextures: () => {
                         return this._hasTexturesExtension(babylonMaterial);
                     },
-                }
+                };
                 node.extensions[NAME] = specularInfo;
             }
             resolve(node);
