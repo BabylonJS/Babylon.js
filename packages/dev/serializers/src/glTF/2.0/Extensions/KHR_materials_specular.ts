@@ -4,7 +4,6 @@ import { _Exporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Color3 } from "core/Maths/math.color";
 
 const NAME = "KHR_materials_specular";
 
@@ -56,8 +55,8 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
     }
 
     private _isExtensionEnabled(mat: PBRMaterial):boolean{
-       return  (mat.metallicF0Factor && mat.metallicF0Factor != 1.0) || 
-               (mat.metallicReflectanceColor  && !mat.metallicReflectanceColor.equalsFloats(1.0,1.0,1.0)) ||
+       return  (mat.metallicF0Factor != undefined && mat.metallicF0Factor != 1.0) || 
+               (mat.metallicReflectanceColor  != undefined && !mat.metallicReflectanceColor.equalsFloats(1.0,1.0,1.0)) ||
                this._hasTexturesExtension(mat) ;
     }
 
@@ -77,14 +76,16 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
                 
-                const metallicReflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.metallicReflectanceTexture);
-                const reflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.reflectanceTexture);
+                const metallicReflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.metallicReflectanceTexture) ?? undefined;
+                const reflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.reflectanceTexture) ?? undefined;
+                const metallicF0Factor = babylonMaterial.metallicF0Factor == 1.0 ? undefined : babylonMaterial.metallicF0Factor
+                const metallicReflectanceColor = babylonMaterial.metallicReflectanceColor.equalsFloats(1.0,1.0,1.0) ? undefined : babylonMaterial.metallicReflectanceColor.asArray();
  
                 const specularInfo : IKHRMaterialsSpecular = {
-                    specularFactor : babylonMaterial.metallicF0Factor ?? 1.0, 
-                    specularTexture : metallicReflectanceTexture ?? undefined,
-                    specularColorFactor : (babylonMaterial.metallicReflectanceColor ?? Color3.White).asArray(),
-                    specularColorTexture : reflectanceTexture ?? undefined,
+                    specularFactor : metallicF0Factor, 
+                    specularTexture : metallicReflectanceTexture ,
+                    specularColorFactor : metallicReflectanceColor,
+                    specularColorTexture : reflectanceTexture,
                     hasTextures: () => {
                         return this._hasTexturesExtension(babylonMaterial);
                     },
