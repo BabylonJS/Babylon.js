@@ -634,6 +634,13 @@ export class InputTextArea extends InputText {
             this.autoStretchWidth = true;
         }
 
+        if (this._autoStretchHeight) {
+            const textHeight = this._lines.length * this._fontOffset.height;
+            const totalHeight = textHeight + this._margin.getValueInPixel(this._host, parentMeasure.height) * 2;
+            this.height = Math.min(this._maxHeight.getValueInPixel(this._host, parentMeasure.height), totalHeight) + "px";
+
+            this._autoStretchHeight = true;
+        }
     /** @hidden */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
