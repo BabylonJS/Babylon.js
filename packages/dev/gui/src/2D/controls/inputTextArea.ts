@@ -621,7 +621,17 @@ export class InputTextArea extends InputText {
         let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
 
         if (this._autoStretchWidth) {
-            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+            const tmpLines = text.split("\n");
+            const longerString = tmpLines.reduce((acc: string, val: string) =>  {
+                const valueLength = context.measureText(val).width;
+                const accLength = context.measureText(acc).width;
+                return (valueLength > accLength) ? val : acc;
+            }, "");
+            
+            const longerStringWidth = context.measureText(longerString).width;
+            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), longerStringWidth + marginWidth) + "px";
+            
+            this.autoStretchWidth = true;
         }
 
     /** @hidden */
