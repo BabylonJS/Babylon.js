@@ -12,6 +12,8 @@ import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { PointerInfoBase } from "core/Events/pointerEvents";
 import { IKeyboardEvent } from "core/Events/deviceInputEvents";
 
+import { serialize } from "core/Misc/decorators";
+
 /**
  * Class used to create input text control
  */
@@ -24,6 +26,7 @@ export class InputTextArea extends InputText {
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
+    private _maxHeight = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
     
     private _clipTextTop: number;
     private _clipTextLeft: number;
@@ -81,6 +84,27 @@ export class InputTextArea extends InputText {
         }
         this._outlineColor = value;
         this._markAsDirty();
+    }
+
+
+    @serialize()
+    public get maxHeight(): string | number {
+        return this._maxHeight.toString(this._host);
+    }
+
+    /** Gets the maximum width allowed by the control in pixels */
+    public get maxHeightInPixels(): number {
+        return this._maxHeight.getValueInPixel(this._host, this._cachedParentMeasure.height);
+    }
+
+    public set maxHeight(value: string | number) {
+        if (this._maxHeight.toString(this._host) === value) {
+            return;
+        }
+
+        if (this._maxHeight.fromString(value)) {
+            this._markAsDirty();
+        }
     }
 
     /**
