@@ -618,7 +618,7 @@ export class InputTextArea extends InputText {
         // measures the textlength -> this.measure.width
         this._textWidth = context.measureText(text).width;
         // we double up the margin width
-        let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
+        let marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
 
         if (this._autoStretchWidth) {
             const tmpLines = text.split("\n");
