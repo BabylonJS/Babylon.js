@@ -50,6 +50,8 @@ export class InputTextArea extends InputText {
 
     private _scrollTop: Nullable<number>;
 
+    private _autoStretchHeight: boolean;
+
     /**
      * Gets or sets outlineWidth of the text to display
      */
@@ -86,6 +88,26 @@ export class InputTextArea extends InputText {
         this._markAsDirty();
     }
 
+    /** Gets or sets a boolean indicating if the control can auto stretch its height to adapt to the text */
+    @serialize()
+    public get autoStretchHeight(): boolean {
+        return this._autoStretchHeight;
+    }
+
+    public set autoStretchHeight(value: boolean) {
+        if (this._autoStretchHeight === value) {
+            return;
+        }
+
+        this._autoStretchHeight = value;
+        this._markAsDirty();
+    }
+
+    public set height(value: string | number) {
+        super.height = value;
+
+        this._autoStretchHeight = false;
+    }
 
     @serialize()
     public get maxHeight(): string | number {
