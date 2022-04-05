@@ -155,6 +155,7 @@ export class InputTextArea extends InputText {
                     evt.preventDefault();
                 }
 
+                this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
 
                 this._textHasChanged();
@@ -172,6 +173,7 @@ export class InputTextArea extends InputText {
                     evt.preventDefault();
                 }
                 
+                this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
 
                 this._textHasChanged();
@@ -181,6 +183,7 @@ export class InputTextArea extends InputText {
                 this._cursorInfo.globalStartIndex++;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
 
+                this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
 
                 this._textHasChanged();
@@ -473,6 +476,7 @@ export class InputTextArea extends InputText {
             if (this._addKey) {
 
                 this._isTextHighlightOn = false;
+                this._blinkIsEven = false;
 
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, key);
                 this._cursorInfo.globalStartIndex += key.length;
