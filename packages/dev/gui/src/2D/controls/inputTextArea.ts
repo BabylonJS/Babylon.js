@@ -634,6 +634,13 @@ export class InputTextArea extends InputText {
             this.autoStretchWidth = true;
         }
 
+        this._availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
+
+        // Prepare lines
+        this._lines = this._breakLines(this._availableWidth, context);
+        // can we find a cleaner implementation here?
+        this._contextForBreakLines = context;
+
         if (this._autoStretchHeight) {
             const textHeight = this._lines.length * this._fontOffset.height;
             const totalHeight = textHeight + this._margin.getValueInPixel(this._host, parentMeasure.height) * 2;
@@ -641,6 +648,10 @@ export class InputTextArea extends InputText {
 
             this._autoStretchHeight = true;
         }
+
+        this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginWidth;
+    }
+
     /** @hidden */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
