@@ -1068,6 +1068,9 @@ export class InputTextArea extends InputText {
                 }
 
                 this._cursorInfo.relativeEndIndex = this._cursorInfo.globalEndIndex - tmpLength;
+            } else {
+                this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
+                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
             }
         }
     }
