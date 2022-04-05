@@ -739,10 +739,6 @@ export class InputTextArea extends InputText {
             context.shadowOffsetY = 0;
         }
 
-        if (!this._fontOffset) {
-            this._fontOffset = Control._GetFontOffset(context.font);
-        }
-
         // sets the color of the rectangle (border if background available)
         if (this.color) {
             context.fillStyle = this.color;
@@ -791,14 +787,14 @@ export class InputTextArea extends InputText {
             rootY += this._fontOffset.height;
         }
 
+        context.restore();
+
         // Cursor
         if (this._isFocused) {
 
-            // Caret Blinking
-            this._resetBlinking();
+            // Render cursor
+            if (!this._blinkIsEven) {
 
-            // Compute overflowing cursor position in case on blinking or highlighting
-            if (!this._blinkIsEven || this._isTextHighlightOn) {
                 let cursorLeft = this._scrollLeft + context.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, this._cursorInfo.relativeStartIndex)).width;
 
                 if (cursorLeft < this._clipTextLeft) {
@@ -823,10 +819,13 @@ export class InputTextArea extends InputText {
                     this._markAsDirty();
                 }
 
-                // Render cursor
-                if (!this._blinkIsEven) {
+                if (!this._isTextHighlightOn) {
                 context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
+                }
             }
+
+            
+            this._resetBlinking();
 
                 //show the highlighted text
                 if (this._isTextHighlightOn) {
@@ -872,7 +871,6 @@ export class InputTextArea extends InputText {
 
                     if (this._cursorInfo.globalEndIndex === this._cursorInfo.globalStartIndex) {
                         this._resetBlinking();
-                    }
                 }
             }
         }
