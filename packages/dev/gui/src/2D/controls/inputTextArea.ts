@@ -604,29 +604,6 @@ export class InputTextArea extends InputText {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
-        super._processMeasures(parentMeasure, context);
-
-        // Prepare lines
-        this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, context);
-        // can we find a cleaner implementation here?
-        this._contextForBreakLines = context;
-
-        this.onLinesReadyObservable.notifyObservers(this);
-
-        let maxLineWidth: number = 0;
-
-        for (let i = 0; i < this._lines.length; i++) {
-            const line = this._lines[i];
-
-            if (line.width > maxLineWidth) {
-                maxLineWidth = line.width;
-            }
-        }
-    }
-
-    /** @hidden */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-
         let text = this._beforeRenderText(this._textWrapper).text;
 
         // placeholder conditions and color setting
