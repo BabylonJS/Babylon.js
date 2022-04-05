@@ -624,7 +624,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
                 // single change for left handed systems
                 if (!handsDefined && !scene.useRightHandedSystem) {
-                    handGLB.transformNodes[0].rotate(Axis.Y, Math.PI);
+                    handGLB.meshes[1].rotate(Axis.Y, Math.PI);
                 }
             });
 
