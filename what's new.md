@@ -454,7 +454,15 @@
 - Cloning a mesh now assigns the `skeleton` property to the source skeleton. ([bghgary](https://github.com/bghgary))
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
 - `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))
-- GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))
+- GLTF Animations are loaded at 60 FPS by default, instead of the previous 1 FPS. ([carolhmj](https://github.com/carolhmj)).
+If you'd like to keep your existing animation ranges, you can use this workaround:
+```
+BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+  if (plugin.name === "gltf") {
+    plugin.targetFps = 1;
+  }
+});
+```
 - `currentState` and `previousState` have been removed from use in `onInputChangedObservable` in the `DeviceSourceManager` ([PolygonalSun](https://github.com/PolygonalSun))
 - `PointerInput` movement enums are no longer being used in any movement event handling in the `DeviceInputSystem` and `InputManager` ([PolygonalSun](https://github.com/PolygonalSun))
 - Shadow generators now use the `Material.alphaCutOff` value instead of a hard-coded 0.4 value. ([Popov72](https://github.com/Popov72))
