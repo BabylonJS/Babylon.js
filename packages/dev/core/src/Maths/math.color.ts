@@ -1010,15 +1010,15 @@ export class Color4 {
 
     /**
      * Creates a new Color4 from the string containing valid hexadecimal values.
-     * 
+     *
      * A valid hex string is either in the format #RRGGBB or #RRGGBBAA.
-     * 
+     *
      * When a hex string without alpha is passed, the resulting Color4 has
      * its alpha value set to 1.0.
-     * 
-     * An invalid string results in a Color with all its channels set to 0.0, 
+     *
+     * An invalid string results in a Color with all its channels set to 0.0,
      * i.e. "transparent black".
-     * 
+     *
      * @param hex defines a string containing valid hexadecimal values
      * @returns a new Color4 object
      */
