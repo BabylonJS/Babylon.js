@@ -105,7 +105,11 @@ export class AssetContainer extends AbstractScene {
      * @param options.predicate defines a predicate used to filter whih mesh to instantiate/clone
      * @returns a list of rootNodes, skeletons and animation groups that were duplicated
      */
-    public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false, options?: { doNotInstantiate: boolean, predicate?: (entity: any) => boolean }): InstantiatedEntries {
+    public instantiateModelsToScene(
+        nameFunction?: (sourceName: string) => string,
+        cloneMaterials = false,
+        options?: { doNotInstantiate: boolean; predicate?: (entity: any) => boolean }
+    ): InstantiatedEntries {
         const convertionMap: { [key: number]: number } = {};
         const storeMap: { [key: number]: any } = {};
         const result = new InstantiatedEntries();
@@ -276,7 +280,7 @@ export class AssetContainer extends AbstractScene {
     /**
      * Adds all the assets from the container to the scene.
      */
-     public addAllToScene() {
+    public addAllToScene() {
         if (this._wasAddedToScene) {
             return;
         }
@@ -294,8 +298,8 @@ export class AssetContainer extends AbstractScene {
         }
 
         this.scene.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
-        this._onContextRestoredObserver = null;         
-     }
+        this._onContextRestoredObserver = null;
+    }
 
     /**
      * Adds assets from the container to the scene.
@@ -391,7 +395,7 @@ export class AssetContainer extends AbstractScene {
     /**
      * Removes all the assets in the container from the scene
      */
-     public removeAllFromScene() {
+    public removeAllFromScene() {
         this._wasAddedToScene = false;
 
         this.removeFromScene(null);
@@ -402,8 +406,8 @@ export class AssetContainer extends AbstractScene {
 
         for (const component of this.scene._serializableComponents) {
             component.removeFromContainer(this);
-        }        
-     }
+        }
+    }
 
     /**
      * Removes assets in the container from the scene
