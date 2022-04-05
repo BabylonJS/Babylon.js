@@ -629,9 +629,6 @@ export class InputTextArea extends InputText {
         this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
         this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, parentMeasure.height);
 
-        this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
-        this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
-
         if (this._isFocused && this._lines[this._cursorInfo.currentLineIndex].width > this._availableWidth) {
 
             const textLeft = this._clipTextLeft - this._lines[this._cursorInfo.currentLineIndex].width + this._availableWidth;
