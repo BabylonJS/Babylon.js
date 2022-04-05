@@ -178,6 +178,8 @@ export class InputTextArea extends InputText {
                 break;
             case 13: // RETURN
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
+                this._cursorInfo.globalStartIndex++;
+                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
 
                 this._isTextHighlightOn = false;
 
