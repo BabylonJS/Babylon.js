@@ -598,8 +598,9 @@ export class InputTextArea extends InputText {
         return { text: line, width: context.measureText(line).width, lineEnding: " " };
     }
 
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        if (!this._fontOffset) {
+    /** @hidden */
+    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        if (!this._fontOffset || this._wasDirty) {
             this._fontOffset = Control._GetFontOffset(context.font);
         }
 
@@ -646,8 +647,10 @@ export class InputTextArea extends InputText {
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
         }
 
-        this._availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
-        this._availableHeight = this._height.getValueInPixel(this._host, this._tempParentMeasure.height) - marginWidth;
+    /** @hidden */
+    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
+        this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, parentMeasure.height);
 
         this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
         this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
