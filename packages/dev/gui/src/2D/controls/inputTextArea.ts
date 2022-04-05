@@ -575,7 +575,7 @@ export class InputTextArea extends InputText {
         return lines;
     }
 
-    protected _breakLines(refWidth: number, refHeight: number,  context: ICanvasRenderingContext): object[] {
+    protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
         var lines: { text: string, width: number, lineEnding: string }[] = [];
         var _lines = this.text.split("\n");
 
