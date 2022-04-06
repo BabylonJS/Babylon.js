@@ -4,7 +4,6 @@ import type { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
 import { DynamicTexture } from "../../../Materials/Textures/dynamicTexture";
-import type { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
@@ -87,7 +86,6 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
     public base: number = 0.5;
 
     private _scene: Scene;
-    private _depthTexture: RenderTargetTexture;
     private _randomTexture: DynamicTexture;
 
     private _originalColorPostProcess: PassPostProcess;
@@ -119,7 +117,6 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
 
         // Set up assets
         this._createRandomTexture();
-        this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
 
         const ssaoRatio = ratio.ssaoRatio || ratio;
         const combineRatio = ratio.combineRatio || ratio;
@@ -186,6 +183,19 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
         scene.postProcessRenderPipelineManager.addPipeline(this);
         if (cameras) {
             scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+        }
+    }
+
+    /**
+     * @param cameras
+     * @param unique
+     * @hidden
+     */
+    public _attachCameras(cameras: any, unique: boolean): void {
+        super._attachCameras(cameras, unique);
+
+        for (const camera of this._cameras) {
+            this._scene.enableDepthRenderer(camera).getDepthMap(); // Force depth renderer "on"
         }
     }
 
@@ -305,7 +315,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("fallOff", this.fallOff);
             effect.setFloat("base", this.base);
 
-            effect.setTexture("textureSampler", this._depthTexture);
+            effect.setTexture("textureSampler", this._scene.enableDepthRenderer(this._scene.activeCamera).getDepthMap());
             effect.setTexture("randomSampler", this._randomTexture);
         };
     }
