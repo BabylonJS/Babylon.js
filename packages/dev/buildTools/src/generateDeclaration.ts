@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chokidar from "chokidar";
 
-import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile } from "./utils";
+import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, getHashOfContent, getHashOfFile, kebabize } from "./utils";
 import { BuildType, DevPackageName, getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
 
 export interface IGenerateDeclarationConfig {
@@ -91,8 +91,10 @@ function getModuleDeclaration(
                                 if (match[1].startsWith(devPackageName)) {
                                     line = line.replace(
                                         match[1],
-                                        getPublicPackageName(mapping[devPackageName as DevPackageName][buildType], /*undefined, */ match[1]) +
-                                            match[1].substring(devPackageName.length)
+                                        getPublicPackageName(
+                                            mapping[(isValidDevPackageName(devPackageName, true) ? devPackageName : kebabize(config.devPackageName)) as DevPackageName][buildType],
+                                            match[1]
+                                        ) + match[1].substring(devPackageName.length)
                                     );
                                     found = true;
                                 }
@@ -222,7 +224,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                 });
             } else {
                 if (!devPackageName.startsWith("babylonjs")) {
-                    console.log(`Not a Dev Package Name: ${devPackageName}`);
+                    // console.log(`Not a Dev Package Name: ${devPackageName}`);
                     mappingArray.push({
                         alias,
                         externalName: devPackageName,
@@ -316,9 +318,9 @@ function getPackageDeclaration(
 
     // replaces classes definitions with namespace definitions
     classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; externalName?: string; fullPath: string }) => {
-        const { alias, realClassName, devPackageName, fullPath, externalName } = classMapping;
+        const { alias, realClassName, devPackageName: localDevPackageMap, fullPath, externalName } = classMapping;
         // TODO - make a list of dependencies that are accepted by each package
-        if (!devPackageName) {
+        if (!localDevPackageMap) {
             if (externalName) {
                 if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
                     // replace with any
@@ -333,8 +335,9 @@ function getPackageDeclaration(
 
             return;
         }
-        const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace);
-        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageName).namespace, fullPath /*, fullPath*/);
+        const devPackageToUse = isValidDevPackageName(localDevPackageMap, true) ? localDevPackageMap : devPackageName;
+        const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace);
+        const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace, fullPath /*, fullPath*/);
         if (namespace !== defaultModuleName || originalNamespace !== namespace || alias !== realClassName) {
             const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
             processedSource = processedSource.replace(matchRegex, `$1${namespace}.${realClassName}$3`);
