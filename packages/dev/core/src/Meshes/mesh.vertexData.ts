@@ -593,7 +593,7 @@ export class VertexData {
             }
 
             let positionsOffset = this.positions ? this.positions.length / 3 : 0;
-            for (const [other,] of vertexDatas) {
+            for (const [other] of vertexDatas) {
                 if (other.indices) {
                     for (let index = 0; index < other.indices.length; index++) {
                         indices[indicesOffset + index] = other.indices[index] + positionsOffset;
