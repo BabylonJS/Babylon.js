@@ -264,6 +264,15 @@ class Playground {
             declarations.push("https://playground.babylonjs.com/libs/babylon.manager.d.ts");
         }
 
+        const timestamp = typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__ ? (globalThis as any).__babylonSnapshotTimestamp__ : 0;
+        if (timestamp) {
+            for (let index = 0; index < declarations.length; index++) {
+                if (declarations[index].indexOf("preview.babylonjs.com") !== -1) {
+                    declarations[index] = declarations[index] + "?t=" + timestamp;
+                }
+            }
+        }
+
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
         const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";

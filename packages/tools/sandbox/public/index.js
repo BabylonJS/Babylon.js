@@ -6,8 +6,10 @@ const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/head
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
+        // eslint-disable-next-line no-undef
+        let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
         const script = document.createElement("script");
-        script.src = url;
+        script.src = urlToLoad;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
@@ -21,9 +23,9 @@ let loadScriptAsync = function (url, instantResolve) {
                 if (!instantResolve) {
                     resolve();
                 }
-            }
+            };
             document.head.appendChild(fallbackScript);
-        }
+        };
         document.head.appendChild(script);
         if (instantResolve) {
             resolve();
@@ -33,6 +35,7 @@ let loadScriptAsync = function (url, instantResolve) {
 
 const Versions = {
     dist: [
+        "https://preview.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://preview.babylonjs.com/babylon.js",
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
         "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
@@ -62,7 +65,7 @@ let loadInSequence = async function (versions, index, resolve) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1)) {
+    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) {
         activeVersion = "local";
     }
 
