@@ -7,6 +7,16 @@
             "referenceImage": "mergemeshes.png"
         },
         {
+            "title": "Merge Meshes 2",
+            "playgroundId": "#4WB7B5#2",
+            "referenceImage": "mergemeshes2.png"
+        },      
+        {
+            "title": "Merge Meshes 3",
+            "playgroundId": "#E99FHV#0",
+            "referenceImage": "mergemeshes3.png"
+        },    
+        {
             "title": "Texture cache",
             "playgroundId": "#3TFH5I#0",
             "referenceImage": "texture cache.png",
