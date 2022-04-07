@@ -498,22 +498,12 @@ export class VertexData {
         }
     }
 
-    @nativeOverride.filter((...[indices]: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(indices))
-    private static _FlipFaces(indices: IndicesArray, offset = 0, length = indices.length) {
-        for (let index = offset; index < offset + length; index += 3) {
-            const tmp = indices[index + 1];
-            indices[index + 1] = indices[index + 2];
-            indices[index + 2] = tmp;
-        }
-    }
-
     /**
      * Transforms each position and each normal of the vertexData according to the passed Matrix
      * @param matrix the transforming matrix
      * @returns the VertexData
      */
     public transform(matrix: Matrix): VertexData {
-        const flip = matrix.determinant() < 0;
         if (this.positions) {
             VertexData._TransformVector3Coordinates(this.positions, matrix);
         }
@@ -524,10 +514,6 @@ export class VertexData {
 
         if (this.tangents) {
             VertexData._TransformVector4Normals(this.tangents, matrix);
-        }
-
-        if (flip && this.indices) {
-            VertexData._FlipFaces(this.indices);
         }
 
         return this;
@@ -554,7 +540,7 @@ export class VertexData {
      * @hidden
      */
     public *_mergeCoroutine(
-        transform: Matrix | undefined,
+        transformSource: Matrix | undefined,
         vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[],
         use32BitsIndices = false,
         isAsync: boolean,
@@ -604,21 +590,13 @@ export class VertexData {
                     temp.set(indices);
                     indices = temp;
                 }
-
-                if (transform && transform.determinant() < 0) {
-                    VertexData._FlipFaces(indices, 0, indicesOffset);
-                }
             }
 
             let positionsOffset = this.positions ? this.positions.length / 3 : 0;
-            for (const [other, transform] of vertexDatas) {
+            for (const [other,] of vertexDatas) {
                 if (other.indices) {
                     for (let index = 0; index < other.indices.length; index++) {
                         indices[indicesOffset + index] = other.indices[index] + positionsOffset;
-                    }
-
-                    if (transform && transform.determinant() < 0) {
-                        VertexData._FlipFaces(indices, indicesOffset, other.indices.length);
                     }
 
                     // The call to _validate already checked for positions
@@ -637,7 +615,7 @@ export class VertexData {
         this.positions = VertexData._MergeElement(
             VertexBuffer.PositionKind,
             this.positions,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].positions, other[1]])
         );
         if (isAsync) {
@@ -646,7 +624,7 @@ export class VertexData {
         this.normals = VertexData._MergeElement(
             VertexBuffer.NormalKind,
             this.normals,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].normals, other[1]])
         );
         if (isAsync) {
@@ -655,7 +633,7 @@ export class VertexData {
         this.tangents = VertexData._MergeElement(
             VertexBuffer.TangentKind,
             this.tangents,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].tangents, other[1]])
         );
         if (isAsync) {
@@ -664,7 +642,7 @@ export class VertexData {
         this.uvs = VertexData._MergeElement(
             VertexBuffer.UVKind,
             this.uvs,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].uvs, other[1]])
         );
         if (isAsync) {
@@ -673,7 +651,7 @@ export class VertexData {
         this.uvs2 = VertexData._MergeElement(
             VertexBuffer.UV2Kind,
             this.uvs2,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].uvs2, other[1]])
         );
         if (isAsync) {
@@ -682,7 +660,7 @@ export class VertexData {
         this.uvs3 = VertexData._MergeElement(
             VertexBuffer.UV3Kind,
             this.uvs3,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].uvs3, other[1]])
         );
         if (isAsync) {
@@ -691,7 +669,7 @@ export class VertexData {
         this.uvs4 = VertexData._MergeElement(
             VertexBuffer.UV4Kind,
             this.uvs4,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].uvs4, other[1]])
         );
         if (isAsync) {
@@ -700,7 +678,7 @@ export class VertexData {
         this.uvs5 = VertexData._MergeElement(
             VertexBuffer.UV5Kind,
             this.uvs5,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].uvs5, other[1]])
         );
         if (isAsync) {
@@ -709,7 +687,7 @@ export class VertexData {
         this.uvs6 = VertexData._MergeElement(
             VertexBuffer.UV6Kind,
             this.uvs6,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].uvs6, other[1]])
         );
         if (isAsync) {
@@ -718,7 +696,7 @@ export class VertexData {
         this.colors = VertexData._MergeElement(
             VertexBuffer.ColorKind,
             this.colors,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].colors, other[1]])
         );
         if (isAsync) {
@@ -727,7 +705,7 @@ export class VertexData {
         this.matricesIndices = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesKind,
             this.matricesIndices,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].matricesIndices, other[1]])
         );
         if (isAsync) {
@@ -736,7 +714,7 @@ export class VertexData {
         this.matricesWeights = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsKind,
             this.matricesWeights,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].matricesWeights, other[1]])
         );
         if (isAsync) {
@@ -745,7 +723,7 @@ export class VertexData {
         this.matricesIndicesExtra = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesExtraKind,
             this.matricesIndicesExtra,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].matricesIndicesExtra, other[1]])
         );
         if (isAsync) {
@@ -754,7 +732,7 @@ export class VertexData {
         this.matricesWeightsExtra = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsExtraKind,
             this.matricesWeightsExtra,
-            transform,
+            transformSource,
             vertexDatas.map((other) => [other[0].matricesWeightsExtra, other[1]])
         );
 
@@ -764,7 +742,7 @@ export class VertexData {
     private static _MergeElement(
         kind: string,
         source: Nullable<FloatArray>,
-        transform: Matrix | undefined,
+        transformSource: Matrix | undefined,
         others: readonly (readonly [element: Nullable<FloatArray>, transform?: Matrix])[]
     ): Nullable<FloatArray> {
         const nonNullOthers = others.filter((other): other is [element: FloatArray, transform?: Matrix] => other[0] !== null && other[0] !== undefined);
@@ -793,7 +771,7 @@ export class VertexData {
             // use non-loop method when the source is Float32Array
             const ret32 = new Float32Array(len);
             ret32.set(source);
-            transform && transformRange(ret32, transform, 0, source.length);
+            transformSource && transformRange(ret32, transformSource, 0, source.length);
 
             let offset = source.length;
             for (const [vertexData, transform] of nonNullOthers) {
@@ -808,7 +786,7 @@ export class VertexData {
             for (let i = 0; i < source.length; i++) {
                 ret[i] = source[i];
             }
-            transform && transformRange(ret, transform, 0, source.length);
+            transformSource && transformRange(ret, transformSource, 0, source.length);
 
             let offset = source.length;
             for (const [vertexData, transform] of nonNullOthers) {
