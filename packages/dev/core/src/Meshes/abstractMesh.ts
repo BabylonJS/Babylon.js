@@ -1462,7 +1462,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param data defines the position data to apply the skeleton and morph to
      * @returns the position data
      */
-    public getPositionData(applySkeleton: boolean, applyMorph: boolean, data?: Nullable<FloatArray>): Nullable<FloatArray> {
+    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
         data = data ?? this.getVerticesData(VertexBuffer.PositionKind);
 
         if (data && applyMorph && this.morphTargetManager) {
