@@ -114,13 +114,13 @@ export class IridescenceBlock extends NodeMaterialBlock {
      * @param iridescenceBlock instance of a IridescenceBlock or null if the code must be generated without an active iridescence module
      * @returns the shader code
      */
-    public static GetCode(
-        iridescenceBlock: Nullable<IridescenceBlock>,
-    ): string {
+    public static GetCode(iridescenceBlock: Nullable<IridescenceBlock>): string {
         let code = "";
 
         const intensityName = iridescenceBlock?.intensity.isConnected ? iridescenceBlock.intensity.associatedVariableName : "1.";
-        const indexOfRefraction = iridescenceBlock?.indexOfRefraction.isConnected ? iridescenceBlock.indexOfRefraction.associatedVariableName : PBRIridescenceConfiguration._DefaultIndexOfRefraction;
+        const indexOfRefraction = iridescenceBlock?.indexOfRefraction.isConnected
+            ? iridescenceBlock.indexOfRefraction.associatedVariableName
+            : PBRIridescenceConfiguration._DefaultIndexOfRefraction;
         const thickness = iridescenceBlock?.thickness.isConnected ? iridescenceBlock.thickness.associatedVariableName : PBRIridescenceConfiguration._DefaultMaximumThickness;
 
         code += `iridescenceOutParams iridescenceOut;
