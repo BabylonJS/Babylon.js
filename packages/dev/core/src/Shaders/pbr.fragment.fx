@@ -64,6 +64,7 @@ precision highp float;
 #include<pbrBlockReflection>
 #include<pbrBlockSheen>
 #include<pbrBlockClearcoat>
+#include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
 
 // _____________________________ MAIN FUNCTION ____________________________
@@ -368,6 +369,43 @@ void main(void) {
         #ifdef SHEEN_LINKWITHALBEDO
             surfaceAlbedo = sheenOut.surfaceAlbedo;
         #endif
+    #endif
+
+    // _____________________________ Iridescence ____________________________
+    #ifdef IRIDESCENCE
+        iridescenceOutParams iridescenceOut;
+
+        #ifdef IRIDESCENCE_TEXTURE
+            vec2 iridescenceMapData = texture2D(iridescenceSampler, vIridescenceUV + uvOffset).rg * vIridescenceInfos.y;
+        #endif
+        #ifdef IRIDESCENCE_THICKNESS_TEXTURE
+            vec2 iridescenceThicknessMapData = texture2D(iridescenceThicknessSampler, vIridescenceThicknessUV + uvOffset).rg * vIridescenceInfos.w;
+        #endif
+
+        iridescenceBlock(
+            vIridescenceParams,
+            #ifdef IRIDESCENCE_TEXTURE
+                iridescenceMapData,
+            #endif
+            #ifdef IRIDESCENCE_THICKNESS_TEXTURE
+                iridescenceThicknessMapData,
+            #endif
+            iridescenceOut
+        );
+
+        float topIor = 1.; // Assume air
+        float viewAngle = NdotV;
+        float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
+
+        #ifdef CLEARCOAT_IRIDESCENCE_REMAP_TODO
+            topIor = lerp(1.0, 1. - vClearCoatRefractionParams.w, vClearCoatParams.x);
+            // HACK: Use the reflected direction to specify the Fresnel coefficient for pre-convolved envmaps
+            viewAngle = sqrt(1.0 + square(1.0 / topIor) * (square(NdotVUnclamped) - 1.0));
+        #endif
+
+        vec3 iridescenceFresnel = evalIridescence(topIor, iridescenceOut.iridescenceIOR, viewAngle, iridescenceOut.iridescenceThickness, specularEnvironmentR0);
+
+        specularEnvironmentR0 = mix(specularEnvironmentR0, iridescenceFresnel, iridescenceIntensity);
     #endif
 
     // _____________________________ Clear Coat ____________________________

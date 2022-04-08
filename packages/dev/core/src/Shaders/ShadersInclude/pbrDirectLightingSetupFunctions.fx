@@ -17,6 +17,10 @@ struct preLightingInfo
     float NdotL;
     float VdotH;
     float roughness;
+
+    #ifdef IRIDESCENCE
+        float iridescenceIntensity;
+    #endif
 };
 
 preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 N) {

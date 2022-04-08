@@ -25,6 +25,7 @@ import { MaterialFlags } from "../../../materialFlags";
 import { AnisotropyBlock } from "./anisotropyBlock";
 import { ReflectionBlock } from "./reflectionBlock";
 import { ClearCoatBlock } from "./clearCoatBlock";
+import { IridescenceBlock } from "./iridescenceBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
 import type { RefractionBlock } from "./refractionBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
@@ -121,6 +122,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             true,
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock")
+        );
+        this.registerInput(
+            "iridescence",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("iridescence", this, NodeMaterialConnectionPointDirection.Input, IridescenceBlock, "IridescenceBlock")
         );
 
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -517,6 +525,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
         return this._inputs[16];
+    }
+
+    /**
+     * Gets the iridescence object parameters
+     */
+     public get iridescence(): NodeMaterialConnectionPoint {
+        return this._inputs[17];
     }
 
     /**
@@ -1179,6 +1194,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
             ],
+        });
+
+        // _____________________________ Iridescence _______________________________
+        const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
+        state.compilationString += IridescenceBlock.GetCode(
+            state,
+            iridescenceBlock,
+        );
+
+        state._emitFunctionFromInclude("pbrBlockIridescence", comments, {
+            replaceStrings: [ ],
         });
 
         // _____________________________ Clear Coat ____________________________
