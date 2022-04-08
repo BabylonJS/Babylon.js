@@ -530,7 +530,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets the iridescence object parameters
      */
-     public get iridescence(): NodeMaterialConnectionPoint {
+    public get iridescence(): NodeMaterialConnectionPoint {
         return this._inputs[17];
     }
 
@@ -1198,13 +1198,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // _____________________________ Iridescence _______________________________
         const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
-        state.compilationString += IridescenceBlock.GetCode(
-            state,
-            iridescenceBlock,
-        );
+        state.compilationString += IridescenceBlock.GetCode(state, iridescenceBlock);
 
         state._emitFunctionFromInclude("pbrBlockIridescence", comments, {
-            replaceStrings: [ ],
+            replaceStrings: [],
         });
 
         // _____________________________ Clear Coat ____________________________
