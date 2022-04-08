@@ -162,6 +162,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                         onSelect={(value) => (extensionStates["KHR_materials_clearcoat"].enabled = value)}
                     />
                     <CheckBoxLineComponent
+                        label="KHR_materials_iridescence"
+                        isSelected={() => extensionStates["KHR_materials_iridescence"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_iridescence"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
                         label="KHR_materials_emissive_strength"
                         isSelected={() => extensionStates["KHR_materials_emissive_strength"].enabled}
                         onSelect={(value) => (extensionStates["KHR_materials_emissive_strength"].enabled = value)}
