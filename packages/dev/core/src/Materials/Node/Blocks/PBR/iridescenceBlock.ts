@@ -11,8 +11,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Scene } from "../../../../scene";
 import type { Nullable } from "../../../../types";
-import type { Mesh } from "../../../../Meshes/mesh";
-import type { Effect } from "../../../effect";
 import { PBRIridescenceConfiguration } from "../../../../Materials/PBR/pbrIridescenceConfiguration";
 
 /**
