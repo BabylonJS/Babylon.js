@@ -65,6 +65,7 @@ export class Inspector {
     }
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
+        console.log("test")
         for (let index = 0; index < sourceDoc.styleSheets.length; index++) {
             const styleSheet: any = sourceDoc.styleSheets[index];
 
