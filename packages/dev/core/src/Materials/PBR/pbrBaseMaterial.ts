@@ -851,7 +851,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly clearCoat: PBRClearCoatConfiguration;
 
     /**
-     * Defines the clear coat layer parameters for the material.
+     * Defines the iridescence layer parameters for the material.
      */
     public readonly iridescence: PBRIridescenceConfiguration;
 

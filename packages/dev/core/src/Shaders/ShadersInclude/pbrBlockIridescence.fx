@@ -19,7 +19,6 @@ struct iridescenceOutParams
         out iridescenceOutParams outParams
     )
     {
-        // Clear COAT parameters.
         float iridescenceIntensity = vIridescenceParams.x;
         float iridescenceIOR = vIridescenceParams.y;
 

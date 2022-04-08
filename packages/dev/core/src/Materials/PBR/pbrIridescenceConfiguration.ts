@@ -64,7 +64,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     public isEnabled = false;
 
     /**
-     * Defines the clear coat layer strength (between 0 and 1) it defaults to 1.
+     * Defines the iridescence layer strength (between 0 and 1) it defaults to 1.
      */
     @serialize()
     public intensity: number = 1;
