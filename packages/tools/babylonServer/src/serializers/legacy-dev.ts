@@ -78,4 +78,3 @@ if (typeof globalObject !== "undefined") {
 
 export * from "../../../../dev/serializers/src/glTF/glTFFileExporter";
 export * from "../../../../dev/serializers/src/glTF/2.0/index";
-

@@ -50,7 +50,7 @@ module.exports = (env) => {
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
-            extensions: [".js", ".ts", ".tsx", ".d.ts"],
+            extensions: [".js", ".ts", ".tsx"],
             alias: {
                 core: path.resolve(basePathForSources, "core", outputDirectoryForAliases),
                 gui: path.resolve(basePathForSources, "gui", outputDirectoryForAliases),
