@@ -384,6 +384,8 @@ void main(void) {
 
         iridescenceBlock(
             vIridescenceParams,
+            NdotV,
+            specularEnvironmentR0,
             #ifdef IRIDESCENCE_TEXTURE
                 iridescenceMapData,
             #endif
@@ -393,19 +395,8 @@ void main(void) {
             iridescenceOut
         );
 
-        float topIor = 1.; // Assume air
-        float viewAngle = NdotV;
         float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
-
-        #ifdef CLEARCOAT_IRIDESCENCE_REMAP_TODO
-            topIor = lerp(1.0, 1. - vClearCoatRefractionParams.w, vClearCoatParams.x);
-            // HACK: Use the reflected direction to specify the Fresnel coefficient for pre-convolved envmaps
-            viewAngle = sqrt(1.0 + square(1.0 / topIor) * (square(NdotVUnclamped) - 1.0));
-        #endif
-
-        vec3 iridescenceFresnel = evalIridescence(topIor, iridescenceOut.iridescenceIOR, viewAngle, iridescenceOut.iridescenceThickness, specularEnvironmentR0);
-
-        specularEnvironmentR0 = mix(specularEnvironmentR0, iridescenceFresnel, iridescenceIntensity);
+        specularEnvironmentR0 = iridescenceOut.specularEnvironmentR0;
     #endif
 
     // _____________________________ Clear Coat ____________________________
