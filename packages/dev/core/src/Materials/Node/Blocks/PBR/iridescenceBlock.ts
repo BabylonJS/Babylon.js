@@ -126,16 +126,13 @@ export class IridescenceBlock extends NodeMaterialBlock {
         #ifdef IRIDESCENCE
             iridescenceBlock(
                 vec4(${intensityName}, ${indexOfRefraction}, 1., ${thickness}),
+                NdotV,
+                specularEnvironmentR0,
                 iridescenceOut
             );
 
-            float topIor = 1.; // Assume air
-            float viewAngle = NdotV;
             float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
-
-            vec3 iridescenceFresnel = evalIridescence(topIor, iridescenceOut.iridescenceIOR, viewAngle, iridescenceOut.iridescenceThickness, specularEnvironmentR0);
-
-            specularEnvironmentR0 = mix(specularEnvironmentR0, iridescenceFresnel, iridescenceIntensity);
+            specularEnvironmentR0 = iridescenceOut.specularEnvironmentR0;
         #endif\r\n`;
 
         return code;
