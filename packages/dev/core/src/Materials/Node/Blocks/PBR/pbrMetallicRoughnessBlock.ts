@@ -1198,7 +1198,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // _____________________________ Iridescence _______________________________
         const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
-        state.compilationString += IridescenceBlock.GetCode(state, iridescenceBlock);
+        state.compilationString += IridescenceBlock.GetCode(iridescenceBlock);
 
         state._emitFunctionFromInclude("pbrBlockIridescence", comments, {
             replaceStrings: [],

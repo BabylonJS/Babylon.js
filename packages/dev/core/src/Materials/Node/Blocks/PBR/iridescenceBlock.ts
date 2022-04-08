@@ -109,49 +109,31 @@ export class IridescenceBlock extends NodeMaterialBlock {
         defines.setValue("IRIDESCENCE_THICKNESS_TEXTURE", false, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        super.bind(effect, nodeMaterial, mesh);
-
-        const intensity = this.intensity.connectInputBlock?.value ?? 1;
-        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? PBRIridescenceConfiguration._DefaultIndexOfRefraction;
-        const thickness = this.thickness.connectInputBlock?.value ?? PBRIridescenceConfiguration._DefaultMaximumThickness;
-
-        effect.setFloat4("vIridescenceParams", intensity, indexOfRefraction, 1, thickness);
-    }
-
     /**
      * Gets the main code of the block (fragment side)
-     * @param state current state of the node material building
      * @param iridescenceBlock instance of a IridescenceBlock or null if the code must be generated without an active iridescence module
      * @returns the shader code
      */
     public static GetCode(
-        state: NodeMaterialBuildState,
         iridescenceBlock: Nullable<IridescenceBlock>,
     ): string {
         let code = "";
 
-        if (iridescenceBlock) {
-            state._emitUniformFromString("vIridescenceParams", "vec4");
-        }
+        const intensityName = iridescenceBlock?.intensity.isConnected ? iridescenceBlock.intensity.associatedVariableName : "1.";
+        const indexOfRefraction = iridescenceBlock?.indexOfRefraction.isConnected ? iridescenceBlock.indexOfRefraction.associatedVariableName : PBRIridescenceConfiguration._DefaultIndexOfRefraction;
+        const thickness = iridescenceBlock?.thickness.isConnected ? iridescenceBlock.thickness.associatedVariableName : PBRIridescenceConfiguration._DefaultMaximumThickness;
 
         code += `iridescenceOutParams iridescenceOut;
 
         #ifdef IRIDESCENCE
             iridescenceBlock(
-                vIridescenceParams,
+                vec4(${intensityName}, ${indexOfRefraction}, 1., ${thickness}),
                 iridescenceOut
             );
 
             float topIor = 1.; // Assume air
             float viewAngle = NdotV;
             float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
-
-            #ifdef CLEARCOAT_IRIDESCENCE_REMAP_TODO
-                topIor = lerp(1.0, 1. - vClearCoatRefractionParams.w, vClearCoatParams.x);
-                // HACK: Use the reflected direction to specify the Fresnel coefficient for pre-convolved envmaps
-                viewAngle = sqrt(1.0 + square(1.0 / topIor) * (square(NdotVUnclamped) - 1.0));
-            #endif
 
             vec3 iridescenceFresnel = evalIridescence(topIor, iridescenceOut.iridescenceIOR, viewAngle, iridescenceOut.iridescenceThickness, specularEnvironmentR0);
 
