@@ -68,12 +68,7 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
 
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
-            if (babylonMaterial instanceof PBRMaterial) {
-                if (!this._isExtensionEnabled(babylonMaterial)) {
-                    resolve(node);
-                    return;
-                }
-
+            if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
                 this._wasUsed = true;
 
                 node.extensions = node.extensions || {};
