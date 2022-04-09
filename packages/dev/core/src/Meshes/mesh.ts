@@ -4466,10 +4466,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
+        const currentOverrideMaterialSideOrientation = meshes[0].overrideMaterialSideOrientation;
+
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
             if (mesh.isAnInstance) {
                 Logger.Warn("Cannot merge instance meshes.");
+                return null;
+            }
+
+            if (currentOverrideMaterialSideOrientation !== mesh.overrideMaterialSideOrientation) {
+                Logger.Warn("Cannot merge meshes with different overrideMaterialSideOrientation values.");
                 return null;
             }
 
@@ -4554,6 +4561,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
+        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
 
         // Cleaning
         if (disposeSource) {
