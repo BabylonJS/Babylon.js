@@ -42,6 +42,7 @@ import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
+import { PBRIridescenceConfiguration } from "./pbrIridescenceConfiguration";
 import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
@@ -850,6 +851,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly clearCoat: PBRClearCoatConfiguration;
 
     /**
+     * Defines the iridescence layer parameters for the material.
+     */
+    public readonly iridescence: PBRIridescenceConfiguration;
+
+    /**
      * Defines the anisotropic parameters for the material.
      */
     public readonly anisotropy: PBRAnisotropicConfiguration;
@@ -892,6 +898,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
+        this.iridescence = new PBRIridescenceConfiguration(this);
         this.anisotropy = new PBRAnisotropicConfiguration(this);
         this.sheen = new PBRSheenConfiguration(this);
         this.subSurface = new PBRSubSurfaceConfiguration(this);

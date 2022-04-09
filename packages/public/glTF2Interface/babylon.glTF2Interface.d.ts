@@ -1037,6 +1037,16 @@ declare module BABYLON.GLTF2 {
         clearcoatNormalTexture?: IMaterialNormalTextureInfo;
     }
 
+    /** @hidden */
+    interface IKHRMaterialsIridescence extends IMaterialExtension {
+        iridescenceFactor?: number;
+        iridescenceIOR?: number;
+        iridescenceThicknessMinimum?: number;
+        iridescenceThicknessMaximum?: number;
+        iridescenceTexture?: ITextureInfo;
+        iridescenceThicknessTexture?: ITextureInfo;
+    }
+
     /**
      * Interfaces from the KHR_materials_ior extension
      * !!! Experimental Extension Subject to Changes !!!

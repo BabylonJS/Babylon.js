@@ -108,6 +108,23 @@ uniform mat4 view;
     #endif
 #endif
 
+// Iridescence
+#ifdef IRIDESCENCE
+    uniform vec4 vIridescenceParams;
+
+    #if defined(IRIDESCENCE_TEXTURE) || defined(IRIDESCENCE_THICKNESS_TEXTURE)
+        uniform vec4 vIridescenceInfos;
+    #endif
+
+    #ifdef IRIDESCENCE_TEXTURE
+        uniform mat4 iridescenceMatrix;
+    #endif
+
+    #ifdef IRIDESCENCE_THICKNESS_TEXTURE
+        uniform mat4 iridescenceThicknessMatrix;
+    #endif
+#endif
+
 // Anisotropy
 #ifdef ANISOTROPIC
     uniform vec3 vAnisotropy;
