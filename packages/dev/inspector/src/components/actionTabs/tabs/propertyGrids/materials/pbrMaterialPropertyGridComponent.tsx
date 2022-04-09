@@ -520,7 +520,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 label="IOR"
                                 target={material.iridescence}
                                 propertyName="indexOfRefraction"
-                                minimum={0}
+                                minimum={1.0}
                                 maximum={3}
                                 step={0.01}
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
