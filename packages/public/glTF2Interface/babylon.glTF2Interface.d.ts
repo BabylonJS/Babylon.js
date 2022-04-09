@@ -1054,7 +1054,7 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRMaterialsIor extends IMaterialExtension {
-        ior: number;
+        ior?: number;
     }
 
     /**
