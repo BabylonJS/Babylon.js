@@ -128,6 +128,9 @@ export class IridescenceBlock extends NodeMaterialBlock {
                 vec4(${intensityName}, ${indexOfRefraction}, 1., ${thickness}),
                 NdotV,
                 specularEnvironmentR0,
+                #ifdef CLEARCOAT
+                    NdotVUnclamped,
+                #endif
                 iridescenceOut
             );
 

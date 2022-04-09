@@ -371,6 +371,13 @@ void main(void) {
         #endif
     #endif
 
+    // _____________ Shared Iridescence and Clear Coat data _________________
+    #ifdef CLEARCOAT
+        #ifdef CLEARCOAT_TEXTURE
+            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
+        #endif
+    #endif
+
     // _____________________________ Iridescence ____________________________
     #ifdef IRIDESCENCE
         iridescenceOutParams iridescenceOut;
@@ -392,6 +399,12 @@ void main(void) {
             #ifdef IRIDESCENCE_THICKNESS_TEXTURE
                 iridescenceThicknessMapData,
             #endif
+            #ifdef CLEARCOAT
+                NdotVUnclamped,
+                #ifdef CLEARCOAT_TEXTURE
+                    clearCoatMapData,
+                #endif
+            #endif
             iridescenceOut
         );
 
@@ -403,10 +416,6 @@ void main(void) {
     clearcoatOutParams clearcoatOut;
 
     #ifdef CLEARCOAT
-        #ifdef CLEARCOAT_TEXTURE
-            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
-        #endif
-
         #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
             vec4 clearCoatMapRoughnessData = texture2D(clearCoatRoughnessSampler, vClearCoatRoughnessUV + uvOffset) * vClearCoatInfos.w;
         #endif
