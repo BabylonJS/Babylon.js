@@ -59,7 +59,7 @@ const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, p
     for (let index = 0, cache = parsedData.materials.length; index < cache; index++) {
         const parsedMaterial = parsedData.materials[index];
         if (predicate(parsedMaterial)) {
-            return Material.Parse(parsedMaterial, scene, rootUrl);
+            return { parsedMaterial, material: Material.Parse(parsedMaterial, scene, rootUrl) };
         }
     }
     return null;
@@ -657,8 +657,9 @@ SceneLoader.RegisterPlugin({
                                 const loadSubMaterial = (subMatId: string, predicate: (parsedMaterial: any) => boolean) => {
                                     materialArray.push(subMatId);
                                     const mat = parseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
-                                    if (mat) {
-                                        log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    if (mat && mat.material) {
+                                        tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                        log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                     }
                                 };
                                 for (let multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
@@ -694,15 +695,16 @@ SceneLoader.RegisterPlugin({
                                 materialArray.push(parsedMesh.materialUniqueId || parsedMesh.materialId);
                                 const mat = parseMaterialByPredicate(
                                     (parsedMaterial) =>
-                                        (parsedMesh.MaterialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
+                                        (parsedMesh.materialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
                                     parsedData,
                                     scene,
                                     rootUrl
                                 );
-                                if (!mat) {
+                                if (!mat || !mat.material) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {
-                                    log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                    log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                 }
                             }
                         }
