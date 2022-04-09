@@ -5,6 +5,7 @@ import { PBRAnisotropicConfiguration } from "./PBR/pbrAnisotropicConfiguration";
 import { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import { PBRBRDFConfiguration } from "./PBR/pbrBRDFConfiguration";
 import { PBRClearCoatConfiguration } from "./PBR/pbrClearCoatConfiguration";
+import { PBRIridescenceConfiguration } from "./PBR/pbrIridescenceConfiguration";
 import { PBRSheenConfiguration } from "./PBR/pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./PBR/pbrSubSurfaceConfiguration";
 import { StandardMaterial } from "./standardMaterial";
@@ -43,6 +44,18 @@ export function createPBRBRDFPlugin(material: Material): Nullable<MaterialPlugin
 export function createPBRClearCoatPlugin(material: Material): Nullable<MaterialPluginBase> {
     if (material instanceof PBRBaseMaterial) {
         return new PBRClearCoatConfiguration(material);
+    }
+    return null;
+}
+
+/**
+ * Creates an instance of the iridescence plugin
+ * @param material parent material the plugin will be created for
+ * @returns the plugin instance or null if the plugin is incompatible with material
+ */
+export function createPBRIridescencePlugin(material: Material): Nullable<MaterialPluginBase> {
+    if (material instanceof PBRBaseMaterial) {
+        return new PBRIridescenceConfiguration(material);
     }
     return null;
 }
