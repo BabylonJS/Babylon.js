@@ -8,7 +8,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 const NAME = "KHR_materials_specular";
 
 /**
- * @hidden
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_specular/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
