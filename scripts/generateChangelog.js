@@ -45,7 +45,7 @@ if (!fs.existsSync(path.resolve("./.build/changelog.json"))) {
 
 const config = require(path.resolve("./.build/changelog.json"));
 
-const githubPatToken = `bjsplat:${process.env.GITHUBPAT}` || "bjsplat:GITHUB_PAT_TOKEN";
+const githubPatToken = process.env.GITHUBPAT ? `bjsplat:${process.env.GITHUBPAT}` : "bjsplat:GITHUB_PAT_TOKEN";
 
 const forceUpdateFrom = process.argv[2] || config.fromTag || "5.0.0";
 
