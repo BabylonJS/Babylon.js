@@ -70,6 +70,11 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         float alphaG = convertRoughnessToAverageSlope(roughness);
 
         vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
+
+        #ifdef IRIDESCENCE
+            fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
+        #endif
+
         float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
 
         #ifdef BRDF_V_HEIGHT_CORRELATED
@@ -97,6 +102,11 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         alphaTB = max(alphaTB, square(geometricRoughnessFactor));
 
         vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
+
+        #ifdef IRIDESCENCE
+            fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
+        #endif
+
         float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
         float smithVisibility = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
 

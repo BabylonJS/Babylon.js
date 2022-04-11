@@ -1,16 +1,16 @@
 /* eslint-disable import/no-internal-modules */
-import * as GUI from "gui/index";
+import * as postProcessLibrary from "../../../../dev/postProcesses/src/index";
 
 /**
- * Legacy support, defining window.BABYLON.GUI (global variable).
  *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.GUI = GUI;
+    for (const key in postProcessLibrary) {
+        (<any>globalObject).BABYLON[key] = (<any>postProcessLibrary)[key];
+    }
 }
 
-export * from "gui/index";
+export * from "../../../../dev/postProcesses/src/index";

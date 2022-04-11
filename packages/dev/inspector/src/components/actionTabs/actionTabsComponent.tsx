@@ -148,7 +148,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                 if (!element) {
                     return;
                 }
-                element.style.width = "300px";
+                element.style.width = "200px";
             }, 150);
         }
 
