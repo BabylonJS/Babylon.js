@@ -21,6 +21,12 @@ export class ShaderCodeCursor {
                 continue;
             }
 
+            // Do not split single line comments
+            if (line.trim().startsWith("//")) {
+                this._lines.push(line);
+                continue;
+            }
+
             const split = line.split(";");
 
             for (let index = 0; index < split.length; index++) {
