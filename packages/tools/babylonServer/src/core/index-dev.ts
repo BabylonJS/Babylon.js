@@ -1,7 +1,8 @@
 /* eslint-disable import/no-internal-modules */
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as BABYLON from "core/index";
-import * as DebugImport from "core/Debug/index";
+// import * as BABYLON from "core/index";
+import * as BABYLON from "../../../../dev/core/src/index";
+import * as DebugImport from "../../../../dev/core/src/Debug/index";
 
 declare let global: any;
 
@@ -27,7 +28,7 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "core/index";
+export * from "../../../../dev/core/src/index";
 export const Debug = {
     AxesViewer: BABYLON.AxesViewer,
     BoneAxesViewer: BABYLON.BoneAxesViewer,
