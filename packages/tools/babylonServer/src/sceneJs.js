@@ -9,7 +9,6 @@ const resize = () => {
     engine && engine.resize();
 };
 const openInspector = (e) => {
-    console.log(e);
     if (e.keyCode === 85 && e.shiftKey && (e.ctrlKey || e.metaKey) && scene) {
         scene.debugLayer.show();
     }

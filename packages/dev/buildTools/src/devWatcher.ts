@@ -15,17 +15,20 @@ export const devWatch = () => {
     const serve = checkArgs(["-s", "--serve"], true);
     const https = checkArgs(["-https", "--https"], true);
     const lts = checkArgs(["-lts", "--lts"], true);
+    const skipCompilation = checkArgs(["-sc", "--skip-compilation"], true);
 
     const processes: { command: string; name: string; arguments: string[]; optional?: boolean }[] = [];
     const processedPackages: string[] = [];
     // start running the processes needed
     if (packages[0] === "all") {
         // global watchers
-        processes.push({
-            command: "npm",
-            arguments: ["run", "watch:source:" + (lts ? "lts" : "dev")],
-            name: "typescript-all",
-        });
+        if (!skipCompilation) {
+            processes.push({
+                command: "npm",
+                arguments: ["run", "watch:source:" + (lts ? "lts" : "dev")],
+                name: "typescript-all",
+            });
+        }
         // if (watchShaders) {
         //     processes.push({
         //         command: "npm",
@@ -53,11 +56,13 @@ export const devWatch = () => {
                 p = `@${lts ? "lts" : "dev"}/${p}`;
             }
             const devName = p.replace("lts", "dev");
-            processes.push({
-                command: "npm",
-                arguments: ["run", `watch:source`, "-w", p],
-                name: `typescript-${p}`,
-            });
+            if (!skipCompilation) {
+                processes.push({
+                    command: "npm",
+                    arguments: ["run", `watch:source`, "-w", p],
+                    name: `typescript-${p}`,
+                });
+            }
             if (watchAssets) {
                 processes.push({
                     command: "npm",

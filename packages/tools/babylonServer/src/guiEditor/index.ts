@@ -1,5 +1,5 @@
 /* eslint-disable import/no-internal-modules */
-import { GUIEditor } from "gui-editor/index";
+import { GUIEditor } from "../../../guiEditor/src/index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
@@ -9,4 +9,4 @@ if (typeof globalObject !== "undefined") {
     (<any>globalObject).GUIEDITOR = { GUIEditor };
 }
 
-export * from "gui-editor/index";
+export * from "../../../guiEditor/src/index";
