@@ -1563,9 +1563,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
                 }
             }
+            return this.getPositionData(applySkeleton, applyMorph, data);
         }
 
-        return this.getPositionData(applySkeleton, applyMorph, data);
+        return data;
     }
 
     /** @hidden */
