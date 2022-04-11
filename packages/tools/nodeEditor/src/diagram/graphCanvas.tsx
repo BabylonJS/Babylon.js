@@ -214,9 +214,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     // If in marquee selection mode, always prioritize selecting nodes. Otherwise, always prioritize selecting the type of
                     // the selected element
                     if (marqueeSelection) {
-                        if (selection instanceof GraphFrame) {
+                        if (selection instanceof GraphFrame && !this._selectedFrames.includes(selection)) {
                             this._selectedFrames.push(selection);
-                        } else if (selection instanceof GraphNode) {
+                        } else if (selection instanceof GraphNode && !this._selectedNodes.includes(selection)) {
                             this._selectedNodes.push(selection);
                         }
                         if (this._selectedFrameAndNodesConflict(this.selectedFrames, this.selectedNodes)) {
@@ -228,7 +228,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                                     }
                                 }
                             }
-                            this._selectedFrames = this._selectedFrames.filter(f => !framesToRemove.has(f));
+                            this._selectedFrames = this._selectedFrames.filter((f) => !framesToRemove.has(f));
                         }
                     } else {
                         if (selection instanceof GraphFrame) {
