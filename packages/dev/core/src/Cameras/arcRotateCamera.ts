@@ -50,7 +50,7 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public radius: number;
 
-     /**
+    /**
      * Defines an override value to use as the parameter to setTarget.
      * This allows the parameter to be specified when animating the target (e.g. using FramingBehavior).
      */
