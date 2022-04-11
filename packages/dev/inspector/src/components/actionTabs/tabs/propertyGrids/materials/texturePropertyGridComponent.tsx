@@ -350,7 +350,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Class" value={textureClass} />
                     {count >= 0 && <TextLineComponent label="Number of textures" value={count.toString()} />}
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
-                    <CheckBoxLineComponent label="Get alpha from RGB" isSelected={() => texture.getAlphaFromRGB} onSelect={(value) => (texture.getAlphaFromRGB = value)} />
+                    <CheckBoxLineComponent label="Get alpha from RGB" target={texture} propertyName="getAlphaFromRGB" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />

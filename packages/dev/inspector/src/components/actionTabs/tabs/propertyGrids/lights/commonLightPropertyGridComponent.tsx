@@ -47,7 +47,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
                     />
                     <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={light.getClassName()} />
-                    <ParentPropertyGridComponent globalState={this.props.globalState} node={light} lockObject={this.props.lockObject} />
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={light} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Intensity"
