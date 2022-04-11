@@ -131,15 +131,18 @@ let checkBabylonVersionAsync = function () {
     let versions = Versions[activeVersion] || Versions["Latest"];
     if (snapshot) {
         versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
-    } else if (window.location.href.includes("debug.html") && activeVersion === "Latest") {
+    } else if (window.location.href.includes("debug.html")) {
         versions = versions.map((v) => {
-            if (!v.includes("https://preview.babylonjs.com")) {
+            if (!v.includes("https://preview.babylonjs.com") && !v.includes("https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js")) {
                 return v;
             }
-            if (v.includes(".min")) {
+            if(v.includes("timestamp.js")) {
+                return v;
+            }
+            if (v.includes(".min.")) {
                 return v.replace(".min", "");
             } else {
-                return v.replace(".js", ".max.js");
+                return v.replace("babylon.js", "babylon.max.js");
             }
         });
     }
