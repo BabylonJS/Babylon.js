@@ -745,7 +745,12 @@ export class InputManager {
 
             // Meshes
             this._pickedDownMesh = null;
-            const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+            let pickResult;
+            if (scene.skipPointerDownPicking) {
+                pickResult = new PickingInfo();
+            } else {
+                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+            }
 
             this._processPointerDown(pickResult, evt);
         };
