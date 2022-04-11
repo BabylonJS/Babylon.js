@@ -603,7 +603,7 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-     public detachControl(ignored?: any): void;
+    public detachControl(ignored?: any): void;
     /**
      * Detach the current controls from the specified dom element.
      * This function is here because typescript removes the typing of the last function.
