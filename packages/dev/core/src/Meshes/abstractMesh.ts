@@ -1463,7 +1463,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the position data
      */
     public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
-        data = data ?? this.getVerticesData(VertexBuffer.PositionKind);
+        data = data ?? Tools.Slice(this.getVerticesData(VertexBuffer.PositionKind));
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
