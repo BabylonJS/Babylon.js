@@ -710,7 +710,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer down event occurs.
      */
-     public skipPointerDownPicking = false;
+    public skipPointerDownPicking = false;
 
     /** Callback called when a pointer move is detected */
     public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
