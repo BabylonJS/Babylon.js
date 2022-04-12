@@ -265,7 +265,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
             state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
-            
+
             const normalShading = ccBlock.worldNormal;
             code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
         } else {
