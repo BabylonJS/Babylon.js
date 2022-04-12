@@ -357,9 +357,9 @@ export class BoundingBoxGizmo extends Gizmo {
                         }
 
                         // Rotate around center of bounding box
-                        this._anchorMesh.addChild(this.attachedMesh);
+                        this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                         this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
-                        this._anchorMesh.removeChild(this.attachedMesh);
+                        this._anchorMesh.removeChild(this.attachedMesh, Gizmo.PreserveScaling);
                         this.attachedMesh.setParent(originalParent);
                     }
                     this.updateBoundingBox();
@@ -442,12 +442,12 @@ export class BoundingBoxGizmo extends Gizmo {
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
                             }
 
-                            this._anchorMesh.addChild(this.attachedMesh);
+                            this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                             this._anchorMesh.scaling.addInPlace(deltaScale);
                             if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
                                 this._anchorMesh.scaling.subtractInPlace(deltaScale);
                             }
-                            this._anchorMesh.removeChild(this.attachedMesh);
+                            this._anchorMesh.removeChild(this.attachedMesh, Gizmo.PreserveScaling);
                             this.attachedMesh.setParent(originalParent);
                             PivotTools._RestorePivotPoint(this.attachedMesh);
                         }
@@ -518,8 +518,8 @@ export class BoundingBoxGizmo extends Gizmo {
             this._anchorMesh.scaling.setAll(1);
             PivotTools._RemoveAndStorePivotPoint(value);
             const originalParent = value.parent;
-            this._anchorMesh.addChild(value);
-            this._anchorMesh.removeChild(value);
+            this._anchorMesh.addChild(value, Gizmo.PreserveScaling);
+            this._anchorMesh.removeChild(value, Gizmo.PreserveScaling);
             value.setParent(originalParent);
             PivotTools._RestorePivotPoint(value);
             this.updateBoundingBox();
