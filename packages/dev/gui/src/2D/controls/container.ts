@@ -408,6 +408,7 @@ export class Container extends Control {
 
             if (!this._isClipped) {
                 for (const child of this._children) {
+                    if (!child.isVisible || child.notRenderable) continue;
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     if (child._layout(this._measureForChildren, context)) {
