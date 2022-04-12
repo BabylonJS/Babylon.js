@@ -76,10 +76,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     ],
                 },
                 antialiasing: antialias,
+                useHighPrecisionMatrix: true,
             });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
             this._engine = new Engine(this._canvas, antialias, {
+                useHighPrecisionMatrix: true,
                 premultipliedAlpha: false,
                 preserveDrawingBuffer: true,
                 antialias: antialias,
