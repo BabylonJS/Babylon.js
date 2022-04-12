@@ -116,10 +116,11 @@ export class LoadManager {
                         // Extract code
                         let code: string = JSON.parse(snippet.jsonPayload).code.toString();
 
-                        if (code.substring(0, 11) === "__encoded__") { // Need to decode
+                        if (code.substring(0, 11) === "__encoded__") {
+                            // Need to decode
                             const encodedData = code.substring(11);
                             const decoder = new TextDecoder("utf8");
-                            
+
                             code = decoder.decode(DecodeBase64ToBinary(encodedData));
                         }
 

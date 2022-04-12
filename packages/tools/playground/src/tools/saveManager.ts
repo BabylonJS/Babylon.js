@@ -61,11 +61,11 @@ export class SaveManager {
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        const encoder = new TextEncoder()
+        const encoder = new TextEncoder();
         const buffer = encoder.encode(this.globalState.currentCode);
 
         const payLoad = JSON.stringify({
-            code: '__encoded__' + EncodeArrayBufferToBase64(buffer),
+            code: "__encoded__" + EncodeArrayBufferToBase64(buffer),
         });
 
         const dataToSend = {
