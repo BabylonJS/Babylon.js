@@ -64,8 +64,16 @@ export class SaveManager {
         const encoder = new TextEncoder();
         const buffer = encoder.encode(this.globalState.currentCode);
 
+        // Check if we need to encode it to store the unicode characters
+        let testData = "";
+
+        for (let i = 0; i < buffer.length; i++) {
+            testData += String.fromCharCode(buffer[i]);
+        }
+
         const payLoad = JSON.stringify({
-            code: "__encoded__" + EncodeArrayBufferToBase64(buffer),
+            code: this.globalState.currentCode,
+            unicode: testData !== this.globalState.currentCode ? EncodeArrayBufferToBase64(buffer) : undefined,
         });
 
         const dataToSend = {
