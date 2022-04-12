@@ -95,11 +95,11 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 let readStringFromStore = function (key, defaultValue) {
-    if (localStorage.getItem(key) === null) {
+    if (sessionStorage.getItem(key) === null) {
         return defaultValue;
     }
 
-    return localStorage.getItem(key);
+    return sessionStorage.getItem(key);
 };
 
 let loadInSequence = async function (versions, index, resolve) {

@@ -130,7 +130,9 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                     : "")
                                                             }
                                                             onClick={() => {
-                                                                Utilities.StoreStringToStore(m.storeKey!, s, this.props.useSessionStorage);
+                                                                if (m.storeKey) {
+                                                                    Utilities.StoreStringToStore(m.storeKey, s, this.props.useSessionStorage);
+                                                                }
                                                                 m.onClick!();
                                                                 this.setState({ isExpanded: false });
                                                             }}
