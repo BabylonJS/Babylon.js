@@ -1,17 +1,18 @@
-import type { IMaterial, IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Color3 } from "core/Maths/math.color";
 
-const NAME = "KHR_materials_specular";
+const NAME = "KHR_materials_volume";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_specular/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
+export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -41,11 +42,8 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
 
         if (babylonMaterial instanceof PBRMaterial) {
             if (this._isExtensionEnabled(babylonMaterial)) {
-                if (babylonMaterial.metallicReflectanceTexture) {
-                    additionalTextures.push(babylonMaterial.metallicReflectanceTexture);
-                }
-                if (babylonMaterial.reflectanceTexture) {
-                    additionalTextures.push(babylonMaterial.reflectanceTexture);
+                if (babylonMaterial.subSurface.thicknessTexture) {
+                    additionalTextures.push(babylonMaterial.subSurface.thicknessTexture);
                 }
                 return additionalTextures;
             }
@@ -59,15 +57,21 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
         if (mat.unlit) {
             return false;
         }
+        const subs = mat.subSurface;
+        // this extension requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
+        if (!subs.isRefractionEnabled && !subs.isTranslucencyEnabled) {
+            return false;
+        }
         return (
-            (mat.metallicF0Factor != undefined && mat.metallicF0Factor != 1.0) ||
-            (mat.metallicReflectanceColor != undefined && !mat.metallicReflectanceColor.equalsFloats(1.0, 1.0, 1.0)) ||
+            (subs.maximumThickness != undefined && subs.maximumThickness != 0) ||
+            (subs.tintColorAtDistance != undefined && subs.tintColorAtDistance != Number.POSITIVE_INFINITY) ||
+            (subs.tintColor != undefined && subs.tintColor != Color3.White()) ||
             this._hasTexturesExtension(mat)
         );
     }
 
     private _hasTexturesExtension(mat: PBRMaterial): boolean {
-        return mat.metallicReflectanceTexture != null || mat.reflectanceTexture != null;
+        return mat.subSurface.thicknessTexture != null;
     }
 
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
@@ -75,29 +79,27 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
             if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
                 this._wasUsed = true;
 
-                node.extensions = node.extensions || {};
+                const subs = babylonMaterial.subSurface;
+                const thicknessFactor = subs.maximumThickness == 0 ? undefined : subs.maximumThickness;
+                const thicknessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.thicknessTexture) ?? undefined;
+                const attenuationDistance = subs.tintColorAtDistance == Number.POSITIVE_INFINITY ? undefined : subs.tintColorAtDistance;
+                const attenuationColor = subs.tintColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : subs.tintColor.asArray();
 
-                const metallicReflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.metallicReflectanceTexture) ?? undefined;
-                const reflectanceTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.reflectanceTexture) ?? undefined;
-                const metallicF0Factor = babylonMaterial.metallicF0Factor == 1.0 ? undefined : babylonMaterial.metallicF0Factor;
-                const metallicReflectanceColor = babylonMaterial.metallicReflectanceColor.equalsFloats(1.0, 1.0, 1.0)
-                    ? undefined
-                    : babylonMaterial.metallicReflectanceColor.asArray();
-
-                const specularInfo: IKHRMaterialsSpecular = {
-                    specularFactor: metallicF0Factor,
-                    specularTexture: metallicReflectanceTexture,
-                    specularColorFactor: metallicReflectanceColor,
-                    specularColorTexture: reflectanceTexture,
+                const volumeInfo: IKHRMaterialsVolume = {
+                    thicknessFactor: thicknessFactor,
+                    thicknessTexture: thicknessTexture,
+                    attenuationDistance: attenuationDistance,
+                    attenuationColor: attenuationColor,
                     hasTextures: () => {
                         return this._hasTexturesExtension(babylonMaterial);
                     },
                 };
-                node.extensions[NAME] = specularInfo;
+                node.extensions = node.extensions || {};
+                node.extensions[NAME] = volumeInfo;
             }
             resolve(node);
         });
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_specular(exporter));
+_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_volume(exporter));

@@ -6,3 +6,5 @@ export * from "./KHR_materials_sheen";
 export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_ior";
 export * from "./KHR_materials_specular";
+export * from "./KHR_materials_volume";
+export * from "./KHR_materials_transmission";

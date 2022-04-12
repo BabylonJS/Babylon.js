@@ -32,6 +32,10 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
     }
 
     private _isExtensionEnabled(mat: PBRMaterial): boolean {
+        // This extension must not be used on a material that also uses KHR_materials_unlit
+        if (mat.unlit) {
+            return false;
+        }
         return mat.indexOfRefraction != undefined && mat.indexOfRefraction != 1.5; // 1.5 is normative default value.
     }
 
@@ -51,4 +55,5 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 _Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_ior());
