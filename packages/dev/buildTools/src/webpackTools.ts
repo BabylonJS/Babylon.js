@@ -7,7 +7,15 @@ import { camelize } from "./utils";
 import type { RuleSetRule, Configuration } from "webpack";
 
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
-    return function ({ request }: { request: string }, callback: (err: Error | null, result?: any) => void) {
+    return function ({ context, request }: { context: string; request: string }, callback: (err: Error | null, result?: any) => void) {
+        if (request.includes("babylonjs-gltf2interface")) {
+            return callback(null, {
+                root: ["BABYLON", "GLTF2"],
+                commonjs: "babylonjs-gltf2interface",
+                commonjs2: "babylonjs-gltf2interface",
+                amd: "babylonjs-gltf2interface",
+            });
+        }
         // fix for mac
         if (request.includes("webpack")) {
             return callback(null);

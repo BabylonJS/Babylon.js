@@ -1,7 +1,18 @@
 const path = require("path");
-const outputDirectoryForAliases = "dist";
+const outputDirectoryForAliases = "src";
 const buildTools = require("@dev/build-tools");
 const externalsFunction = buildTools.webpackTools.externalsFunction;
+const rules = buildTools.webpackTools.getRules({
+    includeAssets: true,
+    includeCSS: true,
+    sideEffects: true,
+    tsOptions: {
+        transpileOnly: true,
+        compilerOptions: {
+            declaration: false,
+        },
+    },
+});
 
 // option - min files or max files, but it is just the filenames. all will have sourcemaps
 
@@ -17,13 +28,45 @@ env: {
     enableHttps: boolean,
     enableHotReload: boolean,
 }
- */
+*/
 
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev"; // || "lts";
     const basePathForSources = path.resolve(__dirname, "../../", source);
     const basePathForTools = path.resolve(__dirname, "../../", "tools");
     const externals = externalsFunction();
+    rules.shift();
+    rules.push({
+        test: /\.tsx?$/,
+        oneOf: [
+            {
+                loader: "ts-loader",
+                issuer: [path.resolve(basePathForSources, "loaders", outputDirectoryForAliases)],
+                options: {
+                    transpileOnly: false,
+                    configFile: path.resolve(basePathForSources, "loaders", "./tsconfig.build.json"),
+                },
+            },
+            {
+                loader: "ts-loader",
+                issuer: [path.resolve(basePathForSources, "serializers", outputDirectoryForAliases)],
+                options: {
+                    transpileOnly: false,
+                    configFile: path.resolve(basePathForSources, "serializers", "./tsconfig.build.json"),
+                },
+            },
+            {
+                loader: "ts-loader",
+                // issuer: { not: [/loaders/] },
+                options: {
+                    transpileOnly: true,
+                    configFile: "tsconfig.build.json",
+                },
+            },
+        ],
+        exclude: /node_modules/,
+        sideEffects: true,
+    });
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         mode: production ? "production" : "development",
@@ -31,17 +74,18 @@ module.exports = (env) => {
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
-            babylon: `./src/core/index.ts`,
-            "gui/babylon.gui.min": `./src/gui/index.ts`,
+            babylon: `./src/core/index-${source}.ts`,
+            "gui/babylon.gui.min": `./src/gui/index-${source}.ts`,
             "inspector/babylon.inspector.min": `./src/inspector/index.ts`,
-            "serializers/babylonjs.serializers.min": `./src/serializers/index.ts`,
-            "loaders/babylonjs.loaders.min": `./src/loaders/index.ts`,
-            "materialsLibrary/babylonjs.materials.min": `./src/materials/index.ts`,
-            "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index.ts`,
-            "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index.ts`,
+            "serializers/babylonjs.serializers.min": `./src/serializers/index-${source}.ts`,
+            "loaders/babylonjs.loaders.min": `./src/loaders/index-${source}.ts`,
+            "materialsLibrary/babylonjs.materials.min": `./src/materials/index-${source}.ts`,
+            "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index-${source}.ts`,
+            "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-${source}.ts`,
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
+            // "babylonjs-gltf2interface": `./src/babylon.glTF2Interface.d.ts`,
         },
         output: {
             path: path.resolve(__dirname, "dist"),
@@ -49,7 +93,7 @@ module.exports = (env) => {
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
-            extensions: [".js", ".ts"],
+            extensions: [".js", ".ts", ".tsx"],
             alias: {
                 core: path.resolve(basePathForSources, "core", outputDirectoryForAliases),
                 gui: path.resolve(basePathForSources, "gui", outputDirectoryForAliases),
@@ -89,14 +133,7 @@ module.exports = (env) => {
             hints: false,
         },
         module: {
-            rules: buildTools.webpackTools.getRules({
-                includeAssets: true,
-                includeCSS: true,
-                sideEffects: true,
-                tsOptions: {
-                    transpileOnly: true,
-                },
-            }),
+            rules,
         },
         devServer: {
             static: ["public", "declarations", "../playground/public"],
@@ -115,6 +152,7 @@ module.exports = (env) => {
                     errors: true,
                 },
                 logging: production ? "error" : "info",
+                progress: true,
             },
         },
         plugins: [],

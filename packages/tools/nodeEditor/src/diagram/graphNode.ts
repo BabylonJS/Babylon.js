@@ -158,6 +158,10 @@ export class GraphNode {
     }
 
     public set isSelected(value: boolean) {
+        this.setIsSelected(value, false);
+    }
+
+    public setIsSelected(value: boolean, marqueeSelection: boolean) {
         if (this._isSelected === value) {
             return;
         }
@@ -172,7 +176,7 @@ export class GraphNode {
                 this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
             }
         } else {
-            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
+            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this, marqueeSelection });
         }
     }
 
@@ -203,7 +207,7 @@ export class GraphNode {
             const rect2 = this._visual.getBoundingClientRect();
             const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
-            this.isSelected = overlap;
+            this.setIsSelected(overlap, true);
         });
 
         this._onFrameCreatedObserver = this._globalState.onFrameCreatedObservable.add((frame) => {
@@ -326,7 +330,7 @@ export class GraphNode {
         if (indexInSelection === -1) {
             this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         } else if (evt.ctrlKey) {
-            this.isSelected = false;
+            this.setIsSelected(false, false);
         }
 
         evt.stopPropagation();

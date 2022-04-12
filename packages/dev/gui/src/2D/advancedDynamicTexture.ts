@@ -1354,5 +1354,3 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.markAsDirty();
     }
 }
-
-export { IFocusableControl };
