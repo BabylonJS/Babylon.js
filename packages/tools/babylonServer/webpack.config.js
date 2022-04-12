@@ -1,7 +1,18 @@
 const path = require("path");
-const outputDirectoryForAliases = "dist";
+const outputDirectoryForAliases = "src";
 const buildTools = require("@dev/build-tools");
 const externalsFunction = buildTools.webpackTools.externalsFunction;
+const rules = buildTools.webpackTools.getRules({
+    includeAssets: true,
+    includeCSS: true,
+    sideEffects: true,
+    tsOptions: {
+        transpileOnly: true,
+        compilerOptions: {
+            declaration: false,
+        },
+    },
+});
 
 // option - min files or max files, but it is just the filenames. all will have sourcemaps
 
@@ -17,13 +28,45 @@ env: {
     enableHttps: boolean,
     enableHotReload: boolean,
 }
- */
+*/
 
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev"; // || "lts";
     const basePathForSources = path.resolve(__dirname, "../../", source);
     const basePathForTools = path.resolve(__dirname, "../../", "tools");
     const externals = externalsFunction();
+    rules.shift();
+    rules.push({
+        test: /\.tsx?$/,
+        oneOf: [
+            {
+                loader: "ts-loader",
+                issuer: [path.resolve(basePathForSources, "loaders", outputDirectoryForAliases)],
+                options: {
+                    transpileOnly: false,
+                    configFile: path.resolve(basePathForSources, "loaders", "./tsconfig.build.json"),
+                },
+            },
+            {
+                loader: "ts-loader",
+                issuer: [path.resolve(basePathForSources, "serializers", outputDirectoryForAliases)],
+                options: {
+                    transpileOnly: false,
+                    configFile: path.resolve(basePathForSources, "serializers", "./tsconfig.build.json"),
+                },
+            },
+            {
+                loader: "ts-loader",
+                // issuer: { not: [/loaders/] },
+                options: {
+                    transpileOnly: true,
+                    configFile: "tsconfig.build.json",
+                },
+            },
+        ],
+        exclude: /node_modules/,
+        sideEffects: true,
+    });
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         mode: production ? "production" : "development",
@@ -90,14 +133,7 @@ module.exports = (env) => {
             hints: false,
         },
         module: {
-            rules: buildTools.webpackTools.getRules({
-                includeAssets: true,
-                includeCSS: true,
-                sideEffects: true,
-                tsOptions: {
-                    transpileOnly: true,
-                },
-            }),
+            rules,
         },
         devServer: {
             static: ["public", "declarations", "../playground/public"],
