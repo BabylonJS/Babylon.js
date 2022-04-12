@@ -425,6 +425,7 @@ export class Container extends Control {
                     if (this.width !== computedWidth + "px") {
                         this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
+                        this._width.ignoreAdaptiveScaling = true;
                         this._rebuildLayout = true;
                     }
                 }
@@ -433,6 +434,7 @@ export class Container extends Control {
                     if (this.height !== computedHeight + "px") {
                         this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
+                        this._height.ignoreAdaptiveScaling = true;
                         this._rebuildLayout = true;
                     }
                 }

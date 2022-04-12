@@ -48,7 +48,6 @@ export class SaveManager {
                             newUrl += "#" + snippet.version;
                         }
                         location.href = newUrl;
-                        this.globalState.onRunRequiredObservable.notifyObservers();
                     }
 
                     this.globalState.onSavedObservable.notifyObservers();

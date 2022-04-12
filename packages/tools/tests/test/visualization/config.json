@@ -2,6 +2,21 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Iridescence",
+            "playgroundId": "#2FDQT5#1505",
+            "referenceImage": "iridescence.png"
+        },
+        {
+            "title": "Iridescence NME",
+            "playgroundId": "#2FDQT5#1507",
+            "referenceImage": "iridescence_nme.png"
+        },
+        {
+            "title": "Iridescence GLTF",
+            "playgroundId": "#2FDQT5#1508",
+            "referenceImage": "iridescence_gltf.png"
+        },
+        {
             "title": "Merge Meshes",
             "playgroundId": "#484RHA#0",
             "referenceImage": "mergemeshes.png"

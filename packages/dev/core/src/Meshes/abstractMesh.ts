@@ -1462,8 +1462,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param data defines the position data to apply the skeleton and morph to
      * @returns the position data
      */
-    public getPositionData(applySkeleton: boolean, applyMorph: boolean, data?: Nullable<FloatArray>): Nullable<FloatArray> {
-        data = data ?? this.getVerticesData(VertexBuffer.PositionKind);
+    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
+        data = data ?? Tools.Slice(this.getVerticesData(VertexBuffer.PositionKind));
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
@@ -1563,9 +1563,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
                 }
             }
+            return this.getPositionData(applySkeleton, applyMorph, data);
         }
 
-        return this.getPositionData(applySkeleton, applyMorph, data);
+        return data;
     }
 
     /** @hidden */
@@ -1573,7 +1574,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (this._boundingInfo) {
             this._boundingInfo.update(this.worldMatrixFromCache);
         } else {
-            this._boundingInfo = new BoundingInfo(this.position, this.position, this.worldMatrixFromCache);
+            this._boundingInfo = new BoundingInfo(Vector3.Zero(), Vector3.Zero(), this.worldMatrixFromCache);
         }
         this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         return this;

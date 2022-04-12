@@ -53,6 +53,10 @@
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
 
+            #ifdef IRIDESCENCE
+                preInfo.iridescenceIntensity = iridescenceIntensity;
+            #endif
+
             // Diffuse contribution
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb, light{X}.vLightGround);

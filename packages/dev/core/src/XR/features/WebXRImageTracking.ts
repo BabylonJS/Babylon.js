@@ -6,8 +6,6 @@ import { Matrix } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 
-declare const XRImageTrackingResult: XRImageTrackingResult;
-
 /**
  * Options interface for the background remover plugin
  */
@@ -145,14 +143,6 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
     }
 
     /**
-     * Check if the needed objects are defined.
-     * This does not mean that the feature is enabled, but that the objects needed are well defined.
-     */
-    public isCompatible(): boolean {
-        return typeof XRImageTrackingResult !== "undefined";
-    }
-
-    /**
      * Get a tracked image by its ID.
      *
      * @param id the id of the image to load (position in the init array)
@@ -186,7 +176,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         }
         const promises = this.options.images.map((image) => {
             if (typeof image.src === "string") {
-                return this._xrSessionManager.scene.getEngine().createImageBitmapFromSource(image.src);
+                return this._xrSessionManager.scene.getEngine()._createImageBitmapFromSource(image.src);
             } else {
                 return Promise.resolve(image.src); // resolve is probably unneeded
             }
@@ -272,6 +262,10 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
 
         this._trackableScoreStatus = ImageTrackingScoreStatus.Waiting;
         const imageScores = await this._xrSessionManager.session.getTrackedImageScores();
+        if (!imageScores || imageScores.length === 0) {
+            this._trackableScoreStatus = ImageTrackingScoreStatus.NotReceived;
+            return;
+        }
 
         // check the scores for all
         for (let idx = 0; idx < imageScores.length; ++idx) {

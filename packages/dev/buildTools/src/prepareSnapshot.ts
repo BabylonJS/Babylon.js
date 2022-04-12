@@ -62,6 +62,11 @@ export const prepareSnapshot = () => {
         copyFile(file, path.join(snapshotDirectory, relative), true);
     }
 
+    // generate timestamp.js, which contains the current timestamp
+    const timestamp = Date.now();
+    const timestampFile = path.join(snapshotDirectory, "timestamp.js");
+    fs.writeFileSync(timestampFile, `if(typeof globalThis !== "undefined") globalThis.__babylonSnapshotTimestamp__ = ${timestamp};`);
+
     // copy the es6 builds
     // removed for now
     // {

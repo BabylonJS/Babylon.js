@@ -120,8 +120,8 @@ class _InternalMeshDataInfo {
     public _onBetweenPassObservable: Nullable<Observable<SubMesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
-    public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
-    public _sourceNormals: Float32Array; // Will be used to save original normals when using software skinning
+    public _sourcePositions: Nullable<Float32Array>; // Will be used to save original positions when using software skinning
+    public _sourceNormals: Nullable<Float32Array>; // Will be used to save original normals when using software skinning
 
     // Will be used to save a source mesh reference, If any
     public _source: Nullable<Mesh> = null;
@@ -275,10 +275,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (value && this._internalMeshDataInfo._sourcePositions) {
             // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
-            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions, true);
             if (this._internalMeshDataInfo._sourceNormals) {
-                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals, true);
             }
+
+            this._internalMeshDataInfo._sourcePositions = null;
+            this._internalMeshDataInfo._sourceNormals = null;
         }
 
         this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
@@ -4161,7 +4164,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Prepare internal position array for software CPU skinning
      * @returns original positions used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh
      */
-    public setPositionsForCPUSkinning(): Float32Array {
+    public setPositionsForCPUSkinning(): Nullable<Float32Array> {
         const internalDataInfo = this._internalMeshDataInfo;
         if (!internalDataInfo._sourcePositions) {
             const source = this.getVerticesData(VertexBuffer.PositionKind);
@@ -4182,7 +4185,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Prepare internal normal array for software CPU skinning
      * @returns original normals used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh.
      */
-    public setNormalsForCPUSkinning(): Float32Array {
+    public setNormalsForCPUSkinning(): Nullable<Float32Array> {
         const internalDataInfo = this._internalMeshDataInfo;
 
         if (!internalDataInfo._sourceNormals) {
@@ -4304,9 +4307,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             Vector3.TransformCoordinatesFromFloatsToRef(
-                internalDataInfo._sourcePositions[index],
-                internalDataInfo._sourcePositions[index + 1],
-                internalDataInfo._sourcePositions[index + 2],
+                internalDataInfo._sourcePositions![index],
+                internalDataInfo._sourcePositions![index + 1],
+                internalDataInfo._sourcePositions![index + 2],
                 finalMatrix,
                 tempVector3
             );
@@ -4314,9 +4317,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (hasNormals) {
                 Vector3.TransformNormalFromFloatsToRef(
-                    internalDataInfo._sourceNormals[index],
-                    internalDataInfo._sourceNormals[index + 1],
-                    internalDataInfo._sourceNormals[index + 2],
+                    internalDataInfo._sourceNormals![index],
+                    internalDataInfo._sourceNormals![index + 1],
+                    internalDataInfo._sourceNormals![index + 2],
                     finalMatrix,
                     tempVector3
                 );
@@ -4463,10 +4466,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
+        const currentOverrideMaterialSideOrientation = meshes[0].overrideMaterialSideOrientation;
+
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
             if (mesh.isAnInstance) {
                 Logger.Warn("Cannot merge instance meshes.");
+                return null;
+            }
+
+            if (currentOverrideMaterialSideOrientation !== mesh.overrideMaterialSideOrientation) {
+                Logger.Warn("Cannot merge meshes with different overrideMaterialSideOrientation values.");
                 return null;
             }
 

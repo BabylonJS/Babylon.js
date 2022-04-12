@@ -3,6 +3,7 @@ import { kebabize } from "./utils";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";
 const privatePackages: DevPackageName[] = ["shared-ui-components"];
+export const declarationsOnlyPackages: DevPackageName[] = ["babylonjs-gltf2interface"];
 export type DevPackageName =
     | "core"
     | "gui"
@@ -46,7 +47,10 @@ export type NamespacePackageName =
     | "INSPECTOR"
     | "BabylonViewer"
     | "KTX2DECODER"
-    | "BABYLON.SharedUIComponents";
+    | "INSPECTOR.SharedUIComponents"
+    | "BABYLON.SharedUIComponents"
+    | "BABYLON.NodeEditor.SharedUIComponents"
+    | "BABYLON.GuiEditor.SharedUIComponents";
 export type ES6PackageName =
     | "@babylonjs/core"
     | "@babylonjs/gui"
@@ -141,12 +145,7 @@ const packageMapping: {
         materials: "babylonjs-materials",
         loaders: "babylonjs-loaders",
         serializers: "babylonjs-serializers",
-        inspector: (filePath?: string) => {
-            if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
-                return "babylonjs-shared-ui-components";
-            }
-            return "babylonjs-inspector";
-        },
+        inspector: "babylonjs-inspector",
         "node-editor": (_filePath?: string) => {
             // if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
             //     return "babylonjs-shared-ui-components";
@@ -240,15 +239,35 @@ const packageMapping: {
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
-                    return "BABYLON.SharedUIComponents";
+                    return "INSPECTOR.SharedUIComponents";
                 } else if (filePath.includes("babylonjs-gltf2interface")) {
                     return "BABYLON.GLTF2";
                 }
             }
             return "INSPECTOR";
         },
-        "node-editor": "BABYLON.NodeEditor",
-        "gui-editor": "BABYLON.GuiEditor",
+        "node-editor": (filePath?: string) => {
+            if (filePath) {
+                if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
+                    // was .endsWith
+                    return "BABYLON.NodeEditor.SharedUIComponents";
+                } else if (filePath.includes("babylonjs-gltf2interface")) {
+                    return "BABYLON.GLTF2";
+                }
+            }
+            return "BABYLON.NodeEditor";
+        },
+        "gui-editor": (filePath?: string) => {
+            if (filePath) {
+                if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
+                    // was .endsWith
+                    return "BABYLON.GuiEditor.SharedUIComponents";
+                } else if (filePath.includes("babylonjs-gltf2interface")) {
+                    return "BABYLON.GLTF2";
+                }
+            }
+            return "BABYLON.GuiEditor";
+        },
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
         ktx2decoder: "KTX2DECODER",
@@ -266,7 +285,7 @@ export function getAllBuildTypes(): BuildType[] {
     return Object.keys(packageMapping) as BuildType[];
 }
 
-export function isValidPackageMap(packageMap: { [key: string]: string | ((data?: any) => string) }, publicOnly?: boolean): packageMap is PackageMap {
+export function isValidPackageMap(packageMap: { [key: string]: string | ((data?: any) => string) }): packageMap is PackageMap {
     const packageNames = Object.keys(packageMap);
     const buildTypes = getAllBuildTypes();
 
