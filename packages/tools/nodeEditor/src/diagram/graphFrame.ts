@@ -674,7 +674,7 @@ export class GraphFrame {
             const rect2 = this.element.getBoundingClientRect();
             const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
             if (overlap) {
-                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true });
+                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true, marqueeSelection: true });
             }
         });
 

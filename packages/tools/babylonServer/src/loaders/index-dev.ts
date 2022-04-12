@@ -1,6 +1,6 @@
 /* eslint-disable import/export */
 /* eslint-disable import/no-internal-modules */
-export * from "../../../../dev/loaders/src/index";
+// export * from "../../../../dev/loaders/src/index";
 // export * from "./legacy-glTF";
 // export * from "./legacy-glTF1";
 // export * from "./legacy-glTF2";
