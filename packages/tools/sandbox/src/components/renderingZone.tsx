@@ -76,6 +76,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     ],
                 },
                 antialiasing: antialias,
+                useHighPrecisionMatrix: true,
             });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
