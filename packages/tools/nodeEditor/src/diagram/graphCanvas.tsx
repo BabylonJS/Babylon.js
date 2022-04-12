@@ -172,11 +172,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._frameContainer;
     }
 
+    // There is a selection conflict between nodes and frames if any selected node is inside any selected frame
+    private _selectedFrameAndNodesConflict(frameSelection: GraphFrame[], nodeSelection: GraphNode[]) {
+        for (const frame of frameSelection) {
+            for (const node of nodeSelection) {
+                if (frame.nodes.includes(node)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
         props.globalState.onSelectionChangedObservable.add((options) => {
-            const { selection, forceKeepSelection } = options || {};
+            const { selection, forceKeepSelection, marqueeSelection = false } = options || {};
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedLink = null;
@@ -188,36 +200,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     this._selectedFrames = [];
                     this._selectedLink = selection;
                     this._selectedPort = null;
-                } else if (selection instanceof GraphFrame && !this._selectedNodes.length) {
-                    if (selection.isCollapsed) {
-                        if (this._ctrlKeyIsPressed || forceKeepSelection) {
-                            if (this._selectedFrames.indexOf(selection) === -1) {
-                                this._selectedFrames.push(selection);
-                            }
-                        } else {
-                            this._selectedFrames = [selection];
-                            this._selectedNodes = [];
-                            this._selectedLink = null;
-                            this._selectedPort = null;
-                        }
-                    } else {
-                        this._selectedNodes = [];
-                        this._selectedFrames = [selection];
-                        this._selectedLink = null;
-                        this._selectedPort = null;
-                    }
-                } else if (selection instanceof GraphNode) {
-                    if (this._ctrlKeyIsPressed || forceKeepSelection) {
-                        if (this._selectedNodes.indexOf(selection) === -1) {
-                            this._selectedNodes.push(selection);
-                            this._selectedFrames = [];
-                        }
-                    } else {
-                        this._selectedNodes = [selection];
-                        this._selectedFrames = [];
-                        this._selectedLink = null;
-                        this._selectedPort = null;
-                    }
                 } else if (selection instanceof NodePort) {
                     this._selectedNodes = [];
                     this._selectedFrames = [];
@@ -228,6 +210,51 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     this._selectedFrames = [];
                     this._selectedLink = null;
                     this._selectedPort = selection.port;
+                } else if (selection instanceof GraphNode || selection instanceof GraphFrame) {
+                    // If in marquee selection mode, always prioritize selecting nodes. Otherwise, always prioritize selecting the type of
+                    // the selected element
+                    if (marqueeSelection) {
+                        if (selection instanceof GraphFrame && !this._selectedFrames.includes(selection)) {
+                            this._selectedFrames.push(selection);
+                        } else if (selection instanceof GraphNode && !this._selectedNodes.includes(selection)) {
+                            this._selectedNodes.push(selection);
+                        }
+                        if (this._selectedFrameAndNodesConflict(this.selectedFrames, this.selectedNodes)) {
+                            const framesToRemove = new Set();
+                            for (const selectedNode of this._selectedNodes) {
+                                for (const selectedFrame of this._selectedFrames) {
+                                    if (selectedFrame.nodes.includes(selectedNode)) {
+                                        framesToRemove.add(selectedFrame);
+                                    }
+                                }
+                            }
+                            this._selectedFrames = this._selectedFrames.filter((f) => !framesToRemove.has(f));
+                        }
+                    } else {
+                        if (selection instanceof GraphFrame) {
+                            if (this._ctrlKeyIsPressed || forceKeepSelection) {
+                                if (!this._selectedFrameAndNodesConflict([selection], this._selectedNodes) && !this._selectedFrames.includes(selection)) {
+                                    this._selectedFrames.push(selection);
+                                }
+                            } else {
+                                this._selectedFrames = [selection];
+                                this._selectedNodes = [];
+                                this._selectedLink = null;
+                                this._selectedPort = null;
+                            }
+                        } else if (selection instanceof GraphNode) {
+                            if (this._ctrlKeyIsPressed || forceKeepSelection) {
+                                if (!this._selectedFrameAndNodesConflict(this._selectedFrames, [selection]) && !this._selectedNodes.includes(selection)) {
+                                    this._selectedNodes.push(selection);
+                                }
+                            } else {
+                                this._selectedFrames = [];
+                                this._selectedNodes = [selection];
+                                this._selectedLink = null;
+                                this._selectedPort = null;
+                            }
+                        }
+                    }
                 }
             }
         });

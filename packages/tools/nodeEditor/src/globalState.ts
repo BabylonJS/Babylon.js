@@ -19,6 +19,7 @@ import { ParticleSystem } from "core/Particles/particleSystem";
 export class ISelectionChangedOptions {
     selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;
     forceKeepSelection?: boolean;
+    marqueeSelection?: boolean;
 }
 
 export class GlobalState {
