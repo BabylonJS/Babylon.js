@@ -485,7 +485,10 @@ ${looseDeclarationsString || ""}
                     // make sure snapshot directory exists
                     checkDirectorySync(path.join(rootDir, ".snapshot"));
                     const documentationFile = path.join(rootDir, ".snapshot", "documentation.d.ts");
-                    const originalFile = fs.existsSync(documentationFile) && !config.initDocumentation ? fs.readFileSync(documentationFile, "utf8") : "";
+                    const originalFile =
+                        fs.existsSync(documentationFile) && !config.initDocumentation
+                            ? fs.readFileSync(documentationFile, "utf8")
+                            : fs.readFileSync(path.resolve(rootDir, "packages/public/glTF2Interface", "babylon.glTF2Interface.d.ts"), "utf8");
                     fs.writeFileSync(
                         documentationFile,
                         `${originalFile}
