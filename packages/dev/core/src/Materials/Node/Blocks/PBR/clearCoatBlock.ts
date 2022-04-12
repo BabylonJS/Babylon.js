@@ -44,6 +44,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.worldNormal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this.registerOutput(
             "clearcoat",
