@@ -5,7 +5,7 @@ import { VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
 
-import { MeshPrimitiveMode, AccessorComponentType  } from "babylonjs-gltf2interface";
+import { MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
 import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
