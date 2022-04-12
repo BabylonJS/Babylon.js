@@ -1,3 +1,4 @@
+import { EncodeArrayBufferToBase64 } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
@@ -60,10 +61,15 @@ export class SaveManager {
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
+        const encoder = new TextEncoder()
+        const buffer = encoder.encode(this.globalState.currentCode);
+
+        const payLoad = JSON.stringify({
+            code: '__encoded__' + EncodeArrayBufferToBase64(buffer),
+        });
+
         const dataToSend = {
-            payload: JSON.stringify({
-                code: this.globalState.currentCode,
-            }),
+            payload: payLoad,
             name: this.globalState.currentSnippetTitle,
             description: this.globalState.currentSnippetDescription,
             tags: this.globalState.currentSnippetTags,

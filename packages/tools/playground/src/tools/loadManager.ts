@@ -1,3 +1,4 @@
+import { DecodeBase64ToBinary } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
@@ -112,7 +113,17 @@ export class LoadManager {
                             this.globalState.currentSnippetTags = "";
                         }
 
-                        this.globalState.onCodeLoaded.notifyObservers(JSON.parse(snippet.jsonPayload).code.toString());
+                        // Extract code
+                        let code: string = JSON.parse(snippet.jsonPayload).code.toString();
+
+                        if (code.substring(0, 11) === "__encoded__") { // Need to decode
+                            const encodedData = code.substring(11);
+                            const decoder = new TextDecoder("utf8");
+                            
+                            code = decoder.decode(DecodeBase64ToBinary(encodedData));
+                        }
+
+                        this.globalState.onCodeLoaded.notifyObservers(code);
 
                         this.globalState.onMetadataUpdatedObservable.notifyObservers();
                     }
