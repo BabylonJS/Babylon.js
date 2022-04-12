@@ -17,7 +17,7 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
             });
         }
         // fix for mac
-        if (request.includes("webpack") || request.includes("babylonjs-gltf2interface")) {
+        if (request.includes("webpack")) {
             return callback(null);
         }
         const importParts = request.split("/");
