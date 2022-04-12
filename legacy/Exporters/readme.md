@@ -1,1 +1,0 @@
-All exporters are now available on their own repo: https://github.com/BabylonJS/Exporters
