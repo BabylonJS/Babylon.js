@@ -75,7 +75,14 @@ module.exports = (env) => {
         //     hints: false,
         // },
         module: {
-            rules: buildTools.webpackTools.getRules(),
+            rules: buildTools.webpackTools.getRules({
+                includeAssets: true,
+                includeCSS: true,
+                sideEffects: true,
+                tsOptions: {
+                    transpileOnly: true,
+                },
+            }),
         },
     };
 

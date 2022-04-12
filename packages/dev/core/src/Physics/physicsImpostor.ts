@@ -542,7 +542,7 @@ export class PhysicsImpostor {
      * @returns boolean specifying if body initialization is required
      */
     public isBodyInitRequired(): boolean {
-        return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
+        return this._bodyUpdateRequired || (!this._physicsBody && (!this._parent || !!this._options.ignoreParent));
     }
 
     /**

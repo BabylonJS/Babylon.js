@@ -1,15 +1,16 @@
 /* eslint-disable import/no-internal-modules */
-import * as Serializers from "serializers/OBJ/index";
+import * as GUI from "../../../../dev/gui/src/index";
 
 /**
+ * Legacy support, defining window.BABYLON.GUI (global variable).
+ *
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    for (const serializer in Serializers) {
-        (<any>globalObject).BABYLON[serializer] = (<any>Serializers)[serializer];
-    }
+    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+    (<any>globalObject).BABYLON.GUI = GUI;
 }
 
-export * from "serializers/OBJ/index";
+export * from "../../../../dev/gui/src/index";
