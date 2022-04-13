@@ -170,7 +170,9 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     scene,
                     hdrSize,
                     true,
-                    !isPBR
+                    !isPBR,
+                    undefined,
+                    parsedData.environmentTexturePrefilterOnLoad
                 );
                 if (parsedData.environmentTextureRotationY) {
                     hdrTexture.rotationY = parsedData.environmentTextureRotationY;
