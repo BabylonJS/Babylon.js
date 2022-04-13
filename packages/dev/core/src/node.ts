@@ -126,6 +126,14 @@ export class Node implements IBehaviorAware<Node> {
     public inspectableCustomProperties: IInspectable[];
 
     /**
+     * Gets or sets the accessibility tag to describe the mesh for accessibility purpose.
+     */
+    public accessibilityTag?: IAccessibilityTag = {
+        isSalient: false,
+        description: ""
+    };
+
+    /**
      * Gets or sets a boolean used to define if the node must be serialized
      */
     public get doNotSerialize() {
@@ -973,4 +981,18 @@ export class Node implements IBehaviorAware<Node> {
             max: max,
         };
     }
+}
+
+/**
+ * Define an interface for a node to indicate it's info for accessibility.
+ */
+ export interface IAccessibilityTag {
+    /**
+     * A boolean indicating that this node is salience to be considered in the accesibility tree. (false by default)
+     */
+    isSalient: boolean;
+    /**
+     * A string as alt text of the node, describing what the node is/does, for accessibility purpose.
+     */
+    description: string;
 }

@@ -16,6 +16,7 @@ import type { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
 import type { IPopupComponentProps } from "./components/popupComponent";
 import { PopupComponent } from "./components/popupComponent";
+import { AccessibilityRenderer } from "./accessibilityRenderer";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -471,6 +472,10 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
+    }
+
+    public static RenderAccessibiiltyTree(scene: Scene) {
+        AccessibilityRenderer.RenderAccessibilityTree(scene);
     }
 
     public static _SetNewScene(scene: Scene) {
