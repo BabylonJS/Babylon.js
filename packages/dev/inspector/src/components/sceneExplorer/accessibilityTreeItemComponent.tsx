@@ -1,23 +1,18 @@
 import { Mesh, Node } from "babylonjs";
 import * as React from "react";
-import { AccessibilityNode, ActionType } from "./accessibilityNode";
+import { AccessibilityItem, ActionType } from "./accessibilityItem";
 
-interface IAccessibilityNodeComponentProps {
-    a11yNode: AccessibilityNode;
+interface IAccessibilityTreeItemComponentProps {
+    a11yNode: AccessibilityItem;
 }
 
-export class AccessibilityTreeNodeComponent extends React.Component<IAccessibilityNodeComponentProps> {
-    constructor(props: IAccessibilityNodeComponentProps) {
+export class AccessibilityTreeItemComponent extends React.Component<IAccessibilityTreeItemComponentProps> {
+    constructor(props: IAccessibilityTreeItemComponentProps) {
         super(props);
     }
 
     render() {
         const a11yNode = this.props.a11yNode;
-
-        //TODO: remove this debug code
-        console.log(a11yNode.node._getActionManagerForTrigger());
-        console.log(a11yNode.node._getActionManagerForTrigger(2));
-        console.log(a11yNode.node._getActionManagerForTrigger(8));
 
         if (a11yNode.children.length === 0) {
             return this._renderLeafNode(a11yNode);
@@ -27,7 +22,7 @@ export class AccessibilityTreeNodeComponent extends React.Component<IAccessibili
         }
     }
 
-    private _renderLeafNode(a11yNode: AccessibilityNode): JSX.Element {
+    private _renderLeafNode(a11yNode: AccessibilityItem): JSX.Element {
         const node = a11yNode.node;
         if(a11yNode.isActionable) {
             return (
@@ -38,7 +33,7 @@ export class AccessibilityTreeNodeComponent extends React.Component<IAccessibili
                     onFocus={() => {this._onFocus(node);}}
                     onBlur={() => {this._onBlur(node);}}
                 >
-                    {node.accessibilityTag.description}
+                    {node.accessibilityTag?.description}
                 </button>
             );
         }
@@ -49,13 +44,13 @@ export class AccessibilityTreeNodeComponent extends React.Component<IAccessibili
                     onFocus={() => {this._onFocus(node);}}
                     onBlur={() => {this._onBlur(node);}}
                 >
-                    {node.accessibilityTag.description}
+                    {node.accessibilityTag?.description}
                 </div>
             );
         }
     }
 
-    private _renderParentNode(a11yNode: AccessibilityNode): JSX.Element {
+    private _renderParentNode(a11yNode: AccessibilityItem): JSX.Element {
         return (
             <div>
                 <div role={'heading'} aria-level={a11yNode.level}
@@ -70,10 +65,10 @@ export class AccessibilityTreeNodeComponent extends React.Component<IAccessibili
         );
     }
 
-    private _renderChildren(children: AccessibilityNode[]): JSX.Element[] {
+    private _renderChildren(children: AccessibilityItem[]): JSX.Element[] {
         return (
             children.map((child) => {
-                return <AccessibilityTreeNodeComponent
+                return <AccessibilityTreeItemComponent
                     a11yNode={child}
                     key={child.node.uniqueId !== undefined && child.node.uniqueId !== null ? child.node.uniqueId : child.node.name}
                     />

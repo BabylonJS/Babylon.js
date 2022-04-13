@@ -10,14 +10,14 @@ export const enum ActionType {
 /**
  * A abstract layer to store the accessibility tree structure (the collections of nodes who's accessibility tag is marked as salient, and their parent-child relationship). It also stores info to define how to render: the level number to inform heading level; and actions to inform whether it should be a button.
  */
-export class AccessibilityNode {
+export class AccessibilityItem {
     public node: Node;
-    public children: AccessibilityNode[];
+    public children: AccessibilityItem[];
     public level: number; // to indicate heading level
 
     private _isActionable?: boolean;
 
-    constructor(node: Node, children: AccessibilityNode[], level: number) {
+    constructor(node: Node, children: AccessibilityItem[], level: number) {
         this.node = node;
         this.children = children;
         this.level = level;

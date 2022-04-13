@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Scene } from "babylonjs/scene";
 import { Node } from "babylonjs";
-import { AccessibilityTreeNodeComponent } from "./accessibilityNodeComponent";
-import { AccessibilityNode } from "./accessibilityNode";
+import { AccessibilityTreeItemComponent } from "./accessibilityTreeItemComponent";
+import { AccessibilityItem } from "./accessibilityItem";
 
 interface IAccessibilityTreeComponentProps {
     scene: Scene;
@@ -14,10 +14,10 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
     }
 
     render() {
+        // Nodes
         const rootNodes = this.props.scene.rootNodes.slice(0);
 
-        // Adding nodes parented to a bone
-        for (const mesh of this.props.scene.meshes) {
+        for (const mesh of this.props.scene.meshes) { // Adding nodes that are parented to a bone
             if (mesh.parent && mesh.parent.getClassName() === "Bone") {
                 rootNodes.push(mesh);
             }
@@ -30,7 +30,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             <div className="accessibility-tree">
                 {a11yTreeRootNodes.map((item) => {
                     return (
-                        <AccessibilityTreeNodeComponent
+                        <AccessibilityTreeItemComponent
                             a11yNode={item}
                             key={item.node.uniqueId !== undefined && item.node.uniqueId !== null ? item.node.uniqueId : item.node.name}
                         />
@@ -40,17 +40,17 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         );
     }
 
-    private _getAccessibilityTreeRootNodes(rootNodes: Node[], level: number): AccessibilityNode[] {
+    private _getAccessibilityTreeRootNodes(rootNodes: Node[], level: number): AccessibilityItem[] {
         if (!rootNodes || rootNodes.length === 0) {
             return [];
         }
 
-        let result: AccessibilityNode[] = [];
+        let result: AccessibilityItem[] = [];
         let queue: Node[] = [...rootNodes];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
-            if (curNode.accessibilityTag.isSalient) {
-                result.push(new AccessibilityNode(curNode, this._getAccessibilityTreeRootNodes(curNode.getChildren(), Math.min(level + 1, 6)), level));
+            if (curNode.accessibilityTag?.isSalient) {
+                result.push(new AccessibilityItem(curNode, this._getAccessibilityTreeRootNodes(curNode.getChildren(), Math.min(level + 1, 6)), level));
             }
             else {
                 queue.push(...curNode.getChildren());
