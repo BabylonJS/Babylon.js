@@ -170,7 +170,7 @@ export class KhronosTextureContainer {
                 const byteArray = new Uint8Array(this.data.buffer, this.data.byteOffset + dataOffset, imageSize);
 
                 const engine = texture.getEngine();
-                engine._uploadCompressedDataToTextureDirectly(texture, this.glInternalFormat, width, height, byteArray, face, level);
+                engine._uploadCompressedDataToTextureDirectly(texture, texture.format, width, height, byteArray, face, level);
 
                 dataOffset += imageSize; // add size of the image for the next face/mipmap
                 dataOffset += 3 - ((imageSize + 3) % 4); // add padding for odd sized image
