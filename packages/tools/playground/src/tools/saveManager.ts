@@ -1,3 +1,4 @@
+import { EncodeArrayBufferToBase64 } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
@@ -60,10 +61,23 @@ export class SaveManager {
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
+        const encoder = new TextEncoder();
+        const buffer = encoder.encode(this.globalState.currentCode);
+
+        // Check if we need to encode it to store the unicode characters
+        let testData = "";
+
+        for (let i = 0; i < buffer.length; i++) {
+            testData += String.fromCharCode(buffer[i]);
+        }
+
+        const payLoad = JSON.stringify({
+            code: this.globalState.currentCode,
+            unicode: testData !== this.globalState.currentCode ? EncodeArrayBufferToBase64(buffer) : undefined,
+        });
+
         const dataToSend = {
-            payload: JSON.stringify({
-                code: this.globalState.currentCode,
-            }),
+            payload: payLoad,
             name: this.globalState.currentSnippetTitle,
             description: this.globalState.currentSnippetDescription,
             tags: this.globalState.currentSnippetTags,
