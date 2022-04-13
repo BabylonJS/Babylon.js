@@ -173,6 +173,22 @@ export class DebugLayer {
         return this._onPropertyChangedObservable;
     }
 
+    private _onSelectionChangedObservable?: Observable<any>;
+    /**
+     * Observable triggered when the selection is changed through the inspector.
+     */
+    public get onSelectionChangedObservable() {
+        if (this.BJSINSPECTOR && this.BJSINSPECTOR.Inspector) {
+            return this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable;
+        }
+
+        if (!this._onSelectionChangedObservable) {
+            this._onSelectionChangedObservable = new Observable<any>();
+        }
+
+        return this._onSelectionChangedObservable;
+    }
+
     /**
      * Instantiates a new debug layer.
      * The debug layer (aka Inspector) is the go to tool in order to better understand
@@ -208,6 +224,14 @@ export class DebugLayer {
             }
             this._onPropertyChangedObservable.clear();
             this._onPropertyChangedObservable = undefined;
+        }
+
+        if (this._onSelectionChangedObservable) {
+            for (const observer of this._onSelectionChangedObservable!.observers) {
+                this.BJSINSPECTOR.Inspector.OnSelectionChangedObservable.add(observer);
+            }
+            this._onSelectionChangedObservable.clear();
+            this._onSelectionChangedObservable = undefined;
         }
 
         const userOptions: IInspectorOptions = {
