@@ -1,9 +1,9 @@
-import { Mesh, Node } from "babylonjs";
 import * as React from "react";
-import { AccessibilityItem, ActionType } from "./accessibilityItem";
+import { AccessibilityItem } from "./accessibilityItem";
 
 interface IAccessibilityTreeItemComponentProps {
-    a11yNode: AccessibilityItem;
+    a11yItem: AccessibilityItem;
+    level: number;
 }
 
 export class AccessibilityTreeItemComponent extends React.Component<IAccessibilityTreeItemComponentProps> {
@@ -12,106 +12,67 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
     }
 
     render() {
-        const a11yNode = this.props.a11yNode;
+        const item = this.props.a11yItem;
 
-        if (a11yNode.children.length === 0) {
-            return this._renderLeafNode(a11yNode);
+        if (item.children.length === 0) {
+            return this._renderLeafNode(item);
         }
         else {
-            return this._renderParentNode(a11yNode);
+            return this._renderParentNode(item, this.props.level);
         }
     }
 
-    private _renderLeafNode(a11yNode: AccessibilityItem): JSX.Element {
-        const node = a11yNode.node;
-        if(a11yNode.isActionable) {
+    private _renderLeafNode(a11yItem: AccessibilityItem): JSX.Element {
+        if(a11yItem.isActionable) {
             return (
                 <button
-                    onClick={a11yNode.getActionHandler(ActionType.OnClick)}
-                    onContextMenu={a11yNode.getActionHandler(ActionType.OnRightClick)}
-                    tabIndex={0}
-                    onFocus={() => {this._onFocus(node);}}
-                    onBlur={() => {this._onBlur(node);}}
+                    onClick={() => {a11yItem.click();}}
+                    onContextMenu={() => {a11yItem.rightClick();}}
+                    tabIndex={a11yItem.isFocusable ? 0 : -1}
+                    onFocus={() => {a11yItem.focus();}}
+                    onBlur={() => {a11yItem.blur();}}
                 >
-                    {node.accessibilityTag?.description}
+                    {a11yItem.description}
                 </button>
             );
         }
         else {
             return (
                 <div
-                    tabIndex={0}
-                    onFocus={() => {this._onFocus(node);}}
-                    onBlur={() => {this._onBlur(node);}}
+                    tabIndex={a11yItem.isFocusable ? 0 : -1}
+                    onFocus={() => {a11yItem.focus();}}
+                    onBlur={() => {a11yItem.blur();}}
                 >
-                    {node.accessibilityTag?.description}
+                    {a11yItem.description}
                 </div>
             );
         }
     }
 
-    private _renderParentNode(a11yNode: AccessibilityItem): JSX.Element {
+    private _renderParentNode(a11yItem: AccessibilityItem, level: number): JSX.Element {
         return (
             <div>
-                <div role={'heading'} aria-level={a11yNode.level}
-                    tabIndex={0}
-                    onFocus={() => {this._onFocus(a11yNode.node);}}
-                    onBlur={() => {this._onBlur(a11yNode.node);}}
+                {!!a11yItem.description && <div role={'heading'} aria-level={level}
+                    tabIndex={a11yItem.isFocusable ? 0 : -1}
+                    onFocus={() => {a11yItem.focus();}}
+                    onBlur={() => {a11yItem.blur();}}
                 >
-                    {a11yNode.node.accessibilityTag.description}
-                </div>
-                {this._renderChildren(a11yNode.children)}
+                    {a11yItem.description}
+                </div>}
+                {this._renderChildren(a11yItem.children, Math.min(level + 1, 6))}
             </div>
         );
     }
 
-    private _renderChildren(children: AccessibilityItem[]): JSX.Element[] {
+    private _renderChildren(children: AccessibilityItem[], level: number): JSX.Element[] {
         return (
             children.map((child) => {
                 return <AccessibilityTreeItemComponent
-                    a11yNode={child}
-                    key={child.node.uniqueId !== undefined && child.node.uniqueId !== null ? child.node.uniqueId : child.node.name}
+                    a11yItem={child}
+                    level={level}
+                    key={child.entity.uniqueId !== undefined && child.entity.uniqueId !== null ? child.entity.uniqueId : child.entity.name}
                     />
             })
         );
-    }
-
-    private _onFocus(node: Node): void {
-        console.log(`Focused on ${node.name}`);
-        console.log(node);
-        this._highlightNode(node, false); // why 'false': focusing on an node will focus on its focusable parent too. Do not apply hightlight on children to avoid the whole group highlighted when a member is highlighted.
-    }
-
-    private _onBlur(node: Node): void {
-        console.log(`Left focus on ${node.name}`);
-        this._dishighlightNode(node, false);
-    }
-
-    private _highlightNode(node: Node, applyOnChildren: boolean): void {
-        if (node.getClassName().indexOf('Mesh') !== -1) {
-            const mesh = node as Mesh;
-            mesh.enableEdgesRendering(0.999);
-            mesh.edgesWidth = 5;
-            mesh.edgesColor = new BABYLON.Color4(0.25, 0.5, 1, 1);
-        }
-        if (applyOnChildren) {
-            const children = node.getChildren();
-            if (children.length >= 0) {
-                children.map((child) => {this._highlightNode(child, true)});
-            }
-        }
-    }
-
-    private _dishighlightNode(node: Node, applyOnChildren: boolean): void {
-        if (node.getClassName().indexOf('Mesh') !== -1) {
-            const mesh = node as Mesh;
-            mesh.disableEdgesRendering();
-        }
-        if (applyOnChildren) {
-            const children = node.getChildren();
-            if (children.length >= 0) {
-                children.map((child) => {this._dishighlightNode(child, true)});
-            }
-        }
     }
 }

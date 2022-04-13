@@ -9,7 +9,8 @@ export class AccessibilityRenderer {
         accessibilityHost.id = 'accessibility-host';
         accessibilityHost.style.position = "absolute";
         accessibilityHost.style.left = "-999px";
-        scene.getEngine().getRenderingCanvas()?.before(accessibilityHost);
+        accessibilityHost.style.width = "900px";
+        scene.getEngine().getRenderingCanvas()?.after(accessibilityHost);
 
         const accessibilityTree = React.createElement(AccessibilityTreeComponent, {
             scene: scene

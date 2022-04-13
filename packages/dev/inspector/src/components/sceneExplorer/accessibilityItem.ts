@@ -1,68 +1,84 @@
 import { Node } from "babylonjs";
-import { IAction } from "babylonjs/Actions/action";
-import { Constants } from "babylonjs/Engines/constants";
+import { Control } from "babylonjs-gui";
 
-export const enum ActionType {
-    OnClick,
-    OnRightClick
-}
+export type AccessibilityEntity = Node | Control;
 
 /**
- * A abstract layer to store the accessibility tree structure (the collections of nodes who's accessibility tag is marked as salient, and their parent-child relationship). It also stores info to define how to render: the level number to inform heading level; and actions to inform whether it should be a button.
+ * A abstract layer to store the accessibility tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of accessibility tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.
  */
 export class AccessibilityItem {
-    public node: Node;
+    /**
+     * The corresponding BabylonJS entity. Can be a Node or a Control.
+     */
+    public entity: AccessibilityEntity;
+
+    /**
+     * The children of this item in the accessibility tree.
+     */
     public children: AccessibilityItem[];
-    public level: number; // to indicate heading level
 
-    private _isActionable?: boolean;
-
-    constructor(node: Node, children: AccessibilityItem[], level: number) {
-        this.node = node;
+    constructor(entity: AccessibilityEntity, children: AccessibilityItem[]) {
+        this.entity = entity;
         this.children = children;
-        this.level = level;
     }
 
+    /**
+     * The text content displayed in HTML element.
+     * Returns "" by default. Implemented by child classes
+     */
+    public get description(): string {
+        return "";
+    }
+
+    /**
+     * If this entity is actionable (can be clicked).
+     * Implemented by child classes
+     */
     public get isActionable(): boolean {
-        if(this._isActionable === undefined) {
-            this._isActionable = this.node._getActionManagerForTrigger()?.hasPickTriggers!!;
-        }
         return this._isActionable;
     }
 
-    public getActionHandler(type: ActionType): undefined | (() => void)  {
-        if(!this.isActionable) {
-            return undefined;
-        }
-        let actions: IAction[] = [];
-        switch(type) {
-            case ActionType.OnClick:
-                actions.push(...this._getTriggerActions(Constants.ACTION_OnLeftPickTrigger));
-                actions.push(...this._getTriggerActions(Constants.ACTION_OnPickTrigger));
-                break;
-            case ActionType.OnRightClick:
-                actions.push(...this._getTriggerActions(Constants.ACTION_OnRightPickTrigger));
-                actions.push(...this._getTriggerActions(Constants.ACTION_OnPickTrigger));
-                break;
-        }
+    /**
+     * If this entity is focusable (can be focused by tab key pressing).
+     * Implemented by child classes
+     */
+    public get isFocusable(): boolean {
+        return this._isFocusable;
+    }
 
-        if(actions.length === 0) {
-            return undefined;
-        }
-        return () => {
-            actions.forEach((action) => {
-                action._executeCurrent();
-            });
-        }
+    /**
+     * Callback when the HTML element is focused. Show visual indication on BabylonJS entity.
+     * Implemented by child classes
+     */
+    public focus(): void {
+    }
+
+    /**
+     * Callback when the HTML element is blured. Dismiss visual indication on BabylonJS entity.
+     * Implemented by child classes
+     */
+    public blur(): void {
+    }
+
+    /**
+     * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
+     * Implemented by child classes
+     */
+    public click(): void {
+    }
+
+    /**
+     * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
+     * Implemented by child classes
+     */
+    public rightClick(): void {
     }
 
     // TODO: maybe remove this
     public toString(): string {
-        return `{${this.node.name}, [${this.children.map((child) => `${child.toString()}`).join(", ")}]}`;
+        return `{${this.entity.name}, [${this.children.map((child) => `${child.toString()}`).join(", ")}]}`;
     }
 
-    private _getTriggerActions(trigger: number): IAction[] {
-        const triggerActions = this.node._getActionManagerForTrigger(trigger)?.actions.filter(action => action.trigger == trigger);
-        return triggerActions?? [];
-    }
+    protected _isActionable: boolean;
+    protected _isFocusable: boolean;
 }

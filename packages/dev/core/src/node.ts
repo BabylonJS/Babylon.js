@@ -598,7 +598,6 @@ export class Node implements IBehaviorAware<Node> {
         this._nodeDataStorage._isEnabled = value;
 
         this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
-
         this._syncParentEnabledState();
     }
 
@@ -983,6 +982,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 }
 
+// TODO: refactor this so the change of this tag can be observed.
 /**
  * Define an interface for a node to indicate it's info for accessibility.
  */

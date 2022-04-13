@@ -335,6 +335,11 @@ export class Control {
     public onDisposeObservable = new Observable<Control>();
 
     /**
+     * An event triggered when the control isVisible is changed
+     */
+    public onIsVisibleChangedObservable = new Observable<boolean>();
+
+    /**
      * Get the hosting AdvancedDynamicTexture
      */
     public get host(): AdvancedDynamicTexture {
@@ -795,6 +800,8 @@ export class Control {
 
         this._isVisible = value;
         this._markAsDirty(true);
+
+        this.onIsVisibleChangedObservable.notifyObservers(value);
     }
 
     /** Gets a boolean indicating that the control needs to update its rendering */
