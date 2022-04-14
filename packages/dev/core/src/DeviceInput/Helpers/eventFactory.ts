@@ -110,7 +110,7 @@ export class DeviceEventFactory {
         evt.deltaY = 0;
         evt.deltaZ = 0;
 
-        switch(inputIndex) {
+        switch (inputIndex) {
             case PointerInput.MouseWheelX:
                 evt.deltaX = currentState;
                 break;
