@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "5.1.0",
+    "version": "5.2.0",
     "module": "dist/babylon.inspector.bundle.max.js",
     "main": "dist/babylon.inspector.bundle.max.js",
     "typings": "dist/babylon.inspector.module.d.ts",
@@ -17,11 +17,11 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.1.0",
-        "@babylonjs/gui": "^5.1.0",
-        "@babylonjs/loaders": "^5.1.0",
-        "@babylonjs/materials": "^5.1.0",
-        "@babylonjs/serializers": "^5.1.0",
+        "@babylonjs/core": "^5.2.0",
+        "@babylonjs/gui": "^5.2.0",
+        "@babylonjs/loaders": "^5.2.0",
+        "@babylonjs/materials": "^5.2.0",
+        "@babylonjs/serializers": "^5.2.0",
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
         "@fortawesome/free-regular-svg-icons": "^6.0.0",
         "@fortawesome/free-solid-svg-icons": "^6.0.0"
