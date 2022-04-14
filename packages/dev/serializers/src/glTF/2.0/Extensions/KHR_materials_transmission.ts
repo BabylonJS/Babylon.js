@@ -57,7 +57,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
             return false;
         }
         const subs = mat.subSurface;
-        return (subs.refractionIntensity != undefined && subs.refractionIntensity != 0) || this._hasTexturesExtension(mat);
+        return (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) || this._hasTexturesExtension(mat);
     }
 
     private _hasTexturesExtension(mat: PBRMaterial): boolean {
