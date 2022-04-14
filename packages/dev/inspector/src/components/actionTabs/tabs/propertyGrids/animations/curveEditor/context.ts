@@ -225,6 +225,7 @@ export class Context {
     }
 
     public resetAllActiveChannels() {
+        this.clearSelection();
         this.activeChannels = {};
     }
 
