@@ -70,7 +70,8 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 this._wasUsed = true;
 
                 const subs = babylonMaterial.subSurface;
-                const transmissionFactor = subs.refractionIntensity == 0 ? undefined : subs.refractionIntensity;
+                const transmissionFactor = subs.refractionIntensity === 0 ? undefined : subs.refractionIntensity;
+
                 const transmissionTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.refractionIntensityTexture) ?? undefined;
 
                 const volumeInfo: IKHRMaterialsTransmission = {
