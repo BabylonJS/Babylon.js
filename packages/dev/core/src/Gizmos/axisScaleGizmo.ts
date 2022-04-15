@@ -163,7 +163,7 @@ export class AxisScaleGizmo extends Gizmo {
                 Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
 
                 this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
-                const transformNode = (<Mesh>this.attachedNode)._isMesh ? this.attachedNode as TransformNode : undefined;
+                const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
                 this._tmpMatrix.decompose(this._tmpVector, undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
 
                 const maxScale = 100000;
