@@ -412,7 +412,7 @@ export class Container extends Control {
 
                     if (child._layout(this._measureForChildren, context)) {
                         if (child.isVisible && !child.notRenderable) {
-                            if (this.adaptWidthToChildren && child._width.isPixel ) {
+                            if (this.adaptWidthToChildren && child._width.isPixel) {
                                 computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
                             }
                             if (this.adaptHeightToChildren && child._height.isPixel) {
