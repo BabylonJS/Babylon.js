@@ -167,7 +167,7 @@ export class PlaneRotationGizmo extends Gizmo {
         this._rotationDisplayPlane.visibility = 0.999;
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(planeNormal));
-        this._rootMesh.addChild(this._gizmoMesh);
+        this._rootMesh.addChild(this._gizmoMesh, Gizmo.PreserveScaling);
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
@@ -365,8 +365,8 @@ export class PlaneRotationGizmo extends Gizmo {
         rotationMesh.rotation.x = Math.PI / 2;
         collider.rotation.x = Math.PI / 2;
 
-        parentMesh.addChild(rotationMesh);
-        parentMesh.addChild(collider);
+        parentMesh.addChild(rotationMesh, Gizmo.PreserveScaling);
+        parentMesh.addChild(collider, Gizmo.PreserveScaling);
         return { rotationMesh, collider };
     }
 
