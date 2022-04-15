@@ -209,7 +209,8 @@ export class Gizmo implements IDisposable {
 
             // Rotation
             if (this.updateGizmoRotationToMatchAttachedMesh) {
-                effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
+                const transformNode = (<Mesh>effectiveNode)._isMesh ? effectiveNode as TransformNode : undefined;
+                effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
             } else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
