@@ -1,5 +1,9 @@
-import { Vector2 } from "babylonjs";
-import { Button, Control, Image, TextBlock, Vector2WithInfo } from "babylonjs-gui";
+import { Vector2 } from "core/Maths/math";
+import { Button } from "gui/2D/controls/button";
+import { Control } from "gui/2D/controls/control";
+import { Image } from "gui/2D/controls/image";
+import { TextBlock } from "gui/2D/controls/textBlock";
+import { Vector2WithInfo } from "gui/2D/math2D";
 import { AccessibilityItem } from "./accessibilityItem";
 
 /**

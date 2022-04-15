@@ -306,8 +306,4 @@ export class DebugLayer {
             }
         });
     }
-
-    public renderAccessibilityTree(): void {
-        this.BJSINSPECTOR.Inspector.RenderAccessibiiltyTree(this._scene);
-    }
 }

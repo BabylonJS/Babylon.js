@@ -1,7 +1,7 @@
+import { Scene } from "core/scene";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Scene } from "babylonjs/scene";
-import { AccessibilityTreeComponent } from "./components/sceneExplorer/accessibilityTreeComponent";
+import { AccessibilityTreeComponent } from "./accessibilityTreeComponent";
 
 export class AccessibilityRenderer {
     public static RenderAccessibilityTree(scene: Scene) {

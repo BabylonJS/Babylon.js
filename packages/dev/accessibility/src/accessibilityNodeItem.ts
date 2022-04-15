@@ -1,4 +1,8 @@
-import { Constants, IAction, Mesh, Node } from "babylonjs";
+import { IAction } from "core/Actions/action";
+import { Constants } from "core/Engines/constants";
+import { Color4 } from "core/Maths/math.color";
+import { Mesh } from "core/Meshes/mesh";
+import { Node } from "core/node";
 import { AccessibilityItem } from "./accessibilityItem";
 
 /**
@@ -57,7 +61,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
             const mesh = this.entity as Mesh;
             mesh.enableEdgesRendering(0.999);
             mesh.edgesWidth = 5;
-            mesh.edgesColor = new BABYLON.Color4(0.25, 0.5, 1, 1);
+            mesh.edgesColor = new Color4(0.25, 0.5, 1, 1);
         }
     }
 

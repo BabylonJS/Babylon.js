@@ -1,5 +1,5 @@
-import { Node } from "babylonjs";
-import { Control } from "babylonjs-gui";
+import { Node } from "core/node";
+import { Control } from "gui/2D/controls/control";
 
 export type AccessibilityEntity = Node | Control;
 

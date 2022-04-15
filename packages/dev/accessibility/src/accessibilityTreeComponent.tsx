@@ -1,11 +1,17 @@
 import * as React from "react";
-import { Scene } from "babylonjs/scene";
-import { AbstractMesh, Node, Nullable, Observable, Observer } from "babylonjs";
 import { AccessibilityTreeItemComponent } from "./accessibilityTreeItemComponent";
 import { AccessibilityItem } from "./accessibilityItem";
-import { AdvancedDynamicTexture, Button, Container, Control } from "babylonjs-gui";
 import { AccessibilityGUIItem } from "./accessibilityGUIItem";
 import { AccessibilityNodeItem } from "./accessibilityNodeItem";
+import { Scene } from "core/scene";
+import { Observable, Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Button } from "gui/2D/controls/button";
+import { Container } from "gui/2D/controls/container";
+import { Control } from "gui/2D/controls/control";
+import { Node } from "core/node";
 
 interface IAccessibilityTreeComponentProps {
     scene: Scene;
