@@ -408,15 +408,16 @@ export class Container extends Control {
 
             if (!this._isClipped) {
                 for (const child of this._children) {
-                    if (!child.isVisible || child.notRenderable) continue;
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     if (child._layout(this._measureForChildren, context)) {
-                        if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
-                        }
-                        if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
+                        if (child.isVisible && !child.notRenderable) {
+                            if (this.adaptWidthToChildren && child._width.isPixel ) {
+                                computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
+                            }
+                            if (this.adaptHeightToChildren && child._height.isPixel) {
+                                computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
+                            }
                         }
                     }
                 }
