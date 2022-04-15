@@ -96,7 +96,7 @@ export class AxisScaleGizmo extends Gizmo {
         const collider = this._createGizmoMesh(this._gizmoMesh, thickness + 4, true);
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
-        this._rootMesh.addChild(this._gizmoMesh);
+        this._rootMesh.addChild(this._gizmoMesh, Gizmo.PreserveScaling);
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
 
         // Closure of initial prop values for resetting
