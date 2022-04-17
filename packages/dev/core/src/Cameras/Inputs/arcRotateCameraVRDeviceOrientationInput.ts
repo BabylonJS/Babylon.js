@@ -1,5 +1,6 @@
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
 import { Tools } from "../../Misc/tools";
 
@@ -120,11 +121,6 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
             this.camera.beta = (this._gamma / 180.0) * Math.PI;
         }
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

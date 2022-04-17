@@ -1,4 +1,4 @@
-import { DeepImmutable, Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 
 // This implementation was based on the original MIT-licensed TRACE repository

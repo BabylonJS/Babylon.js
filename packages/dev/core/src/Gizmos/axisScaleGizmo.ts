@@ -1,19 +1,22 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { PointerInfo } from "../Events/pointerEvents";
 import { Vector3, Matrix } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Node } from "../node";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
+import type { LinesMesh } from "../Meshes/linesMesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo, GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache } from "./gizmo";
+import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { ScaleGizmo } from "./scaleGizmo";
+import type { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Single axis scale gizmo
@@ -93,7 +96,7 @@ export class AxisScaleGizmo extends Gizmo {
         const collider = this._createGizmoMesh(this._gizmoMesh, thickness + 4, true);
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
-        this._rootMesh.addChild(this._gizmoMesh);
+        this._rootMesh.addChild(this._gizmoMesh, Gizmo.PreserveScaling);
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
 
         // Closure of initial prop values for resetting
@@ -160,7 +163,8 @@ export class AxisScaleGizmo extends Gizmo {
                 Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
 
                 this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
-                this._tmpMatrix.decompose(this._tmpVector);
+                const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
+                this._tmpMatrix.decompose(this._tmpVector, undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
 
                 const maxScale = 100000;
                 if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {

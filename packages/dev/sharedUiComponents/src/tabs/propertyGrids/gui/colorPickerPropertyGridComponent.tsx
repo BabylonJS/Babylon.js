@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
-import { ColorPicker } from "gui/2D/controls/colorpicker";
+import type { ColorPicker } from "gui/2D/controls/colorpicker";
 import { Color3LineComponent } from "../../../lines/color3LineComponent";
-import { LockObject } from "../lockObject";
+import type { LockObject } from "../lockObject";
 
 interface IColorPickerPropertyGridComponentProps {
     colorPicker: ColorPicker;

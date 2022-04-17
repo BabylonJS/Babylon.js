@@ -1,6 +1,7 @@
 import { Tools } from "core/Misc/tools";
-import { ViewerConfiguration } from "./configuration";
+import type { ViewerConfiguration } from "./configuration";
 
+// eslint-disable-next-line import/no-internal-modules
 import { kebabToCamel } from "../helper/index";
 
 /**
@@ -41,7 +42,7 @@ class HTMLMapper implements IMapper {
             }
             // map "object.property" to the right configuration place.
             const split = attr.nodeName.split(".");
-            split.reduce((currentConfig, key, idx) => {
+            split.reduce((currentConfig: { [key: string]: any }, key, idx) => {
                 //convert html-style to json-style
                 const camelKey = kebabToCamel(key);
                 if (idx === split.length - 1) {
@@ -99,7 +100,7 @@ class DOMMapper implements IMapper {
         const htmlMapper = new HTMLMapper();
         const config = htmlMapper.map(baseElement);
 
-        const traverseChildren = function (element: HTMLElement, partConfig) {
+        const traverseChildren = function (element: HTMLElement, partConfig: any) {
             const children = element.children;
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {

@@ -1,5 +1,5 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export class DiscardDisplayManager implements IDisplayManager {
     public getHeaderClass() {

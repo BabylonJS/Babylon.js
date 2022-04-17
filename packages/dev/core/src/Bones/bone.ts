@@ -1,9 +1,8 @@
-import { Skeleton } from "./skeleton";
-
+import type { Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Nullable } from "../types";
-import { TransformNode } from "../Meshes/transformNode";
+import type { Nullable } from "../types";
+import type { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Space } from "../Maths/math.axis";
 

@@ -1,6 +1,5 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
-require("dotenv").config();
 
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
@@ -55,7 +54,7 @@ module.exports = (env) => {
                 watch: false,
             },
             // hot: true,
-            port: env.TOOLS_PORT ?? 1338,
+            port: env.TOOLS_PORT || 1338,
             server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
             hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
             liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,

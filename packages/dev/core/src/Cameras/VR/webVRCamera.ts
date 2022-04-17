@@ -1,17 +1,18 @@
-import { Nullable } from "../../types";
-import { Observer, Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { FreeCamera } from "../../Cameras/freeCamera";
-import { TargetCamera } from "../../Cameras/targetCamera";
+import type { TargetCamera } from "../../Cameras/targetCamera";
 import { Camera } from "../../Cameras/camera";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 import { PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
-import { WebVRController } from "../../Gamepads/Controllers/webVRController";
-import { IDisplayChangedEventArgs } from "../../Engines/engine";
+import type { WebVRController } from "../../Gamepads/Controllers/webVRController";
+import type { IDisplayChangedEventArgs } from "../../Engines/engine";
 import { Node } from "../../node";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Ray } from "../../Culling/ray";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
 import { Logger } from "../../Misc/logger";
 import { VRMultiviewToSingleviewPostProcess } from "../../PostProcesses/vrMultiviewToSingleviewPostProcess";
@@ -525,11 +526,6 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             hostWindow.addEventListener("vrdisplaypresentchange", this._detachIfAttached);
         }
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

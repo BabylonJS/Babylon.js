@@ -1,19 +1,19 @@
 import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVector2 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { AutoRotationBehavior } from "../Behaviors/Cameras/autoRotationBehavior";
 import { BouncingBehavior } from "../Behaviors/Cameras/bouncingBehavior";
 import { FramingBehavior } from "../Behaviors/Cameras/framingBehavior";
 import { Camera } from "./camera";
 import { TargetCamera } from "./targetCamera";
-import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
-import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
-import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
+import type { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
+import type { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
+import type { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
@@ -49,6 +49,13 @@ export class ArcRotateCamera extends TargetCamera {
      */
     @serialize()
     public radius: number;
+
+    /**
+     * Defines an override value to use as the parameter to setTarget.
+     * This allows the parameter to be specified when animating the target (e.g. using FramingBehavior).
+     */
+    @serialize()
+    public overrideCloneAlphaBetaRadius: Nullable<boolean>;
 
     @serializeAsVector3("target")
     protected _target: Vector3;
@@ -886,15 +893,6 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     */
-    public detachControl(ignored: any): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         this.inputs.detachElement();
 
@@ -1084,6 +1082,8 @@ export class ArcRotateCamera extends TargetCamera {
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      */
     public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
+        cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
+
         if ((<any>target).getBoundingInfo) {
             if (toBoundingCenter) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();

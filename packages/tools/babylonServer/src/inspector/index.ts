@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Inspector } from "inspector/index";
+/* eslint-disable import/no-internal-modules */
+import { Inspector } from "../../../../dev/inspector/src/index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
@@ -8,4 +9,4 @@ if (typeof globalObject !== "undefined") {
     (<any>globalObject).INSPECTOR = { Inspector };
 }
 
-export * from "inspector/index";
+export * from "../../../../dev/inspector/src/index";

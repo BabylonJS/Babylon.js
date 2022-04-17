@@ -1,30 +1,32 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { ILoadingScreen } from "../Loading/loadingScreen";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
 import { _WarnImport } from "../Misc/devTools";
-import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import { IPipelineContext } from "./IPipelineContext";
-import { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
-import { ThinEngine, EngineOptions } from "./thinEngine";
+import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
+import type { EngineOptions } from "./thinEngine";
+import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import { IViewportLike, IColor4Like } from "../Maths/math.like";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { PerfCounter } from "../Misc/perfCounter";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
-import { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
-import { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
+import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -297,7 +299,7 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap.
      */
-    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = new Image();
             image.onload = () => {
@@ -1710,6 +1712,19 @@ export class Engine extends ThinEngine {
         this._performanceMonitor.sampleFrame();
         this._fps = this._performanceMonitor.averageFPS;
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
     }
 
     /**

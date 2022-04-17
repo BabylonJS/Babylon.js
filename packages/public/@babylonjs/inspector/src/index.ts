@@ -1,3 +1,3 @@
-import * as inspector from "inspector";
+import * as inspector from "inspector/legacy/legacy";
 export { inspector };
 export default inspector;

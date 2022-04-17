@@ -1,19 +1,20 @@
 import * as React from "react";
 import { Camera } from "core/Cameras/camera";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -63,6 +64,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         propertyName="minZ"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={camera} lockObject={this.props.lockObject} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Far plane"

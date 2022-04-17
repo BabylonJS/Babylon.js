@@ -53,6 +53,7 @@
 - Support rotation keys in universal camera ([Sebavan](https://github.com/sebavan))
 - Added flag to allow users to swap between rotation and movement for single touch on FreeCameraTouchInput ([PolygonalSun](https://github.com/PolygonalSun))
 - Added the ability to load a fullscreen GUI from the snippet server ([PirateJC](https://github.com/piratejc))
+- Added `ArcThru3Points` to `Curve3` ([JohnK](https://github.com/BabylonJSGuide/))
 - Updated the gravity parameter in `Scene.enablePhysics()` as optional to fit the current behaviour ([Faber](https://https://github.com/Faber-smythe))
 - Allow the possibility to override the radius delta calculation for mouse wheel event ([RaananW](https://github.com/RaananW))
 - Modified behavior for FreeCamera and ArcRotateCamera so that default mouse dragging movements now account for what button was used to initiate it ([PolygonalSun](https://github.com/PolygonalSun))
@@ -418,6 +419,8 @@
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
 - Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
 - Fix caching of parented node ([carolhmj](https://github.com/carolhmj))
+- Fix glTF exporter when exporting meshes with no material specified. ([bghgary](https://github.com/bghgary))
+- Fix InputPassword serialization ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
@@ -448,9 +451,18 @@
 - When updating the `m` array of the `Matrix` class directly, you must call `markAsUpdated()` explicitly or the matrix changes may not take effect ([Popov72](https://github.com/Popov72), [Deltakosh](https://github.com/deltakosh), [bghgary](https://github.com/bghgary), [Sebavan](https://github.com/sebavan))
 - Loading glTF assets with skins now places skinned meshes as siblings of the corresponding skeleton root nodes instead of using `skeleton.overrideMesh`. ([bghgary](https://github.com/bghgary))
 - The `overrideMesh` of the `Skeleton` class has been removed. ([bghgary](https://github.com/bghgary))
-- Cloning a mesh now copies skeletons. ([bghgary](https://github.com/bghgary))
+- Cloning a mesh now assigns the `skeleton` property to the source skeleton. ([bghgary](https://github.com/bghgary))
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
 - `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))
-- GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))
+- GLTF Animations are loaded at 60 FPS by default, instead of the previous 1 FPS. ([carolhmj](https://github.com/carolhmj)).
+If you'd like to keep your existing animation ranges, you can use this workaround:
+```
+BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+  if (plugin.name === "gltf") {
+    plugin.targetFps = 1;
+  }
+});
+```
 - `currentState` and `previousState` have been removed from use in `onInputChangedObservable` in the `DeviceSourceManager` ([PolygonalSun](https://github.com/PolygonalSun))
 - `PointerInput` movement enums are no longer being used in any movement event handling in the `DeviceInputSystem` and `InputManager` ([PolygonalSun](https://github.com/PolygonalSun))
+- Shadow generators now use the `Material.alphaCutOff` value instead of a hard-coded 0.4 value. ([Popov72](https://github.com/Popov72))

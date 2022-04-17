@@ -1,6 +1,6 @@
 import { Engine } from "@dev/core";
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 import { Utilities } from "../tools/utilities";
 
 interface ICommandDropdownComponentProps {
@@ -130,7 +130,9 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                     : "")
                                                             }
                                                             onClick={() => {
-                                                                Utilities.StoreStringToStore(m.storeKey!, s, this.props.useSessionStorage);
+                                                                if (m.storeKey) {
+                                                                    Utilities.StoreStringToStore(m.storeKey, s, this.props.useSessionStorage);
+                                                                }
                                                                 m.onClick!();
                                                                 this.setState({ isExpanded: false });
                                                             }}

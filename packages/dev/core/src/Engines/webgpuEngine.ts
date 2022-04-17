@@ -1,34 +1,36 @@
 import { Logger } from "../Misc/logger";
 import { IsWindowObjectExist } from "../Misc/domManagement";
-import { Nullable, DataArray, IndicesArray, Immutable } from "../types";
+import type { Nullable, DataArray, IndicesArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IEffectCreationOptions, Effect } from "../Materials/effect";
-import { EffectFallbacks } from "../Materials/effectFallbacks";
+import type { IEffectCreationOptions } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
+import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
-import { WebGPUPipelineContext, IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
-import { IPipelineContext } from "./IPipelineContext";
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { IShaderProcessor } from "./Processors/iShaderProcessor";
+import type { IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
+import { WebGPUPipelineContext } from "./WebGPU/webgpuPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessorGLSL } from "./WebGPU/webgpuShaderProcessorsGLSL";
 import { WebGPUShaderProcessorWGSL } from "./WebGPU/webgpuShaderProcessorsWGSL";
-import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
-import { ISceneLike } from "./thinEngine";
+import type { ISceneLike } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
-import { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import { IColor4Like } from "../Maths/math.like";
+import type { IColor4Like } from "../Maths/math.like";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPURenderPassWrapper } from "./WebGPU/webgpuRenderPassWrapper";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
-import { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
+import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
@@ -37,21 +39,23 @@ import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad";
-import { IStencilState } from "../States/IStencilState";
+import type { IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
-import { ComputeEffect } from "../Compute/computeEffect";
+import type { ComputeEffect } from "../Compute/computeEffect";
 import { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 import { Observable } from "../Misc/observable";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { TwgslOptions, WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
-import { ExternalTexture } from "../Materials/Textures/externalTexture";
+import type { TwgslOptions } from "./WebGPU/webgpuTintWASM";
+import { WebGPUTintWASM } from "./WebGPU/webgpuTintWASM";
+import type { ExternalTexture } from "../Materials/Textures/externalTexture";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessor";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
-import { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
-import { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
+import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { PerformanceConfigurator } from "./performanceConfigurator";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -172,6 +176,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
      */
     premultipliedAlpha?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -520,6 +529,8 @@ export class WebGPUEngine extends Engine {
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
+
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
@@ -2097,6 +2108,27 @@ export class WebGPUEngine extends Engine {
         );
     }
 
+    /**
+     * Wraps an external web gpu texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
+        const hardwareTexture = new WebGPUHardwareTexture(texture);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
+    }
+
     public generateMipMapsForCubemap(texture: InternalTexture) {
         if (texture.generateMipMaps) {
             const gpuTexture = texture._hardwareTexture?.underlyingResource;
@@ -2377,6 +2409,7 @@ export class WebGPUEngine extends Engine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -2386,7 +2419,8 @@ export class WebGPUEngine extends Engine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
@@ -2397,6 +2431,10 @@ export class WebGPUEngine extends Engine {
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
         this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset);
+
+        if (generateMipMaps) {
+            this._generateMipmaps(texture, this._renderTargetEncoder);
+        }
     }
 
     /**

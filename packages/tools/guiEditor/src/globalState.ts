@@ -1,22 +1,30 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import { LogEntry } from "./components/log/logComponent";
+import type { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color3 } from "core/Maths/math.color";
-import { WorkbenchComponent } from "./diagram/workbench";
-import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
-import { Scene } from "core/scene";
-import { Control } from "gui/2D/controls/control";
+import type { WorkbenchComponent } from "./diagram/workbench";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Scene } from "core/scene";
+import type { Control } from "gui/2D/controls/control";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { ISize } from "core/Maths/math";
+import type { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
+import { Container } from "gui/2D/controls/container";
+import { KeyboardManager } from "./keyboardManager";
 
 export enum DragOverLocation {
     ABOVE = 0,
     BELOW = 1,
     CENTER = 2,
     NONE = 3,
+}
+
+export enum GUIEditorTool {
+    SELECT = 0,
+    PAN = 1,
+    ZOOM = 2,
 }
 
 export class GlobalState {
@@ -40,18 +48,33 @@ export class GlobalState {
     onPopupClosedObservable = new Observable<void>();
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
-    isMultiSelecting: boolean = false;
+    public keys: KeyboardManager;
+    /** DO NOT USE: in the process of removing */
+    public blockKeyboardEvents = false;
     onOutlineChangedObservable = new Observable<void>();
-    blockKeyboardEvents = false;
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
-    onZoomObservable = new Observable<void>();
-    onFitToWindowObservable = new Observable<void>();
-    onPanObservable = new Observable<void>();
-    onSelectionButtonObservable = new Observable<void>();
+    private _tool: GUIEditorTool = GUIEditorTool.SELECT;
+    onToolChangeObservable = new Observable<void>();
+    public get tool(): GUIEditorTool {
+        if (this._tool === GUIEditorTool.ZOOM) {
+            return GUIEditorTool.ZOOM;
+        } else if (this._tool === GUIEditorTool.PAN || this.keys.isKeyDown("space")) {
+            return GUIEditorTool.PAN;
+        } else {
+            return GUIEditorTool.SELECT;
+        }
+    }
+    public set tool(newTool: GUIEditorTool) {
+        if (this._tool === newTool) return;
+        this._tool = newTool;
+        this.onToolChangeObservable.notifyObservers();
+    }
+    onFitControlsToWindowObservable = new Observable<void>();
+    onReframeWindowObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
@@ -115,13 +138,12 @@ export class GlobalState {
                 event.preventDefault();
             }
         });
-        this.hostDocument.addEventListener("keydown", (evt) => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keyup", (evt) => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keypress", (evt) => this._updateKeys(evt));
-    }
-
-    private _updateKeys(event: KeyboardEvent) {
-        this.isMultiSelecting = event.ctrlKey;
+        this.keys = new KeyboardManager(this.hostDocument);
+        this.keys.onKeyPressedObservable.add(() => {
+            // trigger a tool update (in case space is now pressed)
+            // we should really have a state management system to handle this for us
+            this.onToolChangeObservable.notifyObservers();
+        });
     }
 
     public get backgroundColor() {
@@ -146,7 +168,7 @@ export class GlobalState {
     }
 
     public select(control: Control) {
-        if (this.isMultiSelecting && this.isMultiSelectable(control)) {
+        if (this.keys.isKeyDown("control") && this.isMultiSelectable(control)) {
             const index = this.selectedControls.indexOf(control);
             if (index === -1) {
                 this.setSelection([...this.selectedControls, control]);
@@ -163,10 +185,37 @@ export class GlobalState {
         this.onSelectionChangedObservable.notifyObservers();
     }
 
+    private _findParentControlInTexture(texture: AdvancedDynamicTexture, searchedControl: Control) {
+        const searchList = [texture.rootContainer];
+        while (searchList.length > 0) {
+            const current = searchList.splice(0, 1)[0];
+            const children = current._children;
+            if (children.indexOf(searchedControl) !== -1) {
+                return current;
+            }
+            for (const child of children) {
+                if (child instanceof Container) {
+                    searchList.push(child);
+                }
+            }
+        }
+        return null;
+    }
+
     public deleteSelectedNodes() {
         for (const control of this.selectedControls) {
-            this.guiTexture.removeControl(control);
-            this.liveGuiTexture?.removeControl(control);
+            const guiTextureParent = this._findParentControlInTexture(this.guiTexture, control);
+            guiTextureParent?.removeControl(control);
+            if (this.liveGuiTexture) {
+                const allDescendants = control.getDescendants();
+                for (const descendant of allDescendants) {
+                    const liveGuiTextureDescendantParent = this._findParentControlInTexture(this.liveGuiTexture, descendant);
+                    liveGuiTextureDescendantParent?.removeControl(descendant);
+                    descendant.dispose();
+                }
+                const liveGuiTextureParent = this._findParentControlInTexture(this.liveGuiTexture, control);
+                liveGuiTextureParent?.removeControl(control);
+            }
             control.dispose();
         }
         this.setSelection([]);
@@ -176,5 +225,9 @@ export class GlobalState {
         if (this.selectedControls.length === 0) return true;
         if (this.selectedControls[0].parent === control.parent) return true;
         return false;
+    }
+
+    public dispose() {
+        this.keys.dispose();
     }
 }

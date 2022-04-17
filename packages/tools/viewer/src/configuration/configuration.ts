@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { IEnvironmentMapConfiguration } from "./interfaces/environmentMapConfiguration";
-import { EngineOptions } from "core/Engines/thinEngine";
-import { IObserversConfiguration } from "./interfaces/observersConfiguration";
-import { IModelConfiguration } from "./interfaces/modelConfiguration";
-import { ISceneConfiguration } from "./interfaces/sceneConfiguration";
-import { ISceneOptimizerConfiguration } from "./interfaces/sceneOptimizerConfiguration";
-import { ICameraConfiguration } from "./interfaces/cameraConfiguration";
-import { ISkyboxConfiguration } from "./interfaces/skyboxConfiguration";
-import { IGroundConfiguration } from "./interfaces/groundConfiguration";
-import { ILightConfiguration } from "./interfaces/lightConfiguration";
-import { ITemplateConfiguration } from "./interfaces/templateConfiguration";
-import { IVRConfiguration } from "./interfaces/vrConfiguration";
-import { IDefaultRenderingPipelineConfiguration } from "./interfaces/defaultRenderingPipelineConfiguration";
+import type { IEnvironmentMapConfiguration } from "./interfaces/environmentMapConfiguration";
+import type { EngineOptions } from "core/Engines/thinEngine";
+import type { IObserversConfiguration } from "./interfaces/observersConfiguration";
+import type { IModelConfiguration } from "./interfaces/modelConfiguration";
+import type { ISceneConfiguration } from "./interfaces/sceneConfiguration";
+import type { ISceneOptimizerConfiguration } from "./interfaces/sceneOptimizerConfiguration";
+import type { ICameraConfiguration } from "./interfaces/cameraConfiguration";
+import type { ISkyboxConfiguration } from "./interfaces/skyboxConfiguration";
+import type { IGroundConfiguration } from "./interfaces/groundConfiguration";
+import type { ILightConfiguration } from "./interfaces/lightConfiguration";
+import type { ITemplateConfiguration } from "./interfaces/templateConfiguration";
+import type { IVRConfiguration } from "./interfaces/vrConfiguration";
+import type { IDefaultRenderingPipelineConfiguration } from "./interfaces/defaultRenderingPipelineConfiguration";
 
-export function getConfigurationKey(key: string, configObject: any) {
+export function getConfigurationKey(key: string, configObject: any): any {
     const splits = key.split(".");
 
     if (splits.length === 0 || !configObject) {

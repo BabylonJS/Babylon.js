@@ -1,10 +1,11 @@
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { Particle } from "../../Particles/particle";
-import { IParticleEmitterType } from "./IParticleEmitterType";
+import type { Particle } from "../../Particles/particle";
+import type { IParticleEmitterType } from "./IParticleEmitterType";
 import { DeepCopier } from "../../Misc/deepCopier";
-import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from the inside of a sphere.
  * It emits the particles alongside the sphere radius. The emission direction might be randomized.

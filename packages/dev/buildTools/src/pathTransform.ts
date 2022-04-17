@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { BuildType, getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, PublicPackageVariable } from "./packageMapping";
+import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, BuildType, declarationsOnlyPackages, PublicPackageVariable } from "./packageMapping";
 
 const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
@@ -13,7 +13,7 @@ const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppe
 export const transformPackageLocation = (location: string, options: ITransformerOptions) => {
     const directoryParts = location.split("/");
     const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
-    if (!basePackage || !isValidDevPackageName(basePackage)) {
+    if (!basePackage || !isValidDevPackageName(basePackage, true) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
         return;
     }
 

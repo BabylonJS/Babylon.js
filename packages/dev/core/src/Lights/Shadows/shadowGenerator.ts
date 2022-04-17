@@ -1,18 +1,18 @@
-import { SmartArray } from "../../Misc/smartArray";
-import { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { SmartArray } from "../../Misc/smartArray";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
 import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
 
-import { IShadowLight } from "../../Lights/shadowLight";
+import type { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-import { MaterialDefines } from "../../Materials/materialDefines";
+import type { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -24,7 +24,7 @@ import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -671,9 +671,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * When it is enabled, the strength of the shadow is taken equal to mesh.visibility
      * If you enabled an alpha texture on your material, the alpha value red from the texture is also combined to compute the strength:
      *          mesh.visibility * alphaTexture.a
+     * The texture used is the diffuse by default, but it can be set to the opacity by setting useOpacityTextureForTransparentShadow
      * Note that by definition transparencyShadow must be set to true for enableSoftTransparentShadow to work!
      */
     public enableSoftTransparentShadow: boolean = false;
+
+    /**
+     * If this is true, use the opacity texture's alpha channel for transparent shadows instead of the diffuse one
+     */
+    public useOpacityTextureForTransparentShadow: boolean = false;
 
     protected _shadowMap: Nullable<RenderTargetTexture>;
     protected _shadowMap2: Nullable<RenderTargetTexture>;
@@ -1204,7 +1210,13 @@ export class ShadowGenerator implements IShadowGenerator {
                 subMesh._setMainDrawWrapperOverride(null);
             } else {
                 // Alpha test
-                if (material && material.needAlphaTesting()) {
+                if (material && this.useOpacityTextureForTransparentShadow) {
+                    const opacityTexture = (material as any).opacityTexture;
+                    if (opacityTexture) {
+                        effect.setTexture("diffuseSampler", opacityTexture);
+                        effect.setMatrix("diffuseMatrix", opacityTexture.getTextureMatrix() || this._defaultTextureMatrix);
+                    }
+                } else if (material && material.needAlphaTesting()) {
                     const alphaTexture = material.getAlphaTestTexture();
                     if (alphaTexture) {
                         effect.setTexture("diffuseSampler", alphaTexture);
@@ -1448,13 +1460,21 @@ export class ShadowGenerator implements IShadowGenerator {
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
-                const alphaTexture = material.getAlphaTestTexture();
+                let alphaTexture = null;
+                if (this.useOpacityTextureForTransparentShadow) {
+                    alphaTexture = (material as any).opacityTexture;
+                } else {
+                    alphaTexture = material.getAlphaTestTexture();
+                }
                 if (alphaTexture) {
                     if (!alphaTexture.isReady()) {
                         return false;
                     }
 
+                    const alphaCutOff = (material as any).alphaCutOff ?? 1;
+
                     defines.push("#define ALPHATEST");
+                    defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");

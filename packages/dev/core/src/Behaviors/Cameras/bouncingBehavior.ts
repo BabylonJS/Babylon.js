@@ -1,11 +1,11 @@
-import { Behavior } from "../../Behaviors/behavior";
-import { Camera } from "../../Cameras/camera";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { Behavior } from "../../Behaviors/behavior";
+import type { Camera } from "../../Cameras/camera";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { BackEase, EasingFunction } from "../../Animations/easing";
-import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Animatable } from "../../Animations/animatable";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
 
 /**

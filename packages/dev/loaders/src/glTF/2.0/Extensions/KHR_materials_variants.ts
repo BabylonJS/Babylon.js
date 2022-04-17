@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "core/types";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import type { Nullable } from "core/types";
+import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { Mesh } from "core/Meshes/mesh";
-import { Node } from "core/node";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
-import { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
+import type { Node } from "core/node";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
+import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_variants";
 

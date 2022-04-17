@@ -1,14 +1,15 @@
-import { IDisposable } from "core/scene";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+/* eslint-disable import/no-internal-modules */
+import type { IDisposable } from "core/scene";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { IParticleSystem } from "core/Particles/IParticleSystem";
-import { Skeleton } from "core/Bones/skeleton";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
 
 import { AnimationGroup } from "core/Animations/animationGroup";
+import type { Animatable } from "core/Animations/index";
 import {
     Animation,
-    Animatable,
     CircleEase,
     BackEase,
     BounceEase,
@@ -21,21 +22,22 @@ import {
     QuinticEase,
     SineEase,
 } from "core/Animations/index";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Tags } from "core/Misc/tags";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { Tools } from "core/Misc/tools";
-import { GLTFFileLoader } from "loaders/glTF/index";
-import { IAsset } from "babylonjs-gltf2interface";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
-import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
+import type { GLTFFileLoader } from "loaders/glTF/index";
+import type { IAsset } from "babylonjs-gltf2interface";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
+import type { IModelAnimation, ModelAnimationConfiguration } from "./modelAnimation";
+import { GroupModelAnimation, AnimationPlayMode, EasingFunction, AnimationState } from "./modelAnimation";
 import { deepmerge, extendClassWithConfig } from "../helper/index";
-import { ObservablesManager } from "../managers/observablesManager";
-import { ConfigurationContainer } from "../configuration/configurationContainer";
+import type { ObservablesManager } from "../managers/observablesManager";
+import type { ConfigurationContainer } from "../configuration/configurationContainer";
 
 /**
  * The current state of the model
@@ -120,13 +122,11 @@ export class ViewerModel implements IDisposable {
     public loadId: number;
 
     public loadInfo: IAsset;
-    private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
     private _loaderDone: boolean = false;
 
     private _entryAnimation: ModelAnimationConfiguration;
-    private _exitAnimation: ModelAnimationConfiguration;
     private _scaleTransition: Animation;
     private _animatables: Array<Animatable> = [];
     private _frameRate: number = 60;
@@ -238,6 +238,7 @@ export class ViewerModel implements IDisposable {
         if (triggerLoaded) {
             return this.onLoadedObservable.notifyObserversWithPromise(this);
         }
+        return Promise.resolve(this);
     }
 
     /**
@@ -337,18 +338,18 @@ export class ViewerModel implements IDisposable {
         this._applyAnimation(this._entryAnimation, true, callback);
     }
 
-    /**
-     * Animates the model from the current position to the exit-screen position
-     * @param completeCallback A function to call when the animation has completed
-     */
-    private _exitScene(completeCallback: () => void): void {
-        if (!this._exitAnimation) {
-            completeCallback();
-            return;
-        }
+    // /**
+    //  * Animates the model from the current position to the exit-screen position
+    //  * @param completeCallback A function to call when the animation has completed
+    //  */
+    // private _exitScene(completeCallback: () => void): void {
+    //     if (!this._exitAnimation) {
+    //         completeCallback();
+    //         return;
+    //     }
 
-        this._applyAnimation(this._exitAnimation, false, completeCallback);
-    }
+    //     this._applyAnimation(this._exitAnimation, false, completeCallback);
+    // }
 
     private _modelComplete() {
         //reapply material defines to be sure:
@@ -431,9 +432,9 @@ export class ViewerModel implements IDisposable {
         const updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach((mesh) => {
                 if (param) {
-                    mesh[variable][param] = value;
+                    mesh[variable as keyof AbstractMesh][param] = value;
                 } else {
-                    mesh[variable] = value;
+                    (mesh as any)[variable] = value;
                 }
             });
         };
@@ -549,9 +550,9 @@ export class ViewerModel implements IDisposable {
             this._entryAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.entryAnimation);
         }
 
-        if (this._modelConfiguration.exitAnimation) {
-            this._exitAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.exitAnimation);
-        }
+        // if (this._modelConfiguration.exitAnimation) {
+        //     this._exitAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.exitAnimation);
+        // }
 
         this.onAfterConfigure.notifyObservers(this);
     }

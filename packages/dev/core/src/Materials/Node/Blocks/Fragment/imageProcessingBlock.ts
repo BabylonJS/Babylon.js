@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { Effect } from "../../../effect";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Scene } from "../../../../scene";
+import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";

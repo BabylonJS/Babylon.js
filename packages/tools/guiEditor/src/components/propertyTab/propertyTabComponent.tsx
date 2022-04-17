@@ -1,27 +1,27 @@
 import * as React from "react";
-import { GlobalState } from "../../globalState";
-import { Nullable } from "core/types";
+import type { GlobalState } from "../../globalState";
+import type { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
-import { Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import { StringTools } from "shared-ui-components/stringTools";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { SliderGenericPropertyGridComponent } from "./propertyGrids/gui/sliderGenericPropertyGridComponent";
-import { Slider } from "gui/2D/controls/sliders/slider";
+import type { Slider } from "gui/2D/controls/sliders/slider";
 import { LinePropertyGridComponent } from "./propertyGrids/gui/linePropertyGridComponent";
 import { RadioButtonPropertyGridComponent } from "./propertyGrids/gui/radioButtonPropertyGridComponent";
-import { TextBlock } from "gui/2D/controls/textBlock";
-import { InputText } from "gui/2D/controls/inputText";
-import { ColorPicker } from "gui/2D/controls/colorpicker";
-import { Image } from "gui/2D/controls/image";
-import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
-import { Rectangle } from "gui/2D/controls/rectangle";
-import { Ellipse } from "gui/2D/controls/ellipse";
-import { Checkbox } from "gui/2D/controls/checkbox";
-import { RadioButton } from "gui/2D/controls/radioButton";
-import { Line } from "gui/2D/controls/line";
-import { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
-import { Grid } from "gui/2D/controls/grid";
-import { StackPanel } from "gui/2D/controls/stackPanel";
+import type { TextBlock } from "gui/2D/controls/textBlock";
+import type { InputText } from "gui/2D/controls/inputText";
+import type { ColorPicker } from "gui/2D/controls/colorpicker";
+import type { Image } from "gui/2D/controls/image";
+import type { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import type { Rectangle } from "gui/2D/controls/rectangle";
+import type { Ellipse } from "gui/2D/controls/ellipse";
+import type { Checkbox } from "gui/2D/controls/checkbox";
+import type { RadioButton } from "gui/2D/controls/radioButton";
+import type { Line } from "gui/2D/controls/line";
+import type { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
+import type { Grid } from "gui/2D/controls/grid";
+import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { TextBlockPropertyGridComponent } from "./propertyGrids/gui/textBlockPropertyGridComponent";
 import { InputTextPropertyGridComponent } from "./propertyGrids/gui/inputTextPropertyGridComponent";
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
@@ -33,15 +33,15 @@ import { GridPropertyGridComponent } from "./propertyGrids/gui/gridPropertyGridC
 import { ScrollViewerPropertyGridComponent } from "./propertyGrids/gui/scrollViewerPropertyGridComponent";
 import { EllipsePropertyGridComponent } from "./propertyGrids/gui/ellipsePropertyGridComponent";
 import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPropertyGridComponent";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
-import { DisplayGrid } from "gui/2D/controls/displayGrid";
-import { Button } from "gui/2D/controls/button";
+import type { DisplayGrid } from "gui/2D/controls/displayGrid";
+import type { Button } from "gui/2D/controls/button";
 import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
 import { GUINodeTools } from "../../guiNodeTools";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
@@ -92,6 +92,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
+        this.props.globalState.onPropertyChangedObservable.add(() => this.forceUpdate());
     }
 
     componentWillUnmount() {
@@ -115,9 +116,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     save(saveCallback: () => void) {
         this.props.globalState.workbench.removeEditorTransformation();
+        const allControls = this.props.globalState.guiTexture.rootContainer.getDescendants();
+        for (const control of allControls) {
+            this.props.globalState.workbench.removeEditorBehavior(control);
+        }
         const size = this.props.globalState.workbench.guiSize;
         this.props.globalState.guiTexture.scaleTo(size.width, size.height);
         saveCallback();
+        for (const control of allControls) {
+            this.props.globalState.workbench.addEditorBehavior(control);
+        }
     }
 
     saveLocally = () => {
@@ -146,7 +154,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         if (windowAsAny.Playground && oldId) {
                             windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                                 regex: new RegExp(oldId, "g"),
-                                replace: `parseFromSnippetAsync("${adt.snippetId})`,
+                                replace: adt.snippetId,
                             });
                         }
                         resolve(adt.snippetId);
@@ -399,9 +407,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onAddComponent={(value) => {
                             for (const button of buttons) {
                                 const guiElement = GUINodeTools.CreateControlFromString(value);
-                                const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
-                                button.addControl(newGuiNode);
-                                this.props.globalState.select(newGuiNode);
+                                this.props.globalState.workbench.addEditorBehavior(guiElement);
+                                button.addControl(guiElement);
+                                this.props.globalState.select(guiElement);
                             }
                         }}
                     />

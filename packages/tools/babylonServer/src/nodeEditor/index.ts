@@ -1,4 +1,5 @@
-import { NodeEditor } from "node-editor/index";
+/* eslint-disable import/no-internal-modules */
+import { NodeEditor } from "../../../nodeEditor/src/index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
@@ -8,4 +9,4 @@ if (typeof globalObject !== "undefined") {
     (<any>globalObject).NODEEDITOR = { NodeEditor };
 }
 
-export * from "node-editor/index";
+export * from "../../../nodeEditor/src/index";

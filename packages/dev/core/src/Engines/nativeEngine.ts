@@ -1,38 +1,43 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable, IndicesArray, DataArray } from "../types";
+import type { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
+import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { VideoTexture } from "../Materials/Textures/videoTexture";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { Effect } from "../Materials/effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { VideoTexture } from "../Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { Effect } from "../Materials/effect";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { Tools } from "../Misc/tools";
-import { Observable, Observer } from "../Misc/observable";
-import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
-import { Scene } from "../scene";
-import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import { IPipelineContext } from "./IPipelineContext";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
+import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
+import type { Scene } from "../scene";
+import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import { ThinEngine, ISceneLike } from "./thinEngine";
-import { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import type { ISceneLike } from "./thinEngine";
+import { ThinEngine } from "./thinEngine";
+import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { WebGL2ShaderProcessor } from "../Engines/WebGL/webGL2ShaderProcessors";
-import { IMaterialContext } from "./IMaterialContext";
-import { IDrawContext } from "./IDrawContext";
-import { ICanvas, IImage } from "./ICanvas";
-import { IStencilState } from "../States/IStencilState";
+import type { IMaterialContext } from "./IMaterialContext";
+import type { IDrawContext } from "./IDrawContext";
+import type { ICanvas, IImage } from "./ICanvas";
+import type { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
-import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
-import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
+import type { NativeData } from "./Native/nativeDataStream";
+import { NativeDataStream } from "./Native/nativeDataStream";
+import type { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 declare const _native: INative;
 
@@ -2369,6 +2374,28 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Wraps an external native texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapNativeTexture(texture: any): InternalTexture {
+        // Currently native is using the WebGL wrapper
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapNativeTexture instead.");
+    }
+
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
@@ -2400,20 +2427,19 @@ export class NativeEngine extends Engine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = this.createCanvasImage();
             image.onload = () => {
-                const imageBitmap = this._engine.createImageBitmap(image);
-                if (imageBitmap) {
+                try {
+                    const imageBitmap = this._engine.createImageBitmap(image);
                     resolve(imageBitmap);
-                    return;
-                } else {
-                    reject(`Error loading image ${image.src}`);
+                } catch (error) {
+                    reject(`Error loading image ${image.src} with exception: ${error}`);
                 }
             };
-            image.onerror = () => {
-                reject(`Error loading image ${image.src}`);
+            image.onerror = (error) => {
+                reject(`Error loading image ${image.src} with exception: ${error}`);
             };
 
             image.src = imageSource;
@@ -2903,6 +2929,32 @@ export class NativeEngine extends Engine {
         }
         const image = new _native.Image();
         return image;
+    }
+
+    /**
+     * Update a portion of an internal texture
+     * @param texture defines the texture to update
+     * @param imageData defines the data to store into the texture
+     * @param xOffset defines the x coordinates of the update rectangle
+     * @param yOffset defines the y coordinates of the update rectangle
+     * @param width defines the width of the update rectangle
+     * @param height defines the height of the update rectangle
+     * @param faceIndex defines the face index if texture is a cube (0 by default)
+     * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
+     */
+    public updateTextureData(
+        texture: InternalTexture,
+        imageData: ArrayBufferView,
+        xOffset: number,
+        yOffset: number,
+        width: number,
+        height: number,
+        faceIndex: number = 0,
+        lod: number = 0,
+        generateMipMaps = false
+    ): void {
+        throw new Error("updateTextureData not implemented.");
     }
 
     /**

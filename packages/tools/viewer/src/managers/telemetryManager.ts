@@ -1,5 +1,5 @@
 import { Observable } from "core/Misc/observable";
-import { Engine } from "core/Engines/engine";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * The data structure of a telemetry event.
@@ -89,7 +89,7 @@ export class TelemetryManager {
         if (typeof details === "object") {
             for (const attr in details) {
                 if (Object.prototype.hasOwnProperty.call(details, attr)) {
-                    telemetryData[attr] = details[attr];
+                    (telemetryData as any)[attr] = details[attr];
                 }
             }
         } else if (details) {

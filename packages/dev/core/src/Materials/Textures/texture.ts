@@ -1,19 +1,20 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
-import { IInspectable } from "../../Misc/iInspectable";
-import { ThinEngine } from "../../Engines/thinEngine";
+import type { IInspectable } from "../../Misc/iInspectable";
+import type { ThinEngine } from "../../Engines/thinEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
 import { EncodeArrayBufferToBase64, StartsWith } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { InternalTexture } from "./internalTexture";
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -59,6 +60,9 @@ export interface ITextureCreationOptions {
 
     /** Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
     useSRGBBuffer?: boolean;
+
+    /** Defines the underlying texture from an already existing one */
+    internalTexture?: InternalTexture;
 }
 
 /**
@@ -383,6 +387,7 @@ export class Texture extends BaseTexture {
 
         let noMipmap: boolean;
         let useSRGBBuffer: boolean = false;
+        let internalTexture: Nullable<InternalTexture> = null;
 
         if (typeof noMipmapOrOptions === "object" && noMipmapOrOptions !== null) {
             noMipmap = noMipmapOrOptions.noMipmap ?? false;
@@ -397,6 +402,7 @@ export class Texture extends BaseTexture {
             loaderOptions = noMipmapOrOptions.loaderOptions;
             creationFlags = noMipmapOrOptions.creationFlags;
             useSRGBBuffer = noMipmapOrOptions.useSRGBBuffer ?? false;
+            internalTexture = noMipmapOrOptions.internalTexture ?? null;
         } else {
             noMipmap = !!noMipmapOrOptions;
         }
@@ -471,7 +477,7 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, this._invertY, useSRGBBuffer);
+        this._texture = internalTexture ?? this._getFromCache(this.url, noMipmap, samplingMode, this._invertY, useSRGBBuffer);
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {

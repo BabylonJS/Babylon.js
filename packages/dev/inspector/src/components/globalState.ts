@@ -1,18 +1,22 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+// eslint-disable-next-line import/no-internal-modules
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
-import { IGLTFValidationResults } from "babylonjs-gltf2interface";
+import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import { Scene } from "core/scene";
-import { Light } from "core/Lights/light";
-import { Camera } from "core/Cameras/camera";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import type { Scene } from "core/scene";
+import type { Light } from "core/Lights/light";
+import type { Camera } from "core/Cameras/camera";
 import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { CameraGizmo } from "core/Gizmos/cameraGizmo";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
+import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
+// eslint-disable-next-line import/no-internal-modules
+import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -27,7 +31,7 @@ export class GlobalState {
     public validationResults: Nullable<IGLTFValidationResults> = null;
     public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();
 
-    public onExtensionLoadedObservable: Observable<import("loaders/glTF/index").IGLTFLoaderExtension>;
+    public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
 
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {
         MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
@@ -39,6 +43,7 @@ export class GlobalState {
         KHR_mesh_quantization: { enabled: true },
         KHR_materials_pbrSpecularGlossiness: { enabled: true },
         KHR_materials_clearcoat: { enabled: true },
+        KHR_materials_iridescence: { enabled: true },
         KHR_materials_emissive_strength: { enabled: true },
         KHR_materials_ior: { enabled: true },
         KHR_materials_sheen: { enabled: true },
@@ -73,7 +78,7 @@ export class GlobalState {
         useSRGBBuffers: true,
     };
 
-    public glTFLoaderExtensions: { [key: string]: import("loaders/glTF/index").IGLTFLoaderExtension } = {};
+    public glTFLoaderExtensions: { [key: string]: IGLTFLoaderExtension } = {};
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitles: Array<string> = [];
@@ -121,7 +126,7 @@ export class GlobalState {
         });
     }
 
-    public prepareGLTFPlugin(loader: import("loaders/glTF/index").GLTFFileLoader) {
+    public prepareGLTFPlugin(loader: GLTFFileLoader) {
         this.glTFLoaderExtensions = {};
         const loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {

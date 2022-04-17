@@ -1,6 +1,7 @@
-import { Nullable } from "../../types";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
+import type { Nullable } from "../../types";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
 import { Quaternion } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
@@ -178,11 +179,6 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
             this._onDeviceOrientationChangedObservable.notifyObservers();
         }
     };
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

@@ -1,4 +1,5 @@
-import { GlobalState } from "../globalState";
+import { DecodeBase64ToBinary } from "@dev/core";
+import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
 export class LoadManager {
@@ -112,7 +113,19 @@ export class LoadManager {
                             this.globalState.currentSnippetTags = "";
                         }
 
-                        this.globalState.onCodeLoaded.notifyObservers(JSON.parse(snippet.jsonPayload).code.toString());
+                        // Extract code
+                        const payload = JSON.parse(snippet.jsonPayload);
+                        let code: string = payload.code.toString();
+
+                        if (payload.unicode) {
+                            // Need to decode
+                            const encodedData = payload.unicode;
+                            const decoder = new TextDecoder("utf8");
+
+                            code = decoder.decode(DecodeBase64ToBinary(encodedData));
+                        }
+
+                        this.globalState.onCodeLoaded.notifyObservers(code);
 
                         this.globalState.onMetadataUpdatedObservable.notifyObservers();
                     }

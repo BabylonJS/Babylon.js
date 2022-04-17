@@ -1,14 +1,15 @@
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { Matrix, Vector2 } from "../Maths/math.vector";
-import { Camera } from "../Cameras/camera";
-import { Effect } from "../Materials/effect";
-import { PostProcess, PostProcessOptions } from "./postProcess";
+import type { Camera } from "../Cameras/camera";
+import type { Effect } from "../Materials/effect";
+import type { PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
-import { PrePassRenderer } from "../Rendering/prePassRenderer";
+import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import "../Animations/animatable";
 import "../Rendering/geometryBufferRendererSceneComponent";

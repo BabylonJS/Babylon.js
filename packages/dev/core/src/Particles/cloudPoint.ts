@@ -1,8 +1,9 @@
-import { Nullable } from "../types";
-import { Color4, Vector2, Vector3, TmpVectors, Matrix, Quaternion } from "../Maths/math";
-import { Mesh } from "../Meshes/mesh";
-import { BoundingInfo } from "../Culling/boundingInfo";
-import { PointsCloudSystem } from "./pointsCloudSystem";
+import type { Nullable } from "../types";
+import type { Matrix } from "../Maths/math";
+import { Color4, Vector2, Vector3, TmpVectors, Quaternion } from "../Maths/math";
+import type { Mesh } from "../Meshes/mesh";
+import type { BoundingInfo } from "../Culling/boundingInfo";
+import type { PointsCloudSystem } from "./pointsCloudSystem";
 /**
  * Represents one particle of a points cloud system.
  */

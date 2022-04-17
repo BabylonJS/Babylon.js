@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../../types";
-import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
-import { WebGPUShaderProcessingContext, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
+import type { Nullable } from "../../types";
+import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
+import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
@@ -65,6 +66,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     protected _varyingsWGSL: string[];
     protected _varyingsDeclWGSL: string[];
     protected _varyingNamesWGSL: string[];
+    protected _stridedUniformArrays: string[];
 
     public shaderLanguage = ShaderLanguage.WGSL;
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
@@ -103,11 +105,12 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         this._varyingsWGSL = [];
         this._varyingsDeclWGSL = [];
         this._varyingNamesWGSL = [];
+        this._stridedUniformArrays = [];
     }
 
     public preProcessShaderCode(code: string): string {
         return (
-            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor__: f32;\ntextureOutputHeight__: f32;\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
+            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor__: f32,\ntextureOutputHeight__: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
             RemoveComments(code)
         );
     }
@@ -127,7 +130,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             } else {
                 location = this._webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, varyingType, preProcessors)[2]);
                 this._webgpuProcessingContext.availableVaryings[name] = location;
-                this._varyingsWGSL.push(`@location(${location}) ${name} : ${varyingType};`);
+                this._varyingsWGSL.push(`@location(${location}) ${name} : ${varyingType},`);
                 this._varyingsDeclWGSL.push(`var<private> ${name} : ${varyingType};`);
                 this._varyingNamesWGSL.push(name);
             }
@@ -148,7 +151,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.availableAttributes[name] = location;
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
-            this._attributesWGSL.push(`@location(${location}) ${name} : ${attributeType};`);
+            this._attributesWGSL.push(`@location(${location}) ${name} : ${attributeType},`);
             this._attributesDeclWGSL.push(`var<private> ${name} : ${attributeType};`);
             this._attributeNamesWGSL.push(name);
             attribute = "";
@@ -259,6 +262,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         // Vertex code
         vertexCode = vertexCode.replace(/#define /g, "//#define ");
+        vertexCode = this._processStridedUniformArrays(vertexCode);
 
         const varyingsDecl = this._varyingsDeclWGSL.join("\n") + "\n";
 
@@ -266,13 +270,13 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         const vertexAttributesDecl = this._attributesDeclWGSL.join("\n") + "\n";
 
-        let vertexInputs = "struct VertexInputs {\n  @builtin(vertex_index) vertexIndex : u32;\n  @builtin(instance_index) instanceIndex : u32;\n";
+        let vertexInputs = "struct VertexInputs {\n  @builtin(vertex_index) vertexIndex : u32,\n  @builtin(instance_index) instanceIndex : u32,\n";
         if (this._attributesWGSL.length > 0) {
             vertexInputs += this._attributesWGSL.join("\n");
         }
         vertexInputs += "\n};\n";
 
-        let vertexFragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>;\n";
+        let vertexFragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n";
         if (this._varyingsWGSL.length > 0) {
             vertexFragmentInputs += this._varyingsWGSL.join("\n");
         }
@@ -300,17 +304,18 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
+        fragmentCode = this._processStridedUniformArrays(fragmentCode);
         fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor__)*dpdy"); // will also handle dpdyCoarse and dpdyFine
 
         const fragmentBuiltinDecl = `var<private> ${builtInName_position_frag} : vec4<f32>;\nvar<private> ${builtInName_front_facing} : bool;\nvar<private> ${builtInName_FragColor} : vec4<f32>;\nvar<private> ${builtInName_frag_depth} : f32;\n`;
 
-        let fragmentFragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>;\n  @builtin(front_facing) frontFacing : bool;\n";
+        let fragmentFragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n  @builtin(front_facing) frontFacing : bool,\n";
         if (this._varyingsWGSL.length > 0) {
             fragmentFragmentInputs += this._varyingsWGSL.join("\n");
         }
         fragmentFragmentInputs += "\n};\n";
 
-        let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>;\n";
+        let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>,\n";
 
         let hasFragDepth = false;
         let idx = 0;
@@ -364,6 +369,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     protected _generateLeftOverUBOCode(name: string, uniformBufferDescription: WebGPUBufferDescription): string {
+        let stridedArrays = "";
         let ubo = `struct ${name} {\n`;
         for (const leftOverUniform of this._webgpuProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
@@ -371,16 +377,23 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
             if (leftOverUniform.length > 0) {
                 if (size <= 2) {
-                    ubo += ` @align(16) ${leftOverUniform.name} : @stride(16) array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                    const stridedArrayType = `${name}_${this._stridedUniformArrays.length}_strided_arr`;
+                    stridedArrays += `struct ${stridedArrayType} {
+                        @size(16)
+                        el: ${type},
+                    }`;
+                    this._stridedUniformArrays.push(leftOverUniform.name);
+
+                    ubo += ` @align(16) ${leftOverUniform.name} : array<${stridedArrayType}, ${leftOverUniform.length}>,\n`;
                 } else {
-                    ubo += ` ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>;\n`;
+                    ubo += ` ${leftOverUniform.name} : array<${leftOverUniform.type}, ${leftOverUniform.length}>,\n`;
                 }
             } else {
-                ubo += `  ${leftOverUniform.name} : ${leftOverUniform.type};\n`;
+                ubo += `  ${leftOverUniform.name} : ${leftOverUniform.type},\n`;
             }
         }
         ubo += "};\n";
-
+        ubo = `${stridedArrays}\n${ubo}`;
         ubo += `@group(${uniformBufferDescription.binding.groupIndex}) @binding(${uniformBufferDescription.binding.bindingIndex}) var<uniform> ${leftOverVarName} : ${name};\n`;
 
         return ubo;
@@ -491,6 +504,13 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             instantiateBufferRegexp.lastIndex += insertPart.length;
         }
 
+        return code;
+    }
+
+    private _processStridedUniformArrays(code: string): string {
+        for (const uniformArrayName of this._stridedUniformArrays) {
+            code = code.replace(new RegExp(`${uniformArrayName}\\s*\\[(.*)\\]`, "g"), `${uniformArrayName}[$1].el`);
+        }
         return code;
     }
 }

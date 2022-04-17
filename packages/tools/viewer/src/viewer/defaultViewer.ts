@@ -1,4 +1,5 @@
-import { Template, EventCallback, TemplateManager } from "../templating/templateManager";
+import type { Template, EventCallback } from "../templating/templateManager";
+import { TemplateManager } from "../templating/templateManager";
 import { FilesInput } from "core/Misc/filesInput";
 import { SpotLight } from "core/Lights/spotLight";
 import { Vector3 } from "core/Maths/math";
@@ -6,16 +7,20 @@ import { Vector3 } from "core/Maths/math";
 import { AbstractViewerWithTemplate } from "./viewerWithTemplate";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+// eslint-disable-next-line import/no-internal-modules
 import { extendClassWithConfig } from "../helper/index";
-import { ViewerModel } from "../model/viewerModel";
-import { IModelAnimation, AnimationState } from "../model/modelAnimation";
-import { IViewerTemplatePlugin } from "../templating/viewerTemplatePlugin";
+import type { ViewerModel } from "../model/viewerModel";
+import type { IModelAnimation } from "../model/modelAnimation";
+import { AnimationState } from "../model/modelAnimation";
+import type { IViewerTemplatePlugin } from "../templating/viewerTemplatePlugin";
 import { HDButtonPlugin } from "../templating/plugins/hdButtonPlugin";
 import { PrintButtonPlugin } from "../templating/plugins/printButton";
-import { ViewerConfiguration } from "../configuration/configuration";
-import { ISceneConfiguration } from "../configuration/interfaces/sceneConfiguration";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { Nullable } from "core/types";
+import type { ViewerConfiguration } from "../configuration/configuration";
+import type { ISceneConfiguration } from "../configuration/interfaces/sceneConfiguration";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { Nullable } from "core/types";
+
+import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.

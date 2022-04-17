@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import type { Observable } from "core/Misc/observable";
+import type { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { NumericInputComponent } from "shared-ui-components/lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { PropertyChangedEvent } from "../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 

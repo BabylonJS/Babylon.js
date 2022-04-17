@@ -1,6 +1,7 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { TrigonometryBlock, TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
+import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
 
 export class TrigonometryDisplayManager implements IDisplayManager {
     public getHeaderClass() {

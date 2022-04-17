@@ -1,11 +1,12 @@
-import { Observer, Observable } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { PointerInfo } from "../Events/pointerEvents";
+import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
@@ -16,9 +17,9 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
 import { Color3 } from "../Maths/math.color";
 
-import { LinesMesh } from "../Meshes/linesMesh";
+import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
-import { IPointerEvent } from "../Events/deviceInputEvents";
+import type { IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
  * Bounding box gizmo
@@ -356,10 +357,10 @@ export class BoundingBoxGizmo extends Gizmo {
                         }
 
                         // Rotate around center of bounding box
-                        this._anchorMesh.addChild(this.attachedMesh);
+                        this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                         this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
-                        this._anchorMesh.removeChild(this.attachedMesh);
-                        this.attachedMesh.setParent(originalParent);
+                        this._anchorMesh.removeChild(this.attachedMesh, Gizmo.PreserveScaling);
+                        this.attachedMesh.setParent(originalParent, Gizmo.PreserveScaling);
                     }
                     this.updateBoundingBox();
 
@@ -441,13 +442,13 @@ export class BoundingBoxGizmo extends Gizmo {
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
                             }
 
-                            this._anchorMesh.addChild(this.attachedMesh);
+                            this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                             this._anchorMesh.scaling.addInPlace(deltaScale);
                             if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
                                 this._anchorMesh.scaling.subtractInPlace(deltaScale);
                             }
-                            this._anchorMesh.removeChild(this.attachedMesh);
-                            this.attachedMesh.setParent(originalParent);
+                            this._anchorMesh.removeChild(this.attachedMesh, Gizmo.PreserveScaling);
+                            this.attachedMesh.setParent(originalParent, Gizmo.PreserveScaling);
                             PivotTools._RestorePivotPoint(this.attachedMesh);
                         }
                         this._updateDummy();
@@ -517,9 +518,9 @@ export class BoundingBoxGizmo extends Gizmo {
             this._anchorMesh.scaling.setAll(1);
             PivotTools._RemoveAndStorePivotPoint(value);
             const originalParent = value.parent;
-            this._anchorMesh.addChild(value);
-            this._anchorMesh.removeChild(value);
-            value.setParent(originalParent);
+            this._anchorMesh.addChild(value, Gizmo.PreserveScaling);
+            this._anchorMesh.removeChild(value, Gizmo.PreserveScaling);
+            value.setParent(originalParent, Gizmo.PreserveScaling);
             PivotTools._RestorePivotPoint(value);
             this.updateBoundingBox();
             value.getChildMeshes(false).forEach((m) => {
@@ -550,7 +551,7 @@ export class BoundingBoxGizmo extends Gizmo {
 
             // Store original parent
             const originalParent = this.attachedMesh.parent;
-            this.attachedMesh.setParent(null);
+            this.attachedMesh.setParent(null, Gizmo.PreserveScaling);
 
             this._update();
 
@@ -592,7 +593,7 @@ export class BoundingBoxGizmo extends Gizmo {
             this.attachedMesh.position.copyFrom(this._tmpVector);
 
             // Restore original parent
-            this.attachedMesh.setParent(originalParent);
+            this.attachedMesh.setParent(originalParent, Gizmo.PreserveScaling);
         }
 
         this._updateRotationSpheres();

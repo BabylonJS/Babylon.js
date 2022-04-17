@@ -1,14 +1,14 @@
-import { Effect } from "../../Materials/effect";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { IColor4Like } from "../../Maths/math.like";
-import { VertexBuffer } from "../../Buffers/buffer";
-import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
-import { Nullable } from "../../types";
+import type { Effect } from "../../Materials/effect";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { IColor4Like } from "../../Maths/math.like";
+import type { VertexBuffer } from "../../Buffers/buffer";
+import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
+import type { Nullable } from "../../types";
 import { Constants } from "../constants";
-import { WebGPUEngine } from "../webgpuEngine";
-import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
+import type { WebGPUEngine } from "../webgpuEngine";
+import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
-import { WebGPUPipelineContext } from "./webgpuPipelineContext";
+import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
 

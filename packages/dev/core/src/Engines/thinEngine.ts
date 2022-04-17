@@ -1,48 +1,49 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
-import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
-import { Effect, IEffectCreationOptions } from "../Materials/effect";
+import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
+import type { IEffectCreationOptions } from "../Materials/effect";
+import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
-import { IShaderProcessor } from "./Processors/iShaderProcessor";
-import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
-import { UniformBuffer } from "../Materials/uniformBuffer";
-import { Nullable, DataArray, IndicesArray } from "../types";
-import { EngineCapabilities } from "./engineCapabilities";
+import type { IShaderProcessor } from "./Processors/iShaderProcessor";
+import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { UniformBuffer } from "../Materials/uniformBuffer";
+import type { Nullable, DataArray, IndicesArray } from "../types";
+import type { EngineCapabilities } from "./engineCapabilities";
 import { Observable } from "../Misc/observable";
 import { DepthCullingState } from "../States/depthCullingState";
 import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IViewportLike, IColor4Like } from "../Maths/math.like";
-import { DataBuffer } from "../Buffers/dataBuffer";
-import { IFileRequest } from "../Misc/fileRequest";
+import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { IFileRequest } from "../Misc/fileRequest";
 import { Logger } from "../Misc/logger";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
-import { IPipelineContext } from "./IPipelineContext";
+import type { IPipelineContext } from "./IPipelineContext";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import { VertexBuffer } from "../Buffers/buffer";
-import { InstancingAttributeInfo } from "./instancingAttributeInfo";
-import { ThinTexture } from "../Materials/Textures/thinTexture";
-import { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { IEffectFallbacks } from "../Materials/iEffectFallbacks";
-import { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import type { VertexBuffer } from "../Buffers/buffer";
+import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
+import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { PerformanceConfigurator } from "./performanceConfigurator";
-import { EngineFeatures } from "./engineFeatures";
-import { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { EngineFeatures } from "./engineFeatures";
+import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { IMaterialContext } from "./IMaterialContext";
-import { IDrawContext } from "./IDrawContext";
-import { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
+import type { IMaterialContext } from "./IMaterialContext";
+import type { IDrawContext } from "./IDrawContext";
+import type { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
 import { StencilStateComposer } from "../States/stencilStateComposer";
-import { StorageBuffer } from "../Buffers/storageBuffer";
-import { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
-import { IStencilState } from "../States/IStencilState";
-import { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { StorageBuffer } from "../Buffers/storageBuffer";
+import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
+import type { IStencilState } from "../States/IStencilState";
+import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
@@ -191,14 +192,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-rc.4";
+        return "babylonjs@5.2.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-rc.4";
+        return "5.2.0";
     }
 
     /**
@@ -2777,16 +2778,17 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
-        // eslint-disable-next-line no-empty
-        while (gl.getError() != gl.NO_ERROR) {}
-
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
+            let error = gl.NO_ERROR;
+            let tempError = gl.NO_ERROR;
+            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
+                error = tempError;
+            }
+
             throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${
-                    this._contextWasLost
-                }`
+                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
             );
         }
 
@@ -4540,6 +4542,7 @@ export class ThinEngine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -4549,7 +4552,8 @@ export class ThinEngine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         const gl = this._gl;
 
@@ -4563,7 +4567,15 @@ export class ThinEngine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
+        this._bindTextureDirectly(target, texture, true);
+
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
+
+        if (generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
+
+        this._bindTextureDirectly(target, null);
     }
 
     /**

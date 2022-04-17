@@ -1,7 +1,7 @@
 import * as React from "react";
-import { GlobalState } from "../../../globalState";
+import type { GlobalState } from "../../../globalState";
 import { Color3LineComponent } from "../../../sharedComponents/color3LineComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 
 interface IColor3PropertyTabComponentProps {
     globalState: GlobalState;

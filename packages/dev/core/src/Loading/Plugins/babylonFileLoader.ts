@@ -1,13 +1,13 @@
 import { Logger } from "../../Misc/logger";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Geometry } from "../../Meshes/geometry";
-import { Node } from "../../node";
+import type { Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Material } from "../../Materials/material";
 import { MultiMaterial } from "../../Materials/multiMaterial";
@@ -20,7 +20,7 @@ import { SceneLoader } from "../../Loading/sceneLoader";
 import { AbstractScene } from "../../abstractScene";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
-import { IParticleSystem } from "../../Particles/IParticleSystem";
+import type { IParticleSystem } from "../../Particles/IParticleSystem";
 import { Skeleton } from "../../Bones/skeleton";
 import { MorphTargetManager } from "../../Morph/morphTargetManager";
 import { CannonJSPlugin } from "../../Physics/Plugins/cannonJSPlugin";
@@ -59,7 +59,7 @@ const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, p
     for (let index = 0, cache = parsedData.materials.length; index < cache; index++) {
         const parsedMaterial = parsedData.materials[index];
         if (predicate(parsedMaterial)) {
-            return Material.Parse(parsedMaterial, scene, rootUrl);
+            return { parsedMaterial, material: Material.Parse(parsedMaterial, scene, rootUrl) };
         }
     }
     return null;
@@ -170,7 +170,9 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     scene,
                     hdrSize,
                     true,
-                    !isPBR
+                    !isPBR,
+                    undefined,
+                    parsedData.environmentTexturePrefilterOnLoad
                 );
                 if (parsedData.environmentTextureRotationY) {
                     hdrTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -178,7 +180,11 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 scene.environmentTexture = hdrTexture;
             } else {
                 if (EndsWith(parsedData.environmentTexture, ".env")) {
-                    const compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    const compressedTexture = new CubeTexture(
+                        (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
+                        scene,
+                        parsedData.environmentTextureForcedExtension
+                    );
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
                     }
@@ -657,8 +663,9 @@ SceneLoader.RegisterPlugin({
                                 const loadSubMaterial = (subMatId: string, predicate: (parsedMaterial: any) => boolean) => {
                                     materialArray.push(subMatId);
                                     const mat = parseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
-                                    if (mat) {
-                                        log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    if (mat && mat.material) {
+                                        tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                        log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                     }
                                 };
                                 for (let multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
@@ -694,15 +701,16 @@ SceneLoader.RegisterPlugin({
                                 materialArray.push(parsedMesh.materialUniqueId || parsedMesh.materialId);
                                 const mat = parseMaterialByPredicate(
                                     (parsedMaterial) =>
-                                        (parsedMesh.MaterialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
+                                        (parsedMesh.materialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
                                     parsedData,
                                     scene,
                                     rootUrl
                                 );
-                                if (!mat) {
+                                if (!mat || !mat.material) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {
-                                    log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                    log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                 }
                             }
                         }

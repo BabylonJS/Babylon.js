@@ -20,6 +20,11 @@
     .commands-right {
         float: right;
         display: flex;
+        .beta-flag {
+            height: 30px;
+            position: relative;
+            left: -15px;
+        }
     }
 
     &.background-ts {
@@ -320,7 +325,7 @@
         }
     }
 
-    .textInputLine,
+    .floatLine,
     .checkBoxLine {
         display: flex;
         align-items: center;
@@ -351,7 +356,7 @@
                 padding-right: 5px;
             }
 
-            .textInputLine {
+            .floatLine {
                 .value {
                     padding-left: 2px;
                 }
@@ -433,7 +438,7 @@
         }
     }
 
-    .textInputLine input,
+    .floatLine input,
     .listLine select {
         background-color: #000000;
         color: white;
@@ -451,12 +456,12 @@
         border: none;
     }
 
-    .textInputLine .value {
+    .floatLine .value {
         position: relative;
         margin: 5px;
     }
 
-    .textInputLine input:focus {
+    .floatLine input:focus {
         outline-color: white;
     }
 

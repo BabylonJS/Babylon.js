@@ -1,11 +1,13 @@
 import { GraphCanvasComponent } from "./graphCanvas";
-import { GraphNode } from "./graphNode";
-import { NodePort } from "./nodePort";
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { FrameNodePort } from "./frameNodePort";
-import { ISelectionChangedOptions } from "../globalState";
-import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
+import type { GraphNode } from "./graphNode";
+import type { NodePort } from "./nodePort";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { FrameNodePort } from "./frameNodePort";
+import type { ISelectionChangedOptions } from "../globalState";
+import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -128,13 +130,18 @@ export class NodeLink {
 
     onClick(evt: MouseEvent) {
         if (evt.altKey) {
+            const nodeA = this._nodeA;
+            const pointA = this._portA.connectionPoint;
+            const nodeB = this._nodeB!;
+            const pointB = this._portB!.connectionPoint;
+
+            if (pointA.type === NodeMaterialBlockConnectionPointTypes.Object || pointB.type === NodeMaterialBlockConnectionPointTypes.Object) {
+                return; // We do not support Elbow on complex types
+            }
+
             // Create an elbow at the clicked location
             this._graphCanvas.globalState.onNewNodeCreatedObservable.addOnce((newNode) => {
                 const newElbowBlock = newNode.block as ElbowBlock;
-                const nodeA = this._nodeA;
-                const pointA = this._portA.connectionPoint;
-                const nodeB = this._nodeB!;
-                const pointB = this._portB!.connectionPoint;
 
                 // Delete previous link
                 this.dispose();

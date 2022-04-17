@@ -1,12 +1,12 @@
-import { Engine } from "../../Engines/engine";
-import { IUIEvent } from "../../Events/deviceInputEvents";
+import type { Engine } from "../../Engines/engine";
+import type { IUIEvent } from "../../Events/deviceInputEvents";
 import { DomManagement } from "../../Misc/domManagement";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
-import { IDeviceInputSystem } from "./inputInterfaces";
+import type { IDeviceInputSystem } from "./inputInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_KEYCODES = 255;

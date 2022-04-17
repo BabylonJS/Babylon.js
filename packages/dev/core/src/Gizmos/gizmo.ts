@@ -1,21 +1,22 @@
-import { Observer } from "../Misc/observable";
-import { Nullable } from "../types";
-import { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
-import { Scene, IDisposable } from "../scene";
+import type { Observer } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
+import type { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Camera } from "../Cameras/camera";
-import { TargetCamera } from "../Cameras/targetCamera";
-import { Node } from "../node";
-import { Bone } from "../Bones/bone";
+import type { Camera } from "../Cameras/camera";
+import type { TargetCamera } from "../Cameras/targetCamera";
+import type { Node } from "../node";
+import type { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { TransformNode } from "../Meshes/transformNode";
-import { StandardMaterial } from "../Materials/standardMaterial";
-import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
-import { LinesMesh } from "../Meshes/linesMesh";
-import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { ShadowLight } from "../Lights/shadowLight";
+import type { TransformNode } from "../Meshes/transformNode";
+import type { StandardMaterial } from "../Materials/standardMaterial";
+import type { PointerInfo } from "../Events/pointerEvents";
+import { PointerEventTypes } from "../Events/pointerEvents";
+import type { LinesMesh } from "../Meshes/linesMesh";
+import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import type { ShadowLight } from "../Lights/shadowLight";
 import { Light } from "../Lights/light";
 
 /**
@@ -57,6 +58,12 @@ export class Gizmo implements IDisposable {
      * boolean updated by pointermove when a gizmo mesh is hovered
      */
     protected _isHovered = false;
+
+    /**
+     * When enabled, any gizmo operation will perserve scaling sign. Default is off.
+     * Only valid for TransformNode derived classes (Mesh, AbstractMesh, ...)
+     */
+    public static PreserveScaling = false;
 
     /**
      * Ratio for the scale of the gizmo (Default: 1)
@@ -202,7 +209,8 @@ export class Gizmo implements IDisposable {
 
             // Rotation
             if (this.updateGizmoRotationToMatchAttachedMesh) {
-                effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
+                const transformNode = (<Mesh>effectiveNode)._isMesh ? (effectiveNode as TransformNode) : undefined;
+                effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
             } else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
@@ -309,10 +317,11 @@ export class Gizmo implements IDisposable {
                 const localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(transform.scaling, this._tempQuaternion, transform.position);
+                localMat.decompose(this._tempVector, this._tempQuaternion, transform.position, Gizmo.PreserveScaling ? transform : undefined);
             } else {
-                this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
+                this._attachedNode._worldMatrix.decompose(this._tempVector, this._tempQuaternion, transform.position, Gizmo.PreserveScaling ? transform : undefined);
             }
+            transform.scaling.copyFrom(this._tempVector);
             if (!transform.billboardMode) {
                 if (transform.rotationQuaternion) {
                     transform.rotationQuaternion.copyFrom(this._tempQuaternion);
@@ -355,8 +364,7 @@ export class Gizmo implements IDisposable {
                     }
                     // setter doesn't copy values. Need a new Vector3
                     light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
-                    Vector3.Backward(false).rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
-                    light.direction = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                    light.direction = new Vector3(light.direction.x, light.direction.y, light.direction.z);
                 }
             }
         }

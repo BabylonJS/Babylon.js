@@ -1,11 +1,14 @@
-import { Observer, EventState, Observable } from "../../Misc/observable";
+import type { Observer, EventState } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import { serialize } from "../../Misc/decorators";
-import { Nullable } from "../../types";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { Nullable } from "../../types";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
-import { IMouseEvent, IPointerEvent } from "../../Events/deviceInputEvents";
+import type { IMouseEvent, IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -207,11 +210,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
@@ -230,6 +228,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             this._onMouseMove = null;
             this._previousPosition = null;
         }
+
+        this._currentActiveButton = -1;
     }
 
     /**

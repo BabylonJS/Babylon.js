@@ -1,17 +1,19 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Node } from "../node";
+import type { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo, GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache } from "./gizmo";
+import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { RotationGizmo } from "./rotationGizmo";
+import type { RotationGizmo } from "./rotationGizmo";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
@@ -165,7 +167,7 @@ export class PlaneRotationGizmo extends Gizmo {
         this._rotationDisplayPlane.visibility = 0.999;
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(planeNormal));
-        this._rootMesh.addChild(this._gizmoMesh);
+        this._rootMesh.addChild(this._gizmoMesh, Gizmo.PreserveScaling);
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
@@ -363,8 +365,8 @@ export class PlaneRotationGizmo extends Gizmo {
         rotationMesh.rotation.x = Math.PI / 2;
         collider.rotation.x = Math.PI / 2;
 
-        parentMesh.addChild(rotationMesh);
-        parentMesh.addChild(collider);
+        parentMesh.addChild(rotationMesh, Gizmo.PreserveScaling);
+        parentMesh.addChild(collider, Gizmo.PreserveScaling);
         return { rotationMesh, collider };
     }
 

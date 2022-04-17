@@ -1,16 +1,19 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { Checkbox } from "gui/2D/controls/checkbox";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { Checkbox } from "gui/2D/controls/checkbox";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import checkBoxIconDark from "shared-ui-components/imgs/checkboxIconDark.svg";
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
+import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import { UnitButton } from "shared-ui-components/lines/unitButton";
 
 interface ICheckboxPropertyGridComponentProps {
     checkboxes: Checkbox[];
@@ -31,23 +34,42 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={checkboxes} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
-                <FloatLineComponent
-                    iconLabel={"Check size ratio"}
-                    icon={sizeIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
-                    propertyName="checkSizeRatio"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <CheckBoxLineComponent
-                    iconLabel={"Checked"}
-                    icon={fillColorIcon}
-                    label="CHECKED"
-                    target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
-                    propertyName="isChecked"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <div className="ge-divider">
+                    <IconComponent icon={sizeIcon} label={"Check Size Ratio"} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label=" "
+                        target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
+                        propertyName="checkSizeRatio"
+                        min={0}
+                        max={1}
+                        arrows={true}
+                        step="0.01"
+                        digits={2}
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={checkBoxIconDark} label={"Is Checkbox Checked"} />
+                    <CheckBoxLineComponent
+                        label="CHECKED"
+                        target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
+                        propertyName="isChecked"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </div>
+                <div className="ge-divider double">
+                    <IconComponent icon={strokeWeightIcon} label={"Thickness"} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
+                        propertyName="thickness"
+                        label=""
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows={true}
+                        min={0}
+                        digits={2}
+                    />
+                </div>
             </div>
         );
     }

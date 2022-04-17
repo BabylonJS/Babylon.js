@@ -1,11 +1,13 @@
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FollowCamera } from "../../Cameras/followCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FollowCamera } from "../../Cameras/followCamera";
 import { serialize } from "../../Misc/decorators";
-import { Nullable } from "../../types";
-import { Observer } from "../../Misc/observable";
-import { Engine } from "../../Engines/engine";
-import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Scene } from "../../scene";
+import type { Nullable } from "../../types";
+import type { Observer } from "../../Misc/observable";
+import type { Engine } from "../../Engines/engine";
+import type { KeyboardInfo } from "../../Events/keyboardEvents";
+import { KeyboardEventTypes } from "../../Events/keyboardEvents";
+import type { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 
 /**
@@ -206,11 +208,6 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
             }
         });
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

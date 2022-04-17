@@ -1,26 +1,28 @@
 import { Engine } from "core/Engines/engine";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from "core/Loading/sceneLoader";
-import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import type { Observable } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 import { RenderingManager } from "core/Rendering/renderingManager";
-import { TargetCamera } from "core/Cameras/targetCamera";
+import type { TargetCamera } from "core/Cameras/targetCamera";
 import { Tools } from "core/Misc/tools";
 import { Effect } from "core/Materials/effect";
 import { processConfigurationCompatibility } from "../configuration/configurationCompatibility";
 import { ConfigurationContainer } from "../configuration/configurationContainer";
 import { viewerGlobals } from "../configuration/globals";
 import { RenderOnlyConfigurationLoader } from "../configuration/renderOnlyLoader";
+// eslint-disable-next-line import/no-internal-modules
 import { deepmerge } from "../helper/index";
 import { ModelLoader } from "../loader/modelLoader";
 import { ObservablesManager } from "../managers/observablesManager";
 import { SceneManager } from "../managers/sceneManager";
 import { telemetryManager } from "../managers/telemetryManager";
-import { ViewerModel } from "../model/viewerModel";
+import type { ViewerModel } from "../model/viewerModel";
 import { viewerManager } from "./viewerManager";
-import { ViewerConfiguration } from "../configuration/configuration";
-import { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
-import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
-import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import type { ViewerConfiguration } from "../configuration/configuration";
+import type { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
+import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.
@@ -538,24 +540,24 @@ export abstract class AbstractViewer {
      */
     protected _configureObservers(observersConfiguration: IObserversConfiguration) {
         if (observersConfiguration.onEngineInit) {
-            this.onEngineInitObservable.add(window[observersConfiguration.onEngineInit]);
+            this.onEngineInitObservable.add((window as any)[observersConfiguration.onEngineInit]);
         } else {
             if (observersConfiguration.onEngineInit === "" && this.configuration.observers && this.configuration.observers!.onEngineInit) {
-                this.onEngineInitObservable.removeCallback(window[this.configuration.observers!.onEngineInit!]);
+                this.onEngineInitObservable.removeCallback((window as any)[this.configuration.observers!.onEngineInit!]);
             }
         }
         if (observersConfiguration.onSceneInit) {
-            this.onSceneInitObservable.add(window[observersConfiguration.onSceneInit]);
+            this.onSceneInitObservable.add((window as any)[observersConfiguration.onSceneInit]);
         } else {
             if (observersConfiguration.onSceneInit === "" && this.configuration.observers && this.configuration.observers!.onSceneInit) {
-                this.onSceneInitObservable.removeCallback(window[this.configuration.observers!.onSceneInit!]);
+                this.onSceneInitObservable.removeCallback((window as any)[this.configuration.observers!.onSceneInit!]);
             }
         }
         if (observersConfiguration.onModelLoaded) {
-            this.onModelLoadedObservable.add(window[observersConfiguration.onModelLoaded]);
+            this.onModelLoadedObservable.add((window as any)[observersConfiguration.onModelLoaded]);
         } else {
             if (observersConfiguration.onModelLoaded === "" && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
-                this.onModelLoadedObservable.removeCallback(window[this.configuration.observers!.onModelLoaded!]);
+                this.onModelLoadedObservable.removeCallback((window as any)[this.configuration.observers!.onModelLoaded!]);
             }
         }
     }
@@ -593,7 +595,7 @@ export abstract class AbstractViewer {
     /**
      * This will prepare the container element for the viewer
      */
-    protected abstract _prepareContainerElement();
+    protected abstract _prepareContainerElement(): void;
 
     /**
      * This function will execute when the HTML templates finished initializing.
@@ -786,7 +788,7 @@ export abstract class AbstractViewer {
         return Promise.resolve(this.sceneManager.scene)
             .then((scene) => {
                 if (!scene) {
-                    return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer);
+                    return this.sceneManager.initScene(this.configuration.scene);
                 }
                 return scene;
             })

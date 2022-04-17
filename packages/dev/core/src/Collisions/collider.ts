@@ -1,6 +1,6 @@
-import { Nullable, IndicesArray } from "../types";
+import type { Nullable, IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Plane } from "../Maths/math.plane";
 
 const intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
@@ -84,6 +84,11 @@ export class Collider {
      * Define last collided mesh
      */
     public collidedMesh: Nullable<AbstractMesh>;
+
+    /**
+     * If true, it check for double sided faces and only returns 1 collision instead of 2
+     */
+    public static DoubleSidedCheck = false;
 
     private _collisionPoint = Vector3.Zero();
     private _planeIntersectionPoint = Vector3.Zero();
@@ -247,6 +252,12 @@ export class Collider {
 
         const signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
         const normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
+
+        // if DoubleSidedCheck is false(default), a double sided face will be consided 2 times.
+        // if true, it discard the faces having normal not facing velocity
+        if (Collider.DoubleSidedCheck && normalDotVelocity > 0.0001) {
+            return;
+        }
 
         if (normalDotVelocity == 0) {
             if (Math.abs(signedDistToTrianglePlane) >= 1.0) {

@@ -1,16 +1,17 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { Light } from "core/Lights/light";
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { Light } from "core/Lights/light";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ICommonLightPropertyGridComponentProps {
     globalState: GlobalState;
@@ -46,6 +47,12 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
                     />
                     <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={light.getClassName()} />
+                    <ParentPropertyGridComponent
+                        globalState={this.props.globalState}
+                        node={light}
+                        lockObject={this.props.lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Intensity"

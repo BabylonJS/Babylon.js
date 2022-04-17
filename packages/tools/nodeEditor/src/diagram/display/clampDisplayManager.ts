@@ -1,6 +1,6 @@
-import { IDisplayManager } from "./displayManager";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
+import type { IDisplayManager } from "./displayManager";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
 
 export class ClampDisplayManager implements IDisplayManager {
     public getHeaderClass() {

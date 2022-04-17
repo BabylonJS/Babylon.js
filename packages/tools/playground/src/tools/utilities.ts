@@ -1,4 +1,4 @@
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 export class Utilities {
     public static FastEval(code: string) {

@@ -1,12 +1,14 @@
 import { serialize } from "../../Misc/decorators";
-import { Observer } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
-import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
+import type { KeyboardInfo } from "../../Events/keyboardEvents";
+import { KeyboardEventTypes } from "../../Events/keyboardEvents";
+import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
-import { Engine } from "../../Engines/engine";
+import type { Engine } from "../../Engines/engine";
 import { Tools } from "../../Misc/tools";
 /**
  * Manage the keyboard inputs to control the movement of a free camera.
@@ -143,11 +145,6 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
             }
         });
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

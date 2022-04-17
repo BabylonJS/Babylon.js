@@ -1,15 +1,17 @@
-import { Behavior } from "../../Behaviors/behavior";
-import { Camera } from "../../Cameras/camera";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { Behavior } from "../../Behaviors/behavior";
+import type { Camera } from "../../Cameras/camera";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
-import { Observable, Observer } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { PointerInfoPre } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Vector3, Vector2 } from "../../Maths/math.vector";
-import { Animatable } from "../../Animations/animatable";
+import type { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
 
 /**

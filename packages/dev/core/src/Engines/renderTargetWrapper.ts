@@ -1,8 +1,9 @@
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import { Nullable } from "../types";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTextureSource } from "../Materials/Textures/internalTexture";
+import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { Nullable } from "../types";
 import { Constants } from "./constants";
-import { ThinEngine } from "./thinEngine";
+import type { ThinEngine } from "./thinEngine";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.

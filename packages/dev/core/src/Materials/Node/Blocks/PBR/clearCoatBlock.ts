@@ -1,20 +1,21 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { ReflectionBlock } from "./reflectionBlock";
-import { Scene } from "../../../../scene";
-import { Nullable } from "../../../../types";
-import { Mesh } from "../../../../Meshes/mesh";
-import { Effect } from "../../../effect";
-import { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
-import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { ReflectionBlock } from "./reflectionBlock";
+import type { Scene } from "../../../../scene";
+import type { Nullable } from "../../../../types";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { Effect } from "../../../effect";
+import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
+import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
@@ -42,6 +43,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.worldNormal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this.registerOutput(
             "clearcoat",
@@ -67,6 +70,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         state._excludeVariableName("vClearCoatTintParams");
         state._excludeVariableName("vClearCoatRefractionParams");
         state._excludeVariableName("vClearCoatTangentSpaceParams");
+        state._excludeVariableName("vGeometricNormaClearCoatW");
     }
 
     /**
@@ -138,6 +142,13 @@ export class ClearCoatBlock extends NodeMaterialBlock {
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
         return this._inputs[8];
+    }
+
+    /**
+     * Gets the world normal input component
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[9];
     }
 
     /**
@@ -254,6 +265,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
             state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
+
+            const normalShading = ccBlock.worldNormal;
+            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
+        } else {
+            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\r\n`;
         }
 
         if (generateTBNSpace && ccBlock) {
@@ -269,7 +285,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
             clearcoatBlock(
                 ${worldPosVarName}.xyz,
-                geometricNormalW,
+                vGeometricNormaClearCoatW,
                 viewDirectionW,
                 vClearCoatParams,
                 specularEnvironmentR0,

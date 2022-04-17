@@ -3,8 +3,8 @@ import { Measure } from "../../measure";
 import { Image } from "../image";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 
 /**
  * Class used to create slider controls based on images

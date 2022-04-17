@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { TransformNode } from "core/Meshes/transformNode";
 import { faCodeBranch } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";

@@ -1,10 +1,10 @@
 import * as React from "react";
 
 import { Observable } from "core/Misc/observable";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Constants } from "core/Engines/constants";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -12,8 +12,8 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 
 import "core/Rendering/prePassRendererSceneComponent";
@@ -494,6 +494,73 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                     onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
                                 />
                             )}
+                        </div>
+                    )}
+                </LineContainerComponent>
+                <LineContainerComponent title="IRIDESCENCE" selection={this.props.globalState}>
+                    <CheckBoxLineComponent
+                        label="Enabled"
+                        target={material.iridescence}
+                        propertyName="isEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.iridescence.isEnabled && (
+                        <div className="fragment">
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.iridescence}
+                                propertyName="intensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="IOR"
+                                target={material.iridescence}
+                                propertyName="indexOfRefraction"
+                                minimum={1.0}
+                                maximum={3}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Min Thickness"
+                                target={material.iridescence}
+                                propertyName="minimumThickness"
+                                minimum={0}
+                                maximum={1000}
+                                step={10}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Max Thickness"
+                                target={material.iridescence}
+                                propertyName="maximumThickness"
+                                minimum={0}
+                                maximum={1000}
+                                step={10}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Iridescence"
+                                texture={material.iridescence.texture}
+                                onTextureCreated={(texture) => (material.iridescence.texture = texture)}
+                                onTextureRemoved={() => (material.iridescence.texture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Thickness"
+                                texture={material.iridescence.thicknessTexture}
+                                onTextureCreated={(texture) => (material.iridescence.thicknessTexture = texture)}
+                                onTextureRemoved={() => (material.iridescence.thicknessTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
                         </div>
                     )}
                 </LineContainerComponent>

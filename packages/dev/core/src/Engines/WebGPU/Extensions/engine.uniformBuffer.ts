@@ -1,6 +1,6 @@
-import { DataBuffer } from "../../../Buffers/dataBuffer";
-import { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
-import { FloatArray } from "../../../types";
+import type { DataBuffer } from "../../../Buffers/dataBuffer";
+import type { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
+import type { FloatArray } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import * as WebGPUConstants from "../webgpuConstants";
 

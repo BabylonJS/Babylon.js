@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
-import { Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 
 import "./guiList.scss";
 
@@ -72,15 +72,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
-                            <input
-                                type="text"
-                                placeholder="Filter"
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
-                                onBlur={() => {
-                                    this.props.globalState.blockKeyboardEvents = false;
-                                }}
-                                onChange={(evt) => this.filterContent(evt.target.value)}
-                            />
+                            <input type="text" placeholder="Filter" onChange={(evt) => this.filterContent(evt.target.value)} />
                         </div>
                         <div className="list-container">{blockMenu}</div>
                     </div>

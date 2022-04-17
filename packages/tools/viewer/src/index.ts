@@ -9,6 +9,7 @@ import { ViewerModel, ModelState } from "./model/viewerModel";
 import { AnimationPlayMode, AnimationState } from "./model/modelAnimation";
 import { ILoaderPlugin } from "./loader/plugins/loaderPlugin";
 import { AbstractViewerNavbarButton } from "./templating/viewerTemplatePlugin";
+// eslint-disable-next-line import/no-internal-modules
 import { registerCustomOptimizer } from "./optimizer/custom/index";
 
 /**
@@ -17,10 +18,11 @@ import { registerCustomOptimizer } from "./optimizer/custom/index";
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
-import * as BABYLON from "babylonjs";
+// eslint-disable-next-line import/no-internal-modules
+import * as BABYLON from "core/index";
 
 // load needed modules.
-import "babylonjs-loaders";
+import "loaders";
 import "pepjs";
 
 import { initListeners, InitTags } from "./initializer";
@@ -67,6 +69,8 @@ export {
     AbstractViewerNavbarButton,
     registerCustomOptimizer,
 };
-export { GLTF2 } from "babylonjs-loaders";
+// eslint-disable-next-line import/no-internal-modules
+export { GLTF2 } from "loaders/glTF/index";
 // export publicliy all configuration interfaces
+// eslint-disable-next-line import/no-internal-modules
 export * from "./configuration/index";

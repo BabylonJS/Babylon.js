@@ -1,5 +1,5 @@
 import { RenderTargetTexture } from "../Textures/renderTargetTexture";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import { Constants } from "../../Engines/constants";
 
 /**
@@ -24,6 +24,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         this._texture.isMultiview = true;
         this._texture.format = Constants.TEXTUREFORMAT_RGBA;
         this.samples = this._getEngine()!.getCaps().maxSamples || this.samples;
+        this._texture.samples = this._samples;
     }
 
     /**

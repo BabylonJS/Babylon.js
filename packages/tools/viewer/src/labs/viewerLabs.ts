@@ -1,8 +1,9 @@
-import { PBREnvironment, EnvironmentDeserializer } from "./environmentSerializer";
-import { Scene } from "core/scene";
+import type { PBREnvironment } from "./environmentSerializer";
+import { EnvironmentDeserializer } from "./environmentSerializer";
+import type { Scene } from "core/scene";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
-import { ShadowLight } from "core/Lights/shadowLight";
+import type { ShadowLight } from "core/Lights/shadowLight";
 import { TextureUtils } from "./texture";
 import { Axis } from "core/Maths/math.axis";
 
@@ -87,8 +88,8 @@ export class ViewerLabs {
             const url = this.getAssetUrl(data);
             this._scene._loadFile(
                 url,
-                (arrayBuffer: ArrayBuffer) => {
-                    this.environment = EnvironmentDeserializer.Parse(arrayBuffer);
+                (arrayBuffer: string | ArrayBuffer) => {
+                    this.environment = EnvironmentDeserializer.Parse(arrayBuffer as ArrayBuffer);
                     if (onSuccess) {
                         onSuccess(this.environment);
                     }

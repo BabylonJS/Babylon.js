@@ -1,17 +1,21 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
-import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { Matrix } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import type { PointerInfoPre, PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
 import { ClipboardEventTypes, ClipboardInfo } from "core/Events/clipboardEvents";
-import { KeyboardInfoPre, KeyboardEventTypes } from "core/Events/keyboardEvents";
-import { Camera } from "core/Cameras/camera";
+import type { KeyboardInfoPre } from "core/Events/keyboardEvents";
+import { KeyboardEventTypes } from "core/Events/keyboardEvents";
+import type { Camera } from "core/Cameras/camera";
 import { Texture } from "core/Materials/Textures/texture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
-import { Engine } from "core/Engines/engine";
-import { Scene } from "core/scene";
+import type { Engine } from "core/Engines/engine";
+import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
@@ -22,7 +26,7 @@ import { Constants } from "core/Engines/constants";
 import { Viewport } from "core/Maths/math.viewport";
 import { Color3 } from "core/Maths/math.color";
 import { WebRequest } from "core/Misc/webRequest";
-import { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
+import type { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
 import { RandomGUID } from "core/Misc/guid";
 import { GetClass } from "core/Misc/typeStore";
 
@@ -859,8 +863,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
-            if (this._shouldBlockPointer) {
-                pi.skipOnPointerObservable = this._shouldBlockPointer;
+            if (this._shouldBlockPointer || this._capturingControl[pointerId]) {
+                pi.skipOnPointerObservable = true;
             }
         } else {
             this._doPicking(x, y, null, PointerEventTypes.POINTERMOVE, this._defaultMousePointerId, 0);
@@ -1350,5 +1354,3 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.markAsDirty();
     }
 }
-
-export { IFocusableControl };

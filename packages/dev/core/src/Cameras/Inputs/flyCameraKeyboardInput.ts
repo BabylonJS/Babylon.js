@@ -1,11 +1,13 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { Observer } from "../../Misc/observable";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FlyCamera } from "../../Cameras/flyCamera";
-import { Engine } from "../../Engines/engine";
-import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FlyCamera } from "../../Cameras/flyCamera";
+import type { Engine } from "../../Engines/engine";
+import type { KeyboardInfo } from "../../Events/keyboardEvents";
+import { KeyboardEventTypes } from "../../Events/keyboardEvents";
+import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 
@@ -121,11 +123,6 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
             }
         });
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

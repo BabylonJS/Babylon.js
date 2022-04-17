@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 import { Playground } from "../index";
 
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;

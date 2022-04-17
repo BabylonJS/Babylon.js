@@ -1,12 +1,12 @@
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Vector3 } from "core/Maths/math.vector";
 import { HandleMaterial } from "../materials/handle/handleMaterial";
-import { SlateGizmo } from "./slateGizmo";
+import type { SlateGizmo } from "./slateGizmo";
 import { BaseSixDofDragBehavior } from "core/Behaviors/Meshes/baseSixDofDragBehavior";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * State of the handle regarding user interaction

@@ -1,4 +1,4 @@
-import { Camera } from "../camera";
+import type { Camera } from "../camera";
 import { PassPostProcess } from "../../PostProcesses/passPostProcess";
 import { AnaglyphPostProcess } from "../../PostProcesses/anaglyphPostProcess";
 

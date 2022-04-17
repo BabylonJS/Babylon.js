@@ -1,15 +1,31 @@
-var snippetUrl = "https://snippet.babylonjs.com";
-var currentSnippetToken;
-var previousHash = "";
+/* global BABYLON */
+let snippetUrl = "https://snippet.babylonjs.com";
+let currentSnippetToken;
+let previousHash = "";
+
+const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
 
 let loadScriptAsync = function (url, instantResolve) {
-    return new Promise((resolve, reject) => {
-        let script = document.createElement("script");
-        script.src = url;
+    return new Promise((resolve) => {
+        // eslint-disable-next-line no-undef
+        let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
+        const script = document.createElement("script");
+        script.src = urlToLoad;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
             }
+        };
+        script.onerror = () => {
+            // fallback
+            const fallbackScript = document.createElement("script");
+            fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
+            fallbackScript.onload = () => {
+                if (!instantResolve) {
+                    resolve();
+                }
+            };
+            document.head.appendChild(fallbackScript);
         };
         document.head.appendChild(script);
         if (instantResolve) {
@@ -19,7 +35,7 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 const Versions = {
-    dist: ["https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/gui/babylon.gui.min.js"],
+    dist: ["https://preview.babylonjs.com/timestamp.js?t=" + Date.now(), "https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/gui/babylon.gui.min.js"],
     local: ["//localhost:1337/babylon.js", "//localhost:1337/gui/babylon.gui.min.js"],
 };
 
@@ -39,18 +55,32 @@ let checkBabylonVersionAsync = function () {
         activeVersion = "local";
     }
 
-    return new Promise((resolve, reject) => {
-        loadInSequence(Versions[activeVersion], 0, resolve);
+    let snapshot = "";
+    // see if a snapshot should be used
+    if (window.location.search.indexOf("snapshot=") !== -1) {
+        snapshot = window.location.search.split("=")[1];
+        // cleanup, just in case
+        snapshot = snapshot.split("&")[0];
+        activeVersion = "dist";
+    }
+
+    let versions = Versions[activeVersion] || Versions["dist"];
+    if (snapshot && activeVersion === "dist") {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    }
+
+    return new Promise((resolve) => {
+        loadInSequence(versions, 0, resolve);
     });
 };
 
 checkBabylonVersionAsync().then(() => {
     loadScriptAsync("babylon.guiEditor.js").then(() => {
-        var customLoadObservable = new BABYLON.Observable();
-        var editorDisplayed = false;
+        let customLoadObservable = new BABYLON.Observable();
+        let editorDisplayed = false;
 
-        var cleanHash = function () {
-            var splits = decodeURIComponent(location.hash.substr(1)).split("#");
+        let cleanHash = function () {
+            let splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
             if (splits.length > 2) {
                 splits.splice(2, splits.length - 2);
@@ -59,13 +89,13 @@ checkBabylonVersionAsync().then(() => {
             location.hash = splits.join("#");
         };
 
-        var checkHash = function () {
+        let checkHash = function () {
             if (location.hash) {
                 if (previousHash != location.hash) {
                     cleanHash();
 
                     previousHash = location.hash;
-                    var hash = location.hash.substr(1);
+                    let hash = location.hash.substr(1);
                     currentSnippetToken = hash;
                     showEditor();
                 }
@@ -74,9 +104,9 @@ checkBabylonVersionAsync().then(() => {
             setTimeout(checkHash, 200);
         };
 
-        var showEditor = function () {
+        let showEditor = function () {
             editorDisplayed = true;
-            var hostElement = document.getElementById("host-element");
+            let hostElement = document.getElementById("host-element");
 
             BABYLON.GuiEditor.Show({
                 hostElement: hostElement,
@@ -91,8 +121,8 @@ checkBabylonVersionAsync().then(() => {
                                 if (xmlHttp.readyState == 4) {
                                     if (xmlHttp.status == 200) {
                                         const snippet = JSON.parse(xmlHttp.responseText);
-                                        var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                                        var newUrl = baseUrl + "#" + snippet.id;
+                                        let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                                        let newUrl = baseUrl + "#" + snippet.id;
                                         currentSnippetToken = snippet.id;
                                         if (snippet.version && snippet.version != "0") {
                                             newUrl += "#" + snippet.version;
@@ -123,8 +153,8 @@ checkBabylonVersionAsync().then(() => {
                     label: "Load as unique URL",
                     action: (data) => {
                         return new Promise((resolve, reject) => {
-                            var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                            var newUrl = baseUrl + "#" + data;
+                            let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                            let newUrl = baseUrl + "#" + data;
                             currentSnippetToken = data;
                             location.href = newUrl;
                             resolve();
@@ -136,9 +166,9 @@ checkBabylonVersionAsync().then(() => {
 
         // Let's start
         if (BABYLON.Engine.isSupported()) {
-            var canvas = document.createElement("canvas");
-            var engine = new BABYLON.Engine(canvas, false);
-            var scene = new BABYLON.Scene(engine);
+            let canvas = document.createElement("canvas");
+            let engine = new BABYLON.Engine(canvas, false);
+            let scene = new BABYLON.Scene(engine);
 
             // Set to default
             if (!location.hash) {

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { Effect } from "core/Materials/effect";
-import { MaterialDefines } from "core/Materials/materialDefines";
+import type { MaterialDefines } from "core/Materials/materialDefines";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Mesh } from "core/Meshes/mesh";
-import { Scene } from "core/scene";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { ShaderCodeInliner } from "core/Engines/Processors/shaderCodeInliner";
-import { ICustomShaderNameResolveOptions } from "core/Materials/material";
+import type { ICustomShaderNameResolveOptions } from "core/Materials/material";
 
 export class ShaderAlebdoParts {
     constructor() {}

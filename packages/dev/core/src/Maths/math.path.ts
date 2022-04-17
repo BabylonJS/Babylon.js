@@ -1,4 +1,4 @@
-import { DeepImmutable, Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import { Scalar } from "./math.scalar";
 import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
 import { Epsilon } from "./math.constants";
@@ -922,6 +922,68 @@ export class Curve3 {
             catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
         }
         return new Curve3(catmullRom);
+    }
+
+    /**
+     * Returns a Curve3 object along an arc through three vector3 points:
+     * The three points should not be colinear. When they are the Curve3 is empty.
+     * @param first (Vector3) the first point the arc must pass through.
+     * @param second (Vector3) the second point the arc must pass through.
+     * @param third (Vector3) the third point the arc must pass through.
+     * @param steps (number) the larger the number of steps the more detailed the arc.
+     * @param closed (boolean) optional with default false, when true forms the chord from the first and third point
+     * @param fullCircle Circle (boolean) optional with default false, when true forms the complete circle through the three points
+     * @returns the created Curve3
+     */
+    public static ArcThru3Points(first: Vector3, second: Vector3, third: Vector3, steps: number = 32, closed: boolean = false, fullCircle: boolean = false): Curve3 {
+        const arc = new Array<Vector3>();
+        const vec1 = second.subtract(first);
+        const vec2 = third.subtract(second);
+        const vec3 = first.subtract(third);
+        const zAxis = Vector3.Cross(vec1, vec2);
+        const len4 = zAxis.length();
+        if (len4 < Math.pow(10, -8)) {
+            return new Curve3(arc); // colinear points arc is empty
+        }
+        const len1_sq = vec1.lengthSquared();
+        const len2_sq = vec2.lengthSquared();
+        const len3_sq = vec3.lengthSquared();
+        const len4_sq = zAxis.lengthSquared();
+        const len1 = vec1.length();
+        const len2 = vec2.length();
+        const len3 = vec3.length();
+        const radius = (0.5 * len1 * len2 * len3) / len4;
+        const dot1 = Vector3.Dot(vec1, vec3);
+        const dot2 = Vector3.Dot(vec1, vec2);
+        const dot3 = Vector3.Dot(vec2, vec3);
+        const a = (-0.5 * len2_sq * dot1) / len4_sq;
+        const b = (-0.5 * len3_sq * dot2) / len4_sq;
+        const c = (-0.5 * len1_sq * dot3) / len4_sq;
+        const center = first.scale(a).add(second.scale(b)).add(third.scale(c));
+        const radiusVec = first.subtract(center);
+        const xAxis = radiusVec.normalize();
+        const yAxis = Vector3.Cross(zAxis, xAxis).normalize();
+        if (fullCircle) {
+            const dStep = (2 * Math.PI) / steps;
+            for (let theta = 0; theta <= 2 * Math.PI; theta += dStep) {
+                arc.push(center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta)))));
+            }
+            arc.push(first);
+        } else {
+            const dStep = 1 / steps;
+            let theta = 0;
+            let point = Vector3.Zero();
+            do {
+                point = center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta))));
+                arc.push(point);
+                theta += dStep;
+            } while (!point.equalsWithEpsilon(third, radius * dStep * 1.1));
+            arc.push(third);
+            if (closed) {
+                arc.push(first);
+            }
+        }
+        return new Curve3(arc);
     }
 
     /**

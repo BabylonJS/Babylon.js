@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
+import type { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
 import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { PhysicsImpostor } from "core/Physics/physicsImpostor";
 import { Scene } from "core/scene";
 
-import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -18,12 +18,12 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { GlobalState } from "../../../../globalState";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
-import { MorphTarget } from "core/Morph/morphTarget";
+import type { MorphTarget } from "core/Morph/morphTarget";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
@@ -34,10 +34,11 @@ import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { IInspectableOptions } from "core/Misc/iInspectable";
+import type { ShaderMaterial } from "core/Materials/shaderMaterial";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import "core/Physics/physicsEngineComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -83,7 +84,7 @@ export class MeshPropertyGridComponent extends React.Component<
             return;
         }
 
-        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true)!;
+        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true, false)!;
         wireframeOver.reservedDataStore = { hidden: true };
 
         // Sets up the mesh to be attached to the parent.
@@ -420,15 +421,27 @@ export class MeshPropertyGridComponent extends React.Component<
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
-                    {mesh.parent && (
-                        <TextLineComponent
-                            label="Parent"
-                            value={mesh.parent.name}
-                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}
-                        />
-                    )}
+                    <ParentPropertyGridComponent
+                        globalState={this.props.globalState}
+                        node={mesh}
+                        lockObject={this.props.lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {mesh.skeleton && <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()} />}
-                    <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
+                    <CheckBoxLineComponent
+                        label="Is enabled"
+                        isSelected={() => mesh.isEnabled()}
+                        onSelect={(value) => {
+                            const prevValue = mesh.isEnabled();
+                            mesh.setEnabled(value);
+                            this.props.onPropertyChangedObservable?.notifyObservers({
+                                object: mesh,
+                                property: "isEnabled",
+                                value,
+                                initialValue: prevValue,
+                            });
+                        }}
+                    />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) && (
                         <TextLineComponent label="Link to material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
@@ -662,6 +675,7 @@ export class MeshPropertyGridComponent extends React.Component<
                                 mesh.disableEdgesRendering();
                             }
                         }}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
                         label="Edge width"

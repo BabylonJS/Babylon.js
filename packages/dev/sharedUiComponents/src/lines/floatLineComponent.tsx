@@ -1,11 +1,12 @@
 import * as React from "react";
 
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { LockObject } from "../tabs/propertyGrids/lockObject";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { SliderLineComponent } from "./sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
+import { InputArrowsComponent } from "./inputArrowsComponent";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -26,12 +27,13 @@ interface IFloatLineComponentProps {
     icon?: string;
     iconLabel?: string;
     defaultValue?: number;
-    unit?: string;
-    onUnitClicked?: () => void;
-    unitLocked?: boolean;
+    arrows?: boolean;
+    unit?: React.ReactNode;
+    onDragStart?: (newValue: number) => void;
+    onDragStop?: (newValue: number) => void;
 }
 
-export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
+export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
     private _store: number;
 
@@ -39,7 +41,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         const currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: this.getValueString(currentValue) };
+        this.state = { value: this.getValueString(currentValue), dragging: false };
         this._store = currentValue;
     }
 
@@ -60,7 +62,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         return "0";
     }
 
-    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
+    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -73,6 +75,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             nextState.value = newValueString;
             return true;
         }
+
+        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit) {
+            return true;
+        }
+
         return false;
     }
 
@@ -147,6 +154,33 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
     }
 
+    incrementValue(amount: number) {
+        if (this.props.step) {
+            amount *= parseFloat(this.props.step);
+        }
+        let currentValue = parseFloat(this.state.value);
+        if (isNaN(currentValue)) {
+            currentValue = 0;
+        }
+        this.updateValue((currentValue + amount).toFixed(2));
+    }
+
+    onKeyDown(event: React.KeyboardEvent) {
+        if (this.props.arrows) {
+            if (event.key === "ArrowUp") {
+                this.incrementValue(1);
+                event.preventDefault();
+            }
+            if (event.key === "ArrowDown") {
+                this.incrementValue(-1);
+                event.preventDefault();
+            }
+        }
+        if (event.key === "Enter" && this.props.onEnter) {
+            this.props.onEnter(this._store);
+        }
+    }
+
     render() {
         let valueAsNumber: number;
 
@@ -156,7 +190,13 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(this.state.value);
         }
 
-        const className = this.props.smallUI ? "short" : "value";
+        let className = this.props.smallUI ? "short" : "value";
+        if (this.state.dragging) {
+            className += " dragging";
+        }
+        if (this.props.arrows) {
+            className += " hasArrows";
+        }
 
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
@@ -175,14 +215,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 type={"number"}
                                 step={this.props.step || this.props.isInteger ? "1" : "0.01"}
                                 className="numeric-input"
-                                onKeyDown={(evt) => {
-                                    if (evt.keyCode !== 13) {
-                                        return;
-                                    }
-                                    if (this.props.onEnter) {
-                                        this.props.onEnter(this._store);
-                                    }
-                                }}
+                                onKeyDown={(evt) => this.onKeyDown(evt)}
                                 value={value}
                                 onBlur={() => {
                                     this.unlock();
@@ -194,17 +227,23 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 onFocus={() => this.lock()}
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />
+                            {this.props.arrows && (
+                                <InputArrowsComponent
+                                    incrementValue={(amount) => this.incrementValue(amount)}
+                                    setDragging={(newDragging) => {
+                                        const currentDragging = this.state.dragging;
+                                        // drag stopped
+                                        if (!currentDragging && newDragging && this.props.onDragStart) {
+                                            this.props.onDragStart(valueAsNumber);
+                                        } else if (currentDragging && !newDragging && this.props.onDragStop) {
+                                            this.props.onDragStop(valueAsNumber);
+                                        }
+                                        this.setState({ dragging: newDragging });
+                                    }}
+                                />
+                            )}
                         </div>
-                        {this.props.unit && (
-                            <button
-                                className={this.props.unitLocked ? "unit disabled" : "unit"}
-                                onClick={() => {
-                                    if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked();
-                                }}
-                            >
-                                {this.props.unit}
-                            </button>
-                        )}
+                        {this.props.unit}
                     </div>
                 )}
                 {this.props.useEuler && (

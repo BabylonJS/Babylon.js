@@ -2,6 +2,7 @@
 // Version
 var Versions = {
     Latest: [
+        "https://preview.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://preview.babylonjs.com/babylon.js",
         "https://preview.babylonjs.com/gui/babylon.gui.min.js",
         "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
@@ -29,16 +30,16 @@ var Versions = {
         "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js",
         "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js",
     ],
-    "4.2.0": [
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/babylon.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/gui/babylon.gui.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/inspector/babylon.inspector.bundle.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/nodeEditor/babylon.nodeEditor.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/materialsLibrary/babylonjs.materials.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/loaders/babylonjs.loaders.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.0/dist/serializers/babylonjs.serializers.min.js",
+    "4.2.1": [
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/babylon.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/gui/babylon.gui.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/inspector/babylon.inspector.bundle.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/nodeEditor/babylon.nodeEditor.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/materialsLibrary/babylonjs.materials.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/loaders/babylonjs.loaders.min.js",
+        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.2.1/dist/serializers/babylonjs.serializers.min.js",
     ],
     "4.1.0": [
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.1.0/dist/babylon.js",
@@ -60,26 +61,31 @@ var Versions = {
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.0.3/dist/loaders/babylonjs.loaders.min.js",
         "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@4.0.3/dist/serializers/babylonjs.serializers.min.js",
     ],
-    3.3: [
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/babylon.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/gui/babylon.gui.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/inspector/babylon.inspector.bundle.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/materialsLibrary/babylonjs.materials.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/postProcessesLibrary/babylonjs.postProcess.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/loaders/babylonjs.loaders.min.js",
-        "https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js@3.3.0/dist/serializers/babylonjs.serializers.min.js",
-    ],
 };
+
+const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
-        let script = document.createElement("script");
-        script.src = url;
+        // eslint-disable-next-line no-undef
+        let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
+        const script = document.createElement("script");
+        script.src = urlToLoad;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
             }
+        };
+        script.onerror = () => {
+            // fallback
+            const fallbackScript = document.createElement("script");
+            fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
+            fallbackScript.onload = () => {
+                if (!instantResolve) {
+                    resolve();
+                }
+            };
+            document.head.appendChild(fallbackScript);
         };
         document.head.appendChild(script);
         if (instantResolve) {
@@ -89,11 +95,11 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 let readStringFromStore = function (key, defaultValue) {
-    if (localStorage.getItem(key) === null) {
+    if (sessionStorage.getItem(key) === null) {
         return defaultValue;
     }
 
-    return localStorage.getItem(key);
+    return sessionStorage.getItem(key);
 };
 
 let loadInSequence = async function (versions, index, resolve) {
@@ -123,8 +129,22 @@ let checkBabylonVersionAsync = function () {
     }
 
     let versions = Versions[activeVersion] || Versions["Latest"];
-    if(snapshot) {
-        versions = versions.map(v => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    if (snapshot) {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    } else if (window.location.href.includes("debug.html")) {
+        versions = versions.map((v) => {
+            if (!v.includes("https://preview.babylonjs.com") && !v.includes("https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js")) {
+                return v;
+            }
+            if(v.includes("timestamp.js")) {
+                return v;
+            }
+            if (v.includes(".min.")) {
+                return v.replace(".min", "");
+            } else {
+                return v.replace("babylon.js", "babylon.max.js");
+            }
+        });
     }
 
     return new Promise((resolve) => {
@@ -136,9 +156,9 @@ checkBabylonVersionAsync().then(() => {
     loadScriptAsync("babylon.playground.js").then(() => {
         var hostElement = document.getElementById("host-element");
         let mode = undefined;
-        if(window.location.href.includes("full.html")) {
+        if (window.location.href.includes("full.html")) {
             mode = 1;
-        } else if(window.location.href.includes("frame.html")) {
+        } else if (window.location.href.includes("frame.html")) {
             mode = 2;
         }
         // eslint-disable-next-line no-undef

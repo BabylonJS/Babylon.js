@@ -1,32 +1,34 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { MaterialHelper } from "../../../materialHelper";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import { Light } from "../../../../Lights/light";
-import { Nullable } from "../../../../types";
+import type { Light } from "../../../../Lights/light";
+import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { Effect } from "../../../effect";
-import { Mesh } from "../../../../Meshes/mesh";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Effect } from "../../../effect";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
-import { Scene } from "../../../../scene";
+import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { SheenBlock } from "./sheenBlock";
-import { BaseTexture } from "../../../Textures/baseTexture";
+import type { BaseTexture } from "../../../Textures/baseTexture";
 import { GetEnvironmentBRDFTexture } from "../../../../Misc/brdfTextureTools";
 import { MaterialFlags } from "../../../materialFlags";
 import { AnisotropyBlock } from "./anisotropyBlock";
 import { ReflectionBlock } from "./reflectionBlock";
 import { ClearCoatBlock } from "./clearCoatBlock";
+import { IridescenceBlock } from "./iridescenceBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
-import { RefractionBlock } from "./refractionBlock";
-import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import type { RefractionBlock } from "./refractionBlock";
+import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
 import { Color3, TmpColors } from "../../../../Maths/math.color";
 
@@ -120,6 +122,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             true,
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock")
+        );
+        this.registerInput(
+            "iridescence",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("iridescence", this, NodeMaterialConnectionPointDirection.Input, IridescenceBlock, "IridescenceBlock")
         );
 
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -516,6 +525,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
         return this._inputs[16];
+    }
+
+    /**
+     * Gets the iridescence object parameters
+     */
+    public get iridescence(): NodeMaterialConnectionPoint {
+        return this._inputs[17];
     }
 
     /**
@@ -1178,6 +1194,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
             ],
+        });
+
+        // _____________________________ Iridescence _______________________________
+        const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
+        state.compilationString += IridescenceBlock.GetCode(iridescenceBlock);
+
+        state._emitFunctionFromInclude("pbrBlockIridescence", comments, {
+            replaceStrings: [],
         });
 
         // _____________________________ Clear Coat ____________________________

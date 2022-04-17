@@ -1,12 +1,12 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import { GlobalState, GUIEditorTool } from "../globalState";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
 import pointerIcon from "../imgs/pointerIcon.svg";
@@ -57,31 +57,12 @@ const _sizeOptions = [
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
-    private _panning: boolean = false;
-    private _zooming: boolean = false;
-    private _selecting: boolean = true;
     private _sizeOption: number = 0;
+    private _stopUpdating: boolean = false;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
-        props.globalState.onPanObservable.add(() => {
-            this._panning = !this._panning;
-            this._zooming = false;
-            this._selecting = false;
-            this.forceUpdate();
-        });
-
-        props.globalState.onSelectionButtonObservable.add(() => {
-            this._selecting = !this._selecting;
-            this._panning = false;
-            this._zooming = false;
-            this.forceUpdate();
-        });
-
-        props.globalState.onZoomObservable.add(() => {
-            this._zooming = !this._zooming;
-            this._panning = false;
-            this._selecting = false;
+        props.globalState.onToolChangeObservable.add(() => {
             this.forceUpdate();
         });
 
@@ -171,7 +152,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Give feedback",
                                     onClick: () => {
-                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
+                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-beta/28943", "_blank");
                                     },
                                 },
                             ]}
@@ -180,27 +161,27 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             tooltip="Select"
                             icon={pointerIcon}
                             shortcut="S"
-                            isActive={this._selecting}
+                            isActive={this.props.globalState.tool === GUIEditorTool.SELECT}
                             onClick={() => {
-                                if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers();
+                                this.props.globalState.tool = GUIEditorTool.SELECT;
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Pan"
                             icon={handIcon}
                             shortcut="P"
-                            isActive={this._panning}
+                            isActive={this.props.globalState.tool === GUIEditorTool.PAN}
                             onClick={() => {
-                                if (!this._panning) this.props.globalState.onPanObservable.notifyObservers();
+                                this.props.globalState.tool = GUIEditorTool.PAN;
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Zoom"
                             shortcut="Z"
                             icon={zoomIcon}
-                            isActive={this._zooming}
+                            isActive={this.props.globalState.tool === GUIEditorTool.ZOOM}
                             onClick={() => {
-                                if (!this._zooming) this.props.globalState.onZoomObservable.notifyObservers();
+                                this.props.globalState.tool = GUIEditorTool.ZOOM;
                             }}
                         />
                     </div>
@@ -211,7 +192,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={canvasFitIcon}
                             isActive={false}
                             onClick={() => {
-                                this.props.globalState.onFitToWindowObservable.notifyObservers();
+                                this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                             }}
                         />
                         <CommandButtonComponent
@@ -240,6 +221,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 }
                                 this.forceUpdate();
                             }}
+                            large
                         />
                         {DataStorage.ReadBoolean("Responsive", true) && (
                             <OptionsLineComponent
@@ -261,38 +243,48 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         )}
                         {!DataStorage.ReadBoolean("Responsive", true) && (
                             <>
-                                <TextInputLineComponent
+                                <FloatLineComponent
                                     label="W"
                                     target={size}
                                     propertyName="width"
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
-                                        const number = parseInt(newValue, 10);
-                                        if (!isNaN(number)) {
-                                            this.props.globalState.workbench.guiSize = { width: number, height: size.height };
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
                                         }
                                     }}
-                                    numeric={true}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
+                                        this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                    }}
                                     arrows={true}
-                                    roundValues={true}
-                                ></TextInputLineComponent>
-                                <TextInputLineComponent
+                                    isInteger={true}
+                                />
+                                <FloatLineComponent
                                     label="H"
                                     target={size}
                                     propertyName="height"
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
-                                        const number = parseInt(newValue, 10);
-                                        if (!isNaN(number)) {
-                                            this.props.globalState.workbench.guiSize = { width: size.width, height: number };
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
                                         }
                                     }}
-                                    numeric={true}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
+                                        this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                    }}
                                     arrows={true}
-                                    roundValues={true}
-                                ></TextInputLineComponent>
+                                    isInteger={true}
+                                />
                             </>
                         )}
                     </div>

@@ -1,0 +1,16 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "../../../tools/viewer/src",
+        "declaration": true,
+        "target": "es5",
+        "importHelpers": true,
+        "plugins": [
+            { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/viewer", "appendJS": true },
+        ]
+    },
+
+    "include": ["../../../tools/viewer/src/**/*"]
+}

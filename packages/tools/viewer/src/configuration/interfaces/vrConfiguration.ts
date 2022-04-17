@@ -1,4 +1,4 @@
-import { VRExperienceHelperOptions } from "babylonjs";
+import type { VRExperienceHelperOptions } from "core/Cameras/VR/vrExperienceHelper";
 
 export interface IVRConfiguration {
     disabled?: boolean;

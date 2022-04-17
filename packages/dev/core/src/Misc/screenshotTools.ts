@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
-import { IScreenshotSize } from "./interfaces/screenshotSize";
+import type { IScreenshotSize } from "./interfaces/screenshotSize";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -215,14 +215,14 @@ export function CreateScreenshotUsingRenderTarget(
     texture.samples = samples;
     texture.renderSprites = renderSprites;
 
-    engine.onEndFrameObservable.addOnce(() => {
-        texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-            Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
-            texture.dispose();
-        });
-    });
-
     const renderToTexture = () => {
+        engine.onEndFrameObservable.addOnce(() => {
+            texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                texture.dispose();
+            });
+        });
+
         // render the RTT
         scene.incrementRenderId();
         scene.resetCachedMaterial();

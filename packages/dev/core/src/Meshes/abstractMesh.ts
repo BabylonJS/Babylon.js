@@ -1,38 +1,41 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene, IDisposable } from "../scene";
-import { Quaternion, Matrix, Vector3, TmpVectors, Vector2 } from "../Maths/math.vector";
+import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene, IDisposable } from "../scene";
+import type { Vector2 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
-import { Node } from "../node";
+import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
-import { VertexData, IGetSetVerticesData } from "../Meshes/mesh.vertexData";
+import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
+import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
-import { SubMesh } from "../Meshes/subMesh";
+import type { SubMesh } from "../Meshes/subMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { IntersectionInfo } from "../Collisions/intersectionInfo";
-import { ICullable, BoundingInfo } from "../Culling/boundingInfo";
-import { Material } from "../Materials/material";
-import { MaterialDefines } from "../Materials/materialDefines";
-import { Light } from "../Lights/light";
-import { Skeleton } from "../Bones/skeleton";
-import { MorphTargetManager } from "../Morph/morphTargetManager";
-import { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
-import { IEdgesRenderer } from "../Rendering/edgesRenderer";
-import { SolidParticle } from "../Particles/solidParticle";
+import type { IntersectionInfo } from "../Collisions/intersectionInfo";
+import type { ICullable } from "../Culling/boundingInfo";
+import { BoundingInfo } from "../Culling/boundingInfo";
+import type { Material } from "../Materials/material";
+import type { MaterialDefines } from "../Materials/materialDefines";
+import type { Light } from "../Lights/light";
+import type { Skeleton } from "../Bones/skeleton";
+import type { MorphTargetManager } from "../Morph/morphTargetManager";
+import type { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
+import type { IEdgesRenderer } from "../Rendering/edgesRenderer";
+import type { SolidParticle } from "../Particles/solidParticle";
 import { Constants } from "../Engines/constants";
-import { AbstractActionManager } from "../Actions/abstractActionManager";
+import type { AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport } from "../Misc/devTools";
-import { RawTexture } from "../Materials/Textures/rawTexture";
+import type { RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Epsilon } from "../Maths/math.constants";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
-import { IParticleSystem } from "../Particles/IParticleSystem";
+import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RegisterClass } from "../Misc/typeStore";
 
 declare type Ray = import("../Culling/ray").Ray;
@@ -1459,8 +1462,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param data defines the position data to apply the skeleton and morph to
      * @returns the position data
      */
-    public getPositionData(applySkeleton: boolean, applyMorph: boolean, data?: Nullable<FloatArray>): Nullable<FloatArray> {
-        data = data ?? this.getVerticesData(VertexBuffer.PositionKind);
+    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
+        data = data ?? Tools.Slice(this.getVerticesData(VertexBuffer.PositionKind));
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
@@ -1560,9 +1563,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
                 }
             }
+            return this.getPositionData(applySkeleton, applyMorph, data);
         }
 
-        return this.getPositionData(applySkeleton, applyMorph, data);
+        return data;
     }
 
     /** @hidden */
@@ -1570,7 +1574,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (this._boundingInfo) {
             this._boundingInfo.update(this.worldMatrixFromCache);
         } else {
-            this._boundingInfo = new BoundingInfo(this.position, this.position, this.worldMatrixFromCache);
+            this._boundingInfo = new BoundingInfo(Vector3.Zero(), Vector3.Zero(), this.worldMatrixFromCache);
         }
         this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         return this;

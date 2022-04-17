@@ -1,12 +1,12 @@
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { Control } from "gui/2D/controls/control";
-import { Grid } from "gui/2D/controls/grid";
-import { Rectangle } from "gui/2D/controls/rectangle";
+import type { Grid } from "gui/2D/controls/grid";
+import type { Rectangle } from "gui/2D/controls/rectangle";
 import { Matrix2D } from "gui/2D/math2D";
 import { Vector2 } from "core/Maths/math.vector";
-import { Observable } from "core/Misc/observable";
-import { GlobalState } from "../globalState";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable } from "core/Misc/observable";
+import type { GlobalState } from "../globalState";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
 
@@ -271,9 +271,22 @@ export class CoordinateHelper {
         return Math.floor(value * 100) / 100;
     }
 
-    public static ConvertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"]) {
+    public static ConvertToPixels(
+        guiControl: Control,
+        properties: DimensionProperties[] = ["left", "top", "width", "height"],
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    ) {
+        // make sure we are using the latest measures for the control
+        (guiControl as any)._processMeasures(guiControl.parent?._currentMeasure, guiControl.host);
         for (const property of properties) {
+            const initialValue = guiControl[property];
             guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
+            onPropertyChangedObservable?.notifyObservers({
+                object: guiControl,
+                initialValue,
+                value: guiControl[property],
+                property,
+            });
         }
     }
 }

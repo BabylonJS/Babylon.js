@@ -2,14 +2,29 @@
 
 var hostElement = document.getElementById("host-element");
 
+const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+
 let loadScriptAsync = function (url, instantResolve) {
-    return new Promise((resolve, _reject) => {
-        let script = document.createElement("script");
-        script.src = url;
+    return new Promise((resolve) => {
+        // eslint-disable-next-line no-undef
+        let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
+        const script = document.createElement("script");
+        script.src = urlToLoad;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
             }
+        };
+        script.onerror = () => {
+            // fallback
+            const fallbackScript = document.createElement("script");
+            fallbackScript.src = url.replace("https://preview.babylonjs.com", fallbackUrl);
+            fallbackScript.onload = () => {
+                if (!instantResolve) {
+                    resolve();
+                }
+            };
+            document.head.appendChild(fallbackScript);
         };
         document.head.appendChild(script);
         if (instantResolve) {
@@ -20,6 +35,7 @@ let loadScriptAsync = function (url, instantResolve) {
 
 const Versions = {
     dist: [
+        "https://preview.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://preview.babylonjs.com/babylon.js",
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
         "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
@@ -49,12 +65,26 @@ let loadInSequence = async function (versions, index, resolve) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {
+    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) {
         activeVersion = "local";
     }
 
+    let snapshot = "";
+    // see if a snapshot should be used
+    if (window.location.search.indexOf("snapshot=") !== -1) {
+        snapshot = window.location.search.split("=")[1];
+        // cleanup, just in case
+        snapshot = snapshot.split("&")[0];
+        activeVersion = "dist";
+    }
+
+    let versions = Versions[activeVersion] || Versions["dist"];
+    if (snapshot && activeVersion === "dist") {
+        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    }
+
     return new Promise((resolve, _reject) => {
-        loadInSequence(Versions[activeVersion], 0, resolve);
+        loadInSequence(versions, 0, resolve);
     });
 };
 

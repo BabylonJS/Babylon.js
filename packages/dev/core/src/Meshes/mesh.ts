@@ -1,28 +1,31 @@
-import { Observer, Observable } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { Tools, AsyncLoop } from "../Misc/tools";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { DeepCopier } from "../Misc/deepCopier";
 import { Tags } from "../Misc/tags";
-import { Coroutine, runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
-import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Coroutine } from "../Misc/coroutine";
+import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
+import type { Nullable, FloatArray, IndicesArray } from "../types";
+import type { Camera } from "../Cameras/camera";
+import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import { Engine } from "../Engines/engine";
+import type { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
-import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
+import type { IGetSetVerticesData } from "./mesh.vertexData";
+import { VertexData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
-import { BoundingSphere } from "../Culling/boundingSphere";
-import { Effect } from "../Materials/effect";
+import type { BoundingSphere } from "../Culling/boundingSphere";
+import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
-import { Skeleton } from "../Bones/skeleton";
+import type { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
@@ -30,10 +33,10 @@ import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
-import { Path3D } from "../Maths/math.path";
-import { Plane } from "../Maths/math.plane";
-import { TransformNode } from "./transformNode";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { Path3D } from "../Maths/math.path";
+import type { Plane } from "../Maths/math.plane";
+import type { TransformNode } from "./transformNode";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 
 declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -117,8 +120,8 @@ class _InternalMeshDataInfo {
     public _onBetweenPassObservable: Nullable<Observable<SubMesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
-    public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
-    public _sourceNormals: Float32Array; // Will be used to save original normals when using software skinning
+    public _sourcePositions: Nullable<Float32Array>; // Will be used to save original positions when using software skinning
+    public _sourceNormals: Nullable<Float32Array>; // Will be used to save original normals when using software skinning
 
     // Will be used to save a source mesh reference, If any
     public _source: Nullable<Mesh> = null;
@@ -272,10 +275,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (value && this._internalMeshDataInfo._sourcePositions) {
             // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
-            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions, true);
             if (this._internalMeshDataInfo._sourceNormals) {
-                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals, true);
             }
+
+            this._internalMeshDataInfo._sourcePositions = null;
+            this._internalMeshDataInfo._sourceNormals = null;
         }
 
         this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
@@ -4158,7 +4164,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Prepare internal position array for software CPU skinning
      * @returns original positions used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh
      */
-    public setPositionsForCPUSkinning(): Float32Array {
+    public setPositionsForCPUSkinning(): Nullable<Float32Array> {
         const internalDataInfo = this._internalMeshDataInfo;
         if (!internalDataInfo._sourcePositions) {
             const source = this.getVerticesData(VertexBuffer.PositionKind);
@@ -4179,7 +4185,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Prepare internal normal array for software CPU skinning
      * @returns original normals used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh.
      */
-    public setNormalsForCPUSkinning(): Float32Array {
+    public setNormalsForCPUSkinning(): Nullable<Float32Array> {
         const internalDataInfo = this._internalMeshDataInfo;
 
         if (!internalDataInfo._sourceNormals) {
@@ -4301,9 +4307,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             Vector3.TransformCoordinatesFromFloatsToRef(
-                internalDataInfo._sourcePositions[index],
-                internalDataInfo._sourcePositions[index + 1],
-                internalDataInfo._sourcePositions[index + 2],
+                internalDataInfo._sourcePositions![index],
+                internalDataInfo._sourcePositions![index + 1],
+                internalDataInfo._sourcePositions![index + 2],
                 finalMatrix,
                 tempVector3
             );
@@ -4311,9 +4317,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (hasNormals) {
                 Vector3.TransformNormalFromFloatsToRef(
-                    internalDataInfo._sourceNormals[index],
-                    internalDataInfo._sourceNormals[index + 1],
-                    internalDataInfo._sourceNormals[index + 2],
+                    internalDataInfo._sourceNormals![index],
+                    internalDataInfo._sourceNormals![index + 1],
+                    internalDataInfo._sourceNormals![index + 2],
                     finalMatrix,
                     tempVector3
                 );
@@ -4460,10 +4466,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
+        const currentOverrideMaterialSideOrientation = meshes[0].overrideMaterialSideOrientation;
+
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
             if (mesh.isAnInstance) {
                 Logger.Warn("Cannot merge instance meshes.");
+                return null;
+            }
+
+            if (currentOverrideMaterialSideOrientation !== mesh.overrideMaterialSideOrientation) {
+                Logger.Warn("Cannot merge meshes with different overrideMaterialSideOrientation values.");
                 return null;
             }
 

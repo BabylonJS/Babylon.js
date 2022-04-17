@@ -1,37 +1,40 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector4 } from "../../Maths/math.vector";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { SubMesh } from "../../Meshes/subMesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
+import type { SubMesh } from "../../Meshes/subMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 import { Scalar } from "../../Maths/math.scalar";
 
-import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
-import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
+import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
+import { Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
 
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { CubeTexture } from "../../Materials/Textures/cubeTexture";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
-import { IAnimatable } from "../../Animations/animatable.interface";
+import type { IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
 import "../../Shaders/pbr.fragment";
@@ -39,6 +42,7 @@ import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
+import { PBRIridescenceConfiguration } from "./pbrIridescenceConfiguration";
 import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
@@ -847,6 +851,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly clearCoat: PBRClearCoatConfiguration;
 
     /**
+     * Defines the iridescence layer parameters for the material.
+     */
+    public readonly iridescence: PBRIridescenceConfiguration;
+
+    /**
      * Defines the anisotropic parameters for the material.
      */
     public readonly anisotropy: PBRAnisotropicConfiguration;
@@ -889,6 +898,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
+        this.iridescence = new PBRIridescenceConfiguration(this);
         this.anisotropy = new PBRAnisotropicConfiguration(this);
         this.sheen = new PBRSheenConfiguration(this);
         this.subSurface = new PBRSubSurfaceConfiguration(this);
@@ -1321,6 +1331,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (defines.VERTEXCOLOR) {
             attribs.push(VertexBuffer.ColorKind);
+        }
+
+        if (defines.INSTANCESCOLOR) {
+            attribs.push(VertexBuffer.ColorInstanceKind);
         }
 
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);

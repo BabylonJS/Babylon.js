@@ -1,15 +1,17 @@
-import { Nullable, IndicesArray } from "../types";
+import type { Nullable, IndicesArray } from "../types";
 import { Logger } from "../Misc/logger";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
-import { TransformNode } from "../Meshes/transformNode";
+import type { Matrix } from "../Maths/math.vector";
+import { Vector3, Quaternion } from "../Maths/math.vector";
+import type { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Scene } from "../scene";
-import { Bone } from "../Bones/bone";
-import { BoundingInfo } from "../Culling/boundingInfo";
-import { IPhysicsEngine } from "./IPhysicsEngine";
-import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
+import type { Scene } from "../scene";
+import type { Bone } from "../Bones/bone";
+import type { BoundingInfo } from "../Culling/boundingInfo";
+import type { IPhysicsEngine } from "./IPhysicsEngine";
+import type { PhysicsJointData } from "./physicsJoint";
+import { PhysicsJoint } from "./physicsJoint";
 import { Space } from "../Maths/math.axis";
 
 /**
@@ -540,7 +542,7 @@ export class PhysicsImpostor {
      * @returns boolean specifying if body initialization is required
      */
     public isBodyInitRequired(): boolean {
-        return this._bodyUpdateRequired || (!this._physicsBody && !this._parent);
+        return this._bodyUpdateRequired || (!this._physicsBody && (!this._parent || !!this._options.ignoreParent));
     }
 
     /**

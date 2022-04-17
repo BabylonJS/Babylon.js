@@ -1,9 +1,10 @@
-import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
-import { Scene } from "../../scene";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import type { SmartArrayNoDuplicate } from "../../Misc/smartArray";
+import type { Scene } from "../../scene";
+import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
-import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
+import type { ISceneSerializableComponent } from "../../sceneComponent";
+import { SceneComponentConstants } from "../../sceneComponent";
 import { AbstractScene } from "../../abstractScene";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {

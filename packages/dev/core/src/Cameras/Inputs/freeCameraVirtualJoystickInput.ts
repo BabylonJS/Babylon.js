@@ -1,6 +1,7 @@
 import { VirtualJoystick, JoystickAxis } from "../../Misc/virtualJoystick";
-import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { FreeCamera } from "../../Cameras/freeCamera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { FreeCamera } from "../../Cameras/freeCamera";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
 
@@ -93,11 +94,6 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
         this._rightjoystick.setJoystickSensibility(0.05);
         this._rightjoystick.setJoystickColor("yellow");
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

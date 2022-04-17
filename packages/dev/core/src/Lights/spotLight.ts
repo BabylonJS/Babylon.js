@@ -1,16 +1,16 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
-import { Nullable } from "../types";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Effect } from "../Materials/effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { Effect } from "../Materials/effect";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { Texture } from "../Materials/Textures/texture";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { Camera } from "../Cameras/camera";
+import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { Camera } from "../Cameras/camera";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);

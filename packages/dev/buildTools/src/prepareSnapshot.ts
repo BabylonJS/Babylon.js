@@ -1,6 +1,8 @@
+import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import { UMDPackageName, umdPackageMapping } from "./packageMapping";
+import type { UMDPackageName } from "./packageMapping";
+import { umdPackageMapping } from "./packageMapping";
 import { copyFile, findRootDirectory } from "./utils";
 
 export const prepareSnapshot = () => {
@@ -8,8 +10,8 @@ export const prepareSnapshot = () => {
     const snapshotDirectory = path.join(baseDirectory, ".snapshot");
     Object.keys(umdPackageMapping).forEach((packageName) => {
         const metadata = umdPackageMapping[packageName as UMDPackageName];
-        const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName, "dist");
-        const coreUmd = glob.sync(`${corePath}/*.*`);
+        const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName);
+        const coreUmd = glob.sync(`${corePath}/*+(.js|.d.ts|.map)`);
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);
         }
@@ -34,7 +36,10 @@ export const prepareSnapshot = () => {
         const baseLocation = path.join(baseDirectory, ".snapshot");
         const staticFiles = glob.sync(`${baseLocation}/**/*.module.d.ts`);
         for (const file of staticFiles) {
-            copyFile(file, file.replace(".module", ""), false);
+            // check if the file already exists. if it isn't, copy it
+            if (!fs.existsSync(file.replace(".module", ""))) {
+                copyFile(file, file.replace(".module", ""), false);
+            }
         }
     }
 
@@ -56,4 +61,24 @@ export const prepareSnapshot = () => {
         const relative = path.relative(baseLocationDist, file);
         copyFile(file, path.join(snapshotDirectory, relative), true);
     }
+
+    // generate timestamp.js, which contains the current timestamp
+    const timestamp = Date.now();
+    const timestampFile = path.join(snapshotDirectory, "timestamp.js");
+    fs.writeFileSync(timestampFile, `if(typeof globalThis !== "undefined") globalThis.__babylonSnapshotTimestamp__ = ${timestamp};`);
+
+    // copy the es6 builds
+    // removed for now
+    // {
+    //     const baseLocationDist = path.join(baseDirectory, "packages", "public", "@babylonjs");
+    //     const staticFilesDist = glob.sync(`${baseLocationDist}/**/*.*`);
+    //     for (const file of staticFilesDist) {
+    //         // ignore directories
+    //         if (fs.lstatSync(file).isDirectory()) {
+    //             continue;
+    //         }
+    //         const relative = path.relative(baseLocationDist, file);
+    //         copyFile(file, path.join(snapshotDirectory, "es6", relative), true);
+    //     }
+    // }
 };

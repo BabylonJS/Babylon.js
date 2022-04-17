@@ -1,10 +1,10 @@
-import { ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
+import type { ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
-import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
+import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 
 const NAME = "KHR_texture_transform";

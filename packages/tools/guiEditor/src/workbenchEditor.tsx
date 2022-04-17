@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "./globalState";
+import type { GlobalState } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -9,10 +9,10 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
-import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
-import { Nullable } from "core/types";
+import { GizmoWrapper } from "./diagram/gizmoWrapper";
+import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { ControlTypes } from "./controlTypes";
 
 import "./main.scss";
@@ -49,25 +49,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.state = {
             showPreviewPopUp: false,
         };
-
-        this.props.globalState.hostDocument!.addEventListener(
-            "keydown",
-            (evt) => {
-                if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) {
-                    // Delete
-                }
-
-                if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
-                    return;
-                }
-
-                if (evt.key === "a") {
-                    //all
-                    evt.preventDefault();
-                }
-            },
-            false
-        );
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
         this.props.globalState.onDropObservable.add(() => {
@@ -228,7 +209,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {
                             return;
                         }
-                        this.props.globalState.blockKeyboardEvents = false;
                     }}
                     ref={this._rootRef}
                     onPointerUp={(evt) => this.onPointerUp(evt)}
@@ -248,6 +228,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         onDrop={(event) => {
                             event.preventDefault();
                             this.props.globalState.onDropObservable.notifyObservers();
+                            this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -278,7 +259,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     onCreate(value: string): Control {
         const guiElement = GUINodeTools.CreateControlFromString(value);
         const newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
-        this.props.globalState.select(newGuiNode);
+        this.props.globalState.setSelection([newGuiNode]);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
         return newGuiNode;

@@ -1,5 +1,5 @@
-import { Nullable } from "core/types";
-import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { Nullable } from "core/types";
+import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,7 +7,7 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
-import { GlobalState } from "../globalState";
+import type { GlobalState } from "../globalState";
 
 export interface ITreeItemSelectableComponentProps {
     entity: any;

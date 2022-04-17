@@ -1,16 +1,17 @@
 import { Scene } from "../scene";
 import { VertexBuffer } from "../Buffers/buffer";
-import { SubMesh } from "../Meshes/subMesh";
+import type { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Matrix } from "../Maths/math.vector";
 import { SmartArray } from "../Misc/smartArray";
-import { Nullable, FloatArray, IndicesArray } from "../types";
-import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
-import { BoundingBox } from "../Culling/boundingBox";
-import { Effect } from "../Materials/effect";
+import type { Nullable, FloatArray, IndicesArray } from "../types";
+import type { ISceneComponent } from "../sceneComponent";
+import { SceneComponentConstants } from "../sceneComponent";
+import type { BoundingBox } from "../Culling/boundingBox";
+import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
-import { DataBuffer } from "../Buffers/dataBuffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color";
 import { Observable } from "../Misc/observable";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -161,9 +162,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
     constructor(scene: Scene) {
         this.scene = scene;
         scene._addComponent(this);
-        this._uniformBufferFront = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererFront");
+        this._uniformBufferFront = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererFront", !this.scene.getEngine().isWebGPU);
         this._buildUniformLayout(this._uniformBufferFront);
-        this._uniformBufferBack = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererBack");
+        this._uniformBufferBack = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererBack", !this.scene.getEngine().isWebGPU);
         this._buildUniformLayout(this._uniformBufferBack);
     }
 
@@ -217,7 +218,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             "boundingBoxRenderer",
             {
                 attributes: [VertexBuffer.PositionKind],
-                uniforms: ["world", "viewProjection", "color"],
+                uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
             },
             false
@@ -233,7 +234,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             "boundingBoxRenderer",
             {
                 attributes: [VertexBuffer.PositionKind],
-                uniforms: ["world", "viewProjection", "color"],
+                uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
             },
             true

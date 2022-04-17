@@ -1,16 +1,16 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { NodeMaterialDefines } from "../../nodeMaterial";
-import { BaseTexture } from "../../../Textures/baseTexture";
-import { Nullable } from "../../../../types";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
+import type { BaseTexture } from "../../../Textures/baseTexture";
+import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
-import { Scene } from "../../../../scene";
-import { InputBlock } from "../Input/inputBlock";
+import type { Scene } from "../../../../scene";
+import type { InputBlock } from "../Input/inputBlock";
 
 declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 

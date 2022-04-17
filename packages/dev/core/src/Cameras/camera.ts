@@ -2,20 +2,20 @@ import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/deco
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { CameraInputsManager } from "./cameraInputsManager";
-import { Scene } from "../scene";
+import type { Nullable } from "../types";
+import type { CameraInputsManager } from "./cameraInputsManager";
+import type { Scene } from "../scene";
 import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
-import { Mesh } from "../Meshes/mesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { ICullable } from "../Culling/boundingInfo";
+import type { Mesh } from "../Meshes/mesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
-import { Plane } from "../Maths/math.plane";
+import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -589,11 +589,11 @@ export class Camera extends Node {
     public attachControl(ignored: any, noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * This function is here because typescript removes the typing of the last function.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
+     * @param _noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
+    public attachControl(_ignored?: any, _noPreventDefault?: boolean): void {}
 
     /**
      * Detach the current controls from the specified dom element.
@@ -603,13 +603,13 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored: any): void;
+    public detachControl(ignored?: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
+     * This function is here because typescript removes the typing of the last function.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public detachControl(ignored?: any): void {}
+    public detachControl(_ignored?: any): void {}
 
     /**
      * Update the camera state according to the different inputs gathered during the frame.

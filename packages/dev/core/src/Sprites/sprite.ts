@@ -1,10 +1,10 @@
 import { Vector3 } from "../Maths/math.vector";
-import { Nullable } from "../types";
-import { ActionManager } from "../Actions/actionManager";
-import { ISpriteManager, SpriteManager } from "./spriteManager";
+import type { Nullable } from "../types";
+import type { ActionManager } from "../Actions/actionManager";
+import type { ISpriteManager, SpriteManager } from "./spriteManager";
 import { Color4 } from "../Maths/math.color";
 import { Observable } from "../Misc/observable";
-import { IAnimatable } from "../Animations/animatable.interface";
+import type { IAnimatable } from "../Animations/animatable.interface";
 import { ThinSprite } from "./thinSprite";
 
 declare type Animation = import("../Animations/animation").Animation;

@@ -1,9 +1,9 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Geometry } from "core/Meshes/geometry";
-import { Mesh } from "core/Meshes/mesh";
+import type { StandardMaterial } from "core/Materials/standardMaterial";
+import type { Geometry } from "core/Meshes/geometry";
+import type { Mesh } from "core/Meshes/mesh";
 
 /**
  * Class for generating OBJ data from a Babylon scene.

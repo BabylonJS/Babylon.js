@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { DataBuffer } from "../../Buffers/dataBuffer";
-import { IndicesArray, DataArray } from "../../types";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
+import type { IndicesArray, DataArray } from "../../types";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -48,7 +48,7 @@ ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, ver
         byteOffset = 0;
     }
 
-    const dataLength = (data as number[]).length || (data as ArrayBuffer).byteLength;
+    const dataLength = (data as ArrayBuffer).byteLength || (data as number[]).length;
 
     if (byteLength === undefined || (byteLength >= dataLength && byteOffset === 0)) {
         if (data instanceof Array) {

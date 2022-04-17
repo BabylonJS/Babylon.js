@@ -1,15 +1,16 @@
-import { GraphNode } from "./graphNode";
-import { GraphCanvasComponent } from "./graphCanvas";
-import { Nullable } from "core/types";
-import { Observer, Observable } from "core/Misc/observable";
-import { NodeLink } from "./nodeLink";
-import { IFrameData } from "../nodeLocationInfo";
+import type { GraphNode } from "./graphNode";
+import type { GraphCanvasComponent } from "./graphCanvas";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { NodeLink } from "./nodeLink";
+import type { IFrameData } from "../nodeLocationInfo";
 import { Color3 } from "core/Maths/math.color";
-import { NodePort } from "./nodePort";
+import type { NodePort } from "./nodePort";
 import { SerializationTools } from "../serializationTools";
 import { StringTools } from "shared-ui-components/stringTools";
 import { FrameNodePort } from "./frameNodePort";
-import { ISelectionChangedOptions } from "../globalState";
+import type { ISelectionChangedOptions } from "../globalState";
 
 enum ResizingDirection {
     Right,
@@ -673,7 +674,7 @@ export class GraphFrame {
             const rect2 = this.element.getBoundingClientRect();
             const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
             if (overlap) {
-                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true });
+                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true, marqueeSelection: true });
             }
         });
 

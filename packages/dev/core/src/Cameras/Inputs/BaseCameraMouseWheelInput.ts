@@ -1,11 +1,14 @@
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { Observable, Observer } from "../../Misc/observable";
-import { Camera } from "../../Cameras/camera";
-import { ICameraInput } from "../../Cameras/cameraInputsManager";
-import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import type { Observer } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
+import type { Camera } from "../../Cameras/camera";
+import type { ICameraInput } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
-import { EventConstants, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import { EventConstants } from "../../Events/deviceInputEvents";
 
 /**
  * Base class for mouse wheel input..
@@ -97,11 +100,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
 
         this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
-    public detachControl(): void;
 
     /**
      * Detach the current controls from the specified dom element.

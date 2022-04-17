@@ -1,12 +1,14 @@
-import { Nullable } from "core/types";
-import { Observable, Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { StackPanel } from "./stackPanel";
 import { Button } from "./button";
-import { Container } from "./container";
-import { TextBlock } from "./textBlock";
-import { InputText } from "./inputText";
+import type { Container } from "./container";
+import type { TextBlock } from "./textBlock";
+import type { InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to store key control properties
@@ -307,6 +309,27 @@ export class VirtualKeyboard extends StackPanel {
         returnValue.addKeysRow([" "], [{ width: "200px" }]);
 
         return returnValue;
+    }
+
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        for (const row of this.children) {
+            if (row.getClassName() === "StackPanel") {
+                const stackPanel = row as StackPanel;
+                for (const key of stackPanel.children) {
+                    if (key.getClassName() === "Button" && key.name) {
+                        key.onPointerUpObservable.add(() => {
+                            this.onKeyPressObservable.notifyObservers(key.name as string);
+                        });
+                    }
+                }
+            }
+        }
     }
 }
 

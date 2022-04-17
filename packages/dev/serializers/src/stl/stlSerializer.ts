@@ -1,4 +1,4 @@
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3 } from "core/Maths/math.vector";
 

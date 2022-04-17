@@ -2,22 +2,22 @@
  * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
  */
 import { Constants } from "../Engines/constants";
-import { Engine } from "../Engines/engine";
-import { Effect } from "../Materials/effect";
+import type { Engine } from "../Engines/engine";
+import type { Effect } from "../Materials/effect";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-import { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
-import { SubMesh } from "../Meshes/subMesh";
+import type { SubMesh } from "../Meshes/subMesh";
 import { SmartArray } from "../Misc/smartArray";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
-import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import { PrePassRenderer } from "./prePassRenderer";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import type { PrePassRenderer } from "./prePassRenderer";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Logger } from "../Misc/logger";
-import { IMaterialContext } from "../Engines/IMaterialContext";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { IMaterialContext } from "../Engines/IMaterialContext";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 import { Material } from "../Materials/material";
 
 import "../Shaders/postprocess.vertex";

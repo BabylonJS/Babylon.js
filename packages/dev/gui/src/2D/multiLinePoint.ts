@@ -1,13 +1,13 @@
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector";
 import { Epsilon } from "core/Maths/math.constants";
-import { Camera } from "core/Cameras/camera";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Camera } from "core/Cameras/camera";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
-import { MultiLine } from "./controls/multiLine";
+import type { MultiLine } from "./controls/multiLine";
 import { ValueAndUnit } from "./valueAndUnit";
-import { Control } from "./controls/control";
+import type { Control } from "./controls/control";
 
 /**
  * Class used to store a point for a MultiLine object.

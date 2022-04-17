@@ -1,13 +1,13 @@
 import { Vector4 } from "core/Maths/math.vector";
-import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Scene } from "core/scene";
+import type { Scene } from "core/scene";
 
 import { AbstractButton3D } from "./abstractButton3D";
-import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
+import type { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Color3 } from "core/Maths/math.color";
 
 /**

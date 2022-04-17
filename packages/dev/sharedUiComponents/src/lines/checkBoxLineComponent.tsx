@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
-import { PropertyChangedEvent } from "./../propertyChangedEvent";
-import { IconDefinition } from "@fortawesome/fontawesome-common-types";
+import type { Observable } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "./../propertyChangedEvent";
+import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 
@@ -17,11 +17,27 @@ export interface ICheckBoxLineComponentProps {
     icon?: string;
     iconLabel?: string;
     faIcons?: { enabled: IconDefinition; disabled: IconDefinition };
+    large?: boolean;
 }
 
-import toggleOnIcon from "../imgs/toggleOnIcon.svg";
-import toggleMixedIcon from "../imgs/toggleMixedIcon.svg";
-import toggleOffIcon from "../imgs/toggleOffIcon.svg";
+import toggleOnIcon_40px from "../imgs/toggleOnIcon_40px.svg";
+import toggleOffIcon_40px from "../imgs/toggleOffIcon_40px.svg";
+import toggleOnIcon_30px from "../imgs/toggleOnIcon_30px.svg";
+import toggleMixedIcon_30px from "../imgs/toggleMixedIcon_30px.svg";
+import toggleOffIcon_30px from "../imgs/toggleOffIcon_30px.svg";
+
+const Icons = {
+    size30: {
+        on: toggleOnIcon_30px,
+        mixed: toggleMixedIcon_30px,
+        off: toggleOffIcon_30px,
+    },
+    size40: {
+        on: toggleOnIcon_40px,
+        mixed: "", // unneeded
+        off: toggleOffIcon_40px,
+    },
+};
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean; isConflict: boolean }> {
     private _localChange = false;
@@ -94,7 +110,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     }
 
     render() {
-        const icon = this.state.isConflict ? toggleMixedIcon : this.state.isSelected ? toggleOnIcon : toggleOffIcon;
+        const icons = this.props.large ? Icons.size40 : Icons.size30;
+        const icon = this.state.isConflict ? icons.mixed : this.state.isSelected ? icons.on : icons.off;
         return (
             <div className="checkBoxLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}

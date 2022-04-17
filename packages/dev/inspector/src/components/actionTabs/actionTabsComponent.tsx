@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Nullable } from "core/types";
-import { Observer } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 import { DebugLayerTab } from "core/Debug/debugLayer";
 import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar, faCog } from "@fortawesome/free-solid-svg-icons";
@@ -11,7 +11,7 @@ import Resizable from "re-resizable";
 import { PropertyGridTabComponent } from "./tabs/propertyGridTabComponent";
 import { HeaderComponent } from "../headerComponent";
 import { ToolsTabComponent } from "./tabs/toolsTabComponent";
-import { GlobalState } from "../../components/globalState";
+import type { GlobalState } from "../../components/globalState";
 import { SettingsTabComponent } from "./tabs/settingsTabComponent";
 
 import "./actionTabs.scss";
@@ -148,7 +148,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                 if (!element) {
                     return;
                 }
-                element.style.width = "300px";
+                element.style.width = "200px";
             }, 150);
         }
 

@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { ExternalTexture } from "../../Materials/Textures/externalTexture";
-import { Nullable } from "../../types";
+import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
+import type { Nullable } from "../../types";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

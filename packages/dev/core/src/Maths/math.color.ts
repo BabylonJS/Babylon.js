@@ -1,4 +1,4 @@
-import { DeepImmutable, FloatArray } from "../types";
+import type { DeepImmutable, FloatArray } from "../types";
 import { Scalar } from "./math.scalar";
 import { ToLinearSpace, ToGammaSpace } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
@@ -97,9 +97,7 @@ export class Color3 {
      * @returns the new array
      */
     public asArray(): number[] {
-        const result = new Array<number>();
-        this.toArray(result, 0);
-        return result;
+        return [this.r, this.g, this.b];
     }
 
     /**
@@ -723,9 +721,7 @@ export class Color4 {
      * @returns the new array
      */
     public asArray(): number[] {
-        const result = new Array<number>();
-        this.toArray(result, 0);
-        return result;
+        return [this.r, this.g, this.b, this.a];
     }
 
     /**
@@ -734,7 +730,7 @@ export class Color4 {
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Color4 object
      */
-    public toArray(array: number[], index: number = 0): Color4 {
+    public toArray(array: FloatArray, index: number = 0): Color4 {
         array[index] = this.r;
         array[index + 1] = this.g;
         array[index + 2] = this.b;
@@ -1013,7 +1009,16 @@ export class Color4 {
     // Statics
 
     /**
-     * Creates a new Color4 from the string containing valid hexadecimal values
+     * Creates a new Color4 from the string containing valid hexadecimal values.
+     *
+     * A valid hex string is either in the format #RRGGBB or #RRGGBBAA.
+     *
+     * When a hex string without alpha is passed, the resulting Color4 has
+     * its alpha value set to 1.0.
+     *
+     * An invalid string results in a Color with all its channels set to 0.0,
+     * i.e. "transparent black".
+     *
      * @param hex defines a string containing valid hexadecimal values
      * @returns a new Color4 object
      */
