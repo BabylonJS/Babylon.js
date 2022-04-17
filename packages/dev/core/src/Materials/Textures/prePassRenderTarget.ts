@@ -6,6 +6,7 @@ import type { Scene } from "../../scene";
 import type { PostProcess } from "../../PostProcesses/postProcess";
 import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
 import type { Nullable } from "../../types";
+import { Constants } from "core/Engines";
 
 /**
  * A multi render target designed to render the prepass.
@@ -61,6 +62,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
         super(name, size, count, scene, options);
 
         this.renderTargetTexture = renderTargetTexture;
+        this._renderPassIds = this.renderTargetTexture ? this.renderTargetTexture.renderPassIds as number[] : [Constants.RENDERPASS_MAIN];
     }
 
     /**

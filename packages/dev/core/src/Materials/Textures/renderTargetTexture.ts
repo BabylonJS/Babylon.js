@@ -266,7 +266,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Current render pass id of the render target texture. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
      */
     public renderPassId: number;
-    private _renderPassIds: number[];
+    protected _renderPassIds: number[];
     /**
      * Gets the render pass ids used by the render target texture. For a single render target the array length will be 1, for a cube texture it will be 6 and for
      * a 2D texture array it will return an array of ids the size of the 2D texture array
