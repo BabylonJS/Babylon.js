@@ -70,7 +70,7 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
         babylonMaterial.iridescence.isEnabled = true;
 
         babylonMaterial.iridescence.intensity = properties.iridescenceFactor ?? 0;
-        babylonMaterial.iridescence.indexOfRefraction = properties.iridescenceIOR ?? 1.3;
+        babylonMaterial.iridescence.indexOfRefraction = properties.iridescenceIor ?? (properties as any).iridescenceIOR ?? 1.3;
         babylonMaterial.iridescence.minimumThickness = properties.iridescenceThicknessMinimum ?? 100;
         babylonMaterial.iridescence.maximumThickness = properties.iridescenceThicknessMaximum ?? 400;
 
