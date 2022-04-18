@@ -218,6 +218,11 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public static readonly QUALITY_LOW = 2;
 
+    /**
+     * Defines the default alpha cutoff value used for transparent alpha tested materials.
+     */
+    public static DEFAULT_ALPHA_CUTOFF = 0.5;
+
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
     public id: string;
 
@@ -1471,7 +1476,7 @@ export class ShadowGenerator implements IShadowGenerator {
                         return false;
                     }
 
-                    const alphaCutOff = (material as any).alphaCutOff ?? 1;
+                    const alphaCutOff = (material as any).alphaCutOff ?? ShadowGenerator.DEFAULT_ALPHA_CUTOFF;
 
                     defines.push("#define ALPHATEST");
                     defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
