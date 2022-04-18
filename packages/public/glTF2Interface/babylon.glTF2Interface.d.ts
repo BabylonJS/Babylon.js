@@ -1040,7 +1040,7 @@ declare module BABYLON.GLTF2 {
     /** @hidden */
     interface IKHRMaterialsIridescence extends IMaterialExtension {
         iridescenceFactor?: number;
-        iridescenceIOR?: number;
+        iridescenceIor?: number;
         iridescenceThicknessMinimum?: number;
         iridescenceThicknessMaximum?: number;
         iridescenceTexture?: ITextureInfo;
