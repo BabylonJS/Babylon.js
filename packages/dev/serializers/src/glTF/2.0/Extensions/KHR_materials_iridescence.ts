@@ -70,7 +70,7 @@ export class KHR_materials_iridescence implements IGLTFExporterExtensionV2 {
 
                 const iridescenceInfo: IKHRMaterialsIridescence = {
                     iridescenceFactor: babylonMaterial.iridescence.intensity,
-                    iridescenceIOR: babylonMaterial.iridescence.indexOfRefraction,
+                    iridescenceIor: babylonMaterial.iridescence.indexOfRefraction,
                     iridescenceThicknessMinimum: babylonMaterial.iridescence.minimumThickness,
                     iridescenceThicknessMaximum: babylonMaterial.iridescence.maximumThickness,
 
