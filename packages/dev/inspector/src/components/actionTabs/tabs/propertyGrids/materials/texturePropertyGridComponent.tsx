@@ -346,7 +346,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Use sRGB buffers" value={texture._texture?._useSRGBBuffer ? "Yes" : "No"} />
                     {extension && <TextLineComponent label="File format" value={extension} />}
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
-                    <TextLineComponent label="Internal Unique ID" value={texture._texture?.uniqueId.toString()} />
+                    <TextLineComponent label="Internal Unique ID" value={(texture._texture?.uniqueId ?? "N/A").toString()} />
                     <TextLineComponent label="Class" value={textureClass} />
                     {count >= 0 && <TextLineComponent label="Number of textures" value={count.toString()} />}
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
