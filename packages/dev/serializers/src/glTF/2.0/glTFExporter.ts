@@ -239,8 +239,14 @@ export class _Exporter {
         );
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: { [key: number]: number }, binaryWriter?: _BinaryWriter): Promise<Nullable<INode>> {
-        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap,binaryWriter));
+    public _extensionsPostExportNodeAsync(
+        context: string,
+        node: Nullable<INode>,
+        babylonNode: Node,
+        nodeMap?: { [key: number]: number },
+        binaryWriter?: _BinaryWriter
+    ): Promise<Nullable<INode>> {
+        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, binaryWriter));
     }
 
     public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
@@ -2094,7 +2100,7 @@ export class _Exporter {
             promiseChain = promiseChain.then(() => {
                 const convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
                 return this._createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem).then((node) => {
-                    const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap,binaryWriter);
+                    const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap, binaryWriter);
                     if (promise == null) {
                         Tools.Warn(`Not exporting node ${babylonNode.name}`);
                         return Promise.resolve();
