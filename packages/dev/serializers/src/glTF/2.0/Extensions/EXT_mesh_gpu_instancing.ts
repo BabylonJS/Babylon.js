@@ -54,7 +54,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     const noRotation = Quaternion.Identity();
                     const noScale = Vector3.One();
 
-                    // retreive all the instance world matrix
+                    // retrieve all the instance world matrix
+
                     const matrix = babylonNode.thinInstanceGetWorldMatrices();
 
                     const iwt = TmpVectors.Vector3[2];
