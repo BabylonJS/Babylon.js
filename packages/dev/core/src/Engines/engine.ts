@@ -2061,6 +2061,7 @@ export class Engine extends ThinEngine {
             element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
             element.requestPointerLock();
+            element.focus();
         }
     }
 
