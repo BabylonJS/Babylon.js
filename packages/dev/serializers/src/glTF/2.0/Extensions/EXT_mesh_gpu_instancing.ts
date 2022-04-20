@@ -6,6 +6,8 @@ import type { Nullable } from "core/types";
 import type { Node } from "core/node";
 import { Mesh } from "core/Meshes";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { DefaultCollisionCoordinator } from "core/Collisions/collisionCoordinator";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -91,7 +93,13 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
                     // do we need to write TRANSLATION ?
                     if (hasAnyInstanceWorldTranslation) {
-                        gpu_instancing.attributes["TRANSLATION"] = this._buildFloat32Accessor(translationBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, binaryWriter);
+                        gpu_instancing.attributes["TRANSLATION"] = this._buildAccessor(
+                            translationBuffer,
+                            AccessorType.VEC3,
+                            babylonNode.thinInstanceCount,
+                            binaryWriter,
+                            AccessorComponentType.FLOAT
+                        );
                     }
                     // do we need to write ROTATION ?
                     if (hasAnyInstanceWorldRotation) {
@@ -99,11 +107,23 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                         //   - 5126 (FLOAT)
                         //   - 5120 (BYTE) normalized
                         //   - 5122 (SHORT) normalized
-                        gpu_instancing.attributes["ROTATION"] = this._buildFloat32Accessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, binaryWriter);
+                        gpu_instancing.attributes["ROTATION"] = this._buildAccessor(
+                            rotationBuffer,
+                            AccessorType.VEC4,
+                            babylonNode.thinInstanceCount,
+                            binaryWriter,
+                            AccessorComponentType.FLOAT
+                        );
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
-                        gpu_instancing.attributes["SCALE"] = this._buildFloat32Accessor(scaleBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, binaryWriter);
+                        gpu_instancing.attributes["SCALE"] = this._buildAccessor(
+                            scaleBuffer,
+                            AccessorType.VEC3,
+                            babylonNode.thinInstanceCount,
+                            binaryWriter,
+                            AccessorComponentType.FLOAT
+                        );
                     }
 
                     /* eslint-enable @typescript-eslint/naming-convention*/
@@ -115,20 +135,43 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         });
     }
 
-    private _buildFloat32Accessor(buffer: Float32Array, type: AccessorType, count: number, binaryWriter: _BinaryWriter): number {
+    private _buildAccessor(
+        buffer: Float32Array | Int8Array | Int16Array,
+        type: AccessorType,
+        count: number,
+        binaryWriter: _BinaryWriter,
+        componentType: AccessorComponentType
+    ): number {
         // write the buffer
         const bufferOffset = binaryWriter.getByteOffset();
-        for (let i = 0; i != buffer.length; i++) {
-            binaryWriter.setFloat32(buffer[i]);
+        switch (componentType) {
+            case AccessorComponentType.FLOAT: {
+                for (let i = 0; i != buffer.length; i++) {
+                    binaryWriter.setFloat32(buffer[i]);
+                }
+                break;
+            }
+            case AccessorComponentType.BYTE: {
+                for (let i = 0; i != buffer.length; i++) {
+                    binaryWriter.setByte(buffer[i]);
+                }
+                break;
+            }
+            case AccessorComponentType.SHORT: {
+                for (let i = 0; i != buffer.length; i++) {
+                    binaryWriter.setInt16(buffer[i]);
+                }
+                break;
+            }
         }
         // build the buffer view
-        const bv: IBufferView = { buffer: 0, byteOffset: bufferOffset, byteLength: buffer.length * 4 };
+        const bv: IBufferView = { buffer: 0, byteOffset: bufferOffset, byteLength: buffer.length * VertexBuffer.GetTypeByteLength(componentType) };
         const bufferViewIndex = this._exporter._bufferViews.length;
         this._exporter._bufferViews.push(bv);
 
         // finally build the accessor
         const accessorIndex = this._exporter._accessors.length;
-        const accessor: IAccessor = { bufferView: bufferViewIndex, componentType: AccessorComponentType.FLOAT, count: count, type: type };
+        const accessor: IAccessor = { bufferView: bufferViewIndex, componentType: componentType, count: count, type: type };
         this._exporter._accessors.push(accessor);
         return accessorIndex;
     }

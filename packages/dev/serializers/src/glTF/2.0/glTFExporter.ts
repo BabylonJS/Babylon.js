@@ -2493,4 +2493,44 @@ export class _BinaryWriter {
             this._byteOffset += 4;
         }
     }
+    /**
+     * Stores an Int16 in the array buffer
+     * @param entry
+     * @param byteOffset If defined, specifies where to set the value as an offset.
+     */
+    public setInt16(entry: number, byteOffset?: number) {
+        if (byteOffset != null) {
+            if (byteOffset < this._byteOffset) {
+                this._dataView.setInt16(byteOffset, entry, true);
+            } else {
+                Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            }
+        } else {
+            if (this._byteOffset + 2 > this._arrayBuffer.byteLength) {
+                this._resizeBuffer(this._arrayBuffer.byteLength * 2);
+            }
+            this._dataView.setInt16(this._byteOffset, entry, true);
+            this._byteOffset += 2;
+        }
+    }
+    /**
+     * Stores a byte in the array buffer
+     * @param entry
+     * @param byteOffset If defined, specifies where to set the value as an offset.
+     */
+    public setByte(entry: number, byteOffset?: number) {
+        if (byteOffset != null) {
+            if (byteOffset < this._byteOffset) {
+                this._dataView.setInt8(byteOffset, entry);
+            } else {
+                Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            }
+        } else {
+            if (this._byteOffset + 1 > this._arrayBuffer.byteLength) {
+                this._resizeBuffer(this._arrayBuffer.byteLength * 2);
+            }
+            this._dataView.setInt8(this._byteOffset, entry);
+            this._byteOffset++;
+        }
+    }
 }
