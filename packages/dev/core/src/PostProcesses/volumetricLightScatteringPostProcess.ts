@@ -399,10 +399,16 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     }
                 }
 
+                if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
+                    effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                }
+
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
-                    effect.setMatrix("world", world)
-                );
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering, (isInstance, world) => {
+                    if (!isInstance) {
+                        effect.setMatrix("world", world);
+                    }
+                });
             }
         };
 
