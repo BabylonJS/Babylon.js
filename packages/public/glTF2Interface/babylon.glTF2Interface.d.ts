@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 declare module "babylonjs-gltf2interface" {
     export = BABYLON.GLTF2;
 }
+
 /**
  * Module for glTF 2.0 Interface
  */
@@ -903,7 +906,7 @@ declare module BABYLON.GLTF2 {
             hasSkins: boolean;
             hasTextures: boolean;
             maxAttributesUsed: number;
-            primitivesCount: number
+            primitivesCount: number;
         };
         issues: {
             messages: Array<string>;
@@ -911,7 +914,7 @@ declare module BABYLON.GLTF2 {
             numHints: number;
             numInfos: number;
             numWarnings: number;
-            truncated: boolean
+            truncated: boolean;
         };
         mimeType: string;
         uri: string;
@@ -995,10 +998,10 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    const enum IKHRLightsPunctual_LightType {
+    const enum KHRLightsPunctual_LightType {
         DIRECTIONAL = "directional",
         POINT = "point",
-        SPOT = "spot"
+        SPOT = "spot",
     }
 
     /** @hidden */
@@ -1008,7 +1011,7 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRLightsPunctual_Light extends IChildRootProperty {
-        type: IKHRLightsPunctual_LightType;
+        type: KHRLightsPunctual_LightType;
         color?: number[];
         intensity?: number;
         range?: number;
@@ -1025,7 +1028,7 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IMaterialExtension {
-        hasTextures?() : boolean;
+        hasTextures?(): boolean;
     }
 
     /** @hidden */
@@ -1049,12 +1052,45 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_ior extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
     interface IKHRMaterialsIor extends IMaterialExtension {
-        ior: number;
+        ior?: number;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_volume extension
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsVolume extends IMaterialExtension {
+        thicknessFactor?: number;
+        thicknessTexture?: ITextureInfo;
+        attenuationDistance?: number;
+        attenuationColor?: number[];
+    }
+
+    /**
+     * Interfaces from the KHR_materials_specular extension
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsSpecular extends IMaterialExtension {
+        specularFactor?: number;
+        specularColorFactor?: number[];
+        specularTexture?: ITextureInfo;
+        specularColorTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_transmission extension
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsTransmission extends IMaterialExtension {
+        transmissionFactor?: number;
+        transmissionTexture?: ITextureInfo;
     }
 
     /**
@@ -1082,7 +1118,6 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_sheen extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1091,30 +1126,6 @@ declare module BABYLON.GLTF2 {
         sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
         sheenRoughnessTexture?: ITextureInfo;
-    }
-
-    /**
-     * Interfaces from the KHR_materials_specular extension
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-
-    /** @hidden */
-    interface IKHRMaterialsSpecular extends IMaterialExtension {
-        specularFactor?: number;
-        specularColorFactor?: number[];
-        specularTexture?: ITextureInfo;
-        specularColorTexture?: ITextureInfo;
-    }
-
-    /**
-     * Interfaces from the KHR_materials_transmission extension
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-
-    /** @hidden */
-    interface IKHRMaterialsTransmission extends IMaterialExtension {
-        transmissionFactor?: number;
-        transmissionTexture?: ITextureInfo;
     }
 
     /**
