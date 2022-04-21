@@ -45,6 +45,10 @@ export enum PointerInput {
     MouseWheelY = 8,
     /** Mouse Wheel Z */
     MouseWheelZ = 9,
+    /** Delta X */
+    DeltaHorizontal = 10,
+    /** Delta Y */
+    DeltaVertical = 11,
     /** Used in events/observables to identify if x/y changes occurred */
     Move = 12,
 }

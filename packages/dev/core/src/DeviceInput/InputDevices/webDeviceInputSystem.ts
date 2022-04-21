@@ -13,10 +13,37 @@ const MAX_KEYCODES = 255;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
+class InputValue {
+    private _currentValue: number;
+    private _accumulatingValue: number;
+
+    public constructor(defaultValue: number = 0) {
+        this._currentValue = defaultValue;
+        this._accumulatingValue = defaultValue;
+    }
+
+    public set(value: number): void {
+        this._currentValue = value;
+    }
+
+    public get value(): number {
+        return this._currentValue;
+    }
+
+    public accumulate(value: number): void {
+        this._accumulatingValue += value;
+    }
+
+    public tick(defaultValue: number = 0): void {
+        this._currentValue = this._accumulatingValue;
+        this._accumulatingValue = defaultValue;
+    }
+}
+
 /** @hidden */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     // Private Members
-    private _inputs: Array<{ [deviceSlot: number]: Array<number> }> = [];
+    private _inputs: Array<{ [deviceSlot: number]: Array<InputValue> }> = [];
     private _gamepads: Array<DeviceType>;
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
@@ -117,7 +144,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             Tools.Warn(`Unable to provide information for PointerInput.Move.  Try using PointerInput.Horizontal or PointerInput.Vertical for move data.`);
         }
 
-        return currentValue;
+        return currentValue.value;
     }
 
     /**
@@ -162,7 +189,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                             const device = inputs[deviceSlot];
                             if (device) {
                                 for (let inputIndex = 0; inputIndex < device.length; inputIndex++) {
-                                    device[inputIndex] = 0;
+                                    device[inputIndex].set(0);
                                 }
                             }
                         }
@@ -266,8 +293,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
         this._registerDevice(deviceType, deviceSlot, MAX_POINTER_INPUTS);
         const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
-        pointer[0] = currentX;
-        pointer[1] = currentY;
+        pointer[PointerInput.Horizontal].set(currentX);
+        pointer[PointerInput.Vertical].set(currentY);
     }
 
     /**
@@ -286,10 +313,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
 
         if (!this._inputs[deviceType][deviceSlot]) {
-            const device = new Array<number>(numberOfInputs);
+            const device = new Array<InputValue>(numberOfInputs);
 
             for (let i = 0; i < numberOfInputs; i++) {
-                device[i] = 0; /* set device input as unpressed */
+                device[i] = new InputValue(0); /* set device input as unpressed */
             }
 
             this._inputs[deviceType][deviceSlot] = device;
@@ -321,7 +348,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
-                kbKey[evt.keyCode] = 1;
+                kbKey[evt.keyCode].set(1);
 
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
@@ -338,7 +365,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const kbKey = this._inputs[DeviceType.Keyboard][0];
             if (kbKey) {
-                kbKey[evt.keyCode] = 0;
+                kbKey[evt.keyCode].set(0);
 
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
@@ -352,8 +379,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const kbKey = this._inputs[DeviceType.Keyboard][0];
 
                 for (let i = 0; i < kbKey.length; i++) {
-                    if (kbKey[i] !== 0) {
-                        kbKey[i] = 0;
+                    if (kbKey[i].value !== 0) {
+                        kbKey[i].set(0);
 
                         const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, i, 0, this, this._elementToAttachTo);
 
@@ -396,8 +423,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                pointer[PointerInput.Horizontal] = evt.clientX;
-                pointer[PointerInput.Vertical] = evt.clientY;
+                pointer[PointerInput.Horizontal].set(evt.clientX);
+                pointer[PointerInput.Vertical].set(evt.clientY);
+                pointer[PointerInput.DeltaHorizontal].accumulate(evt.movementX ?? 0);
+                pointer[PointerInput.DeltaVertical].accumulate(evt.movementY ?? 0);
 
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = PointerInput.Move;
@@ -407,7 +436,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 // Lets Propagate the event for move with same position.
                 if (!this._usingSafari && evt.button !== -1) {
                     deviceEvent.inputIndex = evt.button + 2;
-                    pointer[evt.button + 2] = pointer[evt.button + 2] ? 0 : 1; // Reverse state of button if evt.button has value
+                    pointer[evt.button + 2].set(pointer[evt.button + 2].value ? 0 : 1); // Reverse state of button if evt.button has value
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
             }
@@ -442,8 +471,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                const previousHorizontal = pointer[PointerInput.Horizontal];
-                const previousVertical = pointer[PointerInput.Vertical];
+                const previousHorizontal = pointer[PointerInput.Horizontal].value;
+                const previousVertical = pointer[PointerInput.Vertical].value;
 
                 if (deviceType === DeviceType.Mouse) {
                     // Mouse; Among supported browsers, value is either 1 or 0 for mouse
@@ -474,9 +503,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 }
 
-                pointer[PointerInput.Horizontal] = evt.clientX;
-                pointer[PointerInput.Vertical] = evt.clientY;
-                pointer[evt.button + 2] = 1;
+                pointer[PointerInput.Horizontal].set(evt.clientX);
+                pointer[PointerInput.Vertical].set(evt.clientY);
+                pointer[evt.button + 2].set(1);
 
                 const deviceEvent = evt as IUIEvent;
 
@@ -507,13 +536,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
 
             const pointer = this._inputs[deviceType]?.[deviceSlot];
-            if (pointer && pointer[evt.button + 2] !== 0) {
-                const previousHorizontal = pointer[PointerInput.Horizontal];
-                const previousVertical = pointer[PointerInput.Vertical];
+            if (pointer && pointer[evt.button + 2].value !== 0) {
+                const previousHorizontal = pointer[PointerInput.Horizontal].value;
+                const previousVertical = pointer[PointerInput.Vertical].value;
 
-                pointer[PointerInput.Horizontal] = evt.clientX;
-                pointer[PointerInput.Vertical] = evt.clientY;
-                pointer[evt.button + 2] = 0;
+                pointer[PointerInput.Horizontal].set(evt.clientX);
+                pointer[PointerInput.Vertical].set(evt.clientY);
+                pointer[evt.button + 2].set(0);
 
                 const deviceEvent = evt as IUIEvent;
 
@@ -550,8 +579,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 }
 
                 for (let inputIndex = PointerInput.LeftClick; inputIndex <= PointerInput.BrowserForward; inputIndex++) {
-                    if (pointer[inputIndex] === 1) {
-                        pointer[inputIndex] = 0;
+                    if (pointer[inputIndex].value === 1) {
+                        pointer[inputIndex].set(0);
 
                         const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
 
@@ -565,7 +594,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     this._elementToAttachTo.releasePointerCapture(evt.pointerId);
                 }
 
-                this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
+                this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick].set(0);
 
                 const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
 
@@ -616,8 +645,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 }
 
                 for (let inputIndex = PointerInput.LeftClick; inputIndex <= PointerInput.BrowserForward; inputIndex++) {
-                    if (pointer[inputIndex] === 1) {
-                        pointer[inputIndex] = 0;
+                    if (pointer[inputIndex].value === 1) {
+                        pointer[inputIndex].set(0);
 
                         const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
 
@@ -637,8 +666,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._elementToAttachTo.releasePointerCapture(pointerId);
                     }
 
-                    if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
-                        pointer[deviceSlot][PointerInput.LeftClick] = 0;
+                    if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick].value === 1) {
+                        pointer[deviceSlot][PointerInput.LeftClick].set(0);
 
                         const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
 
@@ -666,21 +695,21 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                pointer[PointerInput.MouseWheelX] = evt.deltaX || 0;
-                pointer[PointerInput.MouseWheelY] = evt.deltaY || evt.wheelDelta || 0;
-                pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
+                pointer[PointerInput.MouseWheelX].accumulate(evt.deltaX || 0);
+                pointer[PointerInput.MouseWheelY].accumulate(evt.deltaY || evt.wheelDelta || 0);
+                pointer[PointerInput.MouseWheelZ].accumulate(evt.deltaZ || 0);
 
                 const deviceEvent = evt as IUIEvent;
 
-                if (pointer[PointerInput.MouseWheelX] !== 0) {
+                if (evt.deltaX) {
                     deviceEvent.inputIndex = PointerInput.MouseWheelX;
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
-                if (pointer[PointerInput.MouseWheelY] !== 0) {
+                if (evt.deltaY || evt.wheelDelta) {
                     deviceEvent.inputIndex = PointerInput.MouseWheelY;
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
-                if (pointer[PointerInput.MouseWheelZ] !== 0) {
+                if (evt.deltaZ) {
                     deviceEvent.inputIndex = PointerInput.MouseWheelZ;
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
@@ -698,9 +727,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._pointerInputClearObserver = this._engine.onEndFrameObservable.add(() => {
             if (this.isDeviceAvailable(DeviceType.Mouse)) {
                 const pointer = this._inputs[DeviceType.Mouse][0];
-                pointer[PointerInput.MouseWheelX] = 0;
-                pointer[PointerInput.MouseWheelY] = 0;
-                pointer[PointerInput.MouseWheelZ] = 0;
+                pointer[PointerInput.MouseWheelX].tick();
+                pointer[PointerInput.MouseWheelY].tick();
+                pointer[PointerInput.MouseWheelZ].tick();
+                pointer[PointerInput.DeltaHorizontal].tick();
+                pointer[PointerInput.DeltaVertical].tick();
+                console.log("horizontal: " + pointer[PointerInput.DeltaHorizontal].value);
             }
         });
     }
@@ -741,9 +773,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const device = this._inputs[deviceType][deviceSlot];
 
             if (inputIndex >= gp.buttons.length) {
-                device[inputIndex] = gp.axes[inputIndex - gp.buttons.length].valueOf();
+                device[inputIndex].set(gp.axes[inputIndex - gp.buttons.length].valueOf());
             } else {
-                device[inputIndex] = gp.buttons[inputIndex].value;
+                device[inputIndex].set(gp.buttons[inputIndex].value);
             }
         }
     }
