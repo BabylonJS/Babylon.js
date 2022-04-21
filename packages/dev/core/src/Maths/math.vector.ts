@@ -1371,6 +1371,13 @@ export class Vector3 {
     }
 
     /**
+     * Gets a boolean indicating if the vector contains a zero in one of its components
+     */
+     public get hasAZeroComponent(): boolean {
+        return this._x * this._y * this._z === 0;
+    }
+
+    /**
      * Normalize the current Vector3.
      * Please note that this is an in place operation.
      * @returns the current updated Vector3

@@ -3826,7 +3826,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
                 continue;
             }
 
