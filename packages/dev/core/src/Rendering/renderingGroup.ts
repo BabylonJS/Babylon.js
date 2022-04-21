@@ -280,7 +280,7 @@ export class RenderingGroup {
     private static _RenderUnsorted(subMeshes: SmartArray<SubMesh>): void {
         const scene = subMeshes.data[0].getMesh().getScene();
         for (let subIndex = 0; subIndex < subMeshes.length; subIndex++) {
-            const submesh = subMeshes.data[subIndex];            
+            const submesh = subMeshes.data[subIndex];
 
             if (scene._activeMeshesFrozenButKeepClipping && !submesh.isInFrustum(scene._frustumPlanes)) {
                 continue;

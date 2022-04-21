@@ -3706,7 +3706,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param keepFrustumCulling defines if you want to keep running the frustum clipping (false by default)
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes = true, keepFrustumCulling = false): Scene {
+    public freezeActiveMeshes(
+        skipEvaluateActiveMeshes = false,
+        onSuccess?: () => void,
+        onError?: (message: string) => void,
+        freezeMeshes = true,
+        keepFrustumCulling = false
+    ): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 onError && onError("No active camera found");

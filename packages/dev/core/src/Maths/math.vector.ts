@@ -1373,7 +1373,7 @@ export class Vector3 {
     /**
      * Gets a boolean indicating if the vector contains a zero in one of its components
      */
-     public get hasAZeroComponent(): boolean {
+    public get hasAZeroComponent(): boolean {
         return this._x * this._y * this._z === 0;
     }
 
