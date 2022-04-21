@@ -31,6 +31,7 @@ export class WebXRManagedOutputCanvasOptions {
      * @returns default values of this configuration object
      */
     public static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions {
+        const engineOptions = engine ? engine.getCreationOptions() : {};
         const defaults = new WebXRManagedOutputCanvasOptions();
         defaults.canvasOptions = {
             antialias: true,
@@ -38,7 +39,7 @@ export class WebXRManagedOutputCanvasOptions {
             stencil: engine ? engine.isStencilEnable : true,
             alpha: true,
             multiview: false,
-            framebufferScaleFactor: 1,
+            framebufferScaleFactor: engineOptions.framebufferScaleFactor || 1,
         };
 
         defaults.newCanvasCssStyle = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";

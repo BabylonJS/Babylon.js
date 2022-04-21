@@ -166,6 +166,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+
+    /**
+     * buffer scale from 0 .. 1 -- lower than 1 scales down
+     */
+     framebufferScaleFactor?: number;
 }
 
 /**
