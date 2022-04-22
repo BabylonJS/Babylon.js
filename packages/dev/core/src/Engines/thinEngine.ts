@@ -170,7 +170,7 @@ export interface EngineOptions extends WebGLContextAttributes {
     /**
      * buffer scale from 0 .. 1 -- lower than 1 scales down
      */
-     framebufferScaleFactor?: number;
+    framebufferScaleFactor?: number;
 }
 
 /**
