@@ -372,6 +372,10 @@ export class _Exporter {
         }
     }
 
+    public get options() { 
+        return this._options;
+    }
+    
     /**
      * Registers a glTF exporter extension
      * @param name Name of the extension to export

@@ -7,7 +7,6 @@ import type { Node } from "core/node";
 import { Mesh } from "core/Meshes";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { DefaultCollisionCoordinator } from "core/Collisions/collisionCoordinator";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -56,8 +55,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     const noRotation = Quaternion.Identity();
                     const noScale = Vector3.One();
 
-                    // retrieve all the instance world matrix
-
+                    // retreive all the instance world matrix
                     const matrix = babylonNode.thinInstanceGetWorldMatrices();
 
                     const iwt = TmpVectors.Vector3[2];
@@ -78,7 +76,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
                         // fill the temp buffer
                         translationBuffer.set(iwt.asArray(), i * 3);
-                        rotationBuffer.set(iwr.asArray(), i * 4);
+                        rotationBuffer.set(iwr.normalize().asArray(), i * 4); // ensure the quaternion is normalized
                         scaleBuffer.set(iws.asArray(), i * 3);
 
                         // this is where we decide if there is any transformation
@@ -108,13 +106,13 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                         //   - 5126 (FLOAT)
                         //   - 5120 (BYTE) normalized
                         //   - 5122 (SHORT) normalized
-                        gpu_instancing.attributes["ROTATION"] = this._buildAccessor(
-                            rotationBuffer,
-                            AccessorType.VEC4,
-                            babylonNode.thinInstanceCount,
-                            binaryWriter,
-                            AccessorComponentType.FLOAT
-                        );
+                        // this is defined by option.
+                        let componentType = this._exporter.options?.meshGpuInstancingOptions?.quaternionType ?? AccessorComponentType.FLOAT;
+                        if (componentType != AccessorComponentType.FLOAT && componentType != AccessorComponentType.SHORT && componentType != AccessorComponentType.BYTE) {
+                            // force to float if wrong type.
+                            componentType = AccessorComponentType.FLOAT;
+                        }
+                        gpu_instancing.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, binaryWriter, componentType);
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
@@ -154,13 +152,13 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
             }
             case AccessorComponentType.BYTE: {
                 for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.setByte(buffer[i]);
+                    binaryWriter.setByte(buffer[i] * 127);
                 }
                 break;
             }
             case AccessorComponentType.SHORT: {
                 for (let i = 0; i != buffer.length; i++) {
-                    binaryWriter.setInt16(buffer[i]);
+                    binaryWriter.setInt16(buffer[i] * 32767);
                 }
                 break;
             }
