@@ -2,11 +2,11 @@ import type { IDisplayManager } from "./displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import type { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
-import type { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
-import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
+import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
+import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -36,7 +36,7 @@ export class TextureDisplayManager implements IDisplayManager {
             if (block instanceof TextureBlock) {
                 contentArea.classList.add("regular-texture-block");
             }
-            if (block instanceof ReflectionBlock) {
+            if (block instanceof ReflectionTextureBlock || block instanceof ReflectionBlock) {
                 contentArea.classList.add("reflection-block");
             }
             if (block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
