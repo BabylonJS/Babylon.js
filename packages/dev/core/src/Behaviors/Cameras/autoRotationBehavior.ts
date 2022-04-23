@@ -1,5 +1,5 @@
 import type { Behavior } from "../../Behaviors/behavior";
-import { Camera } from "../../Cameras/camera";
+import type { Camera } from "../../Cameras/camera";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
@@ -23,18 +23,18 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     private _idleRotationSpeed = 0.05;
     private _idleRotationWaitTime = 2000;
     private _idleRotationSpinupTime = 2000;
-    private _targetAlpha:number;
+    private _targetAlpha: number;
 
     /**
-    * Sets the target aplha for Camera to rotate to
-    * @param targetAlpha
-    */
+     * Sets the target aplha for Camera to rotate to
+     * @param targetAlpha
+     */
     public setTargetAlpha(targetAlpha: number): void {
         this._targetAlpha = targetAlpha;
     }
     /**
-     * Gets the target alpha for Camera to rotate to 
-    */    
+     * Gets the target alpha for Camera to rotate to
+     */
     public get targetAlpha(): number {
         return this._targetAlpha;
     }
@@ -137,7 +137,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
         });
 
         this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
-            if(this._reachTargetAlpha()){
+            if (this._reachTargetAlpha()) {
                 return;
             }
             const now = PrecisionDate.Now;
@@ -187,7 +187,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * 
+     * Returns true if camera alpha reaches the target alpha
      * @returns true if camera alpha reaches the target alpha
      */
     private _reachTargetAlpha(): boolean {
@@ -196,8 +196,6 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
         }
         return false;
     }
-
-    
 
     /**
      * Returns true if user is scrolling.
