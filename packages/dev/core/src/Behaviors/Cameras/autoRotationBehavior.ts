@@ -1,5 +1,5 @@
 import type { Behavior } from "../../Behaviors/behavior";
-import type { Camera } from "../../Cameras/camera";
+import { Camera } from "../../Cameras/camera";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
@@ -23,7 +23,21 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     private _idleRotationSpeed = 0.05;
     private _idleRotationWaitTime = 2000;
     private _idleRotationSpinupTime = 2000;
+    private _targetAlpha:number;
 
+    /**
+    * Sets the target aplha for Camera to rotate to
+    * @param targetAlpha
+    */
+    public setTargetAlpha(targetAlpha: number): void {
+        this._targetAlpha = targetAlpha;
+    }
+    /**
+     * Gets the target alpha for Camera to rotate to 
+    */    
+    public get targetAlpha(): number {
+        return this._targetAlpha;
+    }
     /**
      * Sets the flag that indicates if user zooming should stop animation.
      */
@@ -123,6 +137,9 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
         });
 
         this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
+            if(this._reachTargetAlpha()){
+                return;
+            }
             const now = PrecisionDate.Now;
             let dt = 0;
             if (this._lastFrameTime != null) {
@@ -168,6 +185,19 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     public resetLastInteractionTime(customTime?: number): void {
         this._lastInteractionTime = customTime ?? PrecisionDate.Now;
     }
+
+    /**
+     * 
+     * @returns true if camera alpha reaches the target alpha
+     */
+    private _reachTargetAlpha(): boolean {
+        if (this._attachedCamera && this._targetAlpha) {
+            return this._attachedCamera.alpha <= this._targetAlpha;
+        }
+        return false;
+    }
+
+    
 
     /**
      * Returns true if user is scrolling.
