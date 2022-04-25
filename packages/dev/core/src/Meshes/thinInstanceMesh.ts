@@ -188,7 +188,7 @@ Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
         return this._thinInstanceDataStorage.instancesCount;
     },
     set: function (this: Mesh, value: number) {
-        const numMaxInstances = (this._thinInstanceDataStorage.matrixData?.length ?? 0) / 16;
+        const numMaxInstances = (this._thinInstanceDataStorage.matrixData?.length ?? (this.source?._thinInstanceDataStorage.matrixData?.length ?? 0)) / 16;
 
         if (value <= numMaxInstances) {
             this._thinInstanceDataStorage.instancesCount = value;
