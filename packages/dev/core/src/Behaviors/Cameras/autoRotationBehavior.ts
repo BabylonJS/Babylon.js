@@ -6,6 +6,7 @@ import type { Observer } from "../../Misc/observable";
 import type { PointerInfoPre } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
+import { Epsilon } from "core/Maths/math.constants";
 
 /**
  * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
@@ -23,21 +24,8 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     private _idleRotationSpeed = 0.05;
     private _idleRotationWaitTime = 2000;
     private _idleRotationSpinupTime = 2000;
-    private _targetAlpha: number;
+    public _targetAlpha: Nullable<number> = null;
 
-    /**
-     * Sets the target aplha for Camera to rotate to
-     * @param targetAlpha
-     */
-    public setTargetAlpha(targetAlpha: number): void {
-        this._targetAlpha = targetAlpha;
-    }
-    /**
-     * Gets the target alpha for Camera to rotate to
-     */
-    public get targetAlpha(): number {
-        return this._targetAlpha;
-    }
     /**
      * Sets the flag that indicates if user zooming should stop animation.
      */
@@ -192,7 +180,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
      */
     private _reachTargetAlpha(): boolean {
         if (this._attachedCamera && this._targetAlpha) {
-            return this._attachedCamera.alpha <= this._targetAlpha;
+            return Math.abs(this._attachedCamera.alpha - this._targetAlpha) < Epsilon;
         }
         return false;
     }
