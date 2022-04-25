@@ -300,7 +300,7 @@ export class GridMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.GridMaterial";
         return serializationObject;
     }
