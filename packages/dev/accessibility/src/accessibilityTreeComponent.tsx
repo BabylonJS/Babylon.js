@@ -52,16 +52,21 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
                 let container = control as Container;
 
                 // observe add control and deal with new controls
-                // observe remove control
-                if(!this._observersMap.has(container.onControlAddedOrRemovedObservable)) {
-                    this._observersMap.set(container.onControlAddedOrRemovedObservable, container.onControlAddedOrRemovedObservable.add((newControl) => {
-                        if (newControl?.parent) { // added instead of removed
+                if(!this._observersMap.has(container.onControlAddedObservable)) {
+                    this._observersMap.set(container.onControlAddedObservable, container.onControlAddedObservable.add((newControl) => {
+                        if (newControl) {
                             // deal with the new added control
                             addGUIObservers(newControl);
                         }
-
                         updateA11yTree();
                     }));
+                }
+
+                // observe remove control
+                if(!this._observersMap.has(container.onControlRemovedObservable)) {
+                    this._observersMap.set(container.onControlRemovedObservable, container.onControlRemovedObservable.add((removedControl => {
+                        updateA11yTree();
+                    })))
                 }
 
                 // deal with children

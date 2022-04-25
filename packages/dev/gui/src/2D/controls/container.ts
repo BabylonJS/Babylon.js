@@ -210,7 +210,7 @@ export class Container extends Control {
 
         this._markAsDirty();
 
-        this.onControlAddedOrRemovedObservable.notifyObservers(control);
+        this.onControlAddedObservable.notifyObservers(control);
 
         return this;
     }
@@ -226,7 +226,7 @@ export class Container extends Control {
             this.removeControl(child);
         }
 
-        this.onControlAddedOrRemovedObservable.notifyObservers(null);
+        this.onControlRemovedObservable.notifyObservers(null);
         return this;
     }
 
@@ -252,14 +252,19 @@ export class Container extends Control {
 
         this._markAsDirty();
 
-        this.onControlAddedOrRemovedObservable.notifyObservers(control);
+        this.onControlRemovedObservable.notifyObservers(control);
         return this;
     }
 
     /**
-     * An event triggered when any control is added to or removed from  this container.
+     * An event triggered when any control is added to this container.
      */
-    public onControlAddedOrRemovedObservable = new Observable<Nullable<Control>>();
+    public onControlAddedObservable = new Observable<Nullable<Control>>();
+
+    /**
+     * An event triggered when any control is removed from this container.
+     */
+    public onControlRemovedObservable = new Observable<Nullable<Control>>();
 
     /**
      * @param control
