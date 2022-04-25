@@ -168,6 +168,10 @@ Mesh.prototype.thinInstanceSetMatrixAt = function (index: number, matrix: DeepIm
 };
 
 Mesh.prototype.thinInstanceSetAttributeAt = function (kind: string, index: number, value: Array<number>, refresh: boolean = true): boolean {
+    if (kind === VertexBuffer.ColorKind) {
+        kind = VertexBuffer.ColorInstanceKind;
+    }
+
     if (!this._userThinInstanceBuffersStorage || !this._userThinInstanceBuffersStorage.data[kind] || index >= this._thinInstanceDataStorage.instancesCount) {
         return false;
     }
