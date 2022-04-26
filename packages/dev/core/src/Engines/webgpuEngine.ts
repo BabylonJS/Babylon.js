@@ -919,8 +919,8 @@ export class WebGPUEngine extends Engine {
             depthLoadOp: WebGPUConstants.LoadOp.Clear,
             depthStoreOp: WebGPUConstants.StoreOp.Store,
             stencilClearValue: this._clearStencilValue,
-            stencilLoadOp: WebGPUConstants.LoadOp.Clear,
-            stencilStoreOp: WebGPUConstants.StoreOp.Store,
+            stencilLoadOp: !this.isStencilEnable ? undefined : WebGPUConstants.LoadOp.Clear,
+            stencilStoreOp: !this.isStencilEnable ? undefined : WebGPUConstants.StoreOp.Store,
         };
 
         this._mainRenderPassWrapper.renderPassDescriptor = {
@@ -2788,8 +2788,8 @@ export class WebGPUEngine extends Engine {
                           depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                           depthStoreOp: WebGPUConstants.StoreOp.Store,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: WebGPUConstants.StoreOp.Store,
+                          stencilLoadOp: !this.isStencilEnable ? undefined : rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: !this.isStencilEnable ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
@@ -2893,7 +2893,7 @@ export class WebGPUEngine extends Engine {
             : undefined;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadOp = mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilClearValue = mustClearStencil ? this._clearStencilValue : undefined;
-        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
+        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !this.isStencilEnable ? undefined : mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         this._swapChainTexture = this._context.getCurrentTexture();
