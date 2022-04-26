@@ -80,7 +80,11 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             if(!this._observersMap.has(node.onEnabledStateChangedObservable)) {
                 this._observersMap.set(node.onEnabledStateChangedObservable, node.onEnabledStateChangedObservable.add(updateA11yTree));
             }
-            // TODO: add observer on isSalient changed.
+
+            if(!this._observersMap.has(node.onAccessibilityTagChangedObservable)) {
+                this._observersMap.set(node.onAccessibilityTagChangedObservable, node.onAccessibilityTagChangedObservable.add(updateA11yTree));
+            }
+
             // If the node has GUI, add observer to the controls
             if(this._isGUI(node)) {
                 let curMesh = node as AbstractMesh;

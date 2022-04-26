@@ -12,6 +12,7 @@ import { _WarnImport } from "./Misc/devTools";
 import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import type { IInspectable } from "./Misc/iInspectable";
 import type { AbstractScene } from "./abstractScene";
+import { IAccessibilityTag } from "./IAccessibilityTag";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -126,12 +127,23 @@ export class Node implements IBehaviorAware<Node> {
     public inspectableCustomProperties: IInspectable[];
 
     /**
-     * Gets or sets the accessibility tag to describe the mesh for accessibility purpose.
+     * Gets or sets the accessibility tag to describe the node for accessibility purpose.
      */
-    public accessibilityTag?: IAccessibilityTag = {
+    public set accessibilityTag(value: IAccessibilityTag) {
+        this._accessibilityTag = value;
+        this.onAccessibilityTagChangedObservable.notifyObservers(value);
+    }
+
+    public get accessibilityTag() {
+        return this._accessibilityTag;
+    }
+
+    protected _accessibilityTag: IAccessibilityTag = {
         isSalient: false,
         description: ""
     };
+
+    public onAccessibilityTagChangedObservable = new Observable<IAccessibilityTag>();
 
     /**
      * Gets or sets a boolean used to define if the node must be serialized
@@ -980,19 +992,4 @@ export class Node implements IBehaviorAware<Node> {
             max: max,
         };
     }
-}
-
-// TODO: refactor this so the change of this tag can be observed.
-/**
- * Define an interface for a node to indicate it's info for accessibility.
- */
- export interface IAccessibilityTag {
-    /**
-     * A boolean indicating that this node is salience to be considered in the accesibility tree. (false by default)
-     */
-    isSalient: boolean;
-    /**
-     * A string as alt text of the node, describing what the node is/does, for accessibility purpose.
-     */
-    description: string;
 }
