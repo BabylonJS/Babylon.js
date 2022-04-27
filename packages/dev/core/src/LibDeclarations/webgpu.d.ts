@@ -849,8 +849,8 @@ interface GPURenderPassDepthStencilAttachment {
     depthReadOnly?: boolean /* default=false */;
 
     stencilClearValue?: GPUStencilValue /* default=0 */;
-    stencilLoadOp: GPULoadOp;
-    stencilStoreOp: GPUStoreOp;
+    stencilLoadOp?: GPULoadOp;
+    stencilStoreOp?: GPUStoreOp;
     stencilReadOnly?: boolean /* default=false */;
 }
 
