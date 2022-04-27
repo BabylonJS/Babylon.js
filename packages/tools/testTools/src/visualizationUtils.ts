@@ -135,7 +135,7 @@ export const evaluatePrepareScene = async (
             const snippet = await data.json();
             let code = JSON.parse(snippet.jsonPayload).code.toString();
             code = code
-                .replace(/\/textures\//g, globalConfig.pgRoot + "/textures/")
+                .replace(/"\/textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/"textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/\/scenes\//g, globalConfig.pgRoot + "/scenes/")
                 .replace(/"scenes\//g, '"' + globalConfig.pgRoot + "/scenes/")
