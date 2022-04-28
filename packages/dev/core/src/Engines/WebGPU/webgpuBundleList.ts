@@ -158,7 +158,7 @@ export class WebGPUBundleList {
         this._currentItemIsBundle = false;
     }
 
-    public getBundleEncoder(colorFormats: GPUTextureFormat[], depthStencilFormat: GPUTextureFormat | undefined, sampleCount: number): GPURenderBundleEncoder {
+    public getBundleEncoder(colorFormats: (GPUTextureFormat | null)[], depthStencilFormat: GPUTextureFormat | undefined, sampleCount: number): GPURenderBundleEncoder {
         if (!this._currentItemIsBundle) {
             this.addBundle();
             this._bundleEncoder = this._device.createRenderBundleEncoder({
