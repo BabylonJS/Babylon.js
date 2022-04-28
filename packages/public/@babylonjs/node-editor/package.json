@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-editor",
-    "version": "5.0.0-rc.12",
+    "version": "5.4.0",
     "main": "dist/babylon.nodeEditor.max.js",
     "module": "dist/babylon.nodeEditor.max.js",
     "esnext": "dist/babylon.nodeEditor.max.js",
@@ -18,7 +18,7 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.12"
+        "@babylonjs/core": "^5.4.0"
     },
     "peerDependencies": {
         "@types/react": ">=16.7.3",

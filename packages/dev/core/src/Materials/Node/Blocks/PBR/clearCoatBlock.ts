@@ -43,6 +43,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.worldNormal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this.registerOutput(
             "clearcoat",
@@ -68,6 +70,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         state._excludeVariableName("vClearCoatTintParams");
         state._excludeVariableName("vClearCoatRefractionParams");
         state._excludeVariableName("vClearCoatTangentSpaceParams");
+        state._excludeVariableName("vGeometricNormaClearCoatW");
     }
 
     /**
@@ -139,6 +142,13 @@ export class ClearCoatBlock extends NodeMaterialBlock {
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
         return this._inputs[8];
+    }
+
+    /**
+     * Gets the world normal input component
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[9];
     }
 
     /**
@@ -255,6 +265,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
             state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
+
+            const normalShading = ccBlock.worldNormal;
+            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
+        } else {
+            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\r\n`;
         }
 
         if (generateTBNSpace && ccBlock) {
@@ -270,7 +285,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
             clearcoatBlock(
                 ${worldPosVarName}.xyz,
-                geometricNormalW,
+                vGeometricNormaClearCoatW,
                 viewDirectionW,
                 vClearCoatParams,
                 specularEnvironmentR0,

@@ -497,6 +497,73 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         </div>
                     )}
                 </LineContainerComponent>
+                <LineContainerComponent title="IRIDESCENCE" selection={this.props.globalState}>
+                    <CheckBoxLineComponent
+                        label="Enabled"
+                        target={material.iridescence}
+                        propertyName="isEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.iridescence.isEnabled && (
+                        <div className="fragment">
+                            <SliderLineComponent
+                                label="Intensity"
+                                target={material.iridescence}
+                                propertyName="intensity"
+                                minimum={0}
+                                maximum={1}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="IOR"
+                                target={material.iridescence}
+                                propertyName="indexOfRefraction"
+                                minimum={1.0}
+                                maximum={3}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Min Thickness"
+                                target={material.iridescence}
+                                propertyName="minimumThickness"
+                                minimum={0}
+                                maximum={1000}
+                                step={10}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                label="Max Thickness"
+                                target={material.iridescence}
+                                propertyName="maximumThickness"
+                                minimum={0}
+                                maximum={1000}
+                                step={10}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Iridescence"
+                                texture={material.iridescence.texture}
+                                onTextureCreated={(texture) => (material.iridescence.texture = texture)}
+                                onTextureRemoved={() => (material.iridescence.texture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <TextureLinkLineComponent
+                                label="Thickness"
+                                texture={material.iridescence.thicknessTexture}
+                                onTextureCreated={(texture) => (material.iridescence.thicknessTexture = texture)}
+                                onTextureRemoved={() => (material.iridescence.thicknessTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                        </div>
+                    )}
+                </LineContainerComponent>
                 <LineContainerComponent title="ANISOTROPIC" selection={this.props.globalState}>
                     <CheckBoxLineComponent
                         label="Enabled"

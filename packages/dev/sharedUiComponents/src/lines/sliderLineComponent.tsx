@@ -22,6 +22,7 @@ interface ISliderLineComponentProps {
     icon?: string;
     iconLabel?: string;
     lockObject?: LockObject;
+    unit?: React.ReactNode;
 }
 
 export class SliderLineComponent extends React.Component<ISliderLineComponentProps, { value: number }> {
@@ -59,6 +60,11 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             this._localChange = false;
             return true;
         }
+
+        if (nextProps.unit !== this.props.unit) {
+            return true;
+        }
+
         return false;
     }
 
@@ -138,6 +144,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                         this.onChange(changed);
                     }}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    unit={this.props.unit}
                 />
                 <div className="slider">
                     <input

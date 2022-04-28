@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
@@ -21,6 +21,7 @@ import { PerfCounter } from "../Misc/perfCounter";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
@@ -298,7 +299,7 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap.
      */
-    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = new Image();
             image.onload = () => {
@@ -1714,6 +1715,19 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
      * @param texture
      * @param image
      * @param faceIndex
@@ -2047,6 +2061,7 @@ export class Engine extends ThinEngine {
             element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
             element.requestPointerLock();
+            element.focus();
         }
     }
 

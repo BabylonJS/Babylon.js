@@ -44,13 +44,13 @@ void main(){
     vec2 sheetUnits = 1. / spriteMapSize;
     float spriteUnits = 1. / spriteCount;
     vec2 stageUnits = 1. / stageSize;
-    
+
     for(int i = 0; i < LAYERS; i++) {
         float frameID;
         #define LAYER_ID_SWITCH
 
-        vec4 animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.); 
-        
+        vec4 animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.);
+
         if(animationData.y > 0.) {
 
             mt = mod(time*animationData.z, 1.0);
@@ -59,16 +59,16 @@ void main(){
                     frameID = animationData.x;
                     break;
                 }
-                
-                animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, aFrameSteps * f), 0.); 
+
+                animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, aFrameSteps * f), 0.);
             }
         }
 
         //Get Animation Frame
         mat4 frameData = getFrameData(frameID + 0.5);
-        vec2 frameSize = (frameData[0].wz) / spriteMapSize;
+        vec2 frameSize = (frameData[0].zw) / spriteMapSize;
         vec2 offset = frameData[0].xy * sheetUnits;
-        vec2 ratio = frameData[2].xy / frameData[0].wz;
+        vec2 ratio = frameData[2].xy / frameData[0].zw;
 
         //rotated
         if (frameData[2].z == 1.){
@@ -86,6 +86,6 @@ void main(){
     }
 
     color.xyz *= colorMul;
-    
+
     gl_FragColor = color;
 }

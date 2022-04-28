@@ -18,9 +18,6 @@ export interface ITextInputLineComponentProps {
     noUnderline?: boolean;
     numbersOnly?: boolean;
     delayInput?: boolean;
-    unit?: string;
-    onUnitClicked?: (unit: string) => void;
-    unitLocked?: boolean;
     arrows?: boolean;
     arrowsIncrement?: (amount: number) => void;
     step?: number;
@@ -29,6 +26,7 @@ export interface ITextInputLineComponentProps {
     min?: number;
     max?: number;
     placeholder?: string;
+    unit?: React.ReactNode;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
@@ -63,7 +61,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
-        if (nextState.dragging != this.state.dragging) return true;
+        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit) {
+            return true;
+        }
 
         return false;
     }
@@ -199,16 +199,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     />
                     {this.props.arrows && <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />}
                 </div>
-                {this.props.unit !== undefined && (
-                    <button
-                        className={this.props.unitLocked ? "unit disabled" : "unit"}
-                        onClick={() => {
-                            if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "");
-                        }}
-                    >
-                        {this.props.unit}
-                    </button>
-                )}
+                {this.props.unit}
             </div>
         );
     }

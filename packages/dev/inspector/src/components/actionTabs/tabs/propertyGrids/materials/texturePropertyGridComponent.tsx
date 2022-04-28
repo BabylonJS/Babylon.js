@@ -63,6 +63,8 @@ const textureFormat = [
     { label: "Depth32 float", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
     { label: "Depth16", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH16 },
     { label: "Depth24", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH24 },
+    { label: "Depth24Unorm/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
+    { label: "Depth32Float/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
     { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
     { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
     { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
@@ -346,11 +348,16 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Use sRGB buffers" value={texture._texture?._useSRGBBuffer ? "Yes" : "No"} />
                     {extension && <TextLineComponent label="File format" value={extension} />}
                     <TextLineComponent label="Unique ID" value={texture.uniqueId.toString()} />
-                    <TextLineComponent label="Internal Unique ID" value={texture._texture?.uniqueId.toString()} />
+                    <TextLineComponent label="Internal Unique ID" value={(texture._texture?.uniqueId ?? "N/A").toString()} />
                     <TextLineComponent label="Class" value={textureClass} />
                     {count >= 0 && <TextLineComponent label="Number of textures" value={count.toString()} />}
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
-                    <CheckBoxLineComponent label="Get alpha from RGB" isSelected={() => texture.getAlphaFromRGB} onSelect={(value) => (texture.getAlphaFromRGB = value)} />
+                    <CheckBoxLineComponent
+                        label="Get alpha from RGB"
+                        target={texture}
+                        propertyName="getAlphaFromRGB"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />

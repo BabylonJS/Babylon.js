@@ -20,3 +20,5 @@ jest-screenshot-report/
 junit.xml
 .env
 *.pem
+packages/tools/babylonServer/public/localDev
+packages/tools/babylonServer/public/localDevWebGPU

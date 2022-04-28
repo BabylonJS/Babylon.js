@@ -192,14 +192,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-rc.12";
+        return "babylonjs@5.4.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-rc.12";
+        return "5.4.0";
     }
 
     /**
@@ -2778,16 +2778,17 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
-        // eslint-disable-next-line no-empty
-        while (gl.getError() != gl.NO_ERROR) {}
-
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
+            let error = gl.NO_ERROR;
+            let tempError = gl.NO_ERROR;
+            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
+                error = tempError;
+            }
+
             throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${
-                    this._contextWasLost
-                }`
+                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
             );
         }
 
@@ -4541,6 +4542,7 @@ export class ThinEngine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -4550,7 +4552,8 @@ export class ThinEngine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         const gl = this._gl;
 
@@ -4564,7 +4567,15 @@ export class ThinEngine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
+        this._bindTextureDirectly(target, texture, true);
+
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
+
+        if (generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
+
+        this._bindTextureDirectly(target, null);
     }
 
     /**

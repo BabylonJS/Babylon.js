@@ -3,7 +3,7 @@ import { Tools } from "core/Misc/tools";
 // eslint-disable-next-line import/no-internal-modules
 import { isUrl, camelToKebab, kebabToCamel, deepmerge } from "../helper/index";
 
-import * as Handlebars from "handlebars/dist/handlebars";
+import * as Handlebars from "handlebars";
 import { EventManager } from "./eventManager";
 import type { ITemplateConfiguration } from "../configuration/interfaces/templateConfiguration";
 import type { IFileRequest } from "core/Misc/fileRequest";
@@ -52,7 +52,7 @@ export class TemplateManager {
     private _templates: { [name: string]: Template };
 
     constructor(public containerElement: Element) {
-        this.templates = {};
+        this._templates = {};
 
         this.onTemplateInit = new Observable<Template>();
         this.onTemplateLoaded = new Observable<Template>();
@@ -68,19 +68,19 @@ export class TemplateManager {
      * @param templates the templates to be used to initialize the main template
      */
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
-        const internalInit = (dependencyMap, name: string, parentTemplate?: Template) => {
+        const internalInit = (dependencyMap: any, name: string, parentTemplate?: Template) => {
             //init template
             const template = this._templates[name];
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const childrenTemplates = Object.keys(dependencyMap).map((childName) => {
+            Object.keys(dependencyMap).map((childName) => {
                 return internalInit(dependencyMap[childName], childName, template);
             });
 
             // register the observers
             //template.onLoaded.add(() => {
             const addToParent = () => {
-                const lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
+                const lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name) as keyof HTMLElementTagNameMap);
                 const containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
                 template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
@@ -141,7 +141,7 @@ export class TemplateManager {
         return Promise.all(promises).then(() => {
             const templateStructure = {};
             // now iterate through all templates and check for children:
-            const buildTree = (parentObject, name) => {
+            const buildTree = (parentObject: any, name: string) => {
                 this._templates[name].isInHtmlTree = true;
                 const childNodes = this._templates[name].getChildElements().filter((n) => !!this._templates[n]);
                 childNodes.forEach((element) => {
@@ -563,8 +563,8 @@ export class Template {
                 return new Promise((resolve, reject) => {
                     const fileRequest = Tools.LoadFile(
                         location,
-                        (data: string) => {
-                            resolve(data);
+                        (data: string | ArrayBuffer) => {
+                            resolve(data as string);
                         },
                         undefined,
                         undefined,
@@ -600,8 +600,8 @@ export class Template {
         if (this._configuration.events) {
             for (const eventName in this._configuration.events) {
                 if (this._configuration.events && this._configuration.events[eventName]) {
-                    const functionToFire = (selector, event) => {
-                        this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
+                    const functionToFire = (selector: string, event: Event) => {
+                        this.onEventTriggered.notifyObservers({ event, template: this, selector });
                     };
 
                     // if boolean, set the parent as the event listener
@@ -621,10 +621,10 @@ export class Template {
                         });
                     } else if (typeof this._configuration.events[eventName] === "object") {
                         const selectorsArray: Array<string> = Object.keys((this._configuration.events[eventName] as object) || {});
-                        // strict null checl is working incorrectly, must override:
+                        // strict null check is working incorrectly, must override:
                         const event = this._configuration.events[eventName] || {};
                         selectorsArray
-                            .filter((selector) => event[selector])
+                            .filter((selector) => typeof event !== "boolean" && event[selector])
                             .forEach((selector) => {
                                 let htmlElement = <HTMLElement>this.parent.querySelector(selector);
                                 if (!htmlElement) {
@@ -652,11 +652,11 @@ export class Template {
         }
     }
 
-    private _getTemplateLocation(templateConfig): string {
+    private _getTemplateLocation(templateConfig: ITemplateConfiguration): string {
         if (!templateConfig || typeof templateConfig === "string") {
             return templateConfig;
         } else {
-            return templateConfig.location;
+            return templateConfig.location!;
         }
     }
 }

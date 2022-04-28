@@ -172,25 +172,53 @@ export class Constants {
     public static readonly TEXTUREFORMAT_DEPTH16 = 15;
     /** Depth 24 bits */
     public static readonly TEXTUREFORMAT_DEPTH24 = 16;
+    /** Depth 24 bits unorm + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 = 17;
+    /** Depth 32 bits float + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
+    /** Compressed BC7 (SRGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM = 36493;
     /** Compressed BC6 unsigned float */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
     /** Compressed BC6 signed float */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
     /** Compressed BC3 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
+    /** Compressed BC3 (SRGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = 35919;
     /** Compressed BC2 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
+    /** Compressed BC2 (SRGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = 35918;
     /** Compressed BC1 (RGBA) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
     /** Compressed BC1 (RGB) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = 33776;
+    /** Compressed BC1 (SRGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = 35917;
+    /** Compressed BC1 (SRGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916;
     /** Compressed ASTC 4x4 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
-    /**  Compressed ETC1 (RGB) */
+    /** Compressed ASTC 4x4 (SRGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840;
+    /** Compressed ETC1 (RGB) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
+    /** Compressed ETC2 (RGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB8_ETC2 = 37492;
+    /** Compressed ETC2 (SRGB) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2 = 37493;
+    /** Compressed ETC2 (RGB+A1) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37494;
+    /** Compressed ETC2 (SRGB+A1)*/
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37495;
+    /** Compressed ETC2 (RGB+A) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = 37496;
+    /** Compressed ETC2 (SRGB+1) */
+    public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497;
 
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;

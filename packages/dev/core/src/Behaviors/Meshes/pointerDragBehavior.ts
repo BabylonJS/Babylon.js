@@ -533,6 +533,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  Detaches the behavior from the mesh
      */
     public detach(): void {
+        this._lastPointerRay = {};
         if (this.attachedNode) {
             this.attachedNode.isNearGrabbable = false;
         }

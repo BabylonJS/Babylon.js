@@ -55,6 +55,7 @@ import type { InternalTextureCreationOptions, TextureSize } from "../Materials/T
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { PerformanceConfigurator } from "./performanceConfigurator";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -175,6 +176,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
      */
     premultipliedAlpha?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -523,6 +529,8 @@ export class WebGPUEngine extends Engine {
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
+
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
@@ -911,8 +919,8 @@ export class WebGPUEngine extends Engine {
             depthLoadOp: WebGPUConstants.LoadOp.Clear,
             depthStoreOp: WebGPUConstants.StoreOp.Store,
             stencilClearValue: this._clearStencilValue,
-            stencilLoadOp: WebGPUConstants.LoadOp.Clear,
-            stencilStoreOp: WebGPUConstants.StoreOp.Store,
+            stencilLoadOp: !this.isStencilEnable ? undefined : WebGPUConstants.LoadOp.Clear,
+            stencilStoreOp: !this.isStencilEnable ? undefined : WebGPUConstants.StoreOp.Store,
         };
 
         this._mainRenderPassWrapper.renderPassDescriptor = {
@@ -2100,6 +2108,27 @@ export class WebGPUEngine extends Engine {
         );
     }
 
+    /**
+     * Wraps an external web gpu texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
+        const hardwareTexture = new WebGPUHardwareTexture(texture);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
+    }
+
     public generateMipMapsForCubemap(texture: InternalTexture) {
         if (texture.generateMipMaps) {
             const gpuTexture = texture._hardwareTexture?.underlyingResource;
@@ -2380,6 +2409,7 @@ export class WebGPUEngine extends Engine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -2389,7 +2419,8 @@ export class WebGPUEngine extends Engine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
@@ -2400,6 +2431,10 @@ export class WebGPUEngine extends Engine {
         const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
 
         this._textureHelper.updateTexture(data, texture, width, height, texture.depth, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset);
+
+        if (generateMipMaps) {
+            this._generateMipmaps(texture, this._renderTargetEncoder);
+        }
     }
 
     /**
@@ -2681,6 +2716,7 @@ export class WebGPUEngine extends Engine {
 
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+        const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format) : false;
 
         const colorAttachments: GPURenderPassColorAttachment[] = [];
 
@@ -2753,8 +2789,12 @@ export class WebGPUEngine extends Engine {
                           depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                           depthStoreOp: WebGPUConstants.StoreOp.Store,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: WebGPUConstants.StoreOp.Store,
+                          stencilLoadOp: !depthTextureHasStencil
+                              ? undefined
+                              : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
+                              ? WebGPUConstants.LoadOp.Clear
+                              : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
@@ -2858,7 +2898,11 @@ export class WebGPUEngine extends Engine {
             : undefined;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadOp = mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilClearValue = mustClearStencil ? this._clearStencilValue : undefined;
-        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
+        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !this.isStencilEnable
+            ? undefined
+            : mustClearStencil
+            ? WebGPUConstants.LoadOp.Clear
+            : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         this._swapChainTexture = this._context.getCurrentTexture();

@@ -247,6 +247,10 @@ export class CubeTexture extends BaseTexture {
         }
         this.url = url;
 
+        if (forcedExtension) {
+            this._forcedExtension = forcedExtension;
+        }
+
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
         const isDDS = extension.indexOf(".dds") === 0;

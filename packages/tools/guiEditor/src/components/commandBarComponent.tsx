@@ -58,6 +58,7 @@ const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _sizeOption: number = 0;
+    private _stopUpdating: boolean = false;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
@@ -151,7 +152,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Give feedback",
                                     onClick: () => {
-                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
+                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-beta/28943", "_blank");
                                     },
                                 },
                             ]}
@@ -191,7 +192,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={canvasFitIcon}
                             isActive={false}
                             onClick={() => {
-                                this.props.globalState.onFitToWindowObservable.notifyObservers();
+                                this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                             }}
                         />
                         <CommandButtonComponent
@@ -220,6 +221,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 }
                                 this.forceUpdate();
                             }}
+                            large
                         />
                         {DataStorage.ReadBoolean("Responsive", true) && (
                             <OptionsLineComponent
@@ -248,6 +250,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                        }
+                                    }}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
                                     }}
                                     arrows={true}
@@ -260,6 +271,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                        }
+                                    }}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
                                     }}
                                     arrows={true}

@@ -242,11 +242,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         if (this._onLostFocus) {
             const hostWindow = this.camera.getScene().getEngine().getHostWindow();
@@ -272,6 +267,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._metaKey = false;
         this._shiftKey = false;
         this._buttonsPressed = 0;
+        this._currentActiveButton = -1;
     }
 
     /**

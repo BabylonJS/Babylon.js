@@ -78,6 +78,11 @@ float square(float value)
     return value * value;
 }
 
+vec3 square(vec3 value)
+{
+    return value * value;
+}
+
 float pow5(float value) {
     float sq = value * value;
     return sq * sq * value;

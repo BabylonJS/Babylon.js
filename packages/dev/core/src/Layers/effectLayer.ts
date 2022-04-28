@@ -584,7 +584,7 @@ export abstract class EffectLayer {
         }
 
         // Vertex
-        if (mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && mesh.hasVertexAlpha) {
+        if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && mesh.hasVertexAlpha && material.transparencyMode !== Material.MATERIAL_OPAQUE) {
             attribs.push(VertexBuffer.ColorKind);
             defines.push("#define VERTEXALPHA");
         }

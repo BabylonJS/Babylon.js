@@ -88,8 +88,8 @@ export class ViewerLabs {
             const url = this.getAssetUrl(data);
             this._scene._loadFile(
                 url,
-                (arrayBuffer: ArrayBuffer) => {
-                    this.environment = EnvironmentDeserializer.Parse(arrayBuffer);
+                (arrayBuffer: string | ArrayBuffer) => {
+                    this.environment = EnvironmentDeserializer.Parse(arrayBuffer as ArrayBuffer);
                     if (onSuccess) {
                         onSuccess(this.environment);
                     }

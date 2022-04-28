@@ -218,6 +218,11 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public static readonly QUALITY_LOW = 2;
 
+    /**
+     * Defines the default alpha cutoff value used for transparent alpha tested materials.
+     */
+    public static DEFAULT_ALPHA_CUTOFF = 0.5;
+
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
     public id: string;
 
@@ -671,9 +676,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * When it is enabled, the strength of the shadow is taken equal to mesh.visibility
      * If you enabled an alpha texture on your material, the alpha value red from the texture is also combined to compute the strength:
      *          mesh.visibility * alphaTexture.a
+     * The texture used is the diffuse by default, but it can be set to the opacity by setting useOpacityTextureForTransparentShadow
      * Note that by definition transparencyShadow must be set to true for enableSoftTransparentShadow to work!
      */
     public enableSoftTransparentShadow: boolean = false;
+
+    /**
+     * If this is true, use the opacity texture's alpha channel for transparent shadows instead of the diffuse one
+     */
+    public useOpacityTextureForTransparentShadow: boolean = false;
 
     protected _shadowMap: Nullable<RenderTargetTexture>;
     protected _shadowMap2: Nullable<RenderTargetTexture>;
@@ -1204,7 +1215,13 @@ export class ShadowGenerator implements IShadowGenerator {
                 subMesh._setMainDrawWrapperOverride(null);
             } else {
                 // Alpha test
-                if (material && material.needAlphaTesting()) {
+                if (material && this.useOpacityTextureForTransparentShadow) {
+                    const opacityTexture = (material as any).opacityTexture;
+                    if (opacityTexture) {
+                        effect.setTexture("diffuseSampler", opacityTexture);
+                        effect.setMatrix("diffuseMatrix", opacityTexture.getTextureMatrix() || this._defaultTextureMatrix);
+                    }
+                } else if (material && material.needAlphaTesting()) {
                     const alphaTexture = material.getAlphaTestTexture();
                     if (alphaTexture) {
                         effect.setTexture("diffuseSampler", alphaTexture);
@@ -1448,13 +1465,18 @@ export class ShadowGenerator implements IShadowGenerator {
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
-                const alphaTexture = material.getAlphaTestTexture();
+                let alphaTexture = null;
+                if (this.useOpacityTextureForTransparentShadow) {
+                    alphaTexture = (material as any).opacityTexture;
+                } else {
+                    alphaTexture = material.getAlphaTestTexture();
+                }
                 if (alphaTexture) {
                     if (!alphaTexture.isReady()) {
                         return false;
                     }
 
-                    const alphaCutOff = (material as any).alphaCutOff ?? 1;
+                    const alphaCutOff = (material as any).alphaCutOff ?? ShadowGenerator.DEFAULT_ALPHA_CUTOFF;
 
                     defines.push("#define ALPHATEST");
                     defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);

@@ -1,6 +1,6 @@
+import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import * as fs from "fs";
 import type { UMDPackageName } from "./packageMapping";
 import { umdPackageMapping } from "./packageMapping";
 import { copyFile, findRootDirectory } from "./utils";
@@ -61,4 +61,24 @@ export const prepareSnapshot = () => {
         const relative = path.relative(baseLocationDist, file);
         copyFile(file, path.join(snapshotDirectory, relative), true);
     }
+
+    // generate timestamp.js, which contains the current timestamp
+    const timestamp = Date.now();
+    const timestampFile = path.join(snapshotDirectory, "timestamp.js");
+    fs.writeFileSync(timestampFile, `if(typeof globalThis !== "undefined") globalThis.__babylonSnapshotTimestamp__ = ${timestamp};`);
+
+    // copy the es6 builds
+    // removed for now
+    // {
+    //     const baseLocationDist = path.join(baseDirectory, "packages", "public", "@babylonjs");
+    //     const staticFilesDist = glob.sync(`${baseLocationDist}/**/*.*`);
+    //     for (const file of staticFilesDist) {
+    //         // ignore directories
+    //         if (fs.lstatSync(file).isDirectory()) {
+    //             continue;
+    //         }
+    //         const relative = path.relative(baseLocationDist, file);
+    //         copyFile(file, path.join(snapshotDirectory, "es6", relative), true);
+    //     }
+    // }
 };

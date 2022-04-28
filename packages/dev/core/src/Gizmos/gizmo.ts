@@ -60,6 +60,12 @@ export class Gizmo implements IDisposable {
     protected _isHovered = false;
 
     /**
+     * When enabled, any gizmo operation will perserve scaling sign. Default is off.
+     * Only valid for TransformNode derived classes (Mesh, AbstractMesh, ...)
+     */
+    public static PreserveScaling = false;
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -203,7 +209,8 @@ export class Gizmo implements IDisposable {
 
             // Rotation
             if (this.updateGizmoRotationToMatchAttachedMesh) {
-                effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
+                const transformNode = (<Mesh>effectiveNode)._isMesh ? (effectiveNode as TransformNode) : undefined;
+                effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
             } else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
@@ -224,7 +231,7 @@ export class Gizmo implements IDisposable {
                 this._rootMesh.scaling.set(dist, dist, dist);
 
                 // Account for handedness, similar to Matrix.decompose
-                if (effectiveNode._getWorldMatrixDeterminant() < 0) {
+                if (effectiveNode._getWorldMatrixDeterminant() < 0 && !Gizmo.PreserveScaling) {
                     this._rootMesh.scaling.y *= -1;
                 }
             } else {
@@ -310,10 +317,11 @@ export class Gizmo implements IDisposable {
                 const localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(transform.scaling, this._tempQuaternion, transform.position);
+                localMat.decompose(this._tempVector, this._tempQuaternion, transform.position, Gizmo.PreserveScaling ? transform : undefined);
             } else {
-                this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
+                this._attachedNode._worldMatrix.decompose(this._tempVector, this._tempQuaternion, transform.position, Gizmo.PreserveScaling ? transform : undefined);
             }
+            transform.scaling.copyFrom(this._tempVector);
             if (!transform.billboardMode) {
                 if (transform.rotationQuaternion) {
                     transform.rotationQuaternion.copyFrom(this._tempQuaternion);

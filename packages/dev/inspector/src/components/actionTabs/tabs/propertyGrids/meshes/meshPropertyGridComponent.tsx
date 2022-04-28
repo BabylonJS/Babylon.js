@@ -38,6 +38,7 @@ import type { ShaderMaterial } from "core/Materials/shaderMaterial";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import "core/Physics/physicsEngineComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -83,7 +84,7 @@ export class MeshPropertyGridComponent extends React.Component<
             return;
         }
 
-        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true)!;
+        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true, false)!;
         wireframeOver.reservedDataStore = { hidden: true };
 
         // Sets up the mesh to be attached to the parent.
@@ -420,15 +421,27 @@ export class MeshPropertyGridComponent extends React.Component<
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
-                    {mesh.parent && (
-                        <TextLineComponent
-                            label="Parent"
-                            value={mesh.parent.name}
-                            onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}
-                        />
-                    )}
+                    <ParentPropertyGridComponent
+                        globalState={this.props.globalState}
+                        node={mesh}
+                        lockObject={this.props.lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {mesh.skeleton && <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()} />}
-                    <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
+                    <CheckBoxLineComponent
+                        label="Is enabled"
+                        isSelected={() => mesh.isEnabled()}
+                        onSelect={(value) => {
+                            const prevValue = mesh.isEnabled();
+                            mesh.setEnabled(value);
+                            this.props.onPropertyChangedObservable?.notifyObservers({
+                                object: mesh,
+                                property: "isEnabled",
+                                value,
+                                initialValue: prevValue,
+                            });
+                        }}
+                    />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) && (
                         <TextLineComponent label="Link to material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
@@ -662,6 +675,7 @@ export class MeshPropertyGridComponent extends React.Component<
                                 mesh.disableEdgesRendering();
                             }
                         }}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
                         label="Edge width"

@@ -589,11 +589,11 @@ export class Camera extends Node {
     public attachControl(ignored: any, noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * This function is here because typescript removes the typing of the last function.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
+     * @param _noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
+    public attachControl(_ignored?: any, _noPreventDefault?: boolean): void {}
 
     /**
      * Detach the current controls from the specified dom element.
@@ -603,13 +603,13 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored: any): void;
+    public detachControl(ignored?: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
+     * This function is here because typescript removes the typing of the last function.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public detachControl(ignored?: any): void {}
+    public detachControl(_ignored?: any): void {}
 
     /**
      * Update the camera state according to the different inputs gathered during the frame.
@@ -1283,14 +1283,16 @@ export class Camera extends Node {
     /**
      * Clones the current camera.
      * @param name The cloned camera name
+     * @param newParent The cloned camera's new parent (none by default)
      * @returns the cloned camera
      */
-    public clone(name: string): Camera {
+    public clone(name: string, newParent: Nullable<Node> = null): Camera {
         const camera = SerializationHelper.Clone(
             Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide),
             this
         );
         camera.name = name;
+        camera.parent = newParent;
 
         this.onClonedObservable.notifyObservers(camera);
 

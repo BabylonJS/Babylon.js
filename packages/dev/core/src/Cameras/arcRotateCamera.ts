@@ -50,6 +50,13 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public radius: number;
 
+    /**
+     * Defines an override value to use as the parameter to setTarget.
+     * This allows the parameter to be specified when animating the target (e.g. using FramingBehavior).
+     */
+    @serialize()
+    public overrideCloneAlphaBetaRadius: Nullable<boolean>;
+
     @serializeAsVector3("target")
     protected _target: Vector3;
     @serializeAsMeshReference("targetHost")
@@ -886,15 +893,6 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     */
-    public detachControl(ignored: any): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         this.inputs.detachElement();
 
@@ -1084,6 +1082,8 @@ export class ArcRotateCamera extends TargetCamera {
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      */
     public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
+        cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
+
         if ((<any>target).getBoundingInfo) {
             if (toBoundingCenter) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();

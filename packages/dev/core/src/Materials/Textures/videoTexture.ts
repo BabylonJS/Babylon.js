@@ -167,33 +167,33 @@ export class VideoTexture extends Texture {
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
 
-        if (settings.poster) {
-            this.video.poster = settings.poster;
+        if (this._settings.poster) {
+            this.video.poster = this._settings.poster;
         }
-        if (settings.autoPlay !== undefined) {
-            this.video.autoplay = settings.autoPlay;
+        if (this._settings.autoPlay !== undefined) {
+            this.video.autoplay = this._settings.autoPlay;
         }
-        if (settings.loop !== undefined) {
-            this.video.loop = settings.loop;
+        if (this._settings.loop !== undefined) {
+            this.video.loop = this._settings.loop;
         }
-        if (settings.muted !== undefined) {
-            this.video.muted = settings.muted;
+        if (this._settings.muted !== undefined) {
+            this.video.muted = this._settings.muted;
         }
 
         this.video.setAttribute("playsinline", "");
         this.video.addEventListener("paused", this._updateInternalTexture);
         this.video.addEventListener("seeked", this._updateInternalTexture);
         this.video.addEventListener("emptied", this._reset);
-        this._createInternalTextureOnEvent = settings.poster && !settings.autoPlay ? "play" : "canplay";
+        this._createInternalTextureOnEvent = this._settings.poster && !this._settings.autoPlay ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
-        if (settings.autoPlay) {
+        if (this._settings.autoPlay) {
             this._handlePlay();
         }
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
-        if (settings.poster && (!settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._getEngine()!.createTexture(settings.poster!, false, !this.invertY, scene);
+        if (this._settings.poster && (!this._settings.autoPlay || !videoHasEnoughData)) {
+            this._texture = this._getEngine()!.createTexture(this._settings.poster!, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         } else if (videoHasEnoughData) {
             this._createInternalTexture();

@@ -62,6 +62,7 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
+import { SliceTools } from "./Misc/sliceTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -705,6 +706,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
      */
     public skipPointerMovePicking = false;
+
+    /**
+     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer down event occurs.
+     */
+    public skipPointerDownPicking = false;
 
     /** Callback called when a pointer move is detected */
     public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
@@ -2303,6 +2309,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this._blockEntityCollection) {
             return;
         }
+
+        if (newTransformNode.getScene() === this && newTransformNode._indexInSceneTransformNodesArray !== -1) {
+            // Already there?
+            return;
+        }
+
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
 
@@ -2666,6 +2678,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public addMaterial(newMaterial: Material): void {
         if (this._blockEntityCollection) {
+            return;
+        }
+
+        if (newMaterial.getScene() === this && newMaterial._indexInSceneMaterialArray !== -1) {
+            // Already there??
             return;
         }
 
@@ -3677,6 +3694,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _activeMeshesFrozen = false;
+    public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
@@ -3685,9 +3703,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param onSuccess optional success callback
      * @param onError optional error callback
      * @param freezeMeshes defines if meshes should be frozen (true by default)
+     * @param keepFrustumCulling defines if you want to keep running the frustum clipping (false by default)
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes = true): Scene {
+    public freezeActiveMeshes(
+        skipEvaluateActiveMeshes = false,
+        onSuccess?: () => void,
+        onError?: (message: string) => void,
+        freezeMeshes = true,
+        keepFrustumCulling = false
+    ): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 onError && onError("No active camera found");
@@ -3700,6 +3725,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
+            this._activeMeshesFrozenButKeepClipping = keepFrustumCulling;
             this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
             if (freezeMeshes) {
@@ -3809,7 +3835,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
                 continue;
             }
 
@@ -3903,7 +3929,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        if (mesh !== undefined && mesh !== null && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0) {
+        if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
             for (let i = 0; i < len; i++) {
@@ -4634,58 +4660,36 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Release animation groups
-        while (this.animationGroups.length) {
-            this.animationGroups[0].dispose();
-        }
+        this._disposeList(this.animationGroups);
 
         // Release lights
-        while (this.lights.length) {
-            this.lights[0].dispose();
-        }
+        this._disposeList(this.lights);
 
         // Release meshes
-        while (this.meshes.length) {
-            this.meshes[0].dispose(true);
-        }
-        while (this.transformNodes.length) {
-            this.transformNodes[0].dispose(true);
-        }
+        this._disposeList(this.meshes, (item) => item.dispose(true));
+        this._disposeList(this.transformNodes, (item) => item.dispose(true));
 
         // Release cameras
-        while (this.cameras.length) {
-            this.cameras[0].dispose();
-        }
+        this._disposeList(this.cameras);
 
         // Release materials
         if (this._defaultMaterial) {
             this._defaultMaterial.dispose();
         }
-        while (this.multiMaterials.length) {
-            this.multiMaterials[0].dispose();
-        }
-        while (this.materials.length) {
-            this.materials[0].dispose();
-        }
+        this._disposeList(this.multiMaterials);
+        this._disposeList(this.materials);
 
         // Release particles
-        while (this.particleSystems.length) {
-            this.particleSystems[0].dispose();
-        }
+        this._disposeList(this.particleSystems);
 
         // Release postProcesses
-        while (this.postProcesses.length) {
-            this.postProcesses[0].dispose();
-        }
+        this._disposeList(this.postProcesses);
 
         // Release textures
-        while (this.textures.length) {
-            this.textures[0].dispose();
-        }
+        this._disposeList(this.textures);
 
         // Release morph targets
-        while (this.morphTargetManagers.length) {
-            this.morphTargetManagers[0].dispose();
-        }
+        this._disposeList(this.morphTargetManagers);
 
         // Release UBO
         this._sceneUbo.dispose();
@@ -4698,9 +4702,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.postProcessManager.dispose();
 
         // Components
-        for (const component of this._components) {
-            component.dispose();
-        }
+        this._disposeList(this._components);
 
         // Remove from engine
         let index = this._engine.scenes.indexOf(this);
@@ -4725,6 +4727,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._engine.wipeCaches(true);
         this._isDisposed = true;
+    }
+
+    private _disposeList<T extends IDisposable>(items: T[], callback?: (item: T) => void): void {
+        const itemsCopy = SliceTools.Slice(items, 0);
+        callback = callback ?? ((item) => item.dispose());
+        for (const item of itemsCopy) {
+            callback(item);
+        }
+        items.length = 0;
     }
 
     /**
