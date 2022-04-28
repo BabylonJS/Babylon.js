@@ -363,7 +363,8 @@ export class InputTextArea extends InputText {
                     let tmpIndex = 0;
                     let relativeIndex = 0;
                     if (!this._isTextHighlightOn 
-                        || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex ) {
+                        || this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex
+                        && this._highlightCursorInfo.initialStartIndex === this._cursorInfo.globalEndIndex ) {
                         tmpIndex = this._cursorInfo.globalStartIndex;
                         relativeIndex = this._cursorInfo.relativeStartIndex;
                     } else {
@@ -398,6 +399,7 @@ export class InputTextArea extends InputText {
                     } else if (this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex ) {
                         this._cursorInfo.globalStartIndex = tmpIndex;
                         this._cursorInfo.globalEndIndex = this._highlightCursorInfo.initialStartIndex;
+                        this._cursorInfo.relativeEndIndex = this._highlightCursorInfo.initialRelativeStartIndex;
                     } else {
                         this._cursorInfo.globalEndIndex = tmpIndex;
                     }
@@ -526,6 +528,7 @@ export class InputTextArea extends InputText {
 
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, key);
                 this._cursorInfo.globalStartIndex += key.length;
+                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
 
                 this._textHasChanged();
             }
@@ -1034,12 +1037,12 @@ export class InputTextArea extends InputText {
 
         if (this._clickedCoordinateX && this._clickedCoordinateY) {
             if (!this._isTextHighlightOn) {
-            this._cursorInfo = {
-                globalStartIndex:0,
-                globalEndIndex: 0,
-                relativeStartIndex: 0,
-                relativeEndIndex: 0,
-                currentLineIndex : 0
+                this._cursorInfo = {
+                    globalStartIndex:0,
+                    globalEndIndex: 0,
+                    relativeStartIndex: 0,
+                    relativeEndIndex: 0,
+                    currentLineIndex : 0
                 }       
             }
 
@@ -1129,7 +1132,7 @@ export class InputTextArea extends InputText {
                 }
 
                 this._cursorInfo.relativeEndIndex = this._cursorInfo.globalEndIndex - tmpLength;
-            } else {
+            } else if (!this._isTextHighlightOn) {
                 this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
             }
