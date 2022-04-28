@@ -76,11 +76,11 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
-        depthTextureFormat: Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        depthTextureFormat: options.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
         ...options,
     };
 
-    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : internalOptions.depthTextureFormat;
+    internalTexture.format = internalOptions.depthTextureFormat;
 
     this._setupDepthStencilTexture(
         internalTexture,
