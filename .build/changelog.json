@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.2.0",
+    "fromTag": "5.3.0",
     "changelog": {
         "5.3.0": [
             {
@@ -270,6 +270,305 @@
                 },
                 "files": [
                     "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "5.4.0": [
+            {
+                "pr": "12452",
+                "title": "WebGPU: more changes and fixes for stencil support",
+                "description": "When a texture has both a depth and stencil aspects, only one of these can be used in a texture lookup. So, when creating a texture view, we must choose between depth and stencil.\r\n\r\nWe currently choose \"depth\" as it is what the user would most likely want, but we will need to come up with a way to be able to specify \"stencil\" instead. However, I don't know how we can do that, that would require some annotations in the shader so that we know a texture should be bound with the stencil aspect...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "12450",
+                "title": "WebGPU: Fix crash when creating the engine without stencil buffer support",
+                "description": "Also fix a warning when setting a value in gl_FragDepth.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12429",
+                "title": "Allow arc rotate auto rotation to rotate to a certain alpha value",
+                "description": "add `targetAlpha` to autoRotateBehavior to serve as a limit. When the limit is reached, the autoRotateBehavoir would stop.\r\n",
+                "author": {
+                    "name": "TheCrowd",
+                    "url": "https://github.com/TheCrowd"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/autoRotationBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12445",
+                "title": "move tests to the cdn instead of main page",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12443",
+                "title": "Fix camera cloning by adding newParent parameter",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/invoke-clone-with-camera-childnode-can-not-keep-structure/29648 and Playground: https://playground.babylonjs.com/#FZPMS1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12440",
+                "title": "make sure pointer up only triggers once",
+                "description": "Adressing this:\n\nhttps://forum.babylonjs.com/t/webxr-pointer-up-event-trigger-twice-on-one-single-touch/29370?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12432",
+                "title": "Fix iridescence texture transform",
+                "description": "Fix #12431 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12442",
+                "title": "Fix OimoJS plugin syncMeshWithImpostor method.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/physicsviewer-working-only-with-meshimposter/29654 and Playground: https://playground.babylonjs.com/#WIR77Z#1317",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/Plugins/oimoJSPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "12434",
+                "title": "Fix thinInstanceCount setter to work with mesh clone",
+                "description": "After cloning a mesh that has thin instances, setting thinInstanceCount on the clone currently doesn't work (unless it is set to 0 the setter will return without updating the internal instanceCount).\r\n\r\nWith this PR, if a mesh doesn't have the thin instance matrixData, then it checks to see if the mesh's source has it before defaulting the max instance count to 0.\r\n\r\nPG Repro: https://playground.babylonjs.com/#217750#76\r\nForum: https://forum.babylonjs.com/t/cant-set-thininstancecount-for-clone/29674\r\n",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12436",
+                "title": "Fix crash when cloning meshes with thin instances that are using instance color",
+                "description": "See https://forum.babylonjs.com/t/vertex-error-and-no-colors-on-thin-instances-after-upgrade/28492/23",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12428",
+                "title": "Fix GridMaterial serialization",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12437",
+                "title": "Fix audit issues",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12427",
+                "title": "Fix effectLayer vertex alpha detection",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12424",
+                "title": "Enable more features for PG in JS mode",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12425",
+                "title": "NME: uploading a static cube texture in a Reflection block does not work",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/tools/nodeEditor/src/diagram/display/textureDisplayManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12389",
+                "title": "Export KHR extensions: IOR, Transmission and Volume",
+                "description": "GLTF 2.0 Serializer is missing the \r\n\r\n- KHR_materials_ior \r\n- KHR_materials_volume \r\n- KHR_materials_transmissions\r\n\r\nextensions\r\n\r\nThis PR add support for these extensions to the GLTF2.0 serializer.\r\nAlso, some minor modification has been made into the GLTF Loader extensions to be consistant with the GLTF definitions.\r\nTest has been conducted using [this](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/StainedGlassLamp) standard sample model\r\nMaterials has been loaded and serialized succesfully without any diff.",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_ior.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_specular.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12421",
+                "title": "Remove some unnecessary computations",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Rendering/renderingGroup.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12420",
+                "title": "WebGPU: Fix RenderAttachment flag for 3D textures",
+                "description": "See https://forum.babylonjs.com/t/how-to-get-error-callback-when-computeshader-dispatch-work-wrong/29571/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12419",
+                "title": "ShaderMaterial: keep uniqueId in serialize()",
+                "description": "Like Material here: https://github.com/BabylonJS/Babylon.js/blob/c654c7303965a43f340f8c1e0eab3fc804c566f1/packages/dev/core/src/Materials/material.ts#L1719\r\nRelated commit: https://github.com/BabylonJS/Babylon.js/commit/738236a7578d1c6dfcae4f93cfffeb768ea5a826",
+                "author": {
+                    "name": "lxq100",
+                    "url": "https://github.com/lxq100"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
                 ],
                 "tags": []
             }
