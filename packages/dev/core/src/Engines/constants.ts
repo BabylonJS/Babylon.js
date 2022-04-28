@@ -172,6 +172,10 @@ export class Constants {
     public static readonly TEXTUREFORMAT_DEPTH16 = 15;
     /** Depth 24 bits */
     public static readonly TEXTUREFORMAT_DEPTH24 = 16;
+    /** Depth 24 bits unorm + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 = 17;
+    /** Depth 32 bits float + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
