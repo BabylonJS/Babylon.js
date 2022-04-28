@@ -765,7 +765,7 @@ export class InputTextArea extends InputText {
         this._textHasChanged();
     }
 
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(context: ICanvasRenderingContext): void {
         this._scrollLeft = this._scrollLeft ?? 0;
         this._scrollTop = this._scrollTop ?? 0;
 
