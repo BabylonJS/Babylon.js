@@ -2156,7 +2156,7 @@ export class GLTFLoader implements IGLTFLoader {
 
             babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
             babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
-            if (material.normalTexture.scale != undefined) {
+            if (material.normalTexture.scale != undefined && babylonMaterial.bumpTexture) {
                 babylonMaterial.bumpTexture.level = material.normalTexture.scale;
             }
 
