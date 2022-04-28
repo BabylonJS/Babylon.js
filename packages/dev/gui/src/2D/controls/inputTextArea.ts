@@ -683,6 +683,8 @@ export class InputTextArea extends InputText {
 
         // Flush the highlighted text each frame
         this.highlightedText = "";
+
+        this.onLinesReadyObservable.notifyObservers(this);
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
