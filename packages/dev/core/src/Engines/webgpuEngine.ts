@@ -2716,6 +2716,7 @@ export class WebGPUEngine extends Engine {
 
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+        const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format) : false;
 
         const colorAttachments: GPURenderPassColorAttachment[] = [];
 
@@ -2788,12 +2789,12 @@ export class WebGPUEngine extends Engine {
                           depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                           depthStoreOp: WebGPUConstants.StoreOp.Store,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: !this.isStencilEnable
+                          stencilLoadOp: !depthTextureHasStencil
                               ? undefined
                               : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
                               ? WebGPUConstants.LoadOp.Clear
                               : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: !this.isStencilEnable ? undefined : WebGPUConstants.StoreOp.Store,
+                          stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
