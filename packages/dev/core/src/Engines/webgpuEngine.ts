@@ -331,8 +331,6 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public dbgShowShaderCode = false;
     /** @hidden */
-    public dbgSanityChecks = true;
-    /** @hidden */
     public dbgVerboseLogsForFirstFrames = false;
     /** @hidden */
     public dbgVerboseLogsNumFrames = 10;
