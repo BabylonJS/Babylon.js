@@ -484,6 +484,8 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     private _cachedCameraDirection = new Vector3();
     private _cachedCameraPosition = new Vector3();
     private _lastCheck = 0;
+    private _invertMatrixTemp = new Matrix();
+    private _cameraDirectionTemp = new Vector3();
 
     private _afterRender() {
         const now = PrecisionDate.Now;
@@ -536,14 +538,14 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                     if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                         listeningCamera = listeningCamera.rigCameras[0];
                     }
-                    const mat = Matrix.Invert(listeningCamera.getViewMatrix());
-                    const cameraDirection = Vector3.TransformNormal(AudioSceneComponent._CameraDirection, mat);
-                    cameraDirection.normalize();
+                    listeningCamera.getViewMatrix().invertToRef(this._invertMatrixTemp);
+                    Vector3.TransformNormalToRef(AudioSceneComponent._CameraDirection, this._invertMatrixTemp, this._cameraDirectionTemp);
+                    this._cameraDirectionTemp.normalize();
                     // To avoid some errors on GearVR
-                    if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {
-                        if (!this._cachedCameraDirection.equals(cameraDirection)) {
-                            this._cachedCameraDirection.copyFrom(cameraDirection);
-                            audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+                    if (!isNaN(this._cameraDirectionTemp.x) && !isNaN(this._cameraDirectionTemp.y) && !isNaN(this._cameraDirectionTemp.z)) {
+                        if (!this._cachedCameraDirection.equals(this._cameraDirectionTemp)) {
+                            this._cachedCameraDirection.copyFrom(this._cameraDirectionTemp);
+                            audioEngine.audioContext.listener.setOrientation(this._cameraDirectionTemp.x, this._cameraDirectionTemp.y, this._cameraDirectionTemp.z, 0, 1, 0);
                         }
                     }
                 }

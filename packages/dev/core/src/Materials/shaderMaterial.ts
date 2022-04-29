@@ -1340,6 +1340,7 @@ export class ShaderMaterial extends PushMaterial {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.ShaderMaterial";
+        serializationObject.uniqueId = this.uniqueId;
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;

@@ -1250,7 +1250,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns The JSON representation.
      */
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.BackgroundMaterial";
         return serializationObject;
     }

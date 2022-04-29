@@ -9,7 +9,7 @@ import { Light } from "core/Lights/light";
 import type { TransformNode } from "core/Meshes/transformNode";
 
 import type { IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
-import { IKHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
+import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { INode } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -74,15 +74,15 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
 
                 switch (light.type) {
-                    case IKHRLightsPunctual_LightType.DIRECTIONAL: {
+                    case KHRLightsPunctual_LightType.DIRECTIONAL: {
                         babylonLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
                         break;
                     }
-                    case IKHRLightsPunctual_LightType.POINT: {
+                    case KHRLightsPunctual_LightType.POINT: {
                         babylonLight = new PointLight(name, Vector3.Zero(), this._loader.babylonScene);
                         break;
                     }
-                    case IKHRLightsPunctual_LightType.SPOT: {
+                    case KHRLightsPunctual_LightType.SPOT: {
                         const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
                         babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
                         babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;

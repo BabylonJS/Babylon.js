@@ -215,14 +215,14 @@ export function CreateScreenshotUsingRenderTarget(
     texture.samples = samples;
     texture.renderSprites = renderSprites;
 
-    engine.onEndFrameObservable.addOnce(() => {
-        texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-            Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
-            texture.dispose();
-        });
-    });
-
     const renderToTexture = () => {
+        engine.onEndFrameObservable.addOnce(() => {
+            texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                texture.dispose();
+            });
+        });
+
         // render the RTT
         scene.incrementRenderId();
         scene.resetCachedMaterial();

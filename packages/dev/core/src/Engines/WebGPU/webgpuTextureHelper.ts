@@ -699,6 +699,10 @@ export class WebGPUTextureHelper {
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
                 return WebGPUConstants.TextureFormat.Depth32Float;
+            case Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8:
+                return WebGPUConstants.TextureFormat.Depth24UnormStencil8;
+            case Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8:
+                return WebGPUConstants.TextureFormat.Depth32FloatStencil8;
 
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC7RGBAUnorm;
@@ -991,6 +995,17 @@ export class WebGPUTextureHelper {
         return false;
     }
 
+    public static HasDepthAndStencilAspects(format: GPUTextureFormat): boolean {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                return true;
+        }
+
+        return false;
+    }
+
     public invertYPreMultiplyAlpha(
         gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture,
         width: number,
@@ -1221,7 +1236,7 @@ export class WebGPUTextureHelper {
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
 
-        if (!isCompressedFormat) {
+        if (!isCompressedFormat && !is3D) {
             // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
             additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst;
         }
@@ -1478,7 +1493,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: 6,
-                    aspect: WebGPUConstants.TextureAspect.All,
+                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
                 },
                 isStorageTexture
             );
@@ -1510,7 +1525,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: texture.is3D ? 1 : layerCount,
-                    aspect: WebGPUConstants.TextureAspect.All,
+                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
                 },
                 isStorageTexture
             );

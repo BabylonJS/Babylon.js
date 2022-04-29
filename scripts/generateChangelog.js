@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const exec = require("child_process").exec;
 
-async function runCommand(command) {
+function runCommand(command) {
     return new Promise((resolve, reject) => {
         // console.log(command);
         exec(command, function (error, stdout, stderr) {
@@ -38,31 +38,40 @@ const tagNames = {
 };
 
 // make sure the file is already there
-if (!fs.existsSync(path.resolve("./.build/changelog.json"))) {
+if (!fs.existsSync(path.resolve(__dirname, "..", "./.build/changelog.json"))) {
     console.log("Generating changelog.json");
-    fs.writeFileSync("./.build/changelog.json", `{"fromTag": "5.0.0"}`);
+    fs.writeFileSync(path.resolve(__dirname, "..", "./.build/changelog.json"), `{"fromTag": "5.0.0"}`);
 }
 
-const config = require(path.resolve("./.build/changelog.json"));
+const config = require(path.resolve(__dirname, "..", "./.build/changelog.json"));
 
-const githubPatToken = process.env.GITHUBPAT ? `bjsplat:${process.env.GITHUBPAT}` : "bjsplat:GITHUB_PAT_TOKEN";
+const githubPatToken = process.env.GITHUBPAT ? `bjsplat:${process.env.GITHUBPAT}` : ""; // bjsplat:GITHUB_PAT_TOKEN
 
-const forceUpdateFrom = process.argv[2] || config.fromTag || "5.0.0";
+const forceUpdateFrom = config.fromTag || "5.0.0";
 
 const skipJSONGeneration = false;
 
-async function generateChangelog() {
+async function generateChangelog(nextVersion) {
+    if (!githubPatToken) {
+        console.log("No github PAT token found, skipping changelog generation");
+        return;
+    }
     const versions = {};
     const changelog = {};
+    console.log(config, nextVersion);
     let newFromTag = config.fromTag;
 
     if (!skipJSONGeneration) {
+        const latestTag = ""; // || (await runCommand("git describe --abbrev=0 --tags"));
+        console.log("Generating changelog.json");
+        console.log(`git log "--pretty=%h|%D|%s|%cd" ${forceUpdateFrom}..${latestTag.replace("\n", "")}`);
         // get the latest tag
-        const latestTag = "HEAD"; // || (await runCommand("git describe --abbrev=0 --tags"));
         // get all commits since the last major release
         const prs = await runCommand(`git log "--pretty=%h|%D|%s|%cd" ${forceUpdateFrom}..${latestTag.replace("\n", "")}`);
+        console.log(prs);
+        nextVersion = nextVersion || "upcoming";
         // split according to version
-        let currentTag = "upcoming";
+        let currentTag = nextVersion;
         prs.split("\n").forEach((pr) => {
             const [hash, tagLabel] = pr.split("|");
             if (!hash) {
@@ -150,8 +159,8 @@ async function generateChangelog() {
     }
     const finalChangelog = { ...changelog, ...config.changelog };
     // write the changelog
-    fs.writeFileSync(path.resolve("./.build/changelog.json"), JSON.stringify({ fromTag: newFromTag || config.fromTag, changelog: finalChangelog }, null, 4));
-    fs.writeFileSync(path.resolve("./CHANGELOG.md"), generateMarkdown(finalChangelog));
+    fs.writeFileSync(path.resolve(__dirname, "..", "./.build/changelog.json"), JSON.stringify({ fromTag: newFromTag || config.fromTag, changelog: finalChangelog }, null, 4));
+    fs.writeFileSync(path.resolve(__dirname, "..", "./CHANGELOG.md"), generateMarkdown(finalChangelog));
 }
 
 function generateMarkdown(finalChangelog) {
@@ -170,23 +179,23 @@ function generateMarkdown(finalChangelog) {
                     const parts = file.split("/");
                     return parts[2];
                 })
-                .filter((package) => {
-                    return friendlyNames[package];
+                .filter((pck) => {
+                    return friendlyNames[pck];
                 });
             const packagesSet = new Set(packageInfluenced);
-            packagesSet.forEach((package) => {
-                versionChangelog[version][package] = versionChangelog[version][package] || [];
-                versionChangelog[version][package].push(pr);
+            packagesSet.forEach((pck) => {
+                versionChangelog[version][pck] = versionChangelog[version][pck] || [];
+                versionChangelog[version][pck].push(pr);
             });
         });
     });
     Object.keys(versionChangelog).forEach((version) => {
         markdown += `\n## ${version}\n`;
         const sortedPackages = Object.keys(versionChangelog[version]).sort();
-        sortedPackages.forEach((package) => {
-            const prettyPackage = friendlyNames[package];
+        sortedPackages.forEach((pck) => {
+            const prettyPackage = friendlyNames[pck];
             markdown += `\n### ${prettyPackage}\n\n`;
-            versionChangelog[version][package].forEach((pr) => {
+            versionChangelog[version][pck].forEach((pr) => {
                 const tag = pr.tags.find((tag) => {
                     return tagNames[tag];
                 });
@@ -199,4 +208,6 @@ function generateMarkdown(finalChangelog) {
     return markdown;
 }
 
-generateChangelog();
+module.exports = generateChangelog;
+
+// generateChangelog();

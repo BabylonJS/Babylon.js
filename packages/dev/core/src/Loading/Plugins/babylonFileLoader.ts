@@ -170,7 +170,9 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     scene,
                     hdrSize,
                     true,
-                    !isPBR
+                    !isPBR,
+                    undefined,
+                    parsedData.environmentTexturePrefilterOnLoad
                 );
                 if (parsedData.environmentTextureRotationY) {
                     hdrTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -178,7 +180,11 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 scene.environmentTexture = hdrTexture;
             } else {
                 if (EndsWith(parsedData.environmentTexture, ".env")) {
-                    const compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                    const compressedTexture = new CubeTexture(
+                        (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
+                        scene,
+                        parsedData.environmentTextureForcedExtension
+                    );
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
                     }
