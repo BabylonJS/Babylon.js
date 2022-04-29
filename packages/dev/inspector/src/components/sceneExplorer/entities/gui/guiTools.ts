@@ -7,12 +7,13 @@ declare let BABYLON: any;
 
 let editorUrl = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-let guiEditorContainer: { GUIEditor: typeof GUIEditor } = { GUIEditor };
+let guiEditorContainer: { GUIEditor: typeof GUIEditor };
 /** Get the inspector from bundle or global */
-function _getGlobalGUIEditor(): any {
+function _getGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
     // UMD Global name detection from Webpack Bundle UMD Name.
     if (typeof GUIEditor !== "undefined") {
-        return GUIEditor;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        return { GUIEditor };
     }
 
     // In case of module let's check the global emitted from the editor entry point.
@@ -46,10 +47,10 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * @param adt
  */
 export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
+    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
     if (!guiEditorContainer) {
         if (typeof BABYLON !== "undefined") {
             // we are in UMD environment
-            guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
             if (typeof guiEditorContainer === "undefined") {
                 // Load editor and add it to the DOM
                 try {
