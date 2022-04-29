@@ -1558,7 +1558,10 @@ export class Vector3 {
     public static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
-        const dot: number = Vector3.Dot(v0, v1);
+        let dot: number = Vector3.Dot(v0, v1);
+        // Vector are normalized so dot will in [-1, 1] (aside precision issues enough to break the result)
+        dot = Scalar.Clamp(dot, -1, 1);
+
         const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
         Vector3.CrossToRef(v0, v1, n);
