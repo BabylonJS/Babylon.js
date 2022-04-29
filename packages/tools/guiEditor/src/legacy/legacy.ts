@@ -5,6 +5,7 @@ const globalObject = typeof global !== "undefined" ? global : typeof window !== 
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
     (<any>globalObject).BABYLON.GuiEditor = GUIEditor;
+    (<any>globalObject).BABYLON.GUIEditor = GUIEditor;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     (<any>globalObject).GUIEDITOR = { GUIEditor };
 }
