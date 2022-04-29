@@ -1559,7 +1559,7 @@ export class Vector3 {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
         let dot: number = Vector3.Dot(v0, v1);
-        // Vector are normalized so dot will in [-1, 1] (aside precision issues enough to break the result)
+        // Vectors are normalized so dot will be in [-1, 1] (aside precision issues enough to break the result which explains the below clamp)
         dot = Scalar.Clamp(dot, -1, 1);
 
         const angle = Math.acos(dot);
