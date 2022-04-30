@@ -1,6 +1,578 @@
 {
-    "fromTag": "5.1.0",
+    "fromTag": "5.3.0",
     "changelog": {
+        "5.3.0": [
+            {
+                "pr": "12418",
+                "title": "Added function call to focus on canvas when setting PointerLock",
+                "description": "In this PR, I've added a line to `_RequestPointerlock` called by `enterPointerlock` in the Engine that will set focus on the canvas when a pointerlock is set with `enterPointerlock`.  This reason for this fix was because a user had identified an issue where the pointerlock was successfully being set but keyboard input wasn't working.  This was due to the fact that requestPointerlock does not set focus when setting the pointerlock element so no keyboard input was being routed to the canvas.  This fix simply sets focus once the pointerlock element has been set.\r\n\r\nThis fix is in reference to this Forum post: https://forum.babylonjs.com/t/input-not-recognised-until-window-resize-triggered-or-change-focus/15653",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12417",
+                "title": "width height swizzle",
+                "description": "fix per\r\nhttps://forum.babylonjs.com/t/height-and-width-mean-the-opposite-thing/29401/3\r\n\r\n",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12416",
+                "title": "Volumetric light scattering post process: Fix support for thin instances",
+                "description": "See https://forum.babylonjs.com/t/how-i-can-use-volumetric-rendering-pipeline-vrp-with-thininstances/29544",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12410",
+                "title": "Fix uninitialized last ray for PointerDragBehavior",
+                "description": "Follow up https://forum.babylonjs.com/t/pointerdragbehavior-ghost-movement-on-click-bug/29512\r\n`this._lastPointerRay` was not reinitialized when detaching a mesh.\r\nSo, when a new mesh is attached, the previous ray is still active a newly picked mesh translates to the previous position.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12413",
+                "title": "Do not use determinant when preserving scaling",
+                "description": "Yet another fix for scaling perservation with Gizmos. https://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/35\r\nMesh Matrix determinant is used to check if Y axis should be inverted. This should not happen with PreverseScaling.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12414",
+                "title": "Fix typo in warning message",
+                "description": "back-face culling and two-sided lighting warning message was erroneous.\r\n\r\nfor more info, check [this forum thread](https://forum.babylonjs.com/t/warning-in-gltfexporter-about-double-sided-lighting-and-backface-culling/29395)",
+                "author": {
+                    "name": "Krenodeno",
+                    "url": "https://github.com/Krenodeno"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12415",
+                "title": "Skeleton._sortBones() crash for bones with parents from other skeletons",
+                "description": "It is possible for a bone to have a parent bone from a skeleton different from the original one.\r\nCurrently, the method crashes when this is the case.\r\nThis simple check fixes it. Notice that \"index\" might be -1 when the parent is from another skeleton in the previous iteration.",
+                "author": {
+                    "name": "EvgenyRodygin",
+                    "url": "https://github.com/EvgenyRodygin"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12409",
+                "title": "Inspector: render N/A for internal texture unique ID when internal texture is undefined",
+                "description": "Fixes an issue where the internal texture being undefined could lead to an inspector crash due to rendering call throwing. Will now render \"N/A\" if there is no internal texture.\r\n\r\nSee PG: https://playground.babylonjs.com/#436DIW#2",
+                "author": {
+                    "name": "darraghjburke",
+                    "url": "https://github.com/darraghjburke"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "12408",
+                "title": "Remove dead code",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12397",
+                "title": "DeviceInputSystem: Remove pollInput calls for MouseWheel from EventFactory",
+                "description": "This PR contains two changes.  First, all pollInput calls that reference MouseWheelX/Y/Z as it's not necessary for Native to get that value.  Additionally, the Move conditional has been removed from NativeDeviceInputSystem as it's not needed.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/Helpers/eventFactory.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceTypes.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/nativeDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "inputs",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "12404",
+                "title": "fix container regression",
+                "description": "Fixes a regression in GUI introduced by #12392. Invisible children were not being laid out correctly. See forum thread: https://forum.babylonjs.com/t/2d-gui-elements-not-hiding-in-5-2-0/29390/6\r\n\r\nNow, we still call layout, but we just don't count them towards the computedWidth/computedHeight of the parent container.",
+                "author": {
+                    "name": "darraghjburke",
+                    "url": "https://github.com/darraghjburke"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12406",
+                "title": "Fix Transparent shadows",
+                "description": "Fix #12405 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_iridescence.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_iridescence.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "12403",
+                "title": "Scaling preservation fix for boundingBoxGizmo",
+                "description": "More use cases fixed for scaling perservation. follow up https://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/29",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12400",
+                "title": "Block pointer events to scene when pointer is captured",
+                "description": "When a pointer is captured (for example, if the user is dragging a scrollbar), pointer events should not be passed to the scene.\r\n\r\nThis matches the behavior of setPointerCapture() on the web, which forces all pointer events to fire on a particular element.\r\n\r\nResolves forum issue: https://forum.babylonjs.com/t/scrollbar-and-pointerblocker/28732\r\nSee playground: #XNY77K#3",
+                "author": {
+                    "name": "darraghjburke",
+                    "url": "https://github.com/darraghjburke"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12402",
+                "title": "Fix empty screenshot when enabling antialiasing",
+                "description": "See https://forum.babylonjs.com/t/chrome-issue-with-create-screenshot-using-render-target/29367/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12401",
+                "title": "Add the possibility to pass forcedExtension for an environment texture",
+                "description": null,
+                "author": {
+                    "name": "ton-solutions",
+                    "url": "https://github.com/ton-solutions"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12399",
+                "title": "Deselect keys when active channels are changed.",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12396",
+                "title": "Add the possibility to pass prefilterOnLoad flag for an environment texture",
+                "description": null,
+                "author": {
+                    "name": "ton-solutions",
+                    "url": "https://github.com/ton-solutions"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "5.4.0": [
+            {
+                "pr": "12452",
+                "title": "WebGPU: more changes and fixes for stencil support",
+                "description": "When a texture has both a depth and stencil aspects, only one of these can be used in a texture lookup. So, when creating a texture view, we must choose between depth and stencil.\r\n\r\nWe currently choose \"depth\" as it is what the user would most likely want, but we will need to come up with a way to be able to specify \"stencil\" instead. However, I don't know how we can do that, that would require some annotations in the shader so that we know a texture should be bound with the stencil aspect...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "12450",
+                "title": "WebGPU: Fix crash when creating the engine without stencil buffer support",
+                "description": "Also fix a warning when setting a value in gl_FragDepth.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12429",
+                "title": "Allow arc rotate auto rotation to rotate to a certain alpha value",
+                "description": "add `targetAlpha` to autoRotateBehavior to serve as a limit. When the limit is reached, the autoRotateBehavoir would stop.\r\n",
+                "author": {
+                    "name": "TheCrowd",
+                    "url": "https://github.com/TheCrowd"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/autoRotationBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12445",
+                "title": "move tests to the cdn instead of main page",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12443",
+                "title": "Fix camera cloning by adding newParent parameter",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/invoke-clone-with-camera-childnode-can-not-keep-structure/29648 and Playground: https://playground.babylonjs.com/#FZPMS1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12440",
+                "title": "make sure pointer up only triggers once",
+                "description": "Adressing this:\n\nhttps://forum.babylonjs.com/t/webxr-pointer-up-event-trigger-twice-on-one-single-touch/29370?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12432",
+                "title": "Fix iridescence texture transform",
+                "description": "Fix #12431 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12442",
+                "title": "Fix OimoJS plugin syncMeshWithImpostor method.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/physicsviewer-working-only-with-meshimposter/29654 and Playground: https://playground.babylonjs.com/#WIR77Z#1317",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/Plugins/oimoJSPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "12434",
+                "title": "Fix thinInstanceCount setter to work with mesh clone",
+                "description": "After cloning a mesh that has thin instances, setting thinInstanceCount on the clone currently doesn't work (unless it is set to 0 the setter will return without updating the internal instanceCount).\r\n\r\nWith this PR, if a mesh doesn't have the thin instance matrixData, then it checks to see if the mesh's source has it before defaulting the max instance count to 0.\r\n\r\nPG Repro: https://playground.babylonjs.com/#217750#76\r\nForum: https://forum.babylonjs.com/t/cant-set-thininstancecount-for-clone/29674\r\n",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12436",
+                "title": "Fix crash when cloning meshes with thin instances that are using instance color",
+                "description": "See https://forum.babylonjs.com/t/vertex-error-and-no-colors-on-thin-instances-after-upgrade/28492/23",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12428",
+                "title": "Fix GridMaterial serialization",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12437",
+                "title": "Fix audit issues",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12427",
+                "title": "Fix effectLayer vertex alpha detection",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12424",
+                "title": "Enable more features for PG in JS mode",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12425",
+                "title": "NME: uploading a static cube texture in a Reflection block does not work",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/tools/nodeEditor/src/diagram/display/textureDisplayManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12389",
+                "title": "Export KHR extensions: IOR, Transmission and Volume",
+                "description": "GLTF 2.0 Serializer is missing the \r\n\r\n- KHR_materials_ior \r\n- KHR_materials_volume \r\n- KHR_materials_transmissions\r\n\r\nextensions\r\n\r\nThis PR add support for these extensions to the GLTF2.0 serializer.\r\nAlso, some minor modification has been made into the GLTF Loader extensions to be consistant with the GLTF definitions.\r\nTest has been conducted using [this](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/StainedGlassLamp) standard sample model\r\nMaterials has been loaded and serialized succesfully without any diff.",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_ior.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_specular.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12421",
+                "title": "Remove some unnecessary computations",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Rendering/renderingGroup.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12420",
+                "title": "WebGPU: Fix RenderAttachment flag for 3D textures",
+                "description": "See https://forum.babylonjs.com/t/how-to-get-error-callback-when-computeshader-dispatch-work-wrong/29571/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12419",
+                "title": "ShaderMaterial: keep uniqueId in serialize()",
+                "description": "Like Material here: https://github.com/BabylonJS/Babylon.js/blob/c654c7303965a43f340f8c1e0eab3fc804c566f1/packages/dev/core/src/Materials/material.ts#L1719\r\nRelated commit: https://github.com/BabylonJS/Babylon.js/commit/738236a7578d1c6dfcae4f93cfffeb768ea5a826",
+                "author": {
+                    "name": "lxq100",
+                    "url": "https://github.com/lxq100"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": []
+            }
+        ],
         "5.2.0": [
             {
                 "pr": "12362",

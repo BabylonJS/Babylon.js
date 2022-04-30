@@ -3694,6 +3694,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _activeMeshesFrozen = false;
+    public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
@@ -3702,9 +3703,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param onSuccess optional success callback
      * @param onError optional error callback
      * @param freezeMeshes defines if meshes should be frozen (true by default)
+     * @param keepFrustumCulling defines if you want to keep running the frustum clipping (false by default)
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes = true): Scene {
+    public freezeActiveMeshes(
+        skipEvaluateActiveMeshes = false,
+        onSuccess?: () => void,
+        onError?: (message: string) => void,
+        freezeMeshes = true,
+        keepFrustumCulling = false
+    ): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 onError && onError("No active camera found");
@@ -3717,6 +3725,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
+            this._activeMeshesFrozenButKeepClipping = keepFrustumCulling;
             this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
             if (freezeMeshes) {
@@ -3826,7 +3835,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
                 continue;
             }
 
@@ -3920,7 +3929,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        if (mesh !== undefined && mesh !== null && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0) {
+        if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
             for (let i = 0; i < len; i++) {

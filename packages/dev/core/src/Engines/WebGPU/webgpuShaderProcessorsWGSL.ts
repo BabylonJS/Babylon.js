@@ -337,7 +337,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         }
 
         if (hasFragDepth) {
-            fragmentOutputs += "  @builtin(frag_depth) fragDepth: f32;\n";
+            fragmentOutputs += "  @builtin(frag_depth) fragDepth: f32,\n";
         }
 
         fragmentOutputs += "};\n";

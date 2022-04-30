@@ -249,8 +249,13 @@ export class RenderingGroup {
             sortedArray.sort(sortCompareFn);
         }
 
+        const scene = sortedArray[0].getMesh().getScene();
         for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
             subMesh = sortedArray[subIndex];
+
+            if (scene._activeMeshesFrozenButKeepClipping && !subMesh.isInFrustum(scene._frustumPlanes)) {
+                continue;
+            }
 
             if (transparent) {
                 const material = subMesh.getMaterial();
@@ -273,8 +278,14 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private static _RenderUnsorted(subMeshes: SmartArray<SubMesh>): void {
+        const scene = subMeshes.data[0].getMesh().getScene();
         for (let subIndex = 0; subIndex < subMeshes.length; subIndex++) {
             const submesh = subMeshes.data[subIndex];
+
+            if (scene._activeMeshesFrozenButKeepClipping && !submesh.isInFrustum(scene._frustumPlanes)) {
+                continue;
+            }
+
             submesh.render(false);
         }
     }

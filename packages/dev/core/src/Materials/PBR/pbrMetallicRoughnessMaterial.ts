@@ -4,6 +4,7 @@ import type { Color3 } from "../../Maths/math.color";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
+import { Nullable } from "../../types";
 
 /**
  * The PBR material of BJS following the metal roughness convention.
@@ -28,7 +29,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
-    public baseTexture: BaseTexture;
+    public baseTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the metallic scalar value of the material.
@@ -52,7 +53,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_metallicTexture")
-    public metallicRoughnessTexture: BaseTexture;
+    public metallicRoughnessTexture: Nullable<BaseTexture>;
 
     /**
      * Instantiates a new PBRMetalRoughnessMaterial instance.

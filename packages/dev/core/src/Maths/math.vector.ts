@@ -1371,6 +1371,13 @@ export class Vector3 {
     }
 
     /**
+     * Gets a boolean indicating if the vector contains a zero in one of its components
+     */
+    public get hasAZeroComponent(): boolean {
+        return this._x * this._y * this._z === 0;
+    }
+
+    /**
      * Normalize the current Vector3.
      * Please note that this is an in place operation.
      * @returns the current updated Vector3
@@ -1551,7 +1558,10 @@ export class Vector3 {
     public static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
-        const dot: number = Vector3.Dot(v0, v1);
+        let dot: number = Vector3.Dot(v0, v1);
+        // Vectors are normalized so dot will be in [-1, 1] (aside precision issues enough to break the result which explains the below clamp)
+        dot = Scalar.Clamp(dot, -1, 1);
+
         const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
         Vector3.CrossToRef(v0, v1, n);
