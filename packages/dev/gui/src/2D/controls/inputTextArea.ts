@@ -1142,6 +1142,29 @@ export class InputTextArea extends InputText {
         // Override to avoid parent behavior during _onPointerMove
     }
 
+    /**
+     * @param evt
+     * @hidden
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _processDblClick(evt: PointerInfo) {
+        //pre-find the start and end index of the word under cursor, speeds up the rendering
+        let moveLeft, moveRight;
+        do {
+            moveLeft = this._cursorInfo.globalStartIndex > 0 && this._textWrapper.isWord(this._cursorInfo.globalStartIndex - 1) ? --this._cursorInfo.globalStartIndex : 0;
+            moveRight = this._cursorInfo.globalEndIndex < this._textWrapper.length && this._textWrapper.isWord(this._cursorInfo.globalEndIndex) ? ++this._cursorInfo.globalEndIndex : 0;
+        } while (moveLeft || moveRight);
+
+        this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
+        this._highlightCursorInfo.initialStartIndex = this._cursorInfo.globalStartIndex;
+
+        this.onTextHighlightObservable.notifyObservers(this);
+
+        this._isTextHighlightOn = true;      
+        this._blinkIsEven = true;
+        this._markAsDirty();
+    }
+
     /** @hidden */
     protected _selectAllText() {
         this._isTextHighlightOn = true;
