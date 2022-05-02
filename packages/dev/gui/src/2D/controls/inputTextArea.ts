@@ -882,57 +882,57 @@ export class InputTextArea extends InputText {
                 }
 
                 if (!this._isTextHighlightOn) {
-                context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
+                    context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
                 }
             }
 
             
             this._resetBlinking();
 
-                //show the highlighted text
-                if (this._isTextHighlightOn) {
-                    clearTimeout(this._blinkTimeout);
+            //show the highlighted text
+            if (this._isTextHighlightOn) {
+                clearTimeout(this._blinkTimeout);
 
-                    this._highlightedText = this.text.substring(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
+                this._highlightedText = this.text.substring(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
-                    context.globalAlpha = this._highligherOpacity;
-                    context.fillStyle = this._textHighlightColor;
+                context.globalAlpha = this._highligherOpacity;
+                context.fillStyle = this._textHighlightColor;
 
-                    const startLineIndex = Math.min(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
-                    const endLineIndex = Math.max(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
+                const startLineIndex = Math.min(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
+                const endLineIndex = Math.max(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
 
-                    let highlightRootY = this._scrollTop + startLineIndex * this._fontOffset.height;
+                let highlightRootY = this._scrollTop + startLineIndex * this._fontOffset.height;
 
-                    for (let i = startLineIndex; i <= endLineIndex; i++) {
-                        const line = this._lines[i];
+                for (let i = startLineIndex; i <= endLineIndex; i++) {
+                    const line = this._lines[i];
 
-                        let highlightRootX = this._scrollLeft as number;
-                        switch (this._textHorizontalAlignment) {
-                            case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                                highlightRootX += 0;
-                                break;
-                            case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                                highlightRootX += width - line.width;
-                                break;
-                            case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                                highlightRootX += (width - line.width) / 2;
-                                break;
-                        }
-
-                        const begin = i === startLineIndex ? this._cursorInfo.relativeStartIndex : 0;
-                        const end = i === endLineIndex ? this._cursorInfo.relativeEndIndex : line.text.length;
-
-                        const leftOffsetWidth = context.measureText(line.text.substr(0,begin)).width;
-                        const selectedText = line.text.substring(begin, end);
-                        const hightlightWidth = context.measureText(selectedText).width;
-
-                        context.fillRect(highlightRootX + leftOffsetWidth, highlightRootY, hightlightWidth, this._fontOffset.height);
-
-                        highlightRootY += this._fontOffset.height;
+                    let highlightRootX = this._scrollLeft as number;
+                    switch (this._textHorizontalAlignment) {
+                        case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                            highlightRootX += 0;
+                            break;
+                        case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                            highlightRootX += width - line.width;
+                            break;
+                        case Control.HORIZONTAL_ALIGNMENT_CENTER:
+                            highlightRootX += (width - line.width) / 2;
+                            break;
                     }
 
-                    if (this._cursorInfo.globalEndIndex === this._cursorInfo.globalStartIndex) {
-                        this._resetBlinking();
+                    const begin = i === startLineIndex ? this._cursorInfo.relativeStartIndex : 0;
+                    const end = i === endLineIndex ? this._cursorInfo.relativeEndIndex : line.text.length;
+
+                    const leftOffsetWidth = context.measureText(line.text.substr(0,begin)).width;
+                    const selectedText = line.text.substring(begin, end);
+                    const hightlightWidth = context.measureText(selectedText).width;
+
+                    context.fillRect(highlightRootX + leftOffsetWidth, highlightRootY, hightlightWidth, this._fontOffset.height);
+
+                    highlightRootY += this._fontOffset.height;
+                }
+
+                if (this._cursorInfo.globalEndIndex === this._cursorInfo.globalStartIndex) {
+                    this._resetBlinking();
                 }
             }
         }
@@ -1079,7 +1079,7 @@ export class InputTextArea extends InputText {
             if (!this._isTextHighlightOn) {
                 this._cursorInfo.globalStartIndex = globalIndex;
                 this._cursorInfo.relativeStartIndex = relativeIndex;
-            this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                 this._cursorInfo.relativeEndIndex= this._cursorInfo.relativeStartIndex;
             } else {
                 if (globalIndex < this._highlightCursorInfo.initialStartIndex) {
