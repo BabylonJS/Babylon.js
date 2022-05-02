@@ -1047,7 +1047,7 @@ export class InputTextArea extends InputText {
             let globalIndex = 0;
             let relativeIndex = 0;         
 
-            const lastClickedCoordinateY = this._clickedCoordinateY - this._currentMeasure.top - this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+            const lastClickedCoordinateY = this._clickedCoordinateY - (this._scrollTop as number);
   
             const relativeCoordinateY = Math.floor(lastClickedCoordinateY / this._fontOffset.height);
             this._cursorInfo.currentLineIndex = Math.min(Math.max(relativeCoordinateY, 0), this._lines.length - 1);
