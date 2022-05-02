@@ -671,7 +671,7 @@ export class InputTextArea extends InputText {
             this._scrollLeft = this._clipTextLeft;
         }
 
-        if (this._isFocused) {
+        if (this._isFocused && !this._autoStretchHeight) {
             const selectedHeight = (this._cursorInfo.currentLineIndex + 1) * this._fontOffset.height;
             const textTop = this._clipTextTop - selectedHeight;
 
