@@ -123,12 +123,12 @@ export class TBNBlock extends NodeMaterialBlock {
         const normal = this.normal;
         const tangent = this.tangent;
 
-        let normalAvailable = normal.isConnected && normal.isConnectedToInputBlock;
+        let normalAvailable = normal.isConnected;
         if (normal.connectInputBlock?.isAttribute && !mesh.isVerticesDataPresent(normal.connectInputBlock?.name)) {
             normalAvailable = false;
         }
 
-        let tangentAvailable = tangent.isConnected && tangent.isConnectedToInputBlock;
+        let tangentAvailable = tangent.isConnected;
         if (tangent.connectInputBlock?.isAttribute && !mesh.isVerticesDataPresent(tangent.connectInputBlock?.name)) {
             tangentAvailable = false;
         }
@@ -152,7 +152,7 @@ export class TBNBlock extends NodeMaterialBlock {
 
             state.compilationString += `
                 // ${this.name}
-                vec3 tbnNormal = normalize(${normal.associatedVariableName});
+                vec3 tbnNormal = normalize(${normal.associatedVariableName}).xyz;
                 vec3 tbnTangent = normalize(${tangent.associatedVariableName}.xyz);
                 vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${tangent.associatedVariableName}.w;
                 ${TBN.associatedVariableName} = mat3(${world.associatedVariableName}) * mat3(tbnTangent, tbnBitangent, tbnNormal);
