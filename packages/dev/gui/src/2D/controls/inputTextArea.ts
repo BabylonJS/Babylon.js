@@ -1163,5 +1163,11 @@ export class InputTextArea extends InputText {
 
         this._markAsDirty();
     }
+
+    public dipose() {
+        super.dispose();
+
+        this.onLinesReadyObservable.clear();
+    }
 }
 RegisterClass("BABYLON.GUI.InputTextArea", InputTextArea);
