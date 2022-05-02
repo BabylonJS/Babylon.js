@@ -1155,10 +1155,10 @@ export class InputTextArea extends InputText {
 
         this._cursorInfo = {
             globalStartIndex: 0,
-            globalEndIndex: this.text.length,
-            relativeEndIndex: -1,
-            relativeStartIndex: -1,
-            currentLineIndex: 0,
+            globalEndIndex: this._textWrapper.length,
+            relativeEndIndex: this._lines[this._lines.length - 1].text.length,
+            relativeStartIndex: 0,
+            currentLineIndex: this._lines.length - 1,
         };
 
         this._markAsDirty();
