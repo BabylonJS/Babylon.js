@@ -871,7 +871,7 @@ export class InputTextArea extends InputText {
 
                 let cursorTop = this._scrollTop + this._cursorInfo.currentLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
 
-                if (cursorTop <this._clipTextTop) {
+                if (cursorTop < this._clipTextTop) {
                     this._scrollTop += (this._clipTextTop - cursorTop);
                     cursorTop = this._clipTextTop;
                     this._markAsDirty();
