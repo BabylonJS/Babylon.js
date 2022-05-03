@@ -20,6 +20,7 @@ declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
+const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 
 /** @hidden */
 export class ShaderProcessor {
@@ -360,8 +361,7 @@ export class ShaderProcessor {
         return preparedSourceCode;
     }
 
-    private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+    private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {        
         let match = regexShaderInclude.exec(sourceCode);
 
         let returnValue = new String(sourceCode);
