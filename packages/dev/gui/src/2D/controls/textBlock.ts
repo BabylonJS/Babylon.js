@@ -5,7 +5,7 @@ import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { Nullable } from "core/types";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext, ITextMetrics } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**
@@ -483,21 +483,25 @@ export class TextBlock extends Control {
         return { text: line, width: lineWidth };
     }
 
+    private _getTextMetricsWidth(textMetrics: ITextMetrics) {
+        if (textMetrics.actualBoundingBoxLeft !== undefined) {
+            return Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        }
+        return textMetrics.width;
+    }
+
     protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         const lines = [];
         const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
-        let textMetrics = context.measureText(line);
-        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         for (let n = 0; n < words.length; n++) {
             const testLine = n > 0 ? line + " " + words[n] : words[0];
-            const metrics = context.measureText(testLine);
-            const testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+            const testWidth = this._getTextMetricsWidth(context.measureText(testLine));
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
-                textMetrics = context.measureText(line);
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line));
             } else {
                 lineWidth = testWidth;
                 line = testLine;
