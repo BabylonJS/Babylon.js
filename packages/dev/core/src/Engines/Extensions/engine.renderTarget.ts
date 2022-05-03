@@ -65,12 +65,14 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateDepthBuffer = !!options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = !!options.generateStencilBuffer;
+        fullOptions.noColorTarget = !!options.noColorTarget;
     } else {
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
+        fullOptions.noColorTarget = false;
     }
 
-    const texture = this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
+    const texture = fullOptions.noColorTarget ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
@@ -83,7 +85,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
 
     // No need to rebind on every frame
-    if (!texture.is2DArray) {
+    if (texture && !texture.is2DArray) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
     }
 

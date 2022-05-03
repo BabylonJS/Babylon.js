@@ -501,7 +501,7 @@ export class SceneOptimizerOptions {
      * @param priority defines the priority of this optimization (0 by default which means first in the list)
      * @returns the current SceneOptimizerOptions
      */
-    public addCustomOptimization(onApply: (scene: Scene) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
+    public addCustomOptimization(onApply: (scene: Scene, optimizer: SceneOptimizer) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
         const optimization = new CustomOptimization(priority);
         optimization.onApply = onApply;
         optimization.onGetDescription = onGetDescription;
@@ -631,10 +631,14 @@ export class SceneOptimizer implements IDisposable {
     public onFailureObservable = new Observable<SceneOptimizer>();
 
     /**
-     * Gets a boolean indicating if the optimizer is in improvement mode
+     * Gets or sets a boolean indicating if the optimizer is in improvement mode
      */
     public get isInImprovementMode(): boolean {
         return this._improvementMode;
+    }
+
+    public set isInImprovementMode(value: boolean) {
+        this._improvementMode = value;
     }
 
     /**
