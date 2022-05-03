@@ -17,7 +17,7 @@ import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Mesh } from "core/Meshes/mesh";
 import { FilesInput } from "core/Misc/filesInput";
 import type { Scene } from "core/scene";
-import { SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
+import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
 // TODO - does it still work if loading the modules from the correct files?
@@ -39,6 +39,7 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import GIF from "gif.js.optimized";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
+import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 
 const envExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
@@ -84,8 +85,8 @@ export class ToolsTabComponent extends PaneComponent {
     }
 
     componentDidMount() {
-        if (!(BABYLON as any).GLTF2Export) {
-            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {});
+        if (!GLTF2Export) {
+            Tools.Warn("GLTF2Export is not available. Make sure to load the serializers library");
             return;
         }
     }
@@ -216,7 +217,7 @@ export class ToolsTabComponent extends PaneComponent {
                         currentGroup.play(true);
                     }
                 };
-                (BABYLON as any).SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
+                SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
         const filesInputAnimation = new FilesInput(
@@ -480,7 +481,7 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     )}
                 </LineContainerComponent>
-                {(BABYLON as any).GLTFFileLoader && <GLTFComponent scene={scene} globalState={this.props.globalState!} />}
+                {GLTFFileLoader && <GLTFComponent scene={scene} globalState={this.props.globalState!} />}
                 <LineContainerComponent title="REFLECTOR" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />
