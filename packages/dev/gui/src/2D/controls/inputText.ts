@@ -788,7 +788,7 @@ export class InputText extends Control implements IFocusableControl {
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _processDblClick(evt: PointerInfo) {
+    protected _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
         this._endHighlightIndex = this._startHighlightIndex;

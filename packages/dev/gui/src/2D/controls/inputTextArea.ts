@@ -1147,7 +1147,7 @@ export class InputTextArea extends InputText {
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _processDblClick(evt: PointerInfo) {
+    protected _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         let moveLeft, moveRight;
         do {
