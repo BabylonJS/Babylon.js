@@ -435,9 +435,7 @@ export class TextBlock extends Control {
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
-        const textMetrics = context.measureText(line);
-        const lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
-        return { text: line, width: lineWidth };
+        return { text: line, width: this._getTextMetricsWidth(context.measureText(line)) };
     }
 
     //Calculate how many characters approximately we need to remove
@@ -450,8 +448,7 @@ export class TextBlock extends Control {
     }
 
     protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
-        let textMetrics = context.measureText(line);
-        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         let removeChars = this._getCharsToRemove(lineWidth, width, line.length);
 
@@ -462,8 +459,7 @@ export class TextBlock extends Control {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
                 line = line.slice(0, -removeChars);
-                textMetrics = context.measureText(line + "…");
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line + "…"));
 
                 removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
@@ -473,8 +469,7 @@ export class TextBlock extends Control {
             while (characters.length && lineWidth > width) {
                 characters.splice(characters.length - removeChars, removeChars);
                 line = `${characters.join("")}…`;
-                textMetrics = context.measureText(line);
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
                 removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
