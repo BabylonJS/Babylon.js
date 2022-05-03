@@ -9,7 +9,7 @@ import { RegisterClass } from 'core/Misc/typeStore';
 import { Measure } from '../measure';
 import { InputText } from "./inputText";
 import { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { PointerInfoBase } from "core/Events/pointerEvents";
+import { PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
 import { IKeyboardEvent } from "core/Events/deviceInputEvents";
 
 import { serialize } from "core/Misc/decorators";
