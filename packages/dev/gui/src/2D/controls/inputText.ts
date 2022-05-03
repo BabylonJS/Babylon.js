@@ -36,7 +36,7 @@ export class InputText extends Control implements IFocusableControl {
     protected _focusedBy: string;
     protected _blinkTimeout: number;
     protected _blinkIsEven = false;
-    protected _cursorOffset = 0;
+    private _cursorOffset = 0;
     protected _scrollLeft: Nullable<number>;
     protected _textWidth: number;
     protected _clickedCoordinate: Nullable<number>;
@@ -47,9 +47,9 @@ export class InputText extends Control implements IFocusableControl {
     protected _textHighlightColor = "#d5e0ff";
     protected _highligherOpacity = 0.4;
     protected _highlightedText = "";
-    protected _startHighlightIndex = 0;
-    protected _endHighlightIndex = 0;
-    protected _cursorIndex = -1;
+    private _startHighlightIndex = 0;
+    private _endHighlightIndex = 0;
+    private _cursorIndex = -1;
     protected _onFocusSelectAll = false;
     protected _isPointerDown = false;
     protected _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;

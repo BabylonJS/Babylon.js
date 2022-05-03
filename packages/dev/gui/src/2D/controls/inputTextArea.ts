@@ -332,7 +332,6 @@ export class InputTextArea extends InputText {
                 // update the cursor
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
-                this._cursorIndex = -1;
                 return;
             case 38: // UP
                 // update the cursor
@@ -496,11 +495,9 @@ export class InputTextArea extends InputText {
                     }
                 } else {
                     evt.preventDefault();
-                    this._cursorIndex = -1;
                     this.deadKey = true;
                 }
             } else {
-                this._cursorIndex = -1;
                 this.deadKey = true;
             }
         }
@@ -984,7 +981,6 @@ export class InputTextArea extends InputText {
 
         this._isTextHighlightOn = false;
         this._highlightedText = "";
-        this._cursorIndex = -1;
         this._isPointerDown = true;
         this._host._capturingControl[pointerId] = this;
         if (this._host.focusedControl === this) {
