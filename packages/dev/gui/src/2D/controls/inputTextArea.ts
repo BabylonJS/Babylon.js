@@ -855,7 +855,7 @@ export class InputTextArea extends InputText {
         if (this._isFocused) {
 
             // Render cursor
-            if (!this._blinkIsEven) {
+            if (!this._blinkIsEven || this._isTextHighlightOn) {
 
                 let cursorLeft = this._scrollLeft + context.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, this._cursorInfo.relativeStartIndex)).width;
 
