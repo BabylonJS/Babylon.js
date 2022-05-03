@@ -141,7 +141,7 @@ export class InputTextArea extends InputText {
 
         this.isPointerBlocker = true;
 
-        this.onLinesReadyObservable.add((inputTextArea)=> this._updateCursorPosition());
+        this.onLinesReadyObservable.add(() => this._updateCursorPosition());
 
         this._highlightCursorInfo = {
             initialStartIndex: -1,
@@ -162,7 +162,14 @@ export class InputTextArea extends InputText {
         return "InputTextArea";
     }
 
-    /** @hidden */
+    /**
+     * Process the last keyboard input
+     *
+     * @param keyCode The ascii input number 
+     * @param key The key string representation
+     * @param evt The keyboard event emits with input
+     * @hidden
+     */
     public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
 
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
@@ -576,15 +583,15 @@ export class InputTextArea extends InputText {
     }
 
     protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
-        var lines: { text: string, width: number, lineEnding: string }[] = [];
-        var _lines = this.text.split("\n");
+        const lines: { text: string, width: number, lineEnding: string }[] = [];
+        const _lines = this.text.split("\n");
 
         if (this.clipContent) {
-            for (var _line of _lines) {
+            for (const _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
         } else {
-            for (var _line of _lines) {
+            for (const _line of _lines) {
                 lines.push(this._parseLine(_line, context));
             }
         }
@@ -598,7 +605,13 @@ export class InputTextArea extends InputText {
         return { text: line, width: context.measureText(line).width, lineEnding: " " };
     }
 
-    /** @hidden */
+    /**
+     * Processing of child right before the parent measurement update
+     *
+     * @param parentMeasure The parent measure
+     * @param context The rendering canvas 
+     * @hidden
+     */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (!this._fontOffset || this._wasDirty) {
             this._fontOffset = Control._GetFontOffset(context.font);
@@ -618,7 +631,7 @@ export class InputTextArea extends InputText {
         // measures the textlength -> this.measure.width
         this._textWidth = context.measureText(text).width;
         // we double up the margin width
-        let marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
+        const marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
 
         if (this._autoStretchWidth) {
             const tmpLines = text.split("\n");
@@ -652,7 +665,14 @@ export class InputTextArea extends InputText {
         this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginWidth;
     }
 
-    /** @hidden */
+    /**
+     * Processing of child after the parent measurement update
+     *
+     * @param parentMeasure The parent measure
+     * @param context The rendering canvas 
+     * @hidden
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
         this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, parentMeasure.height);
@@ -686,8 +706,8 @@ export class InputTextArea extends InputText {
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
-        var width = this._currentMeasure.width;
-        var x = this._scrollLeft as number;
+        const width = this._currentMeasure.width;
+        let x = this._scrollLeft as number;
         switch (this._textHorizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
                 x += 0;
@@ -713,7 +733,12 @@ export class InputTextArea extends InputText {
         context.fillText(text, x, y);
     }
 
-    /** @hidden */
+    /**
+     * Copy the text in the clipboard
+     *
+     * @param ev The clipboard event
+     * @hidden
+     */
     protected _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
@@ -724,7 +749,12 @@ export class InputTextArea extends InputText {
         this._host.clipboardData = this._highlightedText;
     }
 
-    /** @hidden */
+    /**
+     * Cut the text and copy it in the clipboard
+     *
+     * @param ev The clipboard event
+     * @hidden
+     */
     protected _onCutText(ev: ClipboardEvent): void {
         if (!this._highlightedText) {
             return;
@@ -742,7 +772,12 @@ export class InputTextArea extends InputText {
         this._textHasChanged();
     }
 
-    /** @hidden */
+    /**
+     * Paste the copied text from the clipboard
+     *
+     * @param ev The clipboard event
+     * @hidden
+     */
     protected _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
@@ -1048,11 +1083,11 @@ export class InputTextArea extends InputText {
             const relativeCoordinateY = Math.floor(lastClickedCoordinateY / this._fontOffset.height);
             this._cursorInfo.currentLineIndex = Math.min(Math.max(relativeCoordinateY, 0), this._lines.length - 1);
 
-            var currentSize = 0;
+            let currentSize = 0;
 
             const relativeXPosition = this._clickedCoordinateX - (this._scrollLeft ?? 0);
 
-            var previousDist = 0;
+            let previousDist = 0;
 
             for (let index = 0; index < this._cursorInfo.currentLineIndex; index++) {
                 const line = this._lines[index];
@@ -1076,7 +1111,7 @@ export class InputTextArea extends InputText {
                 this._cursorInfo.globalStartIndex = globalIndex;
                 this._cursorInfo.relativeStartIndex = relativeIndex;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                this._cursorInfo.relativeEndIndex= this._cursorInfo.relativeStartIndex;
+                this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
             } else {
                 if (globalIndex < this._highlightCursorInfo.initialStartIndex) {
                     this._cursorInfo.globalStartIndex = globalIndex;
@@ -1133,13 +1168,21 @@ export class InputTextArea extends InputText {
         }
     }
 
-    /** @hidden */
+    /**
+     * Update all values of cursor information based on cursorIndex value
+     *
+     * @param offset The index to take care of
+     * @hidden
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _updateValueFromCursorIndex(offset: number) {
         // Override to avoid parent behavior during _onPointerMove
     }
 
     /**
-     * @param evt
+     * Select the word immediatly under the cursor on double click
+     *
+     * @param evt Pointer informations of double click
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
