@@ -192,7 +192,8 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 } else {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
-                        scene
+                        scene,
+                        parsedData.environmentTextureForcedExtension
                     );
                     if (parsedData.environmentTextureRotationY) {
                         cubeTexture.rotationY = parsedData.environmentTextureRotationY;
