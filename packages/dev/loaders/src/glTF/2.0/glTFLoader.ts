@@ -532,8 +532,10 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createRootNode(): INode {
+        this._babylonScene._blockEntityCollection = !!this._assetContainer;
         this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
         this._rootBabylonMesh._parentContainer = this._assetContainer;
+        this._babylonScene._blockEntityCollection = false;
         this._rootBabylonMesh.setEnabled(false);
 
         const rootNode: INode = {
