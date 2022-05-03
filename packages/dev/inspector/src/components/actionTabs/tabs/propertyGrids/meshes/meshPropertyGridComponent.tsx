@@ -39,6 +39,7 @@ import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
+import { Tools } from "core/Misc/tools";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -166,12 +167,8 @@ export class MeshPropertyGridComponent extends React.Component<
             mesh.reservedDataStore.originalMaterial = null;
             this.setState({ displayNormals: false });
         } else {
-            if (!NormalMaterial) {
-                // this.setState({ displayNormals: true });
-                // Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", () => {
-                //     this.displayNormals();
-                // });
-                console.log("NormalMaterial not found");
+            if (typeof NormalMaterial === "undefined") {
+                Tools.Warn("NormalMaterial not found. Make sure to load the materials library.");
                 return;
             }
 

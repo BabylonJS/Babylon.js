@@ -86,8 +86,7 @@ export class ToolsTabComponent extends PaneComponent {
 
     componentDidMount() {
         if (!GLTF2Export) {
-            console.log("GLTF2Export is not available");
-            // Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {});
+            Tools.Warn("GLTF2Export is not available. Make sure to load the serializers library");
             return;
         }
     }
