@@ -1283,14 +1283,16 @@ export class Camera extends Node {
     /**
      * Clones the current camera.
      * @param name The cloned camera name
+     * @param newParent The cloned camera's new parent (none by default)
      * @returns the cloned camera
      */
-    public clone(name: string): Camera {
+    public clone(name: string, newParent: Nullable<Node> = null): Camera {
         const camera = SerializationHelper.Clone(
             Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide),
             this
         );
         camera.name = name;
+        camera.parent = newParent;
 
         this.onClonedObservable.notifyObservers(camera);
 
