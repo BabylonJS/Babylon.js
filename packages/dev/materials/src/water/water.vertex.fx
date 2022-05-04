@@ -124,15 +124,7 @@ void main(void) {
     #include<shadowsVertex>[0..maxSimultaneousLights]
     
 	// Vertex color
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
-    vColor = vec4(1.0);
-    #ifdef VERTEXCOLOR
-        vColor *= color;
-    #endif
-    #ifdef INSTANCESCOLOR
-        vColor *= instanceColor;
-    #endif
-#endif
+#include<vertexColorMixing>
 
 	// Point size
 #if defined(POINTSIZE) && !defined(WEBGPU)
