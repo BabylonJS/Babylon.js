@@ -104,7 +104,18 @@ export class InputTextArea extends InputText {
     }
 
     public set height(value: string | number) {
-        super.height = value;
+        //#region Code from control.ts
+        // Impossible to call super in setter...
+        this._fixedRatioMasterIsWidth = false;
+
+        if (this._height.toString(this._host) === value) {
+            return;
+        }
+
+        if (this._height.fromString(value)) {
+            this._markAsDirty();
+        }
+        //#endregion Code from control.ts
 
         this._autoStretchHeight = false;
     }
