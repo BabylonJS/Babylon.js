@@ -61,9 +61,7 @@ import type {
     IArrayItem as IArrItem,
     _ISamplerData,
 } from "./glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
-import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import { GLTFFileLoader, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -75,6 +73,8 @@ import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
+import { ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
+import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -131,7 +131,7 @@ export class ArrayItem {
 /**
  * The glTF 2.0 loader
  */
-export class GLTFLoader implements IGLTFLoader {
+export class GLTFLoader implements ILoader {
     /** @hidden */
     public _completePromises = new Array<Promise<any>>();
 
@@ -281,7 +281,7 @@ export class GLTFLoader implements IGLTFLoader {
         meshesNames: any,
         scene: Scene,
         container: Nullable<AssetContainer>,
-        data: IGLTFLoaderData,
+        data: ILoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName = ""
@@ -336,7 +336,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param fileName
      * @hidden
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
+    public loadAsync(scene: Scene, data: ILoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._loadData(data);
@@ -354,13 +354,13 @@ export class GLTFLoader implements IGLTFLoader {
                 this._loadExtensions();
                 this._checkExtensions();
 
-                const loadingToReadyCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.READY]}`;
-                const loadingToCompleteCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.COMPLETE]}`;
+                const loadingToReadyCounterName = `${LoaderState[LoaderState.LOADING]} => ${LoaderState[LoaderState.READY]}`;
+                const loadingToCompleteCounterName = `${LoaderState[LoaderState.LOADING]} => ${LoaderState[LoaderState.COMPLETE]}`;
 
                 this._parent._startPerformanceCounter(loadingToReadyCounterName);
                 this._parent._startPerformanceCounter(loadingToCompleteCounterName);
 
-                this._parent._setState(GLTFLoaderState.LOADING);
+                this._parent._setState(LoaderState.LOADING);
                 this._extensionsOnLoading();
 
                 const promises = new Array<Promise<any>>();
@@ -405,7 +405,7 @@ export class GLTFLoader implements IGLTFLoader {
                     }
 
                     this._extensionsOnReady();
-                    this._parent._setState(GLTFLoaderState.READY);
+                    this._parent._setState(LoaderState.READY);
 
                     this._startAnimations();
 
@@ -421,7 +421,7 @@ export class GLTFLoader implements IGLTFLoader {
                                 () => {
                                     this._parent._endPerformanceCounter(loadingToCompleteCounterName);
 
-                                    this._parent._setState(GLTFLoaderState.COMPLETE);
+                                    this._parent._setState(LoaderState.COMPLETE);
 
                                     this._parent.onCompleteObservable.notifyObservers(undefined);
                                     this._parent.onCompleteObservable.clear();
@@ -453,7 +453,7 @@ export class GLTFLoader implements IGLTFLoader {
             });
     }
 
-    private _loadData(data: IGLTFLoaderData): void {
+    private _loadData(data: ILoaderData): void {
         this._gltf = data.json as IGLTF;
         this._setupData();
 
@@ -2886,4 +2886,4 @@ export class GLTFLoader implements IGLTFLoader {
     }
 }
 
-GLTFFileLoader._CreateGLTF2Loader = (parent) => new GLTFLoader(parent);
+GLTFFileLoader._CreateGLTF2Loader = (parent) => new GLTFLoader(parent as GLTFFileLoader);

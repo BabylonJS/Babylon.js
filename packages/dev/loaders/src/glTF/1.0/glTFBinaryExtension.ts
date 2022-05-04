@@ -1,11 +1,11 @@
 import { GLTFLoaderExtension, GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
 import { GLTFUtils } from "./glTFLoaderUtils";
 import type { Scene } from "core/scene";
-import type { IGLTFLoaderData } from "../glTFFileLoader";
 import type { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, IGLTFShader } from "./glTFLoaderInterfaces";
 import { EComponentType } from "./glTFLoaderInterfaces";
 
 import type { IDataBuffer } from "core/Misc/dataReader";
+import { ILoaderData } from "../abstractFileLoader";
 
 const BinaryExtensionBufferName = "binary_glTF";
 
@@ -28,7 +28,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         super("KHR_binary_glTF");
     }
 
-    public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void): boolean {
+    public loadRuntimeAsync(scene: Scene, data: ILoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void): boolean {
         const extensionsUsed = (<any>data.json).extensionsUsed;
         if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
             return false;

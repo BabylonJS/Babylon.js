@@ -60,10 +60,10 @@ import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Lo
 import type { Scene } from "core/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
-import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader } from "../glTFFileLoader";
 import { Constants } from "core/Engines/constants";
 import type { AssetContainer } from "core/assetContainer";
+import { ILoader, ILoaderData } from "../abstractFileLoader";
 
 /**
  * Tokenizer. Used for shaders compatibility
@@ -1744,7 +1744,7 @@ export class GLTFLoaderBase {
  * glTF V1 Loader
  * @hidden
  */
-export class GLTFLoader implements IGLTFLoader {
+export class GLTFLoader implements ILoader {
     public static Extensions: { [name: string]: GLTFLoaderExtension } = {};
 
     public static RegisterExtension(extension: GLTFLoaderExtension): void {
@@ -1763,7 +1763,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _importMeshAsync(
         meshesNames: any,
         scene: Scene,
-        data: IGLTFLoaderData,
+        data: ILoaderData,
         rootUrl: string,
         assetContainer: Nullable<AssetContainer>,
         onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void,
@@ -1850,7 +1850,7 @@ export class GLTFLoader implements IGLTFLoader {
         meshesNames: any,
         scene: Scene,
         assetContainer: Nullable<AssetContainer>,
-        data: IGLTFLoaderData,
+        data: ILoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void
     ): Promise<ISceneLoaderAsyncResult> {
@@ -1882,7 +1882,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _loadAsync(
         scene: Scene,
-        data: IGLTFLoaderData,
+        data: ILoaderData,
         rootUrl: string,
         onSuccess: () => void,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
@@ -1933,7 +1933,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onProgress event that fires when loading progress has occured
      * @returns a promise which completes when objects have been loaded to the scene
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
+    public loadAsync(scene: Scene, data: ILoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
         return new Promise((resolve, reject) => {
             this._loadAsync(
                 scene,
@@ -2080,7 +2080,7 @@ export abstract class GLTFLoaderExtension {
      * @param onSuccess
      * @param onError
      */
-    public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean {
+    public loadRuntimeAsync(scene: Scene, data: ILoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean {
         return false;
     }
 
@@ -2169,7 +2169,7 @@ export abstract class GLTFLoaderExtension {
 
     public static LoadRuntimeAsync(
         scene: Scene,
-        data: IGLTFLoaderData,
+        data: ILoaderData,
         rootUrl: string,
         onSuccess?: (gltfRuntime: IGLTFRuntime) => void,
         onError?: (message: string) => void
