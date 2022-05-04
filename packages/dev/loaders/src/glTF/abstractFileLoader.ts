@@ -664,7 +664,7 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
         this.onValidatedObservable.clear();
     }
 
-    protected abstract _loaders: { [key: number]: (parent: AbstractFileLoader) => ILoader };
+    protected abstract _getLoaders(): { [key: number]: (parent: AbstractFileLoader) => ILoader };
 
     private _getLoader(loaderData: ILoaderData): ILoader {
         const asset = (<any>loaderData.json).asset || {};
@@ -689,7 +689,7 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
             }
         }
 
-        const createLoader = this._loaders[version.major];
+        const createLoader = this._getLoaders()[version.major];
         if (!createLoader) {
             throw new Error("Unsupported version: " + asset.version);
         }
@@ -697,7 +697,7 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
         return createLoader(this);
     }
 
-    private _parseJson(json: string): Object {
+    protected _parseJson(json: string): Object {
         this._startPerformanceCounter("Parse JSON");
         this._log(`JSON length: ${json.length}`);
         const parsed = JSON.parse(json);
@@ -707,7 +707,7 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
 
     protected abstract _onBinaryDataUnpacked(dataReader: DataReader): Promise<ILoaderData>;
 
-    private async _unpackBinaryAsync(dataReader: DataReader): Promise<ILoaderData> {
+    protected async _unpackBinaryAsync(dataReader: DataReader): Promise<ILoaderData> {
         this._startPerformanceCounter("Unpack Binary");
 
         // Read magic + version + length + json length + json format

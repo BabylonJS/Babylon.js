@@ -9,13 +9,13 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { IDisposable } from "core/scene";
 import type { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
-import type { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import type { IProperty } from "babylonjs-gltf2interface";
+import { ILoaderExtension } from "../abstractFileLoader";
 
 /**
  * Interface for a glTF loader extension.
  */
-export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposable {
+export interface IGLTFLoaderExtension extends ILoaderExtension, IDisposable {
     /**
      * Called after the loader state changes to LOADING.
      */
