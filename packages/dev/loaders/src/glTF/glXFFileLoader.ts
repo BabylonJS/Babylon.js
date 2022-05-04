@@ -117,6 +117,13 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
     // --------------
 
     /**
+     * Defines if the loader should use range requests when load binary glTF files from HTTP.
+     * Enabling will disable offline support and glTF validator.
+     * Defaults to false.
+     */
+    public useRangeRequests = false;
+
+    /**
      * Raised when the asset has been parsed
      */
     public onParsedObservable = new Observable<ILoaderData>();
