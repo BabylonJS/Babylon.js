@@ -5,8 +5,8 @@ import { Vector2 } from "core/Maths/math.vector";
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
-import { RegisterClass } from 'core/Misc/typeStore';
-import { Measure } from '../measure';
+import { RegisterClass } from "core/Misc/typeStore";
+import { Measure } from "../measure";
 import { InputText } from "./inputText";
 import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
@@ -18,7 +18,6 @@ import { serialize } from "core/Misc/decorators";
  * Class used to create input text control
  */
 export class InputTextArea extends InputText {
-
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
@@ -27,16 +26,16 @@ export class InputTextArea extends InputText {
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
     private _maxHeight = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    
+
     private _clipTextTop: number;
     private _clipTextLeft: number;
-    
-    private _cursorInfo: { globalStartIndex: number, globalEndIndex: number, relativeStartIndex: number, relativeEndIndex: number, currentLineIndex: number };
-    private _highlightCursorInfo: { initialStartIndex: number, initialRelativeStartIndex: number, initialLineIndex: number };
+
+    private _cursorInfo: { globalStartIndex: number; globalEndIndex: number; relativeStartIndex: number; relativeEndIndex: number; currentLineIndex: number };
+    private _highlightCursorInfo: { initialStartIndex: number; initialRelativeStartIndex: number; initialLineIndex: number };
 
     /**
-    * An event triggered after the text was broken up into lines
-    */
+     * An event triggered after the text was broken up into lines
+     */
     public onLinesReadyObservable = new Observable<InputTextArea>();
 
     /** @hidden */
@@ -173,13 +172,12 @@ export class InputTextArea extends InputText {
     /**
      * Process the last keyboard input
      *
-     * @param keyCode The ascii input number 
+     * @param keyCode The ascii input number
      * @param key The key string representation
      * @param evt The keyboard event emits with input
      * @hidden
      */
     public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
-
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
             return;
@@ -204,7 +202,7 @@ export class InputTextArea extends InputText {
                 break;
             case 8: // BACKSPACE
                 if (!this._isTextHighlightOn && this._cursorInfo.globalStartIndex > 0) {
-                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                     this._cursorInfo.globalStartIndex--;
                 }
 
@@ -227,13 +225,13 @@ export class InputTextArea extends InputText {
                 }
 
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
-                
+
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                
+
                 if (evt) {
                     evt.preventDefault();
                 }
-                
+
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
 
@@ -281,7 +279,7 @@ export class InputTextArea extends InputText {
                         this._cursorInfo.globalStartIndex--;
                         this._isTextHighlightOn = true;
                     } else {
-                        if(this._cursorInfo.globalEndIndex > this._highlightCursorInfo.initialStartIndex) {
+                        if (this._cursorInfo.globalEndIndex > this._highlightCursorInfo.initialStartIndex) {
                             this._cursorInfo.globalEndIndex--;
                         } else {
                             this._cursorInfo.globalStartIndex--;
@@ -294,7 +292,8 @@ export class InputTextArea extends InputText {
 
                 if (this._isTextHighlightOn) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                } else if (evt && (evt.ctrlKey || evt.metaKey)) { // ctr + <-
+                } else if (evt && (evt.ctrlKey || evt.metaKey)) {
+                    // ctr + <-
                     this._cursorInfo.globalStartIndex -= this._cursorInfo.relativeStartIndex;
                     evt.preventDefault();
                 } else if (this._cursorInfo.globalStartIndex > 0) {
@@ -325,7 +324,7 @@ export class InputTextArea extends InputText {
                         this._cursorInfo.globalEndIndex++;
                         this._isTextHighlightOn = true;
                     } else {
-                        if(this._cursorInfo.globalStartIndex < this._highlightCursorInfo.initialStartIndex) {
+                        if (this._cursorInfo.globalStartIndex < this._highlightCursorInfo.initialStartIndex) {
                             this._cursorInfo.globalStartIndex++;
                         } else {
                             this._cursorInfo.globalEndIndex++;
@@ -337,7 +336,8 @@ export class InputTextArea extends InputText {
                 }
                 if (this._isTextHighlightOn) {
                     this._cursorInfo.globalStartIndex = this._cursorInfo.globalEndIndex;
-                } else if (evt && (evt.ctrlKey || evt.metaKey)) { //ctr + ->
+                } else if (evt && (evt.ctrlKey || evt.metaKey)) {
+                    //ctr + ->
                     const rightDelta = this._lines[this._cursorInfo.currentLineIndex].text.length - this._cursorInfo.relativeEndIndex;
                     this._cursorInfo.globalStartIndex += rightDelta;
                 } else if (this._cursorInfo.globalStartIndex < this.text.length) {
@@ -376,9 +376,11 @@ export class InputTextArea extends InputText {
 
                     let tmpIndex = 0;
                     let relativeIndex = 0;
-                    if (!this._isTextHighlightOn 
-                        || this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex
-                        && this._highlightCursorInfo.initialStartIndex === this._cursorInfo.globalEndIndex ) {
+                    if (
+                        !this._isTextHighlightOn ||
+                        (this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex &&
+                            this._highlightCursorInfo.initialStartIndex === this._cursorInfo.globalEndIndex)
+                    ) {
                         tmpIndex = this._cursorInfo.globalStartIndex;
                         relativeIndex = this._cursorInfo.relativeStartIndex;
                     } else {
@@ -393,10 +395,10 @@ export class InputTextArea extends InputText {
                     let previousWidth = 0;
 
                     tmpIndex -= relativeIndex; // Start of current line
-                    tmpIndex -= (upperLine.text.length + upperLine.lineEnding.length); // Start of upper line
+                    tmpIndex -= upperLine.text.length + upperLine.lineEnding.length; // Start of upper line
                     let upperLineRelativeIndex = 0;
 
-                    while(upperWidth < currentWidth && upperLineRelativeIndex < upperLine.text.length) {
+                    while (upperWidth < currentWidth && upperLineRelativeIndex < upperLine.text.length) {
                         tmpIndex++;
                         upperLineRelativeIndex++;
                         previousWidth = Math.abs(currentWidth - upperWidth);
@@ -410,7 +412,7 @@ export class InputTextArea extends InputText {
 
                     if (!this._isTextHighlightOn) {
                         this._cursorInfo.globalStartIndex = tmpIndex;
-                    } else if (this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex ) {
+                    } else if (this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex) {
                         this._cursorInfo.globalStartIndex = tmpIndex;
                         this._cursorInfo.globalEndIndex = this._highlightCursorInfo.initialStartIndex;
                         this._cursorInfo.relativeEndIndex = this._highlightCursorInfo.initialRelativeStartIndex;
@@ -450,8 +452,7 @@ export class InputTextArea extends InputText {
 
                     let tmpIndex = 0;
                     let relativeIndex = 0;
-                    if (!this._isTextHighlightOn
-                        || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex ) {
+                    if (!this._isTextHighlightOn || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex) {
                         tmpIndex = this._cursorInfo.globalStartIndex;
                         relativeIndex = this._cursorInfo.relativeStartIndex;
                     } else {
@@ -465,10 +466,10 @@ export class InputTextArea extends InputText {
                     let underWidth = 0;
                     let previousWidth = 0;
 
-                    tmpIndex += (currentLine.text.length - relativeIndex + currentLine.lineEnding.length); // Start of current line
+                    tmpIndex += currentLine.text.length - relativeIndex + currentLine.lineEnding.length; // Start of current line
                     let underLineRelativeIndex = 0;
 
-                    while(underWidth < currentWidth && underLineRelativeIndex < underLine.text.length) {
+                    while (underWidth < currentWidth && underLineRelativeIndex < underLine.text.length) {
                         tmpIndex++;
                         underLineRelativeIndex++;
                         previousWidth = Math.abs(currentWidth - underWidth);
@@ -482,12 +483,12 @@ export class InputTextArea extends InputText {
 
                     if (!this._isTextHighlightOn) {
                         this._cursorInfo.globalStartIndex = tmpIndex;
-                    } else if(this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex ) {
+                    } else if (this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex) {
                         this._cursorInfo.globalStartIndex = tmpIndex;
                         if (this._cursorInfo.globalStartIndex > this._cursorInfo.globalEndIndex) {
                             this._cursorInfo.globalEndIndex += this._cursorInfo.globalStartIndex;
                             this._cursorInfo.globalStartIndex = this._cursorInfo.globalEndIndex - this._cursorInfo.globalStartIndex;
-                            this._cursorInfo.globalEndIndex -= this._cursorInfo.globalStartIndex; 
+                            this._cursorInfo.globalEndIndex -= this._cursorInfo.globalStartIndex;
                         }
                     } else {
                         this._cursorInfo.globalEndIndex = tmpIndex;
@@ -498,23 +499,23 @@ export class InputTextArea extends InputText {
                 this._markAsDirty();
                 return;
             case 222: // Dead
-            if (evt) {
-                //add support for single and double quotes
-                if (evt.code == "Quote") {
-                    if (evt.shiftKey) {
-                        keyCode = 34;
-                        key = '"';
+                if (evt) {
+                    //add support for single and double quotes
+                    if (evt.code == "Quote") {
+                        if (evt.shiftKey) {
+                            keyCode = 34;
+                            key = '"';
+                        } else {
+                            keyCode = 39;
+                            key = "'";
+                        }
                     } else {
-                        keyCode = 39;
-                        key = "'";
+                        evt.preventDefault();
+                        this.deadKey = true;
                     }
                 } else {
-                    evt.preventDefault();
                     this.deadKey = true;
                 }
-            } else {
-                this.deadKey = true;
-            }
         }
 
         if (key === "Dead") {
@@ -522,19 +523,21 @@ export class InputTextArea extends InputText {
         }
 
         // Printable characters
-        if (key &&
-            ((keyCode === -1) ||                     // Direct access
-                (keyCode === 32) ||                     // Space
-                (keyCode > 47 && keyCode < 64) ||       // Numbers
-                (keyCode > 64 && keyCode < 91) ||       // Letters
-                (keyCode > 159 && keyCode < 193) ||     // Special characters
-                (keyCode > 218 && keyCode < 223) ||     // Special characters
-                (keyCode > 95 && keyCode < 112))) {     // Numpad
+        if (
+            key &&
+            (keyCode === -1 || // Direct access
+                keyCode === 32 || // Space
+                (keyCode > 47 && keyCode < 64) || // Numbers
+                (keyCode > 64 && keyCode < 91) || // Letters
+                (keyCode > 159 && keyCode < 193) || // Special characters
+                (keyCode > 218 && keyCode < 223) || // Special characters
+                (keyCode > 95 && keyCode < 112))
+        ) {
+            // Numpad
             this._currentKey = key;
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
             if (this._addKey) {
-
                 this._isTextHighlightOn = false;
                 this._blinkIsEven = false;
 
@@ -547,10 +550,9 @@ export class InputTextArea extends InputText {
         }
     }
 
-    protected _parseLineWordWrap(line: string = '', width: number,
-        context: ICanvasRenderingContext): { text: string, width: number, lineEnding: string }[] {
+    protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): { text: string; width: number; lineEnding: string }[] {
         const lines = [];
-        const words = line.split(' ');
+        const words = line.split(" ");
         let lineWidth = 0;
 
         for (let n = 0; n < words.length; n++) {
@@ -560,15 +562,15 @@ export class InputTextArea extends InputText {
             if (testWidth > width) {
                 if (n > 0) {
                     // Avoid first word duplication if of too long
-                lineWidth = context.measureText(line).width;
-                lines.push({ text: line, width: lineWidth, lineEnding: " "  });
+                    lineWidth = context.measureText(line).width;
+                    lines.push({ text: line, width: lineWidth, lineEnding: " " });
                 }
 
                 line = words[n];
 
                 let flushedLine = "";
 
-                line.split('').map((char) => {
+                line.split("").map((char) => {
                     if (context.measureText(flushedLine + char).width > width) {
                         lines.push({ text: flushedLine, width: context.measureText(flushedLine).width, lineEnding: "\n" });
                         flushedLine = "";
@@ -579,7 +581,6 @@ export class InputTextArea extends InputText {
                 line = flushedLine;
                 // Measure remaining characters
                 lineWidth = context.measureText(line).width;
-
             } else {
                 lineWidth = testWidth;
                 line = testLine;
@@ -591,7 +592,7 @@ export class InputTextArea extends InputText {
     }
 
     protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
-        const lines: { text: string, width: number, lineEnding: string }[] = [];
+        const lines: { text: string; width: number; lineEnding: string }[] = [];
         const _lines = this.text.split("\n");
 
         if (this.clipContent) {
@@ -609,7 +610,7 @@ export class InputTextArea extends InputText {
         return lines;
     }
 
-    protected _parseLine(line: string = '', context: ICanvasRenderingContext): { text: string, width: number, lineEnding: string } {
+    protected _parseLine(line: string = "", context: ICanvasRenderingContext): { text: string; width: number; lineEnding: string } {
         return { text: line, width: context.measureText(line).width, lineEnding: " " };
     }
 
@@ -617,7 +618,7 @@ export class InputTextArea extends InputText {
      * Processing of child right before the parent measurement update
      *
      * @param parentMeasure The parent measure
-     * @param context The rendering canvas 
+     * @param context The rendering canvas
      * @hidden
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
@@ -643,15 +644,15 @@ export class InputTextArea extends InputText {
 
         if (this._autoStretchWidth) {
             const tmpLines = text.split("\n");
-            const longerString = tmpLines.reduce((acc: string, val: string) =>  {
+            const longerString = tmpLines.reduce((acc: string, val: string) => {
                 const valueLength = context.measureText(val).width;
                 const accLength = context.measureText(acc).width;
-                return (valueLength > accLength) ? val : acc;
+                return valueLength > accLength ? val : acc;
             }, "");
-            
+
             const longerStringWidth = context.measureText(longerString).width;
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), longerStringWidth + marginWidth) + "px";
-            
+
             this.autoStretchWidth = true;
         }
 
@@ -677,7 +678,7 @@ export class InputTextArea extends InputText {
      * Processing of child after the parent measurement update
      *
      * @param parentMeasure The parent measure
-     * @param context The rendering canvas 
+     * @param context The rendering canvas
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -686,7 +687,6 @@ export class InputTextArea extends InputText {
         this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, parentMeasure.height);
 
         if (this._isFocused && this._lines[this._cursorInfo.currentLineIndex].width > this._availableWidth) {
-
             const textLeft = this._clipTextLeft - this._lines[this._cursorInfo.currentLineIndex].width + this._availableWidth;
 
             if (!this._scrollLeft) {
@@ -752,8 +752,7 @@ export class InputTextArea extends InputText {
         //when write permission to clipbaord data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
-        }
-        catch { } //pass
+        } catch {} //pass
         this._host.clipboardData = this._highlightedText;
     }
 
@@ -770,8 +769,7 @@ export class InputTextArea extends InputText {
         //when write permission to clipbaord data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
-        }
-        catch { } //pass
+        } catch {} //pass
 
         this._host.clipboardData = this._highlightedText;
 
@@ -790,8 +788,7 @@ export class InputTextArea extends InputText {
         let data: string = "";
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
             data = ev.clipboardData.getData("text/plain");
-        }
-        else {
+        } else {
             //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
@@ -867,7 +864,7 @@ export class InputTextArea extends InputText {
         context.fillStyle = this.fontStyle;
 
         // here we define the visible reactangle to clip it in next line
-        context.rect(this._clipTextLeft,this._clipTextTop , this._availableWidth + 2, this._availableHeight + 2);
+        context.rect(this._clipTextLeft, this._clipTextTop, this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
 
         // Text
@@ -877,11 +874,10 @@ export class InputTextArea extends InputText {
             const line = this._lines[i];
 
             if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-
                 if (this._lineSpacing.isPixel) {
                     rootY += this._lineSpacing.getValue(this._host);
                 } else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
             }
 
@@ -893,18 +889,16 @@ export class InputTextArea extends InputText {
 
         // Cursor
         if (this._isFocused) {
-
             // Render cursor
             if (!this._blinkIsEven || this._isTextHighlightOn) {
-
                 let cursorLeft = this._scrollLeft + context.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, this._cursorInfo.relativeStartIndex)).width;
 
                 if (cursorLeft < this._clipTextLeft) {
-                    this._scrollLeft += (this._clipTextLeft - cursorLeft);
+                    this._scrollLeft += this._clipTextLeft - cursorLeft;
                     cursorLeft = this._clipTextLeft;
                     this._markAsDirty();
                 } else if (cursorLeft > this._clipTextLeft + this._availableWidth) {
-                    this._scrollLeft += (this._clipTextLeft + this._availableWidth - cursorLeft);
+                    this._scrollLeft += this._clipTextLeft + this._availableWidth - cursorLeft;
                     cursorLeft = this._clipTextLeft + this._availableWidth;
                     this._markAsDirty();
                 }
@@ -912,11 +906,11 @@ export class InputTextArea extends InputText {
                 let cursorTop = this._scrollTop + this._cursorInfo.currentLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
 
                 if (cursorTop < this._clipTextTop) {
-                    this._scrollTop += (this._clipTextTop - cursorTop);
+                    this._scrollTop += this._clipTextTop - cursorTop;
                     cursorTop = this._clipTextTop;
                     this._markAsDirty();
                 } else if (cursorTop + this._fontOffset.height > this._clipTextTop + this._availableHeight) {
-                    this._scrollTop += (this._clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height);
+                    this._scrollTop += this._clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height;
                     cursorTop = this._clipTextTop + this._availableHeight - this._fontOffset.height;
                     this._markAsDirty();
                 }
@@ -926,7 +920,6 @@ export class InputTextArea extends InputText {
                 }
             }
 
-            
             this._resetBlinking();
 
             //show the highlighted text
@@ -962,7 +955,7 @@ export class InputTextArea extends InputText {
                     const begin = i === startLineIndex ? this._cursorInfo.relativeStartIndex : 0;
                     const end = i === endLineIndex ? this._cursorInfo.relativeEndIndex : line.text.length;
 
-                    const leftOffsetWidth = context.measureText(line.text.substr(0,begin)).width;
+                    const leftOffsetWidth = context.measureText(line.text.substr(0, begin)).width;
                     const selectedText = line.text.substring(begin, end);
                     const hightlightWidth = context.measureText(selectedText).width;
 
@@ -993,8 +986,12 @@ export class InputTextArea extends InputText {
 
             context.lineWidth = this._thickness;
 
-            context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
-                this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
+            context.strokeRect(
+                this._currentMeasure.left + this._thickness / 2,
+                this._currentMeasure.top + this._thickness / 2,
+                this._currentMeasure.width - this._thickness,
+                this._currentMeasure.height - this._thickness
+            );
         }
     }
 
@@ -1075,19 +1072,19 @@ export class InputTextArea extends InputText {
         if (this._clickedCoordinateX && this._clickedCoordinateY) {
             if (!this._isTextHighlightOn) {
                 this._cursorInfo = {
-                    globalStartIndex:0,
+                    globalStartIndex: 0,
                     globalEndIndex: 0,
                     relativeStartIndex: 0,
                     relativeEndIndex: 0,
-                    currentLineIndex : 0
-                }       
+                    currentLineIndex: 0,
+                };
             }
 
             let globalIndex = 0;
-            let relativeIndex = 0;         
+            let relativeIndex = 0;
 
             const lastClickedCoordinateY = this._clickedCoordinateY - (this._scrollTop as number);
-  
+
             const relativeCoordinateY = Math.floor(lastClickedCoordinateY / this._fontOffset.height);
             this._cursorInfo.currentLineIndex = Math.min(Math.max(relativeCoordinateY, 0), this._lines.length - 1);
 
@@ -1102,12 +1099,12 @@ export class InputTextArea extends InputText {
                 globalIndex += line.text.length + line.lineEnding.length;
             }
 
-            while(currentSize < relativeXPosition && this._lines[this._cursorInfo.currentLineIndex].text.length > relativeIndex) {
+            while (currentSize < relativeXPosition && this._lines[this._cursorInfo.currentLineIndex].text.length > relativeIndex) {
                 relativeIndex++;
                 previousDist = Math.abs(relativeXPosition - currentSize);
                 currentSize = this._contextForBreakLines.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, relativeIndex)).width;
             }
-    
+
             // Find closest move
             if (Math.abs(relativeXPosition - currentSize) > previousDist && relativeIndex > 0) {
                 relativeIndex--;
@@ -1148,7 +1145,7 @@ export class InputTextArea extends InputText {
 
             while (tmpLength + lineLength <= this._cursorInfo.globalStartIndex) {
                 tmpLength += lineLength;
-                
+
                 if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
                     this._cursorInfo.currentLineIndex++;
                     lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
@@ -1161,7 +1158,7 @@ export class InputTextArea extends InputText {
                 // Current line is at least below the initial highlight index
                 while (tmpLength + lineLength <= this._cursorInfo.globalEndIndex) {
                     tmpLength += lineLength;
-    
+
                     if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
                         this._cursorInfo.currentLineIndex++;
                         lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
@@ -1199,7 +1196,8 @@ export class InputTextArea extends InputText {
         let moveLeft, moveRight;
         do {
             moveLeft = this._cursorInfo.globalStartIndex > 0 && this._textWrapper.isWord(this._cursorInfo.globalStartIndex - 1) ? --this._cursorInfo.globalStartIndex : 0;
-            moveRight = this._cursorInfo.globalEndIndex < this._textWrapper.length && this._textWrapper.isWord(this._cursorInfo.globalEndIndex) ? ++this._cursorInfo.globalEndIndex : 0;
+            moveRight =
+                this._cursorInfo.globalEndIndex < this._textWrapper.length && this._textWrapper.isWord(this._cursorInfo.globalEndIndex) ? ++this._cursorInfo.globalEndIndex : 0;
         } while (moveLeft || moveRight);
 
         this._highlightCursorInfo.initialLineIndex = this._cursorInfo.currentLineIndex;
@@ -1207,7 +1205,7 @@ export class InputTextArea extends InputText {
 
         this.onTextHighlightObservable.notifyObservers(this);
 
-        this._isTextHighlightOn = true;      
+        this._isTextHighlightOn = true;
         this._blinkIsEven = true;
         this._markAsDirty();
     }

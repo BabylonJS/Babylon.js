@@ -834,7 +834,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param ev
      * @hidden
      */
-     protected _onCopyText(ev: ClipboardEvent): void {
+    protected _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
