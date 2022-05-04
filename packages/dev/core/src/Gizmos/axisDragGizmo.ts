@@ -137,6 +137,7 @@ export class AxisDragGizmo extends Gizmo {
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
         this.dragBehavior.moveAttached = false;
+        this.dragBehavior.updateDragPlane = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
         this.dragBehavior.onDragObservable.add((event) => {

@@ -22,7 +22,7 @@ export class Animatable {
     private _speedRatio = 1;
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
-    private _frameToSyncFromJump: Nullable<number> = 0;
+    private _frameToSyncFromJump: Nullable<number> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
