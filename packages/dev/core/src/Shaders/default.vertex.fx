@@ -170,11 +170,7 @@ void main(void) {
 #include<fogVertex>
 #include<shadowsVertex>[0..maxSimultaneousLights]
 
-#ifdef VERTEXCOLOR
-	vColor = color;
-#elif INSTANCESCOLOR
-	vColor = instanceColor;
-#endif
+#include<vertexColorMixing>
 
 #include<pointCloudVertex>
 #include<logDepthVertex>
