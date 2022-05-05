@@ -1,6 +1,82 @@
 {
-    "fromTag": "5.4.0",
+    "fromTag": "5.5.0",
     "changelog": {
+        "5.5.5": [
+            {
+                "pr": "12476",
+                "title": "More perf improvements",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/Rendering/renderingGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12478",
+                "title": "Make AbstractMesh props protected instead of private",
+                "description": null,
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12472",
+                "title": "Instance color mixing",
+                "description": "Follow up https://forum.babylonjs.com/t/vertex-error-and-no-colors-on-thin-instances-after-upgrade/28492\r\n\r\nMixing color instances from thin instances and vertex colors from mesh.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/Shaders/color.vertex.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/materials/src/cell/cell.vertex.fx",
+                    "packages/dev/materials/src/fire/fire.vertex.fx",
+                    "packages/dev/materials/src/fur/fur.vertex.fx",
+                    "packages/dev/materials/src/gradient/gradient.vertex.fx",
+                    "packages/dev/materials/src/lava/lava.vertex.fx",
+                    "packages/dev/materials/src/mix/mix.vertex.fx",
+                    "packages/dev/materials/src/simple/simple.vertex.fx",
+                    "packages/dev/materials/src/terrain/terrain.vertex.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx",
+                    "packages/dev/materials/src/water/water.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12479",
+                "title": "typescript update, fix build",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/tools/guiEditor/tsconfig.build.json",
+                    "packages/tools/nodeEditor/tsconfig.build.json",
+                    "tsconfig.devpackages.json"
+                ],
+                "tags": []
+            }
+        ],
         "5.5.0": [
             {
                 "pr": "12474",
