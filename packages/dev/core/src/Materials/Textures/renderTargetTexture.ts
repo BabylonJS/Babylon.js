@@ -378,6 +378,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param samples sample count to use when creating the RTT
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param noColorTarget True to indicate that no color target should be created. Useful if you only want to write to the depth buffer, for eg
+     * @param useSRGBBuffer True to create a SRGB texture
      */
     constructor(
         name: string,
@@ -395,7 +396,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         delayAllocation = false,
         samples?: number,
         creationFlags?: number,
-        noColorTarget = false
+        noColorTarget = false,
+        useSRGBBuffer = false
     ) {
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
         scene = this.getScene();
@@ -440,6 +442,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             samples,
             creationFlags,
             noColorTarget,
+            useSRGBBuffer
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
