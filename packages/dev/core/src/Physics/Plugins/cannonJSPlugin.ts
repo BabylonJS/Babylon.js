@@ -679,15 +679,26 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public getRadius(impostor: PhysicsImpostor): number {
-        const shape = impostor.physicsBody.shapes[0];
-        return shape.boundingSphereRadius;
+        if (impostor.physicsBody && impostor.physicsBody.shapes && impostor.physicsBody.shapes.length) {
+            const shape = impostor.physicsBody.shapes[0];
+            return shape.boundingSphereRadius;
+        }
+        Logger.Warn("Unable to get radius of impostor. It might be initialized later with by its parent's impostor.");
+        return 0;
     }
 
     public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
-        const shape = impostor.physicsBody.shapes[0];
-        result.x = shape.halfExtents.x * 2;
-        result.y = shape.halfExtents.y * 2;
-        result.z = shape.halfExtents.z * 2;
+        if (impostor.physicsBody && impostor.physicsBody.shapes && impostor.physicsBody.shapes.length) {
+            const shape = impostor.physicsBody.shapes[0];
+            result.x = shape.halfExtents.x * 2;
+            result.y = shape.halfExtents.y * 2;
+            result.z = shape.halfExtents.z * 2;
+        } else {
+            Logger.Warn("Unable to get box size of impostor. It might be initialized later with by its parent's impostor.");
+            result.x = 0;
+            result.y = 0;
+            result.z = 0;
+        }
     }
 
     public dispose() {}

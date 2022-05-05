@@ -15,6 +15,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import type { ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
 import { CreateCapsule } from "../Meshes/Builders/capsuleBuilder";
+import { Logger } from "../Misc/logger";
 
 /**
  * Used to show the physics impostor around the specific mesh
@@ -309,6 +310,8 @@ export class PhysicsViewer {
                             }
                         }
                     });
+                } else {
+                    Logger.Warn("No target mesh parameter provided for NoImpostor. Skipping.");
                 }
                 mesh = null;
                 break;
