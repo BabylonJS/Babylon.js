@@ -243,7 +243,7 @@ export class RenderingGroup {
             subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
         }
 
-        const sortedArray = subMeshes.data.slice(0, subMeshes.length);
+        const sortedArray = subMeshes.length === subMeshes.data.length ? subMeshes.data : subMeshes.data.slice(0, subMeshes.length);
 
         if (sortCompareFn) {
             sortedArray.sort(sortCompareFn);
