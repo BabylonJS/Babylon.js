@@ -4,6 +4,7 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
+        "composite": true
     },
 
     "references": [
@@ -12,6 +13,5 @@
         }
     ],
 
-    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
-
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"]
 }
