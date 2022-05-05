@@ -249,7 +249,6 @@ export class PhysicsViewer {
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
         if (!impostor.physicsBody) {
             Logger.Warn("Unable to get physicsBody of impostor. It might be initialized later by its parent's impostor.");
-
             return null;
         }
         switch (impostor.type) {
