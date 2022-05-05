@@ -726,8 +726,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _masterMesh: Nullable<AbstractMesh> = null;
-    private _boundingInfo: Nullable<BoundingInfo> = null;
-    private _boundingInfoIsDirty = true;
+    protected _boundingInfo: Nullable<BoundingInfo> = null;
+    protected _boundingInfoIsDirty = true;
     /** @hidden */
     public _renderId = 0;
 
