@@ -247,7 +247,10 @@ export class PhysicsViewer {
 
         let mesh: Nullable<AbstractMesh> = null;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
-
+        if (!impostor.physicsBody) {
+            Logger.Warn("Unable to get physicsBody of impostor. It might be initialized later with by its parent's impostor.");
+            return null;
+        }
         switch (impostor.type) {
             case PhysicsImpostor.BoxImpostor:
                 mesh = this._getDebugBoxMesh(utilityLayerScene);
