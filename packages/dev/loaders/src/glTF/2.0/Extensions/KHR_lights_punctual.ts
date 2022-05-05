@@ -64,7 +64,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
                 let babylonLight: Light;
 

@@ -7,15 +7,14 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { IDisposable } from "core/scene";
 import type { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
 import type { IProperty } from "babylonjs-gltf2interface";
-import { ILoaderExtension } from "../abstractFileLoader";
+import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
 
 /**
  * Interface for a glTF loader extension.
  */
-export interface IGLTFLoaderExtension extends ILoaderExtension, IDisposable {
+export interface IGLTFLoaderExtension extends IBaseLoaderExtension {
     /**
      * Called after the loader state changes to LOADING.
      */

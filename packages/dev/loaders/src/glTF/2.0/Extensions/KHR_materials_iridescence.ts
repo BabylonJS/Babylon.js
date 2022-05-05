@@ -52,7 +52,7 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsIridescence>(context, material, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IKHRMaterialsIridescence>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadIridescencePropertiesAsync(extensionContext, extension, babylonMaterial));

@@ -10,6 +10,7 @@ import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_draco_mesh_compression";
 
@@ -60,7 +61,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
      * @hidden
      */
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
             if (primitive.mode != undefined) {
                 if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP && primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
                     throw new Error(`${context}: Unsupported mode ${primitive.mode}`);

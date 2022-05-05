@@ -5,6 +5,7 @@ import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import type { IBufferView } from "../glTFLoaderInterfaces";
 import type { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
 import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "EXT_meshopt_compression";
 
@@ -51,7 +52,7 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, (extensionContext, extension) => {
             const bufferViewMeshopt = bufferView as IBufferViewMeshopt;
             if (bufferViewMeshopt._meshOptData) {
                 return bufferViewMeshopt._meshOptData;

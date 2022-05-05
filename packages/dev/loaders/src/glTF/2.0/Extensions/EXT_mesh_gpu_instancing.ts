@@ -10,6 +10,7 @@ import type { INode } from "../glTFLoaderInterfaces";
 import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 import "core/Meshes/thinInstanceMesh";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -52,7 +53,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             this._loader._disableInstancedMesh++;
 
             const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);

@@ -52,7 +52,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
+        return LoadExtensionAsync(context, material, this.name, () => {
             return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
         });
     }

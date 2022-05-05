@@ -60,7 +60,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsVolume>(context, material, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IKHRMaterialsVolume>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
