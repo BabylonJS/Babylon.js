@@ -1840,7 +1840,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
-
         let isReady = true;
 
         // Pending data
