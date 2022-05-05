@@ -18,7 +18,8 @@
         "babylonjs-gui": "^5.5.0",
         "babylonjs-loaders": "^5.5.0",
         "babylonjs-materials": "^5.5.0",
-        "babylonjs-serializers": "^5.5.0"
+        "babylonjs-serializers": "^5.5.0",
+        "babylonjs-gui-editor": "^5.5.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
