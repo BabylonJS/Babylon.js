@@ -47,11 +47,7 @@ void main(void) {
 
 #include<clipPlaneVertex>
 
-#ifdef VERTEXCOLOR
-	vColor = color;
-#elif INSTANCESCOLOR
-	vColor = instanceColor;
-#endif
+#include<vertexColorMixing>
 
 #define CUSTOM_VERTEX_MAIN_END
 }
