@@ -61,7 +61,7 @@ export class RenderingGroup {
      * If null the sub meshes will be render in the order they were created
      */
     public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
-        if (value) {        
+        if (value) {
             this._alphaTestSortCompareFn = value;
         } else {
             this._alphaTestSortCompareFn = RenderingGroup.PainterSortCompare;
@@ -351,7 +351,7 @@ export class RenderingGroup {
 
         if (meshA.material && meshB.material) {
             return meshA.material.uniqueId - meshB.material.uniqueId;
-        }        
+        }
 
         return meshA.uniqueId - meshB.uniqueId;
     }
