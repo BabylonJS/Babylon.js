@@ -22,7 +22,8 @@ import { registerCustomOptimizer } from "./optimizer/custom/index";
 import * as BABYLON from "core/index";
 
 // load needed modules.
-import "loaders";
+// eslint-disable-next-line import/no-internal-modules
+import "loaders/index";
 import "pepjs";
 
 import { initListeners, InitTags } from "./initializer";
