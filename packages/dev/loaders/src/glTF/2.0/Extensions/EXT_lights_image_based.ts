@@ -10,6 +10,7 @@ import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBase
 import type { IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "EXT_lights_image_based";
 
@@ -68,7 +69,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));

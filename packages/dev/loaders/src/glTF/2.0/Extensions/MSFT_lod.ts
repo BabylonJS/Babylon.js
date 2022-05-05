@@ -161,7 +161,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<TransformNode>;
 
             const nodeLODs = this._getLODs(extensionContext, node, this._loader.gltf.nodes, extension.ids);
@@ -229,7 +229,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             return null;
         }
 
-        return GLTFLoader.LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IMSFTLOD, Material>(context, material, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<Material>;
 
             const materialLODs = this._getLODs(extensionContext, material, this._loader.gltf.materials, extension.ids);

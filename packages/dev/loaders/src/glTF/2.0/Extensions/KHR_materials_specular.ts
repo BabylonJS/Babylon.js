@@ -53,7 +53,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSpecular>(context, material, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IKHRMaterialsSpecular>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));

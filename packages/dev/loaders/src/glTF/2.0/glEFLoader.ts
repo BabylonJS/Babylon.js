@@ -3,8 +3,14 @@ import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading
 import { Scene } from "core/scene";
 import { Nullable } from "core/types";
 import { ILoader, ILoaderData } from "../abstractFileLoader";
+import type { GLEFFileLoader } from "../glEFFileLoader";
 
 export class GLEFLoader implements ILoader {
+    /**
+     * @param _parent
+     * @hidden
+     */
+    constructor(private _parent: GLEFFileLoader) {}
     importMeshAsync(
         _meshesNames: any,
         _scene: Scene,

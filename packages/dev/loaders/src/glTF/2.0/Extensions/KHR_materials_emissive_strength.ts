@@ -52,7 +52,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
      * @hidden
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
+        return LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
             return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
                 this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
             });

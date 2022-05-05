@@ -73,8 +73,9 @@ import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
-import { ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
+import { AbstractFileLoader, ILoader, ILoaderData, ILoaderExtension, LoaderState } from "../abstractFileLoader";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
+import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -93,7 +94,7 @@ interface ILoaderProperty extends IProperty {
 }
 
 interface IRegisteredExtension {
-    factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
+    factory: (loader: BaseLoader) => IBaseLoaderExtension;
 }
 
 /**
@@ -128,36 +129,54 @@ export class ArrayItem {
     }
 }
 
+const registeredExtensions: { [loaderName: string]: { [extensionName: string]: IRegisteredExtension } } = {};
+
+export function RegisterExtension<T extends IBaseLoaderExtension>(loaderName: string, extensionName: string, factory: (loader: BaseLoader) => T): void {
+    if (!registeredExtensions[loaderName]) {
+        registeredExtensions[loaderName] = {};
+    }
+
+    registeredExtensions[loaderName][extensionName] = {
+        factory,
+    };
+}
+
+export function UnregisterExtension(loaderName: string, extensionName: string): boolean {
+    if (!registeredExtensions[loaderName] || !registeredExtensions[loaderName][extensionName]) {
+        return false;
+    }
+
+    if (registeredExtensions[loaderName] && registeredExtensions[loaderName][extensionName]) {
+        delete registeredExtensions[loaderName][extensionName];
+    }
+    return true;
+}
+
 /**
- * The glTF 2.0 loader
+ * Base loader implementation
  */
-export class GLTFLoader implements ILoader {
+export abstract class BaseLoader implements ILoader {
     /** @hidden */
     public _completePromises = new Array<Promise<any>>();
 
     /** @hidden */
     public _assetContainer: Nullable<AssetContainer> = null;
 
-    /** Storage */
-    public _babylonLights: Light[] = [];
-
     /** @hidden */
     public _disableInstancedMesh = 0;
 
-    private readonly _parent: GLTFFileLoader;
-    private readonly _extensions = new Array<IGLTFLoaderExtension>();
+    protected readonly _parent: AbstractFileLoader;
+    private _jsonData: Nullable<any> = null; // TODO - should not be any
+    private _bin: Nullable<IDataBuffer> = null;
+    private readonly _extensions = new Array<IBaseLoaderExtension>();
     private _disposed = false;
     private _rootUrl: Nullable<string> = null;
     private _fileName: Nullable<string> = null;
     private _uniqueRootUrl: Nullable<string> = null;
-    private _gltf: IGLTF;
-    private _bin: Nullable<IDataBuffer> = null;
     private _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private _postSceneLoadActions = new Array<() => void>();
-
-    private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
     /**
      * The default glTF sampler.
@@ -165,75 +184,21 @@ export class GLTFLoader implements ILoader {
     public static readonly DefaultSampler: ISampler = { index: -1 };
 
     /**
-     * Registers a loader extension.
-     * @param name The name of the loader extension.
-     * @param factory The factory function that creates the loader extension.
-     */
-    public static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void {
-        if (GLTFLoader.UnregisterExtension(name)) {
-            Logger.Warn(`Extension with the name '${name}' already exists`);
-        }
-
-        GLTFLoader._RegisteredExtensions[name] = {
-            factory: factory,
-        };
-    }
-
-    /**
-     * Unregisters a loader extension.
-     * @param name The name of the loader extension.
-     * @returns A boolean indicating whether the extension has been unregistered
-     */
-    public static UnregisterExtension(name: string): boolean {
-        if (!GLTFLoader._RegisteredExtensions[name]) {
-            return false;
-        }
-
-        delete GLTFLoader._RegisteredExtensions[name];
-        return true;
-    }
-
-    /**
      * The object that represents the glTF JSON.
      */
-    public get gltf(): IGLTF {
-        if (!this._gltf) {
+     public get json(): IGLTF {
+        if (!this._jsonData) {
             throw new Error("glTF JSON is not available");
         }
 
-        return this._gltf;
-    }
-
-    /**
-     * The BIN chunk of a binary glTF.
-     */
-    public get bin(): Nullable<IDataBuffer> {
-        return this._bin;
+        return this._jsonData;
     }
 
     /**
      * The parent file loader.
      */
-    public get parent(): GLTFFileLoader {
+    public get parent(): AbstractFileLoader {
         return this._parent;
-    }
-
-    /**
-     * The Babylon scene when loading the asset.
-     */
-    public get babylonScene(): Scene {
-        if (!this._babylonScene) {
-            throw new Error("Scene is not available");
-        }
-
-        return this._babylonScene;
-    }
-
-    /**
-     * The root Babylon mesh when loading the asset.
-     */
-    public get rootBabylonMesh(): Nullable<Mesh> {
-        return this._rootBabylonMesh;
     }
 
     /**
@@ -257,7 +222,7 @@ export class GLTFLoader implements ILoader {
         this._extensions.forEach((extension) => extension.dispose && extension.dispose());
         this._extensions.length = 0;
 
-        (this._gltf as Nullable<IGLTF>) = null; // TODO
+        (this._jsonData) = null; // TODO
         this._bin = null;
         (this._babylonScene as Nullable<Scene>) = null; // TODO
         this._rootBabylonMesh = null;
@@ -265,67 +230,6 @@ export class GLTFLoader implements ILoader {
         this._postSceneLoadActions.length = 0;
 
         this._parent.dispose();
-    }
-
-    /**
-     * @param meshesNames
-     * @param scene
-     * @param container
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
-     */
-    public importMeshAsync(
-        meshesNames: any,
-        scene: Scene,
-        container: Nullable<AssetContainer>,
-        data: ILoaderData,
-        rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName = ""
-    ): Promise<ISceneLoaderAsyncResult> {
-        return Promise.resolve().then(() => {
-            this._babylonScene = scene;
-            this._assetContainer = container;
-            this._loadData(data);
-
-            let nodes: Nullable<Array<number>> = null;
-
-            if (meshesNames) {
-                const nodeMap: { [name: string]: number } = {};
-                if (this._gltf.nodes) {
-                    for (const node of this._gltf.nodes) {
-                        if (node.name) {
-                            nodeMap[node.name] = node.index;
-                        }
-                    }
-                }
-
-                const names = meshesNames instanceof Array ? meshesNames : [meshesNames];
-                nodes = names.map((name) => {
-                    const node = nodeMap[name];
-                    if (node === undefined) {
-                        throw new Error(`Failed to find node '${name}'`);
-                    }
-
-                    return node;
-                });
-            }
-
-            return this._loadAsync(rootUrl, fileName, nodes, () => {
-                return {
-                    meshes: this._getMeshes(),
-                    particleSystems: [],
-                    skeletons: this._getSkeletons(),
-                    animationGroups: this._getAnimationGroups(),
-                    lights: this._babylonLights,
-                    transformNodes: this._getTransformNodes(),
-                    geometries: this._getGeometries(),
-                };
-            });
-        });
     }
 
     /**
@@ -344,114 +248,7 @@ export class GLTFLoader implements ILoader {
         });
     }
 
-    private _loadAsync<T>(rootUrl: string, fileName: string, nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T> {
-        return Promise.resolve()
-            .then(() => {
-                this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
-                this._fileName = fileName;
-
-                this._loadExtensions();
-                this._checkExtensions();
-
-                const loadingToReadyCounterName = `${LoaderState[LoaderState.LOADING]} => ${LoaderState[LoaderState.READY]}`;
-                const loadingToCompleteCounterName = `${LoaderState[LoaderState.LOADING]} => ${LoaderState[LoaderState.COMPLETE]}`;
-
-                this._parent._startPerformanceCounter(loadingToReadyCounterName);
-                this._parent._startPerformanceCounter(loadingToCompleteCounterName);
-
-                this._parent._setState(LoaderState.LOADING);
-                this._extensionsOnLoading();
-
-                const promises = new Array<Promise<any>>();
-
-                // Block the marking of materials dirty until the scene is loaded.
-                const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
-                this._babylonScene.blockMaterialDirtyMechanism = true;
-
-                if (!this.parent.loadOnlyMaterials) {
-                    if (nodes) {
-                        promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
-                    } else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
-                        const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
-                        promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
-                    }
-                }
-
-                if (!this.parent.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
-                    for (let m = 0; m < this._gltf.materials.length; ++m) {
-                        const material = this._gltf.materials[m];
-                        const context = "/materials/" + m;
-                        const babylonDrawMode = Material.TriangleFillMode;
-
-                        promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, () => {}));
-                    }
-                }
-
-                // Restore the blocking of material dirty.
-                this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
-
-                if (this._parent.compileMaterials) {
-                    promises.push(this._compileMaterialsAsync());
-                }
-
-                if (this._parent.compileShadowGenerators) {
-                    promises.push(this._compileShadowGeneratorsAsync());
-                }
-
-                const resultPromise = Promise.all(promises).then(() => {
-                    if (this._rootBabylonMesh) {
-                        this._rootBabylonMesh.setEnabled(true);
-                    }
-
-                    this._extensionsOnReady();
-                    this._parent._setState(LoaderState.READY);
-
-                    this._startAnimations();
-
-                    return resultFunc();
-                });
-
-                return resultPromise.then((result) => {
-                    this._parent._endPerformanceCounter(loadingToReadyCounterName);
-
-                    Tools.SetImmediate(() => {
-                        if (!this._disposed) {
-                            Promise.all(this._completePromises).then(
-                                () => {
-                                    this._parent._endPerformanceCounter(loadingToCompleteCounterName);
-
-                                    this._parent._setState(LoaderState.COMPLETE);
-
-                                    this._parent.onCompleteObservable.notifyObservers(undefined);
-                                    this._parent.onCompleteObservable.clear();
-
-                                    this.dispose();
-                                },
-                                (error) => {
-                                    this._parent.onErrorObservable.notifyObservers(error);
-                                    this._parent.onErrorObservable.clear();
-
-                                    this.dispose();
-                                }
-                            );
-                        }
-                    });
-
-                    return result;
-                });
-            })
-            .catch((error) => {
-                if (!this._disposed) {
-                    this._parent.onErrorObservable.notifyObservers(error);
-                    this._parent.onErrorObservable.clear();
-
-                    this.dispose();
-                }
-
-                throw error;
-            });
-    }
+    protected abstract _loadAsync<T>(rootUrl: string, fileName: string, nodes: Nullable<Array<number>>, resultFunc: () => T): Promise<T>;
 
     private _loadData(data: ILoaderData): void {
         this._gltf = data.json as IGLTF;
@@ -472,42 +269,9 @@ export class GLTFLoader implements ILoader {
         }
     }
 
-    private _setupData(): void {
-        ArrayItem.Assign(this._gltf.accessors);
-        ArrayItem.Assign(this._gltf.animations);
-        ArrayItem.Assign(this._gltf.buffers);
-        ArrayItem.Assign(this._gltf.bufferViews);
-        ArrayItem.Assign(this._gltf.cameras);
-        ArrayItem.Assign(this._gltf.images);
-        ArrayItem.Assign(this._gltf.materials);
-        ArrayItem.Assign(this._gltf.meshes);
-        ArrayItem.Assign(this._gltf.nodes);
-        ArrayItem.Assign(this._gltf.samplers);
-        ArrayItem.Assign(this._gltf.scenes);
-        ArrayItem.Assign(this._gltf.skins);
-        ArrayItem.Assign(this._gltf.textures);
-
-        if (this._gltf.nodes) {
-            const nodeParents: { [index: number]: number } = {};
-            for (const node of this._gltf.nodes) {
-                if (node.children) {
-                    for (const index of node.children) {
-                        nodeParents[index] = node.index;
-                    }
-                }
-            }
-
-            const rootNode = this._createRootNode();
-            for (const node of this._gltf.nodes) {
-                const parentIndex = nodeParents[node.index];
-                node.parent = parentIndex === undefined ? rootNode : this._gltf.nodes[parentIndex];
-            }
-        }
-    }
-
-    private _loadExtensions(): void {
-        for (const name in GLTFLoader._RegisteredExtensions) {
-            const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
+    protected _loadExtensions(): void {
+        for (const name in registeredExtensions[this._parent.name] || {}) {
+            const extension = registeredExtensions[this._parent.name][name].factory(this);
             if (extension.name !== name) {
                 Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
             }
@@ -2829,5 +2593,3 @@ export class GLTFLoader implements ILoader {
         this._parent._endPerformanceCounter(counterName);
     }
 }
-
-GLTFFileLoader._CreateGLTF2Loader = (parent) => new GLTFLoader(parent as GLTFFileLoader);
