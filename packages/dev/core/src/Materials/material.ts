@@ -309,7 +309,7 @@ export class Material implements IAnimatable {
         this._alpha = value;
 
         // Only call dirty when there is a state change (no alpha / alpha)
-        if ((oldValue === 1 || value === 1) && oldValue !== value) {
+        if (oldValue === 1 || value === 1) {
             this.markAsDirty(Material.MiscDirtyFlag);
         }
     }
