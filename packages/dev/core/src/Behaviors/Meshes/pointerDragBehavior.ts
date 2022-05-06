@@ -260,7 +260,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     }
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
-                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId && this._activeDragButton === pointerInfo.event.button) {
+                if (
+                    this.startAndReleaseDragOnPointerEvents &&
+                    this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
+                    this._activeDragButton === pointerInfo.event.button
+                ) {
                     this.releaseDrag();
                     this._activeDragButton = -1;
                 }
