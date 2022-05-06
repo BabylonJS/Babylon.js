@@ -1,5 +1,5 @@
 {
-    "name": "@dev/accessibility",
+    "name": "@tools/accessibility",
     "description": "Render accessibility tree for 3D content in DOM, thus the 3D content is compatible with screen readers and tab selection",
     "private": false,
     "version": "1.0.0",
