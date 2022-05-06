@@ -714,6 +714,11 @@
             "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
         },
         {
+            "title": "GLTF Serializer KHR gpu instancing",
+            "playgroundId": "#1Q2BWN#10",
+            "referenceImage": "glTFSerializerKhrGpuInstancing.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
