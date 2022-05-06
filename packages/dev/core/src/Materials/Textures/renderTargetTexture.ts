@@ -442,7 +442,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             samples,
             creationFlags,
             noColorTarget,
-            useSRGBBuffer
+            useSRGBBuffer,
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
