@@ -234,7 +234,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 } else {
                     injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
                 }
-                injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\r\n`;
+
+                if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\r\n`;
+                }
+                else {
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\r\n`;
+                }
                 injectionCode += `#endif\r\n`;
             }
 
