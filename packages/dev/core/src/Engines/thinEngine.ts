@@ -192,14 +192,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.4.0";
+        return "babylonjs@5.5.5";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.4.0";
+        return "5.5.5";
     }
 
     /**
@@ -1211,6 +1211,7 @@ export class ThinEngine {
             this._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = this._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
         }
         if (this._caps.s3tc_srgb) {
+            this._gl.COMPRESSED_SRGB_S3TC_DXT1_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_S3TC_DXT1_EXT;
             this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
             this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
         }
@@ -3704,6 +3705,8 @@ export class ThinEngine {
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
         }
 
+        fullOptions.useSRGBBuffer = fullOptions.useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -3718,12 +3721,13 @@ export class ThinEngine {
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
+        texture._useSRGBBuffer = !!fullOptions.useSRGBBuffer;
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
         const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
         const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
-        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format);
+        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format, fullOptions.useSRGBBuffer);
         const internalFormat = this._getInternalFormat(fullOptions.format);
         const type = this._getWebGLTextureType(fullOptions.type);
 
@@ -4466,6 +4470,14 @@ export class ThinEngine {
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+                    if (this._caps.s3tc_srgb) {
+                        internalFormat = gl.COMPRESSED_SRGB_S3TC_DXT1_EXT;
+                    } else {
+                        // S3TC sRGB extension not supported
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {
                         internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
                     } else {
