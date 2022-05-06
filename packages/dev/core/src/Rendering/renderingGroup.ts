@@ -48,12 +48,12 @@ export class RenderingGroup {
      * If null the sub meshes will be render in the order they were created
      */
     public set opaqueSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
-        this._opaqueSortCompareFn = value;
         if (value) {
-            this._renderOpaque = this._renderOpaqueSorted;
+            this._opaqueSortCompareFn = value;
         } else {
-            this._renderOpaque = RenderingGroup._RenderUnsorted;
+            this._opaqueSortCompareFn = RenderingGroup.PainterSortCompare;
         }
+        this._renderOpaque = this._renderOpaqueSorted;
     }
 
     /**
@@ -61,12 +61,12 @@ export class RenderingGroup {
      * If null the sub meshes will be render in the order they were created
      */
     public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
-        this._alphaTestSortCompareFn = value;
         if (value) {
-            this._renderAlphaTest = this._renderAlphaTestSorted;
+            this._alphaTestSortCompareFn = value;
         } else {
-            this._renderAlphaTest = RenderingGroup._RenderUnsorted;
+            this._alphaTestSortCompareFn = RenderingGroup.PainterSortCompare;
         }
+        this._renderAlphaTest = this._renderAlphaTestSorted;
     }
 
     /**
@@ -246,7 +246,7 @@ export class RenderingGroup {
             }
         }
 
-        const sortedArray = subMeshes.data.slice(0, subMeshes.length);
+        const sortedArray = subMeshes.length === subMeshes.data.length ? subMeshes.data : subMeshes.data.slice(0, subMeshes.length);
 
         if (sortCompareFn) {
             sortedArray.sort(sortCompareFn);
@@ -273,23 +273,6 @@ export class RenderingGroup {
             }
 
             subMesh.render(transparent);
-        }
-    }
-
-    /**
-     * Renders the submeshes in the order they were dispatched (no sort applied).
-     * @param subMeshes The submeshes to render
-     */
-    private static _RenderUnsorted(subMeshes: SmartArray<SubMesh>): void {
-        const scene = subMeshes.data[0].getMesh().getScene();
-        for (let subIndex = 0; subIndex < subMeshes.length; subIndex++) {
-            const submesh = subMeshes.data[subIndex];
-
-            if (scene._activeMeshesFrozenButKeepClipping && !submesh.isInFrustum(scene._frustumPlanes)) {
-                continue;
-            }
-
-            submesh.render(false);
         }
     }
 
@@ -355,6 +338,25 @@ export class RenderingGroup {
         }
 
         return 0;
+    }
+
+    /**
+     * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+     * are grouped by material then geometry.
+     *
+     * @param a The first submesh
+     * @param b The second submesh
+     * @returns The result of the comparison
+     */
+    public static PainterSortCompare(a: SubMesh, b: SubMesh): number {
+        const meshA = a.getMesh();
+        const meshB = b.getMesh();
+
+        if (meshA.material && meshB.material) {
+            return meshA.material.uniqueId - meshB.material.uniqueId;
+        }
+
+        return meshA.uniqueId - meshB.uniqueId;
     }
 
     /**
