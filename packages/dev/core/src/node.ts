@@ -129,7 +129,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Gets or sets the accessibility tag to describe the node for accessibility purpose.
      */
-    public set accessibilityTag(value: IAccessibilityTag) {
+    public set accessibilityTag(value: Nullable<IAccessibilityTag>) {
         this._accessibilityTag = value;
         this.onAccessibilityTagChangedObservable.notifyObservers(value);
     }
@@ -138,12 +138,9 @@ export class Node implements IBehaviorAware<Node> {
         return this._accessibilityTag;
     }
 
-    protected _accessibilityTag: IAccessibilityTag = {
-        isSalient: false,
-        description: ""
-    };
+    protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
 
-    public onAccessibilityTagChangedObservable = new Observable<IAccessibilityTag>();
+    public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
 
     /**
      * Gets or sets a boolean used to define if the node must be serialized
