@@ -860,7 +860,7 @@ export class SkeletonViewer {
         this._localAxes.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
         this._localAxes.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
         this._localAxes.skeleton = this.skeleton;
-        this._localAxes.renderingGroupId = this.renderingGroupId;
+        this._localAxes.renderingGroupId = this.renderingGroupId + 1;
         this._localAxes.parent = this.mesh;
         this._localAxes.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
     }
