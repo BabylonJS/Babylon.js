@@ -237,8 +237,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
                 if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
                     injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\r\n`;
-                }
-                else {
+                } else {
                     injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\r\n`;
                 }
                 injectionCode += `#endif\r\n`;
