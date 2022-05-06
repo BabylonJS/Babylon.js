@@ -1456,6 +1456,92 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+     * Iterate through the morph target data and apply influences to data
+     * @param data the data to apply influences to.
+     * @param morphTargetManager the morph target.
+     * @param fn an optional function to execute each loop
+     */
+    private _iterateMorphData(data: FloatArray, morphTargetManager: MorphTargetManager, fn?: () => void) {
+        for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
+            for (let targetCount = 0; targetCount < morphTargetManager.numTargets; targetCount++) {
+                const targetMorph = morphTargetManager.getTarget(targetCount);
+                const influence = targetMorph.influence;
+                if (influence > 0.0) {
+                    const morphTargetPositions = targetMorph.getPositions();
+                    if (morphTargetPositions) {
+                        data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                    }
+                }
+            }
+
+            if (fn) {
+                fn();
+            }
+        }
+    }
+
+    /**
+     * Get the normals vertex data and optionally apply skeleton and morphing.
+     * @param applySkeleton defines whether to apply the skeleton
+     * @param applyMorph  defines whether to apply the morph target
+     * @returns the normals data
+     */
+    public getNormalsData(applySkeleton = false, applyMorph = false) {
+        const data = Tools.Slice(this.getVerticesData(VertexBuffer.NormalKind));
+
+        if (data && applyMorph && this.morphTargetManager) {
+            this._iterateMorphData(data, this.morphTargetManager);
+        }
+
+        if (data && applySkeleton && this.skeleton) {
+            const matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+            const matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+            if (matricesWeightsData && matricesIndicesData) {
+                const needExtras = this.numBoneInfluencers > 4;
+                const matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                const matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+
+                if (matricesIndicesExtraData && matricesWeightsExtraData) {
+                    const skeletonMatrices = this.skeleton.getTransformMatrices(this);
+
+                    const tempVector = TmpVectors.Vector3[0];
+                    const finalMatrix = TmpVectors.Matrix[0];
+                    const tempMatrix = TmpVectors.Matrix[1];
+
+                    let matWeightIdx = 0;
+                    for (let index = 0; index < data.length; index += 3, matWeightIdx += 4) {
+                        finalMatrix.reset();
+
+                        let inf;
+                        let weight;
+                        for (inf = 0; inf < 4; inf++) {
+                            weight = matricesWeightsData[matWeightIdx + inf];
+                            if (weight > 0) {
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
+                        }
+                        if (needExtras) {
+                            for (inf = 0; inf < 4; inf++) {
+                                weight = matricesWeightsExtraData[matWeightIdx + inf];
+                                if (weight > 0) {
+                                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                                    finalMatrix.addToSelf(tempMatrix);
+                                }
+                            }
+                        }
+
+                        Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                        tempVector.toArray(data, index);
+                    }
+                }
+            }
+        }
+
+        return data;
+    }
+
+    /**
      * Get the position vertex data and optionally apply skeleton and morphing.
      * @param applySkeleton defines whether to apply the skeleton
      * @param applyMorph  defines whether to apply the morph target
@@ -1468,27 +1554,16 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
             let positionIndex = 0;
-            for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
-                for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
-                    const targetMorph = this.morphTargetManager.getTarget(targetCount);
-                    const influence = targetMorph.influence;
-                    if (influence > 0.0) {
-                        const morphTargetPositions = targetMorph.getPositions();
-                        if (morphTargetPositions) {
-                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
-                        }
-                    }
-                }
-
+            this._iterateMorphData(data, this.morphTargetManager, () => {
                 faceIndexCount++;
 
                 if (this._positions && faceIndexCount === 3) {
                     // We want to merge into positions every 3 indices starting (but not 0)
                     faceIndexCount = 0;
                     const index = positionIndex * 3;
-                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
+                    this._positions[positionIndex++].copyFromFloats(data![index], data![index + 1], data![index + 2]);
                 }
-            }
+            });
         }
 
         if (data && applySkeleton && this.skeleton) {
