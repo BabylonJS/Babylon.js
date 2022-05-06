@@ -8,4 +8,3 @@ export * from "./KHR_materials_specular";
 export * from "./KHR_materials_volume";
 export * from "./KHR_materials_transmission";
 export * from "./EXT_mesh_gpu_instancing";
-
