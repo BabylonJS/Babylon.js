@@ -1856,10 +1856,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
 
-            //            if (!mesh.isEnabled()) { // Hidden for now as I think this is the culprit
-            //    continue;
-            //          }
-
             if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
                 continue;
             }
