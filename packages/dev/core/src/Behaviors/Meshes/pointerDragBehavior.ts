@@ -30,6 +30,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
     private static _PlaneScene: Scene;
     private _useAlternatePickedPointAboveMaxDragAngleDragSpeed = -1.1;
+    private _dragButton: number = -1;
     /**
      * The maximum tolerated angle between the drag plane and dragging pointer rays to trigger pointer events. Set to 0 to allow any angle (default: 0)
      */
@@ -232,6 +233,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 // If behavior is disabled before releaseDrag is ever called, call it now.
                 if (this._attachedToElement) {
                     this.releaseDrag();
+                    this._dragButton = -1;
                 }
 
                 return;
@@ -248,11 +250,15 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     pointerInfo.pickInfo.ray &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
-                    this._startDrag((<IPointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
+                    if (this._dragButton === -1) {
+                        this._dragButton = pointerInfo.event.button;
+                        this._startDrag((<IPointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
+                    }
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
-                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId) {
+                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId && this._dragButton === pointerInfo.event.button) {
                     this.releaseDrag();
+                    this._dragButton = -1;
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
@@ -547,5 +553,6 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._dragPlane.dispose();
         }
         this.releaseDrag();
+        this._dragButton = -1;
     }
 }
