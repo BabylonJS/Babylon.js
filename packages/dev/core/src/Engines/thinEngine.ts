@@ -3704,6 +3704,8 @@ export class ThinEngine {
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
         }
 
+        fullOptions.useSRGBBuffer = fullOptions.useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -3718,12 +3720,13 @@ export class ThinEngine {
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
+        texture._useSRGBBuffer = !!fullOptions.useSRGBBuffer;
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
         const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
         const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
-        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format);
+        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format, fullOptions.useSRGBBuffer);
         const internalFormat = this._getInternalFormat(fullOptions.format);
         const type = this._getWebGLTextureType(fullOptions.type);
 
