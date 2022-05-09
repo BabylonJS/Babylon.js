@@ -82,7 +82,7 @@ export class MaterialPluginManager {
 
         const pluginClassName = plugin.getClassName();
         if (!MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]) {
-            MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName] = "MATERIALPLUGIN_" + (++MaterialPluginManager._MaterialPluginCounter);
+            MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName] = "MATERIALPLUGIN_" + ++MaterialPluginManager._MaterialPluginCounter;
         }
 
         this._material._callbackPluginEventGeneric = this._handlePluginEvent.bind(this);
