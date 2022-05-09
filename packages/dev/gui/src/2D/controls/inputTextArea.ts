@@ -220,7 +220,7 @@ export class InputTextArea extends InputText {
                 this._textHasChanged();
                 break;
             case 46: // DELETE
-                if (!this._isTextHighlightOn && this._cursorInfo.globalEndIndex < this.text.length - 1) {
+                if (!this._isTextHighlightOn && this._cursorInfo.globalEndIndex < this.text.length) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex + 1;
                 }
 
