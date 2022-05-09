@@ -33,13 +33,22 @@ export class WebRequest implements IWebRequest {
      */
     public static CustomRequestModifiers = new Array<(request: XMLHttpRequest, url: string) => void>();
 
+    public static SkipRequestModificationForBabylonCDN = true;
+
     private _injectCustomRequestHeaders(): void {
+        if (this._shouldSkipRequestModifications(this.responseURL)) {
+            return;
+        }
         for (const key in WebRequest.CustomRequestHeaders) {
             const val = WebRequest.CustomRequestHeaders[key];
             if (val) {
                 this._xhr.setRequestHeader(key, val);
             }
         }
+    }
+
+    private _shouldSkipRequestModifications(url: string): boolean {
+        return WebRequest.SkipRequestModificationForBabylonCDN && (url.includes("preview.babylonjs.com") || url.includes("cdn.babylonjs.com"));
     }
 
     /**
@@ -163,6 +172,9 @@ export class WebRequest implements IWebRequest {
      */
     public open(method: string, url: string): void {
         for (const update of WebRequest.CustomRequestModifiers) {
+            if (this._shouldSkipRequestModifications(url)) {
+                return;
+            }
             update(this._xhr, url);
         }
 
