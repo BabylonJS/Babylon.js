@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.5.0",
+    "fromTag": "5.5.5",
     "changelog": {
         "5.5.5": [
             {
@@ -73,6 +73,257 @@
                     "packages/tools/guiEditor/tsconfig.build.json",
                     "packages/tools/nodeEditor/tsconfig.build.json",
                     "tsconfig.devpackages.json"
+                ],
+                "tags": []
+            }
+        ],
+        "5.5.6": [
+            {
+                "pr": "12504",
+                "title": "Fix a stupid bug",
+                "description": "@RaananW can you generate a new release after that?\r\n\r\nthanks a ton",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12503",
+                "title": "Skip modifications of babylon CDN web requests",
+                "description": "When setting headers and loading files from our CDN, the CDN throws a 405 error and refuses to send the file.\nApart from making sure our CDN is configured correctly, we should also ignore modifications of web requests sent to either one of our CDNs. No headers should be sent to the CDNs, only simple GET (and OPTIONS) requests",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12497",
+                "title": "A couple of minor fixes",
+                "description": "- Fix the PG link for Draco Compression doc comment as the path to the bin path changed in the glTF-Sample-Models repo.\r\n- Allow empty morph targets in the glTF loader (see [here](https://github.com/KhronosGroup/glTF/issues/2154#issuecomment-1116701277))",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12502",
+                "title": "Fix ubo not of the right size when using material plugins",
+                "description": "See https://forum.babylonjs.com/t/pluginmaterial-bug/30098\r\n\r\nTo fix the problem I simply generate a specific #define for each plugin and use this define in the vertex/fragment shaders when the plugin is used.\r\n\r\nI have also added a visualization test to test this case.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/materialPlugin.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12496",
+                "title": "test tools initial support",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/test-tools/license.md",
+                    "packages/public/@babylonjs/test-tools/package.json",
+                    "packages/public/@babylonjs/test-tools/readme.md",
+                    "packages/public/@babylonjs/test-tools/tsconfig.build.json",
+                    "packages/public/@babylonjs/test-tools/tsconfig.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12501",
+                "title": "allow skipping a PR in the changelog",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "scripts/generateChangelog.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12489",
+                "title": "GLTFSerializer : Prevent empty skin to export invalid GLTF",
+                "description": "If for any reason, skeletons.length is corrupted, then exported GLTF was invalid. This is a very unlikely situation, but because of the public nature of the serializer, putting a guard in place is always usefull ",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12480",
+                "title": "fix viewer import from loaders",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/viewer/src/index.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12490",
+                "title": "Changed rendering group for local axes to make them render on top.",
+                "description": "Not sure this is the right way to do it, but it seems to do the trick.",
+                "author": {
+                    "name": "reimund",
+                    "url": "https://github.com/reimund"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12494",
+                "title": "NME Generate code has error on ColorMergerBlock",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/colorMergerBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12488",
+                "title": "Add support for COMPRESSED_SRGB_S3TC_DXT1_EXT",
+                "description": "If requesting sRGB for an ST3C **RGB** texture, the previous logic was using an sRGB + **ALPHA** format. This change will use RGB (no alpha) instead.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12486",
+                "title": "Add creation of sRGB Render Targets",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12482",
+                "title": "warning and checks for noimpostor children",
+                "description": "fixes #12446 \r\n\r\n2 issues :\r\n- when creating impostor for children mesh, their impostor will effectively be created with the NoImpostor. So shapes are not available and you get the crash. I've added a check and log a warning\r\n- The correct way to debugdisplay impostor in this case is to do the call on the NoImpostor parent. But you have to provide a 2nd parameter or nothing appears. I've also added a warning in that particular case.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12485",
+                "title": "Fixed wrong matrix used when creating local rotation axes.",
+                "description": "Only the first bone got the correct orientation before this change, now the entire chain of rotations in taken into account.\r\n<img width=\"550\" alt=\"Screenshot 2022-05-05 at 21 41 15\" src=\"https://user-images.githubusercontent.com/83687/167014155-4b2f3de2-6ffb-40c9-bbc0-a459b100bf21.png\">\r\n\r\n",
+                "author": {
+                    "name": "reimund",
+                    "url": "https://github.com/reimund"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12477",
+                "title": "Optimize rendering to reuse material as much as possible",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingGroup.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12483",
+                "title": "Antialias for Sarafi 15.4 is turned of per default.",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12475",
+                "title": "reduce the call to dirty",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
                 ],
                 "tags": []
             }

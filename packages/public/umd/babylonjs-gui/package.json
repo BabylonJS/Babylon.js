@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui",
-    "version": "5.5.5",
+    "version": "5.5.6",
     "main": "babylon.gui.js",
     "types": "babylon.gui.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.5.5"
+        "babylonjs": "^5.5.6"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
