@@ -1005,7 +1005,7 @@ export class TransformNode extends Node {
         }
 
         const currentRenderId = this.getScene().getRenderId();
-        if (!this._isDirty && !force && this._currentRenderId === currentRenderId && this.isSynchronized()) {
+        if (!this._isDirty && !force && (this._currentRenderId === currentRenderId || this.isSynchronized())) {
             this._currentRenderId = currentRenderId;
             return this._worldMatrix;
         }
