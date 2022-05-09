@@ -672,6 +672,22 @@ export class InputTextArea extends InputText {
         }
 
         this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginWidth;
+        
+        if (this._isFocused) {
+            this._cursorInfo.currentLineIndex = 0;
+
+            let lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
+            let tmpLength = 0;
+
+            while (tmpLength + lineLength <= this._cursorInfo.globalStartIndex) {
+                tmpLength += lineLength;
+
+                if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
+                    this._cursorInfo.currentLineIndex++;
+                    lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
+                }
+            }
+        }
     }
 
     /**
