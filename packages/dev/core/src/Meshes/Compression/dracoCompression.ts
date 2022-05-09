@@ -237,7 +237,7 @@ export interface IDracoCompressionConfiguration {
  *     var vertexData = await DracoCompression.Default.decodeMeshAsync(data);
  * ```
  *
- * @see https://www.babylonjs-playground.com/#N3EK4B#0
+ * @see https://playground.babylonjs.com/#DMZIBD#0
  */
 export class DracoCompression implements IDisposable {
     private _workerPoolPromise?: Promise<AutoReleaseWorkerPool>;

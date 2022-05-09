@@ -1678,10 +1678,12 @@ export class GLTFLoader implements IGLTFLoader {
 
                     this._forEachPrimitive(targetNode, (babylonAbstractMesh: AbstractMesh) => {
                         const babylonMesh = babylonAbstractMesh as Mesh;
-                        const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                        const babylonAnimationClone = babylonAnimation.clone();
-                        morphTarget.animations.push(babylonAnimationClone);
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
+                        if (babylonMesh.morphTargetManager) {
+                            const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
+                            const babylonAnimationClone = babylonAnimation.clone();
+                            morphTarget.animations.push(babylonAnimationClone);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
+                        }
                     });
                 }
             } else {
