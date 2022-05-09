@@ -1,0 +1,52 @@
+{
+    "name": "@babylonjs/test-tools",
+    "private": true,
+    "version": "0.1.0",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**/*",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "compile": "tsc -b tsconfig.build.json --verbose"
+    },
+    "devDependencies": {
+        "puppeteer": "^13.0.0",
+        "@alex_neo/jest-expect-message": "~1.0.5"
+    },
+    "dependencies": {
+        "jest": "^27.0.0",
+        "jest-puppeteer": "^6.0.3"
+    },
+    "peerDependencies": {
+        "puppeteer": ">13.0.0"
+    },
+    "optionalDependencies": {
+        "@alex_neo/jest-expect-message": "~1.0.5"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "esnext": "index.js",
+    "type": "module",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}
+
