@@ -35,8 +35,10 @@ export class WebRequest implements IWebRequest {
 
     public static SkipRequestModificationForBabylonCDN = true;
 
+    private _requestURL: string = "";
+
     private _injectCustomRequestHeaders(): void {
-        if (this._shouldSkipRequestModifications(this.responseURL)) {
+        if (this._shouldSkipRequestModifications(this._requestURL)) {
             return;
         }
         for (const key in WebRequest.CustomRequestHeaders) {
@@ -181,6 +183,8 @@ export class WebRequest implements IWebRequest {
         // Clean url
         url = url.replace("file:http:", "http:");
         url = url.replace("file:https:", "https:");
+
+        this._requestURL = url;
 
         return this._xhr.open(method, url, true);
     }
