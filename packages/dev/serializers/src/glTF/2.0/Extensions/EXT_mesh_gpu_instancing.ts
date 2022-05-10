@@ -71,7 +71,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     const rotationBuffer = new Float32Array(babylonNode.thinInstanceCount * 4);
                     const scaleBuffer = new Float32Array(babylonNode.thinInstanceCount * 3);
 
-                    matrix.forEach((m, i) => {
+                    let i = 0;
+                    for (const m of matrix) {
                         m.decompose(iws, iwr, iwt);
 
                         // fill the temp buffer
@@ -83,16 +84,17 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                         hasAnyInstanceWorldTranslation = hasAnyInstanceWorldTranslation || !iwt.equalsWithEpsilon(noTranslation);
                         hasAnyInstanceWorldRotation = hasAnyInstanceWorldRotation || !iwr.equalsWithEpsilon(noRotation);
                         hasAnyInstanceWorldScale = hasAnyInstanceWorldScale || !iws.equalsWithEpsilon(noScale);
-                    });
 
-                    /* eslint-disable @typescript-eslint/naming-convention*/
-                    const gpu_instancing: IEXTMeshGpuInstancing = {
+                        i++;
+                    }
+
+                    const extension: IEXTMeshGpuInstancing = {
                         attributes: {},
                     };
 
                     // do we need to write TRANSLATION ?
                     if (hasAnyInstanceWorldTranslation) {
-                        gpu_instancing.attributes["TRANSLATION"] = this._buildAccessor(
+                        extension.attributes["TRANSLATION"] = this._buildAccessor(
                             translationBuffer,
                             AccessorType.VEC3,
                             babylonNode.thinInstanceCount,
@@ -112,11 +114,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                             // force to float if wrong type.
                             componentType = AccessorComponentType.FLOAT;
                         }
-                        gpu_instancing.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, binaryWriter, componentType);
+                        extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, binaryWriter, componentType);
                     }
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
-                        gpu_instancing.attributes["SCALE"] = this._buildAccessor(
+                        extension.attributes["SCALE"] = this._buildAccessor(
                             scaleBuffer,
                             AccessorType.VEC3,
                             babylonNode.thinInstanceCount,
@@ -127,7 +129,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
                     /* eslint-enable @typescript-eslint/naming-convention*/
                     node.extensions = node.extensions || {};
-                    node.extensions[NAME] = gpu_instancing;
+                    node.extensions[NAME] = extension;
                 }
             }
             resolve(node);
@@ -160,6 +162,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                 for (let i = 0; i != buffer.length; i++) {
                     binaryWriter.setInt16(buffer[i] * 32767);
                 }
+
                 break;
             }
         }
@@ -170,7 +173,13 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
         // finally build the accessor
         const accessorIndex = this._exporter._accessors.length;
-        const accessor: IAccessor = { bufferView: bufferViewIndex, componentType: componentType, count: count, type: type };
+        const accessor: IAccessor = {
+            bufferView: bufferViewIndex,
+            componentType: componentType,
+            count: count,
+            type: type,
+            normalized: componentType == AccessorComponentType.BYTE || componentType == AccessorComponentType.SHORT,
+        };
         this._exporter._accessors.push(accessor);
         return accessorIndex;
     }
