@@ -106,4 +106,7 @@ export interface EngineCapabilities {
     supportTransformFeedbacks: boolean;
     /** Defines if texture max level are supported */
     textureMaxLevel: boolean;
+
+    /** Defines the maximum layer count for a 2D Texture array. */
+    texture2DArrayMaxLayerCount: number;
 }
