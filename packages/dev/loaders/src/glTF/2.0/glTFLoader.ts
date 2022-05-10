@@ -798,8 +798,17 @@ export class GLTFLoader implements IGLTFLoader {
                 const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
                 promises.push(
                     this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
+                        const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
+
                         // Duplicate the metadata from the skin node to the skinned mesh in case any loader extension added metadata.
-                        babylonTransformNode.metadata = node._babylonTransformNodeForSkin!.metadata;
+                        babylonTransformNode.metadata = babylonTransformNodeForSkin.metadata;
+
+                        // Add a reference to the skinned mesh from the transform node.
+                        babylonTransformNodeForSkin.metadata.gltf.skinnedMesh = babylonTransformNode;
+                        babylonTransformNode.onDisposeObservable.addOnce(() => {
+                            // Delete the reference when the skinned mesh is disposed.
+                            delete babylonTransformNodeForSkin.metadata.gltf.skinnedMesh;
+                        });
 
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(
