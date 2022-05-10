@@ -49,6 +49,7 @@ export class TextBlock extends Control {
     private _outlineColor: string = "white";
     private _underline: boolean = false;
     private _lineThrough: boolean = false;
+    private _wordDivider: string = " "
     /**
      * An event triggered after the text is changed
      */
@@ -270,6 +271,25 @@ export class TextBlock extends Control {
     }
 
     /**
+     * Gets or sets word divider
+     */
+    @serialize()
+    public get wordDivider(): string {
+        return this._wordDivider;
+    }
+
+    /**
+     * Gets or sets word divider
+     */
+    public set wordDivider(value: string) {
+        if (this._wordDivider === value) {
+            return;
+        }
+        this._wordDivider = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Creates a new TextBlock object
      * @param name defines the name of the control
      * @param text defines the text to display (empty string by default)
@@ -487,11 +507,11 @@ export class TextBlock extends Control {
 
     protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         const lines = [];
-        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
+        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(this._wordDivider);
         let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         for (let n = 0; n < words.length; n++) {
-            const testLine = n > 0 ? line + " " + words[n] : words[0];
+            const testLine = n > 0 ? line + this._wordDivider + words[n] : words[0];
             const testWidth = this._getTextMetricsWidth(context.measureText(testLine));
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
