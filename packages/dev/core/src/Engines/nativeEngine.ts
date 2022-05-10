@@ -888,6 +888,7 @@ export class NativeEngine extends Engine {
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
+            texture2DArrayMaxLayerCount : _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
         };
 
         this._features = {
