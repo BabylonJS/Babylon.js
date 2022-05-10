@@ -40,8 +40,9 @@ const updateEngineVersion = async (version) => {
     if (!array) {
         throw new Error("Could not find babylonjs version in thinEngine.ts");
     }
-    const regexp = new RegExp(array[1], "g");
-    const newThinEngineData = thinEngineData.replace(regexp, version);
+
+    const regexp = new RegExp(array[1] + "\"", "g");
+    const newThinEngineData = thinEngineData.replace(regexp, version + "\"");
     fs.writeFileSync(thinEngineFile, newThinEngineData);
 };
 

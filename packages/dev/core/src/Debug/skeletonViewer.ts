@@ -827,9 +827,10 @@ export class SkeletonViewer {
             const boneOrigin = new Vector3();
 
             this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
-            boneAbsoluteBindPoseTransform.decompose(undefined, undefined, boneOrigin);
+            boneAbsoluteBindPoseTransform.decompose(undefined, TmpVectors.Quaternion[0], boneOrigin);
 
-            const m = bone.getBaseMatrix().getRotationMatrix();
+            const m = new Matrix();
+            TmpVectors.Quaternion[0].toRotationMatrix(m);
 
             const boneAxisX = Vector3.TransformCoordinates(new Vector3(0 + size, 0, 0), m);
             const boneAxisY = Vector3.TransformCoordinates(new Vector3(0, 0 + size, 0), m);
@@ -859,7 +860,7 @@ export class SkeletonViewer {
         this._localAxes.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
         this._localAxes.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
         this._localAxes.skeleton = this.skeleton;
-        this._localAxes.renderingGroupId = this.renderingGroupId;
+        this._localAxes.renderingGroupId = this.renderingGroupId + 1;
         this._localAxes.parent = this.mesh;
         this._localAxes.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
     }

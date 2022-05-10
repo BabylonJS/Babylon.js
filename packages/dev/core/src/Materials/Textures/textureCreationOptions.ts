@@ -20,6 +20,8 @@ export interface InternalTextureCreationOptions {
     samples?: number;
     /** Texture creation flags */
     creationFlags?: number;
+    /** Creates the RTT in sRGB space */
+    useSRGBBuffer?: boolean;
 }
 
 /**

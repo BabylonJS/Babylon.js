@@ -234,13 +234,13 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
-                    { label: "tangent", value: "tangent" },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" },
+                    { label: "tangent", value: "tangent" },
                 ];
                 systemValuesOptions = [{ label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }];
                 break;

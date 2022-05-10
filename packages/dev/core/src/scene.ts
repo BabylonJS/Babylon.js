@@ -1840,9 +1840,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
+        let isReady = true;
+
         // Pending data
         if (this._pendingData.length > 0) {
-            return false;
+            isReady = false;
         }
 
         // Meshes
@@ -1851,14 +1853,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._materialsRenderTargets.reset();
         }
 
-        let isReady = true;
-
         for (index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
-
-            if (!mesh.isEnabled()) {
-                continue;
-            }
 
             if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
                 continue;

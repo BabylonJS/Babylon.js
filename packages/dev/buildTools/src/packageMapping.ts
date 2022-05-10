@@ -266,7 +266,7 @@ const packageMapping: {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON.GuiEditor";
+            return "BABYLON";
         },
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",

@@ -864,6 +864,10 @@ export class MaterialHelper {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
             this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
         }
+
+        if (defines.INSTANCESCOLOR) {
+            attribs.push(VertexBuffer.ColorInstanceKind);
+        }
     }
 
     /**
