@@ -17,6 +17,9 @@
             "path": "packages/dev/sharedUiComponents/tsconfig.nocomposite.json"
         },
         {
+            "path": "packages/tools/guiEditor/tsconfig.nocomposite.json"
+        },
+        {
             "path": "packages/dev/materials/tsconfig.nocomposite.json"
         },
         {
@@ -32,13 +35,10 @@
             "path": "packages/dev/proceduralTextures/tsconfig.nocomposite.json"
         },
         {
-            "path": "packages/dev/inspector/tsconfig.nocomposite.json"
-        },
-        {
             "path": "packages/tools/nodeEditor/tsconfig.nocomposite.json"
         },
         {
-            "path": "packages/tools/guiEditor/tsconfig.nocomposite.json"
+            "path": "packages/dev/inspector/tsconfig.nocomposite.json"
         },
         {
             "path": "packages/tools/ktx2Decoder/tsconfig.build.json"

@@ -36,6 +36,7 @@ const tagNames = {
     "new feature": "New Feature",
     "breaking change": "Breaking Change",
 };
+const skipChangelogTag = "skip changelog";
 
 // make sure the file is already there
 if (!fs.existsSync(path.resolve(__dirname, "..", "./.build/changelog.json"))) {
@@ -51,6 +52,11 @@ const forceUpdateFrom = config.fromTag || "5.0.0";
 
 const skipJSONGeneration = false;
 
+/**
+ * Generate / update the change log file, based on the repository's git pull requests
+ * @param {string} nextVersion the next version to update to
+ * @returns void, after updating the changelog.json file
+ */
 async function generateChangelog(nextVersion) {
     if (!githubPatToken) {
         console.log("No github PAT token found, skipping changelog generation");
@@ -196,6 +202,9 @@ function generateMarkdown(finalChangelog) {
             const prettyPackage = friendlyNames[pck];
             markdown += `\n### ${prettyPackage}\n\n`;
             versionChangelog[version][pck].forEach((pr) => {
+                if(pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
+                    return;
+                }
                 const tag = pr.tags.find((tag) => {
                     return tagNames[tag];
                 });
