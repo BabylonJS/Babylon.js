@@ -9,8 +9,9 @@ import { MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interfa
 import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "KHR_draco_mesh_compression";
 
@@ -147,4 +148,4 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader as GLTFLoader));

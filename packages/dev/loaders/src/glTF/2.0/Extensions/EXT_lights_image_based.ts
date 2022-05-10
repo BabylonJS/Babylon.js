@@ -9,8 +9,9 @@ import { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
 import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBased_LightImageBased, IEXTLightsImageBased } from "babylonjs-gltf2interface";
 import type { IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "EXT_lights_image_based";
 
@@ -159,4 +160,4 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader as GLTFLoader));

@@ -15,6 +15,7 @@ import { Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import type { Color4 } from "core/Maths/math.color";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 interface ITransmissionHelperHolder {
     /**
@@ -393,4 +394,4 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_transmission(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_transmission(loader as GLTFLoader));

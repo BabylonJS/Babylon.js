@@ -3,7 +3,7 @@ import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector"
 import type { Mesh } from "core/Meshes/mesh";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { Nullable } from "core/types";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { INode } from "../glTFLoaderInterfaces";
 
@@ -11,6 +11,7 @@ import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 import "core/Meshes/thinInstanceMesh";
 import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -116,4 +117,4 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_mesh_gpu_instancing(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_mesh_gpu_instancing(loader as GLTFLoader));

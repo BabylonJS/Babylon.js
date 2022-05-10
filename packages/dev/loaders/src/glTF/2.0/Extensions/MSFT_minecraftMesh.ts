@@ -51,4 +51,4 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader as GLTFLoader));

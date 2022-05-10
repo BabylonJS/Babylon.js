@@ -8,6 +8,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
 import type { IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_materials_specular";
 
@@ -100,4 +101,4 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_specular(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_specular(loader as GLTFLoader));

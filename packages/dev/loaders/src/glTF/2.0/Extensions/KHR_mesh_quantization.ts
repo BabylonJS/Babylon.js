@@ -30,4 +30,4 @@ export class KHR_mesh_quantization implements IGLTFLoaderExtension {
     public dispose() {}
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_mesh_quantization(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_mesh_quantization(loader as GLTFLoader));

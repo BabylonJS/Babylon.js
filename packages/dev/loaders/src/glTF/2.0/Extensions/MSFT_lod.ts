@@ -8,8 +8,10 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "MSFT_lod";
 
@@ -432,4 +434,4 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader as GLTFLoader));

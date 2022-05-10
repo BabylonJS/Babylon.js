@@ -7,6 +7,7 @@ import type { ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRTextureTransform } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_texture_transform";
 
@@ -81,4 +82,4 @@ export class KHR_texture_transform implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_texture_transform(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_texture_transform(loader as GLTFLoader));

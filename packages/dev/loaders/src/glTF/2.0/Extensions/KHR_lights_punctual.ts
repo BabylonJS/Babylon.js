@@ -12,7 +12,9 @@ import type { IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRL
 import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { INode } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "KHR_lights_punctual";
 
@@ -113,4 +115,4 @@ export class KHR_lights implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_lights(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_lights(loader as GLTFLoader));

@@ -51,4 +51,4 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_sRGBFactors(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_sRGBFactors(loader as GLTFLoader));

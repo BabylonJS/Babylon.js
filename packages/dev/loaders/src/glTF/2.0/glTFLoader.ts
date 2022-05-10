@@ -58,7 +58,6 @@ import type {
     ITexture,
     IImage,
     IMeshPrimitive,
-    IArrayItem as IArrItem,
     _ISamplerData,
 } from "./glTFLoaderInterfaces";
 import { GLTFFileLoader, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
@@ -75,58 +74,7 @@ import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
 import { ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-
-interface TypedArrayLike extends ArrayBufferView {
-    readonly length: number;
-    [n: number]: number;
-}
-
-interface TypedArrayConstructor {
-    new (length: number): TypedArrayLike;
-    new (buffer: ArrayBufferLike, byteOffset: number, length?: number): TypedArrayLike;
-}
-
-interface ILoaderProperty extends IProperty {
-    _activeLoaderExtensionFunctions: {
-        [id: string]: boolean;
-    };
-}
-
-interface IRegisteredExtension {
-    factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
-}
-
-/**
- * Helper class for working with arrays when loading the glTF asset
- */
-export class ArrayItem {
-    /**
-     * Gets an item from the given array.
-     * @param context The context when loading the asset
-     * @param array The array to get the item from
-     * @param index The index to the array
-     * @returns The array item
-     */
-    public static Get<T>(context: string, array: ArrayLike<T> | undefined, index: number | undefined): T {
-        if (!array || index == undefined || !array[index]) {
-            throw new Error(`${context}: Failed to find index (${index})`);
-        }
-
-        return array[index];
-    }
-
-    /**
-     * Assign an `index` field to each item of the given array.
-     * @param array The array of items
-     */
-    public static Assign(array?: IArrItem[]): void {
-        if (array) {
-            for (let index = 0; index < array.length; index++) {
-                array[index].index = index;
-            }
-        }
-    }
-}
+import { ArrayItem, ILoaderProperty, registeredExtensions, RegisterExtension, TypedArrayConstructor, TypedArrayLike } from "./BaseLoader";
 
 /**
  * The glTF 2.0 loader
@@ -157,8 +105,6 @@ export class GLTFLoader implements ILoader {
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private _postSceneLoadActions = new Array<() => void>();
 
-    private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
-
     /**
      * The default glTF sampler.
      */
@@ -169,28 +115,8 @@ export class GLTFLoader implements ILoader {
      * @param name The name of the loader extension.
      * @param factory The factory function that creates the loader extension.
      */
-    public static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void {
-        if (GLTFLoader.UnregisterExtension(name)) {
-            Logger.Warn(`Extension with the name '${name}' already exists`);
-        }
-
-        GLTFLoader._RegisteredExtensions[name] = {
-            factory: factory,
-        };
-    }
-
-    /**
-     * Unregisters a loader extension.
-     * @param name The name of the loader extension.
-     * @returns A boolean indicating whether the extension has been unregistered
-     */
-    public static UnregisterExtension(name: string): boolean {
-        if (!GLTFLoader._RegisteredExtensions[name]) {
-            return false;
-        }
-
-        delete GLTFLoader._RegisteredExtensions[name];
-        return true;
+    public static RegisterExtension(name: string, factory: (loader: ILoader) => IGLTFLoaderExtension): void {
+        RegisterExtension("gltf", name, factory);
     }
 
     /**
@@ -505,11 +431,11 @@ export class GLTFLoader implements ILoader {
         }
     }
 
-    private _loadExtensions(): void {
-        for (const name in GLTFLoader._RegisteredExtensions) {
-            const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
+    protected _loadExtensions(): void {
+        for (const name in registeredExtensions[this._parent.name] || {}) {
+            const extension = registeredExtensions[this._parent.name][name].factory(this);
             if (extension.name !== name) {
-                Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
+                Logger.Warn(`The name of the loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
             }
 
             this._extensions.push(extension);
