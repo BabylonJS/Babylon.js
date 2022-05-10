@@ -359,9 +359,7 @@ export class BoundingBoxGizmo extends Gizmo {
                         // Rotate around center of bounding box
                         this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                         if (this._anchorMesh.getScene().useRightHandedSystem) {
-                            this._tmpQuaternion.x *= -1;
-                            this._tmpQuaternion.y *= -1;
-                            this._tmpQuaternion.z *= -1;
+                            this._tmpQuaternion.conjugateInPlace();
                         }
                         this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
                         this._anchorMesh.removeChild(this.attachedMesh, Gizmo.PreserveScaling);
