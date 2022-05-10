@@ -7,6 +7,7 @@ import type { Material } from "core/Materials/material";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_materials_unlit";
 
@@ -95,4 +96,4 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader as GLTFLoader));

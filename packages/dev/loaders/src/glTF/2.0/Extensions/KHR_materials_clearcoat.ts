@@ -7,6 +7,7 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -123,4 +124,4 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_clearcoat(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_clearcoat(loader as GLTFLoader));

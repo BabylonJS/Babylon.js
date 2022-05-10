@@ -61,4 +61,4 @@ export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_xmp_json_ld(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_xmp_json_ld(loader as GLTFLoader));

@@ -1,0 +1,66 @@
+{
+    "assets": [
+        {
+            "uri": "assets/rowsofspheres.gltf",
+            "nodes": ["Primaries"]
+        },
+        {
+            "uri": "assets/rowsofspheres.gltf",
+            "nodes": ["Secondaries"]
+        },
+        {
+            "uri": "assets/rowsofspheres.gltf",
+            "nodes": ["Yellow"]
+        }
+    ],
+    "experience": {
+        "version": "2.0"
+    },
+    "interactivity": {
+        "actions": [
+            {
+                "infinite": true,
+                "subject": 0,
+                "type": "spin"
+            }
+        ],
+        "behaviors": [
+            {
+                "action": 0,
+                "trigger": 0
+            }
+        ],
+        "references": [
+            {
+                "index": 1,
+                "type": "node"
+            }
+        ],
+        "triggers": [
+            {
+                "type": "sceneStart"
+            }
+        ]
+    },
+    "nodes": [
+        {
+            "children": [1,2,3]
+        },
+        {
+            "asset": 0,
+            "name": "row1",
+            "translation": [0,-1,0]
+        },
+        {
+            "asset": 1,
+            "name": "row2",
+            "translation": [0,1,0]
+        },
+        {
+            "asset": 2,
+            "name": "yellow",
+            "translation": [0,0,0]
+        }
+
+    ]
+}

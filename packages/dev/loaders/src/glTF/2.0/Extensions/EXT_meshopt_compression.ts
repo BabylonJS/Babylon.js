@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { ArrayItem, GLTFLoader } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import type { IBufferView } from "../glTFLoaderInterfaces";
 import type { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
 import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
 import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "EXT_meshopt_compression";
 
@@ -68,4 +69,4 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_meshopt_compression(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_meshopt_compression(loader as GLTFLoader));

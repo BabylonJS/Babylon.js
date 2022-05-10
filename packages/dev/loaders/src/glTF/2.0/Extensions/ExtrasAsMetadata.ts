@@ -90,4 +90,4 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader): IGLTFLoaderExtension => new ExtrasAsMetadata(loader));
+GLTFLoader.RegisterExtension(NAME, (loader): IGLTFLoaderExtension => new ExtrasAsMetadata(loader as GLTFLoader));

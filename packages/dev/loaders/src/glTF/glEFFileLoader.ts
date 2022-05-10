@@ -1,5 +1,5 @@
 import { AssetContainer } from "core/assetContainer";
-import { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { DataReader } from "core/Misc/dataReader";
 import { StringTools } from "core/Misc/stringTools";
 import { GLEFLoader } from "./2.0/glEFLoader";
@@ -43,3 +43,9 @@ export class GLEFFileLoader extends AbstractFileLoader {
         throw new Error("Binary not supported in glEF yet");
     }
 }
+
+if (SceneLoader) {
+    SceneLoader.RegisterPlugin(new GLEFFileLoader());
+}
+
+console.log("gleffileloadeR");

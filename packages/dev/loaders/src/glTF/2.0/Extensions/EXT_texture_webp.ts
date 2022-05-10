@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import type { ITexture } from "../glTFLoaderInterfaces";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { IEXTTextureWebP } from "babylonjs-gltf2interface";
 import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "EXT_texture_webp";
 
@@ -59,4 +60,4 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_texture_webp(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_texture_webp(loader as GLTFLoader));

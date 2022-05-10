@@ -667,7 +667,7 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
     protected abstract _getLoaders(): { [key: number]: (parent: AbstractFileLoader) => ILoader };
 
     private _getLoader(loaderData: ILoaderData): ILoader {
-        const asset = (<any>loaderData.json).asset || {};
+        const asset = (<any>loaderData.json).asset || (<any>loaderData.json).experience || {};
 
         this._log(`Asset version: ${asset.version}`);
         asset.minVersion && this._log(`Asset minimum version: ${asset.minVersion}`);

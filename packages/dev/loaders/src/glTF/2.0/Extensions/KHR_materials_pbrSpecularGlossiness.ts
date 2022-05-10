@@ -8,6 +8,7 @@ import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsPbrSpecularGlossiness } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
 
@@ -107,4 +108,4 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_pbrSpecularGlossiness(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_pbrSpecularGlossiness(loader as GLTFLoader));

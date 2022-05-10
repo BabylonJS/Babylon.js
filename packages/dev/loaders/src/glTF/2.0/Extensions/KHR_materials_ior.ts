@@ -7,6 +7,7 @@ import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsIor } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
 
 const NAME = "KHR_materials_ior";
 
@@ -80,4 +81,4 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_ior(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_ior(loader as GLTFLoader));

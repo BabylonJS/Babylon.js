@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 
 import type { Material } from "core/Materials/material";
 import { Mesh } from "core/Meshes/mesh";
@@ -9,6 +9,8 @@ import type { Node } from "core/node";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
+import { LoadExtensionAsync } from "./BaseLoaderExtension";
+import { ArrayItem } from "../BaseLoader";
 
 const NAME = "KHR_materials_variants";
 
@@ -305,4 +307,4 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_variants(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_variants(loader as GLTFLoader));
