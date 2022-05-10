@@ -182,6 +182,7 @@ export class ThinEngine {
         { key: "Chrome/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
     ];
 
     /** @hidden */
@@ -192,14 +193,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.5.5";
+        return "babylonjs@5.5.6";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.5.5";
+        return "5.5.6";
     }
 
     /**
