@@ -1937,6 +1937,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             fullOptions.samples = options.samples ?? 1;
             fullOptions.creationFlags = options.creationFlags ?? 0;
+            fullOptions.useSRGBBuffer = options.useSRGBBuffer ?? false;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -1944,6 +1945,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
             fullOptions.samples = 1;
             fullOptions.creationFlags = 0;
+            fullOptions.useSRGBBuffer = false;
         }
 
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
@@ -1976,6 +1978,7 @@ export class WebGPUEngine extends Engine {
         texture.is2DArray = layers > 0;
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
 
         this._internalTexturesCache.push(texture);
 
