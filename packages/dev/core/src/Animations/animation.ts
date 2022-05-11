@@ -53,6 +53,11 @@ export class Animation {
      */
     public uniqueId: number;
 
+    /**
+     * If isScalling is true, additive animation is relative to a vector of 1. Default is false
+     */
+    public isScaling: boolean = false;
+
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
 
@@ -474,7 +479,11 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 case Animation.ANIMATIONTYPE_COLOR3:
                 case Animation.ANIMATIONTYPE_COLOR4:
-                    key.value.subtractToRef(valueStore.referenceValue, key.value);
+                    if (animation.isScaling) {
+                        key.value.divideInPlace(valueStore.referenceValue);
+                    } else {
+                        key.value.subtractToRef(valueStore.referenceValue, key.value);
+                    }
                     break;
 
                 case Animation.ANIMATIONTYPE_SIZE:
@@ -572,6 +581,7 @@ export class Animation {
      * @param dataType The data type of the animation
      * @param loopMode The loop mode of the animation
      * @param enableBlending Specifies if blending should be enabled
+     * @param isScalling defines if the values should be relative to a vector of 1
      */
     constructor(
         /**Name of the animation */
@@ -585,12 +595,15 @@ export class Animation {
         /**The loop mode of the animation */
         public loopMode?: number,
         /**Specifies if blending should be enabled */
-        public enableBlending?: boolean
+        public enableBlending?: boolean,
+        /**Specifies if animation is scaling and relative to a vector of 1 */
+        public isScalling?: boolean
     ) {
         this.targetPropertyPath = targetProperty.split(".");
         this.dataType = dataType;
         this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
         this.uniqueId = Animation._UniqueIdGenerator++;
+        this.isScaling = !!isScalling;
     }
 
     // Methods
