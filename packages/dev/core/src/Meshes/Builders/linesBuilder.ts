@@ -7,7 +7,7 @@ import type { FloatArray, Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh";
 import type { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { Tools } from "../../Misc";
+import { Tools } from "../../Misc/tools";
 
 declare type Material = import("../../Materials/material").Material;
 
