@@ -49,7 +49,7 @@ export class TextBlock extends Control {
     private _outlineColor: string = "white";
     private _underline: boolean = false;
     private _lineThrough: boolean = false;
-    private _wordDivider: string = " "
+    private _wordDivider: string = " ";
     /**
      * An event triggered after the text is changed
      */
