@@ -152,7 +152,7 @@ export class NullEngine extends Engine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
-            texture2DArrayMaxLayerCount: 256,
+            texture2DArrayMaxLayerCount: 128,
         };
 
         this._features = {
