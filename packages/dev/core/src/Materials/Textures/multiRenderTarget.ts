@@ -169,7 +169,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             depthTextureFormat: depthTextureFormat,
             types: types,
             textureCount: count,
-            useSRGBBuffers: useSRGBBuffers
+            useSRGBBuffers: useSRGBBuffers,
         };
 
         this._count = count;
