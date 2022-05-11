@@ -1,5 +1,5 @@
 import type { IProperty } from "babylonjs-gltf2interface";
-import type { _IAnimationSamplerData, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
+import type { IArrayItem as IArrItem } from "./glTFLoaderInterfaces";
 
 import { ILoader } from "../abstractFileLoader";
 import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
