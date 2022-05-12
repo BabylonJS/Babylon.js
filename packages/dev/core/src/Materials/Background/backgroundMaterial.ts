@@ -739,7 +739,6 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
                     defines.REFLECTIONBLUR = this._reflectionBlur > 0;
-                    defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
                     defines.REFLECTIONBGR = this.switchToBGR;
@@ -749,6 +748,7 @@ export class BackgroundMaterial extends PushMaterial {
                     }
 
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 
                     switch (reflectionTexture.coordinatesMode) {
                         case Texture.EXPLICIT_MODE:
