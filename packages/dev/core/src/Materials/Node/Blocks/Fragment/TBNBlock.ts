@@ -19,11 +19,11 @@ export class TBNBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.VertexAndFragment, true);
+        super(name, NodeMaterialBlockTargets.Fragment, true);
 
-        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector4, false);
         this.normal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4, false);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false);
 
         this.registerOutput(
@@ -83,7 +83,7 @@ export class TBNBlock extends NodeMaterialBlock {
     }
 
     public get target() {
-        return NodeMaterialBlockTargets.VertexAndFragment;
+        return NodeMaterialBlockTargets.Fragment;
     }
 
     public set target(value: NodeMaterialBlockTargets) {}
