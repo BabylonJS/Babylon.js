@@ -1,80 +1,125 @@
 {
-    "fromTag": "5.5.5",
+    "fromTag": "5.5.6",
     "changelog": {
-        "5.5.5": [
+        "5.6.0": [
             {
-                "pr": "12476",
-                "title": "More perf improvements",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/transformNode.ts",
-                    "packages/dev/core/src/Rendering/renderingGroup.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12478",
-                "title": "Make AbstractMesh props protected instead of private",
-                "description": null,
-                "author": {
-                    "name": "barroij",
-                    "url": "https://github.com/barroij"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/abstractMesh.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12472",
-                "title": "Instance color mixing",
-                "description": "Follow up https://forum.babylonjs.com/t/vertex-error-and-no-colors-on-thin-instances-after-upgrade/28492\r\n\r\nMixing color instances from thin instances and vertex colors from mesh.",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/materialHelper.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/vertexColorMixing.fx",
-                    "packages/dev/core/src/Shaders/color.vertex.fx",
-                    "packages/dev/core/src/Shaders/default.vertex.fx",
-                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
-                    "packages/dev/materials/src/cell/cell.vertex.fx",
-                    "packages/dev/materials/src/fire/fire.vertex.fx",
-                    "packages/dev/materials/src/fur/fur.vertex.fx",
-                    "packages/dev/materials/src/gradient/gradient.vertex.fx",
-                    "packages/dev/materials/src/lava/lava.vertex.fx",
-                    "packages/dev/materials/src/mix/mix.vertex.fx",
-                    "packages/dev/materials/src/simple/simple.vertex.fx",
-                    "packages/dev/materials/src/terrain/terrain.vertex.fx",
-                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx",
-                    "packages/dev/materials/src/water/water.vertex.fx"
-                ],
-                "tags": [
-                    "enhancement"
-                ]
-            },
-            {
-                "pr": "12479",
-                "title": "typescript update, fix build",
+                "pr": "12517",
+                "title": "switch to enum (instead of const-enum)",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "package-lock.json",
-                    "packages/dev/inspector/tsconfig.build.json",
-                    "packages/tools/guiEditor/tsconfig.build.json",
-                    "packages/tools/nodeEditor/tsconfig.build.json",
-                    "tsconfig.devpackages.json"
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12511",
+                "title": "Plumb through useSRGBBuffer for _createInternalTexture.",
+                "description": "This is a follow up change to #12486; A little more plumbing is required to get the useSRGBBuffer value applied to the texture format. With current logic, `fullOptions.useSRGBBuffer` is always undefined.\r\n",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "12510",
+                "title": "Make NME TBNBlock fragment compatible",
+                "description": "Allows using fragment as well as vertex inputs with the TBNBlock node. This can for example be used to flip backface normals.\r\n\r\nThis change still works with vertex normal/tangent inputs, like this playground example: https://playground.babylonjs.com/#VL1FPT#5\r\n\r\nBut now it also works with fragment inputs, such as this Playground that flips backface normals and tangents and therefore rendering the backside correctly: https://playground.babylonjs.com/#VL1FPT#7\r\nThis one currently fails with `Uncaught (in promise) FrontFacingBlock must only be used in a fragment shader` error in the master branch but works with this PR change.",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/TBNBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12493",
+                "title": "Fix NME Morph block with tangents",
+                "description": "https://forum.babylonjs.com/t/nodematerial-renders-incorrectly-when-using-mesh-tangents/29784/12?u=sebavan",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12499",
+                "title": "Fix PointerDragBehavior to account for button context, add button filter",
+                "description": "This PR contains two changes to `PointerDragBehavior`.\r\n- When a mouse button is pressed to initiate a drag, the button is stored and only a `pointerup` event from that button can release the drag (except for detach and other non-input behaviors).\r\n- There is now an array of mouse buttons that are used to define what buttons are eligible to start a drag behavior.  This can be changed by the user (LMB, MMB, and RMB are set as defaults).\r\n\r\nTested on Chrome, Firefox, Edge, and Safari (MacOS only).",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12506",
+                "title": "Add skinned mesh reference when loading glTF skins",
+                "description": "See https://forum.babylonjs.com/t/gltf-parsing-is-creating-doubles-and-reparenting-meshes/30079",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12505",
+                "title": "Fix BoundingBoxGizmo rotate incorrectly when using RightHand system.",
+                "description": "This PR fix a bug of BoundingBoxGizmo. when scene.useRightHandedSystem = true, BoundingBoxGizmo rotate to opposite direction.\r\nRelated issue: [https://forum.babylonjs.com/t/bounding-box-gizmo-rotate-incorrectly-when-scene-is-using-right-hand-system/30206](url)\r\nPlayground: [https://playground.babylonjs.com/#SG9ZZB#15](url)",
+                "author": {
+                    "name": "gongsiyi123",
+                    "url": "https://github.com/gongsiyi123"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12487",
+                "title": "Still test disable meshes because gltf loaders them them on later",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "5.5.6": [
@@ -324,6 +369,82 @@
                 },
                 "files": [
                     "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "5.5.5": [
+            {
+                "pr": "12476",
+                "title": "More perf improvements",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/Rendering/renderingGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12478",
+                "title": "Make AbstractMesh props protected instead of private",
+                "description": null,
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12472",
+                "title": "Instance color mixing",
+                "description": "Follow up https://forum.babylonjs.com/t/vertex-error-and-no-colors-on-thin-instances-after-upgrade/28492\r\n\r\nMixing color instances from thin instances and vertex colors from mesh.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/Shaders/color.vertex.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/materials/src/cell/cell.vertex.fx",
+                    "packages/dev/materials/src/fire/fire.vertex.fx",
+                    "packages/dev/materials/src/fur/fur.vertex.fx",
+                    "packages/dev/materials/src/gradient/gradient.vertex.fx",
+                    "packages/dev/materials/src/lava/lava.vertex.fx",
+                    "packages/dev/materials/src/mix/mix.vertex.fx",
+                    "packages/dev/materials/src/simple/simple.vertex.fx",
+                    "packages/dev/materials/src/terrain/terrain.vertex.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx",
+                    "packages/dev/materials/src/water/water.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12479",
+                "title": "typescript update, fix build",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/tools/guiEditor/tsconfig.build.json",
+                    "packages/tools/nodeEditor/tsconfig.build.json",
+                    "tsconfig.devpackages.json"
                 ],
                 "tags": []
             }
