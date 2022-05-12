@@ -973,7 +973,8 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
                         defines.INVERTCUBICMAP = this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
-                        defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
+                        defines.REFLECTIONMAP_OPPOSITEZ =
+                            defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
 
                         switch (this._reflectionTexture.coordinatesMode) {
