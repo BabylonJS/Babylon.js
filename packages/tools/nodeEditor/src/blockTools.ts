@@ -42,7 +42,7 @@ import { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightIn
 import { MaxBlock } from "core/Materials/Node/Blocks/maxBlock";
 import { MinBlock } from "core/Materials/Node/Blocks/minBlock";
 import { PerturbNormalBlock } from "core/Materials/Node/Blocks/Fragment/perturbNormalBlock";
-import { TBNBlock } from "core/Materials/Node/Blocks/Dual/TBNBlock";
+import { TBNBlock } from "core/Materials/Node/Blocks/Fragment/TBNBlock";
 import { LengthBlock } from "core/Materials/Node/Blocks/lengthBlock";
 import { DistanceBlock } from "core/Materials/Node/Blocks/distanceBlock";
 import { FrontFacingBlock } from "core/Materials/Node/Blocks/Fragment/frontFacingBlock";
