@@ -168,9 +168,11 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
     const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    const defaultUseSRGBBuffer = false;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
+    let useSRGBBuffers = new Array<boolean>();
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
 
@@ -186,6 +188,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         }
         if (options.samplingModes) {
             samplingModes = options.samplingModes;
+        }
+        if (options.useSRGBBuffers) {
+            useSRGBBuffers = options.useSRGBBuffers;
         }
         if (
             this.webGLVersion > 1 &&
@@ -219,6 +224,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     for (let i = 0; i < textureCount; i++) {
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
+        let useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -234,6 +240,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
+        useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+
         const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
         const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
@@ -248,7 +256,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+        const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, Constants.TEXTUREFORMAT_RGBA, useSRGBBuffer);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
 
@@ -268,6 +277,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.type = type;
+        texture._useSRGBBuffer = useSRGBBuffer;
 
         this._internalTexturesCache.push(texture);
     }
