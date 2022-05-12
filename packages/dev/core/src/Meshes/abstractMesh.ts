@@ -1457,12 +1457,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Internal function to get buffer data and possibly apply morphs and normals
-     * @param applySkeleton 
-     * @param applyMorph 
-     * @param data 
-     * @param isNormalData 
+     * @param applySkeleton
+     * @param applyMorph
+     * @param data
+     * @param isNormalData
      */
-    private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, isNormalData: boolean = false) : Nullable<FloatArray> {
+    private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, isNormalData: boolean = false): Nullable<FloatArray> {
         data = data ?? Tools.Slice(this.getVerticesData(isNormalData ? VertexBuffer.NormalKind : VertexBuffer.PositionKind));
 
         if (data && applyMorph && this.morphTargetManager) {
@@ -1528,7 +1528,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                             }
                         }
                     }
-                    
+
                     if (isNormalData) {
                         Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
                     } else {
@@ -1552,7 +1552,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param applyMorph  defines whether to apply the morph target
      * @returns the normals data
      */
-    public getNormalsData(applySkeleton = false, applyMorph = false) : Nullable<FloatArray> {
+    public getNormalsData(applySkeleton = false, applyMorph = false): Nullable<FloatArray> {
         return this._getData(applySkeleton, applyMorph, null, true);
     }
 
