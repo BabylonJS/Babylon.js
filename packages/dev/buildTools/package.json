@@ -1,0 +1,30 @@
+{
+    "name": "@dev/build-tools",
+    "version": "1.0.0",
+    "main": "dist/index",
+    "module": "dist/index",
+    "types": "dist/index",
+    "private": true,
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "npm run compile",
+        "compile": "tsc -b tsconfig.build.json"
+    },
+    "sideEffects": true,
+    "devDependencies": {
+        "@types/glob": "^7.2.0",
+        "@types/mv": "^2.1.2",
+        "@types/node": "^16.11.6",
+        "mv": "^2.1.1",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.4.4"
+    },
+    "bin": {
+        "build-tools": "./dist/index.js"
+    },
+    "dependencies": {
+        "dotenv": "^16.0.0"
+    }
+}

@@ -1,0 +1,40 @@
+#ge-header {
+    width: 100%;
+    grid-column: 2 / 4;
+    grid-row: 1;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 100%;
+    background: #333333;
+
+    .command-bar {
+        padding-left: 15px;
+        grid-row: 1;
+        grid-column: 2;
+        width: 100%;
+
+        .language-button {
+            grid-row: 1;
+            grid-column: 2;
+            color: white;
+            width: 144px;
+            font-size: 18px;
+            text-align: center;
+            display: grid;
+            align-content: center;
+            border-top-left-radius: 14px;
+            transform: scale(1);
+            user-select: none;
+
+            &.active {
+                width: 74px;
+                cursor: pointer;
+                grid-column: 1;
+                margin-right: -5px;
+                transform: translateX(10px);
+            }
+        }
+    }
+}

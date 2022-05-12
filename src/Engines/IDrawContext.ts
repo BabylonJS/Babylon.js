@@ -1,3 +1,0 @@
-/** @hidden */
-export interface IDrawContext {
-}

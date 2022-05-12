@@ -1,0 +1,6 @@
+{
+    "declarationLibs": ["@lts/materials"],
+    "devPackageName": "materials",
+    "filename": "babylonjs.materials.module.d.ts",
+    "outputDirectory": "./"
+}

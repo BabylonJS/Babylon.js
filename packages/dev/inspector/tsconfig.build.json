@@ -1,0 +1,24 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+
+    "references": [
+        {
+            "path": "../sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "../../tools/guiEditor/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "target": "es5",
+        "outDir": "./dist",
+        "rootDir": "./generated",
+    },
+
+    "include": ["./generated/**/*"]
+}

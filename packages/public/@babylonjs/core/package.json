@@ -1,0 +1,49 @@
+{
+    "name": "@babylonjs/core",
+    "version": "5.6.0",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "index.d.ts",
+    "files": [
+        "**/*.js",
+        "**/*.d.ts",
+        "**/*.map",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
+        "compile": "tsc -b tsconfig.build.json --verbose",
+        "postcompile": "build-tools -c declarations-es6 -r ../../../lts/core/generated/LibDeclarations -atf ./dist/Engines/engine.d.ts && build-tools -c add-js-to-es6",
+        "prepublishOnly": "build-tools -c prepare-es6-build -cf Engines/constants.js"
+    },
+    "dependencies": {
+        "tslib": "^2.3.1"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "^1.0.0",
+        "@lts/core": "^1.0.0",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.4.4"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "esnext": "index.js",
+    "type": "module",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

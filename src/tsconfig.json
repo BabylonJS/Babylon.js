@@ -1,9 +1,0 @@
-{
-    "extends": "../tsconfigRules",
-    "compilerOptions": {
-        "types": [],
-        "baseUrl": "./",
-        "rootDir": "./",
-        "outDir": "../.temp/manualBuildCore"
-    }
-}

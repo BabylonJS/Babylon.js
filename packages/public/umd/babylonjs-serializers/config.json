@@ -1,0 +1,7 @@
+{
+    "declarationLibs": ["@lts/serializers"],
+    "devPackageName": "serializers",
+    "filename": "babylonjs.serializers.module.d.ts",
+    "outputDirectory": "./",
+    "addToDocumentation": true
+}

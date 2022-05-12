@@ -1,0 +1,18 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "target": "es5",
+        "outDir": "./dist",
+        "rootDir": "./generated"
+    },
+
+    "references": [
+        {
+            "path": "../core/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./generated/**/*"]
+}

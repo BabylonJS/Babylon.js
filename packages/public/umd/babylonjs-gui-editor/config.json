@@ -1,0 +1,6 @@
+{
+    "declarationLibs": ["@tools/gui-editor", "@dev/shared-ui-components"],
+    "devPackageName": "guiEditor",
+    "filename": "babylon.guiEditor.module.d.ts",
+    "outputDirectory": "./"
+}
