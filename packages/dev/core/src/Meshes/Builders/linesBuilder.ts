@@ -7,7 +7,7 @@ import type { FloatArray, Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh";
 import type { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { Tools } from "../../Misc/tools";
+import { Logger } from "../../Misc/logger";
 
 declare type Material = import("../../Materials/material").Material;
 
@@ -304,7 +304,7 @@ export function CreateDashedLines(
             }
         };
         if (options.dashNb || options.dashSize || options.gapSize || options.useVertexAlpha || options.material) {
-            Tools.Warn("You have used an option other than points with the instance option. Please be aware that these other options will be ignored.");
+            Logger.Warn("You have used an option other than points with the instance option. Please be aware that these other options will be ignored.");
         }
         instance.updateMeshPositions(positionFunction, false);
         return instance;
