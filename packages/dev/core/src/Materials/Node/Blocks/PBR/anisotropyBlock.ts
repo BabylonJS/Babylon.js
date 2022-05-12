@@ -8,7 +8,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { TBNBlock } from "../Dual/TBNBlock";
+import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
