@@ -21,9 +21,9 @@ export class TBNBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment, true);
 
-        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector4, false);
+        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.normal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4, false);
+        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false);
 
         this.registerOutput(
@@ -50,6 +50,7 @@ export class TBNBlock extends NodeMaterialBlock {
         state._excludeVariableName("tbnNormal");
         state._excludeVariableName("tbnTangent");
         state._excludeVariableName("tbnBitangent");
+        state._excludeVariableName("TBN");
     }
 
     /**
@@ -146,23 +147,18 @@ export class TBNBlock extends NodeMaterialBlock {
         const world = this.world;
         const TBN = this.TBN;
 
-        if (state.target !== NodeMaterialBlockTargets.Fragment) {
-            // Vertex
-            state._emitVaryingFromString(TBN.associatedVariableName, "mat3");
-
+        // Fragment
+        if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `
                 // ${this.name}
                 vec3 tbnNormal = normalize(${normal.associatedVariableName}).xyz;
                 vec3 tbnTangent = normalize(${tangent.associatedVariableName}.xyz);
                 vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${tangent.associatedVariableName}.w;
-                ${TBN.associatedVariableName} = mat3(${world.associatedVariableName}) * mat3(tbnTangent, tbnBitangent, tbnNormal);
+                mat3 ${TBN.associatedVariableName} = mat3(${world.associatedVariableName}) * mat3(tbnTangent, tbnBitangent, tbnNormal);
             `;
 
-            return this;
+            state.sharedData.blocksWithDefines.push(this);
         }
-
-        // Fragment
-        state.sharedData.blocksWithDefines.push(this);
 
         return this;
     }

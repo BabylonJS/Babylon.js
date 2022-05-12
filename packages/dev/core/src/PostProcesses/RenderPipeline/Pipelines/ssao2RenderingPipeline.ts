@@ -543,6 +543,10 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setTexture("randomSampler", this._randomTexture);
         };
         this._ssaoPostProcess.samples = this.textureSamples;
+
+        if (!this._forceGeometryBuffer) {
+            this._ssaoPostProcess._prePassEffectConfiguration = new SSAO2Configuration();
+        }
     }
 
     private _createSSAOCombinePostProcess(ratio: number, textureType: number): void {
@@ -566,10 +570,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.samples = this.textureSamples;
-
-        if (!this._forceGeometryBuffer) {
-            this._ssaoCombinePostProcess._prePassEffectConfiguration = new SSAO2Configuration();
-        }
     }
 
     private _createRandomTexture(): void {
