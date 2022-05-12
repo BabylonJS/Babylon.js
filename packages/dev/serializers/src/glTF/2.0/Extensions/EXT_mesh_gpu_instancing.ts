@@ -136,13 +136,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         });
     }
 
-    private _buildAccessor(
-        buffer: Float32Array | Int8Array | Int16Array,
-        type: AccessorType,
-        count: number,
-        binaryWriter: _BinaryWriter,
-        componentType: AccessorComponentType
-    ): number {
+    private _buildAccessor(buffer: Float32Array, type: AccessorType, count: number, binaryWriter: _BinaryWriter, componentType: AccessorComponentType): number {
         // write the buffer
         const bufferOffset = binaryWriter.getByteOffset();
         switch (componentType) {
