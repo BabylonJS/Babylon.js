@@ -177,7 +177,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         disableWebGL2Support: forceWebGL1,
                         preserveDrawingBuffer: true,
                         stencil: true,
-                        antialias
+                        antialias,
                     });
                 };
             }
