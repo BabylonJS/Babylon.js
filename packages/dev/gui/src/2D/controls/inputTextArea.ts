@@ -672,7 +672,7 @@ export class InputTextArea extends InputText {
         }
 
         this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginWidth;
-        
+
         if (this._isFocused) {
             this._cursorInfo.currentLineIndex = 0;
 
