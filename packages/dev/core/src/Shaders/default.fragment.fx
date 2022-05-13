@@ -457,6 +457,14 @@ color.rgb = max(color.rgb, 0.);
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
     #endif
+	#ifdef PREPASS_SPECULARGLOSSINESS
+		// specularity = F0 value
+		#if defined(SPECULAR)
+			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularMapColor.rgb * writeGeometryInfo, specularMapColor.a * writeGeometryInfo); // no specularity if no visibility
+		#else
+			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(vec3(0.04) * writeGeometryInfo, writeGeometryInfo); // vec3(0.04) is F0 default value for dielectric materials
+		#endif
+	#endif
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)

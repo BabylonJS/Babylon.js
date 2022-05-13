@@ -678,6 +678,26 @@ void main(void) {
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
         #endif
     #endif
+        #ifdef PREPASS_SPECULARGLOSSINESS
+		#if defined(REFLECTIVITY) // TODO
+            #if defined(METALLICWORKFLOW)
+                // specularity equivalent = mix(vec3(0.04, 0.04, 0.04), albedo, metallic); according to https://marmoset.co/posts/pbr-texture-conversion/ 
+                // glossiness equivalent = 1.0 - roughness
+               
+                // reflectance = metallic * baseReflectivity.b; 
+                // microsurface = 1.0 - roughness;
+                gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(mix(vec3(0.04), baseColor.rgb, reflectance)* writeGeometryInfo, microSurface * writeGeometryInfo);
+            #else // specularGlossiness workflow
+                gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(baseReflectivity.rgb * writeGeometryInfo, baseReflectivity.a * microSurface * writeGeometryInfo);
+            #endif
+		#else
+            #if defined(METALLICWORKFLOW) 
+                gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(mix(vec3(0.04), baseColor.rgb, reflectance) * writeGeometryInfo, microSurface * writeGeometryInfo);
+            #else // specularGlossiness workflow
+                gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(vec3(0.04, 0.04, 0.04) * writeGeometryInfo, microSurface * writeGeometryInfo); // vec3(0.04) is F0 default value for dielectric materials
+            #endif
+		#endif
+	#endif
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)
