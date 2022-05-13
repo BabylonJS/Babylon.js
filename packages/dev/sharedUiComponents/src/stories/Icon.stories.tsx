@@ -3,7 +3,7 @@ import { Icon, IIconProps } from './Icon';
 import resizeToFitIcon from "../imgs/resizeToFitIcon.svg";
 
 export default {
-    title: "Inputs/Icon",
+    title: "Layout/Icon",
     component: Icon
 }
 

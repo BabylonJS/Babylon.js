@@ -55,5 +55,8 @@
     "typescript": "^4.4.4"
   },
   "sideEffects": false,
-  "dependencies": {}
+  "dependencies": {
+    "@storybook/builder-webpack5": "^6.4.22",
+    "@storybook/manager-webpack5": "^6.4.22"
+  }
 }
