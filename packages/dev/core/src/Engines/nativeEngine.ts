@@ -849,7 +849,7 @@ export class NativeEngine extends Engine {
             maxTexturesImageUnits: 16,
             maxVertexTextureImageUnits: 16,
             maxCombinedTexturesImageUnits: 32,
-            maxTextureSize: 512,
+            maxTextureSize: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_SIZE,
             maxCubemapTextureSize: 512,
             maxRenderTextureSize: 512,
             maxVertexAttribs: 16,
