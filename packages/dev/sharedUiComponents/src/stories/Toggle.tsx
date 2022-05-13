@@ -1,4 +1,5 @@
-import  "./Toggle.css";
+import styles from "./Toggle.scss";
+import { ClassNames } from "./classNames";
 
 import toggleOnIcon_30px from "../imgs/toggleOnIcon_30px.svg";
 import toggleMixedIcon_30px from "../imgs/toggleMixedIcon_30px.svg";
@@ -6,9 +7,9 @@ import toggleOffIcon_30px from "../imgs/toggleOffIcon_30px.svg";
 import { Icon } from "./Icon";
 
 const Icons = {
-        on: toggleOnIcon_30px,
-        mixed: toggleMixedIcon_30px,
-        off: toggleOffIcon_30px,
+    on: toggleOnIcon_30px,
+    mixed: toggleMixedIcon_30px,
+    off: toggleOffIcon_30px,
 };
 
 export interface IToggleProps {
@@ -18,11 +19,11 @@ export interface IToggleProps {
     color?: "dark" | "light";
 }
 
-export function Toggle({color = "dark", toggled = "off", padded = false, onToggle = () => {}}: IToggleProps) {
+export function Toggle({ color = "dark", toggled = "off", padded = false, onToggle = () => {} }: IToggleProps) {
     return (
-        <label className={`${padded ? "padded" : ""} toggle`}>
-            <input type="checkbox" style={{display: "none"}} checked={toggled === "on"} onChange={() => onToggle()} />
-            <Icon icon={Icons[toggled]} color={color}/>
+        <label className={ClassNames({ toggle: true, padded }, styles)}>
+            <input type="checkbox" style={{ display: "none" }} checked={toggled === "on"} onChange={() => onToggle()} />
+            <Icon icon={Icons[toggled]} color={color} />
         </label>
     );
 }
