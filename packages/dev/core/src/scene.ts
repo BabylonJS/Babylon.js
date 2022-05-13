@@ -697,6 +697,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a predicate used to select candidate meshes for a pointer up event
      */
     public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer move event
      */
@@ -711,6 +712,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer down event occurs.
      */
     public skipPointerDownPicking = false;
+
+    /**
+     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer up event occurs.
+     */
+    public skipPointerUpPicking = false;
 
     /** Callback called when a pointer move is detected */
     public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;

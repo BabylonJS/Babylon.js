@@ -405,7 +405,7 @@ export class InputManager {
 
     private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, clickInfo: _ClickInfo): void {
         const scene = this._scene;
-        if (pickResult && pickResult && pickResult.pickedMesh) {
+        if (pickResult && pickResult.hit && pickResult.pickedMesh) {
             this._pickedUpMesh = pickResult.pickedMesh;
             if (this._pickedDownMesh === this._pickedUpMesh) {
                 if (scene.onPointerPick) {
@@ -463,7 +463,6 @@ export class InputManager {
 
             if (!clickInfo.ignore) {
                 type = PointerEventTypes.POINTERUP;
-
                 const pi = new PointerInfo(type, evt, pickResult);
                 this._setRayOnPointerInfo(pi);
                 scene.onPointerObservable.notifyObservers(pi, type);
@@ -824,8 +823,13 @@ export class InputManager {
                 if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers())) {
                     this._initActionManager(null, clickInfo);
                 }
-                if (!pickResult) {
-                    pickResult = this._currentPickResult;
+
+                //let pickResult;
+                if (scene.skipPointerUpPicking) {
+                    pickResult = new PickingInfo();
+                } else {
+                    pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
+                    this._currentPickResult = pickResult;
                 }
 
                 this._processPointerUp(pickResult, evt, clickInfo);
