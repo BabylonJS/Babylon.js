@@ -2469,9 +2469,6 @@ export class GLTFLoader implements IGLTFLoader {
         pointers.push(pointer);
     }
 
-    private static _AddSkinnedMeshMetadata(babylonObject: { metadata: any }, skinnedMesh: TransformNode): void {
-    }
-
     private static _GetTextureWrapMode(context: string, mode: TextureWrapMode | undefined): number {
         // Set defaults if undefined
         mode = mode == undefined ? TextureWrapMode.REPEAT : mode;
