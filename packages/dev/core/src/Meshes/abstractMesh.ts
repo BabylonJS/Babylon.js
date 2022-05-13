@@ -1460,10 +1460,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param applySkeleton
      * @param applyMorph
      * @param data
-     * @param isNormalData
+     * @param kind the kind of data you want. Can be Normal or Position
      */
-    private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, isNormalData: boolean = false): Nullable<FloatArray> {
-        data = data ?? Tools.Slice(this.getVerticesData(isNormalData ? VertexBuffer.NormalKind : VertexBuffer.PositionKind));
+    private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
+        data = data ?? Tools.Slice(this.getVerticesData(kind));
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
@@ -1481,7 +1481,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 }
 
                 faceIndexCount++;
-                if (!isNormalData) {
+                if (kind === VertexBuffer.PositionKind) {
                     if (this._positions && faceIndexCount === 3) {
                         // We want to merge into positions every 3 indices starting (but not 0)
                         faceIndexCount = 0;
@@ -1529,14 +1529,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                         }
                     }
 
-                    if (isNormalData) {
+                    if (kind === VertexBuffer.NormalKind) {
                         Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
                     } else {
                         Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
                     }
                     tempVector.toArray(data, index);
 
-                    if (!isNormalData && this._positions) {
+                    if (kind === VertexBuffer.PositionKind && this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
                     }
                 }
@@ -1553,7 +1553,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the normals data
      */
     public getNormalsData(applySkeleton = false, applyMorph = false): Nullable<FloatArray> {
-        return this._getData(applySkeleton, applyMorph, null, true);
+        return this._getData(applySkeleton, applyMorph, null, VertexBuffer.NormalKind);
     }
 
     /**
@@ -1564,7 +1564,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the position data
      */
     public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
-        return this._getData(applySkeleton, applyMorph, data, false);
+        return this._getData(applySkeleton, applyMorph, data, VertexBuffer.PositionKind);
     }
 
     /**
