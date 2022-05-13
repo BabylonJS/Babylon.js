@@ -1,19 +1,19 @@
-import { IToggleProps, Toggle } from './Toggle';
+import { ToggleProps, Toggle } from "./Toggle";
 
 export default {
     title: "Inputs/Toggle",
-    component: Toggle
-}
+    component: Toggle,
+};
 
-const Template = (args: IToggleProps) => <Toggle {...args} onToggle={() => {}} />;
+const Template = (args: ToggleProps) => <Toggle {...args} onToggle={() => {}} />;
 
 export const Default = Template.bind({});
 Default.args = {
     toggled: "off",
-    padded: false
-}
+    padded: false,
+};
 export const Padded = Template.bind({});
 Padded.args = {
     toggled: "off",
-    padded: true
-}
+    padded: true,
+};

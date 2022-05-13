@@ -1,34 +1,43 @@
-import { Button, IButtonProps } from './Button';
+import { Button, ButtonProps } from "./Button";
 
-import { Icon } from './Icon';
+import { Icon } from "./Icon";
 import resizeToFitIcon from "../imgs/resizeToFitIcon.svg";
 
 export default {
     title: "Inputs/Button",
-    component: Button
-}
+    component: Button,
+};
 
-const Template = (args: IButtonProps) => <>
-    <div>
-    <h1>Icons</h1>
-    <Button {...args} color="light"><Icon icon={resizeToFitIcon} color="dark"/></Button>
-    <Button {...args} color="dark"><Icon icon={resizeToFitIcon} color="light"/></Button>
-    </div>
-    <div>
-    <h1>Text</h1>
-    <Button {...args} color="light">HELLO</Button>
-    <Button {...args} color="dark">WORLD</Button>
-    </div>
-</>;
+const Template = (args: ButtonProps) => (
+    <>
+        <div>
+            <h1>Icons</h1>
+            <Button {...args} color="light" title="Foo">
+                <Icon icon={resizeToFitIcon} color="dark" />
+            </Button>
+            <Button {...args} color="dark" title="Bar">
+                <Icon icon={resizeToFitIcon} color="light" />
+            </Button>
+        </div>
+        <div>
+            <h1>Text</h1>
+            <Button {...args} color="light" title="Foo">
+                HELLO
+            </Button>
+            <Button {...args} color="dark" title="Bar">
+                WORLD
+            </Button>
+        </div>
+    </>
+);
 
 export const Default = Template.bind({});
-Default.args = {
-}
+Default.args = {};
 export const Wide = Template.bind({});
 Wide.args = {
-    size: "wide"
-}
+    size: "wide",
+};
 export const Small = Template.bind({});
 Small.args = {
-    size: "small"
-}
+    size: "small",
+};

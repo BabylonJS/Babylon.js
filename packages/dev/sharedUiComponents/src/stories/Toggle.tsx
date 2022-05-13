@@ -12,18 +12,18 @@ const Icons = {
     off: toggleOffIcon_30px,
 };
 
-export interface IToggleProps {
+export type ToggleProps = {
     toggled: "on" | "mixed" | "off";
     onToggle?: () => void;
     padded?: boolean;
     color?: "dark" | "light";
-}
+};
 
-export function Toggle({ color = "dark", toggled = "off", padded = false, onToggle = () => {} }: IToggleProps) {
+export const Toggle: React.FC<ToggleProps> = ({ color = "dark", toggled = "off", padded = false, onToggle = () => {} }) => {
     return (
         <label className={ClassNames({ toggle: true, padded }, styles)}>
             <input type="checkbox" style={{ display: "none" }} checked={toggled === "on"} onChange={() => onToggle()} />
             <Icon icon={Icons[toggled]} color={color} />
         </label>
     );
-}
+};
