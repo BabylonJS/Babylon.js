@@ -824,7 +824,6 @@ export class InputManager {
                     this._initActionManager(null, clickInfo);
                 }
 
-                //let pickResult;
                 if (scene.skipPointerUpPicking) {
                     pickResult = new PickingInfo();
                 } else {
