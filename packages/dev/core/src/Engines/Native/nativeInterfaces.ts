@@ -87,30 +87,8 @@ interface INativeEngineConstructor {
 
     readonly PROTOCOL_VERSION: number;
 
-    readonly CAPS_LIMITS_MAX_DRAW_CALLS: number;
-    readonly CAPS_LIMITS_MAX_BLITS: number;
     readonly CAPS_LIMITS_MAX_TEXTURE_SIZE: number;
     readonly CAPS_LIMITS_MAX_TEXTURE_LAYERS: number;
-    readonly CAPS_LIMITS_MAX_VIEWS: number;
-    readonly CAPS_LIMITS_MAX_FRAME_BUFFERS: number;
-    readonly CAPS_LIMITS_MAX_FB_ATTACHMENTS: number;
-    readonly CAPS_LIMITS_MAX_PROGRAMS: number;
-    readonly CAPS_LIMITS_MAX_SHADERS: number;
-    readonly CAPS_LIMITS_MAX_TEXTURES: number;
-    readonly CAPS_LIMITS_MAX_TEXTURE_SAMPLERS: number;
-    readonly CAPS_LIMITS_MAX_COMPUTE_BINDINGS: number;
-    readonly CAPS_LIMITS_MAX_VERTEX_LAYOUTS: number;
-    readonly CAPS_LIMITS_MAX_VERTEX_STREAMS: number;
-    readonly CAPS_LIMITS_MAX_INDEX_BUFFERS: number;
-    readonly CAPS_LIMITS_MAX_VERTEX_BUFFERS: number;
-    readonly CAPS_LIMITS_MAX_DYNAMIC_INDEX_BUFFERS: number;
-    readonly CAPS_LIMITS_MAX_DYNAMIC_VERTEX_BUFFERS: number;
-    readonly CAPS_LIMITS_MAX_UNIFORMS: number;
-    readonly CAPS_LIMITS_MAX_OCCLUSION_QUERIES: number;
-    readonly CAPS_LIMITS_MAX_ENCODERS: number;
-    readonly CAPS_LIMITS_MIN_RESOURCE_CB_SIZE: number;
-    readonly CAPS_LIMITS_TRANSIENT_VB_SIZE: number;
-    readonly CAPS_LIMITS_TRANSIENT_IB_SIZE: number;
 
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;
