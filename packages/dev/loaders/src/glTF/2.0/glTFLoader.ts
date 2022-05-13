@@ -806,8 +806,10 @@ export class GLTFLoader implements IGLTFLoader {
                         // Add a reference to the skinned mesh from the transform node.
                         babylonTransformNodeForSkin.metadata.gltf.skinnedMesh = babylonTransformNode;
                         babylonTransformNode.onDisposeObservable.addOnce(() => {
-                            // Delete the reference when the skinned mesh is disposed.
-                            delete babylonTransformNodeForSkin.metadata.gltf.skinnedMesh;
+                            if (babylonTransformNodeForSkin.metadata && babylonTransformNodeForSkin.metadata.gltf) {
+                                // Delete the reference when the skinned mesh is disposed.
+                                delete babylonTransformNodeForSkin.metadata.gltf.skinnedMesh;
+                            }
                         });
 
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
@@ -2465,6 +2467,9 @@ export class GLTFLoader implements IGLTFLoader {
         const gltf = (metadata.gltf = metadata.gltf || {});
         const pointers = (gltf.pointers = gltf.pointers || []);
         pointers.push(pointer);
+    }
+
+    private static _AddSkinnedMeshMetadata(babylonObject: { metadata: any }, skinnedMesh: TransformNode): void {
     }
 
     private static _GetTextureWrapMode(context: string, mode: TextureWrapMode | undefined): number {
