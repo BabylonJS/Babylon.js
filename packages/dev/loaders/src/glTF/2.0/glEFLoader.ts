@@ -1,6 +1,9 @@
+import { IProperty } from "babylonjs-gltf2interface";
 import { AssetContainer } from "core/assetContainer";
 import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoader } from "core/Loading/sceneLoader";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
+import { TransformNode } from "core/Meshes/transformNode";
 import { IDataBuffer } from "core/Misc/dataReader";
 import { Logger } from "core/Misc/logger";
 import { StringTools } from "core/Misc/stringTools";
@@ -9,9 +12,10 @@ import { Scene } from "core/scene";
 import { Nullable } from "core/types";
 import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import type { GLEFFileLoader } from "../glEFFileLoader";
-import { ArrayItem, registeredExtensions } from "./BaseLoader";
+import { ArrayItem, ILoaderProperty, registeredExtensions } from "./BaseLoader";
 import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
-import { INode } from "./glTFLoaderInterfaces";
+import { IGLEFLoaderExtension, IInteractivity } from "./glEFLoaderExtension";
+import { INode, IScene } from "./glTFLoaderInterfaces";
 
 export class GLEFLoader implements ILoader {
     /** @hidden */
@@ -84,6 +88,9 @@ export class GLEFLoader implements ILoader {
         throw new Error("Method not used");
     }
     public async loadAsync(scene: Scene, data: ILoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
+        scene.onNewTransformNodeAddedObservable.add((m) => {
+            console.log(m.name);
+        })
         this._scene = scene;
         this._loadData(data);
         this._rootUrl = rootUrl;
@@ -104,31 +111,53 @@ export class GLEFLoader implements ILoader {
 
         const promises: Array<Promise<any>> = [];
         // this._prepareLoadAsync(promises, rootUrl, fileName, null, () => undefined);
-
-        // load the needed nodes
-        // TODO move it away from here
-        const nodes = this._jsonData.nodes;
-        const assets = this._jsonData.assets;
-        nodes.forEach((node: any) => {
-            if (typeof node.asset === "number") {
-                const asset: any = ArrayItem.Get("assets", assets, node.asset);
-                if (asset.uri) {
-                    // get the filename
-                    const filename = Tools.GetFilename(asset.uri);
-                    const url = Tools.GetFolderPath(asset.uri);
-                    console.log(asset.nodes);
-                    promises.push(
-                        SceneLoader.ImportMeshAsync(asset.nodes || "", rootUrl + url, filename, scene).then((result) => {
-                            console.log(result.meshes);
-                            result.meshes[0].parent = this._rootBabylonMesh;
-                            if (node.translation) {
-                                result.meshes[0].position.fromArray(node.translation);
-                            }
-                        })
-                    );
+        if (this._jsonData.scene !== undefined || (this._jsonData.scenes && this._jsonData.scenes[0])) {
+            const scene = ArrayItem.Get(`/scene`, this._jsonData.scenes as IScene[], this._jsonData.scene || 0);
+            promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
+        } else if (this._jsonData.nodes) {
+            // generate nodes list
+            const nodesArray: number[] = [];
+            const childrenList: number[] = [];
+            this._jsonData.nodes.forEach((node: any) => {
+                if (node.children) {
+                    childrenList.push(...node.children);
                 }
-            }
-        });
+                if (childrenList.indexOf(node.index) === -1) {
+                    nodesArray.push(node.index);
+                }
+            });
+            const nodesToUse = nodesArray.filter((idx: number) => childrenList.indexOf(idx) === -1);
+            promises.push(this.loadSceneAsync("/nodes", { nodes: nodesToUse, index: -1 }));
+        }
+
+        // // load the needed nodes
+        // // TODO move it away from here
+        // const nodes = this._jsonData.nodes;
+        // const assets = this._jsonData.assets;
+        // const transformNodes: { [index: number]: TransformNode } = {};
+        // nodes.forEach((node: any) => {
+        //     transformNodes[node.index] = new TransformNode(node.name || "node-" + node.index, scene);
+        //     if (node.translation) {
+        //         transformNodes[node.index].position.fromArray(node.translation);
+        //     }
+        //     if (typeof node.asset === "number") {
+        //         const asset: any = ArrayItem.Get("assets", assets, node.asset);
+        //         if (asset.uri) {
+        //             // get the filename
+        //             const filename = Tools.GetFilename(asset.uri);
+        //             const url = Tools.GetFolderPath(asset.uri);
+        //             console.log(asset.nodes);
+        //             promises.push(
+        //                 SceneLoader.ImportMeshAsync(asset.nodes || "", rootUrl + url, filename, scene).then((result) => {
+        //                     result.meshes[0].parent = transformNodes[node.parent];
+        //                     if (node.translation) {
+        //                         result.meshes[0].position.fromArray(node.translation);
+        //                     }
+        //                 })
+        //             );
+        //         }
+        //     }
+        // });
 
         await Promise.all(promises);
 
@@ -172,15 +201,139 @@ export class GLEFLoader implements ILoader {
         return;
     }
 
+    /**
+     * Loads a glTF scene.
+     * @param context The context when loading the asset
+     * @param scene The glTF scene property
+     * @returns A promise that resolves when the load is complete
+     */
+    public async loadSceneAsync(context: string, scene: IScene): Promise<void> {
+        const extensionPromise = this._extensionsLoadSceneAsync(context, scene);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+
+        const promises = new Array<Promise<any>>();
+
+        this.logOpen(`${context} ${scene.name || ""}`);
+
+        if (scene.nodes) {
+            for (const index of scene.nodes) {
+                const node = ArrayItem.Get(`${context}/nodes/${index}`, this._jsonData.nodes as INode[], index);
+                promises.push(
+                    this.loadNodeAsync(`/nodes/${node.index}`, node, (babylonMesh) => {
+                        babylonMesh.parent = this._rootBabylonMesh;
+                    })
+                );
+            }
+        }
+
+        // for (const action of this._postSceneLoadActions) {
+        //     action();
+        // }
+
+        this.logClose();
+
+        await Promise.all(promises);
+    }
+
+    /**
+     * Loads a glTF node.
+     * @param context The context when loading the asset
+     * @param node The glTF node property
+     * @param assign A function called synchronously after parsing the glTF properties
+     * @returns A promise that resolves with the loaded Babylon mesh when the load is complete
+     */
+    public async loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void = () => {}): Promise<TransformNode> {
+        const extensionPromise = this._extensionsLoadNodeAsync(context, node, assign);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+
+        if (node._babylonTransformNode) {
+            throw new Error(`${context}: Invalid recursive node hierarchy`);
+        }
+
+        const promises = new Array<Promise<any>>();
+
+        this.logOpen(`${context} ${node.name || ""}`);
+
+        const loadNode = (babylonTransformNode: TransformNode) => {
+            GLEFLoader.AddPointerMetadata(babylonTransformNode, context);
+            GLEFLoader._LoadTransform(node, babylonTransformNode);
+
+            if (node.children) {
+                for (const index of node.children) {
+                    const childNode = ArrayItem.Get(`${context}/children/${index}`, this._jsonData.nodes as INode[], index);
+                    promises.push(
+                        this.loadNodeAsync(`/nodes/${childNode.index}`, childNode, (childBabylonMesh) => {
+                            childBabylonMesh.parent = babylonTransformNode;
+                        })
+                    );
+                }
+            } else if (typeof (node as any).asset === "number") {
+                const assets = this._jsonData.assets;
+                const asset: any = ArrayItem.Get("assets", assets, (node as any).asset);
+                if (asset.uri) {
+                    // get the filename
+                    const filename = Tools.GetFilename(asset.uri);
+                    const url = Tools.GetFolderPath(asset.uri);
+                    console.log(asset.nodes);
+                    promises.push(
+                        SceneLoader.ImportMeshAsync(asset.nodes || "", this._rootUrl + url, filename, this._scene).then((result) => {
+                            result.meshes[0].parent = babylonTransformNode;
+                        })
+                    );
+                }
+            }
+
+            assign(babylonTransformNode);
+        };
+
+        const nodeName = node.name || `node${node.index}`;
+        this._scene._blockEntityCollection = !!this._assetContainer;
+        const transformNode = new TransformNode(nodeName, this._scene);
+        transformNode._parentContainer = this._assetContainer;
+        this._scene._blockEntityCollection = false;
+        if (node.mesh == undefined) {
+            node._babylonTransformNode = transformNode;
+        } else {
+            node._babylonTransformNodeForSkin = transformNode;
+        }
+        loadNode(transformNode);
+
+        this.logClose();
+
+        await Promise.all(promises);
+        return node._babylonTransformNode!;
+    }
+
+    public async loadInteractivityAsync(context: string, interactivity: IInteractivity): Promise<void> {
+        const extensionPromise = this._extensionsLoadInteractivityAsync(context, interactivity);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+    }
+
     private _setupData(): void {
         ArrayItem.Assign(this._jsonData.assets);
         ArrayItem.Assign(this._jsonData.nodes);
-        ArrayItem.Assign(this._jsonData.interactivity);
+        if (this._jsonData.interactivity) {
+            ArrayItem.Assign(this._jsonData.interactivity.actions);
+            ArrayItem.Assign(this._jsonData.interactivity.references);
+            ArrayItem.Assign(this._jsonData.interactivity.behaviors);
+            ArrayItem.Assign(this._jsonData.interactivity.triggers);
+        }
 
         if (this._jsonData.nodes) {
             const nodeParents: { [index: number]: number } = {};
             for (const node of this._jsonData.nodes) {
                 if (node.children) {
+                    // simple validation
+                    if (node.asset) {
+                        // invalid
+                        throw new Error("a node has both children and asset. Node is not valid.");
+                    }
                     for (const index of node.children) {
                         nodeParents[index] = node.index;
                     }
@@ -196,6 +349,24 @@ export class GLEFLoader implements ILoader {
 
         console.log(this._jsonData.nodes);
     }
+
+    // private _getTransformNodes(): TransformNode[] {
+    //     const transformNodes = new Array<TransformNode>();
+
+    //     const nodes = this._jsonData.nodes;
+    //     if (nodes) {
+    //         for (const node of nodes) {
+    //             if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
+    //                 transformNodes.push(node._babylonTransformNode);
+    //             }
+    //             if (node._babylonTransformNodeForSkin) {
+    //                 transformNodes.push(node._babylonTransformNodeForSkin);
+    //             }
+    //         }
+    //     }
+
+    //     return transformNodes;
+    // }
 
     protected _loadExtensions(): void {
         for (const name in registeredExtensions[this._parent.name] || {}) {
@@ -278,30 +449,30 @@ export class GLEFLoader implements ILoader {
         }
     }
 
-    // private _applyExtensions<T>(property: IProperty, functionName: string, actionAsync: (extension: IBaseLoaderExtension) => Nullable<T> | undefined): Nullable<T> {
-    //     for (const extension of this._extensions) {
-    //         if (extension.enabled) {
-    //             const id = `${extension.name}.${functionName}`;
-    //             const loaderProperty = property as ILoaderProperty;
-    //             loaderProperty._activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions || {};
-    //             const activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions;
-    //             if (!activeLoaderExtensionFunctions[id]) {
-    //                 activeLoaderExtensionFunctions[id] = true;
+    private _applyExtensions<T>(property: IProperty, functionName: string, actionAsync: (extension: IGLEFLoaderExtension) => Nullable<T> | undefined): Nullable<T> {
+        for (const extension of this._extensions) {
+            if (extension.enabled) {
+                const id = `${extension.name}.${functionName}`;
+                const loaderProperty = property as ILoaderProperty;
+                loaderProperty._activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions || {};
+                const activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions;
+                if (!activeLoaderExtensionFunctions[id]) {
+                    activeLoaderExtensionFunctions[id] = true;
 
-    //                 try {
-    //                     const result = actionAsync(extension);
-    //                     if (result) {
-    //                         return result;
-    //                     }
-    //                 } finally {
-    //                     delete activeLoaderExtensionFunctions[id];
-    //                 }
-    //             }
-    //         }
-    //     }
+                    try {
+                        const result = actionAsync(extension);
+                        if (result) {
+                            return result;
+                        }
+                    } finally {
+                        delete activeLoaderExtensionFunctions[id];
+                    }
+                }
+            }
+        }
 
-    //     return null;
-    // }
+        return null;
+    }
 
     private _extensionsOnLoading(): void {
         this._forEachExtensions((extension) => extension.onLoading && extension.onLoading());
@@ -315,10 +486,106 @@ export class GLEFLoader implements ILoader {
     //     return IsBase64DataUrl(uri) || uri.indexOf("..") === -1;
     // }
 
+    private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
+        return this._applyExtensions(scene, "loadScene", (extension) => extension.loadSceneAsync && extension.loadSceneAsync(context, scene));
+    }
+
+    private _extensionsLoadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
+        return this._applyExtensions(node, "loadNode", (extension) => extension.loadNodeAsync && extension.loadNodeAsync(context, node, assign));
+    }
+
+    // TODO - return type here?
+    private _extensionsLoadInteractivityAsync(context: string, interactivity: IInteractivity): Nullable<Promise<void>> {
+        return this._applyExtensions(interactivity, "loadNode", (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity));
+    }
     private _forEachExtensions(action: (extension: IBaseLoaderExtension) => void): void {
         for (const extension of this._extensions) {
             if (extension.enabled) {
                 action(extension);
+            }
+        }
+    }
+
+    /**
+     * Checks for presence of an extension.
+     * @param name The name of the extension to check
+     * @returns A boolean indicating the presence of the given extension name in `extensionsUsed`
+     */
+    public isExtensionUsed(name: string): boolean {
+        return !!this._jsonData.extensionsUsed && this._jsonData.extensionsUsed.indexOf(name) !== -1;
+    }
+
+    /**
+     * Increments the indentation level and logs a message.
+     * @param message The message to log
+     */
+    public logOpen(message: string): void {
+        this._parent._logOpen(message);
+    }
+
+    /**
+     * Decrements the indentation level.
+     */
+    public logClose(): void {
+        this._parent._logClose();
+    }
+
+    /**
+     * Logs a message
+     * @param message The message to log
+     */
+    public log(message: string): void {
+        this._parent._log(message);
+    }
+
+    /**
+     * Starts a performance counter.
+     * @param counterName The name of the performance counter
+     */
+    public startPerformanceCounter(counterName: string): void {
+        this._parent._startPerformanceCounter(counterName);
+    }
+
+    /**
+     * Ends a performance counter.
+     * @param counterName The name of the performance counter
+     */
+    public endPerformanceCounter(counterName: string): void {
+        this._parent._endPerformanceCounter(counterName);
+    }
+
+    /**
+     * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
+     * @param babylonObject the Babylon object with metadata
+     * @param babylonObject.metadata
+     * @param pointer the JSON pointer
+     */
+    public static AddPointerMetadata(babylonObject: { metadata: any }, pointer: string): void {
+        const metadata = (babylonObject.metadata = babylonObject.metadata || {});
+        const gltf = (metadata.gltf = metadata.gltf || {});
+        const pointers = (gltf.pointers = gltf.pointers || []);
+        pointers.push(pointer);
+    }
+
+    private static _LoadTransform(node: INode, babylonNode: TransformNode): void {
+        babylonNode.rotationQuaternion = babylonNode.rotationQuaternion || Quaternion.Identity();
+
+        const position = babylonNode.position;
+        const rotation = babylonNode.rotationQuaternion;
+        const scaling = babylonNode.scaling;
+
+        if (node.matrix) {
+            const matrix = Matrix.FromArray(node.matrix);
+            matrix.decompose(scaling, rotation, position);
+        } else {
+            if (node.translation) {
+                Vector3.FromArrayToRef(node.translation, 0, position);
+            }
+            if (node.rotation) {
+                Quaternion.FromArrayToRef(node.rotation, 0, rotation);
+            }
+            if (node.scale) {
+                Vector3.FromArrayToRef(node.scale, 0, scaling);
             }
         }
     }
