@@ -679,7 +679,7 @@ void main(void) {
         #endif
     #endif
         #ifdef PREPASS_SPECULARGLOSSINESS
-		#if defined(REFLECTIVITY) // TODO
+		#if defined(REFLECTIVITY)
             #if defined(METALLICWORKFLOW)
                 // specularity equivalent = mix(vec3(0.04, 0.04, 0.04), albedo, metallic); according to https://marmoset.co/posts/pbr-texture-conversion/ 
                 // glossiness equivalent = 1.0 - roughness
@@ -694,7 +694,7 @@ void main(void) {
             #if defined(METALLICWORKFLOW) 
                 gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(mix(vec3(0.04), baseColor.rgb, reflectance) * writeGeometryInfo, microSurface * writeGeometryInfo);
             #else // specularGlossiness workflow
-                gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(vec3(0.04, 0.04, 0.04) * writeGeometryInfo, microSurface * writeGeometryInfo); // vec3(0.04) is F0 default value for dielectric materials
+                gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(vec3(0.04) * writeGeometryInfo, microSurface * writeGeometryInfo); // vec3(0.04) is F0 default value for dielectric materials
             #endif
 		#endif
 	#endif
