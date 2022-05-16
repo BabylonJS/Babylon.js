@@ -3,7 +3,7 @@
     <head>
         <title>Babylon.js Node Material Editor</title>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico" />
 
         <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css" />
@@ -17,7 +17,11 @@
                 height: 100%;
                 padding: 0;
                 margin: 0;
+                -ms-touch-action: none;
+                touch-action: none;
                 overflow: hidden;
+                overscroll-behavior-x: none;
+                overscroll-behavior-y: none;
             }
 
             #host-element {
@@ -28,6 +32,28 @@
                 overflow: hidden;
             }
         </style>
+
+        <script>
+            window.addEventListener(
+            "wheel",
+            function (evt) {
+                if (evt.ctrlKey) {
+                    return evt.preventDefault();
+                }
+
+                if (Math.abs(evt.deltaX) < Math.abs(evt.deltaY)) {
+                    return;
+                }
+
+                const scrollLeftMax = this.scrollWidth - this.offsetWidth;
+                if (this.scrollLeft + evt.deltaX < 0 || this.scrollLeft + evt.deltaX > scrollLeftMax) {
+                    return evt.preventDefault();
+                }
+            },
+            { passive: false }
+        );
+        </script>
+
     </head>
 
     <body>
