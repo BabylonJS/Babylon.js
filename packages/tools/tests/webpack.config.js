@@ -7,7 +7,7 @@ module.exports = (env) => {
         mode: production ? "production" : "development",
         entry: {
             engineOnly: "./src/engineOnly.ts",
-            minGridMaterials: "./src/minGridMaterials.ts",
+            minGridMaterial: "./src/minGridMaterial.ts",
             minStandardMaterial: "./src/minStandardMaterial.ts",
             sceneOnly: "./src/sceneOnly.ts",
             thinEngineOnly: "./src/thinEngineOnly.ts",
