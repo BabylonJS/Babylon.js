@@ -235,7 +235,8 @@ export class SubMesh implements ICullable {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public get IsGlobal(): boolean {
-        return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices();
+        return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices() &&
+            this.indexStart === 0 && this.indexCount === this._mesh.getTotalIndices();
     }
 
     /**
