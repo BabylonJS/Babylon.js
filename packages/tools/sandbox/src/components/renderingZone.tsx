@@ -59,11 +59,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     async initEngine() {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
         // TODO - remove this once not needed anymore. Spoofing Safari 15.4.X
-        const fixYourBugsAlreadyRegexp = /.*AppleWebKit.*(15.4).*Safari/g;
-        const allowOtherBrowsersAlready = /.*(15.4).*AppleWebKit.*Safari/g;
-        const fixYourBugsAlreadyMatch = navigator.userAgent.match(fixYourBugsAlreadyRegexp) || navigator.userAgent.match(allowOtherBrowsersAlready);
-        const disableAntialiasOnThisVersion = fixYourBugsAlreadyMatch ? false : undefined;
-        const antialias = this.props.globalState.commerceMode ? false : disableAntialiasOnThisVersion;
+        const antialias = this.props.globalState.commerceMode ? false : undefined;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {

@@ -137,11 +137,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
 
         try {
-            // TODO - remove this once not needed anymore. Spoofing Safari 15.4.X
-            const fixYourBugsAlreadyRegexp = /.*AppleWebKit.*(15.4).*Safari/g;
-            const allowOtherBrowsersAlready = /.*(15.4).*AppleWebKit.*Safari/g;
-            const fixYourBugsAlreadyMatch = navigator.userAgent.match(fixYourBugsAlreadyRegexp) || navigator.userAgent.match(allowOtherBrowsersAlready);
-            const antialias = fixYourBugsAlreadyMatch ? false : undefined;
             // Set up the global object ("window" and "this" for user code).
             // Delete (or rewrite) previous-run globals to avoid confusion.
             const globalObject = window as any;
@@ -173,11 +168,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 };
             } else {
                 globalObject.createDefaultEngine = function () {
-                    return new Engine(canvas, antialias, {
+                    return new Engine(canvas, true, {
                         disableWebGL2Support: forceWebGL1,
                         preserveDrawingBuffer: true,
                         stencil: true,
-                        antialias,
                     });
                 };
             }
