@@ -128,7 +128,7 @@ export class Uvprojector {
     }
     /**
      * Get class name
-     * @returns "MeshExploder"
+     * @returns "UvProjector"
      */
      public getClassName(): string {
         return "UvProjector";
