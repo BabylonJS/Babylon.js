@@ -190,7 +190,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     /**
-     * The strength of the bloom.
+     * The luminance threshold to find bright areas of the image to bloom.
      */
     public set bloomThreshold(value: number) {
         if (this._bloomThreshold === value) {
