@@ -7,6 +7,7 @@ export * from "./decorators";
 export * from "./deferred";
 export * from "./environmentTextureTools";
 export * from "./meshExploder";
+export * from "./uvprojector";
 export * from "./filesInput";
 export * from "./HighDynamicRange/index";
 export * from "./khronosTextureContainer";
