@@ -452,17 +452,16 @@ color.rgb = max(color.rgb, 0.);
     #endif
     #ifdef PREPASS_REFLECTIVITY
         #if defined(SPECULAR)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularMapColor.rgb, specularMapColor.a * writeGeometryInfo);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularColor.rgb, specularMapColor.a * writeGeometryInfo);
         #else
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularColor, writeGeometryInfo);
         #endif
     #endif
 	#ifdef PREPASS_SPECULARGLOSSINESS
-		// specularity = F0 value
 		#if defined(SPECULAR)
-			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularMapColor.rgb * writeGeometryInfo, specularMapColor.a * writeGeometryInfo); // no specularity if no visibility
+			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularColor.rgb, specularMapColor.a) * writeGeometryInfo; // no specularity if no visibility
 		#else
-			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(vec3(0.04) * writeGeometryInfo, writeGeometryInfo); // vec3(0.04) is F0 default value for dielectric materials
+			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularColor, 1.0) * writeGeometryInfo;
 		#endif
 	#endif
 #endif
