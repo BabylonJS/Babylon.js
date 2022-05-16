@@ -1,5 +1,5 @@
-import { LabelProps, Label } from "./Label";
-import { Toggle } from "./Toggle";
+import { LabelProps, Label } from "../components/Label";
+import { Toggle } from "../components/Toggle";
 
 export default {
     title: "Layout/Label",
