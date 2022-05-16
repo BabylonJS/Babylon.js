@@ -1,4 +1,4 @@
-import { Icon, IconProps } from "./Icon";
+import { Icon, IconProps } from "../components/Icon";
 
 import resizeToFitIcon from "../imgs/resizeToFitIcon.svg";
 
