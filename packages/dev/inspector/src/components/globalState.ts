@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 // eslint-disable-next-line import/no-internal-modules
-import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
 import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 import type { Nullable } from "core/types";
@@ -15,8 +15,8 @@ import { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
-// eslint-disable-next-line import/no-internal-modules
-import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
+import { IGLTFLoaderExtension } from "loaders/glTF/2.0/glTFLoaderExtension";
+import { ILoaderExtension } from "loaders/glTF/abstractFileLoader";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -78,7 +78,7 @@ export class GlobalState {
         useSRGBBuffers: true,
     };
 
-    public glTFLoaderExtensions: { [key: string]: IGLTFLoaderExtension } = {};
+    public glTFLoaderExtensions: { [key: string]: ILoaderExtension } = {};
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitles: Array<string> = [];
@@ -135,7 +135,7 @@ export class GlobalState {
             }
         }
 
-        loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
+        loader.onExtensionLoadedObservable.add((extension: ILoaderExtension) => {
             const extensionState = this.glTFLoaderExtensionDefaults[extension.name];
             if (extensionState !== undefined) {
                 for (const key in extensionState) {

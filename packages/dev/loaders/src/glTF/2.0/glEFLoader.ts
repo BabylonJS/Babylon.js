@@ -68,7 +68,7 @@ export class GLEFLoader implements ILoader {
 
         this._parent.dispose();
 
-        // TODO remove
+        // TODO remove. Only here to "use" some of those vars
         console.log(this._scene, this._bin, this._rootUrl, this._fileName, this._uniqueRootUrl, this._rootBabylonMesh);
     }
     /**
@@ -130,48 +130,14 @@ export class GLEFLoader implements ILoader {
             promises.push(this.loadSceneAsync("/nodes", { nodes: nodesToUse, index: -1 }));
         }
 
-        // // load the needed nodes
-        // // TODO move it away from here
-        // const nodes = this._jsonData.nodes;
-        // const assets = this._jsonData.assets;
-        // const transformNodes: { [index: number]: TransformNode } = {};
-        // nodes.forEach((node: any) => {
-        //     transformNodes[node.index] = new TransformNode(node.name || "node-" + node.index, scene);
-        //     if (node.translation) {
-        //         transformNodes[node.index].position.fromArray(node.translation);
-        //     }
-        //     if (typeof node.asset === "number") {
-        //         const asset: any = ArrayItem.Get("assets", assets, node.asset);
-        //         if (asset.uri) {
-        //             // get the filename
-        //             const filename = Tools.GetFilename(asset.uri);
-        //             const url = Tools.GetFolderPath(asset.uri);
-        //             console.log(asset.nodes);
-        //             promises.push(
-        //                 SceneLoader.ImportMeshAsync(asset.nodes || "", rootUrl + url, filename, scene).then((result) => {
-        //                     result.meshes[0].parent = transformNodes[node.parent];
-        //                     if (node.translation) {
-        //                         result.meshes[0].position.fromArray(node.translation);
-        //                     }
-        //                 })
-        //             );
-        //         }
-        //     }
-        // });
-
         await Promise.all(promises);
 
-        // TODO
         if (this._rootBabylonMesh) {
             this._rootBabylonMesh.setEnabled(true);
         }
 
         this._extensionsOnReady();
         this._parent._setState(LoaderState.READY);
-
-        // this._startAnimations();
-
-        // const result = resultFunc();
 
         this._parent._endPerformanceCounter(loadingToReadyCounterName);
 

@@ -11,7 +11,7 @@ const NAME = "KHR_interactivity_behavior";
 List of TODOs:
 
 1) count on assets should be taken into account
-2) What is the default mode for behavior?
+2) What is the default mode for behavior? - "ignore"
 3) What is "`animation`", where is it defined?
 */
 
