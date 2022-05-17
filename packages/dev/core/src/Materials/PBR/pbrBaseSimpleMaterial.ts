@@ -3,6 +3,7 @@ import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Nullable } from "../../types";
 
 /**
  * The Physically based simple base material of BJS.
@@ -30,7 +31,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectionTexture")
-    public environmentTexture: BaseTexture;
+    public environmentTexture: Nullable<BaseTexture>;
 
     /**
      * If sets to true, x component of normal map value will invert (x = 1.0 - x).
@@ -51,7 +52,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_bumpTexture")
-    public normalTexture: BaseTexture;
+    public normalTexture: Nullable<BaseTexture>;
 
     /**
      * Emissivie color used to self-illuminate the model.
@@ -65,7 +66,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: BaseTexture;
+    public emissiveTexture: Nullable<BaseTexture>;
 
     /**
      * Occlusion Channel Strength.
@@ -79,7 +80,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTexture")
-    public occlusionTexture: BaseTexture;
+    public occlusionTexture: Nullable<BaseTexture>;
 
     /**
      * Defines the alpha limits in alpha test mode.
@@ -112,7 +113,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
-    public lightmapTexture: BaseTexture;
+    public lightmapTexture: Nullable<BaseTexture>;
 
     /**
      * If true, the light map contains occlusion information instead of lighting info.

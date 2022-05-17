@@ -973,8 +973,9 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
                         defines.INVERTCUBICMAP = this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
+                        defines.REFLECTIONMAP_OPPOSITEZ =
+                            defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
-                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -1269,10 +1270,6 @@ export class StandardMaterial extends PushMaterial {
 
             if (defines.VERTEXCOLOR) {
                 attribs.push(VertexBuffer.ColorKind);
-            }
-
-            if (defines.INSTANCESCOLOR) {
-                attribs.push(VertexBuffer.ColorInstanceKind);
             }
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);

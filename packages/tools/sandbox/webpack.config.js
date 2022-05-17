@@ -33,6 +33,8 @@ module.exports = (env) => {
                     return callback(null, "BABYLON.GUI");
                 } else if (/^serializers\//.test(request)) {
                     return callback(null, "BABYLON");
+                } else if (/^gui-editor\//.test(request)) {
+                    return callback(null, "BABYLON.GUIEditor");
                 }
 
                 // Continue without externalizing the import

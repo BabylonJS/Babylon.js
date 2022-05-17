@@ -18,6 +18,7 @@ import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -45,6 +46,13 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.worldNormal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput(
+            "TBN",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
+        );
 
         this.registerOutput(
             "clearcoat",
@@ -152,6 +160,14 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the TBN input component
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get TBN(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the clear coat object output component
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
@@ -216,7 +232,14 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
-        if (worldTangent.isConnected) {
+        const TBN = this.TBN;
+        if (TBN.isConnected) {
+            state.compilationString += `
+            #ifdef TBNBLOCK
+            mat3 vTBN = ${TBN.associatedVariableName};
+            #endif
+            `;
+        } else if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\r\n`;
             code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
             code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;

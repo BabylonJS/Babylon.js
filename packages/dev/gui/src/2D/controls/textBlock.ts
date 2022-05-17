@@ -5,7 +5,7 @@ import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { Nullable } from "core/types";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext, ITextMetrics } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**
@@ -49,6 +49,7 @@ export class TextBlock extends Control {
     private _outlineColor: string = "white";
     private _underline: boolean = false;
     private _lineThrough: boolean = false;
+    private _wordDivider: string = " ";
     /**
      * An event triggered after the text is changed
      */
@@ -270,6 +271,25 @@ export class TextBlock extends Control {
     }
 
     /**
+     * Gets or sets word divider
+     */
+    @serialize()
+    public get wordDivider(): string {
+        return this._wordDivider;
+    }
+
+    /**
+     * Gets or sets word divider
+     */
+    public set wordDivider(value: string) {
+        if (this._wordDivider === value) {
+            return;
+        }
+        this._wordDivider = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Creates a new TextBlock object
      * @param name defines the name of the control
      * @param text defines the text to display (empty string by default)
@@ -435,9 +455,7 @@ export class TextBlock extends Control {
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
-        const textMetrics = context.measureText(line);
-        const lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
-        return { text: line, width: lineWidth };
+        return { text: line, width: this._getTextMetricsWidth(context.measureText(line)) };
     }
 
     //Calculate how many characters approximately we need to remove
@@ -450,8 +468,7 @@ export class TextBlock extends Control {
     }
 
     protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
-        let textMetrics = context.measureText(line);
-        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         let removeChars = this._getCharsToRemove(lineWidth, width, line.length);
 
@@ -462,8 +479,7 @@ export class TextBlock extends Control {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
                 line = line.slice(0, -removeChars);
-                textMetrics = context.measureText(line + "…");
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line + "…"));
 
                 removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
@@ -473,8 +489,7 @@ export class TextBlock extends Control {
             while (characters.length && lineWidth > width) {
                 characters.splice(characters.length - removeChars, removeChars);
                 line = `${characters.join("")}…`;
-                textMetrics = context.measureText(line);
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
                 removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
@@ -483,21 +498,25 @@ export class TextBlock extends Control {
         return { text: line, width: lineWidth };
     }
 
+    private _getTextMetricsWidth(textMetrics: ITextMetrics) {
+        if (textMetrics.actualBoundingBoxLeft !== undefined) {
+            return Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        }
+        return textMetrics.width;
+    }
+
     protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         const lines = [];
-        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
-        let textMetrics = context.measureText(line);
-        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(this._wordDivider);
+        let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         for (let n = 0; n < words.length; n++) {
-            const testLine = n > 0 ? line + " " + words[n] : words[0];
-            const metrics = context.measureText(testLine);
-            const testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+            const testLine = n > 0 ? line + this._wordDivider + words[n] : words[0];
+            const testWidth = this._getTextMetricsWidth(context.measureText(testLine));
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
-                textMetrics = context.measureText(line);
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line));
             } else {
                 lineWidth = testWidth;
                 line = testLine;

@@ -304,8 +304,14 @@ export class Material implements IAnimatable {
         if (this._alpha === value) {
             return;
         }
+
+        const oldValue = this._alpha;
         this._alpha = value;
-        this.markAsDirty(Material.MiscDirtyFlag);
+
+        // Only call dirty when there is a state change (no alpha / alpha)
+        if (oldValue === 1 || value === 1) {
+            this.markAsDirty(Material.MiscDirtyFlag);
+        }
     }
 
     /**

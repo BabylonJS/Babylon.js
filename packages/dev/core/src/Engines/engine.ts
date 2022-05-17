@@ -1082,7 +1082,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Executes a scissor clear (ie. a clear on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1096,7 +1096,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle

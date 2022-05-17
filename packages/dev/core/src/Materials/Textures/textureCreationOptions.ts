@@ -20,6 +20,8 @@ export interface InternalTextureCreationOptions {
     samples?: number;
     /** Texture creation flags */
     creationFlags?: number;
+    /** Creates the RTT in sRGB space */
+    useSRGBBuffer?: boolean;
 }
 
 /**
@@ -30,6 +32,8 @@ export interface RenderTargetCreationOptions extends InternalTextureCreationOpti
     generateDepthBuffer?: boolean;
     /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
     generateStencilBuffer?: boolean;
+    /** Specifies that no color target should be bound to the render target (useful if you only want to write to the depth buffer, for eg) */
+    noColorTarget?: boolean;
 }
 
 /**
