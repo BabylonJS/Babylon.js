@@ -451,10 +451,14 @@ color.rgb = max(color.rgb, 0.);
         gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo); // We can't split albedo on std material
     #endif
     #ifdef PREPASS_REFLECTIVITY
-		#if defined(SPECULAR)
-			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularMapColor.rgb, specularMapColor.a) * writeGeometryInfo; // no specularity if no visibility
+		#if defined(SPECULARTERM)
+			#if defined(SPECULAR)
+				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularMapColor.rgb, specularMapColor.a) * writeGeometryInfo; // no specularity if no visibility
+			#else
+				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularColor, 1.0) * writeGeometryInfo;
+			#endif
 		#else
-			gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularColor, 1.0) * writeGeometryInfo;
+			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0) * writeGeometryInfo;
 		#endif
     #endif
 #endif

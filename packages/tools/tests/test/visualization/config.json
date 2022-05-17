@@ -1115,14 +1115,14 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#352",
+            "playgroundId": "#PIZ1GK#459",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#340",
+            "playgroundId": "#PIZ1GK#460",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
