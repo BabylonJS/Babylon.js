@@ -213,7 +213,7 @@ struct clearcoatOutParams
 
         #ifdef CLEARCOAT_TINT
             // Used later on in the light fragment and ibl.
-            vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
+            vec3 clearCoatVRefract = refract(-viewDirectionW, clearCoatNormalW, vClearCoatRefractionParams.y);
             // The order 1886 page 3.
             outParams.clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
         #endif
