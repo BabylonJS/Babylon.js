@@ -104,16 +104,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     }
                     // do we need to write ROTATION ?
                     if (hasAnyInstanceWorldRotation) {
-                        // Data type can be
-                        //   - 5126 (FLOAT)
-                        //   - 5120 (BYTE) normalized
-                        //   - 5122 (SHORT) normalized
-                        // this is defined by option.
-                        let componentType = this._exporter.options?.meshGpuInstancingOptions?.quaternionType ?? AccessorComponentType.FLOAT;
-                        if (componentType != AccessorComponentType.FLOAT && componentType != AccessorComponentType.SHORT && componentType != AccessorComponentType.BYTE) {
-                            // force to float if wrong type.
-                            componentType = AccessorComponentType.FLOAT;
-                        }
+                        const componentType = AccessorComponentType.FLOAT; // we decided to stay on FLOAT for now see https://github.com/BabylonJS/Babylon.js/pull/12495
                         extension.attributes["ROTATION"] = this._buildAccessor(rotationBuffer, AccessorType.VEC4, babylonNode.thinInstanceCount, binaryWriter, componentType);
                     }
                     // do we need to write SCALE ?

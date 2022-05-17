@@ -2,17 +2,6 @@ import type { Node } from "core/node";
 import type { Scene } from "core/scene";
 import type { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
-import { AccessorComponentType } from "babylonjs-gltf2interface";
-
-/**
- * Holds a collection of Extension Mesh Gpu Instancing options and parameters
- */
-export interface IMeshGpuInstancingOptions {
-    /**
-     * Indicates the type used to write quaternion
-     */
-    quaternionType?: AccessorComponentType;
-}
 
 /**
  * Holds a collection of exporter options and parameters
@@ -51,11 +40,6 @@ export interface IExportOptions {
      * Indicates if coordinate system swapping root nodes should be included in export
      */
     includeCoordinateSystemConversionNodes?: boolean;
-
-    /**
-     * the EXT_mesh_gpu_instancing specific options.
-     */
-    meshGpuInstancingOptions?: IMeshGpuInstancingOptions;
 }
 
 /**
