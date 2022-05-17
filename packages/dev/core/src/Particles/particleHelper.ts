@@ -11,6 +11,7 @@ import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
 import { ParticleSystem } from "./particleSystem";
 import { WebRequest } from "../Misc/webRequest";
+import { Constants } from "../Engines/constants";
 /**
  * This class is made for on one-liner static method to help creating particle system set.
  */
@@ -21,7 +22,7 @@ export class ParticleHelper {
     public static BaseAssetsUrl = ParticleSystemSet.BaseAssetsUrl;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /**
      * Create a default particle system that you can tweak

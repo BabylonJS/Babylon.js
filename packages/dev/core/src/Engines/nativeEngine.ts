@@ -803,7 +803,7 @@ class CommandBufferEncoder {
 /** @hidden */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 5;
+    private static readonly PROTOCOL_VERSION = 6;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -849,7 +849,7 @@ export class NativeEngine extends Engine {
             maxTexturesImageUnits: 16,
             maxVertexTextureImageUnits: 16,
             maxCombinedTexturesImageUnits: 32,
-            maxTextureSize: 512,
+            maxTextureSize: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_SIZE,
             maxCubemapTextureSize: 512,
             maxRenderTextureSize: 512,
             maxVertexAttribs: 16,
@@ -888,6 +888,7 @@ export class NativeEngine extends Engine {
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
+            texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
         };
 
         this._features = {

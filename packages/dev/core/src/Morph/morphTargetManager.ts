@@ -100,7 +100,8 @@ export class MorphTargetManager implements IDisposable {
             this._uniqueId = this._scene.getUniqueId();
 
             const engineCaps = this._scene.getEngine().getCaps();
-            this._canUseTextureForTargets = engineCaps.canUseGLVertexID && engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
+            this._canUseTextureForTargets =
+                engineCaps.canUseGLVertexID && engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0 && engineCaps.texture2DArrayMaxLayerCount > 1;
         }
     }
 

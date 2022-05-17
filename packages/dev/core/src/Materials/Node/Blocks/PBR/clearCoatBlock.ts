@@ -18,7 +18,7 @@ import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { TBNBlock } from "../Dual/TBNBlock";
+import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
  * Block used to implement the clear coat module of the PBR material

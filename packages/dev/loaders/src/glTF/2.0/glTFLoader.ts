@@ -68,7 +68,6 @@ import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
-
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
@@ -724,8 +723,15 @@ export class GLTFLoader implements ILoader {
                 const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
                 promises.push(
                     this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
-                        // Duplicate the metadata from the skin node to the skinned mesh in case any loader extension added metadata.
-                        babylonTransformNode.metadata = node._babylonTransformNodeForSkin!.metadata;
+                        const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
+
+                        // Add a reference to the skinned mesh from the transform node.
+                        const gltf = babylonTransformNodeForSkin.metadata.gltf;
+                        gltf.skinnedMesh = babylonTransformNode;
+                        babylonTransformNode.onDisposeObservable.addOnce(() => {
+                            // Delete the reference when the skinned mesh is disposed.
+                            delete gltf.skinnedMesh;
+                        });
 
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(

@@ -16,6 +16,7 @@ import { SpriteRenderer } from "./spriteRenderer";
 import type { ThinSprite } from "./thinSprite";
 import type { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
+import { Constants } from "../Engines/constants";
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -104,7 +105,7 @@ export interface ISpriteManager extends IDisposable {
  */
 export class SpriteManager implements ISpriteManager {
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Snippet ID if the manager was created from the snippet server */
     public snippetId: string;
