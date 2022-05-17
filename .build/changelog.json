@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.5.6",
+    "fromTag": "5.6.0",
     "changelog": {
         "5.6.0": [
             {
@@ -119,6 +119,271 @@
                 ],
                 "tags": [
                     "bug"
+                ]
+            }
+        ],
+        "5.6.1": [
+            {
+                "pr": "12538",
+                "title": "More fix for glTF loader skinning code",
+                "description": "Previous code still had some weird issues as pointed out by the forum: https://forum.babylonjs.com/t/assetcontainer-dispose-throws-typeerror-r-metadata-is-null/30360/9",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12534",
+                "title": "Add Safari 15.4 to Exception list",
+                "description": "This adds two regexp to the exception list, setting antialia off and maxMSAASamples to 1 on safari 15.4 browsers.\nIt ain't pretty. But it'll fix a lot of issues with this version of safari.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12509",
+                "title": "Add a warning when using ignored options with Dashed Lines update.",
+                "description": "From: https://forum.babylonjs.com/t/dashed-line-not-correctly-updated/29250 this is to make the behavior clearer to users.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts"
+                ],
+                "tags": [
+                    "documentation"
+                ]
+            },
+            {
+                "pr": "12515",
+                "title": "Exposed Native Engine capabilities to Babylon.js, fixes morph targets on Babylon Native Android",
+                "description": "## Overview\r\n\r\nMorph targets are currently failing on Babylon Native when running on Android since bgfx does not support Texture2D arrays for Android API BGFX_CONFIG_RENDERER_OPENGLES lower than 31 (currently set to 30). The appropriate way of handling this type of problem would be to check bgfx capabilities and handle it appropriately on the JS side by setting ```canUseTextureForTargets``` property at ```MorphTargetManager```. This PR exposes all capabilities info provided by the Native Engine so they can be accessed by the js NativeEngine and appropriately handled by Babylon.js \r\n\r\n## Aditions\r\n\r\n- Exposed Native engine caps to javascript. \r\n- After this PR gets merged the following [Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1075) can be merged.\r\n- Fixes [Android Morph Targets](https://github.com/BabylonJS/BabylonNative/issues/1049) issue on Babylon Native.  ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12533",
+                "title": "Fix inspector not working after download",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/playground/src/tools/downloadManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12529",
+                "title": "Fix SubMesh IsGlobal",
+                "description": "Currently IsGlobal returns true if the subMesh has all the vertices of the mesh but it should check if the subMesh also has all the indices of the mesh IMO.\r\n\r\nBecause otherwise the mesh's full bounding info is returned by getBoundingInfo when the subMesh has all the vertices **but only some of the indices** of the whole mesh. E.G. the subMeshes created by CreateTiledGround, which shouldn't return the bounding info for the whole mesh but currently are.\r\n\r\nForum discussion w/ test PGs: https://forum.babylonjs.com/t/find-or-define-center-point-of-submesh/30400/3",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12530",
+                "title": "Fix doc for property \"bloomThreshold\"",
+                "description": "Fix the documentation for the property [bloomThreshold](https://doc.babylonjs.com/typedoc/classes/babylon.defaultrenderingpipeline#bloomthreshold) to be the same as the documentation for the [BloomEffect property](https://doc.babylonjs.com/typedoc/classes/babylon.bloomeffect#threshold) that it wraps. Currently the documentation is mistakenly copied from the documentation for the [weight](https://doc.babylonjs.com/typedoc/classes/babylon.bloomeffect#weight) property.\r\n\r\nhttps://forum.babylonjs.com/t/white-texture-seems-overexposure-if-open-bloom-post-process/30384/8",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12498",
+                "title": "Add getNormalsData to AbstractMesh and refactor common part with getP…",
+                "description": "…ositionData\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/how-to-get-vertex-normals-of-mesh-with-skeleton-morph/29959/12\r\n\r\nPlayground: playground.babylonjs.com/#SYQW69#1061",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12526",
+                "title": "Fix a bug in glTF loader when loading skins",
+                "description": "See https://forum.babylonjs.com/t/assetcontainer-dispose-throws-typeerror-r-metadata-is-null/30360",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12527",
+                "title": "Fixed easing function links in API docs",
+                "description": "Ref https://forum.babylonjs.com/t/the-easing-function-link-in-the-api-documentation-may-be-incorrect/30377",
+                "author": {
+                    "name": "cx20",
+                    "url": "https://github.com/cx20"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/easing.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12522",
+                "title": "disable antialias in safari 15.4",
+                "description": "Fixing #12507\n\nThis will match all ua strings that have both AppleWebKit and Safari, and has a reference to the version 15.4\n\nAmong others, the following were (positivly) tested:\n\n```\n// iOS 15.4.1 Chrome 101\nMozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/101.0.4951.44 Mobile/15E148 Safari/604.1\n// iOS 15.4.1 Safari 15.4.1\nMozilla/5.0 (iPhone; CPU iPhone OS 15_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1\n\n// iPadOS 15.4.1 Chrome 101\nMozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/101.0.4951.44 Mobile/15E148 Safari/604.1\n// iPadOS 15.4.1 Safari 15.4.1\nMozilla/5.0 (iPad; CPU OS 15_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15H321 Safari/604.1\n\nMozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15\n```",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12521",
+                "title": "Fix Mirror Reflection in right handed system",
+                "description": "https://forum.babylonjs.com/t/bugs-on-mirrortexture-caused-by-userighthandedsystem-true-flag/29474/7",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12520",
+                "title": "Add a constant for the Snippet Server URL in all dev packages.",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Particles/particleHelper.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/tools/playground/src/globalState.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12519",
+                "title": "Fix: NME TBNBlock world input doesn't work if connected to a vertex node",
+                "description": "This fixes: https://forum.babylonjs.com/t/nme-tbnblock-world-input-doesnt-work-if-connected-to-another-vertex-node-block/30322\r\n\r\nWhole TNBBlock is switched to `Fragment` target type as it already kind of was. And moved to Fragment nodes folder where it now belongs.\r\n\r\nWith this fix in place Playground example [#VL1FPT#8](https://playground.babylonjs.com/#VL1FPT#8) should now work without a shader error.",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12516",
+                "title": "Add sRGB option to MultiRenderTarget",
+                "description": null,
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12518",
+                "title": "Fix Scissor Doc",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineFactory.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "documentation"
                 ]
             }
         ],
