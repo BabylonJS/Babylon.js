@@ -38,7 +38,7 @@ declare type StandardMaterial = import("core/Materials/standardMaterial").Standa
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
     /** Define the Uurl to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;

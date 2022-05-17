@@ -810,6 +810,7 @@ export class WebGPUEngine extends Engine {
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
             textureMaxLevel: true,
+            texture2DArrayMaxLayerCount: 2048,
         };
 
         this._caps.parallelShaderCompile = null as any;
