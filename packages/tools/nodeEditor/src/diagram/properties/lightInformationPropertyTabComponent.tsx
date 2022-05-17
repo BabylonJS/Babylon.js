@@ -25,6 +25,7 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
                         options={lightOptions}
                         target={lightInformationBlock}
                         propertyName="name"
+                        getSelection={(target) => target.light.name}
                         onSelect={(name: any) => {
                             lightInformationBlock.light = scene.getLightByName(name);
                             this.forceUpdate();

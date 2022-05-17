@@ -2,7 +2,7 @@ import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -11,6 +11,8 @@ import type { Effect } from "../../../effect";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import type { TextureBlock } from "../Dual/textureBlock";
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { TBNBlock } from "./TBNBlock";
 
 import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
@@ -51,6 +53,13 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.registerInput("viewDirection", NodeMaterialBlockConnectionPointTypes.Vector3, true);
         this.registerInput("parallaxScale", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("parallaxHeight", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput(
+            "TBN",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
+        );
 
         // Fragment
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -126,6 +135,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
      */
     public get parallaxHeight(): NodeMaterialConnectionPoint {
         return this._inputs[8];
+    }
+
+    /**
+     * Gets the TBN input component
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get TBN(): NodeMaterialConnectionPoint {
+        return this._inputs[9];
     }
 
     /**
@@ -212,7 +229,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
         const tbnVarying = { search: /varying mat3 vTBN/g, replace: "" };
 
-        if (worldTangent.isConnected) {
+        const TBN = this.TBN;
+        if (TBN.isConnected) {
+            state.compilationString += `
+            #ifdef TBNBLOCK
+            mat3 vTBN = ${TBN.associatedVariableName};
+            #endif
+            `;
+        } else if (worldTangent.isConnected) {
             state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
             state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
             state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;

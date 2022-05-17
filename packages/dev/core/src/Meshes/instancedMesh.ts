@@ -582,8 +582,6 @@ declare module "./abstractMesh" {
     }
 }
 
-Mesh.prototype.edgesShareWithInstances = false;
-
 Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number): void {
     // Remove existing one
     this._userInstancedBuffersStorage?.vertexBuffers[kind]?.dispose();

@@ -12,13 +12,13 @@
         "build": "npm run clean && npm run compile",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "build:deployment": "npm run clean && webpack --env mode=production",
-        "compile": "tsc -b tsconfig.build.json",
+        "compile": "tsc -b tsconfig.build.json --verbose",
         "postcompile": "build-tools -c pa",
         "serve": "webpack serve",
         "serve:prod": "webpack serve --env mode=production",
         "serve:https": "webpack serve --env mode=development --server-type https --host ::",
         "serve:dev": "webpack serve --env mode=development --env watch=all",
-        "clean": "rimraf dist"
+        "clean": "rimraf dist && rimraf *.tsbuildinfo"
     },
     "dependencies": {
         "react": "^17.0.2",

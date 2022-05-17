@@ -11,7 +11,7 @@ import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
  */
 export interface IGUIEditorOptions {
     liveGuiTexture?: AdvancedDynamicTexture;
-    customLoad: { label: string; action: (data: string) => Promise<string> } | undefined;
+    customLoad?: { label: string; action: (data: string) => Promise<string> } | undefined;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<string> };
     currentSnippetToken?: string;

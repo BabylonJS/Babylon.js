@@ -186,10 +186,10 @@ export class ColorMergerBlock extends NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-        codeString += `${this._codeVariableName}.rSwizzle = ${this.rSwizzle}};\r\n`;
-        codeString += `${this._codeVariableName}.gSwizzle = ${this.gSwizzle}};\r\n`;
-        codeString += `${this._codeVariableName}.bSwizzle = ${this.bSwizzle}};\r\n`;
-        codeString += `${this._codeVariableName}.aSwizzle = ${this.aSwizzle}};\r\n`;
+        codeString += `${this._codeVariableName}.rSwizzle = ${this.rSwizzle};\r\n`;
+        codeString += `${this._codeVariableName}.gSwizzle = ${this.gSwizzle};\r\n`;
+        codeString += `${this._codeVariableName}.bSwizzle = ${this.bSwizzle};\r\n`;
+        codeString += `${this._codeVariableName}.aSwizzle = ${this.aSwizzle};\r\n`;
 
         return codeString;
     }

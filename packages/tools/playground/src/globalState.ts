@@ -20,7 +20,7 @@ export class GlobalState {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly MobileSizeTrigger = 1024;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public readonly SnippetServerUrl = "https://snippet.babylonjs.com";
+    public SnippetServerUrl = "https://snippet.babylonjs.com";
 
     public currentCode: string;
     public getCompiledCode: () => Promise<string> = () => {

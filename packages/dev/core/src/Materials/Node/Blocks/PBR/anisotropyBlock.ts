@@ -8,6 +8,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
@@ -37,6 +38,13 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         this.registerInput("direction", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true); // need this property and the next one in case there's no PerturbNormal block connected to the main PBR block
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput(
+            "TBN",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
+        );
 
         this.registerOutput(
             "anisotropy",
@@ -92,6 +100,14 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the TBN input component
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get TBN(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
      * Gets the anisotropy object output component
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
@@ -118,7 +134,14 @@ export class AnisotropyBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
-        if (worldTangent.isConnected) {
+        const TBN = this.TBN;
+        if (TBN.isConnected) {
+            state.compilationString += `
+            #ifdef TBNBLOCK
+            mat3 vTBN = ${TBN.associatedVariableName};
+            #endif
+            `;
+        } else if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
             code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
             code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;

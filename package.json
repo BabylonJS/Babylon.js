@@ -8,7 +8,7 @@
     },
     "devDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5",
-        "@dev/build-tools": "file:packages/dev/buildTools",
+        "@dev/build-tools": "^1.0.0",
         "@nrwl/cli": "~13.9.4",
         "@nrwl/tao": "~13.9.4",
         "@nrwl/workspace": "~13.9.4",

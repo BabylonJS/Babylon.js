@@ -18,7 +18,7 @@
         "serve:prod": "webpack serve --env mode=production",
         "serve:https": "webpack serve --env mode=development --server-type https --host ::",
         "serve:dev": "webpack serve --env mode=development --env watch=all",
-        "clean": "rimraf dist"
+        "clean": "rimraf dist && rimraf *.tsbuildinfo"
     },
     "dependencies": {
         "react": "^17.0.2",

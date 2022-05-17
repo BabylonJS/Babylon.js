@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import type { Observable } from "core/Misc/observable";
-import { Tools } from "core/Misc/tools";
 import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { Mesh } from "core/Meshes/mesh";
@@ -36,9 +35,11 @@ import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import type { ShaderMaterial } from "core/Materials/shaderMaterial";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
+import { Tools } from "core/Misc/tools";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -166,11 +167,8 @@ export class MeshPropertyGridComponent extends React.Component<
             mesh.reservedDataStore.originalMaterial = null;
             this.setState({ displayNormals: false });
         } else {
-            if (!(BABYLON as any).NormalMaterial) {
-                this.setState({ displayNormals: true });
-                Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", () => {
-                    this.displayNormals();
-                });
+            if (typeof NormalMaterial === "undefined") {
+                Tools.Warn("NormalMaterial not found. Make sure to load the materials library.");
                 return;
             }
 
@@ -182,7 +180,7 @@ export class MeshPropertyGridComponent extends React.Component<
                 mesh.reservedDataStore.originalMaterial = mesh.material;
             }
 
-            const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
+            const normalMaterial = new NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
             if (mesh.material) {
                 normalMaterial.sideOrientation = mesh.material.sideOrientation;
