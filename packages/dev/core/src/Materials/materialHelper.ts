@@ -399,11 +399,6 @@ export class MaterialHelper {
                 define: "PREPASS_NORMAL",
                 index: "PREPASS_NORMAL_INDEX",
             },
-            {
-                type: Constants.PREPASS_SPECULARGLOSSINESS_EQUIVALENT_TEXTURE_TYPE,
-                define: "PREPASS_SPECULARGLOSSINESS",
-                index: "PREPASS_SPECULARGLOSSINESS_INDEX",
-            },
         ];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {

@@ -672,16 +672,9 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
-        #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, baseReflectivity.a * writeGeometryInfo);
-        #else
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
-        #endif
-    #endif
-    #ifdef PREPASS_SPECULARGLOSSINESS
-        // microsurface = 1.0 - roughness;
+        // translate to vec4(specular3, glossiness) model
         gl_FragData[PREPASS_SPECULARGLOSSINESS_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
-	#endif
+    #endif
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)

@@ -600,11 +600,6 @@ export class Constants {
      * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
-    /**
-     * Constant used to retrieve specularGlossiness equivalent index in the textures array in the prepass
-     * using the getIndex(Constants.PREPASS_SPECULARGLOSSINESS_EQUIVALENT_TEXTURE_TYPE)
-     */
-    public static readonly PREPASS_SPECULARGLOSSINESS_EQUIVALENT_TEXTURE_TYPE = 8;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
