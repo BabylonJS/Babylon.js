@@ -76,9 +76,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 const evt = <IPointerEvent>p.event;
 
-                const isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+                const isMouseEvent = evt.pointerType === "mouse";
 
-                if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
+                if (!this.allowMouse && isMouseEvent) {
                     return;
                 }
 
