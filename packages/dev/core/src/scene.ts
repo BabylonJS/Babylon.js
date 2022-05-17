@@ -1157,7 +1157,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the list of meshes imported to the scene through SceneLoader
      */
-    public importedMeshesFiles = new Array<String>();
+    public importedMeshesFiles = new Array<string>();
 
     // Probes
     /**

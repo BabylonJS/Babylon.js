@@ -765,4 +765,7 @@ export class Constants {
     public static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA = 0x8003;
     /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
     public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA = 0x8004;
+
+    /** URL to the snippet server. Points to the public snippet server by default */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
 }

@@ -1556,7 +1556,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.REFLECTION = true;
                     defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
-                    defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
@@ -1576,6 +1575,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
 
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 
                     defines.REFLECTIONMAP_CUBIC = false;
                     defines.REFLECTIONMAP_EXPLICIT = false;

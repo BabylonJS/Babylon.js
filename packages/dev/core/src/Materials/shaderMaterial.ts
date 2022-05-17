@@ -20,6 +20,7 @@ import type { TextureSampler } from "./Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
+import { Constants } from "../Engines/constants";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -129,7 +130,7 @@ export class ShaderMaterial extends PushMaterial {
     private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Snippet ID if the material was created from the snippet server */
     public snippetId: string;
