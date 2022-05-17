@@ -30,7 +30,7 @@ interface ISpriteManagerPropertyGridComponentProps {
 }
 
 export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
-    private _snippetUrl = "https://snippet.babylonjs.com";
+    private _snippetUrl = Constants.SnippetUrl;
 
     constructor(props: ISpriteManagerPropertyGridComponentProps) {
         super(props);

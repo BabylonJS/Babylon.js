@@ -129,7 +129,6 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
-
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -183,6 +182,10 @@ export class ThinEngine {
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        // desktop osx safari 15.4
+        { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
+        // mobile browsers using safari 15.4 on ios
+        { key: ".*(15.4).*AppleWebKit.*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
     ];
 
     /** @hidden */
@@ -537,6 +540,7 @@ export class ThinEngine {
 
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
+    private _maxMSAASamplesOverride: Nullable<number> = null;
 
     private _activeRequests = new Array<IFileRequest>();
 
@@ -858,6 +862,12 @@ export class ThinEngine {
                                 case "vao":
                                     this.disableVertexArrayObjects = true;
                                     break;
+                                case "antialias":
+                                    options.antialias = false;
+                                    break;
+                                case "maxMSAASamples":
+                                    this._maxMSAASamplesOverride = 1;
+                                    break;
                             }
                         }
                     }
@@ -1155,6 +1165,7 @@ export class ThinEngine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: this._webGLVersion > 1,
             textureMaxLevel: this._webGLVersion > 1,
+            texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? 256 : 128,
         };
 
         // Infos
@@ -1227,7 +1238,7 @@ export class ThinEngine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
-            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
+            this._caps.maxMSAASamples = this._maxMSAASamplesOverride !== null ? this._maxMSAASamplesOverride : this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             const drawBuffersExtension = this._gl.getExtension("WEBGL_draw_buffers");
 
