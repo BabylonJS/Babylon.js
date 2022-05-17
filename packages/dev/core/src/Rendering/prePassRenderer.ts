@@ -120,11 +120,6 @@ export class PrePassRenderer {
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
             name: "prePass_Albedo",
         },
-        {
-            type: Constants.PREPASS_SPECULARGLOSSINESS_EQUIVALENT_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_UNSIGNED_INT,
-            name: "prePass_SpecularGlossiness",
-        },
     ];
 
     private _isDirty: boolean = true;
