@@ -612,7 +612,7 @@ export class SolidParser {
                     normals: undefined,
                     uvs: undefined,
                     colors: undefined,
-                    materialName: "",
+                    materialName: this._materialNameFromObj,
                 };
                 this._addPreviousObjMesh();
 
