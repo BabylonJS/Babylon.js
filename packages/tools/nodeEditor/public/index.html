@@ -33,27 +33,6 @@
             }
         </style>
 
-        <script>
-            window.addEventListener(
-            "wheel",
-            function (evt) {
-                if (evt.ctrlKey) {
-                    return evt.preventDefault();
-                }
-
-                if (Math.abs(evt.deltaX) < Math.abs(evt.deltaY)) {
-                    return;
-                }
-
-                const scrollLeftMax = this.scrollWidth - this.offsetWidth;
-                if (this.scrollLeft + evt.deltaX < 0 || this.scrollLeft + evt.deltaX > scrollLeftMax) {
-                    return evt.preventDefault();
-                }
-            },
-            { passive: false }
-        );
-        </script>
-
     </head>
 
     <body>
