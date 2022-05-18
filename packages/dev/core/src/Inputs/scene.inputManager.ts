@@ -824,7 +824,7 @@ export class InputManager {
                     this._initActionManager(null, clickInfo);
                 }
 
-                if (scene.skipPointerUpPicking) {
+                if (!pickResult && scene.skipPointerUpPicking) {
                     pickResult = this._currentPickResult;
                 } else {
                     pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
