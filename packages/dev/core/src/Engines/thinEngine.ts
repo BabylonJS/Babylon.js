@@ -4202,6 +4202,8 @@ export class ThinEngine {
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -4213,7 +4215,9 @@ export class ThinEngine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        creationFlags = 0,
+        useSRGBBuffer: boolean = false
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
