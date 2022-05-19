@@ -217,7 +217,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 systemValuesOptions = [{ label: "Fog color", value: NodeMaterialSystemValues.FogColor }];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                attributeOptions = [{ label: "color", value: "color" }];
+                attributeOptions = [{ label: "color", value: "color" }, { label: "Instance Color", value: "instanceColor" }];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 attributeOptions = [
