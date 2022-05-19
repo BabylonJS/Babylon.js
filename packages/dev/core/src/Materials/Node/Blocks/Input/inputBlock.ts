@@ -815,7 +815,11 @@ export class InputBlock extends NodeMaterialBlock {
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
 
         // Tangents back compat
-        if (serializationObject.name === "tangent" && serializationObject.mode === NodeMaterialBlockConnectionPointMode.Attribute && serializationObject.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+        if (
+            serializationObject.name === "tangent" &&
+            serializationObject.mode === NodeMaterialBlockConnectionPointMode.Attribute &&
+            serializationObject.type === NodeMaterialBlockConnectionPointTypes.Vector3
+        ) {
             this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
         }
 
