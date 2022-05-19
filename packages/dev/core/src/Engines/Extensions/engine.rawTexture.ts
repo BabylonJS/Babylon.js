@@ -21,6 +21,7 @@ declare module "../../Engines/thinEngine" {
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          * @returns the raw texture inside an InternalTexture
          */
         createRawTexture(
@@ -33,7 +34,8 @@ declare module "../../Engines/thinEngine" {
             samplingMode: number,
             compression: Nullable<string>,
             type: number,
-            creationFlags?: number
+            creationFlags?: number,
+            useSRGBBuffer?: boolean
         ): InternalTexture;
 
         /**
@@ -53,8 +55,9 @@ declare module "../../Engines/thinEngine" {
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          */
-        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, type: number): void;
+        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, type: number, useSRGBBuffer: boolean): void;
 
         /**
          * Creates a new raw cube texture
@@ -283,16 +286,17 @@ ThinEngine.prototype.updateRawTexture = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
         return;
     }
     // Babylon's internalSizedFomat but gl's texImage2D internalFormat
-    const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format);
+    const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
 
     // Babylon's internalFormat but gl's texImage2D format
-    const internalFormat = this._getInternalFormat(format);
+    const internalFormat = this._getInternalFormat(format, useSRGBBuffer);
     const textureType = this._getWebGLTextureType(type);
     this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
     this._unpackFlipY(invertY === undefined ? true : invertY ? true : false);
@@ -334,7 +338,8 @@ ThinEngine.prototype.createRawTexture = function (
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    creationFlags = 0
+    creationFlags = 0,
+    useSRGBBuffer = false
 ): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
@@ -347,12 +352,13 @@ ThinEngine.prototype.createRawTexture = function (
     texture.invertY = invertY;
     texture._compression = compression;
     texture.type = type;
+    texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
     if (!this._doNotHandleContextLost) {
         texture._bufferView = data;
     }
 
-    this.updateRawTexture(texture, data, format, invertY, compression, type);
+    this.updateRawTexture(texture, data, format, invertY, compression, type, texture._useSRGBBuffer);
     this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
 
     // Filters
