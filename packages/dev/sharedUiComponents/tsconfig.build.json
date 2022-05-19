@@ -7,7 +7,7 @@
         "rootDir": "./src"
     },
 
-    "include": ["./src/**/*.ts", "./src/**/*.tsx", "./declaration.d.ts"],
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
     "exclude": [
         "**/node_modules",
         "**/dist",
