@@ -508,7 +508,10 @@ export class InputManager {
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
-            if (!this._meshPickProceed) {
+            if (scene.skipPointerDownPicking && scene.skipPointerMovePicking && scene.skipPointerUpPicking) {
+                this._currentPickResult = this._currentPickResult || new PickingInfo();
+            }
+            else if (!this._meshPickProceed) {
                 const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
