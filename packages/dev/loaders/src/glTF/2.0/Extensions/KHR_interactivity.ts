@@ -38,6 +38,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
     constructor(loader: GLEFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
+        console.log("KHR_interactivity_behavior: enabled", this.enabled);
     }
 
     /** @hidden */
@@ -55,6 +56,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
 
     public loadInteractivityAsync(context: string, interactivity: IInteractivity): Nullable<Promise<void>> {
         // analyze the behaviors array and process everything there. The rest are all passive until needed.
+        console.log("KHR_interactivity_behavior: loadInteractivityAsync", interactivity);
         const behaviors = interactivity.behaviors;
         if(!behaviors) {
             return null;
@@ -63,7 +65,11 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         return null;
     }
 
+    private _getReference(reference: string): any {
+
+    }
+
     
 }
 
-RegisterExtension(NAME, "glef", (loader) => new KHR_Interactivity(loader as GLEFLoader));
+RegisterExtension("glef", NAME, (loader) => new KHR_Interactivity(loader as GLEFLoader));

@@ -1,12 +1,20 @@
 import { Observable } from "../../../Misc/observable";
-import { IDisposable, Scene } from "../../../scene";
+import { IDisposable } from "../../../scene";
 
-export class BaseTrigger<T = void> implements IDisposable {
+export abstract class BaseTrigger<T = void> implements IDisposable {
+    private _payload: T;
     public onTriggeredObservable: Observable<T> = new Observable();
 
-    constructor(private _scene: Scene) {}
+    constructor() {}
 
-    dispose(): void {
-        console.log(this._scene);
+    abstract dispose(): void;
+
+    public attachToAction(action: Action): void {
+    };
+
+    public abstract _checkConditions();
+
+    protected _trigger(): void {
+        this.onTriggeredObservable.notifyObservers(this._payload);
     }
 }

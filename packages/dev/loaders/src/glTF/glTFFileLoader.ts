@@ -285,11 +285,9 @@ export class GLTFFileLoader extends AbstractFileLoader {
         switch (version) {
             case 1: {
                 return this._unpackBinaryV1Async(dataReader, length);
-                break;
             }
             case 2: {
                 return this._unpackBinaryV2Async(dataReader, length);
-                break;
             }
             default: {
                 throw new Error("Unsupported version: " + version);
