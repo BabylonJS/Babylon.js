@@ -57,7 +57,15 @@ declare module "../../Engines/thinEngine" {
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          */
-        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, type: number, useSRGBBuffer: boolean): void;
+        updateRawTexture(
+            texture: Nullable<InternalTexture>,
+            data: Nullable<ArrayBufferView>,
+            format: number,
+            invertY: boolean,
+            compression: Nullable<string>,
+            type: number,
+            useSRGBBuffer: boolean
+        ): void;
 
         /**
          * Creates a new raw cube texture
