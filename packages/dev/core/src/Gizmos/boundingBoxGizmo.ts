@@ -534,6 +534,11 @@ export class BoundingBoxGizmo extends Gizmo {
                 this._updateDummy();
             });
         }
+        // If the attachedMesh property is not set, then the attachedNode constructor was used, which
+        // the BoundingBoxGizmo doesn't support
+        if (!this.attachedMesh) {
+            Logger.Warn("Using the attachedNode attribute in BoundingBoxGizmo may lead to unexpected behavior.");
+        }
     }
 
     private _selectNode(selectedMesh: Nullable<Mesh>) {
