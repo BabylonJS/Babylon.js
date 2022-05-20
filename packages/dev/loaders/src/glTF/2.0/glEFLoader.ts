@@ -4,17 +4,17 @@ import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoader } from 
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
-import { IDataBuffer } from "core/Misc/dataReader";
 import { Logger } from "core/Misc/logger";
-import { StringTools } from "core/Misc/stringTools";
 import { Tools } from "core/Misc/tools";
 import { Scene } from "core/scene";
 import { Nullable } from "core/types";
 import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import type { GLEFFileLoader } from "../glEFFileLoader";
+import { GLTFFileLoader } from "../glTFFileLoader";
 import { ArrayItem, ILoaderProperty, registeredExtensions } from "./BaseLoader";
 import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
 import { IGLEFLoaderExtension, IInteractivity } from "./glEFLoaderExtension";
+import { GLTFLoader } from "./glTFLoader";
 import { INode, IScene } from "./glTFLoaderInterfaces";
 
 export class GLEFLoader implements ILoader {
@@ -24,11 +24,11 @@ export class GLEFLoader implements ILoader {
     private readonly _extensions: Array<IBaseLoaderExtension> = [];
     private _jsonData: Nullable<any> = null; // TODO - should not be any
     private _scene: Scene;
-    private _bin: Nullable<IDataBuffer> = null;
+    // private _bin: Nullable<IDataBuffer> = null;
     private _disposed = false;
     private _rootUrl: Nullable<string> = null;
-    private _fileName: Nullable<string> = null;
-    private _uniqueRootUrl: Nullable<string> = null;
+    // private _fileName: Nullable<string> = null;
+    // private _uniqueRootUrl: Nullable<string> = null;
     private _rootBabylonMesh: Nullable<Mesh> = null;
 
     /**
@@ -64,12 +64,12 @@ export class GLEFLoader implements ILoader {
         this._extensions.length = 0;
 
         this._jsonData = null; // TODO
-        this._bin = null;
+        // this._bin = null;
 
         this._parent.dispose();
 
         // TODO remove. Only here to "use" some of those vars
-        console.log(this._scene, this._bin, this._rootUrl, this._fileName, this._uniqueRootUrl, this._rootBabylonMesh);
+        // console.log(this._scene, this._bin, this._rootUrl, this._fileName, this._uniqueRootUrl, this._rootBabylonMesh);
     }
     /**
      * @param _parent
@@ -88,14 +88,11 @@ export class GLEFLoader implements ILoader {
         throw new Error("Method not used");
     }
     public async loadAsync(scene: Scene, data: ILoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
-        scene.onNewTransformNodeAddedObservable.add((m) => {
-            console.log(m.name);
-        })
         this._scene = scene;
         this._loadData(data);
         this._rootUrl = rootUrl;
-        this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
-        this._fileName = fileName;
+        // this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+        // this._fileName = fileName;
 
         this._loadExtensions();
         this._checkExtensions();
@@ -130,7 +127,13 @@ export class GLEFLoader implements ILoader {
             promises.push(this.loadSceneAsync("/nodes", { nodes: nodesToUse, index: -1 }));
         }
 
+        if(this._jsonData.interactivity) {
+            // promises.push();
+        }
+
         await Promise.all(promises);
+
+        this.loadInteractivityAsync("/interactivity", this._jsonData.interactivity);
 
         if (this._rootBabylonMesh) {
             this._rootBabylonMesh.setEnabled(true);
@@ -244,7 +247,11 @@ export class GLEFLoader implements ILoader {
                     // get the filename
                     const filename = Tools.GetFilename(asset.uri);
                     const url = Tools.GetFolderPath(asset.uri);
-                    console.log(asset.nodes);
+                    SceneLoader.OnPluginActivatedObservable.addOnce((plugin) => {
+                        (plugin as GLTFFileLoader).onCompleteObservable.addOnce(() => {
+                            asset.gltf = ((plugin as GLTFFileLoader)._loader as GLTFLoader).gltf;
+                        });
+                    });
                     promises.push(
                         SceneLoader.ImportMeshAsync(asset.nodes || "", this._rootUrl + url, filename, this._scene).then((result) => {
                             result.meshes[0].parent = babylonTransformNode;
@@ -271,6 +278,7 @@ export class GLEFLoader implements ILoader {
         this.logClose();
 
         await Promise.all(promises);
+        console.log("json data", this._jsonData);
         return node._babylonTransformNode!;
     }
 
@@ -279,6 +287,7 @@ export class GLEFLoader implements ILoader {
         if (extensionPromise) {
             return extensionPromise;
         }
+        console.log(interactivity);
     }
 
     private _setupData(): void {
@@ -312,29 +321,10 @@ export class GLEFLoader implements ILoader {
                 node.parent = parentIndex === undefined ? rootNode : this._jsonData.nodes[parentIndex];
             }
         }
-
-        console.log(this._jsonData.nodes);
     }
 
-    // private _getTransformNodes(): TransformNode[] {
-    //     const transformNodes = new Array<TransformNode>();
-
-    //     const nodes = this._jsonData.nodes;
-    //     if (nodes) {
-    //         for (const node of nodes) {
-    //             if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
-    //                 transformNodes.push(node._babylonTransformNode);
-    //             }
-    //             if (node._babylonTransformNodeForSkin) {
-    //                 transformNodes.push(node._babylonTransformNodeForSkin);
-    //             }
-    //         }
-    //     }
-
-    //     return transformNodes;
-    // }
-
     protected _loadExtensions(): void {
+        console.log(registeredExtensions);
         for (const name in registeredExtensions[this._parent.name] || {}) {
             const extension = registeredExtensions[this._parent.name][name].factory(this);
             if (extension.name !== name) {
@@ -389,19 +379,20 @@ export class GLEFLoader implements ILoader {
         // TODO
         this._setupData();
 
-        if (data.bin) {
-            const buffers = this._jsonData.buffers;
-            if (buffers && buffers[0] && !buffers[0].uri) {
-                const binaryBuffer = buffers[0];
-                if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
-                    Logger.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
-                }
+        // TODO - not yet supported in glEF
+        // if (data.bin) {
+        //     const buffers = this._jsonData.buffers;
+        //     if (buffers && buffers[0] && !buffers[0].uri) {
+        //         const binaryBuffer = buffers[0];
+        //         if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
+        //             Logger.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
+        //         }
 
-                this._bin = data.bin;
-            } else {
-                Logger.Warn("Unexpected BIN chunk");
-            }
-        }
+        //         this._bin = data.bin;
+        //     } else {
+        //         Logger.Warn("Unexpected BIN chunk");
+        //     }
+        // }
     }
 
     private _checkExtensions(): void {
@@ -462,7 +453,7 @@ export class GLEFLoader implements ILoader {
 
     // TODO - return type here?
     private _extensionsLoadInteractivityAsync(context: string, interactivity: IInteractivity): Nullable<Promise<void>> {
-        return this._applyExtensions(interactivity, "loadNode", (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity));
+        return this._applyExtensions(interactivity, "loadInteractivity", (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity));
     }
     private _forEachExtensions(action: (extension: IBaseLoaderExtension) => void): void {
         for (const extension of this._extensions) {

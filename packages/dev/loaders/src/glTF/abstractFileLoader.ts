@@ -261,7 +261,7 @@ export abstract class AbstractFileLoader implements IDisposable, ISceneLoaderPlu
         this._observers["onValidated"] = this.onValidatedObservable.add(callback);
     }
 
-    private _loader: Nullable<ILoader> = null;
+    public _loader: Nullable<ILoader> = null;
     private _state: Nullable<LoaderState> = null;
     private _progressCallback?: (event: ISceneLoaderProgressEvent) => void;
     private _requests = new Array<IFileRequestInfo>();
