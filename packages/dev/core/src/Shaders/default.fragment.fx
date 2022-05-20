@@ -310,7 +310,7 @@ vec4 reflectionColor = vec4(0., 0., 0., 1.);
 
 #endif
 
-#ifdef VERTEXALPHA
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 	alpha *= vColor.a;
 #endif
 
