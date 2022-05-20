@@ -296,7 +296,7 @@ ThinEngine.prototype.updateRawTexture = function (
     const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
 
     // Babylon's internalFormat but gl's texImage2D format
-    const internalFormat = this._getInternalFormat(format, useSRGBBuffer);
+    const internalFormat = this._getInternalFormat(format);
     const textureType = this._getWebGLTextureType(type);
     this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
     this._unpackFlipY(invertY === undefined ? true : invertY ? true : false);
