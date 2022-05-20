@@ -766,8 +766,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         this.x = this.x - widthDiff * xFactor;
         this.y = this.y - heightDiff * yFactor;
-
-        evt.stopPropagation();
     }
 
     zoomToFit() {
