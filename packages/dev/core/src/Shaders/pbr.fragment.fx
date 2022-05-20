@@ -672,16 +672,7 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
-        #if defined(METALLICWORKFLOW)
-            // translate to vec4(specular3, glossiness) model
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
-        #else
-            #if defined(REFLECTIVITY)
-                gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, microSurface) * writeGeometryInfo;
-            #else
-                gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
-            #endif
-        #endif    
+        gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toGammaSpace(specularEnvironmentR0), microSurface) * writeGeometryInfo;
     #endif
 #endif
 
