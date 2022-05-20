@@ -507,12 +507,12 @@ export class InputManager {
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
+        // Because this is only called from _initClickEvent, which is called in _onPointerUp, we'll use the pointerUpPredicate for the pick call
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
-            if (scene.skipPointerDownPicking && scene.skipPointerMovePicking && scene.skipPointerUpPicking) {
-                this._currentPickResult = this._currentPickResult || new PickingInfo();
-            }
-            else if (!this._meshPickProceed) {
-                const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+            if (!this._meshPickProceed) {
+                const pickResult = scene.skipPointerUpPicking
+                    ? null
+                    : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
                     act = pickResult.hit && pickResult.pickedMesh ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
@@ -825,15 +825,6 @@ export class InputManager {
                 // Meshes
                 if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers())) {
                     this._initActionManager(null, clickInfo);
-                }
-
-                if (!pickResult) {
-                    pickResult = this._currentPickResult;
-                }
-
-                if (!scene.skipPointerUpPicking) {
-                    pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
-                    this._currentPickResult = pickResult;
                 }
 
                 this._processPointerUp(pickResult, evt, clickInfo);
