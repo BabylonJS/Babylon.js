@@ -33,7 +33,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
     }
 
     /**
-     * Creates a new instance CircleOfConfusionPostProcess
+     * Creates a new instance DepthOfFieldBlurPostProcess
      * @param name The name of the effect.
      * @param scene The scene the effect belongs to.
      * @param direction The direction the blur should be applied.
@@ -73,8 +73,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (textureType = Constants.TEXTURETYPE_UNSIGNED_INT),
+            textureType,
             `#define DOF 1\r\n`,
             blockCompilation
         );
