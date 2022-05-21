@@ -3188,7 +3188,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
      */
-    public increaseVertices(numberPerEdge : number = 1): void {
+    public increaseVertices(numberPerEdge: number = 1): void {
         const vertex_data = VertexData.ExtractFromMesh(this);
         const currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
         const positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
@@ -3222,11 +3222,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const side: Array<Array<Array<number>>> = new Array();
             let len: number;
             let positionPtr: number = positions.length;
-            let uvPtr: number
+            let uvPtr: number;
             if (uvs) {
                 uvPtr = uvs.length;
             }
-            let normalsPtr: number
+            let normalsPtr: number;
             if (normals) {
                 normalsPtr = normals.length;
             }
