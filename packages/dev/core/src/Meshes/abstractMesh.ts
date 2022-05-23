@@ -1066,17 +1066,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
     }
 
-    /**
-     * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
-     */
-    public get scaling(): Vector3 {
-        return this._scaling;
-    }
-
-    public set scaling(newScaling: Vector3) {
-        this._scaling = newScaling;
-    }
-
     // Methods
     /**
      * Returns true if the mesh is blocked. Implemented by child classes
