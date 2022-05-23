@@ -19,7 +19,8 @@
     &.light {
         background-color: light-background;
         color: dark-color;
-        &:hover,&.active {
+        &:hover,
+        &.active {
             background-color: light-active-background;
         }
         &:disabled {
@@ -29,7 +30,8 @@
     &.dark {
         background-color: dark-background;
         color: light-color;
-        &:hover,&.active {
+        &:hover,
+        &.active {
             background-color: dark-active-background;
         }
     }
