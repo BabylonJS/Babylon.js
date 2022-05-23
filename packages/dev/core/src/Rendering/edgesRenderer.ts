@@ -18,7 +18,6 @@ import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { SmartArray } from "../Misc/smartArray";
-import { Tools } from "../Misc/tools";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare module "../scene" {
@@ -540,7 +539,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         if (!Array.isArray(indices)) {
-            indices = Tools.SliceToArray(indices);
+            indices = indices.slice();
         }
 
         /**
@@ -676,7 +675,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             for (let t = 0; t < mustTesselate.length; ++t) {
                 const triangle = mustTesselate[t];
 
-                this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices, remapVertexIndices);
+                this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices as number[], remapVertexIndices);
             }
 
             (mustTesselate as any) = null;

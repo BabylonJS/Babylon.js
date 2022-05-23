@@ -1,7 +1,6 @@
 import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
-import { SliceTools } from "../Misc/sliceTools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -495,7 +494,7 @@ export class VertexBuffer {
         if (!(data instanceof Array || data instanceof Float32Array) || this.byteOffset !== 0 || data.length !== count) {
             if (data instanceof Array) {
                 const offset = this.byteOffset / 4;
-                return SliceTools.Slice(data, offset, offset + count);
+                return data.slice(offset, offset + count);
             } else if (data instanceof ArrayBuffer) {
                 return new Float32Array(data, this.byteOffset, count);
             } else {
@@ -521,7 +520,7 @@ export class VertexBuffer {
         }
 
         if (forceCopy) {
-            return SliceTools.Slice(data);
+            return data.slice();
         }
 
         return data;

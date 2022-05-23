@@ -24,7 +24,6 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import { SliceTools } from "./sliceTools";
 
 declare type Camera = import("../Cameras/camera").Camera;
 declare type Engine = import("../Engines/engine").Engine;
@@ -164,29 +163,6 @@ export class Tools {
      */
     public static Instantiate(className: string): any {
         return InstantiationTools.Instantiate(className);
-    }
-
-    /**
-     * Provides a slice function that will work even on IE
-     * @param data defines the array to slice
-     * @param start defines the start of the data (optional)
-     * @param end defines the end of the data (optional)
-     * @returns the new sliced array
-     */
-    public static Slice<T>(data: T, start?: number, end?: number): T {
-        return SliceTools.Slice(data, start, end);
-    }
-
-    /**
-     * Provides a slice function that will work even on IE
-     * The difference between this and Slice is that this will force-convert to array
-     * @param data defines the array to slice
-     * @param start defines the start of the data (optional)
-     * @param end defines the end of the data (optional)
-     * @returns the new sliced array
-     */
-    public static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P> {
-        return SliceTools.SliceToArray(data, start, end);
     }
 
     /**
