@@ -30,6 +30,7 @@ import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { StringTools } from "core/Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
+import { TransformNode } from "core/Meshes/transformNode";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -310,6 +311,29 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/divingDeeper/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     * @param node - the transform node that corresponds to the original glTF skin node used for animations
+     * @param skinnedNode - the transform node that is the skinned mesh itself or the parent of the skinned meshes
+     */
+     public readonly onSkinLoadedObservable = new Observable<{ node: TransformNode, skinnedNode: TransformNode }>();
+
+     private _onSkinLoadedObserver: Nullable<Observer<{ node: TransformNode, skinnedNode: TransformNode }>>;
+
+     /**
+      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+      * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
+      */
+     public set onSkinLoaded(callback: (node: TransformNode, skinnedNode: TransformNode) => void) {
+         if (this._onSkinLoadedObserver) {
+             this.onSkinLoadedObservable.remove(this._onSkinLoadedObserver);
+         }
+         this._onSkinLoadedObserver = this.onSkinLoadedObservable.add((data) => {
+             callback(data.node, data.skinnedNode);
+         });
+     }
+ 
+     /**
      * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
     public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
@@ -537,6 +561,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         this.preprocessUrlAsync = (url) => Promise.resolve(url);
 
         this.onMeshLoadedObservable.clear();
+        this.onSkinLoadedObservable.clear();
         this.onTextureLoadedObservable.clear();
         this.onMaterialLoadedObservable.clear();
         this.onCameraLoadedObservable.clear();
