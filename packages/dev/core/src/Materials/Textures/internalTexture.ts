@@ -382,7 +382,9 @@ export class InternalTexture extends TextureSampler {
                     this.invertY,
                     this.samplingMode,
                     this._compression,
-                    this.type
+                    this.type,
+                    undefined,
+                    this._useSRGBBuffer
                 );
                 proxy._swapAndDie(this, false);
 

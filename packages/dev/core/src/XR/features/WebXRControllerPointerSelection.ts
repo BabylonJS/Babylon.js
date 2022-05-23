@@ -743,7 +743,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             };
             this._xrSessionManager.runInXRFrame(() => {
                 this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+                this._scene.simulatePointerUp(controllerData.pick || new PickingInfo(), pointerEventInit);
                 controllerData.finalPointerUpTriggered = true;
             });
         }

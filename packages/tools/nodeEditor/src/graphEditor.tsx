@@ -120,6 +120,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     componentDidMount() {
+        window.addEventListener("wheel", this.onWheel, { passive: false });
+
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this._diagramContainer = this._diagramContainerRef.current!;
@@ -139,6 +141,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     componentWillUnmount() {
+        window.removeEventListener("wheel", this.onWheel);
+
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
@@ -568,6 +572,21 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
         this._moveInProgress = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
+    }
+
+    onWheel(this: any, evt: WheelEvent) {
+        if (evt.ctrlKey) {
+            return evt.preventDefault();
+        }
+
+        if (Math.abs(evt.deltaX) < Math.abs(evt.deltaY)) {
+            return;
+        }
+
+        const scrollLeftMax = this.scrollWidth - this.offsetWidth;
+        if (this.scrollLeft + evt.deltaX < 0 || this.scrollLeft + evt.deltaX > scrollLeftMax) {
+            return evt.preventDefault();
+        }
     }
 
     resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
