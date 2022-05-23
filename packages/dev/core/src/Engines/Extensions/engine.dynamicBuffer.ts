@@ -31,11 +31,11 @@ ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, inde
     let arrayBuffer;
 
     if (indexBuffer.is32Bits) {
-        // any else than Uint32Array needs to be converted to Uint32Array
+        // anything else than Uint32Array needs to be converted to Uint32Array
         arrayBuffer = indices instanceof Uint32Array ? indices : Uint32Array.from(indices)
     }
     else {
-        // any else than Uint16Array needs to be converted to Uint16Array
+        // anything else than Uint16Array needs to be converted to Uint16Array
         arrayBuffer = indices instanceof Uint16Array ? indices : Uint16Array.from(indices)
     }
 
