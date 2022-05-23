@@ -1018,7 +1018,7 @@ export class Texture extends BaseTexture {
                             url = rootUrl + parsedTexture.name;
                         }
 
-                        if (parsedTexture.url.startsWith("data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                        if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
                         texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
