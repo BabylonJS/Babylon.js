@@ -24,7 +24,9 @@ attribute vec3 normal;
 	#endif
 	#ifdef REFLECTIVITY
 	uniform mat4 reflectivityMatrix;
+	uniform mat4 albedoMatrix;
 	varying vec2 vReflectivityUV;
+	varying vec2 vAlbedoUV;
 	#endif
 
 	#ifdef UV1
@@ -149,6 +151,9 @@ void main(void)
 			#ifdef REFLECTIVITY_UV1
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
+			#ifdef ALBEDO_UV1
+			vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
@@ -162,6 +167,9 @@ void main(void)
 			#endif
 			#ifdef REFLECTIVITY_UV2
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
+			#endif
+			#ifdef ALBEDO_UV2
+			vAlbedoUV = vec2(albedoMatrix * vec4(uv2, 1.0, 0.0));
 			#endif
 		#endif
 	#endif

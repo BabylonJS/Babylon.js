@@ -33,9 +33,15 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#if defined(REFLECTIVITY) && (defined(HAS_SPECULAR) || defined(HAS_REFLECTIVITY))
+#if defined(REFLECTIVITY)
 varying vec2 vReflectivityUV;
+varying vec2 vAlbedoUV;
 uniform sampler2D reflectivitySampler;
+uniform sampler2D albedoSampler;
+uniform vec3 reflectivityColor;
+uniform vec3 albedoColor;
+uniform float metallic;
+uniform float glossiness;
 #endif
 
 #ifdef ALPHATEST
@@ -89,15 +95,70 @@ void main() {
     #endif
 
     #ifdef REFLECTIVITY
-        #ifdef HAS_SPECULAR
-            // Specular
-            vec4 reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
-        #elif HAS_REFLECTIVITY
-            // Reflectivity
-            vec4 reflectivity = vec4(texture2D(reflectivitySampler, vReflectivityUV).rgb, 1.0);
+        vec4 reflectivity;
+
+        #ifdef METALLICWORKFLOW
+            // Reflectivity calculus for metallic-roughness model based on:
+            // https://marmoset.co/posts/pbr-texture-conversion/
+            // https://substance3d.adobe.com/tutorials/courses/the-pbr-guide-part-2
+
+            float metal = 1.0;
+            float roughness = 1.0;
+
+            #ifdef ORMTEXTURE
+                // Used as if :
+                // pbr.useRoughnessFromMetallicTextureAlpha = false;
+                // pbr.useRoughnessFromMetallicTextureGreen = true;
+                // pbr.useMetallnessFromMetallicTextureBlue = true;
+                metal *= texture2D(reflectivitySampler, vReflectivityUV).b;
+                roughness *= texture2D(reflectivitySampler, vReflectivityUV).g;
+            #endif
+
+            #ifdef METALLIC
+                metal *= metallic;
+            #endif
+
+            #ifdef ROUGHNESS
+                roughness *= (1.0 - glossiness); // roughness = 1.0 - glossiness
+            #endif
+
+            reflectivity = vec4(1.0, 1.0, 1.0, 1.0 - roughness);
+                
+            #ifdef ALBEDOTEXTURE // Specularity should be: mix(0.04, 0.04, 0.04, albedoTexture, metallic):
+                reflectivity.rgb = mix(vec3(0.04), texture2D(albedoSampler, vAlbedoUV).rgb, metal);
+            #else
+                #ifdef ALBEDOCOLOR // Specularity should be: mix(0.04, 0.04, 0.04, albedoColor, metallic):
+                    reflectivity.rgb = mix(vec3(0.04), albedoColor.xyz, metal);
+                #else // albedo color suposed to be white   
+                    reflectivity.rgb = mix(vec3(0.04), vec3(1.0), metal);   
+                #endif            
+            #endif
         #else
-            vec4 reflectivity = vec4(0.0, 0.0, 0.0, 1.0);
-        #endif
+            // SpecularGlossiness Model 
+            #ifdef SPECULARGLOSSINESSTEXTURE
+                reflectivity = texture2D(reflectivitySampler, vReflectivityUV); 
+                #ifdef GLOSSINESSS
+                    reflectivity.a *= glossiness; 
+                #endif
+            #else 
+                #ifdef REFLECTIVITYTEXTURE 
+                    reflectivity.rbg = texture2D(reflectivitySampler, vReflectivityUV).rbg;
+                #else    
+                    #ifdef REFLECTIVITYCOLOR
+                        reflectivity.rgb = reflectivityColor.xyz;
+                        reflectivity.a = 1.0;
+                    // #else 
+                        // We never reach this case since even if the reflectivity color is not defined
+                        // by the user, there is a default reflectivity/specular color set to (1.0, 1.0, 1.0)
+                    #endif          
+                #endif 
+                #ifdef GLOSSINESSS
+                    reflectivity.a = glossiness; 
+                #else
+                    reflectivity.a = 1.0; // glossiness default value in Standard / SpecularGlossiness mode = 1.0
+                #endif
+            #endif
+        #endif   
 
         gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
     #endif
