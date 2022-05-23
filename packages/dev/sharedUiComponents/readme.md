@@ -1,7 +1,7 @@
 # Babylon Components Library
 This is a library of React components which can be used throughout Babylon's tools.
 
-`npm run storybook` serves the storybook locally, making it easy to browse through the components and test your changes..
+`npm run storybook` serves the storybook locally, making it easy to browse through the components and test your changes.
 
 There are a few goals for the library:
 1. Components should bring in their own styling. The consuming tool should not have to write CSS to style the components. This way, we can maintain a consistent visual appearance across all tools.
@@ -19,6 +19,7 @@ There are a few goals for the library:
 For the last category, migration involves the following steps:
 1. Copy the component into the /components directory
 2. Create a story in the /stories directory for testing. 
-3. Create local styles for the component in `[componentName.scss]`. We should default to the styles in the GUI editor, as that is the most up to date UI design. At this point, the component is ready to go and can be used anywhere you want. The following steps should be done on an as-needed basis.
-4. Migrate over references from the old component to the new component.
-5. When no references remain, delete the old component.
+3. Put any styling needed for the component in `[componentName.scss]`. We should default to the styles in the GUI editor, as that is the most up to date UI design. At this point, the component is ready to go and can be used anywhere you want. The following steps should be done on an as-needed basis.
+4. (Optional) refactor the component to be functional and use hooks rather than class-based
+5. Migrate over references from the old component to the new component.
+6. When no references remain, delete the old component.
