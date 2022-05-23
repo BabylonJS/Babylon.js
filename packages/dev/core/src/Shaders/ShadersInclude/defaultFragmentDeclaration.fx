@@ -39,7 +39,7 @@ uniform vec2 vTangentSpaceParams;
 uniform float alphaCutOff;
 #endif
 
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION) || defined(PREPASS)
 uniform mat4 view;
 #endif
 
