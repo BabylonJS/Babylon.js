@@ -331,7 +331,7 @@ export function CreateGround(
     name: string,
     options: { width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number; updatable?: boolean } = {},
     scene?: Scene
-): Mesh {
+): GroundMesh {
     const ground = new GroundMesh(name, scene);
     ground._setReady(false);
     ground._subdivisionsX = options.subdivisionsX || options.subdivisions || 1;
