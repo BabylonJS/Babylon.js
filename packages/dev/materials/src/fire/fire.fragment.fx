@@ -93,7 +93,7 @@ void main(void) {
 	// Lighting
 	vec3 diffuseBase = vec3(1.0, 1.0, 1.0);
 
-#ifdef VERTEXALPHA
+#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
 	alpha *= vColor.a;
 #endif
 

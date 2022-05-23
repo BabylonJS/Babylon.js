@@ -18,7 +18,8 @@ WebGPUEngine.prototype.createRawTexture = function (
     samplingMode: number,
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-    creationFlags: number = 0
+    creationFlags: number = 0,
+    useSRGBBuffer: boolean = false
 ): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
@@ -31,6 +32,7 @@ WebGPUEngine.prototype.createRawTexture = function (
     texture.invertY = invertY;
     texture._compression = compression;
     texture.type = type;
+    texture._useSRGBBuffer = useSRGBBuffer;
 
     if (!this._doNotHandleContextLost) {
         texture._bufferView = data;
@@ -38,7 +40,7 @@ WebGPUEngine.prototype.createRawTexture = function (
 
     this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, creationFlags);
 
-    this.updateRawTexture(texture, data, format, invertY, compression, type);
+    this.updateRawTexture(texture, data, format, invertY, compression, type, useSRGBBuffer);
 
     this._internalTexturesCache.push(texture);
 
@@ -51,7 +53,8 @@ WebGPUEngine.prototype.updateRawTexture = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
         return;
@@ -61,6 +64,7 @@ WebGPUEngine.prototype.updateRawTexture = function (
         texture._bufferView = bufferView;
         texture.invertY = invertY;
         texture._compression = compression;
+        texture._useSRGBBuffer = useSRGBBuffer;
     }
 
     if (bufferView) {
