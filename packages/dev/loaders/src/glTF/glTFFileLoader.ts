@@ -28,7 +28,6 @@ import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
-import { StringTools } from "core/Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
 
 interface IFileRequestInfo extends IFileRequest {
@@ -749,10 +748,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public canDirectLoad(data: string): boolean {
         return (
             (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
-            StringTools.StartsWith(data, "data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith("data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         );
     }
 
@@ -763,10 +762,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public directLoad(scene: Scene, data: string): Promise<any> {
         if (
-            StringTools.StartsWith(data, "base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, ";base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith(";base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 

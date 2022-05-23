@@ -30,7 +30,6 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
-import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -179,7 +178,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (EndsWith(parsedData.environmentTexture, ".env")) {
+                if ((parsedData.environmentTexture as string).endsWith(".env")) {
                     const compressedTexture = new CubeTexture(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
                         scene,
