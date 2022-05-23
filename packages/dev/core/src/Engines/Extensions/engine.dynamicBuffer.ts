@@ -30,10 +30,13 @@ ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, inde
     this.bindIndexBuffer(indexBuffer);
     let arrayBuffer;
 
-    if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-        arrayBuffer = indices;
-    } else {
-        arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+    if (indexBuffer.is32Bits) {
+        // any else than Uint32Array needs to be converted to Uint32Array
+        arrayBuffer = indices instanceof Uint32Array ? indices : Uint32Array.from(indices)
+    }
+    else {
+        // any else than Uint16Array needs to be converted to Uint16Array
+        arrayBuffer = indices instanceof Uint16Array ? indices : Uint16Array.from(indices)
     }
 
     this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
