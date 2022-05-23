@@ -30,7 +30,7 @@ import { initListeners, InitTags } from "./initializer";
 
 initListeners();
 
-//deprectaed, here for backwards compatibility
+//deprecated, here for backwards compatibility
 const disableInit: boolean = viewerGlobals.disableInit;
 
 /**
