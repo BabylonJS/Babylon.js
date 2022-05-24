@@ -51,6 +51,7 @@ uniform sampler2D diffuseSampler;
 #include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
+#include<helperFunctions>
 
 void main() {
     #ifdef ALPHATEST
@@ -101,6 +102,7 @@ void main() {
             // Reflectivity calculus for metallic-roughness model based on:
             // https://marmoset.co/posts/pbr-texture-conversion/
             // https://substance3d.adobe.com/tutorials/courses/the-pbr-guide-part-2
+            // https://learnopengl.com/PBR/Theory
 
             float metal = 1.0;
             float roughness = 1.0;
@@ -133,6 +135,7 @@ void main() {
                     reflectivity.rgb = mix(vec3(0.04), vec3(1.0), metal);   
                 #endif            
             #endif
+            reflectivity.rgb = toGammaSpace(reflectivity.rgb); // translate to gammaSpace to be sync with prePass reflectivity
         #else
             // SpecularGlossiness Model 
             #ifdef SPECULARGLOSSINESSTEXTURE
