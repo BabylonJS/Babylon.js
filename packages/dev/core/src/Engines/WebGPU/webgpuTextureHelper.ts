@@ -312,6 +312,7 @@ export class WebGPUTextureHelper {
             }
 
             const pipeline = this._device.createRenderPipeline({
+                layout: WebGPUConstants.AutoLayoutMode.Auto,
                 vertex: {
                     module: modules[0],
                     entryPoint: "main",
