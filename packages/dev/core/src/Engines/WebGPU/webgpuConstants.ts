@@ -21,6 +21,8 @@ export enum FeatureName {
     TextureCompressionASTC = "texture-compression-astc",
     TimestampQuery = "timestamp-query",
     IndirectFirstInstance = "indirect-first-instance",
+    ShaderF16 = "shader-f16",
+    BGRA8UnormStorage = "bgra8unorm-storage",
 }
 
 /** @hidden */
@@ -271,6 +273,11 @@ export enum CompilationMessageType {
 }
 
 /** @hidden */
+export enum AutoLayoutMode {
+    Auto = "auto",
+}
+
+/** @hidden */
 export enum PrimitiveTopology {
     PointList = "point-list",
     LineList = "line-list",
@@ -293,7 +300,7 @@ export enum CullMode {
 }
 
 /** @hidden */
-export enum ColorWrite {
+export enum ColorWriteFlags {
     Red = 1,
     Green = 2,
     Blue = 4,
