@@ -539,7 +539,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         if (!Array.isArray(indices)) {
-            indices = indices.slice();
+            indices = Array.from(indices);
         }
 
         /**
