@@ -1206,8 +1206,7 @@ export class InputTextArea extends InputText {
      * @param evt Pointer informations of double click
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _processDblClick(evt: PointerInfo) {
+    protected _processDblClick(_evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         let moveLeft, moveRight;
         do {
