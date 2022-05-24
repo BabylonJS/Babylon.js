@@ -5886,6 +5886,6 @@ export class ThinEngine {
             return this._renderingCanvas.ownerDocument;
         }
 
-        return document;
+        return IsDocumentAvailable() ? document : null;
     }
 }
