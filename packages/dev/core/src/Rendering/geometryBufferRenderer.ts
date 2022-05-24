@@ -17,10 +17,6 @@ import type { Observer } from "../Misc/observable";
 import type { Engine } from "../Engines/engine";
 import type { Nullable } from "../types";
 import { Material } from "../Materials/material";
-import { StandardMaterial } from "../Materials/standardMaterial";
-import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
-import { PBRMetallicRoughnessMaterial } from "../Materials/PBR/pbrMetallicRoughnessMaterial";
-import { PBRSpecularGlossinessMaterial } from "../Materials/PBR/pbrSpecularGlossinessMaterial";
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
@@ -366,7 +362,7 @@ export class GeometryBufferRenderer {
             if (this._enableReflectivity) {
                 let metallicWorkflow = false;
                 // for PBR materials: cf. https://doc.babylonjs.com/divingDeeper/materials/using/masterPBR
-                if (material instanceof PBRMetallicRoughnessMaterial) {
+                if (material.getClassName() == "PBRMetallicRoughnessMaterial") {
                     // if it is a PBR material in MetallicRoughness Mode:
                     if (material.metallicRoughnessTexture != null) {
                         defines.push("#define ORMTEXTURE");
@@ -394,7 +390,7 @@ export class GeometryBufferRenderer {
                             defines.push("#define ALBEDOCOLOR");
                         }
                     }
-                } else if (material instanceof PBRSpecularGlossinessMaterial) {
+                } else if (material.getClassName() == "PBRSpecularGlossinessMaterial") {
                     // if it is a PBR material in Specular/Glossiness Mode:
                     if (material.specularGlossinessTexture != null) {
                         defines.push("#define SPECULARGLOSSINESSTEXTURE");
@@ -408,7 +404,7 @@ export class GeometryBufferRenderer {
                     if (material.glossiness != null) {
                         defines.push("#define GLOSSINESSS");
                     }
-                } else if (material instanceof PBRMaterial) {
+                } else if (material.getClassName() == "PBRMaterial") {
                     // if it is the bigger PBRMaterial
                     if (material.metallicTexture != null) {
                         defines.push("#define ORMTEXTURE");
@@ -450,7 +446,7 @@ export class GeometryBufferRenderer {
                             defines.push("#define GLOSSINESSS");
                         }
                     }
-                } else if (material instanceof StandardMaterial) {
+                } else if (material.getClassName() == "StandardMaterial") {
                     // if StandardMaterial:
                     if (material.specularTexture != null) {
                         defines.push("#define REFLECTIVITYTEXTURE");
@@ -803,15 +799,8 @@ export class GeometryBufferRenderer {
 
                     // Reflectivity
                     if (this._enableReflectivity) {
-                        // if (material.specularTexture) {
-                        //     effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
-                        //     effect.setTexture("reflectivitySampler", material.specularTexture);
-                        // } else if (material.reflectivityTexture) {
-                        //     effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
-                        //     effect.setTexture("reflectivitySampler", material.reflectivityTexture);
-                        // }
                         // for PBR materials: cf. https://doc.babylonjs.com/divingDeeper/materials/using/masterPBR
-                        if (material instanceof PBRMetallicRoughnessMaterial) {
+                        if (material.getClassName() == "PBRMetallicRoughnessMaterial") {
                             // if it is a PBR material in MetallicRoughness Mode:
                             if (material.metallicRoughnessTexture != null) {
                                 effect.setTexture("reflectivitySampler", material.metallicRoughnessTexture);
@@ -829,7 +818,7 @@ export class GeometryBufferRenderer {
                             } else if (material.baseColor != null) {
                                 effect.setColor3("albedoColor", material.baseColor);
                             }
-                        } else if (material instanceof PBRSpecularGlossinessMaterial) {
+                        } else if (material.getClassName() == "PBRSpecularGlossinessMaterial") {
                             // if it is a PBR material in Specular/Glossiness Mode:
                             if (material.specularGlossinessTexture != null) {
                                 effect.setTexture("reflectivitySampler", material.specularGlossinessTexture);
@@ -842,7 +831,7 @@ export class GeometryBufferRenderer {
                             if (material.glossiness != null) {
                                 effect.setFloat("glossiness", material.glossiness);
                             }
-                        } else if (material instanceof PBRMaterial) {
+                        } else if (material.getClassName() == "PBRMaterial") {
                             // if it is the bigger PBRMaterial
                             if (material.metallicTexture != null) {
                                 effect.setTexture("reflectivitySampler", material.metallicTexture);
@@ -876,7 +865,7 @@ export class GeometryBufferRenderer {
                                     effect.setFloat("glossiness", material.microSurface);
                                 }
                             }
-                        } else if (material instanceof StandardMaterial) {
+                        } else if (material.getClassName() == "StandardMaterial") {
                             // if StandardMaterial:
                             if (material.specularTexture != null) {
                                 effect.setTexture("reflectivitySampler", material.specularTexture);
