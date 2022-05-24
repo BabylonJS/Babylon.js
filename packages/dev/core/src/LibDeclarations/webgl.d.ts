@@ -54,7 +54,6 @@ interface WebGLRenderingContext {
     COMPRESSED_SRGB8_ETC2: number;
     COMPRESSED_SRGB8_ALPHA8_ETC2_EAC: number;
 
-
     UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
 
