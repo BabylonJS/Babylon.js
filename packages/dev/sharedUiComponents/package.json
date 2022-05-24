@@ -1,48 +1,62 @@
 {
-    "name": "@dev/shared-ui-components",
-    "private": true,
-    "version": "1.0.0",
-    "types": "dist/index",
-    "main": "dist/index",
-    "module": "dist/index",
-    "files": [
-        "dist",
-        "src"
-    ],
-    "scripts": {
-        "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
-        "precompile": "npm run compile:assets",
-        "compile": "npm run compile:source",
-        "compile:source": "tsc -b tsconfig.build.json",
-        "compile:assets": "build-tools -c process-assets --package core",
-        "watch:assets": "build-tools -c process-assets --package core --watch",
-        "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --package \"shared-ui-components\" -wa"
-    },
-    "peerDependencies": {
-        "@fortawesome/fontawesome-svg-core": "^6.1.0",
-        "@fortawesome/free-solid-svg-icons": "^6.1.0",
-        "@fortawesome/react-fontawesome": "^0.1.18",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2",
-        "@types/react": "^17.0.30",
-        "@types/react-dom": "^17.0.10"
-    },
-    "devDependencies": {
-        "@dev/core": "^1.0.0",
-        "@dev/gui": "^1.0.0",
-        "@rollup/plugin-image": "^2.1.1",
-        "@rollup/plugin-multi-entry": "^4.1.0",
-        "@rollup/plugin-typescript": "^8.3.0",
-        "node-sass": "^7.0.1",
-        "rimraf": "^3.0.2",
-        "rollup": "^2.58.3",
-        "rollup-plugin-scss": "^3.0.0",
-        "typescript": "^4.4.4",
-        "@fortawesome/fontawesome-svg-core": "^6.1.0",
-        "@fortawesome/free-solid-svg-icons": "^6.0.0",
-        "@fortawesome/react-fontawesome": "^0.1.17"
-    },
-    "sideEffects": false
+  "name": "@dev/shared-ui-components",
+  "private": true,
+  "version": "1.0.0",
+  "types": "dist/index",
+  "main": "dist/index",
+  "module": "dist/index",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rimraf dist && rimraf *.tsbuildinfo",
+    "precompile": "npm run compile:assets",
+    "compile": "npm run compile:source",
+    "compile:source": "tsc -b tsconfig.build.json",
+    "compile:assets": "build-tools -c process-assets --package core",
+    "watch:assets": "build-tools -c process-assets --package core --watch",
+    "watch:source": "tsc -b tsconfig.build.json -w",
+    "watch": "build-tools -c dev-watch --package \"shared-ui-components\" -wa",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "peerDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.0",
+    "@fortawesome/free-solid-svg-icons": "^6.1.0",
+    "@fortawesome/react-fontawesome": "^0.1.18",
+    "@types/react": "^17.0.30",
+    "@types/react-dom": "^17.0.10",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@dev/core": "^1.0.0",
+    "@dev/gui": "^1.0.0",
+    "@fortawesome/fontawesome-svg-core": "^6.1.0",
+    "@fortawesome/free-solid-svg-icons": "^6.0.0",
+    "@fortawesome/react-fontawesome": "^0.1.17",
+    "@rollup/plugin-image": "^2.1.1",
+    "@rollup/plugin-multi-entry": "^4.1.0",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "@storybook/addon-actions": "^6.4.22",
+    "@storybook/addon-essentials": "^6.4.22",
+    "@storybook/addon-interactions": "^6.4.22",
+    "@storybook/addon-links": "^6.4.22",
+    "@storybook/react": "^6.4.22",
+    "@storybook/testing-library": "^0.0.11",
+    "babel-loader": "^8.2.5",
+    "node-sass": "^7.0.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.58.3",
+    "rollup-plugin-scss": "^3.0.0",
+    "typescript": "^4.4.4"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@storybook/builder-webpack5": "^6.4.22",
+    "@storybook/manager-webpack5": "^6.4.22"
+  }
 }
