@@ -750,9 +750,9 @@ export class SolidParticleSystem implements IDisposable {
         const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         this.recomputeNormals = meshNor ? false : true;
-        const indices = meshInd.slice() as number[];
-        const shapeNormals = meshNor.slice() as number[];
-        const shapeColors = meshCol ? (meshCol.slice() as number[]) : [];
+        const indices = Array.from(meshInd);
+        const shapeNormals = Array.from(meshNor);
+        const shapeColors = meshCol ? Array.from(meshCol) : [];
         const storage = options && options.storage ? options.storage : null;
         let bbInfo: Nullable<BoundingInfo> = null;
         if (this._particlesIntersect) {
