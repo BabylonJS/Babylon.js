@@ -720,7 +720,10 @@ export class WebGPUTextureHelper {
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB : WebGPUConstants.TextureFormat.ASTC4x4Unorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.ETC2RGB8UnormSRGB : WebGPUConstants.TextureFormat.ETC2RGB8Unorm;
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+                return useSRGBBuffer ? WebGPUConstants.TextureFormat.ETC2RGBA8UnormSRGB : WebGPUConstants.TextureFormat.ETC2RGBA8Unorm;
         }
 
         switch (type) {
