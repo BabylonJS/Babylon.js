@@ -675,7 +675,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             for (let t = 0; t < mustTesselate.length; ++t) {
                 const triangle = mustTesselate[t];
 
-                this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices as number[], remapVertexIndices);
+                this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices, remapVertexIndices);
             }
 
             (mustTesselate as any) = null;
