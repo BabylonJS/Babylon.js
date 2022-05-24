@@ -1203,7 +1203,7 @@ export class InputTextArea extends InputText {
     /**
      * Select the word immediatly under the cursor on double click
      *
-     * @param evt Pointer informations of double click
+     * @param _evt Pointer informations of double click
      * @hidden
      */
     protected _processDblClick(_evt: PointerInfo) {
