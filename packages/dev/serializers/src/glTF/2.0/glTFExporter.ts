@@ -2226,6 +2226,9 @@ export class _Exporter {
         const promiseChain = Promise.resolve();
         const skinMap: { [key: number]: number } = {};
         for (const skeleton of babylonScene.skeletons) {
+            if (skeleton.bones.length <= 0) {
+                continue;
+            }
             // create skin
             const skin: ISkin = { joints: [] };
             const inverseBindMatrices: Matrix[] = [];

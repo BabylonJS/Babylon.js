@@ -152,6 +152,7 @@ export class NullEngine extends Engine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
+            texture2DArrayMaxLayerCount: 128,
         };
 
         this._features = {
@@ -773,6 +774,7 @@ export class NullEngine extends Engine {
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -785,7 +787,8 @@ export class NullEngine extends Engine {
         samplingMode: number,
         compression: Nullable<string> = null,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        creationFlags = 0
+        creationFlags = 0,
+        useSRGBBuffer = false
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Raw);
         texture.baseWidth = width;
@@ -798,6 +801,7 @@ export class NullEngine extends Engine {
         texture.invertY = invertY;
         texture._compression = compression;
         texture.type = type;
+        texture._useSRGBBuffer = useSRGBBuffer;
 
         if (!this._doNotHandleContextLost) {
             texture._bufferView = data;
@@ -814,6 +818,7 @@ export class NullEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      */
     public updateRawTexture(
         texture: Nullable<InternalTexture>,
@@ -821,7 +826,8 @@ export class NullEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        useSRGBBuffer: boolean = false
     ): void {
         if (texture) {
             texture._bufferView = data;
@@ -829,6 +835,7 @@ export class NullEngine extends Engine {
             texture.invertY = invertY;
             texture._compression = compression;
             texture.type = type;
+            texture._useSRGBBuffer = useSRGBBuffer;
         }
     }
 

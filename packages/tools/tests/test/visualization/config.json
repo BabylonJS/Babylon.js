@@ -266,7 +266,7 @@
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#31",
+            "playgroundId": "#QATUCH#32",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
@@ -1416,6 +1416,11 @@
             "playgroundId": "#EVX1DH#80",
             "excludedEngines": ["webgl1"],
             "referenceImage": "testUpdateTextureData.png"
+        },
+        {
+            "title": "Material Plugin",
+            "playgroundId": "#22HT5Z#10",
+            "referenceImage": "materialPlugin.png"
         }
     ]
 }

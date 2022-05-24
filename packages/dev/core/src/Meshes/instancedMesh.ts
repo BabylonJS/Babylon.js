@@ -498,6 +498,7 @@ export class InstancedMesh extends AbstractMesh {
                 "behaviors",
                 "worldMatrixFromCache",
                 "hasThinInstances",
+                "hasBoundingInfo",
             ],
             []
         );
@@ -581,8 +582,6 @@ declare module "./abstractMesh" {
         instancedBuffers: { [key: string]: any };
     }
 }
-
-Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number): void {
     // Remove existing one

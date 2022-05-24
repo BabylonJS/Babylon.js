@@ -40,6 +40,7 @@ import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLi
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
+import { Constants } from "core/Engines/constants";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -50,7 +51,7 @@ interface IParticleSystemPropertyGridComponentProps {
 }
 
 export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
-    private _snippetUrl = "https://snippet.babylonjs.com";
+    private _snippetUrl = Constants.SnippetUrl;
 
     constructor(props: IParticleSystemPropertyGridComponentProps) {
         super(props);

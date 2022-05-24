@@ -300,7 +300,7 @@ export class TransformNode extends Node {
     public _isSynchronized(): boolean {
         const cache = this._cache;
 
-        if (this.billboardMode !== cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+        if (this._billboardMode !== cache.billboardMode || this._billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
             return false;
         }
 
@@ -308,19 +308,19 @@ export class TransformNode extends Node {
             return false;
         }
 
-        if (this.infiniteDistance) {
+        if (this._infiniteDistance) {
             return false;
         }
 
-        if (this.position._isDirty) {
+        if (this._position._isDirty) {
             return false;
         }
 
-        if (this.scaling._isDirty) {
+        if (this._scaling._isDirty) {
             return false;
         }
 
-        if ((this._rotationQuaternion && this._rotationQuaternion._isDirty) || this.rotation._isDirty) {
+        if ((this._rotationQuaternion && this._rotationQuaternion._isDirty) || this._rotation._isDirty) {
             return false;
         }
 
@@ -1005,7 +1005,7 @@ export class TransformNode extends Node {
         }
 
         const currentRenderId = this.getScene().getRenderId();
-        if (!this._isDirty && !force && this.isSynchronized()) {
+        if (!this._isDirty && !force && (this._currentRenderId === currentRenderId || this.isSynchronized())) {
             this._currentRenderId = currentRenderId;
             return this._worldMatrix;
         }
