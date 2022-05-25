@@ -1,8 +1,9 @@
+import { Nullable } from "../../../types";
 import { Observable } from "../../../Misc/observable";
 import { IDisposable, Scene } from "../../../scene";
-import { ICustomEvent } from "../customEventManager";
+import { CustomEventManager, ICustomEvent } from "../customEventManager";
 
-export abstract class BaseTrigger<T = void> implements IDisposable {
+export abstract class BaseTrigger<O = void, T = any> implements IDisposable {
     private _payload: T;
     private _duration: number = 0;
     protected _triggered: boolean = false;
@@ -12,14 +13,30 @@ export abstract class BaseTrigger<T = void> implements IDisposable {
     public reversed: boolean = false;
     public removeAfterTrigger: boolean = false;
 
-    constructor() {}
+    protected _customEventManager: Nullable<CustomEventManager> = null;
+    public set customEventManager(customEventManager: Nullable<CustomEventManager>) {
+        if (customEventManager) {
+            if(this._customEventManager && this._customEventManager !== customEventManager) {
+                // remove event listeners from old event listener
+            }
+            this._customEventManager = customEventManager;
+            this._registerEvents();
+        } else {
+            if(this._customEventManager) {
+                // remove event listeners
+            }
+            this._customEventManager = customEventManager;
+        }
+    }
+
+    constructor(protected _options: O) {}
 
     public update(scene: Scene): void {
         const condition = this._checkConditions(scene);
         this._checkTriggeredState(condition, scene.getEngine().getDeltaTime());
     }
 
-    public eventRaised(_event: ICustomEvent<undefined>): void {}
+    public eventRaised(_event: ICustomEvent<any>): void {}
 
     public isEventListened(event: string): boolean {
         return this._eventsListened.indexOf(event) !== -1;
@@ -29,9 +46,19 @@ export abstract class BaseTrigger<T = void> implements IDisposable {
         this.onTriggeredObservable.clear();
     }
 
-    protected abstract _checkConditions(scene: Scene): boolean;
+    protected _checkConditions(_scene: Scene): boolean {
+        return false;
+    }
 
-    protected _trigger(): void {
+    protected _registerEvents(): void {
+        // no-op, override if you need to register events
+    }
+
+    protected _unregisteredEvents(): void {
+
+    }
+
+    private _trigger(): void {
         this._triggered = true;
         this.onTriggeredObservable.notifyObservers(this._payload);
     }

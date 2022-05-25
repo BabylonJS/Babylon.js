@@ -5,9 +5,9 @@ export interface IImmediateTriggerOptions {
     runOnNextFrame?: boolean;
 }
 
-export class ImmediateTrigger extends BaseTrigger {
-    constructor(private _options: IImmediateTriggerOptions) {
-        super();
+export class ImmediateTrigger extends BaseTrigger<IImmediateTriggerOptions> {
+    constructor(options: IImmediateTriggerOptions) {
+        super(options);
         this.removeAfterTrigger = true;
     }
 
