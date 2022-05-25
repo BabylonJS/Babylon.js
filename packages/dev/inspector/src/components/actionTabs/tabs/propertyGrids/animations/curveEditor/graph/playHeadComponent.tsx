@@ -20,6 +20,8 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _viewScale = 1;
     private _offsetX = 0;
+    private _offsetRange = 0;
+    private _isMounted = false;
 
     private _pointerIsDown: boolean;
 
@@ -60,6 +62,10 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         });
 
         this.props.context.onGraphMoved.add((x) => {
+            if (!this._isMounted) {
+                return;
+            }
+
             this._offsetX = x;
             this.forceUpdate();
 
@@ -67,11 +73,19 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         });
 
         this.props.context.onGraphScaled.add((scale) => {
+            if (!this._isMounted) {
+                return;
+            }
+
             this._viewScale = 1 / scale;
             this.forceUpdate();
 
             this._moveHead(this.props.context.activeFrame);
         });
+    }
+
+    componentDidMount() {
+        this._isMounted = true;
     }
 
     private _moveHead(frame: number) {
@@ -85,20 +99,20 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         this.props.context.activeFrame = frame;
     }
 
-    private _frameToPixel(frame: number) {
+    private _frameToPixel(frame: number, offsetX = this._offsetX, scale = this._viewScale) {
         const minFrame = this.props.context.referenceMinFrame;
         const maxFrame = this.props.context.referenceMaxFrame;
 
-        return (((frame - minFrame) / (maxFrame - minFrame)) * this._graphAbsoluteWidth + this._offsetX) * this._viewScale;
+        return (((frame - minFrame) / (maxFrame - minFrame)) * this._graphAbsoluteWidth + offsetX) * scale;
     }
 
-    private _pixelToFrame(pixel: number) {
+    private _pixelToFrame(pixel: number, offsetX = this._offsetX, scale = this._viewScale) {
         const animation = this.props.context.activeAnimations[0];
         const keys = animation.getKeys();
         const minFrame = this.props.context.referenceMinFrame;
         const maxFrame = this.props.context.referenceMaxFrame;
 
-        return Math.max(((pixel / this._viewScale - this._offsetX) / this._graphAbsoluteWidth) * (maxFrame - minFrame) + minFrame, keys[0].frame);
+        return Math.max(((pixel / scale - offsetX) / this._graphAbsoluteWidth) * (maxFrame - minFrame) + minFrame, keys[0].frame);
     }
 
     componentWillUnmount() {
@@ -110,26 +124,28 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
+
+        this._isMounted = false;
     }
 
-    private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+    private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>, offsetX?: number, scale?: number) {
         evt.preventDefault();
 
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
 
-        const frame = this._pixelToFrame(evt.nativeEvent.offsetX);
+        const frame = this._pixelToFrame(evt.nativeEvent.offsetX, offsetX, scale);
         this.props.context.moveToFrame(frame);
 
         this._moveHead(frame);
     }
 
-    private _onPointerMove(evt: React.PointerEvent<HTMLDivElement>) {
+    private _onPointerMove(evt: React.PointerEvent<HTMLDivElement>, offsetX?: number, scale?: number) {
         if (!this._pointerIsDown) {
             return;
         }
 
-        const frame = this._pixelToFrame(evt.nativeEvent.offsetX);
+        const frame = this._pixelToFrame(evt.nativeEvent.offsetX, offsetX, scale);
         this.props.context.moveToFrame(frame);
 
         this._moveHead(frame);
@@ -155,6 +171,12 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
                     id="play-head-control"
                     onPointerDown={(evt) => this._onPointerDown(evt)}
                     onPointerMove={(evt) => this._onPointerMove(evt)}
+                    onPointerUp={(evt) => this._onPointerUp(evt)}
+                ></div>
+                <div
+                    id="play-head-control-2"
+                    onPointerDown={(evt) => this._onPointerDown(evt, this._offsetRange, 1)}
+                    onPointerMove={(evt) => this._onPointerMove(evt, this._offsetRange, 1)}
                     onPointerUp={(evt) => this._onPointerUp(evt)}
                 ></div>
             </>
