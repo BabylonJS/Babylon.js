@@ -19,8 +19,10 @@
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.7.0",
         "tslib": "^2.3.1"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^5.7.0"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
@@ -48,3 +50,4 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
+

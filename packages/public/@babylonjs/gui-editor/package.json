@@ -17,11 +17,10 @@
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist"
     },
-    "dependencies": {
-        "@babylonjs/core": "^5.7.0",
-        "@babylonjs/gui": "^5.7.0"
-    },
+    "dependencies": {},
     "peerDependencies": {
+        "@babylonjs/core": "^5.7.0",
+        "@babylonjs/gui": "^5.7.0",
         "@types/react": ">=16.7.3",
         "@types/react-dom": ">=16.0.9"
     },
@@ -49,3 +48,4 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
+
