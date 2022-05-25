@@ -1,6 +1,31 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /**
+ * Checks for a matching suffix at the end of a string (for ES5 and lower)
+ * @param str Source string
+ * @param suffix Suffix to search for in the source string
+ * @returns Boolean indicating whether the suffix was found (true) or not (false)
+ * @deprecated Please use native string function instead
+ */
+export const EndsWith = (str: string, suffix: string): boolean => {
+    return str.endsWith(suffix);
+};
+
+/**
+ * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
+ * @param str Source string
+ * @param suffix Suffix to search for in the source string
+ * @returns Boolean indicating whether the suffix was found (true) or not (false)
+ * @deprecated Please use native string function instead
+ */
+export const StartsWith = (str: string, suffix: string): boolean => {
+    if (!str) {
+        return false;
+    }
+    return str.startsWith(suffix);
+};
+
+/**
  * Decodes a buffer into a string
  * @param buffer The buffer to decode
  * @returns The decoded string
@@ -94,6 +119,8 @@ export const PadNumber = (num: number, length: number): string => {
  * Helper to manipulate strings
  */
 export const StringTools = {
+    EndsWith,
+    StartsWith,
     Decode,
     EncodeArrayBufferToBase64,
     DecodeBase64ToString,
