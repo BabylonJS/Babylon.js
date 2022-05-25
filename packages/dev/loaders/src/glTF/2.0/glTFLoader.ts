@@ -132,7 +132,7 @@ export class ArrayItem {
  */
 export class GLTFLoader implements IGLTFLoader {
     /** @hidden */
-    public _completePromises = new Array<Promise<any>>();
+    public readonly _completePromises = new Array<Promise<any>>();
 
     /** @hidden */
     public _assetContainer: Nullable<AssetContainer> = null;
@@ -154,7 +154,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
-    private _postSceneLoadActions = new Array<() => void>();
+    private readonly _postSceneLoadActions = new Array<() => void>();
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -799,14 +799,6 @@ export class GLTFLoader implements IGLTFLoader {
                     this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
-                        // Add a reference to the skinned mesh from the transform node.
-                        const gltf = babylonTransformNodeForSkin.metadata.gltf;
-                        gltf.skinnedMesh = babylonTransformNode;
-                        babylonTransformNode.onDisposeObservable.addOnce(() => {
-                            // Delete the reference when the skinned mesh is disposed.
-                            delete gltf.skinnedMesh;
-                        });
-
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(
                             this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
@@ -828,6 +820,8 @@ export class GLTFLoader implements IGLTFLoader {
                                     } else {
                                         babylonTransformNode.parent = this._rootBabylonMesh;
                                     }
+
+                                    this._parent.onSkinLoadedObservable.notifyObservers({ node: babylonTransformNodeForSkin, skinnedNode: babylonTransformNode });
                                 });
                             })
                         );
