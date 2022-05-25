@@ -179,7 +179,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
                 let guiRoot = adt.getChildren();
                 result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromGUI(guiRoot)));
             }
-            else if (curNode.accessibilityTag?.isSalient) {
+            else if (curNode.accessibilityTag) {
                 result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromNodes(curNode.getChildren())));
             }
             else {
