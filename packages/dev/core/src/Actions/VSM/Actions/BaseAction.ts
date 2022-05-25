@@ -1,8 +1,10 @@
 import { IDisposable } from "../../../scene";
 import { Observable } from "../../../Misc/observable";
-import { ICustomEvent } from "../customEventManager";
+import { Nullable } from "../../../types";
+import { CustomEventManager } from "../customEventManager";
+import { Tools } from "../../../Misc/tools";
 
-export abstract class BaseAction implements IDisposable {
+export abstract class BaseAction<T = any> implements IDisposable {
     protected _isRunning: boolean = false;
     // glEF sees that as a single action
     public parallelActions: BaseAction[] = [];
@@ -11,11 +13,15 @@ export abstract class BaseAction implements IDisposable {
 
     private _runAgainTimes: number = 0;
 
-    public onActionExecutedObservable = new Observable<BaseAction>();
+    public onActionExecutionStartedObservable = new Observable<BaseAction>();
     public onActionDoneObservable = new Observable<BaseAction>();
-    public onEventRaisedObservable = new Observable<ICustomEvent<any>>();
 
-    constructor() {
+    protected _customEventManager: Nullable<CustomEventManager> = null;
+    public set customEventManager(customEventManager: Nullable<CustomEventManager>) {
+        this._customEventManager = customEventManager;
+    }
+
+    constructor(protected _options: T) {
         this.onActionDoneObservable.add(() => {
             if (this._runAgainTimes) {
                 this._runAgainTimes--;
@@ -37,19 +43,29 @@ export abstract class BaseAction implements IDisposable {
     }
 
     public execute(): void {
+        if (this._isRunning) {
+            Tools.Warn("Action is already running");
+            return;
+        }
         this._isRunning = true;
-        this._execute();
+        this.onActionExecutionStartedObservable.notifyObservers(this);
+        this._execute().then(() => {
+            this._isRunning = false;
+            this.onActionDoneObservable.notifyObservers(this);
+        });
     }
-    protected abstract _execute(): void;
+    protected abstract _execute(): Promise<void>;
     public stop(): void {
+        if (!this._isRunning) {
+            return;
+        }
         this._stop();
         this._isRunning = false;
     }
     protected abstract _stop(): void;
 
     dispose(): void {
-        this.onActionExecutedObservable.clear();
+        this.onActionExecutionStartedObservable.clear();
         this.onActionDoneObservable.clear();
-        this.onEventRaisedObservable.clear();
     }
 }

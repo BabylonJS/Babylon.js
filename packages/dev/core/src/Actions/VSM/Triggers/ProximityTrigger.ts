@@ -12,10 +12,7 @@ export interface IProximityTriggerOptions {
     ignoreIfTargetHidden?: boolean;
 }
 
-export class ProximityTrigger extends BaseTrigger {
-    constructor(private _options: IProximityTriggerOptions) {
-        super();
-    }
+export class ProximityTrigger extends BaseTrigger<IProximityTriggerOptions> {
 
     protected _checkConditions(_scene: Scene): boolean {
         if (this._options.ignoreIfTargetHidden) {

@@ -34,12 +34,11 @@ export class BehaviorManager implements IDisposable {
         this._behaviors.push(behavior);
         if (!this._triggers.includes(trigger)) {
             this._triggers.push(trigger);
+            trigger.customEventManager = this._customEventManager;
         }
         if (!this._actions.includes(action)) {
             this._actions.push(action);
-            action.onEventRaisedObservable.add((event) => {
-                this._customEventManager.raiseEvent(event);
-            });
+            action.customEventManager = this._customEventManager;
         }
     }
 
@@ -58,6 +57,7 @@ export class BehaviorManager implements IDisposable {
     }
 
     dispose(): void {
+        // TODO dispose everything
         throw new Error("Method not implemented.");
     }
 }

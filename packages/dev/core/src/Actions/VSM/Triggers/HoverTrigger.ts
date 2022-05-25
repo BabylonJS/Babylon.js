@@ -8,10 +8,7 @@ export interface IHoverTriggerOptions {
     subject: AbstractMesh; // Could be node?
 }
 
-export class HoverTrigger extends BaseTrigger {
-    constructor(private _options: IHoverTriggerOptions) {
-        super();
-    }
+export class HoverTrigger extends BaseTrigger<IHoverTriggerOptions> {
 
     protected _checkConditions(scene: Scene): boolean {
         // this does not take pointerId under consideration.

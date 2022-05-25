@@ -49,6 +49,7 @@ export class CustomEventManager {
     }
 }
 
-// const eventManager = new EventManager();
+// TODO - Should that be a global singleton?
 
-// export { eventManager };
+// const customEventManager = new CustomEventManager();
+// export { customEventManager };
