@@ -318,21 +318,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public readonly onSkinLoadedObservable = new Observable<{ node: TransformNode; skinnedNode: TransformNode }>();
 
-    private _onSkinLoadedObserver: Nullable<Observer<{ node: TransformNode; skinnedNode: TransformNode }>>;
-
-    /**
-     * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
-     * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
-     */
-    public set onSkinLoaded(callback: (node: TransformNode, skinnedNode: TransformNode) => void) {
-        if (this._onSkinLoadedObserver) {
-            this.onSkinLoadedObservable.remove(this._onSkinLoadedObserver);
-        }
-        this._onSkinLoadedObserver = this.onSkinLoadedObservable.add((data) => {
-            callback(data.node, data.skinnedNode);
-        });
-    }
-
     /**
      * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
