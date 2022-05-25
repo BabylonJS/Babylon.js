@@ -1673,6 +1673,7 @@ export class GLTFLoader implements IGLTFLoader {
                             inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
                             value: key.value[targetIndex],
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined,
+                            interpolation: key.interpolation,
                         }))
                     );
 
