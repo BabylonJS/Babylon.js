@@ -28,15 +28,17 @@ ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, inde
     // Force cache update
     this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
     this.bindIndexBuffer(indexBuffer);
-    let arrayBuffer;
 
-    if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-        arrayBuffer = indices;
+    let view: ArrayBufferView;
+    if (indexBuffer.is32Bits) {
+        // anything else than Uint32Array needs to be converted to Uint32Array
+        view = indices instanceof Uint32Array ? indices : new Uint32Array(indices);
     } else {
-        arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+        // anything else than Uint16Array needs to be converted to Uint16Array
+        view = indices instanceof Uint16Array ? indices : new Uint16Array(indices);
     }
 
-    this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
+    this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, view, this._gl.DYNAMIC_DRAW);
 
     this._resetIndexBufferBinding();
 };

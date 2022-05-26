@@ -774,6 +774,15 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <TextureLinkLineComponent
+                                label="Refraction Intensity"
+                                texture={material.subSurface.refractionIntensityTexture}
+                                onTextureCreated={(texture) => (material.subSurface.refractionIntensityTexture = texture)}
+                                onTextureRemoved={() => (material.subSurface.refractionIntensityTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
+                            <TextureLinkLineComponent
                                 label="Refraction"
                                 texture={material.subSurface.refractionTexture}
                                 onTextureCreated={(texture) => (material.subSurface.refractionTexture = texture)}
