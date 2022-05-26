@@ -978,13 +978,11 @@ declare class GPUError {
 }
 
 declare class GPUOutOfMemoryError extends GPUError {
-    private __brand: void;
     constructor();
     readonly message: string;
 }
 
 declare class GPUValidationError extends GPUError {
-    private __brand: void;
     constructor(message: string);
     readonly message: string;
 }
