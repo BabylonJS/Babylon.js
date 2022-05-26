@@ -27,9 +27,12 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * The text content displayed in HTML element.
      */
-    public get description(): string {
+    public override get description(): string {
         let description = "";
-        if (this.entity instanceof TextBlock) {
+        if (this.entity.accessibilityTag?.description) {
+            description = this.entity.accessibilityTag.description;
+        }
+        else if (this.entity instanceof TextBlock) {
             description = (this.entity as TextBlock).text;
         }
         else if (this.entity instanceof Button) {
@@ -44,7 +47,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * If this entity is actionable (can be clicked).
      */
-    public get isActionable(): boolean {
+    public override get isActionable(): boolean {
         if (this._isActionable) {
             return this._isActionable;
         }
@@ -61,7 +64,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * If this entity is focusable (can be focused by tab key pressing).
      */
-    public get isFocusable(): boolean {
+    public override get isFocusable(): boolean {
         // TODO: change back
         // return true;
         if (this._isFocusable) {
@@ -80,7 +83,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * Callback when the HTML element is focused. Show visual indication on BabylonJS entity.
      */
-    public focus(): void {
+    public override focus(): void {
         const control = this.entity as Control;
         control.highlightLineWidth = 10;
         control.isHighlighted = true;
@@ -89,7 +92,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * Callback when the HTML element is blured. Dismiss visual indication on BabylonJS entity.
      */
-    public blur(): void {
+    public override blur(): void {
         const control = this.entity as Control;
         control.isHighlighted = false;
     }
@@ -97,7 +100,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
      */
-    public click(): void {
+    public override click(): void {
         if (!this.isActionable) return;
         this.entity.onPointerClickObservable.notifyObservers(new Vector2WithInfo(new Vector2()));
     }
@@ -105,6 +108,6 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     /**
      * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
      */
-    public rightClick(): void {
+    public override rightClick(): void {
     }
 }

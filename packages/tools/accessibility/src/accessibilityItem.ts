@@ -24,10 +24,10 @@ export class AccessibilityItem {
 
     /**
      * The text content displayed in HTML element.
-     * Returns "" by default. Implemented by child classes
+     * Returns the description in accessibilityTag, if defined (returns "" by default).
      */
     public get description(): string {
-        return "";
+        return this.entity.accessibilityTag?.description ?? "";;
     }
 
     /**

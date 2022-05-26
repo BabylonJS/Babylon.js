@@ -35,6 +35,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         console.log("componentDidMount");
         const scene = this.props.scene;
 
+        // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
         let updateA11yTree: () => void = () => {
             let a11yTreeItems = this._updateAccessibilityTreeItems();
             this.setState({
@@ -46,6 +47,10 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             // observe isVisible changed
             if(!this._observersMap.has(control.onIsVisibleChangedObservable)) {
                 this._observersMap.set(control.onIsVisibleChangedObservable, control.onIsVisibleChangedObservable.add(updateA11yTree));
+            }
+
+            if(!this._observersMap.has(control.onAccessibilityTagChangedObservable)) {
+                this._observersMap.set(control.onAccessibilityTagChangedObservable, control.onAccessibilityTagChangedObservable.add(updateA11yTree));
             }
 
             if(control instanceof Container) {

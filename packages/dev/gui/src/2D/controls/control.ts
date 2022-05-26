@@ -21,6 +21,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
+import { IAccessibilityTag } from "core/IAccessibilityTag";
 
 /**
  * Root class used for all 2D controls
@@ -279,6 +280,23 @@ export class Control {
     public getClassName(): string {
         return this._getTypeName();
     }
+
+    /**
+     * Gets or sets the accessibility tag to describe the control for accessibility purpose.
+     * By default, GUI controls already indicate accessibility info, but one can override the info using this tag.
+     */
+    public set accessibilityTag(value: Nullable<IAccessibilityTag>) {
+        this._accessibilityTag = value;
+        this.onAccessibilityTagChangedObservable.notifyObservers(value);
+    }
+
+    public get accessibilityTag() {
+        return this._accessibilityTag;
+    }
+
+    protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
+
+    public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
 
     /**
      * An event triggered when pointer wheel is scrolled

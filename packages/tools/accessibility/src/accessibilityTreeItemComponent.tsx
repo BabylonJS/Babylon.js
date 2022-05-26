@@ -31,6 +31,8 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
                     onFocus={() => {a11yItem.focus();}}
                     onBlur={() => {a11yItem.blur();}}
+                    role={a11yItem.entity.accessibilityTag?.role}
+                    {...a11yItem.entity.accessibilityTag?.aria}
                 >
                     {a11yItem.description}
                 </button>
@@ -42,6 +44,8 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
                     onFocus={() => {a11yItem.focus();}}
                     onBlur={() => {a11yItem.blur();}}
+                    role={a11yItem.entity.accessibilityTag?.role}
+                    {...a11yItem.entity.accessibilityTag?.aria}
                 >
                     {a11yItem.description}
                 </div>
@@ -52,10 +56,12 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
     private _renderParentNode(a11yItem: AccessibilityItem, level: number): JSX.Element {
         return (
             <div>
-                {!!a11yItem.description && <div role={'heading'} aria-level={level}
+                {!!a11yItem.description && <div role={a11yItem.entity.accessibilityTag?.role ?? 'heading'}
+                    aria-level={level}
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
                     onFocus={() => {a11yItem.focus();}}
                     onBlur={() => {a11yItem.blur();}}
+                    {...a11yItem.entity.accessibilityTag?.aria}
                 >
                     {a11yItem.description}
                 </div>}
