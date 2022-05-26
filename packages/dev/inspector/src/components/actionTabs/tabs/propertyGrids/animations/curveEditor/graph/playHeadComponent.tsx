@@ -75,7 +75,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
             if (!this._isMounted) {
                 return;
             }
-            
+
             this.props.context.moveToFrame(frame);
             this._moveHead(frame);
         });
@@ -117,6 +117,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         this._playHeadCircle.current.innerHTML = frame.toFixed(0);
 
         this.props.context.activeFrame = frame;
+        this.props.context.onPlayheadMoved.notifyObservers(frame);
     }
 
     private _frameToPixel(frame: number) {
