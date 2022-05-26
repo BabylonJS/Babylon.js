@@ -11,12 +11,12 @@ interface IPlayHeadComponentProps {
 }
 
 interface IPlayHeadPixelLocator {
-    minFrame: number,
-    maxFrame: number,
-    width: number,
-    offset: number,
-    scale: number
-};
+    minFrame: number;
+    maxFrame: number;
+    width: number;
+    offset: number;
+    scale: number;
+}
 
 interface IPlayHeadComponentState {}
 
@@ -101,7 +101,6 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
 
             this._moveHead(this.props.context.activeFrame);
         });
-        
     }
 
     componentDidMount() {
@@ -128,7 +127,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     }
 
     private _pixelToFrame(pixel: number, locator: IPlayHeadPixelLocator) {
-        const {minFrame, maxFrame, width, offset, scale} = locator;
+        const { minFrame, maxFrame, width, offset, scale } = locator;
         const animation = this.props.context.activeAnimations[0];
         const keys = animation.getKeys();
 
@@ -152,7 +151,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         this._isMounted = false;
     }
 
-    private _getPixelValues(isRange: boolean) : IPlayHeadPixelLocator {
+    private _getPixelValues(isRange: boolean): IPlayHeadPixelLocator {
         let minFrame, maxFrame, width, offset, scale;
         if (isRange) {
             minFrame = this.props.context.fromKey;
@@ -167,7 +166,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
             offset = this._offsetX;
             scale = this._viewScale;
         }
-        return {minFrame, maxFrame, width, offset, scale};
+        return { minFrame, maxFrame, width, offset, scale };
     }
 
     private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>, isRange: boolean) {

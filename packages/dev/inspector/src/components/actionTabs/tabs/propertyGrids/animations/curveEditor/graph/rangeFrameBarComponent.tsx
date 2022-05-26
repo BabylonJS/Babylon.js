@@ -46,7 +46,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
 
         this._onPlayheadMovedObserver = this.props.context.onPlayheadMoved.add(() => {
             this.forceUpdate();
-        })
+        });
 
         this.props.context.onFrameSet.add(() => {
             if (!this._isMounted) {
@@ -62,7 +62,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
             }
 
             this.forceUpdate();
-        })
+        });
 
         this.props.context.onRangeUpdated.add(() => {
             if (!this._isMounted) {
