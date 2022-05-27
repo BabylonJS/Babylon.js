@@ -826,6 +826,9 @@ export class InputManager {
                 if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers())) {
                     this._initActionManager(null, clickInfo);
                 }
+                if (!pickResult) {
+                    pickResult = this._currentPickResult;
+                }
 
                 this._processPointerUp(pickResult, evt, clickInfo);
 
