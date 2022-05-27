@@ -3716,6 +3716,30 @@ export class Quaternion {
     }
 
     /**
+     * Returns the inverse of the current quaternion
+     * @returns a new quaternion
+     */
+    public invert(): Quaternion {
+        const conjugate = this.conjugate();
+        const lengthSquared = this.lengthSquared();
+        if(lengthSquared == 0 || lengthSquared == 1) return conjugate;
+        conjugate.scaleInPlace(1 / lengthSquared);
+        return conjugate;
+    }
+
+    /**
+     * Invert in place the current quaternion
+     * @returns this quaternion
+     */
+    public invertInPlace(): Quaternion {
+        this.conjugateInPlace();
+        const lengthSquared = this.lengthSquared();
+        if(lengthSquared == 0 || lengthSquared == 1) return this;
+        this.scaleInPlace(1 / lengthSquared);
+        return this;
+    }
+
+    /**
      * Gets squared length of current quaternion
      * @returns the quaternion length (float)
      */
