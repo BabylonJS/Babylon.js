@@ -65,9 +65,9 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         return null;
     }
 
-    private _getReference(reference: string): any {
+    // private _getReference(reference: string): any {
 
-    }
+    // }
 
     
 }
