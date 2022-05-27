@@ -3576,6 +3576,7 @@ export class Quaternion {
         this._w += other._w;
         return this;
     }
+
     /**
      * Subtract two quaternions
      * @param other defines the second operand
@@ -3583,6 +3584,19 @@ export class Quaternion {
      */
     public subtract(other: Quaternion): Quaternion {
         return new Quaternion(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
+    }
+
+    /**
+     * Subtract a quaternion to the current one
+     * @param other defines the quaternion to subtract
+     * @returns the current quaternion
+     */
+    public subtractInPlace(other: DeepImmutable<Quaternion>): Quaternion {
+        this._x -= other._x;
+        this._y -= other._y;
+        this._z -= other._z;
+        this._w -= other._w;
+        return this;
     }
 
     /**
@@ -3646,6 +3660,7 @@ export class Quaternion {
         this.multiplyToRef(q1, result);
         return result;
     }
+
     /**
      * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
      * @param q1 defines the second operand
@@ -3697,8 +3712,15 @@ export class Quaternion {
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
-        const result = new Quaternion(-this._x, -this._y, -this._z, this._w);
-        return result;
+        return new Quaternion(-this._x, -this._y, -this._z, this._w);
+    }
+
+    /**
+     * Gets squared length of current quaternion
+     * @returns the quaternion length (float)
+     */
+    public lengthSquared(): number {
+        return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
     }
 
     /**
@@ -3706,7 +3728,7 @@ export class Quaternion {
      * @returns the quaternion length (float)
      */
     public length(): number {
-        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
+        return Math.sqrt(this.lengthSquared());
     }
 
     /**
@@ -3716,16 +3738,24 @@ export class Quaternion {
     public normalize(): Quaternion {
         const len = this.length();
 
-        if (len === 0) {
-            return this;
-        }
+        if (len === 0) return this;
 
         const inv = 1.0 / len;
-        this.x *= inv;
-        this.y *= inv;
-        this.z *= inv;
-        this.w *= inv;
+        this.scaleInPlace(inv);
         return this;
+    }
+
+    /**
+     * Normalize a copy of the current quaternion
+     * @returns the normalized quaternion
+     */
+    public normalizeToNew(): Quaternion {
+        const len = this.length();
+
+        if (len === 0) return this.clone();
+
+        const inv = 1.0 / len;
+        return this.scale(inv);
     }
 
     /**
