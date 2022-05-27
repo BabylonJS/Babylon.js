@@ -49,7 +49,6 @@ interface WorkerNavigator {
 }
 
 declare class GPU {
-    private __brand: void;
     requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter | null>;
     getPreferredCanvasFormat(): GPUTextureFormat;
 }
@@ -63,7 +62,6 @@ type GPUPowerPreference = "low-power" | "high-performance";
 
 declare class GPUAdapter {
     // https://michalzalecki.com/nominal-typing-in-typescript/#approach-1-class-with-a-private-property
-    private __brand: void;
     readonly name: string;
     readonly features: GPUSupportedFeatures;
     readonly limits: GPUSupportedLimits;
@@ -91,7 +89,6 @@ type GPUFeatureName =
     | "bgra8unorm-storage";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 
     readonly features: GPUSupportedFeatures;
@@ -129,7 +126,6 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
 }
 
 declare class GPUBuffer implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 
     mapAsync(mode: GPUMapModeFlags, offset?: GPUSize64 /*default=0*/, size?: GPUSize64): Promise<void>;
@@ -150,7 +146,6 @@ type GPUBufferUsageFlags = number;
 type GPUMapModeFlags = number;
 
 declare class GPUTexture implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 
     createView(descriptor?: GPUTextureViewDescriptor): GPUTextureView;
@@ -172,7 +167,6 @@ type GPUTextureDimension = "1d" | "2d" | "3d";
 type GPUTextureUsageFlags = number;
 
 declare class GPUTextureView implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -313,7 +307,6 @@ type GPUTextureFormat =
     | "astc-12x12-unorm-srgb";
 
 declare class GPUExternalTexture implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -323,7 +316,6 @@ interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
 }
 
 declare class GPUSampler implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -347,7 +339,6 @@ type GPUFilterMode = "nearest" | "linear";
 type GPUCompareFunction = "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always";
 
 declare class GPUBindGroupLayout implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -401,7 +392,6 @@ interface GPUStorageTextureBindingLayout {
 interface GPUExternalTextureBindingLayout {}
 
 declare class GPUBindGroup implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -424,7 +414,6 @@ interface GPUBufferBinding {
 }
 
 declare class GPUPipelineLayout implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -433,7 +422,6 @@ interface GPUPipelineLayoutDescriptor extends GPUObjectDescriptorBase {
 }
 
 declare class GPUShaderModule implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 
     compilationInfo(): Promise<GPUCompilationInfo>;
@@ -483,7 +471,6 @@ interface GPUProgrammableStage {
 type GPUPipelineConstantValue = number; // May represent WGSL’s bool, f32, i32, u32, and f16 if enabled.
 
 declare class GPUComputePipeline implements GPUObjectBase, GPUPipelineBase {
-    private __brand: void;
     label: string | undefined;
 
     getBindGroupLayout(index: number): GPUBindGroupLayout;
@@ -494,7 +481,6 @@ interface GPUComputePipelineDescriptor extends GPUPipelineDescriptorBase {
 }
 
 declare class GPURenderPipeline implements GPUObjectBase, GPUPipelineBase {
-    private __brand: void;
     label: string | undefined;
 
     getBindGroupLayout(index: number): GPUBindGroupLayout;
@@ -650,7 +636,6 @@ interface GPUVertexAttribute {
 }
 
 declare class GPUCommandBuffer implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
@@ -659,7 +644,6 @@ interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {}
 interface GPUCommandsMixin {}
 
 declare class GPUCommandEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin {
-    private __brand: void;
     label: string | undefined;
 
     beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
@@ -724,7 +708,6 @@ interface GPUDebugCommandsMixin {
 }
 
 declare class GPUComputePassEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUBindingCommandsMixin {
-    private __brand: void;
     label: string | undefined;
 
     setBindGroup(index: number, bindGroup: GPUBindGroup, dynamicOffsets?: GPUBufferDynamicOffset[]): void;
@@ -756,7 +739,6 @@ interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
 }
 
 declare class GPURenderPassEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUBindingCommandsMixin, GPURenderCommandsMixin {
-    private __brand: void;
     label: string | undefined;
 
     setBindGroup(index: GPUIndex32, bindGroup: GPUBindGroup, dynamicOffsets?: GPUBufferDynamicOffset[]): void;
@@ -867,14 +849,12 @@ interface GPURenderCommandsMixin {
 }
 
 declare class GPURenderBundle implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 }
 
 interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {}
 
 declare class GPURenderBundleEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUBindingCommandsMixin, GPURenderCommandsMixin {
-    private __brand: void;
     label: string | undefined;
 
     setBindGroup(index: GPUIndex32, bindGroup: GPUBindGroup, dynamicOffsets?: GPUBufferDynamicOffset[]): void;
@@ -912,7 +892,6 @@ interface GPURenderBundleEncoderDescriptor extends GPURenderPassLayout {
 interface GPUQueueDescriptor extends GPUObjectDescriptorBase {}
 
 declare class GPUQueue implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 
     submit(commandBuffers: GPUCommandBuffer[]): void;
@@ -927,7 +906,6 @@ declare class GPUQueue implements GPUObjectBase {
 }
 
 declare class GPUQuerySet implements GPUObjectBase {
-    private __brand: void;
     label: string | undefined;
 
     destroy(): void;
@@ -941,8 +919,6 @@ interface GPUQuerySetDescriptor extends GPUObjectDescriptorBase {
 type GPUQueryType = "occlusion" | "timestamp";
 
 declare class GPUCanvasContext {
-    private __brand: void;
-
     readonly canvas: HTMLCanvasElement | OffscreenCanvas;
 
     configure(configuration?: GPUCanvasConfiguration): void;
@@ -965,7 +941,6 @@ interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
 type GPUDeviceLostReason = "destroyed";
 
 declare class GPUDeviceLostInfo {
-    private __brand: void;
     readonly reason?: GPUDeviceLostReason;
     readonly message: string;
 }
@@ -973,7 +948,6 @@ declare class GPUDeviceLostInfo {
 type GPUErrorFilter = "out-of-memory" | "validation";
 
 declare class GPUError {
-    private __brand: void;
     readonly message: string;
 }
 
@@ -988,7 +962,6 @@ declare class GPUValidationError extends GPUError {
 }
 
 declare class GPUUncapturedErrorEvent extends Event {
-    private __brand: void;
     constructor(type: string, gpuUncapturedErrorEventInitDict: GPUUncapturedErrorEventInit);
     readonly error: GPUError;
 }
