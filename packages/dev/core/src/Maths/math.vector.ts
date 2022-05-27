@@ -1083,6 +1083,41 @@ export class Vector3 {
     }
 
     /**
+     * Rotates the vector using the given unit quaternion and stores the new vector in result
+     * @param q the unit quaternion representing the rotation
+     * @param result the output vector
+     */
+    public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
+        const ix = q.w * this.x + q.y * this.z - q.z * this.y;
+        const iy = q.w * this.y + q.z * this.x - q.x * this.z;
+        const iz = q.w * this.z + q.x * this.y - q.y * this.x;
+        const iw = -q.x * this.x - q.y * this.y - q.z * this.z;
+
+        result.x = ix * q.w + iw * -q.x + iy * -q.z - iz * -q.y;
+        result.y = iy * q.w + iw * -q.y + iz * -q.x - ix * -q.z;
+        result.z = iz * q.w + iw * -q.z + ix * -q.y - iy * -q.x;
+
+        return result;
+    }
+
+    /**
+     * Rotates the vector in place using the given unit quaternion
+     * @param q the unit quaternion representing the rotation
+     */
+    public applyRotationQuaternionInPlace(q: Quaternion): Vector3 {
+        return this.applyRotationQuaternionToRef(q, this);
+    }
+
+    /**
+     * Rotates the vector using the given unit quaternion and returns the new vector
+     * @param q the unit quaternion representing the rotation
+     */
+    public applyRotationQuaternion(q: Quaternion): Vector3 {
+        return this.applyRotationQuaternionToRef(q, Vector3.Zero());
+    }
+
+
+    /**
      * Scale the current Vector3 values by a factor and add the result to a given Vector3
      * @param scale defines the scale factor
      * @param result defines the Vector3 object where to store the result
