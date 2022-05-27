@@ -686,7 +686,9 @@ export class NullEngine extends Engine {
         texture.isReady = true;
 
         if (onLoad) {
-            onLoad();
+            setTimeout(() => {
+                onLoad();
+            });
         }
 
         this._internalTexturesCache.push(texture);
