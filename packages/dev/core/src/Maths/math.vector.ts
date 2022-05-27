@@ -3757,7 +3757,9 @@ export class Quaternion {
     public invert(): Quaternion {
         const conjugate = this.conjugate();
         const lengthSquared = this.lengthSquared();
-        if(lengthSquared == 0 || lengthSquared == 1) return conjugate;
+        if(lengthSquared == 0 || lengthSquared == 1) {
+            return conjugate;
+        }
         conjugate.scaleInPlace(1 / lengthSquared);
         return conjugate;
     }
@@ -3769,7 +3771,9 @@ export class Quaternion {
     public invertInPlace(): Quaternion {
         this.conjugateInPlace();
         const lengthSquared = this.lengthSquared();
-        if(lengthSquared == 0 || lengthSquared == 1) return this;
+        if(lengthSquared == 0 || lengthSquared == 1) {
+            return this;
+        }
         this.scaleInPlace(1 / lengthSquared);
         return this;
     }
@@ -3796,8 +3800,9 @@ export class Quaternion {
      */
     public normalize(): Quaternion {
         const len = this.length();
-
-        if (len === 0) return this;
+        if (len === 0) {
+            return this;
+        }
 
         const inv = 1.0 / len;
         this.scaleInPlace(inv);
@@ -3810,8 +3815,9 @@ export class Quaternion {
      */
     public normalizeToNew(): Quaternion {
         const len = this.length();
-
-        if (len === 0) return this.clone();
+        if (len === 0) {
+            return this.clone();
+        }
 
         const inv = 1.0 / len;
         return this.scale(inv);
