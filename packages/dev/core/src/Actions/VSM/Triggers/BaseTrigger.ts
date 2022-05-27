@@ -1,7 +1,7 @@
 import { Nullable } from "../../../types";
 import { Observable } from "../../../Misc/observable";
 import { IDisposable, Scene } from "../../../scene";
-import { CustomEventManager, ICustomEvent } from "../customEventManager";
+import { CustomEventManager } from "../customEventManager";
 
 export abstract class BaseTrigger<O = void, T = any> implements IDisposable {
     private _payload: T;
@@ -34,12 +34,6 @@ export abstract class BaseTrigger<O = void, T = any> implements IDisposable {
     public update(scene: Scene): void {
         const condition = this._checkConditions(scene);
         this._checkTriggeredState(condition, scene.getEngine().getDeltaTime());
-    }
-
-    public eventRaised(_event: ICustomEvent<any>): void {}
-
-    public isEventListened(event: string): boolean {
-        return this._eventsListened.indexOf(event) !== -1;
     }
 
     public dispose(): void {

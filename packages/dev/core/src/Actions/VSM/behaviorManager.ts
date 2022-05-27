@@ -23,7 +23,6 @@ export class BehaviorManager implements IDisposable {
                 this._updateTriggers();
             })
         );
-        this._customEventManager.onEventRaisedObservable.add(this._onEventTriggered.bind(this));
         this._scene.onDisposeObservable.add(() => {
             this.dispose();
         });
@@ -45,14 +44,6 @@ export class BehaviorManager implements IDisposable {
     private _updateTriggers() {
         this._triggers.forEach((trigger) => {
             trigger.update(this._scene);
-        });
-    }
-
-    private _onEventTriggered(event: ICustomEvent<any>) {
-        this._triggers.forEach((trigger) => {
-            if (trigger.isEventListened(event.name)) {
-                trigger.eventRaised(event);
-            }
         });
     }
 
