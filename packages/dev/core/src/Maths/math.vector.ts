@@ -1116,7 +1116,6 @@ export class Vector3 {
         return this.applyRotationQuaternionToRef(q, Vector3.Zero());
     }
 
-
     /**
      * Scale the current Vector3 values by a factor and add the result to a given Vector3
      * @param scale defines the scale factor
@@ -3757,7 +3756,7 @@ export class Quaternion {
     public invert(): Quaternion {
         const conjugate = this.conjugate();
         const lengthSquared = this.lengthSquared();
-        if(lengthSquared == 0 || lengthSquared == 1) {
+        if (lengthSquared == 0 || lengthSquared == 1) {
             return conjugate;
         }
         conjugate.scaleInPlace(1 / lengthSquared);
@@ -3771,7 +3770,7 @@ export class Quaternion {
     public invertInPlace(): Quaternion {
         this.conjugateInPlace();
         const lengthSquared = this.lengthSquared();
-        if(lengthSquared == 0 || lengthSquared == 1) {
+        if (lengthSquared == 0 || lengthSquared == 1) {
             return this;
         }
         this.scaleInPlace(1 / lengthSquared);
