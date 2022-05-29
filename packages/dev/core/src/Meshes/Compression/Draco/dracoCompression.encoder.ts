@@ -1,15 +1,17 @@
 import { IGetSetVerticesData } from "../../../meshes/mesh.vertexData";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { Nullable, FloatArray } from "../../../types";
-import { DracoAttributeName,
-         DracoAttribute,
-         DracoGeometryType,
-         DracoEncoderMethod, 
-         IDracoEncoder, 
-         DracoCompressionBase, 
-         IDracoCompressionEngineConfiguration, 
-         IDracoEncodedPrimitive, 
-         IDracoEncoderOptions } from "./dracoCompression";
+import {
+    DracoAttributeName,
+    DracoAttribute,
+    DracoGeometryType,
+    DracoEncoderMethod,
+    IDracoEncoder,
+    DracoCompressionBase,
+    IDracoCompressionEngineConfiguration,
+    IDracoEncodedPrimitive,
+    IDracoEncoderOptions,
+} from "./dracoCompression";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: any;
@@ -40,7 +42,7 @@ function encodeMesh(
     const vertices = attributes.find((a) => a.key == "position")?.data;
 
     if (vertices?.length) {
-        const nativeAttributeTypeNames = ["POSITION", "NORMAL", "COLOR", "TEX_COORD", "GENERIC", "TANGENT", "MATERIAL", "JOINT", "WEIGHT"] ;
+        const nativeAttributeTypeNames = ["POSITION", "NORMAL", "COLOR", "TEX_COORD", "GENERIC", "TANGENT", "MATERIAL", "JOINT", "WEIGHT"];
         const encoder = new encoderModule.Encoder();
         const meshBuilder = geometryDestination == 0 ? new encoderModule.MeshBuilder() : encoderModule.PointCloudBuilder();
         const dracoObject = geometryDestination == 0 ? new encoderModule.Mesh() : new encoderModule.PointCloud();
@@ -116,7 +118,7 @@ function encodeMesh(
 /**
  * The worker function that gets converted to a blob url to pass into a worker.
  */
- function worker(): void {
+function worker(): void {
     let codecPromise: PromiseLike<any> | undefined;
 
     onmessage = (event) => {
@@ -136,10 +138,10 @@ function encodeMesh(
                     throw new Error("Draco encoder module is not available");
                 }
                 codecPromise.then((encoder) => {
-                        const verticesData = data.verticesData;
-                        const result = encodeMesh(encoder, verticesData.attributes, verticesData.indices, verticesData.geometry, data.options, verticesData.buffer);
-                        postMessage({ id: "encodeMeshResult", encodedData: result }, result ? [result.data.buffer] : undefined);
-                 });
+                    const verticesData = data.verticesData;
+                    const result = encodeMesh(encoder, verticesData.attributes, verticesData.indices, verticesData.geometry, data.options, verticesData.buffer);
+                    postMessage({ id: "encodeMeshResult", encodedData: result }, result ? [result.data.buffer] : undefined);
+                });
                 break;
             }
         }
@@ -149,23 +151,20 @@ function encodeMesh(
 //    END WORKER CONTEXT       //
 /////////////////////////////////
 
-const DefaultQuantizationBits = 
-{
+const DefaultQuantizationBits = {
     [DracoAttributeName.POSITION]: 14,
     [DracoAttributeName.NORMAL]: 10,
     [DracoAttributeName.COLOR]: 8,
     [DracoAttributeName.TEX_COORD]: 12,
     [DracoAttributeName.GENERIC]: 12,
-
 };
 
-const DefaultEncoderOptions : IDracoEncoderOptions = {
+const DefaultEncoderOptions: IDracoEncoderOptions = {
     decodeSpeed: 5,
     encodeSpeed: 5,
     method: DracoEncoderMethod.EDGEBREAKER,
     quantizationBits: DefaultQuantizationBits,
 };
-
 
 export class DracoEncoder extends DracoCompressionBase implements IDracoEncoder {
     public static Configuration: IDracoCompressionEngineConfiguration = {
@@ -184,7 +183,7 @@ export class DracoEncoder extends DracoCompressionBase implements IDracoEncoder 
 
         const geometry = input.getIndices() ? DracoGeometryType.TRIANGULAR_MESH : DracoGeometryType.POINT_CLOUD;
 
-        if (this._workerPoolPromise ) {
+        if (this._workerPoolPromise) {
             return this._workerPoolPromise.then((workerPool) => {
                 return new Promise<Nullable<IDracoEncodedPrimitive>>((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
@@ -225,10 +224,9 @@ export class DracoEncoder extends DracoCompressionBase implements IDracoEncoder 
             });
         }
 
-        throw new Error("Draco encoder module is not available");        
+        throw new Error("Draco encoder module is not available");
     }
 
- 
     createModuleAsync(wasmBinary?: ArrayBuffer): Promise<any> {
         return new Promise((resolve) => {
             DracoEncoderModule({ wasmBinary: wasmBinary }).then((module: any) => {
@@ -245,7 +243,7 @@ export class DracoEncoder extends DracoCompressionBase implements IDracoEncoder 
 /**
  * Used to prepare data from Babylon js primitive to Draco attributes.
  */
- interface IDracoAttributes {
+interface IDracoAttributes {
     key: string;
     type: DracoAttribute;
     stride: number;
@@ -257,8 +255,7 @@ export class DracoEncoder extends DracoCompressionBase implements IDracoEncoder 
  * avoiding copy by using a unique Transferable buffer in case of worker
  */
 class DracoEncodersParams {
-    
-    public static ToLocal(input: IGetSetVerticesData, options: IDracoEncoderOptions, geometry:DracoGeometryType = DracoGeometryType.TRIANGULAR_MESH) {
+    public static ToLocal(input: IGetSetVerticesData, options: IDracoEncoderOptions, geometry: DracoGeometryType = DracoGeometryType.TRIANGULAR_MESH) {
         const atts: Array<IDracoAttributes> = [];
 
         const target = new DracoEncodersParams();
@@ -309,7 +306,7 @@ class DracoEncodersParams {
         return target;
     }
 
-    public static ToTransferable(input: IGetSetVerticesData, options: IDracoEncoderOptions, geometry:DracoGeometryType = DracoGeometryType.TRIANGULAR_MESH) {
+    public static ToTransferable(input: IGetSetVerticesData, options: IDracoEncoderOptions, geometry: DracoGeometryType = DracoGeometryType.TRIANGULAR_MESH) {
         const target = DracoEncodersParams.ToLocal(input, options, geometry);
         // alloc the buffer
         let byteSize = 0;

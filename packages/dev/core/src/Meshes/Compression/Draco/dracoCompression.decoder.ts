@@ -241,6 +241,7 @@ export class DracoDecoder extends DracoCompressionBase implements IDracoDecoder 
             });
         }
 
+        // If worker are not supported
         if (this._modulePromise) {
             return this._modulePromise.then((decoder) => {
                 const vertexData = new VertexData();
