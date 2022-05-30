@@ -332,6 +332,8 @@ export class InstancedMesh extends AbstractMesh {
      * @hidden
      */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
+        super._activate(renderId, intermediateRendering);
+
         if (!this._sourceMesh.subMeshes) {
             Logger.Warn("Instances should only be created for meshes with geometry.");
         }

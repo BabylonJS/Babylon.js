@@ -603,6 +603,9 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
         // this.resetTextureCache();
         scene?._removePendingData(texture);
 
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
+
         if (onLoad) {
             onLoad();
         }
