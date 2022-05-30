@@ -209,7 +209,8 @@ export class Gizmo implements IDisposable {
 
             // Rotation
             if (this.updateGizmoRotationToMatchAttachedMesh) {
-                const supportedNode = (<Mesh>effectiveNode)._isMesh ||
+                const supportedNode =
+                    (<Mesh>effectiveNode)._isMesh ||
                     effectiveNode.getClassName() === "AbstractMesh" ||
                     effectiveNode.getClassName() === "TransformNode" ||
                     effectiveNode.getClassName() === "InstancedMesh";
