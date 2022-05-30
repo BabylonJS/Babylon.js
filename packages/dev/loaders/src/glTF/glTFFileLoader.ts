@@ -10,6 +10,7 @@ import { Observable } from "core/Misc/observable";
 import { StringTools } from "core/Misc/stringTools";
 import { GLTFValidation } from "./glTFValidation";
 import { AbstractFileLoader, ILoader, ILoaderData } from "./abstractFileLoader";
+import { TransformNode } from "core/Meshes/transformNode";
 
 /**
  * Mode that determines the coordinate system to use.
@@ -169,6 +170,14 @@ export class GLTFFileLoader extends AbstractFileLoader {
     };
 
     /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/divingDeeper/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     * @param node - the transform node that corresponds to the original glTF skin node used for animations
+     * @param skinnedNode - the transform node that is the skinned mesh itself or the parent of the skinned meshes
+     */
+    public readonly onSkinLoadedObservable = new Observable<{ node: TransformNode; skinnedNode: TransformNode }>();
+
+    /**
      * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
     public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
@@ -253,6 +262,16 @@ export class GLTFFileLoader extends AbstractFileLoader {
     }
     public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
         return new GLTFFileLoader();
+    }
+
+    // TODO - make sure everything is cleared here correctly
+    public dispose(): void {
+        super.dispose();
+        this.onMeshLoadedObservable.clear();
+        this.onTextureLoadedObservable.clear();
+        this.onMaterialLoadedObservable.clear();
+        this.onCameraLoadedObservable.clear();
+        this.onSkinLoadedObservable.clear();
     }
     protected _runValidationAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<any> {
         return GLTFValidation.ValidateAsync(data, rootUrl, fileName, getExternalResource);

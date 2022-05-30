@@ -146,6 +146,8 @@ export class Effect implements IDisposable {
      */
     public _wasPreviouslyReady = false;
 
+    private _isDisposed = false;
+
     /**
      * Observable that will be called when effect is bound.
      */
@@ -566,6 +568,10 @@ export class Effect implements IDisposable {
             }
         } catch (e) {
             this._processCompilationErrors(e, previousPipelineContext);
+            return;
+        }
+
+        if (this._isDisposed) {
             return;
         }
 
@@ -1348,6 +1354,8 @@ export class Effect implements IDisposable {
             this._pipelineContext.dispose();
         }
         this._engine._releaseEffect(this);
+
+        this._isDisposed = true;
     }
 
     /**
