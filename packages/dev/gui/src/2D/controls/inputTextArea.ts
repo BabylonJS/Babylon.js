@@ -157,10 +157,10 @@ export class InputTextArea extends InputText {
         };
 
         this._cursorInfo = {
-            globalStartIndex: -1,
-            globalEndIndex: -1,
-            relativeEndIndex: -1,
-            relativeStartIndex: -1,
+            globalStartIndex: 0,
+            globalEndIndex: 0,
+            relativeEndIndex: 0,
+            relativeStartIndex: 0,
             currentLineIndex: 0,
         };
     }
