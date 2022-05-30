@@ -376,11 +376,7 @@ export class InputTextArea extends InputText {
 
                     let tmpIndex = 0;
                     let relativeIndex = 0;
-                    if (
-                        !this._isTextHighlightOn ||
-                        (this._cursorInfo.currentLineIndex <= this._highlightCursorInfo.initialLineIndex &&
-                            this._highlightCursorInfo.initialStartIndex === this._cursorInfo.globalEndIndex)
-                    ) {
+                    if (!this._isTextHighlightOn || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex) {
                         tmpIndex = this._cursorInfo.globalStartIndex;
                         relativeIndex = this._cursorInfo.relativeStartIndex;
                     } else {
