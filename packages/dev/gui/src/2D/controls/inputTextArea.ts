@@ -546,6 +546,8 @@ export class InputTextArea extends InputText {
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
 
                 this._textHasChanged();
+
+                evt?.preventDefault();
             }
         }
     }
