@@ -13,4 +13,5 @@
         "**/*.vertex.ts": true,
         "**/*.compute.ts": true,
     },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
 }

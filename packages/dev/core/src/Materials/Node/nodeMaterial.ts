@@ -2055,7 +2055,13 @@ export class NodeMaterial extends PushMaterial {
      * @param skipBuild defines whether to build the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial, skipBuild: boolean = false): Promise<NodeMaterial> {
+    public static ParseFromSnippetAsync(
+        snippetId: string,
+        scene: Scene = EngineStore.LastCreatedScene!,
+        rootUrl: string = "",
+        nodeMaterial?: NodeMaterial,
+        skipBuild: boolean = false
+    ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(this.CreateDefault("blank", scene));
         }
