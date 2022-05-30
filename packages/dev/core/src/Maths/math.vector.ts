@@ -3751,11 +3751,6 @@ export class Quaternion {
         const qy = this._y;
         const qw = this._w;
 
-        const sqw = qw * qw;
-        const sqz = qz * qz;
-        const sqx = qx * qx;
-        const sqy = qy * qy;
-
         const zAxisY = qy * qz - qx * qw;
         const limit = 0.4999999;
 
@@ -3768,8 +3763,12 @@ export class Quaternion {
             result.x = -Math.PI / 2;
             result.z = 0;
         } else {
+            const sqw = qw * qw;
+            const sqz = qz * qz;
+            const sqx = qx * qx;
+            const sqy = qy * qy;
             result.z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
-            result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
+            result.x = Math.asin(-2.0 * zAxisY);
             result.y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
         }
 

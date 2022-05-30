@@ -49,7 +49,7 @@ export class BabylonFileLoaderConfiguration {
 }
 
 let tempIndexContainer: { [key: string]: Node } = {};
-const tempMaterialIndexContainer: { [key: string]: Material } = {};
+let tempMaterialIndexContainer: { [key: string]: Material } = {};
 
 const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -552,6 +552,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         }
     } finally {
         tempIndexContainer = {};
+        tempMaterialIndexContainer = {};
 
         if (!addToScene) {
             container.removeAllFromScene();
