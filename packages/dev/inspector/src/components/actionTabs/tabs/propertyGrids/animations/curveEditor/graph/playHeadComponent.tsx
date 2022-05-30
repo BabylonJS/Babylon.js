@@ -27,10 +27,12 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _onRangeFrameBarResizedObserver: Nullable<Observer<number>>;
+    private _onMoveToFrameRequiredObserver: Nullable<Observer<number>>;
+    private _onGraphMovedObserver: Nullable<Observer<number>>;
+    private _onGraphScaledObserver: Nullable<Observer<number>>;
     private _viewScale = 1;
     private _offsetX = 0;
     private _offsetRange = 10;
-    private _isMounted = false;
     private _viewWidth = 748;
     private readonly _rangeWidthToPlayheadWidth = 40;
 
@@ -71,40 +73,24 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
             }
         });
 
-        this.props.context.onMoveToFrameRequired.add((frame) => {
-            if (!this._isMounted) {
-                return;
-            }
-
+        this._onMoveToFrameRequiredObserver = this.props.context.onMoveToFrameRequired.add((frame) => {
             this.props.context.moveToFrame(frame);
             this._moveHead(frame);
         });
 
-        this.props.context.onGraphMoved.add((x) => {
-            if (!this._isMounted) {
-                return;
-            }
-
+        this._onGraphMovedObserver = this.props.context.onGraphMoved.add((x) => {
             this._offsetX = x;
             this.forceUpdate();
 
             this._moveHead(this.props.context.activeFrame);
         });
 
-        this.props.context.onGraphScaled.add((scale) => {
-            if (!this._isMounted) {
-                return;
-            }
-
+        this._onGraphScaledObserver = this.props.context.onGraphScaled.add((scale) => {
             this._viewScale = 1 / scale;
             this.forceUpdate();
 
             this._moveHead(this.props.context.activeFrame);
         });
-    }
-
-    componentDidMount() {
-        this._isMounted = true;
     }
 
     private _moveHead(frame: number) {
@@ -148,7 +134,17 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
             this.props.context.onRangeFrameBarResized.remove(this._onRangeFrameBarResizedObserver);
         }
 
-        this._isMounted = false;
+        if (this._onMoveToFrameRequiredObserver) {
+            this.props.context.onMoveToFrameRequired.remove(this._onMoveToFrameRequiredObserver);
+        }
+
+        if (this._onGraphMovedObserver) {
+            this.props.context.onGraphMoved.remove(this._onGraphMovedObserver);
+        }
+
+        if (this._onGraphScaledObserver) {
+            this.props.context.onGraphScaled.remove(this._onGraphScaledObserver);
+        }
     }
 
     private _getPixelValues(isRange: boolean): IPlayHeadPixelLocator {
