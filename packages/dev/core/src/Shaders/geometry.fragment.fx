@@ -96,7 +96,7 @@ void main() {
     #endif
 
     #ifdef REFLECTIVITY
-        vec4 reflectivity;
+        vec4 reflectivity = vec4(1.0, 1.0, 1.0, 1.0);
 
         #ifdef METALLICWORKFLOW
             // Reflectivity calculus for metallic-roughness model based on:
@@ -124,28 +124,37 @@ void main() {
                 roughness *= (1.0 - glossiness); // roughness = 1.0 - glossiness
             #endif
 
-            reflectivity = vec4(1.0, 1.0, 1.0, 1.0 - roughness);
+            reflectivity.a -= roughness;
                 
-            #ifdef ALBEDOTEXTURE // Specularity should be: mix(0.04, 0.04, 0.04, albedoTexture, metallic):
-                reflectivity.rgb = mix(vec3(0.04), texture2D(albedoSampler, vAlbedoUV).rgb, metal);
-            #else
-                #ifdef ALBEDOCOLOR // Specularity should be: mix(0.04, 0.04, 0.04, albedoColor, metallic):
-                    reflectivity.rgb = mix(vec3(0.04), albedoColor.xyz, metal);
-                #else // albedo color suposed to be white   
-                    reflectivity.rgb = mix(vec3(0.04), vec3(1.0), metal);   
-                #endif            
+            vec3 color = vec3(1.0);    
+            #ifdef ALBEDOTEXTURE 
+                color = texture2D(albedoSampler, vAlbedoUV).rgb; 
+                #ifdef GAMMAALBEDO
+                    color = toLinearSpace(color);
+                #endif    
             #endif
-            reflectivity.rgb = toGammaSpace(reflectivity.rgb); // translate to gammaSpace to be sync with prePass reflectivity
+            #ifdef ALBEDOCOLOR 
+                color *= albedoColor.xyz;
+            //#else // albedo color suposed to be white   
+            #endif
+        
+            reflectivity.rgb = mix(vec3(0.04), color, metal);
         #else
             // SpecularGlossiness Model 
             #ifdef SPECULARGLOSSINESSTEXTURE
                 reflectivity = texture2D(reflectivitySampler, vReflectivityUV); 
+                #ifdef GAMMAREFLECTIVITYTEXTURE
+                    reflectivity.rgb = toLinearSpace(reflectivity.rgb);
+                #endif  
                 #ifdef GLOSSINESSS
                     reflectivity.a *= glossiness; 
                 #endif
             #else 
                 #ifdef REFLECTIVITYTEXTURE 
                     reflectivity.rbg = texture2D(reflectivitySampler, vReflectivityUV).rbg;
+                    #ifdef GAMMAREFLECTIVITYTEXTURE
+                        reflectivity.rgb = toLinearSpace(reflectivity.rgb);
+                    #endif  
                 #else    
                     #ifdef REFLECTIVITYCOLOR
                         reflectivity.rgb = reflectivityColor.xyz;
@@ -162,7 +171,7 @@ void main() {
                 #endif
             #endif
         #endif   
-
+        reflectivity.rgb = toGammaSpace(reflectivity.rgb); // translate to gammaSpace to be sync with prePass reflectivity
         gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
     #endif
 }
