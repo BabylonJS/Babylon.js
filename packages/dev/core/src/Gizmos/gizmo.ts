@@ -209,7 +209,12 @@ export class Gizmo implements IDisposable {
 
             // Rotation
             if (this.updateGizmoRotationToMatchAttachedMesh) {
-                const transformNode = (<Mesh>effectiveNode)._isMesh ? (effectiveNode as TransformNode) : undefined;
+                const supportedNode =
+                    (<Mesh>effectiveNode)._isMesh ||
+                    effectiveNode.getClassName() === "AbstractMesh" ||
+                    effectiveNode.getClassName() === "TransformNode" ||
+                    effectiveNode.getClassName() === "InstancedMesh";
+                const transformNode = supportedNode ? (effectiveNode as TransformNode) : undefined;
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
             } else {
                 if (this._customRotationQuaternion) {
@@ -364,7 +369,9 @@ export class Gizmo implements IDisposable {
                     }
                     // setter doesn't copy values. Need a new Vector3
                     light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
-                    light.direction = new Vector3(light.direction.x, light.direction.y, light.direction.z);
+                    if (light.direction) {
+                        light.direction = new Vector3(light.direction.x, light.direction.y, light.direction.z);
+                    }
                 }
             }
         }
