@@ -389,11 +389,11 @@ export class GeometryBufferRenderer {
                         if (material.baseTexture !== null) {
                             defines.push("#define ALBEDOTEXTURE");
                             defines.push(`#define ALBEDO_UV${material.baseTexture.coordinatesIndex + 1}`);
-                            if(material.baseTexture.gammaSpace){
-                                defines.push("GAMMAALBEDO");
+                            if (material.baseTexture.gammaSpace) {
+                                defines.push("#define GAMMAALBEDO");
                             }
                             needUv = true;
-                        } 
+                        }
                         if (material.baseColor !== null) {
                             defines.push("#define ALBEDOCOLOR");
                         }
@@ -404,8 +404,8 @@ export class GeometryBufferRenderer {
                         defines.push("#define SPECULARGLOSSINESSTEXTURE");
                         defines.push(`#define REFLECTIVITY_UV${material.specularGlossinessTexture.coordinatesIndex + 1}`);
                         needUv = true;
-                        if(material.specularGlossinessTexture.gammaSpace){
-                            defines.push("GAMMAREFLECTIVITYTEXTURE");
+                        if (material.specularGlossinessTexture.gammaSpace) {
+                            defines.push("#define GAMMAREFLECTIVITYTEXTURE");
                         }
                     } else {
                         if (material.specularColor !== null) {
@@ -440,8 +440,8 @@ export class GeometryBufferRenderer {
                         if (material.albedoTexture !== null) {
                             defines.push("#define ALBEDOTEXTURE");
                             defines.push(`#define ALBEDO_UV${material.albedoTexture.coordinatesIndex + 1}`);
-                            if(material.baseTexture.gammaSpace){
-                                defines.push("GAMMAALBEDO");
+                            if (material.albedoTexture.gammaSpace) {
+                                defines.push("#define GAMMAALBEDO");
                             }
                             needUv = true;
                         }
@@ -453,8 +453,8 @@ export class GeometryBufferRenderer {
                         if (material.reflectivityTexture !== null) {
                             defines.push("#define SPECULARGLOSSINESSTEXTURE");
                             defines.push(`#define REFLECTIVITY_UV${material.reflectivityTexture.coordinatesIndex + 1}`);
-                            if(material.reflectivityTexture.gammaSpace){
-                                defines.push("GAMMAREFLECTIVITYTEXTURE");
+                            if (material.reflectivityTexture.gammaSpace) {
+                                defines.push("#define GAMMAREFLECTIVITYTEXTURE");
                             }
                             needUv = true;
                         } else if (material.reflectivityColor !== null) {
@@ -469,8 +469,8 @@ export class GeometryBufferRenderer {
                     if (material.specularTexture !== null) {
                         defines.push("#define REFLECTIVITYTEXTURE");
                         defines.push(`#define REFLECTIVITY_UV${material.specularTexture.coordinatesIndex + 1}`);
-                        if(material.specularTexture.gammaSpace){
-                            defines.push("GAMMAREFLECTIVITYTEXTURE");
+                        if (material.specularTexture.gammaSpace) {
+                            defines.push("#define GAMMAREFLECTIVITYTEXTURE");
                         }
                         needUv = true;
                     }
@@ -836,7 +836,8 @@ export class GeometryBufferRenderer {
                             if (material.baseTexture !== null) {
                                 effect.setTexture("albedoSampler", material.baseTexture);
                                 effect.setMatrix("albedoMatrix", material.baseTexture.getTextureMatrix());
-                            } else if (material.baseColor !== null) {
+                            }
+                            if (material.baseColor !== null) {
                                 effect.setColor3("albedoColor", material.baseColor);
                             }
                         } else if (material.getClassName() === "PBRSpecularGlossinessMaterial") {
@@ -871,7 +872,8 @@ export class GeometryBufferRenderer {
                                 if (material.albedoTexture !== null) {
                                     effect.setTexture("albedoSampler", material.albedoTexture);
                                     effect.setMatrix("albedoMatrix", material.albedoTexture.getTextureMatrix());
-                                } else if (material.albedoColor !== null) {
+                                }
+                                if (material.albedoColor !== null) {
                                     effect.setColor3("albedoColor", material.albedoColor);
                                 }
                             } else {
