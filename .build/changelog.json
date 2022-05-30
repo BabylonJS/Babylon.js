@@ -1,6 +1,182 @@
 {
-    "fromTag": "5.7.0",
+    "fromTag": "5.8.0",
     "changelog": {
+        "5.8.1": [
+            {
+                "pr": "12523",
+                "title": "Add new prepass to compute the specularity-glossiness map whatever the material type",
+                "description": "This is the PR following this issue:\r\nhttps://forum.babylonjs.com/t/prepass-get-accurate-reflectance-information/30351\r\n\r\nThe aim is to compute reflectance and glossiness information whatever the material type (standard, PBR, PBR Specular-Glossiness, PBR Metallic-Roughness). The architecture is based on the other PrePasses. The translation model from Metallic-Roughness to Specular-Glossiness is based on: https://marmoset.co/posts/pbr-texture-conversion.",
+                "author": {
+                    "name": "Mannns",
+                    "url": "https://github.com/Mannns"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12601",
+                "title": "Add missing observer trigger - onLoadedObservable notify method for hdrCubeTexture",
+                "description": "I found a minor issue during loading textures through `add task` of `asset manager`\r\nwhen I try to load the same texture files several times for different purposes, `cubeTextureTask` can be finished normally but `hdrCubeTextureTask` can't be finished even though it has been already finished\r\n\r\n* this playground can show task count on `console`\r\nhttps://playground.babylonjs.com/#M5L9FH\r\n\r\nSo, I have debugged and I found the creating function of hdrTexture has lost the `load observable notify` method that is included in the `creating function of cubeTexture`\r\n\r\n- `engine.cubeTexture.ts` \r\n<img width=\"385\" alt=\"스크린샷 2022-05-30 오후 3 57 43\" src=\"https://user-images.githubusercontent.com/70849655/170935258-89b47f42-e6a3-4366-bde0-003f602b558e.png\">\r\n<img width=\"473\" alt=\"스크린샷 2022-05-30 오후 3 57 36\" src=\"https://user-images.githubusercontent.com/70849655/170935273-108c1e51-48bf-4190-bcec-a38084b0ddb2.png\">\r\n\r\n- `engine.rawTexture.ts`\r\n<img width=\"820\" alt=\"스크린샷 2022-05-30 오후 3 57 57\" src=\"https://user-images.githubusercontent.com/70849655/170935403-edc25ad8-6a49-417f-bf9b-f6a6d9a0fbfd.png\">\r\n<img width=\"452\" alt=\"스크린샷 2022-05-30 오후 3 59 26\" src=\"https://user-images.githubusercontent.com/70849655/170935417-11a8b868-e752-4451-982f-4e99ad92b7c1.png\">\r\n\r\nI add above code in `raw texture` and then it worked well\r\n![스크린샷 2022-05-30 오후 4 06 10](https://user-images.githubusercontent.com/70849655/170936119-0438806d-e447-4027-ab92-7540e4c3c65e.png)\r\n",
+                "author": {
+                    "name": "slash9494",
+                    "url": "https://github.com/slash9494"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12596",
+                "title": "remove private variables from WebGPU declaration",
+                "description": "The reason behind this is the documentation page that fails compilation because of this error:\r\n\r\n```\r\n Class 'GPUOutOfMemoryError' incorrectly implements class 'GPUError'. Did you mean to extend 'GPUError' and inherit its members as a subclass?\r\n  Types have separate declarations of a private property '__brand'.\r\nError: C:/Users/raweber/Documents/GitHub/Documentation/.temp/docdirectory/doc.d.ts(97057)\r\n Class 'GPUValidationError' incorrectly implements class 'GPUError'. Did you mean to extend 'GPUError' and inherit its members as a subclass?\r\n  Types have separate declarations of a private property '__brand'.\r\n```\r\n\r\nThe reason for the error is probably an older version of typedoc (work is being done to update that), which uses an older version of typescript to analyze the file.\r\n\r\nAs this private variable is not being used anywhere in the code I took delibery of suggesting to remove it, but I will wait for @Popov72 to approve this PR before merging",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12495",
+                "title": "GLTFSerializer : Ext mesh gpu instancing",
+                "description": "Add support to EXT_mesh_gpu_instancing to Babylon GLTF Serializer.\r\nThin instances are used to save transformation into GLTF buffer.\r\nThis extension is NOT official and not supported yet by many viewer. This may be used with caution while terminology between Local Transformation and World transformation are not consistent beetwen this Extension and the babylon Thin instances.\r\nTest has been conducted sucessfully with playground and sandbox, using respectively coding samples and imported gltf sample.\r\nThe main sample used was the \"official\" [gltf sample](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/samples/teapots_galore)\r\nAlso add Visualization test.\r\nNote - deleted previous PR for configuration issues.",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporterExtension.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKhrGpuInstancing.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12597",
+                "title": "Fix render frame identification issue with instances",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12595",
+                "title": "Fix `AssetManager` `addTextureTask` resolving with `task.texture === undefined` when using `NullEngine`",
+                "description": "This PR is a follow up on https://forum.babylonjs.com/t/using-assetsmanager-with-nullengine-to-load-textures/8758",
+                "author": {
+                    "name": "alvov-evo",
+                    "url": "https://github.com/alvov-evo"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.assetsManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12524",
+                "title": "InputManager: Fix Picking on PointerUp and add bool to skip pointerup picking",
+                "description": "Recently on the forums ([forum post](https://forum.babylonjs.com/t/no-api-to-disable-mesh-picking-for-some-buttons-and-keep-onpointerobservable/29887)), there was a user who found an issue with the pointerUpPredicate not being used by the InputManager properly.  When a dummy predicate was used (`() => false`), there was still a pickedmesh/point in the pickInfo object.  This PR does a couple of things:\r\n- Fix for the picking logic to use the `pointerUpPredicate` and actually call `scene.pick`\r\n- Add a boolean to scene that allows the user to skip picking on pointerup (same as move and down)",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12592",
+                "title": "Make scene param optional for NodeMaterial.ParseFromSnippetAsync",
+                "description": "Make scene param optional for NodeMaterial.ParseFromSnippetAsync\r\n\r\nForum: https://forum.babylonjs.com/t/make-scene-param-optional-for-nodematerial-parsefromsnippetasync/30747/7",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12594",
+                "title": "fix memory leak",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12589",
+                "title": "WebGPU: fix typescript",
+                "description": "See https://forum.babylonjs.com/t/gpuoutofmemoryerror-and-gpuvalidationerror-error-with-latest-5-8-0-release/30755",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12587",
+                "title": "Fix readme.md CDN notes",
+                "description": null,
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12579",
+                "title": "make sure to watch changes in the assets lib",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/viewer/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "5.8.0": [
             {
                 "pr": "12588",
