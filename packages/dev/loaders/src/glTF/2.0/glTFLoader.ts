@@ -80,7 +80,7 @@ import { ArrayItem, ILoaderProperty, registeredExtensions, RegisterExtension, Ty
  */
 export class GLTFLoader implements ILoader {
     /** @hidden */
-    public _completePromises = new Array<Promise<any>>();
+    public readonly _completePromises = new Array<Promise<any>>();
 
     /** @hidden */
     public _assetContainer: Nullable<AssetContainer> = null;
@@ -102,7 +102,7 @@ export class GLTFLoader implements ILoader {
     private _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
-    private _postSceneLoadActions = new Array<() => void>();
+    private readonly _postSceneLoadActions = new Array<() => void>();
 
     /**
      * The default glTF sampler.
@@ -725,14 +725,6 @@ export class GLTFLoader implements ILoader {
                     this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
-                        // Add a reference to the skinned mesh from the transform node.
-                        const gltf = babylonTransformNodeForSkin.metadata.gltf;
-                        gltf.skinnedMesh = babylonTransformNode;
-                        babylonTransformNode.onDisposeObservable.addOnce(() => {
-                            // Delete the reference when the skinned mesh is disposed.
-                            delete gltf.skinnedMesh;
-                        });
-
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(
                             this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
@@ -754,6 +746,8 @@ export class GLTFLoader implements ILoader {
                                     } else {
                                         babylonTransformNode.parent = this._rootBabylonMesh;
                                     }
+
+                                    this._parent.onSkinLoadedObservable.notifyObservers({ node: babylonTransformNodeForSkin, skinnedNode: babylonTransformNode });
                                 });
                             })
                         );
@@ -1605,6 +1599,7 @@ export class GLTFLoader implements ILoader {
                             inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
                             value: key.value[targetIndex],
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined,
+                            interpolation: key.interpolation,
                         }))
                     );
 

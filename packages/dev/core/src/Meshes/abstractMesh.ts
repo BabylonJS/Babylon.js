@@ -498,6 +498,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param material material to use for this render pass. If undefined is passed, no specific material will be used for this render pass but the regular material will be used instead (mesh.material)
      */
     public setMaterialForRenderPass(renderPassId: number, material?: Material): void {
+        this.resetDrawCache(renderPassId);
         if (!this._internalAbstractMeshDataInfo._materialForRenderPass) {
             this._internalAbstractMeshDataInfo._materialForRenderPass = [];
         }

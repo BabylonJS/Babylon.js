@@ -405,7 +405,7 @@ export class InputManager {
 
     private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, clickInfo: _ClickInfo): void {
         const scene = this._scene;
-        if (pickResult && pickResult && pickResult.pickedMesh) {
+        if (pickResult && pickResult.hit && pickResult.pickedMesh) {
             this._pickedUpMesh = pickResult.pickedMesh;
             if (this._pickedDownMesh === this._pickedUpMesh) {
                 if (scene.onPointerPick) {
@@ -463,7 +463,6 @@ export class InputManager {
 
             if (!clickInfo.ignore) {
                 type = PointerEventTypes.POINTERUP;
-
                 const pi = new PointerInfo(type, evt, pickResult);
                 this._setRayOnPointerInfo(pi);
                 scene.onPointerObservable.notifyObservers(pi, type);
@@ -508,9 +507,12 @@ export class InputManager {
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
+        // Because this is only called from _initClickEvent, which is called in _onPointerUp, we'll use the pointerUpPredicate for the pick call
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
-                const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+                const pickResult = scene.skipPointerUpPicking
+                    ? null
+                    : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
                     act = pickResult.hit && pickResult.pickedMesh ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
