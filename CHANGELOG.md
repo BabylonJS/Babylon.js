@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.8.2
+
+### Core
+
+- Point Cloud System: Add getters - by [Popov72](https://github.com/Popov72) ([#12605](https://github.com/BabylonJS/Babylon.js/pull/12605))
+- Small fixes for gizmo and navigation - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#12603](https://github.com/BabylonJS/Babylon.js/pull/12603))
+
 ## 5.8.1
 
 ### Core
