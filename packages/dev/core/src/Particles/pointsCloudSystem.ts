@@ -91,6 +91,27 @@ export class PointsCloudSystem implements IDisposable {
     private _isReady: boolean = false;
 
     /**
+     * Gets the particle positions computed by the Point Cloud System
+     */
+    public get positions() {
+        return this._positions32;
+    }
+
+    /**
+     * Gets the particle colors computed by the Point Cloud System
+     */
+    public get colors() {
+        return this._colors32;
+    }
+
+    /**
+     * Gets the particle uvs computed by the Point Cloud System
+     */
+    public get uvs() {
+        return this._uvs32;
+    }
+
+    /**
      * Creates a PCS (Points Cloud System) object
      * @param name (String) is the PCS name, this will be the underlying mesh name
      * @param pointSize (number) is the size for each point. Has no effect on a WebGPU engine.
