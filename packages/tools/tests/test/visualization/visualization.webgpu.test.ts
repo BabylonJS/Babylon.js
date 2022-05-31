@@ -14,9 +14,10 @@ import {
 // const debug = buildTools.checkArgs("--debug", true);
 // const configPath = buildTools.checkArgs("--config", false, true) || "../config.json";
 
+const useStandardTestList = process.env.STANDARDLIST === "true" || false;
 const engineType = "webgpu";
 const debug = process.env.DEBUG === "true" || false;
-const configPath = process.env.CONFIG || path.resolve(__dirname, "webgpu.json");
+const configPath = process.env.CONFIG || path.resolve(__dirname, useStandardTestList ? "config.json" : "webgpu.json");
 // load the config
 const rawJsonData = fs.readFileSync(configPath, "utf8");
 // console.log(data);
@@ -114,7 +115,7 @@ test /*.concurrent*/
             });
             // Test screenshot (also save this new screenshot if -u is set)
             expect(screenshot).toMatchImageSnapshot({
-                path: path.resolve(__dirname, `./ReferenceImages/webgpu/${test.title}.png`),
+                path: path.resolve(__dirname, `./ReferenceImages/${useStandardTestList ? test.referenceImage : "webgpu/" + test.title + ".png"}`),
             });
         } finally {
             // dispose the scene
