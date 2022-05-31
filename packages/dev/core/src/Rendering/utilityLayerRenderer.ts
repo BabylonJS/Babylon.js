@@ -326,10 +326,6 @@ export class UtilityLayerRenderer implements IDisposable {
         this._afterRenderObserver = this.originalScene.onAfterCameraRenderObservable.add((camera) => {
             // Only render when the render camera finishes rendering
             if (this.shouldRender && camera == this.getRenderCamera()) {
-                if (camera.outputRenderTarget && camera.isRigCamera) {
-                    // clear depth for the utility layer to render correctly
-                    this.originalScene.getEngine().clear(null, false, true, false);
-                }
                 this.render();
             }
         });
