@@ -245,8 +245,7 @@ export class SceneSerializer {
         if (scene.environmentTexture) {
             if ((scene.environmentTexture as CubeTexture)._files) {
                 serializationObject.environmentTexture = scene.environmentTexture.serialize();
-            }
-            else {
+            } else {
                 serializationObject.environmentTexture = scene.environmentTexture.name;
                 serializationObject.environmentTextureRotationY = (scene.environmentTexture as CubeTexture).rotationY;
             }
