@@ -3,7 +3,6 @@ import type { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { EndsWith } from "../../../Misc/stringTools";
 
 /**
  * Implementation of the ENV Texture Loader.
@@ -22,7 +21,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return EndsWith(extension, ".env");
+        return extension.endsWith(".env");
     }
 
     /**

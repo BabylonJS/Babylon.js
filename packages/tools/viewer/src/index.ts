@@ -28,11 +28,9 @@ import "pepjs";
 
 import { initListeners, InitTags } from "./initializer";
 
-// promise polyfill, if needed!
-BABYLON.PromisePolyfill.Apply();
 initListeners();
 
-//deprectaed, here for backwards compatibility
+//deprecated, here for backwards compatibility
 const disableInit: boolean = viewerGlobals.disableInit;
 
 /**

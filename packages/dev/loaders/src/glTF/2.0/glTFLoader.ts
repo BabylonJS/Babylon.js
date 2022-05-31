@@ -72,7 +72,6 @@ import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Mi
 import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
-import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
 
 interface TypedArrayLike extends ArrayBufferView {
@@ -347,7 +346,7 @@ export class GLTFLoader implements IGLTFLoader {
         return Promise.resolve()
             .then(() => {
                 this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
 
                 this._loadExtensions();
