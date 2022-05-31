@@ -12,7 +12,6 @@ export * from "./HighDynamicRange/index";
 export * from "./khronosTextureContainer";
 export * from "./observable";
 export * from "./performanceMonitor";
-export * from "./promise";
 export * from "./sceneOptimizer";
 export * from "./sceneSerializer";
 export * from "./smartArray";
