@@ -11,7 +11,7 @@ import type { ThinEngine } from "../../Engines/thinEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
-import { EncodeArrayBufferToBase64, StartsWith } from "../../Misc/stringTools";
+import { EncodeArrayBufferToBase64 } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 import { InternalTexture } from "./internalTexture";
@@ -542,7 +542,7 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        if (!this.name || StartsWith(this.name, "data:")) {
+        if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
         }
         this.url = url;
@@ -853,12 +853,12 @@ export class Texture extends BaseTexture {
         const savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
-            if (StartsWith(this.name, "data:")) {
+            if (this.name.startsWith("data:")) {
                 this.name = "";
             }
         }
 
-        if (StartsWith(this.name, "data:") && this.url === this.name) {
+        if (this.name.startsWith("data:") && this.url === this.name) {
             this.url = "";
         }
 
@@ -872,9 +872,9 @@ export class Texture extends BaseTexture {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
-            } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
+            } else if (this.url && this.url.startsWith("data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
-            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:")) || this._forceSerialize) {
+            } else if (Texture.ForceSerializeBuffers || (this.url && this.url.startsWith("blob:")) || this._forceSerialize) {
                 serializationObject.base64String =
                     !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
@@ -1024,7 +1024,7 @@ export class Texture extends BaseTexture {
                             url = rootUrl + parsedTexture.name;
                         }
 
-                        if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                        if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
                         texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
