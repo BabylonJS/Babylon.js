@@ -5,7 +5,7 @@ import type { InternalTexture } from "../../../Materials/Textures/internalTextur
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import type { DDSInfo } from "../../../Misc/dds";
 import { DDSTools } from "../../../Misc/dds";
-import { EndsWith } from "../../../Misc/stringTools";
+
 /**
  * Implementation of the DDS Texture Loader.
  * @hidden
@@ -23,7 +23,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return EndsWith(extension, ".dds");
+        return extension.endsWith(".dds");
     }
 
     /**
