@@ -391,7 +391,9 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     /** @hidden */
     protected _syncParentEnabledState() {
         super._syncParentEnabledState();
-        (this.transformedPosition as any) = null;
-        (this.transformedDirection as any) = null;
+        if (!this.parent || !this.parent.getWorldMatrix) {
+            (this.transformedPosition as any) = null;
+            (this.transformedDirection as any) = null;
+        }
     }
 }
