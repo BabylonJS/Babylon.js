@@ -243,8 +243,13 @@ export class SceneSerializer {
 
         // Environment texture
         if (scene.environmentTexture) {
-            serializationObject.environmentTexture = scene.environmentTexture.name;
-            serializationObject.environmentTextureRotationY = (scene.environmentTexture as CubeTexture).rotationY;
+            if ((scene.environmentTexture as CubeTexture)._files) {
+                serializationObject.environmentTexture = scene.environmentTexture.serialize();
+            }
+            else {
+                serializationObject.environmentTexture = scene.environmentTexture.name;
+                serializationObject.environmentTextureRotationY = (scene.environmentTexture as CubeTexture).rotationY;
+            }
         }
 
         // Environment Intensity
