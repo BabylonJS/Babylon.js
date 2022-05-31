@@ -316,6 +316,7 @@ export class Texture extends BaseTexture {
     private _loaderOptions?: any;
     private _creationFlags?: number;
     private _useSRGBBuffer?: boolean;
+    private _forcedExtension?: string;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -364,6 +365,7 @@ export class Texture extends BaseTexture {
      * @param mimeType defines an optional mime type information
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param forcedExtension defines the extension to use to pick the right loader
      */
     constructor(
         url: Nullable<string>,
@@ -378,7 +380,8 @@ export class Texture extends BaseTexture {
         format?: number,
         mimeType?: string,
         loaderOptions?: any,
-        creationFlags?: number
+        creationFlags?: number,
+        forcedExtension?: string
     ) {
         super(sceneOrEngine);
 
@@ -416,6 +419,7 @@ export class Texture extends BaseTexture {
         this._loaderOptions = loaderOptions;
         this._creationFlags = creationFlags;
         this._useSRGBBuffer = useSRGBBuffer;
+        this._forcedExtension = forcedExtension;
         if (format) {
             this._format = format;
         }
@@ -493,7 +497,7 @@ export class Texture extends BaseTexture {
                         this._buffer,
                         undefined,
                         this._format,
-                        null,
+                        this._forcedExtension,
                         mimeType,
                         loaderOptions,
                         creationFlags,
@@ -530,8 +534,9 @@ export class Texture extends BaseTexture {
      * @param url the url of the texture
      * @param buffer the buffer of the texture (defaults to null)
      * @param onLoad callback called when the texture is loaded  (defaults to null)
+     * @param forcedExtension defines the extension to use to pick the right loader
      */
-    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
+    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, onLoad?: () => void, forcedExtension?: string): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
@@ -542,6 +547,7 @@ export class Texture extends BaseTexture {
         }
         this.url = url;
         this._buffer = buffer;
+        this._forcedExtension = forcedExtension;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
         if (onLoad) {
@@ -581,7 +587,7 @@ export class Texture extends BaseTexture {
                     this._buffer,
                     null,
                     this._format,
-                    null,
+                    this._forcedExtension,
                     this._mimeType,
                     this._loaderOptions,
                     this._creationFlags,
