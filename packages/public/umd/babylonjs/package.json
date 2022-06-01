@@ -11,7 +11,8 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*"
+        "clean": "rimraf dist && rimraf babylon*.*",
+        "postinstall": "node ./scripts/postinstall.js"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
