@@ -178,7 +178,10 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if ((parsedData.environmentTexture as string).endsWith(".env")) {
+                if (typeof parsedData.environmentTexture === "object") {
+                    const environmentTexture = CubeTexture.Parse(parsedData.environmentTexture, scene, rootUrl);
+                    scene.environmentTexture = environmentTexture;
+                } else if ((parsedData.environmentTexture as string).endsWith(".env")) {
                     const compressedTexture = new CubeTexture(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
                         scene,
