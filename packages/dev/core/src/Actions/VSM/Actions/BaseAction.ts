@@ -6,6 +6,7 @@ import { Tools } from "../../../Misc/tools";
 
 export abstract class BaseAction<T = any> implements IDisposable {
     protected _isRunning: boolean = false;
+    // TODO - run parallel and next actions
     // glEF sees that as a single action
     public parallelActions: BaseAction[] = [];
     // Actions in this array will run IN PARALLEL after this action is done

@@ -3,7 +3,7 @@ import { ActionManager } from "../actionManager";
 import { ExecuteCodeAction } from "../directActions";
 import { BaseAction } from "./Actions/BaseAction";
 import { BaseBehavior, IBehaviorOptions } from "./baseBehavior";
-import { CustomEventManager, ICustomEvent } from "./customEventManager";
+import { CustomEventManager } from "./customEventManager";
 import { BaseTrigger } from "./Triggers/BaseTrigger";
 
 /**
