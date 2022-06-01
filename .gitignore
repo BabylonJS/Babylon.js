@@ -3,6 +3,7 @@ dist
 .tempChromeCanaryProfileForDebug
 .tempChromeProfileForDebug
 node_modules
+.idea
 .tsbuildinfo
 .snapshot
 generated
