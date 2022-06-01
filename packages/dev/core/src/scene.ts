@@ -2538,6 +2538,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Removes the given action manager from this scene.
+     * @deprecated
      * @param toRemove The action manager to remove
      * @returns The index of the removed action manager
      */
@@ -2721,6 +2722,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Adds the given action manager to this scene
+     * @deprecated
      * @param newActionManager The action manager to add
      */
     public addActionManager(newActionManager: AbstractActionManager): void {

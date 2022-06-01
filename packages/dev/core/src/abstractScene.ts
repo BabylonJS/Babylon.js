@@ -187,6 +187,7 @@ export abstract class AbstractScene {
 
     /**
      * ActionManagers available on the scene.
+     * @deprecated
      */
     public actionManagers = new Array<AbstractActionManager>();
 
