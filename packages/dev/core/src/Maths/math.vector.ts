@@ -1086,6 +1086,7 @@ export class Vector3 {
      * Rotates the vector using the given unit quaternion and stores the new vector in result
      * @param q the unit quaternion representing the rotation
      * @param result the output vector
+     * @returns the current Vector3
      */
     public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
         const ix = q.w * this.x + q.y * this.z - q.z * this.y;
@@ -1103,6 +1104,7 @@ export class Vector3 {
     /**
      * Rotates the vector in place using the given unit quaternion
      * @param q the unit quaternion representing the rotation
+     * @returns the current updated Vector3
      */
     public applyRotationQuaternionInPlace(q: Quaternion): Vector3 {
         return this.applyRotationQuaternionToRef(q, this);
@@ -1111,6 +1113,7 @@ export class Vector3 {
     /**
      * Rotates the vector using the given unit quaternion and returns the new vector
      * @param q the unit quaternion representing the rotation
+     * @returns a new Vector3
      */
     public applyRotationQuaternion(q: Quaternion): Vector3 {
         return this.applyRotationQuaternionToRef(q, Vector3.Zero());
