@@ -2080,9 +2080,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        this._executeWhenReadyTimeoutId = setTimeout(() => {
-            this._checkIsReady(checkRenderTargets);
-        }, 150);
+        this._checkIsReady(checkRenderTargets);
     }
 
     /**
