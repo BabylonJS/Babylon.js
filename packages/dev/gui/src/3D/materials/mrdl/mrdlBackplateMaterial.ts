@@ -337,7 +337,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                 "_Line_Gradient_Blend_",
                 "_Fade_Out_",
             ];
-            const samplers: string[] = [ "_Iridescent_Map_" ];
+            const samplers: string[] = ["_Iridescent_Map_"];
             const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
