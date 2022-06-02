@@ -1,4 +1,4 @@
-import { VertexData } from "../../../meshes/mesh.vertexData";
+import { VertexData } from "../../mesh.vertexData";
 import { Nullable } from "../../../types";
 import { IDracoDecoder, DracoCompressionBase, IDracoCompressionEngineConfiguration } from "./dracoCommons";
 

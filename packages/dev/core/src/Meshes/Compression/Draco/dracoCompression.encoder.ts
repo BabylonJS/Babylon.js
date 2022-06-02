@@ -1,4 +1,4 @@
-import { IGetSetVerticesData } from "../../../meshes/mesh.vertexData";
+import { IGetSetVerticesData } from "../../mesh.vertexData";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { Nullable, FloatArray } from "../../../types";
 import {

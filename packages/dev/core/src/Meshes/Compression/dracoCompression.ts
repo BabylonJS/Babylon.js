@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import { DracoDecoder } from "./draco/dracoCompression.decoder";
+import { DracoDecoder } from "./Draco/dracoCompression.decoder";
 import type { IDracoCompressionEngineConfiguration } from "./Draco/dracoCommons";
 import { DracoCompressionBase } from "./Draco/dracoCommons";
 
