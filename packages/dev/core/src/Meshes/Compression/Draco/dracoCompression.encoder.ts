@@ -59,7 +59,7 @@ function encodeMesh(
                     // see https://github.com/google/draco/blob/master/src/draco/javascript/emscripten/encoder_webidl_wrapper.cc
                     // According to https://github.com/google/draco/blob/ee2c2578a170324bffef38cb8a3c2e60d89d5e87/src/draco/javascript/emscripten/encoder_webidl_wrapper.h#L86
                     // the third parameter IS THE VERTICE COUNT, and must be similar for all the subsequent AddXXXAttribute call.
-                    attributeIDs[attribute.key] = meshBuilder.AddFloatAttribute(dracoObject, attribute.type, verticesCount, attribute.stride, attribute);
+                    attributeIDs[attribute.key] = meshBuilder.AddFloatAttribute(dracoObject, attribute.type, verticesCount, attribute.stride, attribute.data);
                     const typeName = nativeAttributeTypeNames[attribute.type];
                     if (options.quantizationBits && options.quantizationBits[typeName]) {
                         encoder.SetAttributeQuantization(attribute, options.quantizationBits[typeName]);

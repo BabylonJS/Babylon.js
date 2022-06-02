@@ -120,6 +120,9 @@ class DracoEngineInfo {
     wasmBinaryPromise: Promise<ArrayBuffer | string | undefined>;
 }
 
+/**
+ * This is the base class for the Draco Encoder and Decoder.
+ */
 export abstract class DracoCompressionBase implements IDisposable {
     private static _GetDefaultNumWorkers(): number {
         if (typeof navigator !== "object" || !navigator.hardwareConcurrency) {
