@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.8.1",
+    "fromTag": "5.8.2",
     "changelog": {
         "5.8.2": [
             {
@@ -29,6 +29,294 @@
                 ],
                 "tags": [
                     "bug"
+                ]
+            }
+        ],
+        "5.9.0": [
+            {
+                "pr": "12624",
+                "title": "Fix NME dialog box styling",
+                "description": "The dialog box styling wasn't being applied because of the class scope",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12623",
+                "title": "Fix Lines vertex alpha",
+                "description": "https://forum.babylonjs.com/t/alpha-color-not-working-in-line-system-anymore/30947/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12617",
+                "title": "Fix JPEG environment texture",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/materials/readme.md"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "12625",
+                "title": "Improve CheckIsReady in scene",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12618",
+                "title": "Enable iridescence map in MRDL backplate material",
+                "description": "Simple fix, visually pleasing results\r\n![ezgif-3-4fa4eb9834](https://user-images.githubusercontent.com/4724014/171300738-97774c1e-bd8c-43d9-aad4-7ce79fdba313.gif)\r\n",
+                "author": {
+                    "name": "rgerd",
+                    "url": "https://github.com/rgerd"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12598",
+                "title": "Added a few methods to Quaternion and Vector3",
+                "description": "I noticed there was a few useful methods not implemented regarding transformations of Vector3 by Quaternions.\r\n\r\n# Here is what I added :\r\n\r\n ## Quaternion\r\n\r\n- added ```subtractInPlace```\r\n- added ```invertInPlace```\r\n- added ```invert```\r\n- added ```normalizeToNew```\r\n- added ```lengthSquared```\r\n\r\n## Vector3\r\n\r\n- added ```applyRotationQuaternionToRef```\r\n- added ```applyRotationQuaternionInPlace```\r\n- added ```applyRotationQuaternion```\r\n\r\n## Other\r\n\r\n- Removed a few repetitions",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    ".gitignore",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12620",
+                "title": "deprecate action manager array in scene",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/abstractScene.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12616",
+                "title": "added postinstall script to \"babylonjs\"",
+                "description": "These lines will be presented to anyone installing \"bbylonjs\" package (umd).",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/public/umd/babylonjs/readme.md",
+                    "packages/public/umd/babylonjs/scripts/postinstall.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12621",
+                "title": "Scene.multiPickWithRay signature correction",
+                "description": "Fixes #12614",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12563",
+                "title": "Removed IE support. It was long overdue ;)",
+                "description": "Fix #12324 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ddsTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/envTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/hdrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/tgaTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/deepCopier.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/promise.ts",
+                    "packages/dev/core/src/Misc/reflector.ts",
+                    "packages/dev/core/src/Misc/sliceTools.ts",
+                    "packages/dev/core/src/Misc/stringTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.promise.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/tools/sandbox/src/components/reflectorZone.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/viewer/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12607",
+                "title": "Grid children disappear once linked mesh is outside view",
+                "description": "Fixes #12602\nThis forces resetting the clipping state of children when their matrix is set as dirty.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12609",
+                "title": "Fix registerInstancedBuffer after Mesh creation",
+                "description": "https://forum.babylonjs.com/t/disappearing-mesh-material-on-registerinstancedbuffer-and-instancedbuffers/30868",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/shadowLight.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12612",
+                "title": "Added forcedExtension option to textur creation",
+                "description": "If the texture url does not contain any file extensoin (e.g. object url) we should be able to force the extension. Otherwise compressed textures like -dxt.ktx cannot be loaded.\r\nhttps://forum.babylonjs.com/t/loading-compressed-textures-from-object-url/30861",
+                "author": {
+                    "name": "MBecherKurz",
+                    "url": "https://github.com/MBecherKurz"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "12590",
+                "title": "Move frame bar on ACE to the top of the window",
+                "description": "Previous:\r\n![image](https://user-images.githubusercontent.com/6002144/170536466-5e60d953-bea3-4ebc-ab42-30ef6100275a.png)\r\nWith the PR:\r\n![image](https://user-images.githubusercontent.com/6002144/170536574-e4784010-6794-4ca8-86a6-bd74ccd96c86.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/canvasComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/playHeadComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/rangeFrameBarComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12604",
+                "title": "WebGPU: Allow running the standard viz tests with WebGPU",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12608",
+                "title": "test all packages in modules test",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/src/sceneWithInspector.ts"
+                ],
+                "tags": [
+                    "new feature"
                 ]
             }
         ],
