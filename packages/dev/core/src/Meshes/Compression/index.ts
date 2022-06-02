@@ -1,2 +1,4 @@
 export * from "./meshoptCompression";
-export * from "./Draco";
+export * from "./draco";
+export * from "./dracoCompression";
+

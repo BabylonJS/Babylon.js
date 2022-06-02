@@ -1,5 +1,6 @@
 import { VertexData } from "../../../meshes/mesh.vertexData";
-import { IDracoDecoder, DracoCompressionBase, IDracoCompressionEngineConfiguration } from "./dracoCompression";
+import { Nullable } from "../../../types";
+import { IDracoDecoder, DracoCompressionBase, IDracoCompressionEngineConfiguration } from "./dracoCommons";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: any;
@@ -188,6 +189,26 @@ export class DracoDecoder extends DracoCompressionBase implements IDracoDecoder 
         fallbackUrl: DracoCompressionBase.WasmBaseUrl + "draco_decoder_gltf.js",
     };
 
+    /**
+     * Returns true if the decoder is available.
+     */
+    public static get DecoderAvailable(): boolean {
+        return DracoCompressionBase._isCodecAvailable(DracoDecoder.Configuration);
+    }
+
+    private static _Default: Nullable<DracoDecoder> = null;
+
+    /**
+     * Default instance for the draco compression object.
+     */
+    public static get Default(): DracoDecoder {
+        if (!DracoDecoder._Default) {
+            DracoDecoder._Default = new DracoDecoder();
+        }
+
+        return DracoDecoder._Default;
+    }
+
     constructor(numWorkers = DracoCompressionBase.DefaultNumWorkers) {
         super(DracoDecoder.Configuration, numWorkers);
     }
@@ -274,14 +295,5 @@ export class DracoDecoder extends DracoCompressionBase implements IDracoDecoder 
 
     getWorkerContent(): string {
         return `${decodeMesh}(${worker})()`;
-    }
-}
-
-/**
- * @deprecated use DracoDecoder
- */
-export class DracoCompression extends DracoDecoder {
-    constructor(numWorkers = DracoCompressionBase.DefaultNumWorkers) {
-        super(numWorkers);
     }
 }

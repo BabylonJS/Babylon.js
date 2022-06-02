@@ -11,7 +11,7 @@ import {
     IDracoCompressionEngineConfiguration,
     IDracoEncodedPrimitive,
     IDracoEncoderOptions,
-} from "./dracoCompression";
+} from "./dracoCommons";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: any;
@@ -172,7 +172,12 @@ export class DracoEncoder extends DracoCompressionBase implements IDracoEncoder 
         wasmBinaryUrl: DracoCompressionBase.WasmBaseUrl + "draco_encoder.wasm",
         fallbackUrl: DracoCompressionBase.WasmBaseUrl + "draco_encoder.js",
     };
-
+    /**
+     * Returns true if the encoder is available.
+     */
+    public static get EncoderAvailable(): boolean {
+        return DracoCompressionBase._isCodecAvailable(DracoEncoder.Configuration);
+    }
     constructor(numWorkers = DracoCompressionBase.DefaultNumWorkers) {
         super(DracoEncoder.Configuration, numWorkers);
     }

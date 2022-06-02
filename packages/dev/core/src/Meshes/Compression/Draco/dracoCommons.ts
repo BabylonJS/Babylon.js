@@ -1,4 +1,4 @@
-import { VertexData, IGetSetVerticesData } from "../../../meshes/mesh.vertexData";
+import { VertexData, IGetSetVerticesData } from "../../mesh.vertexData";
 import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
 import type { IDisposable } from "../../../scene";
@@ -131,6 +131,11 @@ export abstract class DracoCompressionBase implements IDisposable {
     }
 
     public static WasmBaseUrl: string = "https://preview.babylonjs.com/";
+
+    protected static _isCodecAvailable(codec: IDracoCompressionEngineConfiguration) {
+        return !!((codec.wasmUrl && codec.wasmBinaryUrl && typeof WebAssembly === "object") || codec.fallbackUrl);
+    }
+
     /**
      * Default number of workers to create when creating the draco compression object.
      */
@@ -196,7 +201,16 @@ export abstract class DracoCompressionBase implements IDisposable {
         }
     }
 
-    dispose(): void {}
+    dispose(): void {
+        if (this._workerPoolPromise) {
+            this._workerPoolPromise.then((workerPool) => {
+                workerPool.dispose();
+            });
+        }
+
+        delete this._workerPoolPromise;
+        delete this._modulePromise;
+    }
 
     abstract createModuleAsync(wasmBinary?: ArrayBuffer): Promise<any>;
     abstract getWorkerContent(): string;
