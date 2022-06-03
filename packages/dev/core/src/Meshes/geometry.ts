@@ -308,7 +308,7 @@ export class Geometry implements IGetSetVerticesData {
             for (let index = 0; index < numOfMeshes; index++) {
                 const mesh = meshes[index];
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
-                mesh._createGlobalSubMesh(false);
+                mesh._createGlobalSubMesh(mesh.isUnIndexed);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();
             }
@@ -606,7 +606,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            return Tools.Slice(orig);
+            return orig.slice();
         }
     }
 
@@ -732,7 +732,7 @@ export class Geometry implements IGetSetVerticesData {
                 }
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
-                mesh._createGlobalSubMesh(false);
+                mesh._createGlobalSubMesh(mesh.isUnIndexed);
 
                 //bounding info was just created again, world matrix should be applied again.
                 mesh._updateBoundingInfo();
