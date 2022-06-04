@@ -1973,6 +1973,7 @@ export class Engine extends ThinEngine {
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
         (this._renderingCanvas.style as any).msTouchAction = "none";
+        (this._renderingCanvas.style as any).webkitTapHighlightColor = 'transparent';
     }
 
     // Loading screen
