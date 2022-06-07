@@ -27,7 +27,9 @@ export class ComputePressureObserverWrapper {
      * Method that must be called to begin observing changes, and triggering callbacks.
      */
     observe(): void {
-        this._observer?.observe && this._observer?.observe();
+        this._observer?.observe && this._observer?.observe().catch(() => {
+            // Ignore error
+        });
     }
 
     /**
