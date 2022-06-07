@@ -205,13 +205,10 @@ export class InputManager {
         if (isMeshPicked) {
             scene.setPointerOverMesh(pickResult!.pickedMesh, evt.pointerId, pickResult);
 
-            if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                if (!scene.doNotHandleCursors && canvas) {
-                    if (this._pointerOverMesh.actionManager.hoverCursor) {
-                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
-                    } else {
-                        canvas.style.cursor = scene.hoverCursor;
-                    }
+            if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
+                const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
+                if (actionManager && actionManager.hasPointerTriggers) {
+                    canvas.style.cursor = actionManager.hoverCursor || scene.hoverCursor;
                 }
             }
         } else {
