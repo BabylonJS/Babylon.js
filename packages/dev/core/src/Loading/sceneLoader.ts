@@ -117,7 +117,7 @@ export interface ISceneLoaderPluginFactory {
 
     /**
      * Function called to create a new plugin
-     * @return the new plugin
+     * @returns the new plugin
      */
     createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 

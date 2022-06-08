@@ -486,7 +486,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Set animation weight for all animatables
      * @param weight defines the weight to use
-     * @return the animationGroup
+     * @returns the animationGroup
      * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
@@ -501,7 +501,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Synchronize and normalize all animatables with a source animatable
      * @param root defines the root animatable to synchronize with (null to stop synchronizing)
-     * @return the animationGroup
+     * @returns the animationGroup
      * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup {
@@ -516,7 +516,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Goes to a specific frame in this animation group
      * @param frame the frame number to go to
-     * @return the animationGroup
+     * @returns the animationGroup
      */
     public goToFrame(frame: number): AnimationGroup {
         if (!this._isStarted) {

@@ -168,7 +168,7 @@ var tmp = new Vec3();
  * @param {Vec3} position
  * @param {Quaternion} quaternion
  * @param {number} skinSize
- * @return {AABB} The self object
+ * @returns {AABB} The self object
  */
 AABB.prototype.setFromPoints = function(points, position, quaternion, skinSize){
     var l = this.lowerBound,
@@ -220,7 +220,7 @@ AABB.prototype.setFromPoints = function(points, position, quaternion, skinSize){
  * Copy bounds from an AABB to this AABB
  * @method copy
  * @param  {AABB} aabb Source to copy from
- * @return {AABB} The this object, for chainability
+ * @returns {AABB} The this object, for chainability
  */
 AABB.prototype.copy = function(aabb){
     this.lowerBound.copy(aabb.lowerBound);
@@ -283,7 +283,7 @@ AABB.prototype.extend = function(aabb){
  * Returns true if the given AABB overlaps this AABB.
  * @method overlaps
  * @param  {AABB} aabb
- * @return {Boolean}
+ * @returns {Boolean}
  */
 AABB.prototype.overlaps = function(aabb){
     var l1 = this.lowerBound,
@@ -305,7 +305,7 @@ AABB.prototype.overlaps = function(aabb){
  * Returns true if the given AABB is fully contained in this AABB.
  * @method contains
  * @param {AABB} aabb
- * @return {Boolean}
+ * @returns {Boolean}
  */
 AABB.prototype.contains = function(aabb){
     var l1 = this.lowerBound,
@@ -366,7 +366,7 @@ var transformIntoFrame_corners = [
  * @method toLocalFrame
  * @param  {Transform} frame
  * @param  {AABB} target
- * @return {AABB} The "target" AABB object.
+ * @returns {AABB} The "target" AABB object.
  */
 AABB.prototype.toLocalFrame = function(frame, target){
 
@@ -397,7 +397,7 @@ AABB.prototype.toLocalFrame = function(frame, target){
  * @method toWorldFrame
  * @param  {Transform} frame
  * @param  {AABB} target
- * @return {AABB} The "target" AABB object.
+ * @returns {AABB} The "target" AABB object.
  */
 AABB.prototype.toWorldFrame = function(frame, target){
 
@@ -446,7 +446,7 @@ function ArrayCollisionMatrix() {
  * @method get
  * @param  {Number} i
  * @param  {Number} j
- * @return {Number}
+ * @returns {Number}
  */
 ArrayCollisionMatrix.prototype.get = function(i, j) {
 	i = i.index;
@@ -549,7 +549,7 @@ Broadphase.prototype.collisionPairs = function(world,p1,p2){
  * @method needBroadphaseCollision
  * @param {Body} bodyA
  * @param {Body} bodyB
- * @return {bool}
+ * @returns {bool}
  */
 var Broadphase_needBroadphaseCollision_STATIC_OR_KINEMATIC = Body.STATIC | Body.KINEMATIC;
 Broadphase.prototype.needBroadphaseCollision = function(bodyA,bodyB){
@@ -684,7 +684,7 @@ Broadphase.prototype.setWorld = function(world){
  * @method boundingSphereCheck
  * @param {Body} bodyA
  * @param {Body} bodyB
- * @return {boolean}
+ * @returns {boolean}
  */
 var bsc_dist = new Vec3();
 Broadphase.boundingSphereCheck = function(bodyA,bodyB){
@@ -699,7 +699,7 @@ Broadphase.boundingSphereCheck = function(bodyA,bodyB){
  * @param  {World} world
  * @param  {AABB} aabb
  * @param  {array} result An array to store resulting bodies in.
- * @return {array}
+ * @returns {array}
  */
 Broadphase.prototype.aabbQuery = function(world, aabb, result){
     console.warn('.aabbQuery is not implemented in this Broadphase subclass.');
@@ -990,7 +990,7 @@ var tmpAABB = new AABB();
  * @param  {World} world
  * @param  {AABB} aabb
  * @param {array} result An array to store resulting bodies in.
- * @return {array}
+ * @returns {array}
  */
 NaiveBroadphase.prototype.aabbQuery = function(world, aabb, result){
     result = result || [];
@@ -1032,7 +1032,7 @@ function ObjectCollisionMatrix() {
  * @method get
  * @param  {Number} i
  * @param  {Number} j
- * @return {Number}
+ * @returns {Number}
  */
 ObjectCollisionMatrix.prototype.get = function(i, j) {
 	i = i.id;
@@ -1187,7 +1187,7 @@ var tmpArray = [];
  * @method intersectWorld
  * @param  {World} world
  * @param  {object} options
- * @return {Boolean} True if the ray hit anything, otherwise false.
+ * @returns {Boolean} True if the ray hit anything, otherwise false.
  */
 Ray.prototype.intersectWorld = function (world, options) {
     this.mode = options.mode || Ray.ANY;
@@ -1828,7 +1828,7 @@ Ray.prototype[Shape.types.TRIMESH] = Ray.prototype.intersectTrimesh;
  * @param  {Vec3} hitPointWorld
  * @param  {Shape} shape
  * @param  {Body} body
- * @return {boolean} True if the intersections should continue
+ * @returns {boolean} True if the intersections should continue
  */
 Ray.prototype.reportIntersection = function(normal, hitPointWorld, shape, body, hitFaceIndex){
     var from = this.from;
@@ -2124,7 +2124,7 @@ SAPBroadphase.prototype.setWorld = function(world){
  * @static
  * @method insertionSortX
  * @param  {Array} a
- * @return {Array}
+ * @returns {Array}
  */
 SAPBroadphase.insertionSortX = function(a) {
     for(var i=1,l=a.length;i<l;i++) {
@@ -2144,7 +2144,7 @@ SAPBroadphase.insertionSortX = function(a) {
  * @static
  * @method insertionSortY
  * @param  {Array} a
- * @return {Array}
+ * @returns {Array}
  */
 SAPBroadphase.insertionSortY = function(a) {
     for(var i=1,l=a.length;i<l;i++) {
@@ -2164,7 +2164,7 @@ SAPBroadphase.insertionSortY = function(a) {
  * @static
  * @method insertionSortZ
  * @param  {Array} a
- * @return {Array}
+ * @returns {Array}
  */
 SAPBroadphase.insertionSortZ = function(a) {
     for(var i=1,l=a.length;i<l;i++) {
@@ -2248,7 +2248,7 @@ SAPBroadphase.prototype.sortList = function(){
  * @param  {Body} bi
  * @param  {Body} bj
  * @param  {Number} axisIndex
- * @return {Boolean}
+ * @returns {Boolean}
  */
 SAPBroadphase.checkBounds = function(bi, bj, axisIndex){
     var biPos;
@@ -2330,7 +2330,7 @@ SAPBroadphase.prototype.autoDetectAxis = function(){
  * @param  {World} world
  * @param  {AABB} aabb
  * @param {array} result An array to store resulting bodies in.
- * @return {array}
+ * @returns {array}
  */
 SAPBroadphase.prototype.aabbQuery = function(world, aabb, result){
     result = result || [];
@@ -3107,7 +3107,7 @@ var ContactEquation_getImpactVelocityAlongNormal_relVel = new Vec3();
 /**
  * Get the current relative velocity in the contact point.
  * @method getImpactVelocityAlongNormal
- * @return {number}
+ * @returns {number}
  */
 ContactEquation.prototype.getImpactVelocityAlongNormal = function(){
     var vi = ContactEquation_getImpactVelocityAlongNormal_vi;
@@ -3226,7 +3226,7 @@ Equation.prototype.setSpookParams = function(stiffness,relaxation,timeStep){
 /**
  * Computes the RHS of the SPOOK equation
  * @method computeB
- * @return {Number}
+ * @returns {Number}
  */
 Equation.prototype.computeB = function(a,b,h){
     var GW = this.computeGW(),
@@ -3238,7 +3238,7 @@ Equation.prototype.computeB = function(a,b,h){
 /**
  * Computes G*q, where q are the generalized body coordinates
  * @method computeGq
- * @return {Number}
+ * @returns {Number}
  */
 Equation.prototype.computeGq = function(){
     var GA = this.jacobianElementA,
@@ -3255,7 +3255,7 @@ var zero = new Vec3();
 /**
  * Computes G*W, where W are the body velocities
  * @method computeGW
- * @return {Number}
+ * @returns {Number}
  */
 Equation.prototype.computeGW = function(){
     var GA = this.jacobianElementA,
@@ -3273,7 +3273,7 @@ Equation.prototype.computeGW = function(){
 /**
  * Computes G*Wlambda, where W are the body velocities
  * @method computeGWlambda
- * @return {Number}
+ * @returns {Number}
  */
 Equation.prototype.computeGWlambda = function(){
     var GA = this.jacobianElementA,
@@ -3290,7 +3290,7 @@ Equation.prototype.computeGWlambda = function(){
 /**
  * Computes G*inv(M)*f, where M is the mass matrix with diagonal blocks for each body, and f are the forces on the bodies.
  * @method computeGiMf
- * @return {Number}
+ * @returns {Number}
  */
 var iMfi = new Vec3(),
     iMfj = new Vec3(),
@@ -3322,7 +3322,7 @@ Equation.prototype.computeGiMf = function(){
 /**
  * Computes G*inv(M)*G'
  * @method computeGiMGt
- * @return {Number}
+ * @returns {Number}
  */
 var tmp = new Vec3();
 Equation.prototype.computeGiMGt = function(){
@@ -3394,7 +3394,7 @@ Equation.prototype.addToWlambda = function(deltalambda){
  * Compute the denominator part of the SPOOK equation: C = G*inv(M)*G' + eps
  * @method computeInvC
  * @param  {Number} eps
- * @return {Number}
+ * @returns {Number}
  */
 Equation.prototype.computeC = function(){
     return this.computeGiMGt() + this.eps;
@@ -3762,7 +3762,7 @@ function JacobianElement(){
  * Multiply with other JacobianElement
  * @method multiplyElement
  * @param  {JacobianElement} element
- * @return {Number}
+ * @returns {Number}
  */
 JacobianElement.prototype.multiplyElement = function(element){
     return element.spatial.dot(this.spatial) + element.rotational.dot(this.rotational);
@@ -3773,7 +3773,7 @@ JacobianElement.prototype.multiplyElement = function(element){
  * @method multiplyVectors
  * @param  {Vec3} spatial
  * @param  {Vec3} rotational
- * @return {Number}
+ * @returns {Number}
  */
 JacobianElement.prototype.multiplyVectors = function(spatial,rotational){
     return spatial.dot(this.spatial) + rotational.dot(this.rotational);
@@ -3856,7 +3856,7 @@ Mat3.prototype.setTrace = function(vec3){
 /**
  * Gets the matrix diagonal elements
  * @method getTrace
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Mat3.prototype.getTrace = function(target){
     var target = target || new Vec3();
@@ -3901,7 +3901,7 @@ Mat3.prototype.smult = function(s){
  * Matrix multiplication
  * @method mmult
  * @param {Mat3} m Matrix to multiply with from left side.
- * @return {Mat3} The result.
+ * @returns {Mat3} The result.
  */
 Mat3.prototype.mmult = function(m,target){
     var r = target || new Mat3();
@@ -3921,7 +3921,7 @@ Mat3.prototype.mmult = function(m,target){
  * Scale each column of the matrix
  * @method scale
  * @param {Vec3} v
- * @return {Mat3} The result.
+ * @returns {Mat3} The result.
  */
 Mat3.prototype.scale = function(v,target){
     target = target || new Mat3();
@@ -3940,7 +3940,7 @@ Mat3.prototype.scale = function(v,target){
  * @method solve
  * @param {Vec3} b The right hand side
  * @param {Vec3} target Optional. Target vector to save in.
- * @return {Vec3} The solution x
+ * @returns {Vec3} The solution x
  * @todo should reuse arrays
  */
 Mat3.prototype.solve = function(b,target){
@@ -4012,7 +4012,7 @@ Mat3.prototype.solve = function(b,target){
  * @param {Number} row
  * @param {Number} column
  * @param {Number} value Optional. If provided, the matrix element will be set to this value.
- * @return {Number}
+ * @returns {Number}
  */
 Mat3.prototype.e = function( row , column ,value){
     if(value===undefined){
@@ -4027,7 +4027,7 @@ Mat3.prototype.e = function( row , column ,value){
  * Copy another matrix into this matrix object.
  * @method copy
  * @param {Mat3} source
- * @return {Mat3} this
+ * @returns {Mat3} this
  */
 Mat3.prototype.copy = function(source){
     for(var i=0; i < source.elements.length; i++){
@@ -4039,7 +4039,7 @@ Mat3.prototype.copy = function(source){
 /**
  * Returns a string representation of the matrix.
  * @method toString
- * @return string
+ * @returns string
  */
 Mat3.prototype.toString = function(){
     var r = "";
@@ -4054,7 +4054,7 @@ Mat3.prototype.toString = function(){
  * reverse the matrix
  * @method reverse
  * @param {Mat3} target Optional. Target matrix to save in.
- * @return {Mat3} The solution x
+ * @returns {Mat3} The solution x
  */
 Mat3.prototype.reverse = function(target){
 
@@ -4186,7 +4186,7 @@ Mat3.prototype.setRotationFromQuaternion = function( q ) {
  * Transpose the matrix
  * @method transpose
  * @param  {Mat3} target Where to store the result.
- * @return {Mat3} The target Mat3, or a new Mat3 if target was omitted.
+ * @returns {Mat3} The target Mat3, or a new Mat3 if target was omitted.
  */
 Mat3.prototype.transpose = function( target ) {
     target = target || new Mat3();
@@ -4259,7 +4259,7 @@ Quaternion.prototype.set = function(x,y,z,w){
 /**
  * Convert to a readable format
  * @method toString
- * @return string
+ * @returns string
  */
 Quaternion.prototype.toString = function(){
     return this.x+","+this.y+","+this.z+","+this.w;
@@ -4268,7 +4268,7 @@ Quaternion.prototype.toString = function(){
 /**
  * Convert to an Array
  * @method toArray
- * @return Array
+ * @returns Array
  */
 Quaternion.prototype.toArray = function(){
     return [this.x, this.y, this.z, this.w];
@@ -4292,7 +4292,7 @@ Quaternion.prototype.setFromAxisAngle = function(axis,angle){
  * Converts the quaternion to axis/angle representation.
  * @method toAxisAngle
  * @param {Vec3} targetAxis Optional. A vector object to reuse for storing the axis.
- * @return Array An array, first elemnt is the axis and the second is the angle in radians.
+ * @returns Array An array, first elemnt is the axis and the second is the angle in radians.
  */
 Quaternion.prototype.toAxisAngle = function(targetAxis){
     targetAxis = targetAxis || new Vec3();
@@ -4343,7 +4343,7 @@ Quaternion.prototype.setFromVectors = function(u,v){
  * @method mult
  * @param {Quaternion} q
  * @param {Quaternion} target Optional.
- * @return {Quaternion}
+ * @returns {Quaternion}
  */
 var Quaternion_mult_va = new Vec3();
 var Quaternion_mult_vb = new Vec3();
@@ -4371,7 +4371,7 @@ Quaternion.prototype.mult = function(q,target){
  * Get the inverse quaternion rotation.
  * @method inverse
  * @param {Quaternion} target
- * @return {Quaternion}
+ * @returns {Quaternion}
  */
 Quaternion.prototype.inverse = function(target){
     var x = this.x, y = this.y, z = this.z, w = this.w;
@@ -4391,7 +4391,7 @@ Quaternion.prototype.inverse = function(target){
  * Get the quaternion conjugate
  * @method conjugate
  * @param {Quaternion} target
- * @return {Quaternion}
+ * @returns {Quaternion}
  */
 Quaternion.prototype.conjugate = function(target){
     target = target || new Quaternion();
@@ -4450,7 +4450,7 @@ Quaternion.prototype.normalizeFast = function () {
  * @method vmult
  * @param {Vec3} v
  * @param {Vec3} target Optional
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Quaternion.prototype.vmult = function(v,target){
     target = target || new Vec3();
@@ -4481,7 +4481,7 @@ Quaternion.prototype.vmult = function(v,target){
  * Copies value of source to this quaternion.
  * @method copy
  * @param {Quaternion} source
- * @return {Quaternion} this
+ * @returns {Quaternion} this
  */
 Quaternion.prototype.copy = function(source){
     this.x = source.x;
@@ -4656,7 +4656,7 @@ Transform.pointToLocalFrame = function(position, quaternion, worldPoint, result)
  * @method pointToLocal
  * @param  {Vec3} point
  * @param  {Vec3} result
- * @return {Vec3} The "result" vector object
+ * @returns {Vec3} The "result" vector object
  */
 Transform.prototype.pointToLocal = function(worldPoint, result){
     return Transform.pointToLocalFrame(this.position, this.quaternion, worldPoint, result);
@@ -4682,7 +4682,7 @@ Transform.pointToWorldFrame = function(position, quaternion, localPoint, result)
  * @method pointToWorld
  * @param  {Vec3} point
  * @param  {Vec3} result
- * @return {Vec3} The "result" vector object
+ * @returns {Vec3} The "result" vector object
  */
 Transform.prototype.pointToWorld = function(localPoint, result){
     return Transform.pointToWorldFrame(this.position, this.quaternion, localPoint, result);
@@ -4774,7 +4774,7 @@ Vec3.UNIT_Z = new Vec3(0, 0, 1);
  * @method cross
  * @param {Vec3} v
  * @param {Vec3} target Optional. Target to save in.
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3.prototype.cross = function(v,target){
     var vx=v.x, vy=v.y, vz=v.z, x=this.x, y=this.y, z=this.z;
@@ -4793,7 +4793,7 @@ Vec3.prototype.cross = function(v,target){
  * @param {Number} x
  * @param {Number} y
  * @param {Number} z
- * @return Vec3
+ * @returns Vec3
  */
 Vec3.prototype.set = function(x,y,z){
     this.x = x;
@@ -4815,7 +4815,7 @@ Vec3.prototype.setZero = function(){
  * @method vadd
  * @param {Vec3} v
  * @param {Vec3} target Optional.
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3.prototype.vadd = function(v,target){
     if(target){
@@ -4834,7 +4834,7 @@ Vec3.prototype.vadd = function(v,target){
  * @method vsub
  * @param {Vec3} v
  * @param {Vec3} target Optional. Target to save in.
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3.prototype.vsub = function(v,target){
     if(target){
@@ -4852,7 +4852,7 @@ Vec3.prototype.vsub = function(v,target){
  * Get the cross product matrix a_cross from a vector, such that a x b = a_cross * b = c
  * @method crossmat
  * @see http://www8.cs.umu.se/kurser/TDBD24/VT06/lectures/Lecture6.pdf
- * @return {Mat3}
+ * @returns {Mat3}
  */
 Vec3.prototype.crossmat = function(){
     return new Mat3([     0,  -this.z,   this.y,
@@ -4863,7 +4863,7 @@ Vec3.prototype.crossmat = function(){
 /**
  * Normalize the vector. Note that this changes the values in the vector.
  * @method normalize
- * @return {Number} Returns the norm of the vector
+ * @returns {Number} Returns the norm of the vector
  */
 Vec3.prototype.normalize = function(){
     var x=this.x, y=this.y, z=this.z;
@@ -4886,7 +4886,7 @@ Vec3.prototype.normalize = function(){
  * Get the version of this vector that is of length 1.
  * @method unit
  * @param {Vec3} target Optional target to save in
- * @return {Vec3} Returns the unit vector
+ * @returns {Vec3} Returns the unit vector
  */
 Vec3.prototype.unit = function(target){
     target = target || new Vec3();
@@ -4908,7 +4908,7 @@ Vec3.prototype.unit = function(target){
 /**
  * Get the length of the vector
  * @method norm
- * @return {Number}
+ * @returns {Number}
  * @deprecated Use .length() instead
  */
 Vec3.prototype.norm = function(){
@@ -4919,14 +4919,14 @@ Vec3.prototype.norm = function(){
 /**
  * Get the length of the vector
  * @method length
- * @return {Number}
+ * @returns {Number}
  */
 Vec3.prototype.length = Vec3.prototype.norm;
 
 /**
  * Get the squared length of the vector
  * @method norm2
- * @return {Number}
+ * @returns {Number}
  * @deprecated Use .lengthSquared() instead.
  */
 Vec3.prototype.norm2 = function(){
@@ -4936,7 +4936,7 @@ Vec3.prototype.norm2 = function(){
 /**
  * Get the squared length of the vector.
  * @method lengthSquared
- * @return {Number}
+ * @returns {Number}
  */
 Vec3.prototype.lengthSquared = Vec3.prototype.norm2;
 
@@ -4944,7 +4944,7 @@ Vec3.prototype.lengthSquared = Vec3.prototype.norm2;
  * Get distance from this point to another point
  * @method distanceTo
  * @param  {Vec3} p
- * @return {Number}
+ * @returns {Number}
  */
 Vec3.prototype.distanceTo = function(p){
     var x=this.x, y=this.y, z=this.z;
@@ -4958,7 +4958,7 @@ Vec3.prototype.distanceTo = function(p){
  * Get squared distance from this point to another point
  * @method distanceSquared
  * @param  {Vec3} p
- * @return {Number}
+ * @returns {Number}
  */
 Vec3.prototype.distanceSquared = function(p){
     var x=this.x, y=this.y, z=this.z;
@@ -4972,7 +4972,7 @@ Vec3.prototype.distanceSquared = function(p){
  * @method mult
  * @param {Number} scalar
  * @param {Vec3} target The vector to save the result in.
- * @return {Vec3}
+ * @returns {Vec3}
  * @deprecated Use .scale() instead
  */
 Vec3.prototype.mult = function(scalar,target){
@@ -4991,7 +4991,7 @@ Vec3.prototype.mult = function(scalar,target){
  * @method scale
  * @param {Number} scalar
  * @param {Vec3} target
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3.prototype.scale = Vec3.prototype.mult;
 
@@ -4999,7 +4999,7 @@ Vec3.prototype.scale = Vec3.prototype.mult;
  * Calculate dot product
  * @method dot
  * @param {Vec3} v
- * @return {Number}
+ * @returns {Number}
  */
 Vec3.prototype.dot = function(v){
     return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -5007,7 +5007,7 @@ Vec3.prototype.dot = function(v){
 
 /**
  * @method isZero
- * @return bool
+ * @returns bool
  */
 Vec3.prototype.isZero = function(){
     return this.x===0 && this.y===0 && this.z===0;
@@ -5017,7 +5017,7 @@ Vec3.prototype.isZero = function(){
  * Make the vector point in the opposite direction.
  * @method negate
  * @param {Vec3} target Optional target to save in
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3.prototype.negate = function(target){
     target = target || new Vec3();
@@ -5060,7 +5060,7 @@ Vec3.prototype.tangents = function(t1,t2){
 /**
  * Converts to a more readable format
  * @method toString
- * @return string
+ * @returns string
  */
 Vec3.prototype.toString = function(){
     return this.x+","+this.y+","+this.z;
@@ -5069,7 +5069,7 @@ Vec3.prototype.toString = function(){
 /**
  * Converts to an array
  * @method toArray
- * @return Array
+ * @returns Array
  */
 Vec3.prototype.toArray = function(){
     return [this.x, this.y, this.z];
@@ -5079,7 +5079,7 @@ Vec3.prototype.toArray = function(){
  * Copies value of source to this vector.
  * @method copy
  * @param {Vec3} source
- * @return {Vec3} this
+ * @returns {Vec3} this
  */
 Vec3.prototype.copy = function(source){
     this.x = source.x;
@@ -5108,7 +5108,7 @@ Vec3.prototype.lerp = function(v,t,target){
  * @method almostEquals
  * @param {Vec3} v
  * @param {Number} precision
- * @return bool
+ * @returns bool
  */
 Vec3.prototype.almostEquals = function(v,precision){
     if(precision===undefined){
@@ -5146,7 +5146,7 @@ var antip_neg = new Vec3();
  * @method isAntiparallelTo
  * @param  {Vec3}  v
  * @param  {Number}  precision Set to zero for exact comparisons
- * @return {Boolean}
+ * @returns {Boolean}
  */
 Vec3.prototype.isAntiparallelTo = function(v,precision){
     this.negate(antip_neg);
@@ -5156,7 +5156,7 @@ Vec3.prototype.isAntiparallelTo = function(v,precision){
 /**
  * Clone the vector
  * @method clone
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3.prototype.clone = function(){
     return new Vec3(this.x, this.y, this.z);
@@ -5616,7 +5616,7 @@ Body.prototype.updateSolveMassProperties = function(){
  * @method pointToLocalFrame
  * @param  {Vec3} worldPoint
  * @param  {Vec3} result
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Body.prototype.pointToLocalFrame = function(worldPoint,result){
     var result = result || new Vec3();
@@ -5630,7 +5630,7 @@ Body.prototype.pointToLocalFrame = function(worldPoint,result){
  * @method vectorToLocalFrame
  * @param  {Vec3} worldPoint
  * @param  {Vec3} result
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Body.prototype.vectorToLocalFrame = function(worldVector, result){
     var result = result || new Vec3();
@@ -5643,7 +5643,7 @@ Body.prototype.vectorToLocalFrame = function(worldVector, result){
  * @method pointToWorldFrame
  * @param  {Vec3} localPoint
  * @param  {Vec3} result
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Body.prototype.pointToWorldFrame = function(localPoint,result){
     var result = result || new Vec3();
@@ -5657,7 +5657,7 @@ Body.prototype.pointToWorldFrame = function(localPoint,result){
  * @method vectorToWorldFrame
  * @param  {Vec3} localVector
  * @param  {Vec3} result
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Body.prototype.vectorToWorldFrame = function(localVector, result){
     var result = result || new Vec3();
@@ -5674,7 +5674,7 @@ var tmpQuat = new Quaternion();
  * @param {Shape} shape
  * @param {Vec3} offset
  * @param {Quaternion} quaternion
- * @return {Body} The body object, for chainability.
+ * @returns {Body} The body object, for chainability.
  */
 Body.prototype.addShape = function(shape, _offset, _orientation){
     var offset = new Vec3();
@@ -5948,7 +5948,7 @@ Body.prototype.updateMassProperties = function(){
  * @method getVelocityAtWorldPoint
  * @param  {Vec3} worldPoint
  * @param  {Vec3} result
- * @return {Vec3} The result vector.
+ * @returns {Vec3} The result vector.
  */
 Body.prototype.getVelocityAtWorldPoint = function(worldPoint, result){
     var r = new Vec3();
@@ -6390,7 +6390,7 @@ var directions = [
  * Get the world transform of one of the wheels
  * @method getWheelTransformWorld
  * @param  {integer} wheelIndex
- * @return {Transform}
+ * @returns {Transform}
  */
 RaycastVehicle.prototype.getWheelTransformWorld = function(wheelIndex) {
     return this.wheelInfos[wheelIndex].worldTransform;
@@ -7661,7 +7661,7 @@ Box.prototype.updateConvexPolyhedronRepresentation = function(){
  * @method calculateLocalInertia
  * @param  {Number} mass
  * @param  {Vec3} target
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Box.prototype.calculateLocalInertia = function(mass,target){
     target = target || new Vec3();
@@ -7681,7 +7681,7 @@ Box.calculateInertia = function(halfExtents,mass,target){
  * @method getSideNormals
  * @param {array}      sixTargetVectors An array of 6 vectors, to store the resulting side normals in.
  * @param {Quaternion} quat             Orientation to apply to the normal vectors. If not provided, the vectors will be in respect to the local frame.
- * @return {array}
+ * @returns {array}
  */
 Box.prototype.getSideNormals = function(sixTargetVectors,quat){
     var sides = sixTargetVectors;
@@ -8057,7 +8057,7 @@ ConvexPolyhedron.prototype.clipAgainstHull = function(posA,quatA,hullB,posB,quat
  * @param {Vec3} posB
  * @param {Quaternion} quatB
  * @param {Vec3} target The target vector to save the axis in
- * @return {bool} Returns false if a separation is found, else true
+ * @returns {bool} Returns false if a separation is found, else true
  */
 var fsa_faceANormalWS3 = new Vec3(),
     fsa_Worldnormal1 = new Vec3(),
@@ -8205,7 +8205,7 @@ var maxminA=[], maxminB=[];
  * @param {Quaternion} quatA
  * @param {Vec3} posB
  * @param {Quaternion} quatB
- * @return {number} The overlap depth, or FALSE if no penetration.
+ * @returns {number} The overlap depth, or FALSE if no penetration.
  */
 ConvexPolyhedron.prototype.testSepAxis = function(axis, hullB, posA, quatA, posB, quatB){
     var hullA=this;
@@ -8247,7 +8247,7 @@ ConvexPolyhedron.prototype.calculateLocalInertia = function(mass,target){
 /**
  * @method getPlaneConstantOfFace
  * @param  {Number} face_i Index of the face
- * @return {Number}
+ * @returns {Number}
  */
 ConvexPolyhedron.prototype.getPlaneConstantOfFace = function(face_i){
     var f = this.faces[face_i];
@@ -8581,7 +8581,7 @@ ConvexPolyhedron.prototype.calculateWorldAABB = function(pos,quat,min,max){
 /**
  * Get approximate convex volume
  * @method volume
- * @return {Number}
+ * @returns {Number}
  */
 ConvexPolyhedron.prototype.volume = function(){
     return 4.0 * Math.PI * this.boundingSphereRadius / 3.0;
@@ -8591,7 +8591,7 @@ ConvexPolyhedron.prototype.volume = function(){
  * Get an average of all the vertices positions
  * @method getAveragePointLocal
  * @param  {Vec3} target
- * @return {Vec3}
+ * @returns {Vec3}
  */
 ConvexPolyhedron.prototype.getAveragePointLocal = function(target){
     target = target || new Vec3();
@@ -8647,7 +8647,7 @@ ConvexPolyhedron.prototype.transformAllPoints = function(offset,quat){
  * Checks whether p is inside the polyhedra. Must be in local coords. The point lies outside of the convex hull of the other points if and only if the direction of all the vectors from it to those other points are on less than one half of a sphere around it.
  * @method pointIsInside
  * @param  {Vec3} p      A point given in local coordinates
- * @return {Boolean}
+ * @returns {Boolean}
  */
 var ConvexPolyhedron_pointIsInside = new Vec3();
 var ConvexPolyhedron_vToP = new Vec3();
@@ -8994,7 +8994,7 @@ Heightfield.prototype.setHeightValueAtIndex = function(xi, yi, value){
  * @param  {integer} iMaxX
  * @param  {integer} iMaxY
  * @param  {array} [result] An array to store the results in.
- * @return {array} The result array, if it was passed in. Minimum will be at position 0 and max at 1.
+ * @returns {array} The result array, if it was passed in. Minimum will be at position 0 and max at 1.
  */
 Heightfield.prototype.getRectMinMax = function (iMinX, iMinY, iMaxX, iMaxY, result) {
     result = result || [];
@@ -9022,7 +9022,7 @@ Heightfield.prototype.getRectMinMax = function (iMinX, iMinY, iMaxX, iMaxY, resu
  * @param  {number} y
  * @param  {array} result Two-element array
  * @param  {boolean} clamp If the position should be clamped to the heightfield edge.
- * @return {boolean}
+ * @returns {boolean}
  */
 Heightfield.prototype.getIndexOfPosition = function (x, y, result, clamp) {
 
@@ -9335,7 +9335,7 @@ Particle.prototype.constructor = Particle;
  * @method calculateLocalInertia
  * @param  {Number} mass
  * @param  {Vec3} target
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Particle.prototype.calculateLocalInertia = function(mass,target){
     target = target || new Vec3();
@@ -9473,7 +9473,7 @@ Shape.prototype.constructor = Shape;
 /**
  * Computes the bounding sphere radius. The result is stored in the property .boundingSphereRadius
  * @method updateBoundingSphereRadius
- * @return {Number}
+ * @returns {Number}
  */
 Shape.prototype.updateBoundingSphereRadius = function(){
     throw "computeBoundingSphereRadius() not implemented for shape type "+this.type;
@@ -9482,7 +9482,7 @@ Shape.prototype.updateBoundingSphereRadius = function(){
 /**
  * Get the volume of this shape
  * @method volume
- * @return {Number}
+ * @returns {Number}
  */
 Shape.prototype.volume = function(){
     throw "volume() not implemented for shape type "+this.type;
@@ -9491,7 +9491,7 @@ Shape.prototype.volume = function(){
 /**
  * Calculates the inertia in the local frame for this shape.
  * @method calculateLocalInertia
- * @return {Vec3}
+ * @returns {Vec3}
  * @see http://en.wikipedia.org/wiki/List_of_moments_of_inertia
  */
 Shape.prototype.calculateLocalInertia = function(mass,target){
@@ -9862,7 +9862,7 @@ var vc = new Vec3();
  * @method getVertex
  * @param  {number} i
  * @param  {Vec3} out
- * @return {Vec3} The "out" vector object
+ * @returns {Vec3} The "out" vector object
  */
 Trimesh.prototype.getVertex = function(i, out){
     var scale = this.scale;
@@ -9879,7 +9879,7 @@ Trimesh.prototype.getVertex = function(i, out){
  * @method _getUnscaledVertex
  * @param  {number} i
  * @param  {Vec3} out
- * @return {Vec3} The "out" vector object
+ * @returns {Vec3} The "out" vector object
  */
 Trimesh.prototype._getUnscaledVertex = function(i, out){
     var i3 = i * 3;
@@ -9898,7 +9898,7 @@ Trimesh.prototype._getUnscaledVertex = function(i, out){
  * @param  {Vec3} pos
  * @param  {Quaternion} quat
  * @param  {Vec3} out
- * @return {Vec3} The "out" vector object
+ * @returns {Vec3} The "out" vector object
  */
 Trimesh.prototype.getWorldVertex = function(i, pos, quat, out){
     this.getVertex(i, out);
@@ -9926,7 +9926,7 @@ Trimesh.prototype.getTriangleVertices = function(i, a, b, c){
  * @method getNormal
  * @param  {Number} i
  * @param  {Vec3} target
- * @return {Vec3} The "target" vector object
+ * @returns {Vec3} The "target" vector object
  */
 Trimesh.prototype.getNormal = function(i, target){
     var i3 = i * 3;
@@ -9943,7 +9943,7 @@ var cli_aabb = new AABB();
  * @method calculateLocalInertia
  * @param  {Number} mass
  * @param  {Vec3} target
- * @return {Vec3} The "target" vector object
+ * @returns {Vec3} The "target" vector object
  */
 Trimesh.prototype.calculateLocalInertia = function(mass,target){
     // Approximate with box inertia
@@ -10085,7 +10085,7 @@ Trimesh.prototype.calculateWorldAABB = function(pos,quat,min,max){
 /**
  * Get approximate volume
  * @method volume
- * @return {Number}
+ * @returns {Number}
  */
 Trimesh.prototype.volume = function(){
     return 4.0 * Math.PI * this.boundingSphereRadius / 3.0;
@@ -10100,7 +10100,7 @@ Trimesh.prototype.volume = function(){
  * @param  {number} [radialSegments=8]
  * @param  {number} [tubularSegments=6]
  * @param  {number} [arc=6.283185307179586]
- * @return {Trimesh} A torus
+ * @returns {Trimesh} A torus
  */
 Trimesh.createTorus = function (radius, tube, radialSegments, tubularSegments, arc) {
     radius = radius || 1;
@@ -10511,7 +10511,7 @@ EventTarget.prototype = {
      * @method addEventListener
      * @param  {String} type
      * @param  {Function} listener
-     * @return {EventTarget} The self object, for chainability.
+     * @returns {EventTarget} The self object, for chainability.
      */
     addEventListener: function ( type, listener ) {
         if ( this._listeners === undefined ){ this._listeners = {}; }
@@ -10530,7 +10530,7 @@ EventTarget.prototype = {
      * @method hasEventListener
      * @param  {String} type
      * @param  {Function} listener
-     * @return {Boolean}
+     * @returns {Boolean}
      */
     hasEventListener: function ( type, listener ) {
         if ( this._listeners === undefined ){ return false; }
@@ -10546,7 +10546,7 @@ EventTarget.prototype = {
      * @method removeEventListener
      * @param  {String} type
      * @param  {Function} listener
-     * @return {EventTarget} The self object, for chainability.
+     * @returns {EventTarget} The self object, for chainability.
      */
     removeEventListener: function ( type, listener ) {
         if ( this._listeners === undefined ){ return this; }
@@ -10564,7 +10564,7 @@ EventTarget.prototype = {
      * @method dispatchEvent
      * @param  {Object} event
      * @param  {String} event.type
-     * @return {EventTarget} The self object, for chainability.
+     * @returns {EventTarget} The self object, for chainability.
      */
     dispatchEvent: function ( event ) {
         if ( this._listeners === undefined ){ return this; }
@@ -10650,7 +10650,7 @@ OctreeNode.prototype.reset = function(aabb, options){
  * @method insert
  * @param  {AABB} aabb
  * @param  {object} elementData
- * @return {boolean} True if successful, otherwise false
+ * @returns {boolean} True if successful, otherwise false
  */
 OctreeNode.prototype.insert = function(aabb, elementData, level){
     var nodeData = this.data;
@@ -10743,7 +10743,7 @@ OctreeNode.prototype.subdivide = function() {
  * @method aabbQuery
  * @param  {AABB} aabb
  * @param  {array} result
- * @return {array} The "result" object
+ * @returns {array} The "result" object
  */
 OctreeNode.prototype.aabbQuery = function(aabb, result) {
 
@@ -10786,7 +10786,7 @@ var tmpAABB = new AABB();
  * @param  {Ray} ray
  * @param  {Transform} treeTransform
  * @param  {array} result
- * @return {array} The "result" object
+ * @returns {array} The "result" object
  */
 OctreeNode.prototype.rayQuery = function(ray, treeTransform, result) {
 
@@ -10852,7 +10852,7 @@ Pool.prototype.release = function(){
 /**
  * Get an object
  * @method get
- * @return {mixed}
+ * @returns {mixed}
  */
 Pool.prototype.get = function(){
     if(this.objects.length===0){
@@ -10865,7 +10865,7 @@ Pool.prototype.get = function(){
 /**
  * Construct an object. Should be implmented in each subclass.
  * @method constructObject
- * @return {mixed}
+ * @returns {mixed}
  */
 Pool.prototype.constructObject = function(){
     throw new Error("constructObject() not implemented in this Pool subclass yet!");
@@ -10892,7 +10892,7 @@ function TupleDictionary() {
  * @method get
  * @param  {Number} i
  * @param  {Number} j
- * @return {Number}
+ * @returns {Number}
  */
 TupleDictionary.prototype.get = function(i, j) {
     if (i > j) {
@@ -10949,7 +10949,7 @@ module.exports = Utils;
  * @method defaults
  * @param  {object} options The options object. May be falsy: in this case, a new object is created and returned.
  * @param  {object} defaults An object containing default values.
- * @return {object} The modified options object.
+ * @returns {object} The modified options object.
  */
 Utils.defaults = function(options, defaults){
     options = options || {};
@@ -10983,7 +10983,7 @@ Vec3Pool.prototype = new Pool();
 /**
  * Construct a vector
  * @method constructObject
- * @return {Vec3}
+ * @returns {Vec3}
  */
 Vec3Pool.prototype.constructObject = function(){
     return new Vec3();
@@ -11043,7 +11043,7 @@ function Narrowphase(world){
 /**
  * Make a contact object, by using the internal pool or creating a new one.
  * @method createContactEquation
- * @return {ContactEquation}
+ * @returns {ContactEquation}
  */
 Narrowphase.prototype.createContactEquation = function(bi, bj, si, sj, rsi, rsj){
     var c;
@@ -12940,7 +12940,7 @@ var tmpRay = new Ray();
  * @method getContactMaterial
  * @param {Material} m1
  * @param {Material} m2
- * @return {ContactMaterial} The contact material if it was found.
+ * @returns {ContactMaterial} The contact material if it was found.
  */
 World.prototype.getContactMaterial = function(m1,m2){
     return this.contactMaterialTable.get(m1.id,m2.id); //this.contactmaterials[this.mats2cmat[i+j*this.materials.length]];
@@ -12949,7 +12949,7 @@ World.prototype.getContactMaterial = function(m1,m2){
 /**
  * Get number of objects in the world.
  * @method numObjects
- * @return {Number}
+ * @returns {Number}
  * @deprecated
  */
 World.prototype.numObjects = function(){
@@ -13048,7 +13048,7 @@ World.prototype.rayTest = function(from, to, result){
  * @param  {boolean} [options.skipBackfaces=false]
  * @param  {boolean} [options.checkCollisionResponse=true]
  * @param  {Function} callback
- * @return {boolean} True if any body was hit.
+ * @returns {boolean} True if any body was hit.
  */
 World.prototype.raycastAll = function(from, to, options, callback){
     options.mode = Ray.ALL;
@@ -13069,7 +13069,7 @@ World.prototype.raycastAll = function(from, to, options, callback){
  * @param  {boolean} [options.skipBackfaces=false]
  * @param  {boolean} [options.checkCollisionResponse=true]
  * @param  {RaycastResult} result
- * @return {boolean} True if any body was hit.
+ * @returns {boolean} True if any body was hit.
  */
 World.prototype.raycastAny = function(from, to, options, result){
     options.mode = Ray.ANY;
@@ -13090,7 +13090,7 @@ World.prototype.raycastAny = function(from, to, options, result){
  * @param  {boolean} [options.skipBackfaces=false]
  * @param  {boolean} [options.checkCollisionResponse=true]
  * @param  {RaycastResult} result
- * @return {boolean} True if any body was hit.
+ * @returns {boolean} True if any body was hit.
  */
 World.prototype.raycastClosest = function(from, to, options, result){
     options.mode = Ray.CLOSEST;

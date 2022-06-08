@@ -1209,7 +1209,7 @@ export class AssetsManager {
 
     /**
      * Reset the AssetsManager and remove all tasks
-     * @return the current instance of the AssetsManager
+     * @returns the current instance of the AssetsManager
      */
     public reset(): AssetsManager {
         this._isLoading = false;
@@ -1219,7 +1219,7 @@ export class AssetsManager {
 
     /**
      * Start the loading process
-     * @return the current instance of the AssetsManager
+     * @returns the current instance of the AssetsManager
      */
     public load(): AssetsManager {
         if (this._isLoading) {
@@ -1254,7 +1254,7 @@ export class AssetsManager {
 
     /**
      * Start the loading process as an async operation
-     * @return a promise returning the list of failed tasks
+     * @returns a promise returning the list of failed tasks
      */
     public loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {

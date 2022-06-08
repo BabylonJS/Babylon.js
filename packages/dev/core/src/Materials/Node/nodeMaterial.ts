@@ -1505,7 +1505,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Launch the node material editor
      * @param config Define the configuration of the editor
-     * @return a promise fulfilled when the node editor is visible
+     * @returns a promise fulfilled when the node editor is visible
      */
     public edit(config?: INodeMaterialEditorOptions): Promise<void> {
         return new Promise((resolve) => {

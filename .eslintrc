@@ -33,6 +33,41 @@
                 "tsconfigRootDir": "./",
                 "project": "./tsconfig.json"
             }
+        },
+        {
+            "files": ["packages/dev/core/src/**/*.{ts,tsx}"],
+            "rules": {
+                "jsdoc/require-jsdoc": [
+                    "error",
+                    {
+                        "contexts": [
+                            // types from here - https://babeljs.io/docs/en/babel-types#functionexpression
+                            // "TSInterfaceDeclaration",
+                            "TSMethodSignature",
+                            "TSPropertySignature",
+                            "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            "MethodDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                        ],
+                        "publicOnly": true,
+                        "exemptEmptyFunctions": true,
+                        "checkConstructors": true,
+                        "checkSetters": false
+                    }
+                    // {
+                    //     "publicOnly": true,
+                    //     "require": {
+                    //         "ArrowFunctionExpression": false,
+                    //         "ClassDeclaration": false,
+                    //         "ClassExpression": false,
+                    //         "FunctionDeclaration": false,
+                    //         "FunctionExpression": false,
+                    //         "MethodDefinition": true
+                    //     }
+                    // }
+                ]
+            }
         }
     ],
     "env": {
@@ -45,7 +80,7 @@
         // "prettier", // add this if we want to use prettier error reporting
         "jest",
         // "@typescript-eslint"
-        "eslint-plugin-tsdoc",
+        "babylonjs",
         "jsdoc"
     ],
     "extends": [
@@ -185,10 +220,29 @@
         "template-tag-spacing": "error",
         "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["afterEach"] }],
         "jest/valid-expect": "off",
-        // "tsdoc/syntax": "error",
-        "jsdoc/check-param-names": "warn",
+        "babylonjs/syntax": "error",
+        "babylonjs/available": [
+            "error",
+            {
+                "contexts": [
+                    // types from here - https://babeljs.io/docs/en/babel-types#functionexpression
+                    // "TSInterfaceDeclaration",
+                    "MethodDefinition",
+                    "PropertyDefinition"
+                    // "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                    // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                    // "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                    // "MethodDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                ]
+                // "publicOnly": true,
+                // "exemptEmptyFunctions": true,
+                // "checkConstructors": true,
+                // "checkSetters": false
+            }
+        ],
+        "jsdoc/check-param-names": ["warn", { "checkRestProperty": false }],
         "jsdoc/check-property-names": "error",
-        "jsdoc/require-param": "error",
+        "jsdoc/require-param": ["error", { "checkDestructured": false, "checkRestProperty": false }],
         "jsdoc/require-param-name": "error",
         // "jsdoc/require-returns": "warn",
         // "jsdoc/require-returns-check": "error",

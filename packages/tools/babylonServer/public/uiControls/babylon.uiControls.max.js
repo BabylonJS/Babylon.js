@@ -699,7 +699,7 @@ var ReactNoopUpdateQueue = {
   /**
    * Checks whether or not this composite component is mounted.
    * @param {ReactClass} publicInstance The instance we want to test.
-   * @return {boolean} True if mounted, false otherwise.
+   * @returns {boolean} True if mounted, false otherwise.
    * @protected
    * @final
    */
@@ -1235,7 +1235,7 @@ function cloneElement(element, config, children) {
  * Verifies the object is a ReactElement.
  * See https://reactjs.org/docs/react-api.html#isvalidelement
  * @param {?object} object
- * @return {boolean} True if `object` is a ReactElement.
+ * @returns {boolean} True if `object` is a ReactElement.
  * @final
  */
 
@@ -1249,7 +1249,7 @@ var SUBSEPARATOR = ':';
  * Escape and wrap key so it is safe to use as a reactid
  *
  * @param {string} key to be escaped.
- * @return {string} the escaped key.
+ * @returns {string} the escaped key.
  */
 
 function escape(key) {
@@ -1316,7 +1316,7 @@ function releaseTraverseContext(traverseContext) {
  * @param {!function} callback Callback to invoke with each child found.
  * @param {?*} traverseContext Used to pass information throughout the traversal
  * process.
- * @return {!number} The number of children in this subtree.
+ * @returns {!number} The number of children in this subtree.
  */
 
 
@@ -1426,7 +1426,7 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext)
  * @param {?*} children Children tree object.
  * @param {!function} callback To invoke upon traversing each child.
  * @param {?*} traverseContext Context for traversal.
- * @return {!number} The number of children in this subtree.
+ * @returns {!number} The number of children in this subtree.
  */
 
 
@@ -1442,7 +1442,7 @@ function traverseAllChildren(children, callback, traverseContext) {
  *
  * @param {*} component A component that could contain a manual key.
  * @param {number} index Index that is used if a manual key is not provided.
- * @return {string}
+ * @returns {string}
  */
 
 
@@ -1531,7 +1531,7 @@ function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
  * @param {?*} children Children tree container.
  * @param {function(*, int)} func The map function.
  * @param {*} context Context for mapFunction.
- * @return {object} Object containing the ordered map of results.
+ * @returns {object} Object containing the ordered map of results.
  */
 
 
@@ -1551,7 +1551,7 @@ function mapChildren(children, func, context) {
  * See https://reactjs.org/docs/react-api.html#reactchildrencount
  *
  * @param {?*} children Children tree container.
- * @return {number} The number of children.
+ * @returns {number} The number of children.
  */
 
 
@@ -1586,7 +1586,7 @@ function toArray(children) {
  * abstract away the particular structure of children.
  *
  * @param {?object} children Child collection structure.
- * @return {ReactElement} The first and only `ReactElement` contained in the
+ * @returns {ReactElement} The first and only `ReactElement` contained in the
  * structure.
  */
 

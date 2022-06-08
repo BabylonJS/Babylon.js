@@ -280,7 +280,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Will return all controls that are inside this texture
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all child controls
+     * @returns all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
@@ -298,7 +298,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Will return the first control with the given name
      * @param name defines the name to search for
-     * @return the first control found or null
+     * @returns the first control found or null
      */
     public getControlByName(name: string): Nullable<Control> {
         return this._getControlByKey("name", name);

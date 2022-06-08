@@ -311,7 +311,7 @@ export class DebugLayer {
     /**
      * Launch the debugLayer.
      * @param config Define the configuration of the inspector
-     * @return a promise fulfilled when the debug layer is visible
+     * @returns a promise fulfilled when the debug layer is visible
      */
     public show(config?: IInspectorOptions): Promise<DebugLayer> {
         return new Promise((resolve) => {

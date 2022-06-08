@@ -1085,7 +1085,7 @@ export class _GLTFMaterialExporter {
      * Extracts a texture from a Babylon texture into file data and glTF data
      * @param babylonTexture Babylon texture to extract
      * @param mimeType Mime Type of the babylonTexture
-     * @return glTF texture info, or null if the texture format is not supported
+     * @returns glTF texture info, or null if the texture format is not supported
      */
     public _exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
         const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);

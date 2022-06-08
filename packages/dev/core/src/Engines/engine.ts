@@ -1069,7 +1069,7 @@ export class Engine extends ThinEngine {
      * @param y defines the y coordinate of the viewport (in screen space)
      * @param width defines the width of the viewport (in screen space)
      * @param height defines the height of the viewport (in screen space)
-     * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+     * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
     public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
         const currentViewport = this._cachedViewport;
@@ -2109,7 +2109,7 @@ export class Engine extends ThinEngine {
     /**
      * Get Font size information
      * @param font font name
-     * @return an object containing ascent, height and descent
+     * @returns an object containing ascent, height and descent
      */
     public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         const text = document.createElement("span");

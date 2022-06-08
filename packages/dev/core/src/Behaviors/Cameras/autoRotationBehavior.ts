@@ -188,7 +188,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
 
     /**
      * Returns true if user is scrolling.
-     * @return true if user is scrolling.
+     * @returns true if user is scrolling.
      */
     private _userIsZooming(): boolean {
         if (!this._attachedCamera) {

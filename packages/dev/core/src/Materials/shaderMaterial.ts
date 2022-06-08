@@ -229,7 +229,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a texture in the shader.
      * @param name Define the name of the uniform samplers as defined in the shader
      * @param texture Define the texture to bind to this sampler
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setTexture(name: string, texture: BaseTexture): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
@@ -244,7 +244,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a texture array in the shader.
      * @param name Define the name of the uniform sampler array as defined in the shader
      * @param textures Define the list of textures to bind to this sampler
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
@@ -262,7 +262,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set an internal texture in the shader.
      * @param name Define the name of the uniform samplers as defined in the shader
      * @param texture Define the texture to bind to this sampler
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setExternalTexture(name: string, texture: ExternalTexture): ShaderMaterial {
         if (this._options.externalTextures.indexOf(name) === -1) {
@@ -277,7 +277,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a float in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setFloat(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
@@ -290,7 +290,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a int in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setInt(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
@@ -303,7 +303,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set an array of floats in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setFloats(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -316,7 +316,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 in the shader from a Color3.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor3(name: string, value: Color3): ShaderMaterial {
         this._checkUniform(name);
@@ -329,7 +329,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 array in the shader from a Color3 array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor3Array(name: string, value: Color3[]): ShaderMaterial {
         this._checkUniform(name);
@@ -344,7 +344,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 in the shader from a Color4.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor4(name: string, value: Color4): ShaderMaterial {
         this._checkUniform(name);
@@ -357,7 +357,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 array in the shader from a Color4 array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor4Array(name: string, value: Color4[]): ShaderMaterial {
         this._checkUniform(name);
@@ -372,7 +372,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec2 in the shader from a Vector2.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setVector2(name: string, value: Vector2): ShaderMaterial {
         this._checkUniform(name);
@@ -385,7 +385,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 in the shader from a Vector3.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setVector3(name: string, value: Vector3): ShaderMaterial {
         this._checkUniform(name);
@@ -398,7 +398,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 in the shader from a Vector4.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setVector4(name: string, value: Vector4): ShaderMaterial {
         this._checkUniform(name);
@@ -411,7 +411,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a mat4 in the shader from a Matrix.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrix(name: string, value: Matrix): ShaderMaterial {
         this._checkUniform(name);
@@ -424,7 +424,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a float32Array in the shader from a matrix array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
         this._checkUniform(name);
@@ -446,7 +446,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a mat3 in the shader from a Float32Array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
@@ -459,7 +459,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a mat2 in the shader from a Float32Array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
@@ -472,7 +472,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec2 array in the shader from a number array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setArray2(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -485,7 +485,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 array in the shader from a number array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setArray3(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -498,7 +498,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 array in the shader from a number array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setArray4(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -511,7 +511,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a uniform buffer in the shader
      * @param name Define the name of the uniform as defined in the shader
      * @param buffer Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {
         if (this._options.uniformBuffers.indexOf(name) === -1) {
@@ -526,7 +526,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a texture sampler in the shader
      * @param name Define the name of the uniform as defined in the shader
      * @param sampler Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setTextureSampler(name: string, sampler: TextureSampler): ShaderMaterial {
         if (this._options.samplerObjects.indexOf(name) === -1) {
@@ -541,7 +541,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a storage buffer in the shader
      * @param name Define the name of the storage buffer as defined in the shader
      * @param buffer Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial {
         if (this._options.storageBuffers.indexOf(name) === -1) {

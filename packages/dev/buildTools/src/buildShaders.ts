@@ -8,7 +8,7 @@ import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "
  * This module is used to build shaders.
  * Arguments:
  * * --isCore - defines that the shaders are part of the core library
- * * --package Package name - from which package should the core shaders be loaded. Defaults to @dev/core
+ * * --package Package name - from which package should the core shaders be loaded. Defaults to dev/core
  */
 
 /**

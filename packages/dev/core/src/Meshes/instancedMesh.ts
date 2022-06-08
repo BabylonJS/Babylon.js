@@ -178,7 +178,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @return {boolean} is it ready
+     * @returns {boolean} is it ready
      */
     public isReady(completeCheck = false): boolean {
         return this._sourceMesh.isReady(completeCheck, true);

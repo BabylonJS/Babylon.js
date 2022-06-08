@@ -649,7 +649,7 @@ export const IsFileURL = (): boolean => {
 /**
  * Test if the given uri is a valid base64 data url
  * @param uri The uri to test
- * @return True if the uri is a base64 data url or false otherwise
+ * @returns True if the uri is a base64 data url or false otherwise
  * @hidden
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
@@ -659,7 +659,7 @@ export const IsBase64DataUrl = (uri: string): boolean => {
 /**
  * Decode the given base64 uri.
  * @param uri The uri to decode
- * @return The decoded base64 data.
+ * @returns The decoded base64 data.
  * @hidden
  */
 export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
@@ -669,7 +669,7 @@ export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
 /**
  * Decode the given base64 uri into a UTF-8 encoded string.
  * @param uri The uri to decode
- * @return The decoded base64 data.
+ * @returns The decoded base64 data.
  * @hidden
  */
 export const DecodeBase64UrlToString = (uri: string): string => {

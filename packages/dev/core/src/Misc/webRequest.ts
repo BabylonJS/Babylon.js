@@ -65,7 +65,7 @@ export class WebRequest implements IWebRequest {
     }
 
     /**
-     * Returns client's state
+     * Returns ready state
      */
     public get readyState(): number {
         return this._xhr.readyState;

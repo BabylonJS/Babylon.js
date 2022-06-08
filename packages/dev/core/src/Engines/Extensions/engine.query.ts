@@ -37,14 +37,14 @@ declare module "../../Engines/engine" {
     export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @return the new query
+         * @returns the new query
          */
         createQuery(): OcclusionQuery;
 
         /**
          * Delete and release a webGL query
          * @param query defines the query to delete
-         * @return the current engine
+         * @returns the current engine
          */
         deleteQuery(query: OcclusionQuery): Engine;
 
