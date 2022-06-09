@@ -1,7 +1,7 @@
 import { SerializationHelper } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -114,6 +114,8 @@ export class ShaderMaterial extends PushMaterial {
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
+    private _quaternions: { [name: string]: Quaternion } = {};
+    private _quaternionsArrays: { [name: string]: number[] } = {};
     private _matrices: { [name: string]: Matrix } = {};
     private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
     private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
@@ -404,6 +406,34 @@ export class ShaderMaterial extends PushMaterial {
         this._checkUniform(name);
         this._vectors4[name] = value;
 
+        return this;
+    }
+
+    /**
+     * Set a vec4 in the shader from a Quaternion.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setQuaternion(name: string, value: Quaternion): ShaderMaterial {
+        this._checkUniform(name);
+        this._quaternions[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set a vec4 array in the shader from a Quaternion array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setQuaternionArray(name: string, value: Quaternion[]): ShaderMaterial {
+        this._checkUniform(name);
+        this._quaternionsArrays[name] = value.reduce((arr, quaternion) => {
+            quaternion.toArray(arr, arr.length);
+            return arr;
+        }, []);
         return this;
     }
 
@@ -1041,6 +1071,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setVector4(name, this._vectors4[name]);
             }
 
+            // Quaternion
+            for (name in this._quaternions) {
+                effect.setQuaternion(name, this._quaternions[name]);
+            }
+
             // Matrix
             for (name in this._matrices) {
                 effect.setMatrix(name, this._matrices[name]);
@@ -1074,6 +1109,11 @@ export class ShaderMaterial extends PushMaterial {
             // Vector4Array
             for (name in this._vectors4Arrays) {
                 effect.setArray4(name, this._vectors4Arrays[name]);
+            }
+
+            // QuaternionArray
+            for (name in this._quaternionsArrays) {
+                effect.setArray4(name, this._quaternionsArrays[name]);
             }
 
             // Uniform buffers
@@ -1255,6 +1295,16 @@ export class ShaderMaterial extends PushMaterial {
             result.setVector4(key, this._vectors4[key]);
         }
 
+        // Quaternion
+        for (const key in this._quaternions) {
+            result.setQuaternion(key, this._quaternions[key]);
+        }
+
+        // QuaternionArray
+        for (const key in this._quaternionsArrays) {
+            result._quaternionsArrays[key] = this._quaternionsArrays[key];
+        }
+
         // Matrix
         for (const key in this._matrices) {
             result.setMatrix(key, this._matrices[key]);
@@ -1288,6 +1338,10 @@ export class ShaderMaterial extends PushMaterial {
         // Vector4Array
         for (const key in this._vectors4Arrays) {
             result.setArray4(key, this._vectors4Arrays[key]);
+        }
+
+        for (const key in this._vectors4Arrays) {
+            result.setArray4(key, this._quaternionsArrays[key]);
         }
 
         // Uniform buffers
@@ -1428,6 +1482,12 @@ export class ShaderMaterial extends PushMaterial {
             serializationObject.vectors4[name] = this._vectors4[name].asArray();
         }
 
+        // Quaternion
+        serializationObject.quaternions = {};
+        for (name in this._quaternions) {
+            serializationObject.quaternions[name] = this._quaternions[name].asArray();
+        }
+
         // Matrix
         serializationObject.matrices = {};
         for (name in this._matrices) {
@@ -1468,6 +1528,12 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.vectors4Arrays = {};
         for (name in this._vectors4Arrays) {
             serializationObject.vectors4Arrays[name] = this._vectors4Arrays[name];
+        }
+
+        // QuaternionArray
+        serializationObject.quaternionsArrays = {};
+        for (name in this._quaternionsArrays) {
+            serializationObject.quaternionsArrays[name] = this._quaternionsArrays[name];
         }
 
         return serializationObject;
@@ -1581,6 +1647,11 @@ export class ShaderMaterial extends PushMaterial {
             material.setVector4(name, Vector4.FromArray(source.vectors4[name]));
         }
 
+        // Quaternion
+        for (name in source.quaternions) {
+            material.setQuaternion(name, Quaternion.FromArray(source.quaternions[name]));
+        }
+
         // Matrix
         for (name in source.matrices) {
             material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
@@ -1614,6 +1685,11 @@ export class ShaderMaterial extends PushMaterial {
         // Vector4Array
         for (name in source.vectors4Arrays) {
             material.setArray4(name, source.vectors4Arrays[name]);
+        }
+
+        // QuaternionArray
+        for (name in source.quaternionsArrays) {
+            material.setArray4(name, source.quaternionsArrays[name]);
         }
 
         return material;

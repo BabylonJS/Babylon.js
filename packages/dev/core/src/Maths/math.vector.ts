@@ -3518,6 +3518,21 @@ export class Quaternion {
     public asArray(): number[] {
         return [this._x, this._y, this._z, this._w];
     }
+
+    /**
+     * Stores from the starting index in the given array the Quaternion successive values
+     * @param array defines the array where to store the x,y,z,w components
+     * @param index defines an optional index in the target array to define where to start storing values
+     * @returns the current Quaternion object
+     */
+    public toArray(array: FloatArray, index: number = 0): Quaternion {
+        array[index] = this.x;
+        array[index + 1] = this.y;
+        array[index + 2] = this.z;
+        array[index + 3] = this.w;
+        return this;
+    }
+
     /**
      * Check if two quaternions are equals
      * @param otherQuaternion defines the second operand
