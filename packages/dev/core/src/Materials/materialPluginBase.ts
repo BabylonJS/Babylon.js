@@ -235,6 +235,13 @@ export class MaterialPluginBase {
     public getSamplers(samplers: string[]): void {}
 
     /**
+     * Gets the attributes used by the plugin.
+     * @param attributes list that the attribute names should be added to.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public getAttributes(attributes: string[]): void {}
+
+    /**
      * Gets the uniform buffers names added by the plugin.
      * @param ubos list that the ubo names should be added to.
      */
