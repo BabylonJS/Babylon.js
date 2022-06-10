@@ -204,6 +204,19 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
+     * Gets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
+     */
+    public get useExactSrgbConversions(): boolean {
+        return this._imageProcessingConfiguration.useExactSrgbConversions;
+    }
+    /**
+     * Sets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
+     */
+    public set useExactSrgbConversions(value: boolean) {
+        this._imageProcessingConfiguration.useExactSrgbConversions = value;
+    }
+
+    /**
      * Gets contrast used in the effect.
      */
     public get contrast(): number {
@@ -357,6 +370,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         COLORGRADING: false,
         COLORGRADING3D: false,
         FROMLINEARSPACE: false,
+        USEEXACTSRGBCONVERSIONS: false,
         SAMPLER3DGREENDEPTH: false,
         SAMPLER3DBGRMAP: false,
         IMAGEPROCESSINGPOSTPROCESS: false,

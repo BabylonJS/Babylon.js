@@ -137,6 +137,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
     public MULTIVIEW = false;
+    public USEEXACTSRGBCONVERSIONS = false;
 
     // Reflection.
     public REFLECTION = false;
