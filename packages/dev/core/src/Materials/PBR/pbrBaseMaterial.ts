@@ -222,6 +222,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
     public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+    public USEEXACTSRGBCONVERSIONS = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;

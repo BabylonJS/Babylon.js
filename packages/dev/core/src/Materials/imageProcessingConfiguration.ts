@@ -31,6 +31,7 @@ export interface IImageProcessingConfigurationDefines {
     SAMPLER3DBGRMAP: boolean;
     IMAGEPROCESSINGPOSTPROCESS: boolean;
     SKIPFINALCOLORCLAMP: boolean;
+    USEEXACTSRGBCONVERSIONS: boolean;
 }
 
 /**
@@ -52,6 +53,7 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
     public SKIPFINALCOLORCLAMP = false;
+    public USEEXACTSRGBCONVERSIONS = false;
 
     constructor() {
         super();
@@ -240,6 +242,26 @@ export class ImageProcessingConfiguration {
         }
 
         this._toneMappingType = value;
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _useExactSrgbConversions = false;
+    /**
+     * Gets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
+     */
+    public get useExactSrgbConversions(): boolean {
+        return this._useExactSrgbConversions;
+    }
+    /**
+     * Sets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
+     */
+    public set useExactSrgbConversions(value: boolean) {
+        if (this._useExactSrgbConversions === value) {
+            return;
+        }
+
+        this._useExactSrgbConversions = value;
         this._updateParameters();
     }
 
@@ -476,6 +498,7 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
+            defines.USEEXACTSRGBCONVERSIONS = false;
             defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
@@ -494,6 +517,8 @@ export class ImageProcessingConfiguration {
                 defines.TONEMAPPING_ACES = false;
                 break;
         }
+
+        defines.USEEXACTSRGBCONVERSIONS = this.useExactSrgbConversions;
 
         defines.CONTRAST = this.contrast !== 1.0;
         defines.EXPOSURE = this.exposure !== 1.0;
