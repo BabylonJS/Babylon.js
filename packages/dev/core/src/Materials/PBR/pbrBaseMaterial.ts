@@ -1818,17 +1818,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;
         }
-
-        // External config
-        this._eventInfo.defines = defines;
-        this._eventInfo.mesh = mesh;
-        this._callbackPluginEventPrepareDefines(this._eventInfo);
-
+        
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
+
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
     }
 
     /**
