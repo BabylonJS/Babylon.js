@@ -810,6 +810,7 @@ export class WebGPUEngine extends Engine {
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
             textureMaxLevel: true,
+            texture2DArrayMaxLayerCount: 2048,
         };
 
         this._caps.parallelShaderCompile = null as any;
@@ -843,7 +844,7 @@ export class WebGPUEngine extends Engine {
 
     private _initializeContextAndSwapChain(): void {
         this._context = this._canvas.getContext("webgpu") as unknown as GPUCanvasContext;
-        this._configureContext(this._canvas.width, this._canvas.height);
+        this._configureContext();
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0]!.format = this._colorFormat;
@@ -933,17 +934,12 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _configureContext(width: number, height: number): void {
+    private _configureContext(): void {
         this._context.configure({
             device: this._device,
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             compositingAlphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasCompositingAlphaMode.Premultiplied : WebGPUConstants.CanvasCompositingAlphaMode.Opaque,
-            size: {
-                width,
-                height,
-                depthOrArrayLayers: 1,
-            },
         });
     }
 
@@ -968,7 +964,6 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._configureContext(width, height);
         this._initializeMainAttachments();
 
         if (this.snapshotRendering) {

@@ -2027,16 +2027,19 @@ export class NodeMaterial extends PushMaterial {
      * @param url defines the url to load from
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL for nested url in the node material
+     * @param skipBuild defines whether to build the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl: string = ""): Promise<NodeMaterial> {
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl: string = "", skipBuild: boolean = false): Promise<NodeMaterial> {
         const material = new NodeMaterial(name, scene);
 
         return new Promise((resolve, reject) => {
             return material
                 .loadAsync(url, rootUrl)
                 .then(() => {
-                    material.build();
+                    if (!skipBuild) {
+                        material.build();
+                    }
                     resolve(material);
                 })
                 .catch(reject);
@@ -2049,9 +2052,16 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param nodeMaterial defines a node material to update (instead of creating a new one)
+     * @param skipBuild defines whether to build the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {
+    public static ParseFromSnippetAsync(
+        snippetId: string,
+        scene: Scene = EngineStore.LastCreatedScene!,
+        rootUrl: string = "",
+        nodeMaterial?: NodeMaterial,
+        skipBuild: boolean = false
+    ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(this.CreateDefault("blank", scene));
         }
@@ -2073,7 +2083,9 @@ export class NodeMaterial extends PushMaterial {
                         nodeMaterial.snippetId = snippetId;
 
                         try {
-                            nodeMaterial.build();
+                            if (!skipBuild) {
+                                nodeMaterial.build();
+                            }
                             resolve(nodeMaterial);
                         } catch (err) {
                             reject(err);

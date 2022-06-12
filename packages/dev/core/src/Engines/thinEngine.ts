@@ -129,7 +129,6 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
-
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -183,6 +182,10 @@ export class ThinEngine {
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        // desktop osx safari 15.4
+        { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
+        // mobile browsers using safari 15.4 on ios
+        { key: ".*(15.4).*AppleWebKit.*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
     ];
 
     /** @hidden */
@@ -193,14 +196,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.6.0";
+        return "babylonjs@5.10.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.6.0";
+        return "5.10.0";
     }
 
     /**
@@ -537,6 +540,7 @@ export class ThinEngine {
 
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
+    private _maxMSAASamplesOverride: Nullable<number> = null;
 
     private _activeRequests = new Array<IFileRequest>();
 
@@ -858,6 +862,12 @@ export class ThinEngine {
                                 case "vao":
                                     this.disableVertexArrayObjects = true;
                                     break;
+                                case "antialias":
+                                    options.antialias = false;
+                                    break;
+                                case "maxMSAASamples":
+                                    this._maxMSAASamplesOverride = 1;
+                                    break;
                             }
                         }
                     }
@@ -1155,6 +1165,7 @@ export class ThinEngine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: this._webGLVersion > 1,
             textureMaxLevel: this._webGLVersion > 1,
+            texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? 256 : 128,
         };
 
         // Infos
@@ -1216,6 +1227,10 @@ export class ThinEngine {
             this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
             this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
         }
+        if (this._caps.etc2) {
+            this._gl.COMPRESSED_SRGB8_ETC2 = this._caps.etc2.COMPRESSED_SRGB8_ETC2;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = this._caps.etc2.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+        }
 
         // Checks if some of the format renders first to allow the use of webgl inspector.
         if (this._webGLVersion > 1) {
@@ -1227,7 +1242,7 @@ export class ThinEngine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
-            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
+            this._caps.maxMSAASamples = this._maxMSAASamplesOverride !== null ? this._maxMSAASamplesOverride : this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             const drawBuffersExtension = this._gl.getExtension("WEBGL_draw_buffers");
 
@@ -4191,6 +4206,8 @@ export class ThinEngine {
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -4202,7 +4219,9 @@ export class ThinEngine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        creationFlags = 0,
+        useSRGBBuffer: boolean = false
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
@@ -4466,6 +4485,22 @@ export class ThinEngine {
 
         if (texture._useSRGBBuffer) {
             switch (internalFormat) {
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+                    // Note, if using ETC1 and sRGB is requested, this will use ETC2 if available.
+                    if (this._caps.etc2) {
+                        internalFormat = gl.COMPRESSED_SRGB8_ETC2;
+                    } else {
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+                    if (this._caps.etc2) {
+                        internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+                    } else {
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
                     internalFormat = gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
                     break;
@@ -5871,6 +5906,6 @@ export class ThinEngine {
             return this._renderingCanvas.ownerDocument;
         }
 
-        return document;
+        return IsDocumentAvailable() ? document : null;
     }
 }

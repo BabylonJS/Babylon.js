@@ -10,7 +10,6 @@ import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { ThinEngine } from "../../Engines/thinEngine";
 
 import "../../Engines/Extensions/engine.cubeTexture";
-import { StartsWith } from "../../Misc/stringTools";
 import { Observable } from "../../Misc/observable";
 
 /**
@@ -92,8 +91,9 @@ export class CubeTexture extends BaseTexture {
 
     private _noMipmap: boolean;
 
+    /** @hidden */
     @serialize("files")
-    private _files: Nullable<string[]> = null;
+    public _files: Nullable<string[]> = null;
 
     @serialize("forcedExtension")
     protected _forcedExtension: Nullable<string> = null;
@@ -242,7 +242,7 @@ export class CubeTexture extends BaseTexture {
         delayLoad = false,
         files: Nullable<string[]> = null
     ): void {
-        if (!this.name || StartsWith(this.name, "data:")) {
+        if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
         }
         this.url = url;

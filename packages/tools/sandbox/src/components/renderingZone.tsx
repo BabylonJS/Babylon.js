@@ -21,7 +21,6 @@ import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { StringTools } from "core/Misc/stringTools";
 
 function isTextureAsset(name: string): boolean {
     const queryStringIndex = name.indexOf("?");
@@ -29,13 +28,7 @@ function isTextureAsset(name: string): boolean {
         name = name.substring(0, queryStringIndex);
     }
 
-    return (
-        StringTools.EndsWith(name, ".ktx") ||
-        StringTools.EndsWith(name, ".ktx2") ||
-        StringTools.EndsWith(name, ".png") ||
-        StringTools.EndsWith(name, ".jpg") ||
-        StringTools.EndsWith(name, ".jpeg")
-    );
+    return name.endsWith(".ktx") || name.endsWith(".ktx2") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
 }
 
 interface IRenderingZoneProps {
@@ -59,11 +52,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     async initEngine() {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
         // TODO - remove this once not needed anymore. Spoofing Safari 15.4.X
-        const fixYourBugsAlreadyRegexp = /.*AppleWebKit.*(15.4).*Safari/g;
-        const allowOtherBrowsersAlready = /.*(15.4).*AppleWebKit.*Safari/g;
-        const fixYourBugsAlreadyMatch = navigator.userAgent.match(fixYourBugsAlreadyRegexp) || navigator.userAgent.match(allowOtherBrowsersAlready);
-        const disableAntialiasOnThisVersion = fixYourBugsAlreadyMatch ? false : undefined;
-        const antialias = this.props.globalState.commerceMode ? false : disableAntialiasOnThisVersion;
+        const antialias = this.props.globalState.commerceMode ? false : undefined;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {

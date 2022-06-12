@@ -153,8 +153,8 @@ export class GroupModelAnimation implements IModelAnimation {
         this._playMode = AnimationPlayMode.LOOP;
 
         this._animationGroup.onAnimationEndObservable.add(() => {
-            this.stop();
             this._state = AnimationState.ENDED;
+            this.stop();
         });
     }
 
@@ -305,6 +305,10 @@ export class GroupModelAnimation implements IModelAnimation {
      * This will fail silently if the animation group is already stopped.
      */
     public stop() {
+        // do not trigger stop if animation state is ended.
+        if (this._state === AnimationState.ENDED) {
+            return;
+        }
         this._animationGroup.stop();
         if (!this._animationGroup.isStarted) {
             this._state = AnimationState.STOPPED;

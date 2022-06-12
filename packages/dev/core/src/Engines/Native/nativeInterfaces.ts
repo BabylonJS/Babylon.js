@@ -87,6 +87,9 @@ interface INativeEngineConstructor {
 
     readonly PROTOCOL_VERSION: number;
 
+    readonly CAPS_LIMITS_MAX_TEXTURE_SIZE: number;
+    readonly CAPS_LIMITS_MAX_TEXTURE_LAYERS: number;
+
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;
     readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;

@@ -6,7 +6,7 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 [![Build Status](https://dev.azure.com/babylonjs/ContinousIntegration/_apis/build/status/CI?branchName=master)](https://dev.azure.com/babylonjs/ContinousIntegration/_build/latest?definitionId=14&branchName=master)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/BabylonJS/Babylon.js.svg)](http://isitmaintained.com/project/BabylonJS/Babylon.js "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
-[![Build Size](https://img.badgesize.io/BabylonJS/Babylon.js/master/dist/preview%20release/babylon.js.svg?compression=gzip)](https://img.badgesize.io/BabylonJS/Babylon.js/master/dist/preview%20release/babylon.js.svg?compression=gzip)
+![Build size](https://img.shields.io/bundlephobia/minzip/babylonjs)
 [![Twitter](https://img.shields.io/twitter/follow/babylonjs.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=babylonjs)
 ![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fforum.babylonjs.com)
 
@@ -17,14 +17,13 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 - <https://cdn.babylonjs.com/babylon.js>
 - <https://cdn.babylonjs.com/babylon.max.js>
 
-Additional references can be found on <https://cdn.babylonjs.com/xxx> where `xxx` is the folder structure you can find in the /dist folder like <https://cdn.babylonjs.com/gui/babylon.gui.min.js>
 
 For the preview release, use the following URLs:
 
 - <https://preview.babylonjs.com/babylon.js>
 - <https://preview.babylonjs.com/babylon.max.js>
 
-Additional references can be found on <https://preview.babylonjs.com/xxx> where xxx is the folder structure you can find in the /dist/preview release folder like <https://preview.babylonjs.com/gui/babylon.gui.min.js>
+A list of additional references can be found [here](https://doc.babylonjs.com/divingDeeper/developWithBjs/frameworkVers#cdn-current-versions).
 
 ## npm
 

@@ -398,6 +398,11 @@ export class BlockTools {
                 meshColor.setAsAttribute("color");
                 return meshColor;
             }
+            case "InstanceColorBlock": {
+                const meshColor = new InputBlock("Instance Color");
+                meshColor.setAsAttribute("instanceColor");
+                return meshColor;
+            }
             case "NormalBlock": {
                 const meshNormal = new InputBlock("normal");
                 meshNormal.setAsAttribute("normal");

@@ -142,6 +142,7 @@ export class Container extends Control {
 
     public _flagDescendantsAsMatrixDirty(): void {
         for (const child of this.children) {
+            child._isClipped = false;
             child._markMatrixAsDirty();
         }
     }
