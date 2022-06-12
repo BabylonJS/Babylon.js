@@ -32,13 +32,9 @@
             "node-editor/*": ["tools/nodeEditor/dist/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
             "viewer/*": ["tools/viewer/dist/*"],
-            "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
+            "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"]
         }
     },
 
-    "exclude": [
-        "**/node_modules",
-        "**/dist",
-        "**/test",
-    ],
+    "exclude": ["**/node_modules", "**/dist"]
 }

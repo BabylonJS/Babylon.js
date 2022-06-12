@@ -1,6 +1,1545 @@
 {
-    "fromTag": "5.5.6",
+    "fromTag": "5.9.1",
     "changelog": {
+        "5.10.0": [
+            {
+                "pr": "12622",
+                "title": "Disallow users to change the frame of the first key, ensuring that th…",
+                "description": "…ere is always a frame at 0. It was already not possible to drag the first frame outside of 0, but this covers the top bar input.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/rangeFrameBarComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/topBarComponent.tsx"
+                ],
+                "tags": []
+            }
+        ],
+        "5.9.1": [
+            {
+                "pr": "12638",
+                "title": "Add a catch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/computePressure.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12637",
+                "title": "Fix pointer hover on descendant controls when action manager is recursive",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/hovercursor-does-not-change-when-hovering-child-elements/31104\r\nPlayground: https://playground.babylonjs.com/#68S8IM",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12636",
+                "title": "Support for extracting bloom highlights with luminance >1",
+                "description": "This is useful for HDR bloom, where the desired, exposed luminance threshold could be greater than 1.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/extractHighlights.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12613",
+                "title": "No need to clear (depth) in utility layer",
+                "description": "This scene fails when in XR:\n\nhttps://playground.babylonjs.com/#HJZBRG#253\n\nForum reference - https://forum.babylonjs.com/t/button3d-in-vr-is-rendered-on-top-of-everything/30772\n\nI am not 100% sure why it was needed until now, so I am going to wait for reviews first before merging this.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/utilityLayerRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "12632",
+                "title": "Serialize iridescene in PBR materials",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSpecularGlossinessMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12635",
+                "title": "Fix where canvas could have a blue highlight effect on tap.",
+                "description": "For #12634.\r\n\r\nAdded a line to also disable the webkitTapHighlight when touch actions are disabled.",
+                "author": {
+                    "name": "saaratrix",
+                    "url": "https://github.com/saaratrix"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12633",
+                "title": "Added ```setQuaternion``` to ```Effect```",
+                "description": "I'm back with more Quaternion's stuff.\r\n\r\nI added ```setQuaternion``` to the Effect class.\r\n\r\nI updated the different pipeline contexts versions to make it possible to set a quaternion as a uniform variable in a shader.\r\nI created a IQuaternionLike interface, though it is the same as IVector4Like I think it makes the code easier to understand and read with this interface.",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Maths/math.like.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12629",
+                "title": "Force createGlobalSubmesh in Mesh.SetVerticesData if Mesh is Unindexed",
+                "description": "This a a fix for the bug reported in the forum here : https://forum.babylonjs.com/t/bug-when-calling-setverticesdata-on-a-unindexed-mesh/31009\r\n\r\nrepro here : https://www.babylonjs-playground.com/#JX7SUF",
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "5.9.0": [
+            {
+                "pr": "12624",
+                "title": "Fix NME dialog box styling",
+                "description": "The dialog box styling wasn't being applied because of the class scope",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12623",
+                "title": "Fix Lines vertex alpha",
+                "description": "https://forum.babylonjs.com/t/alpha-color-not-working-in-line-system-anymore/30947/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12617",
+                "title": "Fix JPEG environment texture",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/materials/readme.md"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "12625",
+                "title": "Improve CheckIsReady in scene",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12618",
+                "title": "Enable iridescence map in MRDL backplate material",
+                "description": "Simple fix, visually pleasing results\r\n![ezgif-3-4fa4eb9834](https://user-images.githubusercontent.com/4724014/171300738-97774c1e-bd8c-43d9-aad4-7ce79fdba313.gif)\r\n",
+                "author": {
+                    "name": "rgerd",
+                    "url": "https://github.com/rgerd"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12598",
+                "title": "Added a few methods to Quaternion and Vector3",
+                "description": "I noticed there was a few useful methods not implemented regarding transformations of Vector3 by Quaternions.\r\n\r\n# Here is what I added :\r\n\r\n ## Quaternion\r\n\r\n- added ```subtractInPlace```\r\n- added ```invertInPlace```\r\n- added ```invert```\r\n- added ```normalizeToNew```\r\n- added ```lengthSquared```\r\n\r\n## Vector3\r\n\r\n- added ```applyRotationQuaternionToRef```\r\n- added ```applyRotationQuaternionInPlace```\r\n- added ```applyRotationQuaternion```\r\n\r\n## Other\r\n\r\n- Removed a few repetitions",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    ".gitignore",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12620",
+                "title": "deprecate action manager array in scene",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/abstractScene.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12616",
+                "title": "added postinstall script to \"babylonjs\"",
+                "description": "These lines will be presented to anyone installing \"bbylonjs\" package (umd).",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/public/umd/babylonjs/readme.md",
+                    "packages/public/umd/babylonjs/scripts/postinstall.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12621",
+                "title": "Scene.multiPickWithRay signature correction",
+                "description": "Fixes #12614",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12563",
+                "title": "Removed IE support. It was long overdue ;)",
+                "description": "Fix #12324 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ddsTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/envTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/hdrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/tgaTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/deepCopier.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/promise.ts",
+                    "packages/dev/core/src/Misc/reflector.ts",
+                    "packages/dev/core/src/Misc/sliceTools.ts",
+                    "packages/dev/core/src/Misc/stringTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.promise.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/tools/sandbox/src/components/reflectorZone.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/viewer/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12607",
+                "title": "Grid children disappear once linked mesh is outside view",
+                "description": "Fixes #12602\nThis forces resetting the clipping state of children when their matrix is set as dirty.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12609",
+                "title": "Fix registerInstancedBuffer after Mesh creation",
+                "description": "https://forum.babylonjs.com/t/disappearing-mesh-material-on-registerinstancedbuffer-and-instancedbuffers/30868",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/shadowLight.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12612",
+                "title": "Added forcedExtension option to textur creation",
+                "description": "If the texture url does not contain any file extensoin (e.g. object url) we should be able to force the extension. Otherwise compressed textures like -dxt.ktx cannot be loaded.\r\nhttps://forum.babylonjs.com/t/loading-compressed-textures-from-object-url/30861",
+                "author": {
+                    "name": "MBecherKurz",
+                    "url": "https://github.com/MBecherKurz"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "12590",
+                "title": "Move frame bar on ACE to the top of the window",
+                "description": "Previous:\r\n![image](https://user-images.githubusercontent.com/6002144/170536466-5e60d953-bea3-4ebc-ab42-30ef6100275a.png)\r\nWith the PR:\r\n![image](https://user-images.githubusercontent.com/6002144/170536574-e4784010-6794-4ca8-86a6-bd74ccd96c86.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/context.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/canvasComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/playHeadComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/rangeFrameBarComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12604",
+                "title": "WebGPU: Allow running the standard viz tests with WebGPU",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12608",
+                "title": "test all packages in modules test",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/src/sceneWithInspector.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "5.8.2": [
+            {
+                "pr": "12605",
+                "title": "Point Cloud System: Add getters",
+                "description": "It can come in handy to get the position/colors/uvs of the particles generated by the point cloud system so I have added some getters.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12603",
+                "title": "Small fixes for gizmo and navigation",
+                "description": "Small fixes for https://forum.babylonjs.com/t/pointlight-withouth-direction/30262/5\r\nhttps://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/48\r\nand\r\nhttps://forum.babylonjs.com/t/error-calling-getcorners-for-a-crowd-agents-path/30526",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Navigation/Plugins/recastJSPlugin.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "5.8.1": [
+            {
+                "pr": "12523",
+                "title": "Add new prepass to compute the specularity-glossiness map whatever the material type",
+                "description": "This is the PR following this issue:\r\nhttps://forum.babylonjs.com/t/prepass-get-accurate-reflectance-information/30351\r\n\r\nThe aim is to compute reflectance and glossiness information whatever the material type (standard, PBR, PBR Specular-Glossiness, PBR Metallic-Roughness). The architecture is based on the other PrePasses. The translation model from Metallic-Roughness to Specular-Glossiness is based on: https://marmoset.co/posts/pbr-texture-conversion.",
+                "author": {
+                    "name": "Mannns",
+                    "url": "https://github.com/Mannns"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12601",
+                "title": "Add missing observer trigger - onLoadedObservable notify method for hdrCubeTexture",
+                "description": "I found a minor issue during loading textures through `add task` of `asset manager`\r\nwhen I try to load the same texture files several times for different purposes, `cubeTextureTask` can be finished normally but `hdrCubeTextureTask` can't be finished even though it has been already finished\r\n\r\n* this playground can show task count on `console`\r\nhttps://playground.babylonjs.com/#M5L9FH\r\n\r\nSo, I have debugged and I found the creating function of hdrTexture has lost the `load observable notify` method that is included in the `creating function of cubeTexture`\r\n\r\n- `engine.cubeTexture.ts` \r\n<img width=\"385\" alt=\"스크린샷 2022-05-30 오후 3 57 43\" src=\"https://user-images.githubusercontent.com/70849655/170935258-89b47f42-e6a3-4366-bde0-003f602b558e.png\">\r\n<img width=\"473\" alt=\"스크린샷 2022-05-30 오후 3 57 36\" src=\"https://user-images.githubusercontent.com/70849655/170935273-108c1e51-48bf-4190-bcec-a38084b0ddb2.png\">\r\n\r\n- `engine.rawTexture.ts`\r\n<img width=\"820\" alt=\"스크린샷 2022-05-30 오후 3 57 57\" src=\"https://user-images.githubusercontent.com/70849655/170935403-edc25ad8-6a49-417f-bf9b-f6a6d9a0fbfd.png\">\r\n<img width=\"452\" alt=\"스크린샷 2022-05-30 오후 3 59 26\" src=\"https://user-images.githubusercontent.com/70849655/170935417-11a8b868-e752-4451-982f-4e99ad92b7c1.png\">\r\n\r\nI add above code in `raw texture` and then it worked well\r\n![스크린샷 2022-05-30 오후 4 06 10](https://user-images.githubusercontent.com/70849655/170936119-0438806d-e447-4027-ab92-7540e4c3c65e.png)\r\n",
+                "author": {
+                    "name": "slash9494",
+                    "url": "https://github.com/slash9494"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12596",
+                "title": "remove private variables from WebGPU declaration",
+                "description": "The reason behind this is the documentation page that fails compilation because of this error:\r\n\r\n```\r\n Class 'GPUOutOfMemoryError' incorrectly implements class 'GPUError'. Did you mean to extend 'GPUError' and inherit its members as a subclass?\r\n  Types have separate declarations of a private property '__brand'.\r\nError: C:/Users/raweber/Documents/GitHub/Documentation/.temp/docdirectory/doc.d.ts(97057)\r\n Class 'GPUValidationError' incorrectly implements class 'GPUError'. Did you mean to extend 'GPUError' and inherit its members as a subclass?\r\n  Types have separate declarations of a private property '__brand'.\r\n```\r\n\r\nThe reason for the error is probably an older version of typedoc (work is being done to update that), which uses an older version of typescript to analyze the file.\r\n\r\nAs this private variable is not being used anywhere in the code I took delibery of suggesting to remove it, but I will wait for @Popov72 to approve this PR before merging",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12495",
+                "title": "GLTFSerializer : Ext mesh gpu instancing",
+                "description": "Add support to EXT_mesh_gpu_instancing to Babylon GLTF Serializer.\r\nThin instances are used to save transformation into GLTF buffer.\r\nThis extension is NOT official and not supported yet by many viewer. This may be used with caution while terminology between Local Transformation and World transformation are not consistent beetwen this Extension and the babylon Thin instances.\r\nTest has been conducted sucessfully with playground and sandbox, using respectively coding samples and imported gltf sample.\r\nThe main sample used was the \"official\" [gltf sample](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/samples/teapots_galore)\r\nAlso add Visualization test.\r\nNote - deleted previous PR for configuration issues.",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporterExtension.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFSerializerKhrGpuInstancing.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12597",
+                "title": "Fix render frame identification issue with instances",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12595",
+                "title": "Fix `AssetManager` `addTextureTask` resolving with `task.texture === undefined` when using `NullEngine`",
+                "description": "This PR is a follow up on https://forum.babylonjs.com/t/using-assetsmanager-with-nullengine-to-load-textures/8758",
+                "author": {
+                    "name": "alvov-evo",
+                    "url": "https://github.com/alvov-evo"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.assetsManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12524",
+                "title": "InputManager: Fix Picking on PointerUp and add bool to skip pointerup picking",
+                "description": "Recently on the forums ([forum post](https://forum.babylonjs.com/t/no-api-to-disable-mesh-picking-for-some-buttons-and-keep-onpointerobservable/29887)), there was a user who found an issue with the pointerUpPredicate not being used by the InputManager properly.  When a dummy predicate was used (`() => false`), there was still a pickedmesh/point in the pickInfo object.  This PR does a couple of things:\r\n- Fix for the picking logic to use the `pointerUpPredicate` and actually call `scene.pick`\r\n- Add a boolean to scene that allows the user to skip picking on pointerup (same as move and down)",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12592",
+                "title": "Make scene param optional for NodeMaterial.ParseFromSnippetAsync",
+                "description": "Make scene param optional for NodeMaterial.ParseFromSnippetAsync\r\n\r\nForum: https://forum.babylonjs.com/t/make-scene-param-optional-for-nodematerial-parsefromsnippetasync/30747/7",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12594",
+                "title": "fix memory leak",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12589",
+                "title": "WebGPU: fix typescript",
+                "description": "See https://forum.babylonjs.com/t/gpuoutofmemoryerror-and-gpuvalidationerror-error-with-latest-5-8-0-release/30755",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12587",
+                "title": "Fix readme.md CDN notes",
+                "description": null,
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12579",
+                "title": "make sure to watch changes in the assets lib",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/viewer/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "5.8.0": [
+            {
+                "pr": "12588",
+                "title": "minor improvements to `toEulerAnglesTo()`",
+                "description": "- Reuse `zAxisY` to avoid unnecessary arithmetic\r\n- Moved some constants inside of the branch where they are used\r\n\r\nForum post: https://forum.babylonjs.com/t/some-tweaks-toeuleranglestoref/30738",
+                "author": {
+                    "name": "nmrugg",
+                    "url": "https://github.com/nmrugg"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12586",
+                "title": "DeviceInputSystem: Add check for matchMedia in WebDeviceInputSystem",
+                "description": "A user in the forum recently found an issue where the error `matchMedia is not defined` was occurring in an offscreen canvas.  Because the offscreen canvas was in a worker thread, it had no context of the `Window` interface and the `matchMedia` function.  This PR will add a check in the `WebDeviceInputSystem` to verify the existence of this function before attempting to execute it.\r\n\r\nForum Link: https://forum.babylonjs.com/t/offscreen-canvas-matchmedia/30682/10",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/InputDevices/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12585",
+                "title": "Fix memoryleak",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders",
+                    "memory leak"
+                ]
+            },
+            {
+                "pr": "12584",
+                "title": "Add missing interpolation to glTF animation key targeting weights",
+                "description": "See https://forum.babylonjs.com/t/gltf-loader-animation-path-weights-ignores-step-interpolation/30719",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12565",
+                "title": "Change glTF skinned mesh reference to a callback",
+                "description": "See https://forum.babylonjs.com/t/converting-circular-structure-to-json/30641",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12564",
+                "title": "Fix ThinEngine.updateDynamicIndexBuffer",
+                "description": "This is to fix a bug we ran into.\r\n\r\nTo repro :\r\n- at creation time, provide a mesh with indices of type `Array<number>`  => if all the indies are below 65535, the `Array<number>` is normallized into an `UInt16Array` in `ThinEngine._normalizeIndexData`\r\n\r\n- call `Mesh.updateIndices` with a `UInt32Array` => instead of converting to `UInt16Array` as if a `Array<number>` had been passed, the `UInt32Array` is forwarded to WebGL, leading to wrong indexing.\r\n\r\n",
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.dynamicBuffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12574",
+                "title": "Add default formatter as prettier",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".vscode/settings.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12567",
+                "title": "Add sRGB handling for ETC texture formats",
+                "description": "Because ETC2 is an extension of ETC1, we should also be able to use the ETC2 sRGB format when sRGB is requested for an ETC1 texture.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12551",
+                "title": "Add warning to Bounding Box Gizmo",
+                "description": "Related issue: https://forum.babylonjs.com/t/is-that-the-attachednode-setter-wrong/30473/6",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12571",
+                "title": "Check if document is available before accessing it",
+                "description": "##  Description\r\n\r\nHi,\r\n\r\nIn `ThinEngine` the `getHostDocument` method is not react-native \"safe\", when accessed from a react-native application, we try to access `document` without checking that it exists first, thus causing the app to crash.\r\n\r\n## Repro\r\n\r\nTo repro the issue, all you need is to create a `FollowCamera` and make it follow a target.\r\nI got this issue to repro by using this code in an Expo environment:\r\n\r\n```ts\r\n function initGame(gl: ExpoWebGLRenderingContext) {\r\n  const engine = new Engine(gl, true, {}, false);\r\n\r\n  const scene = new Scene(engine);\r\n  // Our built-in 'box' shape. Params: name, size, scene\r\n  const box = MeshBuilder.CreateBox(\"box\", { size: 2 }, scene);\r\n\r\n  new FollowCamera(\"ArcRotateCamera\", new Vector3(2, 0, 0), scene, box);\r\n  const light = new HemisphericLight(\"light1\", new Vector3(0, 1, 0), scene);\r\n\r\n  // Default intensity is 1. Let's dim the light a small amount\r\n  light.intensity = 0.7;\r\n\r\n  scene.registerBeforeRender(() => {\r\n    if (this.updatePan) {\r\n      (scene.activeCamera as any).alpha -= this._translateX / 6000;\r\n      (scene.activeCamera as any).beta -= this._translateY / 6000;\r\n    }\r\n    if (this.updatePinch) {\r\n      (scene.activeCamera as any).radius -= this._scale * 60;\r\n    }\r\n\r\n    gl.endFrameEXP();\r\n  });\r\n\r\n  engine.runRenderLoop(() => {\r\n    if (scene) {\r\n      scene.render();\r\n    }\r\n  });\r\n}\r\n\r\n```\r\n\r\n## Cause\r\n\r\nWhat happens here is that at some point, the `Effect` class (packages/dev/core/src/Materials/effect.ts) will try to access the host document by only checking if `IsWindowObjectExist` returns true:\r\n\r\n```ts\r\nconst hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;\r\n```\r\n\r\nThis issue is, in this react-native context `window` will exist but not `document`, leading to this issue.\r\n\r\n## Fix\r\n\r\nTo fix this,  I added a check in `getHostDocument` to make sure that `document` actually exist before returning it. If it doesn't, I simply return `null`.\r\n\r\nThis is my first PR in this repo, please let me know if I forgot anything.",
+                "author": {
+                    "name": "antoine-gannat",
+                    "url": "https://github.com/antoine-gannat"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12572",
+                "title": "PBR refractionIntensityTexture in the inspector",
+                "description": "https://forum.babylonjs.com/t/refractionintensitytexture-is-not-being-displayed-in-the-inspector/30697",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "12570",
+                "title": "Prevent calling stop recursively",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/viewer/src/model/modelAnimation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12569",
+                "title": "WebGPU: Synchronize with spec",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12562",
+                "title": "Fix prepass view uniform",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultFragmentDeclaration.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12525",
+                "title": "Initial storybook setup",
+                "description": "Initial PR to create a storybook with a few simple components. Mainly wanting to verify the architecture makes sense. Takes advantage of some nice features of CSS loader, like :local scopes rules and composition (importing classes from other CSS files).\r\n\r\nComponents right now:\r\n1. Toggle\r\n2. Label\r\n3. Button\r\n\r\nNOT IN THIS PR:\r\n- Snapshots\r\n- Jest testing",
+                "author": {
+                    "name": "darraghjburke",
+                    "url": "https://github.com/darraghjburke"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/sharedUiComponents/.storybook/main.js",
+                    "packages/dev/sharedUiComponents/.storybook/preview.js",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/readme.md",
+                    "packages/dev/sharedUiComponents/src/components/Button.scss",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Colors.scss",
+                    "packages/dev/sharedUiComponents/src/components/Fonts.scss",
+                    "packages/dev/sharedUiComponents/src/components/Icon.scss",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.scss",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.scss",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/classNames.ts",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/dev/sharedUiComponents/src/stories/Button.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Icon.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Introduction.stories.mdx",
+                    "packages/dev/sharedUiComponents/src/stories/Label.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Toggle.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/assets/code-brackets.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/colors.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/comments.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/direction.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/flow.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/plugin.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/repo.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/stackalt.svg"
+                ],
+                "tags": [
+                    "tools"
+                ]
+            },
+            {
+                "pr": "12561",
+                "title": "Make setMaterialForRenderPass call resetDrawCache",
+                "description": "Make setMaterialForRenderPass call resetDrawCache to prevent the error when switching e.g. between StandardMaterial and NodeMaterial.\r\n\r\nForum: https://forum.babylonjs.com/t/need-to-call-resetdrawcache-before-setmaterialforrendering/30642",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12559",
+                "title": "Make Mesh.increaseVertices() work without uvs or normals; set default…",
+                "description": "… additional vertex per edge to 1 (as per doc).\r\n\r\nPR discussed [here](https://forum.babylonjs.com/t/possibility-to-use-mesh-increasevertices-on-custom-meshes-without-vertexdata-uvs/30090).\r\n\r\nI took the liberty of also allowing the use of `Mesh.increaseVertices()` on meshes with no normals. (Only uv-less meshes were discussed on the forum.) I hope that's OK.",
+                "author": {
+                    "name": "OptiStrat",
+                    "url": "https://github.com/OptiStrat"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12557",
+                "title": "Fix return type for CreateGround",
+                "description": "Just noticed that the return type for CreateGround is Mesh but it should be GroundMesh. :)",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12560",
+                "title": "Fix warning when cloning with instanced mesh",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12555",
+                "title": "Fix Instances Color Alpha",
+                "description": "https://forum.babylonjs.com/t/different-transparency-while-using-thin-instances/30574\r\n\r\nThe main issue is that instances color alpha value were not used with if vertex colors were not defined.\r\n\r\nThis playground can be tested on the snapshot once available: https://playground.babylonjs.com/#8L50Q3#129",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/materials/src/cell/cell.fragment.fx",
+                    "packages/dev/materials/src/fire/fire.fragment.fx",
+                    "packages/dev/materials/src/fur/fur.fragment.fx",
+                    "packages/dev/materials/src/gradient/gradient.fragment.fx",
+                    "packages/dev/materials/src/lava/lava.fragment.fx",
+                    "packages/dev/materials/src/mix/mix.fragment.fx",
+                    "packages/dev/materials/src/simple/simple.fragment.fx",
+                    "packages/dev/materials/src/sky/sky.fragment.fx",
+                    "packages/dev/materials/src/terrain/terrain.fragment.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.fragment.fx",
+                    "packages/dev/materials/src/water/water.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12553",
+                "title": "Add sRGB option to 2D RawTexture",
+                "description": null,
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12556",
+                "title": "Allow HDR texture types in DepthOfFieldBlurPostProcess",
+                "description": "This increases the quality of the depth of field effect (note the banding in the before image below), but it comes with a slight perf cost since the intermediate blur textures are now an HDR texture format instead of RGBA8.\r\n\r\n![image](https://user-images.githubusercontent.com/20366429/169629876-195e808a-3359-40dd-96c3-27ab76bb965c.png)\r\n",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/depthOfFieldBlurPostProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12550",
+                "title": "Fix abstractMesh scaling overloads",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12552",
+                "title": "if pick exists, make sure to return it",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12548",
+                "title": "Add param skipBuild when parsing node material",
+                "description": "Add parameter skipBuild to NodeMaterial functions ParseFromFileAsync and ParseFromSnippetAsync\r\nhttps://forum.babylonjs.com/t/parsefromsnippetasync-option-to-skip-build/30544",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12547",
+                "title": "Fix nme tangents back compat and instance color",
+                "description": "https://forum.babylonjs.com/t/how-to-make-nme-material-for-thin-instances-with-color-attribute/30469/11",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/loaders/src/OBJ/solidParser.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/diagram/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12537",
+                "title": "fix wheel behaviour and overscroll",
+                "description": "- fix #12536\r\n- disable horizontal scroll (handle return back/next page)\r\n- fix page overscroll\r\n\r\n<br/>\r\n\r\nB E F O R E\r\n![ezgif-2-d49c4d843b](https://user-images.githubusercontent.com/28831375/168671077-44c9ecbf-eb1d-4a69-a3c4-da9fe5fe09a2.gif)\r\n\r\nA F T E R\r\n![ezgif-2-6eac051240](https://user-images.githubusercontent.com/28831375/168673574-1bf514de-c0cf-4c4d-9af3-4effa334c546.gif)\r\n\r\n",
+                "author": {
+                    "name": "3GOMESz",
+                    "url": "https://github.com/3GOMESz"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/public/index.html",
+                    "packages/tools/nodeEditor/src/diagram/graphCanvas.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": []
+            }
+        ],
+        "5.7.0": [
+            {
+                "pr": "12546",
+                "title": "Problems loading .obj with groups.",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "12539",
+                "title": "Fix ClearCoat Refraction V direction",
+                "description": "https://forum.babylonjs.com/t/clear-coat-shader-compute-question/30440/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockClearcoat.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12541",
+                "title": "Fixed Logic for FreeCameraTouchInput to properly detect when input is mouse input",
+                "description": "A user in the forums found that there was no touch input working with the universal camera, which uses FreeCameraTouchInput as part of its attached inputs.  Upon closer inspection, it was determined that the logic that was used to detect if the input was from a mouse or not was incorrect.  It originally said that if the browser was a not from mobile browser and if the event was an instance of MouseEvent, that it was from the mouse.  The new logic just checks the pointer type and uses that, which is a much more reliable method and also works with touch devices using non-mobile browsers.\r\n\r\nForum Link: https://forum.babylonjs.com/t/guys-i-got-a-problem-with-on-some-android-pad-cant-use-universalcamera-to-move-on-touch/30448/3",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "12512",
+                "title": "Add custom word divider for TextBlock",
+                "description": "Some languages such as Japanese and Chinese has no \"word divider\" (the character between words).\r\nCurrently, when rendering Japanese in TextBlock, an unnecessary space is inserted between words.\r\njsfiddle: [https://jsfiddle.net/3ph9m0cx/](https://jsfiddle.net/3ph9m0cx/)\r\n\r\nThis PR makes it customizable.\r\nIn case of Japanese, setting `wordDivider = \"\"` resolves it.",
+                "author": {
+                    "name": "miudit",
+                    "url": "https://github.com/miudit"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12540",
+                "title": "remove remaining www.babylonjs.com references",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particleHelper.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12532",
+                "title": "Add modules compilation",
+                "description": "This PR adds modules compilation using es6 syntax. It also adds module-file-size test that will run against the snapshot on every PR to make sure no extra code is being added and that tree shaking is still running correctly.\n\nNote that the CI needs to be changed in order for that to work correctly so mering this PR is only half of the solution.\n\nFixes #12350",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/prepareSnapshot.ts",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/scripts/generateFileSizes.js",
+                    "packages/tools/tests/src/engineOnly.ts",
+                    "packages/tools/tests/src/minGridMaterial.ts",
+                    "packages/tools/tests/src/minStandardMaterial.ts",
+                    "packages/tools/tests/src/sceneOnly.ts",
+                    "packages/tools/tests/src/sceneWithInspector.ts",
+                    "packages/tools/tests/src/thinEngineOnly.ts",
+                    "packages/tools/tests/test/unit/moduleFileSize.test.ts",
+                    "packages/tools/tests/test/unit/packageSizeBaseline.json",
+                    "packages/tools/tests/tsconfig.build.json",
+                    "packages/tools/tests/tsconfig.json",
+                    "packages/tools/tests/webpack.config.js",
+                    "packages/tools/viewer/README-ES6.md",
+                    "packages/tools/viewer/README.md",
+                    "packages/tools/viewer/tests/commons/boot.ts",
+                    "packages/tools/viewer/tests/commons/helper.ts",
+                    "packages/tools/viewer/tests/commons/mockWebGL.ts",
+                    "packages/tools/viewer/tests/karma.conf.js",
+                    "packages/tools/viewer/tests/unit/src/configuration/loader.ts",
+                    "packages/tools/viewer/tests/unit/src/configuration/mappers.ts",
+                    "packages/tools/viewer/tests/unit/src/configuration/updateConfiguration.ts",
+                    "packages/tools/viewer/tests/unit/src/helper.ts",
+                    "packages/tools/viewer/tests/unit/src/index.ts",
+                    "packages/tools/viewer/tests/unit/src/viewer/sceneManager.ts",
+                    "packages/tools/viewer/tests/unit/src/viewer/viewer.ts",
+                    "packages/tools/viewer/tests/unit/src/viewer/viewerManager.ts",
+                    "packages/tools/viewer/tests/unit/src/viewerReference.ts",
+                    "packages/tools/viewer/tests/unit/tsconfig.json",
+                    "packages/tools/viewer/tests/unit/webpack.config.js",
+                    "packages/tools/viewer/tests/validation/LogoV3.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/BrainStem.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/BrainStemEnv.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/BrainStemTransformation.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/CameraContrast0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/CameraContrast1.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/CameraExposure0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/CameraExposure1.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Control.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/ControlDefault.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Diffuse.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Emissive.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv0-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv0-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv0-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv100-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv100-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv100-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv50-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv50-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/MainColorEnv50-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular0-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular0-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular0-25.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular0-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular0-75.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular100-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular100-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular100-25.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular100-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular100-75.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular25-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular25-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular25-25.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular25-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular25-75.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular50-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular50-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular50-25.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular50-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular50-75.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular75-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular75-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular75-25.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular75-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Specular75-75.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv0-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv0-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv0-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv100-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv100-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv100-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv50-0.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv50-100.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/SpecularEnv50-50.png",
+                    "packages/tools/viewer/tests/validation/ReferenceImages/Transparency.png",
+                    "packages/tools/viewer/tests/validation/config.json",
+                    "packages/tools/viewer/tests/validation/index.css",
+                    "packages/tools/viewer/tests/validation/index.html",
+                    "packages/tools/viewer/tests/validation/integration.js",
+                    "packages/tools/viewer/tests/validation/karma.conf.browserstack.js",
+                    "packages/tools/viewer/tests/validation/karma.conf.js",
+                    "packages/tools/viewer/tests/validation/loading.gif",
+                    "packages/tools/viewer/tests/validation/validate.html",
+                    "packages/tools/viewer/tests/validation/validation.js"
+                ],
+                "tags": []
+            }
+        ],
+        "5.6.1": [
+            {
+                "pr": "12538",
+                "title": "More fix for glTF loader skinning code",
+                "description": "Previous code still had some weird issues as pointed out by the forum: https://forum.babylonjs.com/t/assetcontainer-dispose-throws-typeerror-r-metadata-is-null/30360/9",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12534",
+                "title": "Add Safari 15.4 to Exception list",
+                "description": "This adds two regexp to the exception list, setting antialia off and maxMSAASamples to 1 on safari 15.4 browsers.\nIt ain't pretty. But it'll fix a lot of issues with this version of safari.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12509",
+                "title": "Add a warning when using ignored options with Dashed Lines update.",
+                "description": "From: https://forum.babylonjs.com/t/dashed-line-not-correctly-updated/29250 this is to make the behavior clearer to users.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts"
+                ],
+                "tags": [
+                    "documentation"
+                ]
+            },
+            {
+                "pr": "12515",
+                "title": "Exposed Native Engine capabilities to Babylon.js, fixes morph targets on Babylon Native Android",
+                "description": "## Overview\r\n\r\nMorph targets are currently failing on Babylon Native when running on Android since bgfx does not support Texture2D arrays for Android API BGFX_CONFIG_RENDERER_OPENGLES lower than 31 (currently set to 30). The appropriate way of handling this type of problem would be to check bgfx capabilities and handle it appropriately on the JS side by setting ```canUseTextureForTargets``` property at ```MorphTargetManager```. This PR exposes all capabilities info provided by the Native Engine so they can be accessed by the js NativeEngine and appropriately handled by Babylon.js \r\n\r\n## Aditions\r\n\r\n- Exposed Native engine caps to javascript. \r\n- After this PR gets merged the following [Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1075) can be merged.\r\n- Fixes [Android Morph Targets](https://github.com/BabylonJS/BabylonNative/issues/1049) issue on Babylon Native.  ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12533",
+                "title": "Fix inspector not working after download",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/playground/src/tools/downloadManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12529",
+                "title": "Fix SubMesh IsGlobal",
+                "description": "Currently IsGlobal returns true if the subMesh has all the vertices of the mesh but it should check if the subMesh also has all the indices of the mesh IMO.\r\n\r\nBecause otherwise the mesh's full bounding info is returned by getBoundingInfo when the subMesh has all the vertices **but only some of the indices** of the whole mesh. E.G. the subMeshes created by CreateTiledGround, which shouldn't return the bounding info for the whole mesh but currently are.\r\n\r\nForum discussion w/ test PGs: https://forum.babylonjs.com/t/find-or-define-center-point-of-submesh/30400/3",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12530",
+                "title": "Fix doc for property \"bloomThreshold\"",
+                "description": "Fix the documentation for the property [bloomThreshold](https://doc.babylonjs.com/typedoc/classes/babylon.defaultrenderingpipeline#bloomthreshold) to be the same as the documentation for the [BloomEffect property](https://doc.babylonjs.com/typedoc/classes/babylon.bloomeffect#threshold) that it wraps. Currently the documentation is mistakenly copied from the documentation for the [weight](https://doc.babylonjs.com/typedoc/classes/babylon.bloomeffect#weight) property.\r\n\r\nhttps://forum.babylonjs.com/t/white-texture-seems-overexposure-if-open-bloom-post-process/30384/8",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12498",
+                "title": "Add getNormalsData to AbstractMesh and refactor common part with getP…",
+                "description": "…ositionData\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/how-to-get-vertex-normals-of-mesh-with-skeleton-morph/29959/12\r\n\r\nPlayground: playground.babylonjs.com/#SYQW69#1061",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12526",
+                "title": "Fix a bug in glTF loader when loading skins",
+                "description": "See https://forum.babylonjs.com/t/assetcontainer-dispose-throws-typeerror-r-metadata-is-null/30360",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12527",
+                "title": "Fixed easing function links in API docs",
+                "description": "Ref https://forum.babylonjs.com/t/the-easing-function-link-in-the-api-documentation-may-be-incorrect/30377",
+                "author": {
+                    "name": "cx20",
+                    "url": "https://github.com/cx20"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/easing.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12522",
+                "title": "disable antialias in safari 15.4",
+                "description": "Fixing #12507\n\nThis will match all ua strings that have both AppleWebKit and Safari, and has a reference to the version 15.4\n\nAmong others, the following were (positivly) tested:\n\n```\n// iOS 15.4.1 Chrome 101\nMozilla/5.0 (iPhone; CPU iPhone OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/101.0.4951.44 Mobile/15E148 Safari/604.1\n// iOS 15.4.1 Safari 15.4.1\nMozilla/5.0 (iPhone; CPU iPhone OS 15_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1\n\n// iPadOS 15.4.1 Chrome 101\nMozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/101.0.4951.44 Mobile/15E148 Safari/604.1\n// iPadOS 15.4.1 Safari 15.4.1\nMozilla/5.0 (iPad; CPU OS 15_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15H321 Safari/604.1\n\nMozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15\n```",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12521",
+                "title": "Fix Mirror Reflection in right handed system",
+                "description": "https://forum.babylonjs.com/t/bugs-on-mirrortexture-caused-by-userighthandedsystem-true-flag/29474/7",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12520",
+                "title": "Add a constant for the Snippet Server URL in all dev packages.",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Particles/particleHelper.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/tools/playground/src/globalState.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12519",
+                "title": "Fix: NME TBNBlock world input doesn't work if connected to a vertex node",
+                "description": "This fixes: https://forum.babylonjs.com/t/nme-tbnblock-world-input-doesnt-work-if-connected-to-another-vertex-node-block/30322\r\n\r\nWhole TNBBlock is switched to `Fragment` target type as it already kind of was. And moved to Fragment nodes folder where it now belongs.\r\n\r\nWith this fix in place Playground example [#VL1FPT#8](https://playground.babylonjs.com/#VL1FPT#8) should now work without a shader error.",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12516",
+                "title": "Add sRGB option to MultiRenderTarget",
+                "description": null,
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12518",
+                "title": "Fix Scissor Doc",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineFactory.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "documentation"
+                ]
+            }
+        ],
         "5.6.0": [
             {
                 "pr": "12517",

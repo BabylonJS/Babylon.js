@@ -2,7 +2,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
-import { StartsWith } from "../../Misc/stringTools";
 
 /**
  * Class used to store node based material build state
@@ -397,7 +396,7 @@ export class NodeMaterialBuildState {
         this.sharedData.varyings.push(name);
 
         if (define) {
-            if (StartsWith(define, "defined(")) {
+            if (define.startsWith("defined(")) {
                 this.sharedData.varyingDeclaration += `#if ${define}\r\n`;
             } else {
                 this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
@@ -426,7 +425,7 @@ export class NodeMaterialBuildState {
         this.uniforms.push(name);
 
         if (define) {
-            if (StartsWith(define, "defined(")) {
+            if (define.startsWith("defined(")) {
                 this._uniformDeclaration += `#if ${define}\r\n`;
             } else {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;

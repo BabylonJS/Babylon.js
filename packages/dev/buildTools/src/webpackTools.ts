@@ -93,6 +93,7 @@ export const getRules = (
                         loader: "css-loader",
                         options: {
                             sourceMap: true,
+                            modules: "global",
                         },
                     },
                     {

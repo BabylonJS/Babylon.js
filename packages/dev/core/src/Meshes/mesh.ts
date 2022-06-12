@@ -3188,20 +3188,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
      */
-    public increaseVertices(numberPerEdge: number): void {
+    public increaseVertices(numberPerEdge: number = 1): void {
         const vertex_data = VertexData.ExtractFromMesh(this);
-        const uvs = vertex_data.uvs && !Array.isArray(vertex_data.uvs) && Array.from ? Array.from(vertex_data.uvs) : vertex_data.uvs;
         const currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
         const positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
+        const uvs = vertex_data.uvs && !Array.isArray(vertex_data.uvs) && Array.from ? Array.from(vertex_data.uvs) : vertex_data.uvs;
         const normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
 
-        if (!currentIndices || !positions || !normals || !uvs) {
-            Logger.Warn("VertexData contains null entries");
+        if (!currentIndices || !positions) {
+            Logger.Warn("Couldn't increase number of vertices : VertexData must contain at least indices and positions");
         } else {
             vertex_data.indices = currentIndices;
             vertex_data.positions = positions;
-            vertex_data.normals = normals;
-            vertex_data.uvs = uvs;
+            if (uvs) {
+                vertex_data.uvs = uvs;
+            }
+            if (normals) {
+                vertex_data.normals = normals;
+            }
 
             const segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             const tempIndices: Array<Array<number>> = new Array();
@@ -3218,7 +3222,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const side: Array<Array<Array<number>>> = new Array();
             let len: number;
             let positionPtr: number = positions.length;
-            let uvPtr: number = uvs.length;
+            let uvPtr: number;
+            if (uvs) {
+                uvPtr = uvs.length;
+            }
+            let normalsPtr: number;
+            if (normals) {
+                normalsPtr = normals.length;
+            }
 
             for (let i = 0; i < currentIndices.length; i += 3) {
                 vertexIndex[0] = currentIndices[i];
@@ -3243,22 +3254,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         deltaPosition.x = (positions[3 * b] - positions[3 * a]) / segments;
                         deltaPosition.y = (positions[3 * b + 1] - positions[3 * a + 1]) / segments;
                         deltaPosition.z = (positions[3 * b + 2] - positions[3 * a + 2]) / segments;
-                        deltaNormal.x = (normals[3 * b] - normals[3 * a]) / segments;
-                        deltaNormal.y = (normals[3 * b + 1] - normals[3 * a + 1]) / segments;
-                        deltaNormal.z = (normals[3 * b + 2] - normals[3 * a + 2]) / segments;
-                        deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
-                        deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
+                        if (normals) {
+                            deltaNormal.x = (normals[3 * b] - normals[3 * a]) / segments;
+                            deltaNormal.y = (normals[3 * b + 1] - normals[3 * a + 1]) / segments;
+                            deltaNormal.z = (normals[3 * b + 2] - normals[3 * a + 2]) / segments;
+                        }
+                        if (uvs) {
+                            deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
+                            deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
+                        }
                         side[a][b].push(a);
                         for (let k = 1; k < segments; k++) {
                             side[a][b].push(positions.length / 3);
-                            positions[positionPtr] = positions[3 * a] + k * deltaPosition.x;
-                            normals[positionPtr++] = normals[3 * a] + k * deltaNormal.x;
-                            positions[positionPtr] = positions[3 * a + 1] + k * deltaPosition.y;
-                            normals[positionPtr++] = normals[3 * a + 1] + k * deltaNormal.y;
-                            positions[positionPtr] = positions[3 * a + 2] + k * deltaPosition.z;
-                            normals[positionPtr++] = normals[3 * a + 2] + k * deltaNormal.z;
-                            uvs[uvPtr++] = uvs[2 * a] + k * deltaUV.x;
-                            uvs[uvPtr++] = uvs[2 * a + 1] + k * deltaUV.y;
+                            positions[positionPtr++] = positions[3 * a] + k * deltaPosition.x;
+                            positions[positionPtr++] = positions[3 * a + 1] + k * deltaPosition.y;
+                            positions[positionPtr++] = positions[3 * a + 2] + k * deltaPosition.z;
+                            if (normals) {
+                                normals[normalsPtr!++] = normals[3 * a] + k * deltaNormal.x;
+                                normals[normalsPtr!++] = normals[3 * a + 1] + k * deltaNormal.y;
+                                normals[normalsPtr!++] = normals[3 * a + 2] + k * deltaNormal.z;
+                            }
+                            if (uvs) {
+                                uvs[uvPtr!++] = uvs[2 * a] + k * deltaUV.x;
+                                uvs[uvPtr!++] = uvs[2 * a + 1] + k * deltaUV.y;
+                            }
                         }
                         side[a][b].push(b);
                         side[b][a] = new Array();
@@ -3278,21 +3297,29 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     deltaPosition.x = (positions[3 * tempIndices[k][k]] - positions[3 * tempIndices[k][0]]) / k;
                     deltaPosition.y = (positions[3 * tempIndices[k][k] + 1] - positions[3 * tempIndices[k][0] + 1]) / k;
                     deltaPosition.z = (positions[3 * tempIndices[k][k] + 2] - positions[3 * tempIndices[k][0] + 2]) / k;
-                    deltaNormal.x = (normals[3 * tempIndices[k][k]] - normals[3 * tempIndices[k][0]]) / k;
-                    deltaNormal.y = (normals[3 * tempIndices[k][k] + 1] - normals[3 * tempIndices[k][0] + 1]) / k;
-                    deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
-                    deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
-                    deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
+                    if (normals) {
+                        deltaNormal.x = (normals[3 * tempIndices[k][k]] - normals[3 * tempIndices[k][0]]) / k;
+                        deltaNormal.y = (normals[3 * tempIndices[k][k] + 1] - normals[3 * tempIndices[k][0] + 1]) / k;
+                        deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
+                    }
+                    if (uvs) {
+                        deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
+                        deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
+                    }
                     for (let j = 1; j < k; j++) {
                         tempIndices[k][j] = positions.length / 3;
-                        positions[positionPtr] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
-                        normals[positionPtr++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
-                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 1] + j * deltaPosition.y;
-                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 1] + j * deltaNormal.y;
-                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 2] + j * deltaPosition.z;
-                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 2] + j * deltaNormal.z;
-                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0]] + j * deltaUV.x;
-                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0] + 1] + j * deltaUV.y;
+                        positions[positionPtr++] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
+                        positions[positionPtr++] = positions[3 * tempIndices[k][0] + 1] + j * deltaPosition.y;
+                        positions[positionPtr++] = positions[3 * tempIndices[k][0] + 2] + j * deltaPosition.z;
+                        if (normals) {
+                            normals[normalsPtr!++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
+                            normals[normalsPtr!++] = normals[3 * tempIndices[k][0] + 1] + j * deltaNormal.y;
+                            normals[normalsPtr!++] = normals[3 * tempIndices[k][0] + 2] + j * deltaNormal.z;
+                        }
+                        if (uvs) {
+                            uvs[uvPtr!++] = uvs[2 * tempIndices[k][0]] + j * deltaUV.x;
+                            uvs[uvPtr!++] = uvs[2 * tempIndices[k][0] + 1] + j * deltaUV.y;
+                        }
                     }
                 }
                 tempIndices[segments] = side[currentIndices[i + 1]][currentIndices[i + 2]];
@@ -3667,7 +3694,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
             serializationObject.thinInstances = {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
-                matrixData: Tools.SliceToArray(this._thinInstanceDataStorage.matrixData),
+                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
                 matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
                 enablePicking: this.thinInstanceEnablePicking,
             };
@@ -3680,7 +3707,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 };
 
                 for (const kind in this._userThinInstanceBuffersStorage.data) {
-                    userThinInstance.data[kind] = Tools.SliceToArray(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
                     userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
                     userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
                 }

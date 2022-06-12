@@ -2,7 +2,6 @@ import { HDRTools } from "../../../Misc/HighDynamicRange/hdr";
 import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { EndsWith } from "../../../Misc/stringTools";
 import { Constants } from "../../../Engines/constants";
 
 /**
@@ -22,7 +21,7 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return EndsWith(extension, ".hdr");
+        return extension.endsWith(".hdr");
     }
 
     /**

@@ -270,14 +270,18 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets a boolean indicating if objects roughness are enabled in the G buffer.
+     * Gets a boolean indicating if objects reflectivity are enabled in the G buffer.
      */
     public get enableReflectivity(): boolean {
         return this._enableReflectivity;
     }
 
     /**
-     * Sets whether or not objects roughness are enabled for the G buffer.
+     * Sets whether or not objects reflectivity are enabled for the G buffer.
+     * For Metallic-Roughness workflow with ORM texture, we assume that ORM texture is defined according to the default layout:
+     * pbr.useRoughnessFromMetallicTextureAlpha = false;
+     * pbr.useRoughnessFromMetallicTextureGreen = true;
+     * pbr.useMetallnessFromMetallicTextureBlue = true;
      */
     public set enableReflectivity(enable: boolean) {
         this._enableReflectivity = enable;
@@ -360,14 +364,119 @@ export class GeometryBufferRenderer {
             }
 
             if (this._enableReflectivity) {
-                if (material.specularTexture) {
-                    defines.push("#define HAS_SPECULAR");
-                    defines.push(`#define REFLECTIVITY_UV${material.specularTexture.coordinatesIndex + 1}`);
-                    needUv = true;
-                } else if (material.reflectivityTexture) {
-                    defines.push("#define HAS_REFLECTIVITY");
-                    defines.push(`#define REFLECTIVITY_UV${material.reflectivityTexture.coordinatesIndex + 1}`);
-                    needUv = true;
+                let metallicWorkflow = false;
+                // for PBR materials: cf. https://doc.babylonjs.com/divingDeeper/materials/using/masterPBR
+                if (material.getClassName() === "PBRMetallicRoughnessMaterial") {
+                    // if it is a PBR material in MetallicRoughness Mode:
+                    if (material.metallicRoughnessTexture !== null) {
+                        defines.push("#define ORMTEXTURE");
+                        defines.push(`#define REFLECTIVITY_UV${material.metallicRoughnessTexture.coordinatesIndex + 1}`);
+                        defines.push("#define METALLICWORKFLOW");
+                        needUv = true;
+                        metallicWorkflow = true;
+                    }
+                    if (material.metallic !== null) {
+                        defines.push("#define METALLIC");
+                        defines.push("#define METALLICWORKFLOW");
+                        metallicWorkflow = true;
+                    }
+                    if (material.roughness !== null) {
+                        defines.push("#define ROUGHNESS");
+                        defines.push("#define METALLICWORKFLOW");
+                        metallicWorkflow = true;
+                    }
+                    if (metallicWorkflow) {
+                        if (material.baseTexture !== null) {
+                            defines.push("#define ALBEDOTEXTURE");
+                            defines.push(`#define ALBEDO_UV${material.baseTexture.coordinatesIndex + 1}`);
+                            if (material.baseTexture.gammaSpace) {
+                                defines.push("#define GAMMAALBEDO");
+                            }
+                            needUv = true;
+                        }
+                        if (material.baseColor !== null) {
+                            defines.push("#define ALBEDOCOLOR");
+                        }
+                    }
+                } else if (material.getClassName() === "PBRSpecularGlossinessMaterial") {
+                    // if it is a PBR material in Specular/Glossiness Mode:
+                    if (material.specularGlossinessTexture !== null) {
+                        defines.push("#define SPECULARGLOSSINESSTEXTURE");
+                        defines.push(`#define REFLECTIVITY_UV${material.specularGlossinessTexture.coordinatesIndex + 1}`);
+                        needUv = true;
+                        if (material.specularGlossinessTexture.gammaSpace) {
+                            defines.push("#define GAMMAREFLECTIVITYTEXTURE");
+                        }
+                    } else {
+                        if (material.specularColor !== null) {
+                            defines.push("#define REFLECTIVITYCOLOR");
+                        }
+                    }
+                    if (material.glossiness !== null) {
+                        defines.push("#define GLOSSINESSS");
+                    }
+                } else if (material.getClassName() === "PBRMaterial") {
+                    // if it is the bigger PBRMaterial
+                    if (material.metallicTexture !== null) {
+                        defines.push("#define ORMTEXTURE");
+                        defines.push(`#define REFLECTIVITY_UV${material.metallicTexture.coordinatesIndex + 1}`);
+                        defines.push("#define METALLICWORKFLOW");
+                        needUv = true;
+                        metallicWorkflow = true;
+                    }
+                    if (material.metallic !== null) {
+                        defines.push("#define METALLIC");
+                        defines.push("#define METALLICWORKFLOW");
+                        metallicWorkflow = true;
+                    }
+
+                    if (material.roughness !== null) {
+                        defines.push("#define ROUGHNESS");
+                        defines.push("#define METALLICWORKFLOW");
+                        metallicWorkflow = true;
+                    }
+
+                    if (metallicWorkflow) {
+                        if (material.albedoTexture !== null) {
+                            defines.push("#define ALBEDOTEXTURE");
+                            defines.push(`#define ALBEDO_UV${material.albedoTexture.coordinatesIndex + 1}`);
+                            if (material.albedoTexture.gammaSpace) {
+                                defines.push("#define GAMMAALBEDO");
+                            }
+                            needUv = true;
+                        }
+                        if (material.albedoColor !== null) {
+                            defines.push("#define ALBEDOCOLOR");
+                        }
+                    } else {
+                        // SpecularGlossiness Model
+                        if (material.reflectivityTexture !== null) {
+                            defines.push("#define SPECULARGLOSSINESSTEXTURE");
+                            defines.push(`#define REFLECTIVITY_UV${material.reflectivityTexture.coordinatesIndex + 1}`);
+                            if (material.reflectivityTexture.gammaSpace) {
+                                defines.push("#define GAMMAREFLECTIVITYTEXTURE");
+                            }
+                            needUv = true;
+                        } else if (material.reflectivityColor !== null) {
+                            defines.push("#define REFLECTIVITYCOLOR");
+                        }
+                        if (material.microSurface !== null) {
+                            defines.push("#define GLOSSINESSS");
+                        }
+                    }
+                } else if (material.getClassName() === "StandardMaterial") {
+                    // if StandardMaterial:
+                    if (material.specularTexture !== null) {
+                        defines.push("#define REFLECTIVITYTEXTURE");
+                        defines.push(`#define REFLECTIVITY_UV${material.specularTexture.coordinatesIndex + 1}`);
+                        if (material.specularTexture.gammaSpace) {
+                            defines.push("#define GAMMAREFLECTIVITYTEXTURE");
+                        }
+                        needUv = true;
+                    }
+                    if (material.specularColor !== null) {
+                        defines.push("#define REFLECTIVITYCOLOR");
+                    }
                 }
             }
 
@@ -483,13 +592,18 @@ export class GeometryBufferRenderer {
                             "mPreviousBones",
                             "bumpMatrix",
                             "reflectivityMatrix",
+                            "albedoMatrix",
+                            "reflectivityColor",
+                            "albedoColor",
+                            "metallic",
+                            "glossiness",
                             "vTangentSpaceParams",
                             "vBumpInfos",
                             "morphTargetInfluences",
                             "morphTargetTextureInfo",
                             "morphTargetTextureIndices",
                         ],
-                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
+                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets"],
                         defines: join,
                         onCompiled: null,
                         fallbacks: null,
@@ -704,14 +818,85 @@ export class GeometryBufferRenderer {
                         effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
                     }
 
-                    // Roughness
+                    // Reflectivity
                     if (this._enableReflectivity) {
-                        if (material.specularTexture) {
-                            effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
-                            effect.setTexture("reflectivitySampler", material.specularTexture);
-                        } else if (material.reflectivityTexture) {
-                            effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
-                            effect.setTexture("reflectivitySampler", material.reflectivityTexture);
+                        // for PBR materials: cf. https://doc.babylonjs.com/divingDeeper/materials/using/masterPBR
+                        if (material.getClassName() === "PBRMetallicRoughnessMaterial") {
+                            // if it is a PBR material in MetallicRoughness Mode:
+                            if (material.metallicRoughnessTexture !== null) {
+                                effect.setTexture("reflectivitySampler", material.metallicRoughnessTexture);
+                                effect.setMatrix("reflectivityMatrix", material.metallicRoughnessTexture.getTextureMatrix());
+                            }
+                            if (material.metallic !== null) {
+                                effect.setFloat("metallic", material.metallic);
+                            }
+                            if (material.roughness !== null) {
+                                effect.setFloat("glossiness", 1.0 - material.roughness);
+                            }
+                            if (material.baseTexture !== null) {
+                                effect.setTexture("albedoSampler", material.baseTexture);
+                                effect.setMatrix("albedoMatrix", material.baseTexture.getTextureMatrix());
+                            }
+                            if (material.baseColor !== null) {
+                                effect.setColor3("albedoColor", material.baseColor);
+                            }
+                        } else if (material.getClassName() === "PBRSpecularGlossinessMaterial") {
+                            // if it is a PBR material in Specular/Glossiness Mode:
+                            if (material.specularGlossinessTexture !== null) {
+                                effect.setTexture("reflectivitySampler", material.specularGlossinessTexture);
+                                effect.setMatrix("reflectivityMatrix", material.specularGlossinessTexture.getTextureMatrix());
+                            } else {
+                                if (material.specularColor !== null) {
+                                    effect.setColor3("reflectivityColor", material.specularColor);
+                                }
+                            }
+                            if (material.glossiness !== null) {
+                                effect.setFloat("glossiness", material.glossiness);
+                            }
+                        } else if (material.getClassName() === "PBRMaterial") {
+                            // if it is the bigger PBRMaterial
+                            if (material.metallicTexture !== null) {
+                                effect.setTexture("reflectivitySampler", material.metallicTexture);
+                                effect.setMatrix("reflectivityMatrix", material.metallicTexture.getTextureMatrix());
+                            }
+                            if (material.metallic !== null) {
+                                effect.setFloat("metallic", material.metallic);
+                            }
+
+                            if (material.roughness !== null) {
+                                effect.setFloat("glossiness", 1.0 - material.roughness);
+                            }
+
+                            if (material.roughness !== null || material.metallic !== null || material.metallicTexture !== null) {
+                                // MetallicRoughness Model
+                                if (material.albedoTexture !== null) {
+                                    effect.setTexture("albedoSampler", material.albedoTexture);
+                                    effect.setMatrix("albedoMatrix", material.albedoTexture.getTextureMatrix());
+                                }
+                                if (material.albedoColor !== null) {
+                                    effect.setColor3("albedoColor", material.albedoColor);
+                                }
+                            } else {
+                                // SpecularGlossiness Model
+                                if (material.reflectivityTexture !== null) {
+                                    effect.setTexture("reflectivitySampler", material.reflectivityTexture);
+                                    effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
+                                } else if (material.reflectivityColor !== null) {
+                                    effect.setColor3("reflectivityColor", material.reflectivityColor);
+                                }
+                                if (material.microSurface !== null) {
+                                    effect.setFloat("glossiness", material.microSurface);
+                                }
+                            }
+                        } else if (material.getClassName() === "StandardMaterial") {
+                            // if StandardMaterial:
+                            if (material.specularTexture !== null) {
+                                effect.setTexture("reflectivitySampler", material.specularTexture);
+                                effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
+                            }
+                            if (material.specularColor !== null) {
+                                effect.setColor3("reflectivityColor", material.specularColor);
+                            }
                         }
                     }
                 }

@@ -1083,6 +1083,43 @@ export class Vector3 {
     }
 
     /**
+     * Rotates the vector using the given unit quaternion and stores the new vector in result
+     * @param q the unit quaternion representing the rotation
+     * @param result the output vector
+     * @returns the current Vector3
+     */
+    public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
+        const ix = q.w * this.x + q.y * this.z - q.z * this.y;
+        const iy = q.w * this.y + q.z * this.x - q.x * this.z;
+        const iz = q.w * this.z + q.x * this.y - q.y * this.x;
+        const iw = -q.x * this.x - q.y * this.y - q.z * this.z;
+
+        result.x = ix * q.w + iw * -q.x + iy * -q.z - iz * -q.y;
+        result.y = iy * q.w + iw * -q.y + iz * -q.x - ix * -q.z;
+        result.z = iz * q.w + iw * -q.z + ix * -q.y - iy * -q.x;
+
+        return result;
+    }
+
+    /**
+     * Rotates the vector in place using the given unit quaternion
+     * @param q the unit quaternion representing the rotation
+     * @returns the current updated Vector3
+     */
+    public applyRotationQuaternionInPlace(q: Quaternion): Vector3 {
+        return this.applyRotationQuaternionToRef(q, this);
+    }
+
+    /**
+     * Rotates the vector using the given unit quaternion and returns the new vector
+     * @param q the unit quaternion representing the rotation
+     * @returns a new Vector3
+     */
+    public applyRotationQuaternion(q: Quaternion): Vector3 {
+        return this.applyRotationQuaternionToRef(q, Vector3.Zero());
+    }
+
+    /**
      * Scale the current Vector3 values by a factor and add the result to a given Vector3
      * @param scale defines the scale factor
      * @param result defines the Vector3 object where to store the result
@@ -3576,6 +3613,7 @@ export class Quaternion {
         this._w += other._w;
         return this;
     }
+
     /**
      * Subtract two quaternions
      * @param other defines the second operand
@@ -3583,6 +3621,19 @@ export class Quaternion {
      */
     public subtract(other: Quaternion): Quaternion {
         return new Quaternion(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
+    }
+
+    /**
+     * Subtract a quaternion to the current one
+     * @param other defines the quaternion to subtract
+     * @returns the current quaternion
+     */
+    public subtractInPlace(other: DeepImmutable<Quaternion>): Quaternion {
+        this._x -= other._x;
+        this._y -= other._y;
+        this._z -= other._z;
+        this._w -= other._w;
+        return this;
     }
 
     /**
@@ -3646,6 +3697,7 @@ export class Quaternion {
         this.multiplyToRef(q1, result);
         return result;
     }
+
     /**
      * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
      * @param q1 defines the second operand
@@ -3697,8 +3749,43 @@ export class Quaternion {
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
-        const result = new Quaternion(-this._x, -this._y, -this._z, this._w);
-        return result;
+        return new Quaternion(-this._x, -this._y, -this._z, this._w);
+    }
+
+    /**
+     * Returns the inverse of the current quaternion
+     * @returns a new quaternion
+     */
+    public invert(): Quaternion {
+        const conjugate = this.conjugate();
+        const lengthSquared = this.lengthSquared();
+        if (lengthSquared == 0 || lengthSquared == 1) {
+            return conjugate;
+        }
+        conjugate.scaleInPlace(1 / lengthSquared);
+        return conjugate;
+    }
+
+    /**
+     * Invert in place the current quaternion
+     * @returns this quaternion
+     */
+    public invertInPlace(): Quaternion {
+        this.conjugateInPlace();
+        const lengthSquared = this.lengthSquared();
+        if (lengthSquared == 0 || lengthSquared == 1) {
+            return this;
+        }
+        this.scaleInPlace(1 / lengthSquared);
+        return this;
+    }
+
+    /**
+     * Gets squared length of current quaternion
+     * @returns the quaternion length (float)
+     */
+    public lengthSquared(): number {
+        return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
     }
 
     /**
@@ -3706,7 +3793,7 @@ export class Quaternion {
      * @returns the quaternion length (float)
      */
     public length(): number {
-        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
+        return Math.sqrt(this.lengthSquared());
     }
 
     /**
@@ -3715,17 +3802,27 @@ export class Quaternion {
      */
     public normalize(): Quaternion {
         const len = this.length();
-
         if (len === 0) {
             return this;
         }
 
         const inv = 1.0 / len;
-        this.x *= inv;
-        this.y *= inv;
-        this.z *= inv;
-        this.w *= inv;
+        this.scaleInPlace(inv);
         return this;
+    }
+
+    /**
+     * Normalize a copy of the current quaternion
+     * @returns the normalized quaternion
+     */
+    public normalizeToNew(): Quaternion {
+        const len = this.length();
+        if (len === 0) {
+            return this.clone();
+        }
+
+        const inv = 1.0 / len;
+        return this.scale(inv);
     }
 
     /**
@@ -3751,11 +3848,6 @@ export class Quaternion {
         const qy = this._y;
         const qw = this._w;
 
-        const sqw = qw * qw;
-        const sqz = qz * qz;
-        const sqx = qx * qx;
-        const sqy = qy * qy;
-
         const zAxisY = qy * qz - qx * qw;
         const limit = 0.4999999;
 
@@ -3768,8 +3860,12 @@ export class Quaternion {
             result.x = -Math.PI / 2;
             result.z = 0;
         } else {
+            const sqw = qw * qw;
+            const sqz = qz * qz;
+            const sqx = qx * qx;
+            const sqy = qy * qy;
             result.z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
-            result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
+            result.x = Math.asin(-2.0 * zAxisY);
             result.y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
         }
 

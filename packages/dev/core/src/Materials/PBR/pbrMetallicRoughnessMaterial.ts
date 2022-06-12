@@ -108,6 +108,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
         serializationObject.subSurface = this.subSurface.serialize();
+        serializationObject.iridescence = this.iridescence.serialize();
 
         return serializationObject;
     }
@@ -134,6 +135,9 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         }
         if (source.subSurface) {
             material.subSurface.parse(source.subSurface, scene, rootUrl);
+        }
+        if (source.iridescence) {
+            material.iridescence.parse(source.iridescence, scene, rootUrl);
         }
         return material;
     }

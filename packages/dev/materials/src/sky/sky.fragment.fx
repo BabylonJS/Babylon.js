@@ -163,7 +163,7 @@ void main(void) {
 	retColor.rgb *= vColor.rgb;
 #endif
 
-#ifdef VERTEXALPHA
+#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
 	alpha *= vColor.a;
 #endif
 

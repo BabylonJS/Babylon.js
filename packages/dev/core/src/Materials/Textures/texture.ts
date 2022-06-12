@@ -11,7 +11,7 @@ import type { ThinEngine } from "../../Engines/thinEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
-import { EncodeArrayBufferToBase64, StartsWith } from "../../Misc/stringTools";
+import { EncodeArrayBufferToBase64 } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 import { InternalTexture } from "./internalTexture";
@@ -316,6 +316,7 @@ export class Texture extends BaseTexture {
     private _loaderOptions?: any;
     private _creationFlags?: number;
     private _useSRGBBuffer?: boolean;
+    private _forcedExtension?: string;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -364,6 +365,7 @@ export class Texture extends BaseTexture {
      * @param mimeType defines an optional mime type information
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param forcedExtension defines the extension to use to pick the right loader
      */
     constructor(
         url: Nullable<string>,
@@ -378,7 +380,8 @@ export class Texture extends BaseTexture {
         format?: number,
         mimeType?: string,
         loaderOptions?: any,
-        creationFlags?: number
+        creationFlags?: number,
+        forcedExtension?: string
     ) {
         super(sceneOrEngine);
 
@@ -416,6 +419,7 @@ export class Texture extends BaseTexture {
         this._loaderOptions = loaderOptions;
         this._creationFlags = creationFlags;
         this._useSRGBBuffer = useSRGBBuffer;
+        this._forcedExtension = forcedExtension;
         if (format) {
             this._format = format;
         }
@@ -493,7 +497,7 @@ export class Texture extends BaseTexture {
                         this._buffer,
                         undefined,
                         this._format,
-                        null,
+                        this._forcedExtension,
                         mimeType,
                         loaderOptions,
                         creationFlags,
@@ -530,18 +534,20 @@ export class Texture extends BaseTexture {
      * @param url the url of the texture
      * @param buffer the buffer of the texture (defaults to null)
      * @param onLoad callback called when the texture is loaded  (defaults to null)
+     * @param forcedExtension defines the extension to use to pick the right loader
      */
-    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
+    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, onLoad?: () => void, forcedExtension?: string): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        if (!this.name || StartsWith(this.name, "data:")) {
+        if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
         }
         this.url = url;
         this._buffer = buffer;
+        this._forcedExtension = forcedExtension;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
         if (onLoad) {
@@ -581,7 +587,7 @@ export class Texture extends BaseTexture {
                     this._buffer,
                     null,
                     this._format,
-                    null,
+                    this._forcedExtension,
                     this._mimeType,
                     this._loaderOptions,
                     this._creationFlags,
@@ -847,12 +853,12 @@ export class Texture extends BaseTexture {
         const savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
-            if (StartsWith(this.name, "data:")) {
+            if (this.name.startsWith("data:")) {
                 this.name = "";
             }
         }
 
-        if (StartsWith(this.name, "data:") && this.url === this.name) {
+        if (this.name.startsWith("data:") && this.url === this.name) {
             this.url = "";
         }
 
@@ -866,9 +872,9 @@ export class Texture extends BaseTexture {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
-            } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
+            } else if (this.url && this.url.startsWith("data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
-            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:")) || this._forceSerialize) {
+            } else if (Texture.ForceSerializeBuffers || (this.url && this.url.startsWith("blob:")) || this._forceSerialize) {
                 serializationObject.base64String =
                     !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
@@ -1018,7 +1024,7 @@ export class Texture extends BaseTexture {
                             url = rootUrl + parsedTexture.name;
                         }
 
-                        if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                        if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
                         texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);

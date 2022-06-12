@@ -1,7 +1,7 @@
 import type { IPipelineContext } from "../IPipelineContext";
 import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { ThinEngine } from "../thinEngine";
 
 /** @hidden */
@@ -474,6 +474,19 @@ export class WebGLPipelineContext implements IPipelineContext {
     public setVector4(uniformName: string, vector4: IVector4Like): void {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
             if (!this.engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Quaternion on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param quaternion Value to be set.
+     */
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
+        if (this._cacheFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName], quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
                 this._valueCache[uniformName] = null;
             }
         }

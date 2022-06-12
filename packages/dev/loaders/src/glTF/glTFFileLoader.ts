@@ -28,8 +28,8 @@ import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
-import { StringTools } from "core/Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
+import { TransformNode } from "core/Meshes/transformNode";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -310,6 +310,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/divingDeeper/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     * @param node - the transform node that corresponds to the original glTF skin node used for animations
+     * @param skinnedNode - the transform node that is the skinned mesh itself or the parent of the skinned meshes
+     */
+    public readonly onSkinLoadedObservable = new Observable<{ node: TransformNode; skinnedNode: TransformNode }>();
+
+    /**
      * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
     public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
@@ -537,6 +545,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         this.preprocessUrlAsync = (url) => Promise.resolve(url);
 
         this.onMeshLoadedObservable.clear();
+        this.onSkinLoadedObservable.clear();
         this.onTextureLoadedObservable.clear();
         this.onMaterialLoadedObservable.clear();
         this.onCameraLoadedObservable.clear();
@@ -749,10 +758,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public canDirectLoad(data: string): boolean {
         return (
             (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
-            StringTools.StartsWith(data, "data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith("data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         );
     }
 
@@ -763,10 +772,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public directLoad(scene: Scene, data: string): Promise<any> {
         if (
-            StringTools.StartsWith(data, "base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, ";base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith(";base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 

@@ -71,9 +71,7 @@ import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
-
 import { BoundingInfo } from "core/Culling/boundingInfo";
-import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
 
 interface TypedArrayLike extends ArrayBufferView {
@@ -133,7 +131,7 @@ export class ArrayItem {
  */
 export class GLTFLoader implements IGLTFLoader {
     /** @hidden */
-    public _completePromises = new Array<Promise<any>>();
+    public readonly _completePromises = new Array<Promise<any>>();
 
     /** @hidden */
     public _assetContainer: Nullable<AssetContainer> = null;
@@ -155,7 +153,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
-    private _postSceneLoadActions = new Array<() => void>();
+    private readonly _postSceneLoadActions = new Array<() => void>();
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -348,7 +346,7 @@ export class GLTFLoader implements IGLTFLoader {
         return Promise.resolve()
             .then(() => {
                 this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
 
                 this._loadExtensions();
@@ -800,16 +798,6 @@ export class GLTFLoader implements IGLTFLoader {
                     this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
-                        // Duplicate the metadata from the skin node to the skinned mesh in case any loader extension added metadata.
-                        babylonTransformNode.metadata = babylonTransformNodeForSkin.metadata;
-
-                        // Add a reference to the skinned mesh from the transform node.
-                        babylonTransformNodeForSkin.metadata.gltf.skinnedMesh = babylonTransformNode;
-                        babylonTransformNode.onDisposeObservable.addOnce(() => {
-                            // Delete the reference when the skinned mesh is disposed.
-                            delete babylonTransformNodeForSkin.metadata.gltf.skinnedMesh;
-                        });
-
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(
                             this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
@@ -831,6 +819,8 @@ export class GLTFLoader implements IGLTFLoader {
                                     } else {
                                         babylonTransformNode.parent = this._rootBabylonMesh;
                                     }
+
+                                    this._parent.onSkinLoadedObservable.notifyObservers({ node: babylonTransformNodeForSkin, skinnedNode: babylonTransformNode });
                                 });
                             })
                         );
@@ -1682,6 +1672,7 @@ export class GLTFLoader implements IGLTFLoader {
                             inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
                             value: key.value[targetIndex],
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined,
+                            interpolation: key.interpolation,
                         }))
                     );
 

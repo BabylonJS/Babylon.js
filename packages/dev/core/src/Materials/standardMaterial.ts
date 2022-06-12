@@ -1364,6 +1364,7 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.fallbackRank = 0;
             this._eventInfo.defines = defines;
             this._eventInfo.uniforms = uniforms;
+            this._eventInfo.attributes = attribs;
             this._eventInfo.samplers = samplers;
             this._eventInfo.uniformBuffersNames = uniformBuffers;
             this._eventInfo.customCode = undefined;
@@ -1745,7 +1746,13 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // View
-            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || this._reflectionTexture || this._refractionTexture || mesh.receiveShadows) {
+            if (
+                (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) ||
+                this._reflectionTexture ||
+                this._refractionTexture ||
+                mesh.receiveShadows ||
+                defines.PREPASS
+            ) {
                 this.bindView(effect);
             }
 

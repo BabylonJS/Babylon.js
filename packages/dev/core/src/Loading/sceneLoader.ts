@@ -19,7 +19,6 @@ import { IsBase64DataUrl } from "../Misc/fileTools";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Geometry } from "../Meshes/geometry";
 import type { Light } from "../Lights/light";
-import { StartsWith } from "../Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 /**
@@ -623,7 +622,7 @@ export class SceneLoader {
             url = `file:${sceneFile.name}`;
             name = sceneFile.name;
             file = sceneFile;
-        } else if (typeof sceneFilename === "string" && StartsWith(sceneFilename, "data:")) {
+        } else if (typeof sceneFilename === "string" && sceneFilename.startsWith("data:")) {
             url = sceneFilename;
             name = "";
         } else {
