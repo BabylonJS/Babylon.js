@@ -296,7 +296,7 @@ export class SubMesh implements ICullable {
 
     /**
      * Returns the submesh material
-     * @param getDefaultMaterial Defines whether or not to get the default material is nothing has been defined.
+     * @param getDefaultMaterial Defines whether or not to get the default material if nothing has been defined.
      * @returns null or the current material
      */
     public getMaterial(getDefaultMaterial = true): Nullable<Material> {
