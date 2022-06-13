@@ -12,6 +12,7 @@ interface ITextInputComponentProps {
     isNumber?: boolean;
     complement?: string;
     onValueAsNumberChanged?: (value: number, isFocused: boolean) => void;
+    disabled?: boolean;
 }
 
 interface ITextInputComponentState {
@@ -103,6 +104,7 @@ export class TextInputComponent extends React.Component<ITextInputComponentProps
                 onKeyPress={(evt) => this._onKeyPress(evt)}
                 value={(this.state.value || "") + (!this.state.isFocused && this.props.complement ? this.props.complement : "")}
                 id={this.props.id}
+                disabled={this.props.disabled}
             ></input>
         );
     }
