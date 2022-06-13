@@ -799,6 +799,8 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
     /** @hidden */
+    public _callbackPluginEventPrepareDefinesBeforeAttributes: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;    
+    /** @hidden */
     public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void 0;
     /** @hidden */
     public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void 0;

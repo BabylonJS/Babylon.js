@@ -95,7 +95,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialAnisotropicDefines, scene: Scene, mesh: AbstractMesh): void {
+    public prepareDefinesBeforeAttributes(defines: MaterialAnisotropicDefines, scene: Scene, mesh: AbstractMesh): void {
         if (this._isEnabled) {
             defines.ANISOTROPIC = this._isEnabled;
             if (this._isEnabled && !mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
