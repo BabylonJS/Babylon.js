@@ -68,6 +68,9 @@ export class SceneComponentConstants {
     public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
 
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
+    public static readonly STEP_BEFORECLEAR_PREPASS = 1;
+
+    public static readonly STEP_BEFORERENDERTARGETCLEAR_PREPASS = 0;
 
     public static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS = 0;
     public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 1;
@@ -86,9 +89,6 @@ export class SceneComponentConstants {
     public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
-
-    public static readonly STEP_BEFORECLEARSTAGE_PREPASS = 0;
-    public static readonly STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS = 0;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
