@@ -338,7 +338,11 @@ export class MaterialPluginManager {
                         const rx = new RegExp(pointName.substring(1), "g");
                         let match = rx.exec(code);
                         while (match !== null) {
-                            code = code.replace(match[0], injectedCode);
+                            let newCode = injectedCode;
+                            for (let i = 0; i < match.length; ++i) {
+                                newCode = newCode.replace("$" + i, match[i]);
+                            }
+                            code = code.replace(match[0], newCode);
                             match = rx.exec(code);
                         }
                     } else {
