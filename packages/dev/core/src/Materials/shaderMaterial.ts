@@ -1340,10 +1340,6 @@ export class ShaderMaterial extends PushMaterial {
             result.setArray4(key, this._vectors4Arrays[key]);
         }
 
-        for (const key in this._vectors4Arrays) {
-            result.setArray4(key, this._quaternionsArrays[key]);
-        }
-
         // Uniform buffers
         for (const key in this._uniformBuffers) {
             result.setUniformBuffer(key, this._uniformBuffers[key]);
