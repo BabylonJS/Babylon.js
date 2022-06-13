@@ -1178,7 +1178,7 @@ export class StandardMaterial extends PushMaterial {
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
-        // External config        
+        // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect
