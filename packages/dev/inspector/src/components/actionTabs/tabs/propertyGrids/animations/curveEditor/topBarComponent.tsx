@@ -97,9 +97,14 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
                     value={this.state.keyFrameValue}
                     tooltip="Frame"
                     id="key-frame"
-                    onValueAsNumberChanged={(newValue) => this.props.context.onFrameManuallyEntered.notifyObservers(newValue)}
+                    onValueAsNumberChanged={(newValue) => {
+                        if (newValue !== 0) {
+                            this.props.context.onFrameManuallyEntered.notifyObservers(newValue);
+                        }
+                    }}
                     globalState={this.props.globalState}
                     context={this.props.context}
+                    disabled={parseFloat(this.state.keyFrameValue) === 0}
                 />
                 <TextInputComponent
                     className={hasActiveAnimations && this.state.valueControlEnabled ? "" : "disabled"}
