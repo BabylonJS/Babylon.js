@@ -1819,16 +1819,19 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.DEBUGMODE = this._debugMode;
         }
 
-        // External config
-        this._eventInfo.defines = defines;
-        this._eventInfo.mesh = mesh;
-        this._callbackPluginEventPrepareDefines(this._eventInfo);
-
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
     }
 
     /**
