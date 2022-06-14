@@ -20,7 +20,7 @@ interface IGLTFBinaryExtensionImage {
     width: number;
 }
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
