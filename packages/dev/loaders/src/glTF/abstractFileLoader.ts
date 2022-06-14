@@ -28,7 +28,7 @@ interface IFileRequestInfo extends IFileRequest {
     _total?: number;
 }
 
-function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: number): Promise<Uint8Array> {
+export function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: number): Promise<Uint8Array> {
     try {
         return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength));
     } catch (e) {
