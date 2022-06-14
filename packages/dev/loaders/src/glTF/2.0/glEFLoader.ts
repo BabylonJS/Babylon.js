@@ -309,13 +309,13 @@ export class GLEFLoader implements ILoader {
             const trigger = (triggers || [])[behavior.trigger];
             const action = (actions || [])[behavior.action];
             if (trigger && action) {
-                console.log("adding behavior");
                 this._behaviorManager.addBehavior(trigger, action);
             }
         });
     }
 
     private _generateTrigger(triggerData: { type: string; index: number }) {
+        // TODO handle the other triggers
         switch (triggerData.type) {
             case "sceneStart":
                 return new EventTrigger({
@@ -326,7 +326,8 @@ export class GLEFLoader implements ILoader {
     }
 
     private _generateAction(actionData: { type: string; index: number; subject: number }) {
-        const subject = this._jsonData.nodes[actionData.subject]._babylonTransformNode;
+        const subject = this._getSubjectForAction(actionData);
+        // TODO handle the other action types
         switch (actionData.type) {
             case "spin":
                 return new SpinAction({
@@ -336,12 +337,22 @@ export class GLEFLoader implements ILoader {
         return null;
     }
 
+    private _getSubjectForAction(actionData: { type: string; index: number; subject: number }) {
+        const reference = this._jsonData.interactivity.references[actionData.subject];
+        // TODO handle the different types
+        switch (reference.type) {
+            case "node":
+                return this._jsonData.nodes[reference.index]._babylonTransformNode;
+        }
+        return null;
+    }
+
     private _setupData(): void {
         ArrayItem.Assign(this._jsonData.assets);
         ArrayItem.Assign(this._jsonData.nodes);
         if (this._jsonData.interactivity) {
             ArrayItem.Assign(this._jsonData.interactivity.actions);
-            ArrayItem.Assign(this._jsonData.interactivity.references);
+            // ArrayItem.Assign(this._jsonData.interactivity.references);
             ArrayItem.Assign(this._jsonData.interactivity.behaviors);
             ArrayItem.Assign(this._jsonData.interactivity.triggers);
         }
