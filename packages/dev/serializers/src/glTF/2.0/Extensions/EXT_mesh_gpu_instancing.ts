@@ -4,7 +4,8 @@ import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter, _BinaryWriter } from "../glTFExporter";
 import type { Nullable } from "core/types";
 import type { Node } from "core/node";
-import { Mesh } from "core/Meshes";
+import { Mesh } from "core/Meshes/mesh";
+import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
 

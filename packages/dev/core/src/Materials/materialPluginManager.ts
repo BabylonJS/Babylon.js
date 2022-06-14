@@ -246,6 +246,7 @@ export class MaterialPluginManager {
                 const eventData = info as MaterialPluginPrepareEffect;
                 for (const plugin of this._activePlugins) {
                     eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
+                    plugin.getAttributes(eventData.attributes);
                 }
                 if (this._uniformList.length > 0) {
                     eventData.uniforms.push(...this._uniformList);
@@ -337,7 +338,11 @@ export class MaterialPluginManager {
                         const rx = new RegExp(pointName.substring(1), "g");
                         let match = rx.exec(code);
                         while (match !== null) {
-                            code = code.replace(match[0], injectedCode);
+                            let newCode = injectedCode;
+                            for (let i = 0; i < match.length; ++i) {
+                                newCode = newCode.replace("$" + i, match[i]);
+                            }
+                            code = code.replace(match[0], newCode);
                             match = rx.exec(code);
                         }
                     } else {

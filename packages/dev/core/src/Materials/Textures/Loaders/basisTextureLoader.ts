@@ -4,7 +4,6 @@ import type { InternalTexture } from "../../../Materials/Textures/internalTextur
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from "../../../Misc/tools";
-import { EndsWith } from "../../../Misc/stringTools";
 
 /**
  * Loader for .basis file format
@@ -22,7 +21,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return EndsWith(extension, ".basis");
+        return extension.endsWith(".basis");
     }
 
     /**

@@ -5,12 +5,13 @@ import { Material } from "core/Materials/material";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { DataReader } from "core/Misc/dataReader";
-import { ErrorCodes, RuntimeError } from "core/Misc/error";
 import { Observable } from "core/Misc/observable";
-import { StringTools } from "core/Misc/stringTools";
 import { GLTFValidation } from "./glTFValidation";
-import { AbstractFileLoader, ILoader, ILoaderData } from "./abstractFileLoader";
+import { AbstractFileLoader, ILoader, ILoaderData, readAsync } from "./abstractFileLoader";
+import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
+import { RuntimeError, ErrorCodes } from "core/Misc/error";
 import { TransformNode } from "core/Meshes/transformNode";
+import { Scene } from "core/scene";
 
 /**
  * Mode that determines the coordinate system to use.
@@ -254,12 +255,49 @@ export class GLTFFileLoader extends AbstractFileLoader {
     public canDirectLoad(data: string): boolean {
         return (
             (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
-            StringTools.StartsWith(data, "data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith("data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         );
     }
+
+    /**
+     * @param scene
+     * @param data
+     * @hidden
+     */
+    public directLoad(scene: Scene, data: string): Promise<any> {
+        if (
+            data.startsWith("base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith(";base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+        ) {
+            const arrayBuffer = DecodeBase64UrlToBinary(data);
+
+            this._validate(scene, arrayBuffer);
+            return this._unpackBinaryAsync(
+                new DataReader({
+                    readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
+                    byteLength: arrayBuffer.byteLength,
+                })
+            );
+        }
+
+        this._validate(scene, data);
+        return Promise.resolve({ json: this._parseJson(data) });
+    }
+
+    /**
+     * The callback that allows custom handling of the root url based on the response url.
+     * @param rootUrl the original root url
+     * @param responseURL the response url if available
+     * @returns the new root url
+     */
+    public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
+
+    /** @hidden */
     public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
         return new GLTFFileLoader();
     }

@@ -18,7 +18,6 @@ import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { SmartArray } from "../Misc/smartArray";
-import { Tools } from "../Misc/tools";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare module "../scene" {
@@ -540,7 +539,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         if (!Array.isArray(indices)) {
-            indices = Tools.SliceToArray(indices);
+            indices = Array.from(indices);
         }
 
         /**
