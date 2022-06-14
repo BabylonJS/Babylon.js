@@ -1,4 +1,3 @@
-import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import type { Camera } from "../Cameras/camera";
@@ -1453,7 +1452,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param kind the kind of data you want. Can be Normal or Position
      */
     private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
-        data = data ?? Tools.Slice(this.getVerticesData(kind));
+        data = data ?? this.getVerticesData(kind)!.slice();
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
@@ -1570,7 +1569,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
-            data = Tools.Slice(data);
+            data = data.slice();
             this._generatePointsArray();
             if (this._positions) {
                 const pos = this._positions;

@@ -69,7 +69,6 @@ import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Mi
 import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
-import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
 import { ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
@@ -273,7 +272,7 @@ export class GLTFLoader implements ILoader {
         return Promise.resolve()
             .then(() => {
                 this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
 
                 this._loadExtensions();
