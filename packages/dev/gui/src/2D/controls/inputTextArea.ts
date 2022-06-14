@@ -175,7 +175,7 @@ export class InputTextArea extends InputText {
      * Handles the keyboard event
      * @param evt Defines the KeyboardEvent
      */
-     public processKeyboard(evt: IKeyboardEvent): void {
+    public processKeyboard(evt: IKeyboardEvent): void {
         // process pressed key
         this.processKey(evt.code, evt.key, evt);
 
@@ -192,8 +192,7 @@ export class InputTextArea extends InputText {
      */
     public processKey(code: string, key?: string, evt?: IKeyboardEvent) {
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
-        if (evt && (evt.ctrlKey || evt.metaKey) && (code === "KeyC" || code === "KeyV" || code === "KeyX")) 
-        {
+        if (evt && (evt.ctrlKey || evt.metaKey) && (code === "KeyC" || code === "KeyV" || code === "KeyX")) {
             return;
         }
 
@@ -504,7 +503,7 @@ export class InputTextArea extends InputText {
                 }
 
                 this._markAsDirty();
-                return;            
+                return;
         }
 
         // Printable characters
