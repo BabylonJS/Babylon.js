@@ -8,6 +8,9 @@ import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
 import { Scene } from "core/scene";
 import { Nullable } from "core/types";
+import { EventTrigger } from "core/Actions/VSM/Triggers/EventTrigger";
+import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
+import { BehaviorManager } from "core/Actions/VSM/behaviorManager";
 import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import type { GLEFFileLoader } from "../glEFFileLoader";
 import { GLTFFileLoader } from "../glTFFileLoader";
@@ -30,6 +33,7 @@ export class GLEFLoader implements ILoader {
     // private _fileName: Nullable<string> = null;
     // private _uniqueRootUrl: Nullable<string> = null;
     private _rootBabylonMesh: Nullable<Mesh> = null;
+    private _behaviorManager: BehaviorManager;
 
     /**
      * The object that represents the glTF JSON.
@@ -94,6 +98,8 @@ export class GLEFLoader implements ILoader {
         // this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
         // this._fileName = fileName;
 
+        this._behaviorManager = new BehaviorManager(this._scene);
+
         this._loadExtensions();
         this._checkExtensions();
 
@@ -127,7 +133,7 @@ export class GLEFLoader implements ILoader {
             promises.push(this.loadSceneAsync("/nodes", { nodes: nodesToUse, index: -1 }));
         }
 
-        if(this._jsonData.interactivity) {
+        if (this._jsonData.interactivity) {
             // promises.push();
         }
 
@@ -141,6 +147,10 @@ export class GLEFLoader implements ILoader {
 
         this._extensionsOnReady();
         this._parent._setState(LoaderState.READY);
+
+        this._behaviorManager.customEventManager.raiseEvent({
+            name: "sceneStart",
+        });
 
         this._parent._endPerformanceCounter(loadingToReadyCounterName);
 
@@ -287,7 +297,43 @@ export class GLEFLoader implements ILoader {
         if (extensionPromise) {
             return extensionPromise;
         }
-        console.log(interactivity);
+        // generate all actions
+        const actions = interactivity.actions?.map((action) => {
+            return this._generateAction(action);
+        });
+        const triggers = interactivity.triggers?.map((trigger) => {
+            return this._generateTrigger(trigger);
+        });
+        // connect all actions to triggers
+        interactivity.behaviors?.forEach((behavior) => {
+            const trigger = (triggers || [])[behavior.trigger];
+            const action = (actions || [])[behavior.action];
+            if (trigger && action) {
+                console.log("adding behavior");
+                this._behaviorManager.addBehavior(trigger, action);
+            }
+        });
+    }
+
+    private _generateTrigger(triggerData: { type: string; index: number }) {
+        switch (triggerData.type) {
+            case "sceneStart":
+                return new EventTrigger({
+                    eventName: "sceneStart",
+                });
+        }
+        return null;
+    }
+
+    private _generateAction(actionData: { type: string; index: number; subject: number }) {
+        const subject = this._jsonData.nodes[actionData.subject]._babylonTransformNode;
+        switch (actionData.type) {
+            case "spin":
+                return new SpinAction({
+                    subject,
+                });
+        }
+        return null;
     }
 
     private _setupData(): void {
@@ -453,7 +499,11 @@ export class GLEFLoader implements ILoader {
 
     // TODO - return type here?
     private _extensionsLoadInteractivityAsync(context: string, interactivity: IInteractivity): Nullable<Promise<void>> {
-        return this._applyExtensions(interactivity, "loadInteractivity", (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity));
+        return this._applyExtensions(
+            interactivity,
+            "loadInteractivity",
+            (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity)
+        );
     }
     private _forEachExtensions(action: (extension: IBaseLoaderExtension) => void): void {
         for (const extension of this._extensions) {
