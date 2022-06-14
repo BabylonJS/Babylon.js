@@ -547,6 +547,9 @@ export class TextBlock extends Control {
     }
 
     protected _renderLines(context: ICanvasRenderingContext): void {
+        if (!this._fontOffset) {
+            return;
+        }
         const height = this._currentMeasure.height;
         let rootY = 0;
         switch (this._textVerticalAlignment) {
