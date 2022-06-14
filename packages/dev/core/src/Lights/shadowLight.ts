@@ -387,4 +387,13 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         }
         return this;
     }
+
+    /** @hidden */
+    protected _syncParentEnabledState() {
+        super._syncParentEnabledState();
+        if (!this.parent || !this.parent.getWorldMatrix) {
+            (this.transformedPosition as any) = null;
+            (this.transformedDirection as any) = null;
+        }
+    }
 }

@@ -97,6 +97,8 @@ export class LinesMesh extends Mesh {
 
         if (useVertexAlpha === false) {
             options.needAlphaBlending = false;
+        } else {
+            options.defines.push("#define VERTEXALPHA");
         }
 
         if (!useVertexColor) {
