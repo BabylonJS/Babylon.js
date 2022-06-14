@@ -33,6 +33,8 @@ export class InputTextArea extends InputText {
     private _cursorInfo: { globalStartIndex: number; globalEndIndex: number; relativeStartIndex: number; relativeEndIndex: number; currentLineIndex: number };
     private _highlightCursorInfo: { initialStartIndex: number; initialRelativeStartIndex: number; initialLineIndex: number };
 
+    private _unprintableKey = ["Dead", "Control", "Shift"];
+
     /**
      * An event triggered after the text was broken up into lines
      */
@@ -170,37 +172,46 @@ export class InputTextArea extends InputText {
     }
 
     /**
+     * Handles the keyboard event
+     * @param evt Defines the KeyboardEvent
+     */
+     public processKeyboard(evt: IKeyboardEvent): void {
+        // process pressed key
+        this.processKey(evt.code, evt.key, evt);
+
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
+    }
+
+    /**
      * Process the last keyboard input
      *
-     * @param keyCode The ascii input number
+     * @param code The ascii input number
      * @param key The key string representation
      * @param evt The keyboard event emits with input
      * @hidden
      */
-    public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
+    public processKey(code: string, key?: string, evt?: IKeyboardEvent) {
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
-        if (evt && (evt.ctrlKey || evt.metaKey) && (keyCode === 67 || keyCode === 86 || keyCode === 88)) {
+        if (evt && (evt.ctrlKey || evt.metaKey) && (code === "KeyC" || code === "KeyV" || code === "KeyX")) 
+        {
             return;
         }
 
         // Specific cases
-        switch (keyCode) {
-            case 65: // A - select all
+        switch (code) {
+            case "KeyA": // A - select all
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
                     this._selectAllText();
                     evt.preventDefault();
                     return;
                 }
                 break;
-            case 32: //SPACE
-                key = " "; //ie11 key for space is "Spacebar"
-                break;
-            case 191: //SLASH
-                if (evt) {
+            case "Period": //SLASH
+                if (evt && evt.shiftKey) {
                     evt.preventDefault();
                 }
                 break;
-            case 8: // BACKSPACE
+            case "Backspace": // BACKSPACE
                 if (!this._isTextHighlightOn && this._cursorInfo.globalStartIndex > 0) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                     this._cursorInfo.globalStartIndex--;
@@ -219,7 +230,7 @@ export class InputTextArea extends InputText {
 
                 this._textHasChanged();
                 break;
-            case 46: // DELETE
+            case "Delete": // DELETE
                 if (!this._isTextHighlightOn && this._cursorInfo.globalEndIndex < this.text.length) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex + 1;
                 }
@@ -237,7 +248,7 @@ export class InputTextArea extends InputText {
 
                 this._textHasChanged();
                 break;
-            case 13: // RETURN
+            case "Enter": // RETURN
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
                 this._cursorInfo.globalStartIndex++;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -247,19 +258,19 @@ export class InputTextArea extends InputText {
 
                 this._textHasChanged();
                 return;
-            case 35: // END
+            case "End": // END
                 this._cursorInfo.globalStartIndex = this.text.length;
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
-            case 36: // HOME
+            case "Home": // HOME
                 this._cursorInfo.globalStartIndex = 0;
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
-            case 37: // LEFT
+            case "ArrowLeft": // LEFT
                 this._markAsDirty();
 
                 if (evt && evt.shiftKey) {
@@ -304,7 +315,7 @@ export class InputTextArea extends InputText {
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 return;
-            case 39: // RIGHT
+            case "ArrowRight": // RIGHT
                 this._markAsDirty();
 
                 if (evt && evt.shiftKey) {
@@ -348,7 +359,7 @@ export class InputTextArea extends InputText {
                 this._blinkIsEven = false;
                 this._isTextHighlightOn = false;
                 return;
-            case 38: // UP
+            case "ArrowUp": // UP
                 // update the cursor
                 this._blinkIsEven = false;
 
@@ -419,7 +430,7 @@ export class InputTextArea extends InputText {
 
                 this._markAsDirty();
                 return;
-            case 40: // DOWN
+            case "ArrowDown": // DOWN
                 // update the cursor
                 this._blinkIsEven = false;
 
@@ -493,43 +504,12 @@ export class InputTextArea extends InputText {
                 }
 
                 this._markAsDirty();
-                return;
-            case 222: // Dead
-                if (evt) {
-                    //add support for single and double quotes
-                    if (evt.code == "Quote") {
-                        if (evt.shiftKey) {
-                            keyCode = 34;
-                            key = '"';
-                        } else {
-                            keyCode = 39;
-                            key = "'";
-                        }
-                    } else {
-                        evt.preventDefault();
-                        this.deadKey = true;
-                    }
-                } else {
-                    this.deadKey = true;
-                }
-        }
-
-        if (key === "Dead") {
-            key = undefined;
+                return;            
         }
 
         // Printable characters
-        if (
-            key &&
-            (keyCode === -1 || // Direct access
-                keyCode === 32 || // Space
-                (keyCode > 47 && keyCode < 64) || // Numbers
-                (keyCode > 64 && keyCode < 91) || // Letters
-                (keyCode > 159 && keyCode < 193) || // Special characters
-                (keyCode > 218 && keyCode < 223) || // Special characters
-                (keyCode > 95 && keyCode < 112))
-        ) {
-            // Numpad
+        if (key?.length === 1) {
+            evt?.preventDefault();
             this._currentKey = key;
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
@@ -542,8 +522,6 @@ export class InputTextArea extends InputText {
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
 
                 this._textHasChanged();
-
-                evt?.preventDefault();
             }
         }
     }
