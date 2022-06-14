@@ -190,7 +190,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
         } else {
             const speed = camera._computeLocalCameraSpeed();
-            const direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);
+            const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
 
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
             camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));

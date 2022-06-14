@@ -1167,15 +1167,18 @@ export class StandardMaterial extends PushMaterial {
             defines
         );
 
-        // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
-
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
+        // Attribs
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
+
+        // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect

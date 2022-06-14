@@ -670,7 +670,7 @@ export class Database implements IOfflineProvider {
                 "error",
                 () => {
                     Logger.Error("error on XHR request.");
-                    callback();
+                    errorCallback && errorCallback();
                 },
                 false
             );
@@ -678,7 +678,7 @@ export class Database implements IOfflineProvider {
             xhr.send();
         } else {
             Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
-            callback();
+            errorCallback && errorCallback();
         }
     }
 
