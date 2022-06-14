@@ -169,6 +169,15 @@ export class MaterialPluginBase {
     }
 
     /**
+     * Sets the defines for the next rendering. Called before MaterialHelper.PrepareDefinesForAttributes is called.
+     * @param defines the list of "defines" to update.
+     * @param scene defines the scene to the material belongs to.
+     * @param mesh the mesh being rendered
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public prepareDefinesBeforeAttributes(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
+
+    /**
      * Sets the defines for the next rendering
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
