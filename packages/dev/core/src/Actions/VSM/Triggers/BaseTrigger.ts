@@ -3,7 +3,7 @@ import { Observable } from "../../../Misc/observable";
 import { IDisposable, Scene } from "../../../scene";
 import { CustomEventManager } from "../customEventManager";
 
-export abstract class BaseTrigger<O = void, T = any> implements IDisposable {
+export abstract class BaseTrigger<O = any, T = any> implements IDisposable {
     private _payload: T;
     private _duration: number = 0;
     protected _triggered: boolean = false;

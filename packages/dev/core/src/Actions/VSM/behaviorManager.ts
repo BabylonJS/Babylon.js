@@ -1,4 +1,4 @@
-import { IDisposable, Scene } from "core/scene";
+import { IDisposable, Scene } from "../../scene";
 import { ActionManager } from "../actionManager";
 import { ExecuteCodeAction } from "../directActions";
 import { BaseAction } from "./Actions/BaseAction";
@@ -26,6 +26,10 @@ export class BehaviorManager implements IDisposable {
         this._scene.onDisposeObservable.add(() => {
             this.dispose();
         });
+    }
+
+    public get customEventManager(): CustomEventManager {
+        return this._customEventManager;
     }
 
     public addBehavior(trigger: BaseTrigger, action: BaseAction, options?: IBehaviorOptions): void {

@@ -12,7 +12,7 @@ export abstract class BaseAction<T = any> implements IDisposable {
     // Actions in this array will run IN PARALLEL after this action is done
     public nextActions: BaseAction[] = [];
 
-    private _runAgainTimes: number = 0;
+    protected _runAgainTimes: number = 0;
 
     public onActionExecutionStartedObservable = new Observable<BaseAction>();
     public onActionDoneObservable = new Observable<BaseAction>();
@@ -55,6 +55,7 @@ export abstract class BaseAction<T = any> implements IDisposable {
             this.onActionDoneObservable.notifyObservers(this);
         });
     }
+    // Not sure this is the right architecture. This expects execute to resolve when the action is done.
     protected abstract _execute(): Promise<void>;
     public stop(): void {
         if (!this._isRunning) {
