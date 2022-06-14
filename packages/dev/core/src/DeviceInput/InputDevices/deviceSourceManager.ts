@@ -59,6 +59,10 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @returns All available DeviceSources of a given type
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
+        // ADD TO PR
+        if (!this._devices[deviceType]) {
+            return [];
+        }
         return this._devices[deviceType].filter((source) => {
             return !!source;
         }) as Array<DeviceSource<T>>;
