@@ -182,7 +182,6 @@ export function UnregisterExtension(loaderName: string, extensionName: string): 
 
 //         const promises: Array<Promise<any>> = [];
 //         this._prepareLoadAsync(promises, rootUrl, fileName, null, () => undefined);
-        
 
 //        await Promise.all(promises);
 //             // if (this._rootBabylonMesh) {

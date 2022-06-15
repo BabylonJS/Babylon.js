@@ -2168,13 +2168,7 @@ export abstract class GLTFLoaderExtension {
     // Utilities
     // ---------
 
-    public static LoadRuntimeAsync(
-        scene: Scene,
-        data: ILoaderData,
-        rootUrl: string,
-        onSuccess?: (gltfRuntime: IGLTFRuntime) => void,
-        onError?: (message: string) => void
-    ): void {
+    public static LoadRuntimeAsync(scene: Scene, data: ILoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): void {
         GLTFLoaderExtension._ApplyExtensions(
             (loaderExtension) => {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
