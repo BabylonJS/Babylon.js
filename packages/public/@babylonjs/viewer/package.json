@@ -25,8 +25,8 @@
         "babylonjs-viewer-assets": "^5.10.0",
         "deepmerge": "~4.2.2",
         "handlebars": "~4.7.7",
-        "pepjs": "~0.4.3",
-        "tslib": "^2.3.1"
+        "pepjs": "~0.5.3",
+        "tslib": "^2.4.0"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
