@@ -9,7 +9,6 @@ export interface IHoverTriggerOptions {
 }
 
 export class HoverTrigger extends BaseTrigger<IHoverTriggerOptions> {
-
     protected _checkConditions(scene: Scene): boolean {
         // this does not take pointerId under consideration.
         return scene._inputManager.meshUnderPointer === this._options.subject;

@@ -58,7 +58,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         // analyze the behaviors array and process everything there. The rest are all passive until needed.
         console.log("KHR_interactivity_behavior: loadInteractivityAsync", interactivity);
         const behaviors = interactivity.behaviors;
-        if(!behaviors) {
+        if (!behaviors) {
             return null;
         }
 
@@ -68,8 +68,6 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
     // private _getReference(reference: string): any {
 
     // }
-
-    
 }
 
 RegisterExtension("glef", NAME, (loader) => new KHR_Interactivity(loader as GLEFLoader));

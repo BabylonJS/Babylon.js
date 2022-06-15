@@ -13,7 +13,6 @@ export interface IProximityTriggerOptions {
 }
 
 export class ProximityTrigger extends BaseTrigger<IProximityTriggerOptions> {
-
     protected _checkConditions(_scene: Scene): boolean {
         if (this._options.ignoreIfTargetHidden) {
             // only AbstractMesh and up have an "isVisible" property

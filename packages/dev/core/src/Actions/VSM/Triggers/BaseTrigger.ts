@@ -16,13 +16,13 @@ export abstract class BaseTrigger<O = any, T = any> implements IDisposable {
     protected _customEventManager: Nullable<CustomEventManager> = null;
     public set customEventManager(customEventManager: Nullable<CustomEventManager>) {
         if (customEventManager) {
-            if(this._customEventManager && this._customEventManager !== customEventManager) {
+            if (this._customEventManager && this._customEventManager !== customEventManager) {
                 // remove event listeners from old event listener
             }
             this._customEventManager = customEventManager;
             this._registerEvents();
         } else {
-            if(this._customEventManager) {
+            if (this._customEventManager) {
                 // remove event listeners
             }
             this._customEventManager = customEventManager;
@@ -48,9 +48,7 @@ export abstract class BaseTrigger<O = any, T = any> implements IDisposable {
         // no-op, override if you need to register events
     }
 
-    protected _unregisteredEvents(): void {
-
-    }
+    protected _unregisteredEvents(): void {}
 
     private _trigger(): void {
         this._triggered = true;

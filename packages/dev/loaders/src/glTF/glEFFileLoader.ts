@@ -37,7 +37,7 @@ export class GLEFFileLoader extends AbstractFileLoader {
     protected _getLoaders(): { [key: number]: (parent: AbstractFileLoader) => ILoader } {
         return {
             2: (parent: AbstractFileLoader) => new GLEFLoader(parent as GLEFFileLoader),
-        }
+        };
     }
     protected _onBinaryDataUnpacked(dataReader: DataReader): Promise<ILoaderData> {
         throw new Error("Binary not supported in glEF yet");

@@ -9,7 +9,6 @@ export interface IInFrustumTriggerOptions {
 }
 
 export class InViewFrustumTrigger extends BaseTrigger<IInFrustumTriggerOptions> {
-
     protected _checkConditions(scene: Scene): boolean {
         const camera = this._options.camera || scene.activeCamera;
         return !!camera?.isInFrustum(this._options.subject);
