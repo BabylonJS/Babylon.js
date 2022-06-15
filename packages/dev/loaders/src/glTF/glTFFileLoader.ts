@@ -48,6 +48,9 @@ export enum GLTFLoaderAnimationStartMode {
     ALL,
 }
 
+// back-compat
+export { ILoaderData as IGLTFLoaderData };
+
 export class GLTFFileLoader extends AbstractFileLoader {
     /** @hidden */
     public static _CreateGLTF1Loader: (parent: AbstractFileLoader) => ILoader;
