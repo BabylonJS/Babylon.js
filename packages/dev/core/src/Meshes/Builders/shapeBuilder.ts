@@ -174,7 +174,6 @@ export function ExtrudeShapeCustom(
 ): Mesh {
     const path = options.path;
     const shape = options.shape;
-    //const firstNormal = options.firstNormal || null;
     const scaleFunction =
         options.scaleFunction ||
         (() => {
