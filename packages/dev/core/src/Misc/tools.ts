@@ -772,6 +772,35 @@ export class Tools {
         );
     }
 
+    static DownloadBlob(blob: Blob, fileName?: string) {
+        //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+        if ("download" in document.createElement("a")) {
+            if (!fileName) {
+                const date = new Date();
+                const stringDate =
+                    (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ("0" + date.getMinutes()).slice(-2);
+                fileName = "screenshot_" + stringDate + ".png";
+            }
+            Tools.Download(blob, fileName);
+        } else {
+            if (blob) {
+                const url = URL.createObjectURL(blob);
+
+                const newWindow = window.open("");
+                if (!newWindow) {
+                    return;
+                }
+                const img = newWindow.document.createElement("img");
+                img.onload = function () {
+                    // no longer need to read the blob so it's revoked
+                    URL.revokeObjectURL(url);
+                };
+                img.src = url;
+                newWindow.document.body.appendChild(img);
+            }
+        }
+    }
+
     /**
      * Encodes the canvas data to base 64 or automatically download the result if filename is defined
      * @param successCallback defines the callback triggered once the data are available
@@ -794,37 +823,8 @@ export class Tools {
             this.ToBlob(
                 canvas ?? Tools._ScreenshotCanvas,
                 function (blob) {
-                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                    if ("download" in document.createElement("a")) {
-                        if (!fileName) {
-                            const date = new Date();
-                            const stringDate =
-                                (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) +
-                                "-" +
-                                date.getDate() +
-                                "_" +
-                                date.getHours() +
-                                "-" +
-                                ("0" + date.getMinutes()).slice(-2);
-                            fileName = "screenshot_" + stringDate + ".png";
-                        }
-                        Tools.Download(blob!, fileName);
-                    } else {
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-
-                            const newWindow = window.open("");
-                            if (!newWindow) {
-                                return;
-                            }
-                            const img = newWindow.document.createElement("img");
-                            img.onload = function () {
-                                // no longer need to read the blob so it's revoked
-                                URL.revokeObjectURL(url);
-                            };
-                            img.src = url;
-                            newWindow.document.body.appendChild(img);
-                        }
+                    if (blob) {
+                        Tools.DownloadBlob(blob, fileName);
                     }
                 },
                 mimeType,
