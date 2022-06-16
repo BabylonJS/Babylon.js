@@ -72,7 +72,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         this.hasAlpha = false;
         this.isCube = true;
 
-        this._texture = this._getFromCache(url, this._noMipmap);
+        this._texture = this._getFromCache(url, this._noMipmap, undefined, undefined, undefined, this.isCube);
 
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {

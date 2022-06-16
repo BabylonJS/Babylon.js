@@ -339,7 +339,7 @@ export class CubeTexture extends BaseTexture {
     private _loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         const scene = this.getScene();
         const oldTexture = this._texture;
-        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer, this.isCube);
 
         const onLoadProcessing = () => {
             this.onLoadObservable.notifyObservers(this);
