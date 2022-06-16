@@ -235,7 +235,7 @@ function _ExtrudeShapeGeneric(
     frontUVs: Nullable<Vector4>,
     backUVs: Nullable<Vector4>,
     firstNormal: Nullable<Vector3>,
-    adjustFrame = false
+    adjustFrame: false
 ): Mesh {
     // extrusion geometry
     const extrusionPathArray = (
@@ -255,7 +255,7 @@ function _ExtrudeShapeGeneric(
         const normals = path3D.getNormals();
         const binormals = path3D.getBinormals();
         const distances = path3D.getDistances();
-        if (adjustFrame ) {
+        if (adjustFrame) {
             /* fix tangents,normals, binormals */
             for (let i = 0; i < tangents.length; i++) {
                 if (tangents[i].x == 0 && tangents[i].y == 0 && tangents[i].z == 0) {
@@ -276,21 +276,21 @@ function _ExtrudeShapeGeneric(
                 if (i > 0) {
                     let v = tangents[i - 1];
                     if (Vector3.Dot(v, tangents[i]) < 0) {
-//                        console.log(`fixing tangents[${i}]: ${tangents[i]}`);
+                        //                        console.log(`fixing tangents[${i}]: ${tangents[i]}`);
                         tangents[i].x *= -1;
                         tangents[i].y *= -1;
                         tangents[i].z *= -1;
                     }
                     v = normals[i - 1];
                     if (Vector3.Dot(v, normals[i]) < 0) {
-//                        console.log(`fixing normals[${i}]: ${normals[i]}`);
+                        //                        console.log(`fixing normals[${i}]: ${normals[i]}`);
                         normals[i].x *= -1;
                         normals[i].y *= -1;
                         normals[i].z *= -1;
                     }
                     v = binormals[i - 1];
                     if (Vector3.Dot(v, binormals[i]) < 0) {
-//                        console.log(`fixing binormals[${i}]: ${binormals[i]}`);
+                        //                        console.log(`fixing binormals[${i}]: ${binormals[i]}`);
                         binormals[i].x *= -1;
                         binormals[i].y *= -1;
                         binormals[i].z *= -1;
