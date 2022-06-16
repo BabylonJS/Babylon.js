@@ -33,8 +33,6 @@ export class InputTextArea extends InputText {
     private _cursorInfo: { globalStartIndex: number; globalEndIndex: number; relativeStartIndex: number; relativeEndIndex: number; currentLineIndex: number };
     private _highlightCursorInfo: { initialStartIndex: number; initialRelativeStartIndex: number; initialLineIndex: number };
 
-    private _unprintableKey = ["Dead", "Control", "Shift"];
-
     /**
      * An event triggered after the text was broken up into lines
      */
@@ -177,7 +175,7 @@ export class InputTextArea extends InputText {
      */
     public processKeyboard(evt: IKeyboardEvent): void {
         // process pressed key
-        this.processKey(evt.code, evt.key, evt);
+        this.alternativeProcessKey(evt.code, evt.key, evt);
 
         this.onKeyboardEventProcessedObservable.notifyObservers(evt);
     }
@@ -190,7 +188,7 @@ export class InputTextArea extends InputText {
      * @param evt The keyboard event emits with input
      * @hidden
      */
-    public processKey(code: string, key?: string, evt?: IKeyboardEvent) {
+    public alternativeProcessKey(code: string, key?: string, evt?: IKeyboardEvent) {
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
         if (evt && (evt.ctrlKey || evt.metaKey) && (code === "KeyC" || code === "KeyV" || code === "KeyX")) {
             return;
