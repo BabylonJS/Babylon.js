@@ -9,6 +9,7 @@ import { Tools } from "core/Misc/tools";
 import { Scene } from "core/scene";
 import { Nullable } from "core/types";
 import { EventTrigger } from "core/Actions/VSM/Triggers/EventTrigger";
+import { TapTrigger } from "core/Actions/VSM/Triggers/TapTrigger";
 import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
 import { BehaviorManager } from "core/Actions/VSM/behaviorManager";
 import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
@@ -314,19 +315,25 @@ export class GLEFLoader implements ILoader {
         });
     }
 
-    private _generateTrigger(triggerData: { type: string; index: number }) {
+    private _generateTrigger(triggerData: { type: string; index: number; subject?: number }) {
+        // optional subject for some triggers
+        const subject = this._getSubjectForData(triggerData.subject);
         // TODO handle the other triggers
         switch (triggerData.type) {
             case "sceneStart":
                 return new EventTrigger({
                     eventName: "sceneStart",
                 });
+            case "tap":
+                return new TapTrigger({
+                    subject,
+                });
         }
         return null;
     }
 
-    private _generateAction(actionData: { type: string; index: number; subject: number }) {
-        const subject = this._getSubjectForAction(actionData);
+    private _generateAction(actionData: { type: string; index: number; subject?: number }) {
+        const subject = this._getSubjectForData(actionData.subject);
         // TODO handle the other action types
         switch (actionData.type) {
             case "spin":
@@ -337,12 +344,14 @@ export class GLEFLoader implements ILoader {
         return null;
     }
 
-    private _getSubjectForAction(actionData: { type: string; index: number; subject: number }) {
-        const reference = this._jsonData.interactivity.references[actionData.subject];
-        // TODO handle the different types
-        switch (reference.type) {
-            case "node":
-                return this._jsonData.nodes[reference.index]._babylonTransformNode;
+    private _getSubjectForData(subject?: number) {
+        if (typeof subject === "number") {
+            const reference = this._jsonData.interactivity.references[subject];
+            // TODO handle the different types
+            switch (reference.type) {
+                case "node":
+                    return this._jsonData.nodes[reference.index]._babylonTransformNode;
+            }
         }
         return null;
     }
@@ -352,6 +361,7 @@ export class GLEFLoader implements ILoader {
         ArrayItem.Assign(this._jsonData.nodes);
         if (this._jsonData.interactivity) {
             ArrayItem.Assign(this._jsonData.interactivity.actions);
+            // TODO - discuss this with gary - is this always needed?
             // ArrayItem.Assign(this._jsonData.interactivity.references);
             ArrayItem.Assign(this._jsonData.interactivity.behaviors);
             ArrayItem.Assign(this._jsonData.interactivity.triggers);
