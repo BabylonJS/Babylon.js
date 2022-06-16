@@ -188,6 +188,8 @@ export function ExtrudeShapeCustom(
     const ribbonClosePath = options.closeShape || options.ribbonClosePath || false;
     const cap = options.cap === 0 ? 0 : options.cap || Mesh.NO_CAP;
     const updatable = options.updatable;
+    const firstNormal = options.firstNormal || null;
+    const adjustFrame = options.adjustFrame || false;
     const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     const instance = options.instance;
     const invertUV = options.invertUV || false;
@@ -210,8 +212,8 @@ export function ExtrudeShapeCustom(
         invertUV,
         options.frontUVs || null,
         options.backUVs || null,
-        options.firstNormal || null,
-        options.adjustFrame ? true : false
+        firstNormal,
+        adjustFrame
     );
 }
 
@@ -235,7 +237,7 @@ function _ExtrudeShapeGeneric(
     frontUVs: Nullable<Vector4>,
     backUVs: Nullable<Vector4>,
     firstNormal: Nullable<Vector3>,
-    adjustFrame: false
+    adjustFrame: boolean
 ): Mesh {
     // extrusion geometry
     const extrusionPathArray = (
