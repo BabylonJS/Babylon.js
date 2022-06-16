@@ -259,6 +259,7 @@ Engine.prototype.endTimeQuery = function (token: _TimeToken): int {
             timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
         } else {
             this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
+            this._currentNonTimestampToken = null;
         }
         token._timeElapsedQueryEnded = true;
     }
@@ -294,7 +295,6 @@ Engine.prototype.endTimeQuery = function (token: _TimeToken): int {
             this._deleteTimeQuery(token._timeElapsedQuery);
             token._timeElapsedQuery = null;
             token._timeElapsedQueryEnded = false;
-            this._currentNonTimestampToken = null;
         }
         return result;
     }
