@@ -31,7 +31,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 declare type Engine = import("../Engines/engine").Engine;
 
 /**
- *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+ *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
  */
 export class VolumetricLightScatteringPostProcess extends PostProcess {
     // Members

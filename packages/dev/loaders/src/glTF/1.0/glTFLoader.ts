@@ -1743,6 +1743,7 @@ export class GLTFLoaderBase {
 /**
  * glTF V1 Loader
  * @hidden
+ * @deprecated
  */
 export class GLTFLoader implements IGLTFLoader {
     public static Extensions: { [name: string]: GLTFLoaderExtension } = {};

@@ -117,6 +117,7 @@ export class MaterialPluginManager {
             this._activePlugins.sort((a, b) => a.priority - b.priority);
 
             this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
+            this._material._callbackPluginEventPrepareDefinesBeforeAttributes = this._handlePluginEventPrepareDefinesBeforeAttributes.bind(this);
             this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
             this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
 
@@ -150,6 +151,12 @@ export class MaterialPluginManager {
             isReady = isReady && plugin.isReadyForSubMesh(eventData.defines, this._scene, this._engine, eventData.subMesh);
         }
         eventData.isReadyForSubMesh = isReady;
+    }
+
+    protected _handlePluginEventPrepareDefinesBeforeAttributes(eventData: MaterialPluginPrepareDefines): void {
+        for (const plugin of this._activePlugins) {
+            plugin.prepareDefinesBeforeAttributes(eventData.defines, this._scene, eventData.mesh);
+        }
     }
 
     protected _handlePluginEventPrepareDefines(eventData: MaterialPluginPrepareDefines): void {
@@ -338,7 +345,11 @@ export class MaterialPluginManager {
                         const rx = new RegExp(pointName.substring(1), "g");
                         let match = rx.exec(code);
                         while (match !== null) {
-                            code = code.replace(match[0], injectedCode);
+                            let newCode = injectedCode;
+                            for (let i = 0; i < match.length; ++i) {
+                                newCode = newCode.replace("$" + i, match[i]);
+                            }
+                            code = code.replace(match[0], newCode);
                             match = rx.exec(code);
                         }
                     } else {
