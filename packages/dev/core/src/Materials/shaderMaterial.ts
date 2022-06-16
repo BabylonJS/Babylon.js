@@ -110,10 +110,12 @@ export class ShaderMaterial extends PushMaterial {
     private _colors3: { [name: string]: Color3 } = {};
     private _colors3Arrays: { [name: string]: number[] } = {};
     private _colors4: { [name: string]: Color4 } = {};
+    private _colors4Arrays: { [name: string]: number[] } = {};
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
     private _quaternions: { [name: string]: Quaternion } = {};
+    private _quaternionsArrays: { [name: string]: number[] } = {};
     private _matrices: { [name: string]: Matrix } = {};
     private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
     private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
@@ -361,7 +363,7 @@ export class ShaderMaterial extends PushMaterial {
      */
     public setColor4Array(name: string, value: Color4[]): ShaderMaterial {
         this._checkUniform(name);
-        this._vectors4Arrays[name] = value.reduce((arr, color) => {
+        this._colors4Arrays[name] = value.reduce((arr, color) => {
             color.toArray(arr, arr.length);
             return arr;
         }, []);
@@ -428,7 +430,7 @@ export class ShaderMaterial extends PushMaterial {
      */
     public setQuaternionArray(name: string, value: Quaternion[]): ShaderMaterial {
         this._checkUniform(name);
-        this._vectors4Arrays[name] = value.reduce((arr, quaternion) => {
+        this._quaternionsArrays[name] = value.reduce((arr, quaternion) => {
             quaternion.toArray(arr, arr.length);
             return arr;
         }, []);
@@ -1049,6 +1051,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
+            // Color4Array
+            for (name in this._colors4Arrays) {
+                effect.setArray4(name, this._colors4Arrays[name]);
+            }
+
             // Vector2
             for (name in this._vectors2) {
                 effect.setVector2(name, this._vectors2[name]);
@@ -1102,6 +1109,11 @@ export class ShaderMaterial extends PushMaterial {
             // Vector4Array
             for (name in this._vectors4Arrays) {
                 effect.setArray4(name, this._vectors4Arrays[name]);
+            }
+
+            // QuaternionArray
+            for (name in this._quaternionsArrays) {
+                effect.setArray4(name, this._quaternionsArrays[name]);
             }
 
             // Uniform buffers
@@ -1263,6 +1275,11 @@ export class ShaderMaterial extends PushMaterial {
             result.setColor4(key, this._colors4[key]);
         }
 
+        // Color4Array
+        for (const key in this._colors4Arrays) {
+            result._colors4Arrays[key] = this._colors4Arrays[key];
+        }
+
         // Vector2
         for (const key in this._vectors2) {
             result.setVector2(key, this._vectors2[key]);
@@ -1281,6 +1298,11 @@ export class ShaderMaterial extends PushMaterial {
         // Quaternion
         for (const key in this._quaternions) {
             result.setQuaternion(key, this._quaternions[key]);
+        }
+
+        // QuaternionArray
+        for (const key in this._quaternionsArrays) {
+            result._quaternionsArrays[key] = this._quaternionsArrays[key];
         }
 
         // Matrix
@@ -1432,6 +1454,12 @@ export class ShaderMaterial extends PushMaterial {
             serializationObject.colors4[name] = this._colors4[name].asArray();
         }
 
+        // Color4 array
+        serializationObject.colors4Arrays = {};
+        for (name in this._colors4Arrays) {
+            serializationObject.colors4Arrays[name] = this._colors4Arrays[name];
+        }
+
         // Vector2
         serializationObject.vectors2 = {};
         for (name in this._vectors2) {
@@ -1496,6 +1524,12 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.vectors4Arrays = {};
         for (name in this._vectors4Arrays) {
             serializationObject.vectors4Arrays[name] = this._vectors4Arrays[name];
+        }
+
+        // QuaternionArray
+        serializationObject.quaternionsArrays = {};
+        for (name in this._quaternionsArrays) {
+            serializationObject.quaternionsArrays[name] = this._quaternionsArrays[name];
         }
 
         return serializationObject;
@@ -1579,6 +1613,21 @@ export class ShaderMaterial extends PushMaterial {
             material.setColor4(name, Color4.FromArray(source.colors4[name]));
         }
 
+        // Color4 arrays
+        for (name in source.colors4Arrays) {
+            const colors: Color4[] = source.colors4Arrays[name]
+                .reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                    if (i % 4 === 0) {
+                        arr.push([num]);
+                    } else {
+                        arr[arr.length - 1].push(num);
+                    }
+                    return arr;
+                }, [])
+                .map((color: ArrayLike<number>) => Color4.FromArray(color));
+            material.setColor4Array(name, colors);
+        }
+
         // Vector2
         for (name in source.vectors2) {
             material.setVector2(name, Vector2.FromArray(source.vectors2[name]));
@@ -1632,6 +1681,11 @@ export class ShaderMaterial extends PushMaterial {
         // Vector4Array
         for (name in source.vectors4Arrays) {
             material.setArray4(name, source.vectors4Arrays[name]);
+        }
+
+        // QuaternionArray
+        for (name in source.quaternionsArrays) {
+            material.setArray4(name, source.quaternionsArrays[name]);
         }
 
         return material;
