@@ -13,9 +13,14 @@ export class TapTrigger extends BaseTrigger<ITapTriggerOptions> {
     private _tapped = false;
     constructor(options: ITapTriggerOptions) {
         super(options);
+        // subject must be pickable
+        options.subject.isPickable = true;
         this._observer = this._options.subject.getScene().onPointerObservable.add((pointerInfo) => {
             // no hit? return!
-            if (!pointerInfo.pickInfo?.hit || pointerInfo.pickInfo?.pickedMesh !== this._options.subject) {
+            if (
+                !pointerInfo.pickInfo?.hit ||
+                (pointerInfo.pickInfo.pickedMesh !== this._options.subject && !pointerInfo.pickInfo.pickedMesh?.isDescendantOf(this._options.subject))
+            ) {
                 if (this._tapped) {
                     this._checkTriggeredState(false);
                 }
