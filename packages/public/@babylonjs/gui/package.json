@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui",
-    "version": "5.10.0",
+    "version": "5.11.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -19,7 +19,7 @@
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.10.0",
+        "@babylonjs/core": "^5.11.0",
         "tslib": "^2.4.0"
     },
     "devDependencies": {
