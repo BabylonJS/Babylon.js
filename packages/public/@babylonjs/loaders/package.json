@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "@babylonjs/core": "^5.11.0",
-        "babylonjs-gltf2interface": "^5.10.0",
+        "babylonjs-gltf2interface": "^5.11.0",
         "tslib": "^2.4.0"
     },
     "devDependencies": {
