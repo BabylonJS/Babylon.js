@@ -1164,7 +1164,7 @@ export class Vector3 {
         // Calculate how close the direction is to the normal of the plane
         const dotProduct = Vector3.Dot(inverseNormal, direction);
 
-        /* 
+        /*
          * Early out in case the direction will never hit the plane.
          *
          * Epsilon is used to avoid issues with rays very near to parallel with the
