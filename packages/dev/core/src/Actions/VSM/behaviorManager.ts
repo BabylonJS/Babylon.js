@@ -11,8 +11,8 @@ import { BaseTrigger } from "./Triggers/BaseTrigger";
  */
 export class BehaviorManager implements IDisposable {
     private _triggers: BaseTrigger[] = [];
-    private _actions: BaseAction[] = [];
-    private _behaviors: BaseBehavior[] = [];
+    // private _actions: BaseAction[] = [];
+    // private _behaviors: BaseBehavior[] = [];
     private _customEventManager: CustomEventManager = new CustomEventManager();
     constructor(private _scene: Scene) {
         if (!this._scene.actionManager) {
@@ -32,17 +32,18 @@ export class BehaviorManager implements IDisposable {
         return this._customEventManager;
     }
 
-    public addBehavior(trigger: BaseTrigger, action: BaseAction, options?: IBehaviorOptions): void {
+    public addBehavior(trigger: BaseTrigger, action: BaseAction, options?: IBehaviorOptions): BaseBehavior {
         const behavior = new BaseBehavior(trigger, action, options);
-        this._behaviors.push(behavior);
+        // this._behaviors.push(behavior);
         if (!this._triggers.includes(trigger)) {
             this._triggers.push(trigger);
             trigger.customEventManager = this._customEventManager;
         }
-        if (!this._actions.includes(action)) {
-            this._actions.push(action);
-            action.customEventManager = this._customEventManager;
-        }
+        // if (!this._actions.includes(action)) {
+        // this._actions.push(action);
+        action.customEventManager = this._customEventManager;
+        // }
+        return behavior;
     }
 
     private _updateTriggers() {

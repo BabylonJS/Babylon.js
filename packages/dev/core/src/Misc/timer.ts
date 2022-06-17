@@ -82,6 +82,8 @@ export enum TimerState {
      * Timer started and counting
      */
     STARTED,
+    PAUSED,
+    RESUMED,
     /**
      * Timer ended (whether aborted or time reached)
      */
@@ -205,7 +207,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
      * @param timeToEnd how much time to measure until timer ended
      */
     public start(timeToEnd: number = this._timeToEnd) {
-        if (this._state === TimerState.STARTED) {
+        if (this._state === TimerState.STARTED || this._state === TimerState.RESUMED) {
             throw new Error("Timer already started. Please stop it before starting again");
         }
         this._timeToEnd = timeToEnd;
@@ -219,10 +221,25 @@ export class AdvancedTimer<T = any> implements IDisposable {
      * Will force a stop on the next tick.
      */
     public stop() {
-        if (this._state !== TimerState.STARTED) {
+        if (this._state !== TimerState.STARTED && this._state !== TimerState.RESUMED) {
             return;
         }
         this._breakOnNextTick = true;
+    }
+
+    public pause() {
+        if (this._state === TimerState.STARTED || this._state === TimerState.RESUMED) {
+            this._setState(TimerState.PAUSED);
+        }
+    }
+
+    public resume() {
+        if (this._state === TimerState.PAUSED) {
+            // startTime needs to change!
+            const now = Date.now();
+            this._startTime = now - this._timer;
+            this._setState(TimerState.RESUMED);
+        }
     }
 
     /**
@@ -241,20 +258,23 @@ export class AdvancedTimer<T = any> implements IDisposable {
     }
 
     private _tick = (payload: T) => {
-        const now = Date.now();
-        this._timer = now - this._startTime;
-        const data: ITimerData<T> = {
-            startTime: this._startTime,
-            currentTime: now,
-            deltaTime: this._timer,
-            completeRate: this._timer / this._timeToEnd,
-            payload,
-        };
-        const shouldBreak = this._breakOnNextTick || this._breakCondition(data);
-        if (shouldBreak || this._timer >= this._timeToEnd) {
-            this._stop(data, shouldBreak);
-        } else {
-            this.onEachCountObservable.notifyObservers(data);
+        // avoid running the tick function when paused
+        if (this._state === TimerState.STARTED || this._state === TimerState.RESUMED) {
+            const now = Date.now();
+            this._timer = now - this._startTime;
+            const data: ITimerData<T> = {
+                startTime: this._startTime,
+                currentTime: now,
+                deltaTime: this._timer,
+                completeRate: this._timer / this._timeToEnd,
+                payload,
+            };
+            const shouldBreak = this._breakOnNextTick || this._breakCondition(data);
+            if (shouldBreak || this._timer >= this._timeToEnd) {
+                this._stop(data, shouldBreak);
+            } else {
+                this.onEachCountObservable.notifyObservers(data);
+            }
         }
     };
 
