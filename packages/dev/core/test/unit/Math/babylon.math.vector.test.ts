@@ -6,7 +6,7 @@ import { Plane, Vector3 } from 'core/Maths'
 describe("Babylon Vectors", () => {
     describe("#Vector3", () => {
         it("can project a direction vector onto a plane", () => {
-            // A ground plan at origin
+            // A ground plane at origin
             const simplePlane = Plane.FromPositionAndNormal(
                 Vector3.Zero(),
                 Vector3.Up(),

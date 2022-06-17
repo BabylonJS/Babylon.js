@@ -1152,12 +1152,12 @@ export class Vector3 {
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
         // Use the normal scaled to the plane offset as the origin for the formula
         const planeOrigin = MathTmp.Vector3[0];
-        plane.normal.scaleToRef(-plane.d, planeOrigin)
+        plane.normal.scaleToRef(-plane.d, planeOrigin);
 
         // Since the normal in Babylon should point toward the viewer, invert it for the dot product
         const inverseNormal = MathTmp.Vector3[1];
         plane.normal.negateToRef(inverseNormal);
-        
+
         // This vector is the direction
         const direction = this;
 
@@ -1170,23 +1170,19 @@ export class Vector3 {
         // Early out in case the direction will never hit the plane
         if (dotProduct <= epsilon) {
             // No good option for setting the result vector here, so just take the origin of the ray
-            result.copyFrom(origin)
-            return
+            result.copyFrom(origin);
+            return;
         }
 
         // Calculate the offset
         const relativeOrigin = MathTmp.Vector3[2];
-        planeOrigin.subtractToRef(origin, relativeOrigin)
+        planeOrigin.subtractToRef(origin, relativeOrigin);
 
-        // Calculate the length along the direction vector of the hit point
-        const hitDistance = Vector3.Dot(relativeOrigin, inverseNormal) / dotProduct; 
+        // Calculate the length along the direction vector to the hit point
+        const hitDistance = Vector3.Dot(relativeOrigin, inverseNormal) / dotProduct;
 
         // Apply the hit point by adding the direction scaled by the distance to the origin
-        result.set(
-            origin.x + direction.x * hitDistance,
-            origin.y + direction.y * hitDistance,
-            origin.z + direction.z * hitDistance,
-        )
+        result.set(origin.x + direction.x * hitDistance, origin.y + direction.y * hitDistance, origin.z + direction.z * hitDistance);
     }
 
     /**
