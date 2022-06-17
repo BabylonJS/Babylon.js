@@ -12,10 +12,25 @@ export interface IBehaviorOptions {
 }
 
 export class BaseBehavior {
+    public enabled = true;
     constructor(private _trigger: BaseTrigger, private _action: BaseAction, private _options: IBehaviorOptions = {}) {
         this._trigger.onTriggeredObservable.add(() => {
-            this._checkExecution();
+            if (this.enabled) {
+                this._checkExecution();
+            }
         });
+    }
+
+    public stop() {
+        this._action.stop();
+    }
+
+    public pause() {
+        this._action.pause();
+    }
+
+    public resume() {
+        this._action.resume();
     }
 
     private _checkExecution() {
@@ -26,7 +41,7 @@ export class BaseBehavior {
                 break;
             case 2:
                 if (this._action.isRunning) {
-                    this._action.nextActions.push(this._action);
+                    this._action.nextActions.unshift(this._action);
                 }
                 break;
             case 1:
