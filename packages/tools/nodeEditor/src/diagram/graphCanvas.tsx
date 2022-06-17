@@ -71,7 +71,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _frames: GraphFrame[] = [];
 
     private _altKeyIsPressed = false;
-    private _ctrlKeyIsPressed = false;
+    private _multiKeyIsPressed = false;
     private _oldY = -1;
 
     public _frameIsMoving = false;
@@ -232,7 +232,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         }
                     } else {
                         if (selection instanceof GraphFrame) {
-                            if (this._ctrlKeyIsPressed || forceKeepSelection) {
+                            if (this._multiKeyIsPressed || forceKeepSelection) {
                                 if (!this._selectedFrameAndNodesConflict([selection], this._selectedNodes) && !this._selectedFrames.includes(selection)) {
                                     this._selectedFrames.push(selection);
                                 }
@@ -243,7 +243,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                                 this._selectedPort = null;
                             }
                         } else if (selection instanceof GraphNode) {
-                            if (this._ctrlKeyIsPressed || forceKeepSelection) {
+                            if (this._multiKeyIsPressed || forceKeepSelection) {
                                 if (!this._selectedFrameAndNodesConflict(this._selectedFrames, [selection]) && !this._selectedNodes.includes(selection)) {
                                     this._selectedNodes.push(selection);
                                 }
@@ -272,7 +272,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             "keydown",
             (evt) => {
                 this._altKeyIsPressed = evt.altKey;
-                this._ctrlKeyIsPressed = evt.ctrlKey;
+                this._multiKeyIsPressed = evt.ctrlKey || evt.metaKey;
             },
             false
         );
@@ -280,7 +280,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             "blur",
             () => {
                 this._altKeyIsPressed = false;
-                this._ctrlKeyIsPressed = false;
+                this._multiKeyIsPressed = false;
             },
             false
         );
@@ -369,7 +369,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     onKeyUp() {
         this._altKeyIsPressed = false;
-        this._ctrlKeyIsPressed = false;
+        this._multiKeyIsPressed = false;
         this._oldY = -1;
     }
 
