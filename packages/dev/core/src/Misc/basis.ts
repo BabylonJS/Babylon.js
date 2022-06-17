@@ -59,6 +59,18 @@ export class BasisTranscodeConfiguration {
          * etc2 compression format
          */
         etc2?: boolean;
+        /**
+         * dxt compression format
+         */
+        dxt?: boolean;
+        /**
+         * astc compression format
+         */
+        astc?: boolean;
+        /**
+         * bc7 compression format
+         */
+        bc7?: boolean;
     };
     /**
      * If mipmap levels should be loaded for transcoded images (Default: true)
@@ -75,14 +87,27 @@ export class BasisTranscodeConfiguration {
  * Enum of basis transcoder formats
  */
 enum BASIS_FORMATS {
-    cTFETC1 = 0,
-    cTFBC1 = 1,
-    cTFBC4 = 2,
-    cTFPVRTC1_4_OPAQUE_ONLY = 3,
-    cTFBC7_M6_OPAQUE_ONLY = 4,
-    cTFETC2 = 5,
-    cTFBC3 = 6,
-    cTFBC5 = 7,
+    cTFETC1= 0,
+    cTFETC2= 1,
+    cTFBC1= 2,
+    cTFBC3= 3,
+    cTFBC4= 4,
+    cTFBC5= 5,
+    cTFBC7= 6,
+    cTFPVRTC1_4_RGB= 8,
+    cTFPVRTC1_4_RGBA= 9,
+    cTFASTC_4x4= 10,
+    cTFATC_RGB= 11,
+    cTFATC_RGBA_INTERPOLATED_ALPHA= 12,
+    cTFRGBA32= 13,
+    cTFRGB565= 14,
+    cTFBGR565= 15,
+    cTFRGBA4444= 16,
+    cTFFXT1_RGB= 17,
+    cTFPVRTC2_4_RGB= 18,
+    cTFPVRTC2_4_RGBA= 19,
+    cTFETC2_EAC_R11= 20,
+    cTFETC2_EAC_RG11= 21,
 }
 
 /**
@@ -314,13 +339,26 @@ declare let Module: any;
 function workerFunc(): void {
     const _BASIS_FORMAT = {
         cTFETC1: 0,
-        cTFBC1: 1,
-        cTFBC4: 2,
-        cTFPVRTC1_4_OPAQUE_ONLY: 3,
-        cTFBC7_M6_OPAQUE_ONLY: 4,
-        cTFETC2: 5,
-        cTFBC3: 6,
-        cTFBC5: 7,
+        cTFETC2: 1,
+        cTFBC1: 2,
+        cTFBC3: 3,
+        cTFBC4: 4,
+        cTFBC5: 5,
+        cTFBC7: 6,
+        cTFPVRTC1_4_RGB: 8,
+        cTFPVRTC1_4_RGBA: 9,
+        cTFASTC_4x4: 10,
+        cTFATC_RGB: 11,
+        cTFATC_RGBA_INTERPOLATED_ALPHA: 12,
+        cTFRGBA32: 13,
+        cTFRGB565: 14,
+        cTFBGR565: 15,
+        cTFRGBA4444: 16,
+        cTFFXT1_RGB: 17,
+        cTFPVRTC2_4_RGB: 18,
+        cTFPVRTC2_4_RGBA: 19,
+        cTFETC2_EAC_R11: 20,
+        cTFETC2_EAC_RG11: 21,
     };
     let transcoderModulePromise: Nullable<Promise<any>> = null;
     onmessage = (event) => {
@@ -411,16 +449,22 @@ function workerFunc(): void {
     function GetSupportedTranscodeFormat(config: BasisTranscodeConfiguration, fileInfo: BasisFileInfo): Nullable<number> {
         let format = null;
         if (config.supportedCompressionFormats) {
-            if (config.supportedCompressionFormats.etc1) {
+            if (config.supportedCompressionFormats.astc) {
+                format = _BASIS_FORMAT.cTFASTC_4x4;
+            } else if (config.supportedCompressionFormats.bc7) {
+                format = _BASIS_FORMAT.cTFBC7;
+            } else if (config.supportedCompressionFormats.dxt) {
+                format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
+            } else if (config.supportedCompressionFormats.pvrtc) {
+                format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFPVRTC1_4_RGBA : _BASIS_FORMAT.cTFPVRTC1_4_RGB;
+            } else if (config.supportedCompressionFormats.etc2) {
+                format = _BASIS_FORMAT.cTFETC2;
+            } else if (config.supportedCompressionFormats.etc1) {
                 format = _BASIS_FORMAT.cTFETC1;
             } else if (config.supportedCompressionFormats.s3tc) {
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
-            } else if (config.supportedCompressionFormats.pvrtc) {
-                // TODO uncomment this after pvrtc bug is fixed is basis transcoder
-                // See discussion here: https://github.com/mrdoob/three.js/issues/16524#issuecomment-498929924
-                // format = _BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
-            } else if (config.supportedCompressionFormats.etc2) {
-                format = _BASIS_FORMAT.cTFETC2;
+            } else {
+                format = _BASIS_FORMAT.cTFRGB565;
             }
         }
         return format;
