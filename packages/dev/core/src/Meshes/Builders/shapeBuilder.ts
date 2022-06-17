@@ -261,41 +261,26 @@ function _ExtrudeShapeGeneric(
             /* fix tangents,normals, binormals */
             for (let i = 0; i < tangents.length; i++) {
                 if (tangents[i].x == 0 && tangents[i].y == 0 && tangents[i].z == 0) {
-                    tangents[i].x = tangents[i - 1].x;
-                    tangents[i].y = tangents[i - 1].y;
-                    tangents[i].z = tangents[i - 1].z;
+                    tangents[i].copyFrom(tangents[i - 1]);
                 }
                 if (normals[i].x == 0 && normals[i].y == 0 && normals[i].z == 0) {
-                    normals[i].x = normals[i - 1].x;
-                    normals[i].y = normals[i - 1].y;
-                    normals[i].z = normals[i - 1].z;
+                    normals[i].copyFrom(normals[i - 1]);
                 }
                 if (binormals[i].x == 0 && binormals[i].y == 0 && binormals[i].z == 0) {
-                    binormals[i].x = binormals[i - 1].x;
-                    binormals[i].y = binormals[i - 1].y;
-                    binormals[i].z = binormals[i - 1].z;
+                    binormals[i].copyFrom(binormals[i - 1]);
                 }
                 if (i > 0) {
                     let v = tangents[i - 1];
                     if (Vector3.Dot(v, tangents[i]) < 0) {
-                        //                        console.log(`fixing tangents[${i}]: ${tangents[i]}`);
-                        tangents[i].x *= -1;
-                        tangents[i].y *= -1;
-                        tangents[i].z *= -1;
+                        tangents[i].scaleInPlace(-1);
                     }
                     v = normals[i - 1];
                     if (Vector3.Dot(v, normals[i]) < 0) {
-                        //                        console.log(`fixing normals[${i}]: ${normals[i]}`);
-                        normals[i].x *= -1;
-                        normals[i].y *= -1;
-                        normals[i].z *= -1;
+                        normals[i].scaleInPlace(-1);
                     }
                     v = binormals[i - 1];
                     if (Vector3.Dot(v, binormals[i]) < 0) {
-                        //                        console.log(`fixing binormals[${i}]: ${binormals[i]}`);
-                        binormals[i].x *= -1;
-                        binormals[i].y *= -1;
-                        binormals[i].z *= -1;
+                        binormals[i].scaleInPlace(-1);
                     }
                 }
             }
