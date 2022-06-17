@@ -11,6 +11,9 @@ import { Nullable } from "core/types";
 import { EventTrigger } from "core/Actions/VSM/Triggers/EventTrigger";
 import { TapTrigger } from "core/Actions/VSM/Triggers/TapTrigger";
 import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
+import { ShowAction } from "core/Actions/VSM/Actions/ShowAction";
+import { HideAction } from "core/Actions/VSM/Actions/HideAction";
+import { Animation } from "core/Animations/animation";
 import { BehaviorManager } from "core/Actions/VSM/behaviorManager";
 import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import type { GLEFFileLoader } from "../glEFFileLoader";
@@ -20,6 +23,7 @@ import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
 import { IGLEFLoaderExtension, IInteractivity } from "./glEFLoaderExtension";
 import { GLTFLoader } from "./glTFLoader";
 import { INode, IScene } from "./glTFLoaderInterfaces";
+import { EasingFunction, QuadraticEase } from "core/Animations/easing";
 
 export class GLEFLoader implements ILoader {
     /** @hidden */
@@ -300,17 +304,20 @@ export class GLEFLoader implements ILoader {
         }
         // generate all actions
         const actions = interactivity.actions?.map((action) => {
-            return this._generateAction(action);
+            action._babylonBehavior = this._processAction(action);
+            return action._babylonBehavior;
         });
+        // generate all triggers
         const triggers = interactivity.triggers?.map((trigger) => {
-            return this._generateTrigger(trigger);
+            trigger._babylonTrigger = this._generateTrigger(trigger);
+            return trigger._babylonTrigger;
         });
         // connect all actions to triggers
         interactivity.behaviors?.forEach((behavior) => {
             const trigger = (triggers || [])[behavior.trigger];
             const action = (actions || [])[behavior.action];
             if (trigger && action) {
-                this._behaviorManager.addBehavior(trigger, action);
+                behavior._babylonBehavior = this._behaviorManager.addBehavior(trigger, action);
             }
         });
     }
@@ -332,16 +339,112 @@ export class GLEFLoader implements ILoader {
         return null;
     }
 
-    private _generateAction(actionData: { type: string; index: number; subject?: number }) {
-        const subject = this._getSubjectForData(actionData.subject);
+    private _generateAction(actionData: { type: string; parameters?: { subject?: number; [key: string]: any }; next?: number; parallel?: number }) {
+        const subject = this._getSubjectForData(actionData.parameters?.subject);
         // TODO handle the other action types
         switch (actionData.type) {
             case "spin":
                 return new SpinAction({
                     subject,
                 });
+            case "hide":
+            case "show": {
+                // calculate "fps" with duration
+                const fps = 100 / (actionData.parameters?.duration || 1);
+                // for now, create the animation here until the architecture change
+                let animation: Animation | undefined = undefined;
+                // no animation when it is 0 or undefined
+                if (actionData.parameters?.showHideEffect) {
+                    // support scaling/fading
+                    // TODO extract this to an external, reusable function
+
+                    // scaling
+                    if (actionData.parameters?.showHideEffect === 2) {
+                        animation = new Animation(`gltf-${subject.name}-${actionData.type}`, "scaling", fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+                        animation.setKeys([
+                            {
+                                frame: 0,
+                                value: actionData.type === "hide" ? subject.scaling.clone() : new Vector3(0, 0, 0),
+                            },
+                            {
+                                frame: 100,
+                                value: actionData.type === "show" ? subject.scaling.clone() : new Vector3(0, 0, 0),
+                            },
+                        ]);
+                    } else if (actionData.parameters?.showHideEffect === 1) {
+                        animation = new Animation(
+                            `gltf-${subject.name}-${actionData.type}`,
+                            "visibility",
+                            fps,
+                            Animation.ANIMATIONTYPE_VECTOR3,
+                            Animation.ANIMATIONLOOPMODE_CONSTANT
+                        );
+                        animation.setKeys([
+                            {
+                                frame: 0,
+                                value: actionData.type === "hide" ? 1 : 0,
+                            },
+                            {
+                                frame: 100,
+                                value: actionData.type === "show" ? 1 : 0,
+                            },
+                        ]);
+                    } else {
+                        throw new Error("unknown animation type");
+                    }
+
+                    // Set easing. TODO - move it out to a private function
+                    if (actionData.parameters.easing) {
+                        const easing = new QuadraticEase();
+                        switch (actionData.parameters.easing) {
+                            case 3:
+                                easing.setEasingMode(EasingFunction.EASINGMODE_EASEIN);
+                                break;
+                            case 2:
+                                easing.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
+                                break;
+                            case 1:
+                                easing.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+                                break;
+                        }
+                        animation.setEasingFunction(easing);
+                    }
+                }
+                return actionData.type === "hide"
+                    ? new HideAction({
+                          subject,
+                          hideAnimation: animation,
+                          applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
+                      })
+                    : new ShowAction({
+                          subject,
+                          animation,
+                          applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
+                      });
+            }
         }
         return null;
+    }
+
+    private _processAction(actionData: { type: string; parameters?: { subject?: number }; next?: number; parallel?: number }) {
+        const actionForData = this._generateAction(actionData);
+        if (actionForData) {
+            if (typeof actionData.next === "number") {
+                const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.next}`, this._jsonData.interactivity.actions /* as IAction[]*/, actionData.next));
+                if (nextAction) {
+                    actionForData.nextActions.push(nextAction);
+                }
+            }
+            if (typeof actionData.parallel === "number") {
+                const parallelAction = this._processAction(
+                    ArrayItem.Get(`actions/${actionData.parallel}`, this._jsonData.interactivity.actions /* as IAction[]*/, actionData.parallel)
+                );
+                if (parallelAction) {
+                    actionForData.parallelActions.push(parallelAction);
+                }
+            }
+        }
+        return actionForData;
     }
 
     private _getSubjectForData(subject?: number) {
