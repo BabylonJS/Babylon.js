@@ -159,6 +159,7 @@
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
 - Make sure popups are closed when page refreshes ([RaananW](https://github.com/RaananW))
+- IInspectable `options` property is now of appropriate type `IInspectableOptions | undefined` ([GordonTombola](https://github.com/GordonTombola))
 
 ### Playground
 
