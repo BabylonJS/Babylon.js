@@ -327,22 +327,20 @@ function workerFunc(): void {
         if (event.data.action === "init") {
             // Load the transcoder if it hasn't been yet
             if (!transcoderModulePromise) {
-                // Override wasm binary
-                Module = { wasmBinary: event.data.wasmBinary };
                 // make sure we loaded the script correctly
                 try {
                     importScripts(event.data.url);
                 } catch (e) {
                     postMessage({ action: "error", error: e });
                 }
-                transcoderModulePromise = new Promise<void>((res) => {
-                    Module.onRuntimeInitialized = () => {
-                        Module.initializeBasis();
-                        res();
-                    };
+                transcoderModulePromise = BASIS({
+                    // Override wasm binary
+                    wasmBinary: event.data.wasmBinary,
                 });
             }
-            transcoderModulePromise.then(() => {
+            transcoderModulePromise.then(m => {
+                Module = m;
+                m.initializeBasis();
                 postMessage({ action: "init" });
             });
         } else if (event.data.action === "transcode") {
