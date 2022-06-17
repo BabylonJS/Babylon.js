@@ -1161,14 +1161,17 @@ export class Vector3 {
         // This vector is the direction
         const direction = this;
 
-        // Set a margin to prevent issues with directions very close to perpendicular to the plane
-        const epsilon = 0.000001;
-
         // Calculate how close the direction is to the normal of the plane
         const dotProduct = Vector3.Dot(inverseNormal, direction);
 
-        // Early out in case the direction will never hit the plane
-        if (dotProduct <= epsilon) {
+        /* 
+         * Early out in case the direction will never hit the plane.
+         *
+         * Epsilon is used to avoid issues with rays very near to parallel with the
+         * plane, and squared because as of writing the value is not sufficiently
+         * small for this use case.
+         */
+        if (dotProduct <= Epsilon * Epsilon) {
             // No good option for setting the result vector here, so just take the origin of the ray
             result.copyFrom(origin);
             return;
