@@ -96,5 +96,5 @@ export interface IInspectable {
     /**
      * Gets the list of options when using "Option" mode
      */
-    options?: [];
+    options?: IInspectableOptions[];
 }
