@@ -1,7 +1,7 @@
 /**
  * Class used to abstract a canvas
  */
- export interface ICanvas {
+export interface ICanvas {
     /**
      * Canvas width.
      */
