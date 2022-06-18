@@ -22,6 +22,7 @@ export class Image extends Control {
     private _stretch = Image.STRETCH_FILL;
     private _source: Nullable<string>;
     private _autoScale = false;
+    private _referrerPolicy: ReferrerPolicy = "strict-origin-when-cross-origin";
 
     private _sourceLeft = 0;
     private _sourceTop = 0;
@@ -291,6 +292,24 @@ export class Image extends Control {
         }
     }
 
+    /**
+     * Gets or sets the referrer policy to apply on the img load request, 
+     * you should set this field before set the source field if you want to ensure the header will be present on the xhr loading request
+     */
+    @serialize()
+    public get referrerPolicy(): ReferrerPolicy {
+        return this._referrerPolicy;
+    }
+
+    public set referrerPolicy(value: ReferrerPolicy) {
+        if (this._referrerPolicy === value) {
+            return;
+        }
+
+        this._referrerPolicy = value;
+        this._domImage.referrerPolicy = value.toString();
+    }
+
     /** Gets or sets the stretching mode used by the image */
     @serialize()
     public get stretch(): number {
@@ -521,7 +540,8 @@ export class Image extends Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
         this._domImage = engine.createCanvasImage();
-
+        this._domImage.referrerPolicy = this._referrerPolicy;
+        
         this._domImage.onload = () => {
             this._onImageLoaded();
         };
