@@ -1,7 +1,7 @@
 /**
  * Class used to abstract a canvas
  */
-export interface ICanvas {
+ export interface ICanvas {
     /**
      * Canvas width.
      */
@@ -72,6 +72,12 @@ export interface IImage {
      * thereby enabling the configuration of the CORS requests for the element's fetched data.
      */
     crossOrigin: string | null;
+
+    /**
+     * provides support for referrer policy on xhr load request,
+     * it is used to control the request header.
+     */
+    referrerPolicy: string;
 }
 
 /**
