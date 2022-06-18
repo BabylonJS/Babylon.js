@@ -293,7 +293,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the referrer policy to apply on the img load request, 
+     * Gets or sets the referrer policy to apply on the img load request,
      * you should set this field before set the source field if you want to ensure the header will be present on the xhr loading request
      */
     @serialize()
@@ -541,7 +541,7 @@ export class Image extends Control {
         }
         this._domImage = engine.createCanvasImage();
         this._domImage.referrerPolicy = this._referrerPolicy;
-        
+
         this._domImage.onload = () => {
             this._onImageLoaded();
         };
