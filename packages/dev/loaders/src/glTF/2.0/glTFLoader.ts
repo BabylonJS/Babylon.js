@@ -6,7 +6,6 @@ import { Tools } from "core/Misc/tools";
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { AnimationGroup } from "core/Animations/animationGroup";
-import { Animation } from "core/Animations/animation";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
@@ -29,7 +28,6 @@ import {
     AccessorType,
     CameraType,
     AnimationChannelTargetPath,
-    AnimationSamplerInterpolation,
     AccessorComponentType,
     MaterialAlphaMode,
     TextureMinFilter,
@@ -38,7 +36,6 @@ import {
     MeshPrimitiveMode,
 } from "babylonjs-gltf2interface";
 import type {
-    _IAnimationSamplerData,
     IGLTF,
     ISampler,
     INode,
@@ -48,8 +45,6 @@ import type {
     ISkin,
     ICamera,
     IAnimation,
-    IAnimationChannel,
-    IAnimationSampler,
     IBuffer,
     IBufferView,
     IMaterialPbrMetallicRoughness,
@@ -64,9 +59,6 @@ import type {
 import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
-import type { IAnimationKey } from "core/Animations/animationKey";
-import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
@@ -130,6 +122,9 @@ export class ArrayItem {
  * The glTF 2.0 loader
  */
 export class GLTFLoader implements IGLTFLoader {
+    /** @hidden */
+    public static readonly _KHRAnimationPointerName = "KHR_animation_pointer";
+
     /** @hidden */
     public readonly _completePromises = new Array<Promise<any>>();
 
@@ -1501,238 +1496,35 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
      */
     public loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup> {
-        const promise = this._extensionsLoadAnimationAsync(context, animation);
-        if (promise) {
-            return promise;
+        // turn everything into pointer
+        for (const channel of animation.channels) {
+            if (channel.target.path == AnimationChannelTargetPath.POINTER) {
+                continue;
+            }
+            // decorate the channel with a KHR_animation_pointer extension.
+            channel.target.extensions = channel.target.extensions || {};
+            channel.target.extensions.KHR_animation_pointer = {
+                pointer: `/nodes/${channel.target.node}/${channel.target.path}`,
+            };
+            channel.target.path = AnimationChannelTargetPath.POINTER;
+            delete channel.target.node;
+
+            // ensure to declare extension used.
+            this._gltf.extensionsUsed = this._gltf.extensionsUsed || [];
+            if (this._gltf.extensionsUsed.indexOf(GLTFLoader._KHRAnimationPointerName) === -1) {
+                this._gltf.extensionsUsed.push(GLTFLoader._KHRAnimationPointerName);
+            }
         }
 
+        // create the animation group to be passed to extension.
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
         const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
         babylonAnimationGroup._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
         animation._babylonAnimationGroup = babylonAnimationGroup;
 
-        const promises = new Array<Promise<any>>();
-
-        ArrayItem.Assign(animation.channels);
-        ArrayItem.Assign(animation.samplers);
-
-        for (const channel of animation.channels) {
-            promises.push(this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, babylonAnimationGroup));
-        }
-
-        return Promise.all(promises).then(() => {
-            babylonAnimationGroup.normalize(0);
-            return babylonAnimationGroup;
-        });
-    }
-
-    /**
-     * @hidden Loads a glTF animation channel.
-     * @param context The context when loading the asset
-     * @param animationContext The context of the animation when loading the asset
-     * @param animation The glTF animation property
-     * @param channel The glTF animation channel property
-     * @param babylonAnimationGroup The babylon animation group property
-     * @param animationTargetOverride The babylon animation channel target override property. My be null.
-     * @returns A void promise when the channel load is complete
-     */
-    public _loadAnimationChannelAsync(
-        context: string,
-        animationContext: string,
-        animation: IAnimation,
-        channel: IAnimationChannel,
-        babylonAnimationGroup: AnimationGroup,
-        animationTargetOverride: Nullable<IAnimatable> = null
-    ): Promise<void> {
-        if (channel.target.node == undefined) {
-            return Promise.resolve();
-        }
-
-        const targetNode = ArrayItem.Get(`${context}/target/node`, this._gltf.nodes, channel.target.node);
-
-        // Ignore animations that have no animation targets.
-        if (
-            (channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
-            (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonTransformNode)
-        ) {
-            return Promise.resolve();
-        }
-
-        const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
-        return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
-            let targetPath: string;
-            let animationType: number;
-            switch (channel.target.path) {
-                case AnimationChannelTargetPath.TRANSLATION: {
-                    targetPath = "position";
-                    animationType = Animation.ANIMATIONTYPE_VECTOR3;
-                    break;
-                }
-                case AnimationChannelTargetPath.ROTATION: {
-                    targetPath = "rotationQuaternion";
-                    animationType = Animation.ANIMATIONTYPE_QUATERNION;
-                    break;
-                }
-                case AnimationChannelTargetPath.SCALE: {
-                    targetPath = "scaling";
-                    animationType = Animation.ANIMATIONTYPE_VECTOR3;
-                    break;
-                }
-                case AnimationChannelTargetPath.WEIGHTS: {
-                    targetPath = "influence";
-                    animationType = Animation.ANIMATIONTYPE_FLOAT;
-                    break;
-                }
-                default: {
-                    throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
-                }
-            }
-
-            let outputBufferOffset = 0;
-            let getNextOutputValue: (scale: number) => Vector3 | Quaternion | Array<number>;
-            switch (targetPath) {
-                case "position": {
-                    getNextOutputValue = (scale) => {
-                        const value = Vector3.FromArray(data.output, outputBufferOffset).scaleInPlace(scale);
-                        outputBufferOffset += 3;
-                        return value;
-                    };
-                    break;
-                }
-                case "rotationQuaternion": {
-                    getNextOutputValue = (scale) => {
-                        const value = Quaternion.FromArray(data.output, outputBufferOffset).scaleInPlace(scale);
-                        outputBufferOffset += 4;
-                        return value;
-                    };
-                    break;
-                }
-                case "scaling": {
-                    getNextOutputValue = (scale) => {
-                        const value = Vector3.FromArray(data.output, outputBufferOffset).scaleInPlace(scale);
-                        outputBufferOffset += 3;
-                        return value;
-                    };
-                    break;
-                }
-                case "influence": {
-                    getNextOutputValue = (scale) => {
-                        const value = new Array<number>(targetNode._numMorphTargets!);
-                        for (let i = 0; i < targetNode._numMorphTargets!; i++) {
-                            value[i] = data.output[outputBufferOffset++] * scale;
-                        }
-                        return value;
-                    };
-                    break;
-                }
-            }
-
-            let getNextKey: (frameIndex: number) => IAnimationKey;
-            switch (data.interpolation) {
-                case AnimationSamplerInterpolation.STEP: {
-                    getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex] * this.parent.targetFps,
-                        value: getNextOutputValue(1),
-                        interpolation: AnimationKeyInterpolation.STEP,
-                    });
-                    break;
-                }
-                case AnimationSamplerInterpolation.LINEAR: {
-                    getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex] * this.parent.targetFps,
-                        value: getNextOutputValue(1),
-                    });
-                    break;
-                }
-                case AnimationSamplerInterpolation.CUBICSPLINE: {
-                    const invTargetFps = 1 / this.parent.targetFps;
-                    getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex] * this.parent.targetFps,
-                        inTangent: getNextOutputValue(invTargetFps),
-                        value: getNextOutputValue(1),
-                        outTangent: getNextOutputValue(invTargetFps),
-                    });
-                    break;
-                }
-            }
-
-            const keys = new Array(data.input.length);
-            for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
-                keys[frameIndex] = getNextKey!(frameIndex);
-            }
-
-            if (targetPath === "influence") {
-                for (let targetIndex = 0; targetIndex < targetNode._numMorphTargets!; targetIndex++) {
-                    const animationName = `${babylonAnimationGroup.name}_channel${babylonAnimationGroup.targetedAnimations.length}`;
-                    const babylonAnimation = new Animation(animationName, targetPath, this.parent.targetFps, animationType);
-                    babylonAnimation.setKeys(
-                        keys.map((key) => ({
-                            frame: key.frame,
-                            inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
-                            value: key.value[targetIndex],
-                            outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined,
-                            interpolation: key.interpolation,
-                        }))
-                    );
-
-                    this._forEachPrimitive(targetNode, (babylonAbstractMesh: AbstractMesh) => {
-                        const babylonMesh = babylonAbstractMesh as Mesh;
-                        if (babylonMesh.morphTargetManager) {
-                            const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
-                            const babylonAnimationClone = babylonAnimation.clone();
-                            morphTarget.animations.push(babylonAnimationClone);
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
-                        }
-                    });
-                }
-            } else {
-                const animationName = `${babylonAnimationGroup.name}_channel${babylonAnimationGroup.targetedAnimations.length}`;
-                const babylonAnimation = new Animation(animationName, targetPath, this.parent.targetFps, animationType);
-                babylonAnimation.setKeys(keys);
-
-                if (animationTargetOverride != null && animationTargetOverride.animations != null) {
-                    animationTargetOverride.animations.push(babylonAnimation);
-                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, animationTargetOverride);
-                } else {
-                    targetNode._babylonTransformNode!.animations.push(babylonAnimation);
-                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonTransformNode!);
-                }
-            }
-        });
-    }
-
-    public _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
-        if (sampler._data) {
-            return sampler._data;
-        }
-
-        const interpolation = sampler.interpolation || AnimationSamplerInterpolation.LINEAR;
-        switch (interpolation) {
-            case AnimationSamplerInterpolation.STEP:
-            case AnimationSamplerInterpolation.LINEAR:
-            case AnimationSamplerInterpolation.CUBICSPLINE: {
-                break;
-            }
-            default: {
-                throw new Error(`${context}/interpolation: Invalid value (${sampler.interpolation})`);
-            }
-        }
-
-        const inputAccessor = ArrayItem.Get(`${context}/input`, this._gltf.accessors, sampler.input);
-        const outputAccessor = ArrayItem.Get(`${context}/output`, this._gltf.accessors, sampler.output);
-        sampler._data = Promise.all([
-            this._loadFloatAccessorAsync(`/accessors/${inputAccessor.index}`, inputAccessor),
-            this._loadFloatAccessorAsync(`/accessors/${outputAccessor.index}`, outputAccessor),
-        ]).then(([inputData, outputData]) => {
-            return {
-                input: inputData,
-                interpolation: interpolation,
-                output: outputData,
-            };
-        });
-
-        return sampler._data;
+        const promise = this._extensionsLoadAnimationAsync(context, animation);
+        return promise ?? Promise.resolve(animation._babylonAnimationGroup);
     }
 
     /**

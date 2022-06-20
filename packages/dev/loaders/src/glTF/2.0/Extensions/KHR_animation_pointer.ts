@@ -3,13 +3,13 @@ import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Animation } from "core/Animations/animation";
-import type { IAnimation, IAnimationChannel } from "../glTFLoaderInterfaces";
+import type { IAnimation, IAnimationChannel, _IAnimationSamplerData, IAnimationSampler} from "../glTFLoaderInterfaces";
 
 import { AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { CoreAnimationPointerMap, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
 
-const NAME = "KHR_animation_pointer";
+const NAME = GLTFLoader._KHRAnimationPointerName;
 
 interface IAnimationChannelTarget {
     stride: number;
@@ -28,9 +28,10 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     public static IgnoreInvalidPointer: boolean = false;
 
     /**
-     * Used internally to determine how much data to be gather from input buffer.
+     * Used internally to determine how much data to be gather from input buffer at each key frame.
+     * Normal usage do not call this function while a GetStrideFn is located into the map path.
      * @param infos the informations
-     * @returns
+     * @returns the number of item to be gather at each keyframe
      */
     static GetAnimationOutputStride(infos: Array<IAnimationPointerPropertyInfos>): number {
         let stride = 0;
@@ -71,10 +72,6 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * The name of this extension.
      */
     public readonly name = NAME;
-    /**
-     * Defines whether this extension is enabled.
-     */
-    public enabled: boolean;
 
     private _loader: GLTFLoader;
 
@@ -84,7 +81,13 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
-        this.enabled = this._loader.isExtensionUsed(NAME);
+    }
+
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public get enabled(): boolean {
+        return this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
@@ -103,12 +106,17 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         return property != "name";
     }
 
-    public loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
-        this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
-        const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._loader.babylonScene);
-        babylonAnimationGroup._parentContainer = this._loader._assetContainer;
-        this._loader.babylonScene._blockEntityCollection = false;
-        animation._babylonAnimationGroup = babylonAnimationGroup;
+    public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
+        
+        // ensure an animation group is present.
+        if(!animation._babylonAnimationGroup){
+            this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
+            const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._loader.babylonScene);
+            babylonAnimationGroup._parentContainer = this._loader._assetContainer;
+            this._loader.babylonScene._blockEntityCollection = false;
+            animation._babylonAnimationGroup = babylonAnimationGroup;
+        }
+        const babylonAnimationGroup = animation._babylonAnimationGroup ;
 
         const promises = new Array<Promise<any>>();
         ArrayItem.Assign(animation.channels);
@@ -151,7 +159,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
 
         const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
 
-        return this._loader._loadAnimationSamplerAsync(`${context}/samplers/${channel.sampler}`, sampler).then((data) => {
+        return this._loadAnimationSamplerAsync(`${context}/samplers/${channel.sampler}`, sampler).then((data) => {
             // this is where we process the pointer.
             const animationTarget = this._parseAnimationPointer(`${context}/extensions/${this.name}/pointer`, pointer);
 
@@ -221,11 +229,46 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                         }
 
                         // each properties has its own build animation process.
+                        // these logics are located into KHR_animation_pointer.map.ts
                         propertyInfo.buildAnimations(animationTarget.target, fps, keys, babylonAnimationGroup);
                     }
                 }
             }
+            return Promise.resolve();
         });
+    }
+
+    private _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
+        if (sampler._data) {
+            return sampler._data;
+        }
+
+        const interpolation = sampler.interpolation || AnimationSamplerInterpolation.LINEAR;
+        switch (interpolation) {
+            case AnimationSamplerInterpolation.STEP:
+            case AnimationSamplerInterpolation.LINEAR:
+            case AnimationSamplerInterpolation.CUBICSPLINE: {
+                break;
+            }
+            default: {
+                throw new Error(`${context}/interpolation: Invalid value (${sampler.interpolation})`);
+            }
+        }
+
+        const inputAccessor = ArrayItem.Get(`${context}/input`, this._loader.gltf.accessors, sampler.input);
+        const outputAccessor = ArrayItem.Get(`${context}/output`, this._loader.gltf.accessors, sampler.output);
+        sampler._data = Promise.all([
+            this._loader._loadFloatAccessorAsync(`/accessors/${inputAccessor.index}`, inputAccessor),
+            this._loader._loadFloatAccessorAsync(`/accessors/${outputAccessor.index}`, outputAccessor),
+        ]).then(([inputData, outputData]) => {
+            return {
+                input: inputData,
+                interpolation: interpolation,
+                output: outputData,
+            };
+        });
+
+        return sampler._data;
     }
 
     /**
@@ -253,23 +296,30 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * @return 
      */
     private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationChannelTarget> {
-        const parts = pointer.split("/");
+        const sep = "/";
+        if (pointer.charAt(0) == sep) {
+            pointer = pointer.substring(1);
+        }
+        const parts = pointer.split(sep);
         // we have a least 3 part
         if (parts.length >= 3) {
             let node = CoreAnimationPointerMap; // the map of possible path
             let index: string = "";
-            for (let i = 0; i != parts.length; i++) {
+            for (let i = 0; i < parts.length; i++) {
                 const part = parts[i];
-                if (node.hasIndex) {
-                    index = part;
-                    // move to the next part
-                    continue;
-                }
                 node = node[part];
+
                 if (!node) {
                     // nothing to do so far
                     break;
                 }
+
+                if (node.hasIndex) {
+                    index = parts[++i];
+                    // move to the next part
+                    continue;
+                }
+
                 if (node.getTarget) {
                     // this is a leaf
                     const t = node.getTarget(this._loader.gltf, index);

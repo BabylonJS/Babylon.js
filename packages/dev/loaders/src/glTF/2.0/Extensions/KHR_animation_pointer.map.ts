@@ -135,7 +135,9 @@ class WeightAnimationPointerPropertyInfos extends AbstractAnimationPointerProper
     public constructor(type: number, name: string, get: GetValueFn) {
         super(type, name, get);
     }
-
+    public isValid(target: any) : boolean { 
+        return target._numMorphTargets ;
+    }
     public buildAnimations(targetNode: any, fps: number, keys: any[], babylonAnimationGroup: AnimationGroup): void {
 
         if(targetNode._numMorphTargets){

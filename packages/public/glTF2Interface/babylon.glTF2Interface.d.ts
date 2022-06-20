@@ -397,9 +397,9 @@ declare module BABYLON.GLTF2 {
      */
     interface IAnimationChannelTarget extends IProperty {
         /**
-         * The index of the node to target
+         * The index of the node to target - become optional with the introduction of KHR_animation_pointer
          */
-        node: number;
+        node?: number;
         /**
          * The name of the node's TRS property to modify, or the weights of the Morph Targets it instantiates
          */
