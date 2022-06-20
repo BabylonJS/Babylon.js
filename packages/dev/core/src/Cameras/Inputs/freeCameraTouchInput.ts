@@ -45,6 +45,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _pointerInput?: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
+    private _isSafari: boolean;
 
     /**
      * Manage the touch inputs to control the movement of a free camera.
@@ -56,7 +57,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
          * Define if mouse events can be treated as touch events
          */
         public allowMouse = false
-    ) {}
+    ) {
+        this._isSafari = Tools.IsSafari();
+    }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -76,7 +79,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 const evt = <IPointerEvent>p.event;
 
-                const isMouseEvent = evt.pointerType === "mouse";
+                const isMouseEvent = evt.pointerType === "mouse" || (this._isSafari && typeof evt.pointerType === "undefined");
 
                 if (!this.allowMouse && isMouseEvent) {
                     return;

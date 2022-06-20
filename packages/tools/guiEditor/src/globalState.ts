@@ -189,7 +189,7 @@ export class GlobalState {
         const searchList = [texture.rootContainer];
         while (searchList.length > 0) {
             const current = searchList.splice(0, 1)[0];
-            const children = current._children;
+            const children = current.children;
             if (children.indexOf(searchedControl) !== -1) {
                 return current;
             }
