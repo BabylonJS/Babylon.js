@@ -331,7 +331,7 @@ export const BasisTools = {
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
-declare let Module: any;
+declare let BASIS: any;
 function workerFunc(): void {
     const _BASIS_FORMAT = {
         cTFETC1: 0,
@@ -373,7 +373,6 @@ function workerFunc(): void {
                 });
             }
             transcoderModulePromise.then(m => {
-                Module = m;
                 m.initializeBasis();
                 postMessage({ action: "init" });
             });
@@ -381,7 +380,7 @@ function workerFunc(): void {
             // Transcode the basis image and return the resulting pixels
             const config: BasisTranscodeConfiguration = event.data.config;
             const imgData = event.data.imageData;
-            const loadedFile = new Module.BasisFile(imgData);
+            const loadedFile = new BASIS.BasisFile(imgData);
             const fileInfo = GetFileInfo(loadedFile);
             let format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
 
