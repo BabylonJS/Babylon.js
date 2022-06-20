@@ -372,7 +372,7 @@ function workerFunc(): void {
                     wasmBinary: event.data.wasmBinary,
                 });
             }
-            transcoderModulePromise.then(m => {
+            transcoderModulePromise.then((m) => {
                 m.initializeBasis();
                 postMessage({ action: "init" });
             });
