@@ -360,7 +360,7 @@ function workerFunc(): void {
         cTFETC2_EAC_R11: 20,
         cTFETC2_EAC_RG11: 21,
     };
-    let transcoderModulePromise: Nullable<Promise<any>> = null;
+    let transcoderModulePromise: Nullable<PromiseLike<any>> = null;
     onmessage = (event) => {
         if (event.data.action === "init") {
             // Load the transcoder if it hasn't been yet
