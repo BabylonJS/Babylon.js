@@ -49,6 +49,8 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 s3tc: caps.s3tc ? true : false,
                 pvrtc: caps.pvrtc ? true : false,
                 etc2: caps.etc2 ? true : false,
+                astc: caps.astc ? true : false,
+                bc7: caps.bptc ? true : false,
             },
         };
         TranscodeAsync(data, transcodeConfig)
@@ -91,6 +93,8 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
                 s3tc: caps.s3tc ? true : false,
                 pvrtc: caps.pvrtc ? true : false,
                 etc2: caps.etc2 ? true : false,
+                astc: caps.astc ? true : false,
+                bc7: caps.bptc ? true : false,
             },
         };
         TranscodeAsync(data, transcodeConfig)
