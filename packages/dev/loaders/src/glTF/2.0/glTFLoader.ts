@@ -1702,7 +1702,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
+    public _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
         if (sampler._data) {
             return sampler._data;
         }
