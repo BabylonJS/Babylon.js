@@ -772,6 +772,12 @@ export class Tools {
         );
     }
 
+    /**
+     * Download a Blob object 
+     * @param blob the Blob object
+     * @param fileName the file name to download
+     * @returns 
+     */
     static DownloadBlob(blob: Blob, fileName?: string) {
         //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
         if ("download" in document.createElement("a")) {
