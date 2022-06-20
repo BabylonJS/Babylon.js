@@ -246,7 +246,7 @@ export class MaterialPluginBase {
     /**
      * Gets the attributes used by the plugin.
      * @param attributes list that the attribute names should be added to.
-     * @param scene defines the scene to the material belongs to.
+     * @param scene the scene that the material belongs to.
      * @param mesh the mesh being rendered.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
