@@ -1,7 +1,7 @@
 import { Animation } from "../../../Animations/animation";
 import { TransformNode } from "../../../Meshes/transformNode";
 import { BaseAction } from "./BaseAction";
-import { AnimationGroup } from "core/Animations";
+import { AnimationGroup } from "../../../Animations/animationGroup";
 
 export interface IHideActionOptions {
     subject: TransformNode;
