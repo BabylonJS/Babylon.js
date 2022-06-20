@@ -87,7 +87,7 @@ export class BasisTranscodeConfiguration {
  * Enum of basis transcoder formats
  */
 enum BASIS_FORMATS {
-    cTFETC1= 0,
+    cTFETC1 = 0,
     cTFETC2= 1,
     cTFBC1= 2,
     cTFBC3= 3,
