@@ -60,10 +60,6 @@ export class BasisTranscodeConfiguration {
          */
         etc2?: boolean;
         /**
-         * dxt compression format
-         */
-        dxt?: boolean;
-        /**
          * astc compression format
          */
         astc?: boolean;
@@ -453,7 +449,7 @@ function workerFunc(): void {
                 format = _BASIS_FORMAT.cTFASTC_4x4;
             } else if (config.supportedCompressionFormats.bc7) {
                 format = _BASIS_FORMAT.cTFBC7;
-            } else if (config.supportedCompressionFormats.dxt) {
+            } else if (config.supportedCompressionFormats.s3tc) {
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
             } else if (config.supportedCompressionFormats.pvrtc) {
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFPVRTC1_4_RGBA : _BASIS_FORMAT.cTFPVRTC1_4_RGB;
@@ -461,8 +457,6 @@ function workerFunc(): void {
                 format = _BASIS_FORMAT.cTFETC2;
             } else if (config.supportedCompressionFormats.etc1) {
                 format = _BASIS_FORMAT.cTFETC1;
-            } else if (config.supportedCompressionFormats.s3tc) {
-                format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
             } else {
                 format = _BASIS_FORMAT.cTFRGB565;
             }
