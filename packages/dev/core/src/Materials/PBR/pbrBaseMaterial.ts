@@ -1451,8 +1451,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.uniforms = uniforms;
         this._eventInfo.attributes = attribs;
         this._eventInfo.samplers = samplers;
-        this._eventInfo.uniformBuffersNames = uniformBuffers;
+        this._eventInfo.uniformBuffersNames = uniformBuffers;        
         this._eventInfo.customCode = undefined;
+        this._eventInfo.mesh = mesh;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
