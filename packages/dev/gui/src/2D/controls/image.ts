@@ -22,7 +22,6 @@ export class Image extends Control {
     private _stretch = Image.STRETCH_FILL;
     private _source: Nullable<string>;
     private _autoScale = false;
-    private _referrerPolicy: ReferrerPolicy = "strict-origin-when-cross-origin";
 
     private _sourceLeft = 0;
     private _sourceTop = 0;
@@ -58,6 +57,12 @@ export class Image extends Control {
      * Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
      */
     public onSVGAttributesComputedObservable = new Observable<Image>();
+
+    /**
+     * Gets or sets the referrer policy to apply on the img element load request.
+     * You should set referrerPolicy before set the source of the image if you want to ensure the header will be present on the xhr loading request
+     */
+    public referrerPolicy: Nullable<ReferrerPolicy>;
 
     /**
      * Gets a boolean indicating that the content is loaded
@@ -292,24 +297,6 @@ export class Image extends Control {
         }
     }
 
-    /**
-     * Gets or sets the referrer policy to apply on the img load request,
-     * you should set this field before set the source field if you want to ensure the header will be present on the xhr loading request
-     */
-    @serialize()
-    public get referrerPolicy(): ReferrerPolicy {
-        return this._referrerPolicy;
-    }
-
-    public set referrerPolicy(value: ReferrerPolicy) {
-        if (this._referrerPolicy === value) {
-            return;
-        }
-
-        this._referrerPolicy = value;
-        this._domImage.referrerPolicy = value.toString();
-    }
-
     /** Gets or sets the stretching mode used by the image */
     @serialize()
     public get stretch(): number {
@@ -540,13 +527,13 @@ export class Image extends Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
         this._domImage = engine.createCanvasImage();
-        this._domImage.referrerPolicy = this._referrerPolicy;
 
         this._domImage.onload = () => {
             this._onImageLoaded();
         };
         if (value) {
             Tools.SetCorsBehavior(value, this._domImage);
+            Tools.SetReferrerPolicyBehavior(this.referrerPolicy, this._domImage);
             this._domImage.src = value;
         }
     }
