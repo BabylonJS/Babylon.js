@@ -9,14 +9,14 @@ import { Color4 } from "core/Maths/math.color";
 import type { GraphNode } from "./diagram/graphNode";
 import type { Vector2 } from "core/Maths/math.vector";
 import type { NodePort } from "./diagram/nodePort";
-import type { NodeLink } from "./sharedComponents/nodeGraphSystem/nodeLink";
+import type { NodeLink } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
 import type { GraphFrame } from "./diagram/graphFrame";
-import type { FrameNodePort } from "./sharedComponents/nodeGraphSystem/frameNodePort";
+import type { FrameNodePort } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
 import type { FramePortData } from "./diagram/graphCanvas";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { ISelectionChangedOptions } from "./sharedComponents/nodeGraphSystem/interfaces/selectionChangedOptions";
-import { StateManager } from "./sharedComponents/nodeGraphSystem/stateManager";
+import { ISelectionChangedOptions } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { StateManager } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/stateManager";
 import { registerElbowSupport } from "./graphSystem/registerElbowSupport";
 
 export class GlobalState {

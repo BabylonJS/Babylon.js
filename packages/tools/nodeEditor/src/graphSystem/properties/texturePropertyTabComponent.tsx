@@ -11,7 +11,7 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
@@ -233,7 +233,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
                         label="Auto select UV"
@@ -455,7 +455,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                     </LineContainerComponent>
                 )}
-                <GenericPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GenericPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
             </div>
         );
     }

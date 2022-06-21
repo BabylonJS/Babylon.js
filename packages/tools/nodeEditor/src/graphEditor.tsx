@@ -14,7 +14,7 @@ import type { Nullable } from "core/types";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { BlockTools } from "./blockTools";
 import { PreviewManager } from "./components/preview/previewManager";
-import type { IEditorData } from "./sharedComponents/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { IEditorData } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
@@ -163,7 +163,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvasRef = React.createRef();
         this._diagramContainerRef = React.createRef();
 
-        this.props.globalState.onNewBlockRequiredObservable.add((eventData) => {
+        this.props.globalState.stateManager.onNewBlockRequiredObservable.add((eventData) => {
             let targetX = eventData.targetX;
             let targetY = eventData.targetY;
 
@@ -175,7 +175,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.emitNewBlock(eventData.type, targetX, targetY);
         });
 
-        this.props.globalState.onRebuildRequiredObservable.add((autoConfigure) => {
+        this.props.globalState.stateManager.onRebuildRequiredObservable.add((autoConfigure) => {
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial(autoConfigure);
             }
@@ -257,8 +257,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                     }
 
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    this.props.globalState.onRebuildRequiredObservable.notifyObservers(false);
+                    this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(false);
                     return;
                 }
 
@@ -335,7 +335,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             }
 
                             // Select
-                            this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
+                            this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
                             return;
                         }
                     }
@@ -404,7 +404,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         copiedNodes = copiedNodes.slice();
 
         // Cancel selection
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
 
         // Create new nodes
         for (const node of copiedNodes) {
@@ -440,7 +440,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNodes.push(newNode);
 
             if (selectNew) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
             }
         }
 
@@ -700,9 +700,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
 
-        this.props.globalState.onNewNodeCreatedObservable.notifyObservers(newNode);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode });
+        this.props.globalState.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
 
         const block = newNode.block;
 

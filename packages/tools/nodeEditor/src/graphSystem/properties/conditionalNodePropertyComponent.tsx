@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
 import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class ConditionalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
@@ -32,7 +32,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent globalState={this.props.globalState} stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Condition"
@@ -40,8 +40,8 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
                         target={conditionBlock}
                         propertyName="condition"
                         onSelect={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(conditionBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(conditionBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
                         }}
                     />

@@ -5,8 +5,8 @@ import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMateri
 import type { GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
 import { GenericPropertyComponent } from "../graphSystem/properties/genericNodePropertyComponent";
-import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/interfaces/displayManager";
-import type { NodeLink } from "../sharedComponents/nodeGraphSystem/nodeLink";
+import type { IDisplayManager } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
+import type { NodeLink } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
 import triangle from "../imgs/triangle.svg";

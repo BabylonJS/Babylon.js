@@ -1,16 +1,19 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { GlobalState, ISelectionChangedOptions } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import type { GraphFrame } from "../../diagram/graphFrame";
 import { FramePortPosition } from "../../diagram/graphFrame";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { FrameNodePort } from "../../sharedComponents/nodeGraphSystem/frameNodePort";
+import type { FrameNodePort } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
 import { isFramePortData } from "../../diagram/graphCanvas";
+import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 
 export interface IFrameNodePortPropertyTabComponentProps {
+    stateManager: StateManager;
     globalState: GlobalState;
     frameNodePort: FrameNodePort;
     frame: GraphFrame;
@@ -27,7 +30,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
         };
 
         const _this = this;
-        this._onSelectionChangedObserver = this.props.globalState.onSelectionChangedObservable.add((options) => {
+        this._onSelectionChangedObserver = this.props.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (isFramePortData(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
@@ -46,7 +49,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
 
     componentWillUnmount() {
         this.props.frameNodePort.onFramePortPositionChangedObservable.remove(this._onFramePortPositionChangedObserver);
-        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        this.props.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
     }
 
     render() {

@@ -27,7 +27,7 @@ import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponen
 import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
 import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import type { FrameNodePort } from "../../sharedComponents/nodeGraphSystem/frameNodePort";
+import type { FrameNodePort } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
 import { NodePort } from "../../diagram/nodePort";
 import { isFramePortData } from "../../diagram/graphCanvas";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";

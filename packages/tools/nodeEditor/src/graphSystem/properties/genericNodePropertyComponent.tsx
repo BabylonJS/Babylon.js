@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -23,8 +23,8 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
     render() {
         return (
             <>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
-                <GenericPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} globalState={this.props.globalState} data={this.props.data} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} globalState={this.props.globalState} data={this.props.data} />
             </>
         );
     }

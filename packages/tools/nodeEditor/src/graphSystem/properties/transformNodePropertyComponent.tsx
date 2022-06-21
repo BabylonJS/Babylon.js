@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
@@ -13,7 +13,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
     render() {
         return (
             <>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
                         label="Transform as direction"

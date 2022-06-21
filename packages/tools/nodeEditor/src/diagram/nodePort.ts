@@ -4,9 +4,9 @@ import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMateri
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Vector2 } from "core/Maths/math.vector";
-import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/interfaces/displayManager";
+import type { IDisplayManager } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { GraphNode } from "./graphNode";
-import type { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
+import type { FrameNodePort } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
 import { StateManager } from "node-editor/sharedComponents/nodeGraphSystem/stateManager";
 import { ISelectionChangedOptions } from "node-editor/sharedComponents/nodeGraphSystem/interfaces/selectionChangedOptions";
 

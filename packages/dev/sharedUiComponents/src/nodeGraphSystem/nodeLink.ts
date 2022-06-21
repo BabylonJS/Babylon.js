@@ -1,6 +1,6 @@
-import { GraphCanvasComponent } from "../../diagram/graphCanvas";
-import type { GraphNode } from "../../diagram/graphNode";
-import type { NodePort } from "../../diagram/nodePort";
+import { GraphCanvasComponent } from "../../../../tools/nodeEditor/src/diagram/graphCanvas";
+import type { GraphNode } from "../../../../tools/nodeEditor/src/diagram/graphNode";
+import type { NodePort } from "../../../../tools/nodeEditor/src/diagram/nodePort";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";

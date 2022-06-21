@@ -3,13 +3,13 @@ import type { GraphCanvasComponent } from "./graphCanvas";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
-import type { NodeLink } from "../sharedComponents/nodeGraphSystem/nodeLink";
-import type { IFrameData } from "../sharedComponents/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { NodeLink } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
+import type { IFrameData } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo";
 import { Color3 } from "core/Maths/math.color";
 import type { NodePort } from "./nodePort";
 import { SerializationTools } from "../serializationTools";
 import { StringTools } from "shared-ui-components/stringTools";
-import { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
+import { FrameNodePort } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
 import type { ISelectionChangedOptions } from "../globalState";
 import { ConnectionPointPortData } from "node-editor/graphSystem/connectionPointPortData";
 

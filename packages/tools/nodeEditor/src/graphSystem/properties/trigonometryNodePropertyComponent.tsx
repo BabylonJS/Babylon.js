@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
 import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {
@@ -41,7 +41,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Operation"

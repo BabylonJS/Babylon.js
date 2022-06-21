@@ -5,7 +5,7 @@ import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock
 import { GradientStepComponent } from "./gradientStepComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { Color3 } from "core/Maths/math.color";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { Nullable } from "core/types";
@@ -102,7 +102,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} globalState={this.props.globalState} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Type"

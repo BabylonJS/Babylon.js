@@ -1,7 +1,7 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
 
@@ -22,7 +22,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent globalState={this.props.globalState} stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="SWIZZLES">
                     <OptionsLineComponent
                         label="R"
@@ -31,8 +31,8 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         propertyName="rSwizzle"
                         valuesAreStrings={true}
                         onSelect={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
                         }}
                     />
@@ -43,8 +43,8 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         propertyName="gSwizzle"
                         valuesAreStrings={true}
                         onSelect={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
                         }}
                     />
@@ -55,8 +55,8 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         propertyName="bSwizzle"
                         valuesAreStrings={true}
                         onSelect={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
                         }}
                     />
@@ -67,8 +67,8 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                         propertyName="aSwizzle"
                         valuesAreStrings={true}
                         onSelect={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(colorMergerBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
                         }}
                     />
