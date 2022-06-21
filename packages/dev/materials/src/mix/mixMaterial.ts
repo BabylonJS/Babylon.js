@@ -355,7 +355,7 @@ export class MixMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
-        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;        
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
