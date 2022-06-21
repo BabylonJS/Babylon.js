@@ -11,7 +11,7 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphEngine/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/propertyComponentProps";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";

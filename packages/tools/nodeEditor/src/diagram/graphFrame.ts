@@ -4,14 +4,14 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import type { NodeLink } from "./nodeLink";
-import type { IFrameData } from "../sharedComponents/nodeGraphEngine/nodeLocationInfo";
+import type { IFrameData } from "../sharedComponents/nodeGraphSystem/nodeLocationInfo";
 import { Color3 } from "core/Maths/math.color";
 import type { NodePort } from "./nodePort";
 import { SerializationTools } from "../serializationTools";
 import { StringTools } from "shared-ui-components/stringTools";
-import { FrameNodePort } from "../sharedComponents/nodeGraphEngine/frameNodePort";
+import { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
 import type { ISelectionChangedOptions } from "../globalState";
-import { ConnectionPointPortData } from "node-editor/graphEngine/connectionPointPortData";
+import { ConnectionPointPortData } from "node-editor/graphSystem/connectionPointPortData";
 
 enum ResizingDirection {
     Right,

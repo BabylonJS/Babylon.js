@@ -1,7 +1,7 @@
-import type { IDisplayManager } from "../../sharedComponents/nodeGraphEngine/displayManager";
+import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
-export class OutputDisplayManager implements IDisplayManager {
+export class PBRDisplayManager implements IDisplayManager {
     public getHeaderClass() {
         return "";
     }
@@ -15,10 +15,10 @@ export class OutputDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(): string {
-        return "rgb(106, 44, 131)";
+        return "#6174FA";
     }
 
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
-        contentArea.classList.add("output-block");
+        contentArea.classList.add("pbr-block");
     }
 }

@@ -9,8 +9,8 @@ import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { RegisterDisplayManagers } from "./graphEngine/registerTodisplayLedger";
-import { RegisterPropertyTabManagers } from "./graphEngine/registerToPropertyLedger";
+import { RegisterDisplayManagers } from "./graphSystem/registerTodisplayLedger";
+import { RegisterPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 /**
  * Interface used to specify creation options for the node editor
  */

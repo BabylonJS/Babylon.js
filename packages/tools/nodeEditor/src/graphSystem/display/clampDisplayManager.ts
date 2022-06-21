@@ -1,4 +1,4 @@
-import type { IDisplayManager } from "../../sharedComponents/nodeGraphEngine/displayManager";
+import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
 

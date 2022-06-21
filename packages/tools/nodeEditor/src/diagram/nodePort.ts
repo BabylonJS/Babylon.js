@@ -5,9 +5,9 @@ import type { GlobalState, ISelectionChangedOptions } from "../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Vector2 } from "core/Maths/math.vector";
-import type { IDisplayManager } from "../sharedComponents/nodeGraphEngine/displayManager";
+import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/displayManager";
 import type { GraphNode } from "./graphNode";
-import type { FrameNodePort } from "../sharedComponents/nodeGraphEngine/frameNodePort";
+import type { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
 
 export class NodePort {
     protected _element: HTMLDivElement;

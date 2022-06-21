@@ -7,7 +7,7 @@ import type { GraphFrame } from "../../diagram/graphFrame";
 import { FramePortPosition } from "../../diagram/graphFrame";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { FrameNodePort } from "../../sharedComponents/nodeGraphEngine/frameNodePort";
+import type { FrameNodePort } from "../../sharedComponents/nodeGraphSystem/frameNodePort";
 import { isFramePortData } from "../../diagram/graphCanvas";
 
 export interface IFrameNodePortPropertyTabComponentProps {

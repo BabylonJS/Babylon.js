@@ -1,5 +1,5 @@
 import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { IPortData } from "node-editor/sharedComponents/nodeGraphEngine/portData";
+import { IPortData } from "node-editor/sharedComponents/nodeGraphSystem/portData";
 
 export class ConnectionPointPortData implements IPortData {
     public data: NodeMaterialConnectionPoint;

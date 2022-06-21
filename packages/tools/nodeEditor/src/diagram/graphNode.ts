@@ -5,15 +5,15 @@ import type { Observer } from "core/Misc/observable";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
-import { GenericPropertyComponent } from "../graphEngine/properties/genericNodePropertyComponent";
-import type { IDisplayManager } from "../sharedComponents/nodeGraphEngine/displayManager";
+import { GenericPropertyComponent } from "../graphSystem/properties/genericNodePropertyComponent";
+import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/displayManager";
 import type { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
 
 import triangle from "../imgs/triangle.svg";
-import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphEngine/displayLedger";
-import { PropertyLedger } from "node-editor/sharedComponents/nodeGraphEngine/propertyLedger";
+import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphSystem/displayLedger";
+import { PropertyLedger } from "node-editor/sharedComponents/nodeGraphSystem/propertyLedger";
 
 export class GraphNode {
     private _visual: HTMLDivElement;

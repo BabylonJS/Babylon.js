@@ -10,7 +10,7 @@ import { PBRDisplayManager } from "./display/pbrDisplayManager";
 import { ConditionalDisplayManager } from "./display/conditionalDisplayManager";
 import { ImageSourceDisplayManager } from "./display/imageSourceDisplayManager";
 import { ElbowDisplayManager } from "./display/elbowDisplayManager";
-import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphEngine/displayLedger";
+import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphSystem/displayLedger";
 
 export const RegisterDisplayManagers = () => {
     DisplayLedger.RegisteredControls["InputBlock"] = InputDisplayManager;
