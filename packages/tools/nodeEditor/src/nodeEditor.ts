@@ -9,6 +9,8 @@ import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
+import { RegisterDisplayManagers } from "./graphEngine/registerTodisplayLedger";
+import { RegisterPropertyTabManagers } from "./graphEngine/registerToPropertyLedger";
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -30,6 +32,10 @@ export class NodeEditor {
      * @param options defines the options to use to configure the node editor
      */
     public static Show(options: INodeEditorOptions) {
+        // Initial setup
+        RegisterDisplayManagers();
+        RegisterPropertyTabManagers();
+
         if (this._CurrentState) {
             const popupWindow = (Popup as any)["node-editor"];
             if (popupWindow) {

@@ -4,16 +4,16 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { GraphCanvasComponent } from "./graphCanvas";
-import { PropertyLedger } from "./propertyLedger";
 import * as React from "react";
-import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent";
-import { DisplayLedger } from "./displayLedger";
-import type { IDisplayManager } from "./display/displayManager";
+import { GenericPropertyComponent } from "../graphEngine/properties/genericNodePropertyComponent";
+import type { IDisplayManager } from "../sharedComponents/nodeGraphEngine/displayManager";
 import type { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
 
 import triangle from "../imgs/triangle.svg";
+import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphEngine/displayLedger";
+import { PropertyLedger } from "node-editor/sharedComponents/nodeGraphEngine/propertyLedger";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -393,7 +393,7 @@ export class GraphNode {
 
         return React.createElement(control, {
             globalState: this._globalState,
-            block: this.block,
+            data: this.block,
         });
     }
 

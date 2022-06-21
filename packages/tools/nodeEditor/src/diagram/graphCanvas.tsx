@@ -14,8 +14,8 @@ import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fr
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
-import type { IEditorData, IFrameData } from "../nodeLocationInfo";
-import { FrameNodePort } from "./frameNodePort";
+import type { IEditorData, IFrameData } from "../sharedComponents/nodeGraphEngine/nodeLocationInfo";
+import { FrameNodePort } from "../sharedComponents/nodeGraphEngine/frameNodePort";
 
 import "./graphCanvas.scss";
 

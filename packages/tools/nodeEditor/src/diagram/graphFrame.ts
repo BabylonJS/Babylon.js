@@ -4,13 +4,14 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import type { NodeLink } from "./nodeLink";
-import type { IFrameData } from "../nodeLocationInfo";
+import type { IFrameData } from "../sharedComponents/nodeGraphEngine/nodeLocationInfo";
 import { Color3 } from "core/Maths/math.color";
 import type { NodePort } from "./nodePort";
 import { SerializationTools } from "../serializationTools";
 import { StringTools } from "shared-ui-components/stringTools";
-import { FrameNodePort } from "./frameNodePort";
+import { FrameNodePort } from "../sharedComponents/nodeGraphEngine/frameNodePort";
 import type { ISelectionChangedOptions } from "../globalState";
+import { ConnectionPointPortData } from "node-editor/graphEngine/connectionPointPortData";
 
 enum ResizingDirection {
     Right,
@@ -89,7 +90,7 @@ export class GraphFrame {
 
     private _createInputPort(port: NodePort, node: GraphNode) {
         const localPort = FrameNodePort.CreateFrameNodePortElement(
-            port.connectionPoint,
+            new ConnectionPointPortData(port.connectionPoint),
             node,
             this._inputPortContainer,
             null,
@@ -267,7 +268,7 @@ export class GraphFrame {
                     if (!portAdded) {
                         portAdded = true;
                         localPort = FrameNodePort.CreateFrameNodePortElement(
-                            port.connectionPoint,
+                            new ConnectionPointPortData(port.connectionPoint),
                             link.nodeA!,
                             this._outputPortContainer,
                             null,
@@ -297,7 +298,7 @@ export class GraphFrame {
                     this._controlledPorts.push(port);
                 } else if (port.exposedPortPosition >= 0 && !portAdded) {
                     const localPort = FrameNodePort.CreateFrameNodePortElement(
-                        port.connectionPoint,
+                        new ConnectionPointPortData(port.connectionPoint),
                         node,
                         this._outputPortContainer,
                         null,
@@ -315,7 +316,7 @@ export class GraphFrame {
             if (portAdded) return true;
         } else if (port.exposedOnFrame) {
             const localPort = FrameNodePort.CreateFrameNodePortElement(
-                port.connectionPoint,
+                new ConnectionPointPortData(port.connectionPoint),
                 node,
                 this._outputPortContainer,
                 null,

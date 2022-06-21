@@ -14,9 +14,9 @@ import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent"
 import { GraphFrame } from "../../diagram/graphFrame";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { Engine } from "core/Engines/engine";
-import { FramePropertyTabComponent } from "../../diagram/properties/framePropertyComponent";
-import { FrameNodePortPropertyTabComponent } from "../../diagram/properties/frameNodePortPropertyComponent";
-import { NodePortPropertyTabComponent } from "../../diagram/properties/nodePortPropertyComponent";
+import { FramePropertyTabComponent } from "../../graphEngine/properties/framePropertyComponent";
+import { FrameNodePortPropertyTabComponent } from "../../graphEngine/properties/frameNodePortPropertyComponent";
+import { NodePortPropertyTabComponent } from "../../graphEngine/properties/nodePortPropertyComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
@@ -27,7 +27,7 @@ import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponen
 import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
 import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import type { FrameNodePort } from "../../diagram/frameNodePort";
+import type { FrameNodePort } from "../../sharedComponents/nodeGraphEngine/frameNodePort";
 import { NodePort } from "../../diagram/nodePort";
 import { isFramePortData } from "../../diagram/graphCanvas";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";

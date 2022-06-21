@@ -11,7 +11,7 @@ import type { Vector2 } from "core/Maths/math.vector";
 import type { NodePort } from "./diagram/nodePort";
 import type { NodeLink } from "./diagram/nodeLink";
 import type { GraphFrame } from "./diagram/graphFrame";
-import type { FrameNodePort } from "./diagram/frameNodePort";
+import type { FrameNodePort } from "./sharedComponents/nodeGraphEngine/frameNodePort";
 import type { FramePortData } from "./diagram/graphCanvas";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";

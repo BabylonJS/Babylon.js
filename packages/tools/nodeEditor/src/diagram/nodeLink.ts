@@ -4,7 +4,7 @@ import type { NodePort } from "./nodePort";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
-import type { FrameNodePort } from "./frameNodePort";
+import type { FrameNodePort } from "../sharedComponents/nodeGraphEngine/frameNodePort";
 import type { ISelectionChangedOptions } from "../globalState";
 import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
