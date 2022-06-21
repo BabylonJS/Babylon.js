@@ -1460,6 +1460,8 @@ export class GLTFLoader implements IGLTFLoader {
         GLTFLoader.AddPointerMetadata(babylonCamera, context);
         this._parent.onCameraLoadedObservable.notifyObservers(babylonCamera);
         assign(babylonCamera);
+        // register the camera to be used later.
+        camera._babylonCamera = babylonCamera;
 
         this.logClose();
 

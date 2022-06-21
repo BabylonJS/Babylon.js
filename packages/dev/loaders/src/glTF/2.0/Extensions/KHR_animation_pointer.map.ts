@@ -95,6 +95,10 @@ const _getMinusFloat: GetValueFn = (_target: any, source: Float32Array, offset: 
     return -(scale ? source[offset] * scale : source[offset]);
 };
 
+const _getFloat2: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+    return (scale ? source[offset] * scale : source[offset]) * 2;
+};
+
 const _getWeights: GetValueFn = (target: any, source: Float32Array, offset: number, scale?: number) => {
     if (target._numMorphTargets) {
         const value = new Array<number>(target._numMorphTargets!);
@@ -156,12 +160,12 @@ class CameraAnimationPointerPropertyInfos extends AbstractAnimationPointerProper
         super(type, name, get);
     }
 
-    public isValid(_target: any): boolean {
-        return true;
+    public isValid(target: any): boolean {
+        return target._babylonCamera != null;
     }
 
     public buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null): void {
-        return this._buildAnimation(target, fps, keys, group, animationTargetOverride);
+        return this._buildAnimation(target._babylonCamera, fps, keys, group, animationTargetOverride);
     }
 }
 
@@ -199,7 +203,7 @@ class LightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropert
     public buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null, params: any): void {
         const i = _parseIntIndex(params[1]);
         const l = i >= 0 && i < target.lights.length ? target.lights[i] : null;
-        return this._buildAnimation(l, fps, keys, group, animationTargetOverride);
+        return this._buildAnimation(l._babylonLight, fps, keys, group, animationTargetOverride);
     }
 }
 
@@ -491,10 +495,10 @@ const CoreAnimationExtensionsPointerMap: any = {
             },
             spot: {
                 innerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle")],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloat2 )],
                 },
                 outerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle")],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloat2 )],
                 },
             },
         },
