@@ -1,15 +1,16 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { GlobalState, ISelectionChangedOptions } from "../../globalState";
-import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { NodePort } from "../../diagram/nodePort";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
+import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 export interface IFrameNodePortPropertyTabComponentProps {
-    globalState: GlobalState;
+    stateManager: StateManager;
     nodePort: NodePort;
 }
 
@@ -21,19 +22,19 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
     }
 
     componentWillUnmount() {
-        this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        this.props.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
     }
 
     toggleExposeOnFrame(value: boolean) {
         this.props.nodePort.exposedOnFrame = value;
-        this.props.globalState.onExposePortOnFrameObservable.notifyObservers(this.props.nodePort.node);
+        this.props.stateManager.onExposePortOnFrameObservable.notifyObservers(this.props.nodePort.node);
     }
 
     render() {
         const info = this.props.nodePort.hasLabel() ? (
             <>
                 {this.props.nodePort.hasLabel() && (
-                    <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portName" target={this.props.nodePort} />
+                    <TextInputLineComponent label="Port Label" propertyName="portName" target={this.props.nodePort} />
                 )}
                 {this.props.nodePort.node.enclosingFrameId !== -1 && (
                     <CheckBoxLineComponent

@@ -16,11 +16,11 @@ import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animat
 import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<InputBlock>>;
@@ -33,7 +33,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const inputBlock = this.props.data as InputBlock;
         this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
-            this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
         });
     }
 
@@ -62,15 +62,15 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 onSelect={(value) => {
                                     inputBlock.value = value ? 1 : 0;
                                     if (inputBlock.isConstant) {
-                                        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                                     }
-                                    this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                                 }}
                             />
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
-                                globalState={this.props.globalState}
+                                globalState={this.props.stateManager.data as GlobalState}
                                 label="Min"
                                 target={inputBlock}
                                 propertyName="min"
@@ -78,7 +78,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     if (inputBlock.value < inputBlock.min) {
                                         inputBlock.value = inputBlock.min;
                                         if (inputBlock.isConstant) {
-                                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                                         }
                                     }
                                     this.forceUpdate();
@@ -87,7 +87,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
-                                globalState={this.props.globalState}
+                                globalState={this.props.stateManager.data as GlobalState}
                                 label="Max"
                                 target={inputBlock}
                                 propertyName="max"
@@ -95,7 +95,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     if (inputBlock.value > inputBlock.max) {
                                         inputBlock.value = inputBlock.max;
                                         if (inputBlock.isConstant) {
-                                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                                         }
                                     }
                                     this.forceUpdate();
@@ -106,7 +106,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         {!inputBlock.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
                                 label="Value"
-                                globalState={this.props.globalState}
+                                globalState={this.props.stateManager.data as GlobalState}
                                 target={inputBlock}
                                 propertyName="value"
                                 step={Math.abs(inputBlock.max - inputBlock.min) / 100.0}
@@ -114,9 +114,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 maximum={inputBlock.max}
                                 onChange={() => {
                                     if (inputBlock.isConstant) {
-                                        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                                     }
-                                    this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                                 }}
                             />
                         )}
@@ -134,7 +134,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             propertyName="convertToGammaSpace"
                             target={inputBlock}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                             }}
                         />
                         <CheckBoxLineComponent
@@ -142,7 +142,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             propertyName="convertToLinearSpace"
                             target={inputBlock}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                             }}
                         />
                     </>
@@ -156,7 +156,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             propertyName="convertToGammaSpace"
                             target={inputBlock}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                             }}
                         />
                         <CheckBoxLineComponent
@@ -164,7 +164,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             propertyName="convertToLinearSpace"
                             target={inputBlock}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                             }}
                         />
                     </>
@@ -267,7 +267,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.globalState}  globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && (
                         <OptionsLineComponent
@@ -302,21 +302,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                         break;
                                 }
                                 this.forceUpdate();
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}
                     {inputBlock.visibleInInspector && (
                         <TextInputLineComponent
-                            globalState={this.props.globalState}
                             label="Group"
                             propertyName="groupInInspector"
                             target={inputBlock}
                             onChange={() => {
                                 this.forceUpdate();
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}
@@ -351,8 +350,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     break;
                             }
                             this.forceUpdate();
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                         }}
                     />
                     {inputBlock.isAttribute && (
@@ -366,8 +365,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 inputBlock.setAsAttribute(value);
                                 this.forceUpdate();
 
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}
@@ -380,12 +379,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             onSelect={() => {
                                 this.forceUpdate();
 
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}
-                    {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && this.renderValue(this.props.globalState)}
+                    {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isUniform && inputBlock.isSystemValue && (
                         <OptionsLineComponent
                             label="System value"
@@ -396,8 +395,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 inputBlock.setAsSystemValue(value);
                                 this.forceUpdate();
 
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}

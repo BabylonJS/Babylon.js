@@ -1,9 +1,10 @@
 import { Nullable } from "core/types";
-import { FramePortData } from "node-editor/diagram/graphCanvas";
-import { GraphFrame } from "node-editor/diagram/graphFrame";
-import { GraphNode } from "node-editor/diagram/graphNode";
-import { NodePort } from "node-editor/diagram/nodePort";
+import { GraphFrame } from "../graphFrame";
+import { GraphNode } from "../graphNode";
+
 import { NodeLink } from "../nodeLink";
+import { NodePort } from "../nodePort";
+import { FramePortData } from "../types/framePortData";
 
 export class ISelectionChangedOptions {
     selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;

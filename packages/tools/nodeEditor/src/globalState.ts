@@ -1,23 +1,18 @@
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import type { LogEntry } from "./components/log/logComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
-import type { GraphNode } from "./diagram/graphNode";
-import type { Vector2 } from "core/Maths/math.vector";
-import type { NodePort } from "./diagram/nodePort";
-import type { NodeLink } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
-import type { GraphFrame } from "./diagram/graphFrame";
-import type { FrameNodePort } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
-import type { FramePortData } from "./diagram/graphCanvas";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { ISelectionChangedOptions } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { StateManager } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/stateManager";
 import { registerElbowSupport } from "./graphSystem/registerElbowSupport";
+import { registerNodePortDesign } from "./graphSystem/registerNodePortDesign";
+import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { Nullable } from "core/types";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -30,7 +25,6 @@ export class GlobalState {
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
-    onErrorMessageDialogRequiredObservable = new Observable<string>();
     onIsLoadingChanged = new Observable<boolean>();
     onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
@@ -41,8 +35,6 @@ export class GlobalState {
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
-    onGridSizeChanged = new Observable<void>();
-    onExposePortOnFrameObservable = new Observable<GraphNode>();
     previewType: PreviewType;
     previewFile: File;
     particleSystemBlendMode = ParticleSystem.BLENDMODE_ONEONE;
@@ -56,7 +48,6 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
     _mode: NodeMaterialModes;
 
     /** Gets the mode */
@@ -83,12 +74,18 @@ export class GlobalState {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
         this.stateManager = new StateManager();
+        this.stateManager.data = this;
 
         registerElbowSupport(this.stateManager);
+        registerNodePortDesign(this.stateManager);        
 
         const r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
         const b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
+    }
+       
+    storeEditorData(serializationObject: any, frame?: Nullable<GraphFrame>) {
+        this.stateManager.storeEditorData(serializationObject, frame);
     }
 }

@@ -18,14 +18,14 @@ import type { IEditorData } from "../../../dev/sharedUiComponents/src/nodeGraphS
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
-import { GraphCanvasComponent } from "./diagram/graphCanvas";
-import type { GraphNode } from "./diagram/graphNode";
-import { GraphFrame } from "./diagram/graphFrame";
 import * as ReactDOM from "react-dom";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
 import { Popup } from "./sharedComponents/popup";
 
 import "./main.scss";
+import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
+import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -625,13 +625,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (blockType.indexOf("CustomBlock") > -1) {
             const storageData = localStorage.getItem(blockType);
             if (!storageData) {
-                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading custom block`);
+                this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading custom block`);
                 return;
             }
 
             customBlockData = JSON.parse(storageData);
             if (!customBlockData) {
-                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error parsing custom block`);
+                this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`Error parsing custom block`);
                 return;
             }
         } else if (blockType.indexOf("Custom") > -1) {
@@ -673,7 +673,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 const className = block.getClassName();
                 for (const other of this._blocks) {
                     if (other !== block && other.getClassName() === className) {
-                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
+                        this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
                         return;
                     }
                 }
@@ -942,7 +942,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     >
                         <GraphCanvasComponent
                             ref={this._graphCanvasRef}
-                            globalState={this.props.globalState}
+                            stateManager={this.props.globalState.stateManager}
                             onEmitNewBlock={(block) => {
                                 return this.createNodeFromObject(block);
                             }}

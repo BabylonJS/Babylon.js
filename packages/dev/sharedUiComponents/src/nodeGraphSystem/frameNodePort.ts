@@ -1,14 +1,14 @@
-import { NodePort } from "../../../../tools/nodeEditor/src/diagram/nodePort";
-import type { GraphNode } from "../../../../tools/nodeEditor/src/diagram/graphNode";
-import type { FramePortPosition } from "../../../../tools/nodeEditor/src/diagram/graphFrame";
 import type { IDisplayManager } from "./interfaces/displayManager";
 import { Observable } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import type { FramePortData } from "../../../../tools/nodeEditor/src/diagram/graphCanvas";
-import { isFramePortData } from "../../../../tools/nodeEditor/src/diagram/graphCanvas";
 import { IPortData } from "./interfaces/portData";
+import { NodePort } from "./nodePort";
+import { GraphNode } from "./graphNode";
+import { isFramePortData } from "./tools";
 
 declare type StateManager = import("./stateManager").StateManager;
+declare type FramePortPosition = import("./graphFrame").FramePortPosition;
+declare type FramePortData = import("./types/framePortData").FramePortData;
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;

@@ -22,7 +22,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="SWIZZLES">
                     <OptionsLineComponent
                         label="R"

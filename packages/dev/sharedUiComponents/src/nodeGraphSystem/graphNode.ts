@@ -10,10 +10,10 @@ import type { NodeLink } from "../../../../dev/sharedUiComponents/src/nodeGraphS
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
 import triangle from "../imgs/triangle.svg";
-import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphSystem/displayLedger";
-import { PropertyLedger } from "node-editor/sharedComponents/nodeGraphSystem/propertyLedger";
-import { StateManager } from "node-editor/sharedComponents/nodeGraphSystem/stateManager";
-import { ISelectionChangedOptions } from "node-editor/sharedComponents/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { DisplayLedger } from "shared-ui-components/nodeGraphSystem/displayLedger";
+import { PropertyLedger } from "shared-ui-components/nodeGraphSystem/propertyLedger";
 
 export class GraphNode {
     private _visual: HTMLDivElement;

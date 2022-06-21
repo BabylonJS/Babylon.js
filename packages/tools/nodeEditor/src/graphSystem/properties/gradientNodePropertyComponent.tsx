@@ -22,7 +22,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         const gradientBlock = this.props.data as GradientBlock;
         this._onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
-            this.props.globalState.onUpdateRequiredObservable.notifyObservers(gradientBlock);
+            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
         });
     }
 
@@ -35,8 +35,8 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     forceRebuild() {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.data as GradientBlock);
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.data as GradientBlock);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
     }
 
     deleteStep(step: GradientBlockColorStep) {
@@ -88,7 +88,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         });
         gradientBlock.colorStepsUpdated();
 
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(gradientBlock);
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
         this.forceUpdate();
     }
 
@@ -102,7 +102,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Type"
@@ -130,8 +130,8 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                                     break;
                             }
                             this.forceUpdate();
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(gradientBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                         }}
                     />
                 </LineContainerComponent>
@@ -140,7 +140,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                     {gradientBlock.colorSteps.map((c, i) => {
                         return (
                             <GradientStepComponent
-                                globalState={this.props.globalState}
+                                stateManager={this.props.stateManager}
                                 onCheckForReOrder={() => this.checkForReOrder()}
                                 onUpdateStep={() => this.forceRebuild()}
                                 key={"step-" + i}

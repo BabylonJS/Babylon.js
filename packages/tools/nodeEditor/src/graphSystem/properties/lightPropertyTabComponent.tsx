@@ -5,10 +5,11 @@ import type { IPropertyComponentProps } from "../../../../../dev/sharedUiCompone
 import type { LightBlock } from "core/Materials/Node/Blocks/Dual/lightBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { Light } from "core/Lights/light";
+import { GlobalState } from "../../globalState";
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     render() {
-        const scene = this.props.globalState.nodeMaterial!.getScene();
+        const scene = (this.props.stateManager.data as GlobalState).nodeMaterial!.getScene();
         const lightOptions = scene.lights.map((l: Light) => {
             return { label: l.name, value: l.name };
         });
@@ -19,7 +20,7 @@ export class LightPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Light"
@@ -36,7 +37,7 @@ export class LightPropertyTabComponent extends React.Component<IPropertyComponen
                                 lightBlock.light = scene.getLightByName(name);
                             }
                             this.forceUpdate();
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                         }}
                     />
                 </LineContainerComponent>

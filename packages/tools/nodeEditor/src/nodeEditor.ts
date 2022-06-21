@@ -9,8 +9,9 @@ import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { RegisterDisplayManagers } from "./graphSystem/registerTodisplayLedger";
+import { RegisterDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
+import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -35,6 +36,7 @@ export class NodeEditor {
         // Initial setup
         RegisterDisplayManagers();
         RegisterPropertyTabManagers();
+        RegisterTypeLedger();
 
         if (this._CurrentState) {
             const popupWindow = (Popup as any)["node-editor"];

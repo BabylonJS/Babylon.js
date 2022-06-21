@@ -32,7 +32,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent globalState={this.props.globalState} stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Condition"

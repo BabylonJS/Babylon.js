@@ -1,7 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import type { GlobalState } from "../../globalState";
-import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import type { GraphFrame } from "../../diagram/graphFrame";
 import { FramePortPosition } from "../../diagram/graphFrame";
@@ -11,6 +10,7 @@ import type { FrameNodePort } from "../../../../../dev/sharedUiComponents/src/no
 import { isFramePortData } from "../../diagram/graphCanvas";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;
@@ -61,7 +61,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent globalState={this.props.globalState} label="Port Name" propertyName="portName" target={this.props.frameNodePort} />
+                        <TextInputLineComponent label="Port Name" propertyName="portName" target={this.props.frameNodePort} />
                         {this.props.frameNodePort.framePortPosition !== FramePortPosition.Top && (
                             <ButtonLineComponent
                                 label="Move Port Up"

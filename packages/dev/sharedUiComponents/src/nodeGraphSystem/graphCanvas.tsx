@@ -1,11 +1,11 @@
 import * as React from "react";
-import type { GlobalState } from "../globalState";
+import type { GlobalState } from "../../../../tools/nodeEditor/src/globalState";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { GraphNode } from "./graphNode";
 import * as dagre from "dagre";
 import type { Nullable } from "core/types";
-import { NodeLink } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
+import { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
@@ -14,28 +14,17 @@ import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fr
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
-import type { IEditorData, IFrameData } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo";
-import { FrameNodePort } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
+import type { IEditorData, IFrameData } from "./interfaces/nodeLocationInfo";
+import { FrameNodePort } from "./frameNodePort";
 
-import "./graphCanvas.scss";
+import "./scss/graphCanvas.scss";
+import { StateManager } from "./stateManager";
+import { FramePortData } from "./types/framePortData";
 
 export interface IGraphCanvasComponentProps {
-    globalState: GlobalState;
+    stateManager: StateManager;
     onEmitNewBlock: (block: NodeMaterialBlock) => GraphNode;
 }
-
-export type FramePortData = {
-    frame: GraphFrame;
-    port: FrameNodePort;
-};
-
-export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
-    if (variableToCheck) {
-        return (variableToCheck as FramePortData).port !== undefined;
-    } else {
-        return false;
-    }
-};
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
     private readonly _minZoom = 0.1;
@@ -87,8 +76,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.updateTransform();
     }
 
-    public get globalState() {
-        return this.props.globalState;
+    public get stateManager() {
+        return this.props.stateManager;
     }
 
     public get nodes() {
@@ -187,7 +176,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
-        props.globalState.onSelectionChangedObservable.add((options) => {
+        props.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection, forceKeepSelection, marqueeSelection = false } = options || {};
             if (!selection) {
                 this._selectedNodes = [];
@@ -209,7 +198,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     this._selectedNodes = [];
                     this._selectedFrames = [];
                     this._selectedLink = null;
-                    this._selectedPort = selection.port;
+                    this._selectedPort = selection;
                 } else if (selection instanceof GraphNode || selection instanceof GraphFrame) {
                     // If in marquee selection mode, always prioritize selecting nodes. Otherwise, always prioritize selecting the type of
                     // the selected element
@@ -259,16 +248,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
         });
 
-        props.globalState.onCandidatePortSelectedObservable.add((port) => {
+        props.stateManager.onCandidatePortSelectedObservable.add((port) => {
             this._candidatePort = port;
         });
 
-        props.globalState.onGridSizeChanged.add(() => {
+        props.stateManager.onGridSizeChanged.add(() => {
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         });
 
-        this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
-        this.props.globalState.hostDocument!.addEventListener(
+        this.props.stateManager.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
+        this.props.stateManager.hostDocument!.addEventListener(
             "keydown",
             (evt) => {
                 this._altKeyIsPressed = evt.altKey;
@@ -276,7 +265,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             },
             false
         );
-        this.props.globalState.hostDocument!.defaultView!.addEventListener(
+        this.props.stateManager.hostDocument!.defaultView!.addEventListener(
             "blur",
             () => {
                 this._altKeyIsPressed = false;
@@ -286,7 +275,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         );
 
         // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData, graphFrame) => {
+        this.props.stateManager.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
             if (graphFrame) {
                 editorData.frames.push(graphFrame!.serialize(false));
@@ -437,7 +426,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     appendBlock(block: NodeMaterialBlock) {
-        const newNode = new GraphNode(block, this.props.globalState);
+        const newNode = new GraphNode(block, this.props.stateManager);
 
         newNode.appendVisual(this._graphCanvas, this);
 
@@ -531,12 +520,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     componentDidMount() {
-        this._hostCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas") as HTMLDivElement;
-        this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
-        this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
-        this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;
-        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;
-        this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;
+        this._hostCanvas = this.props.stateManager.hostDocument.getElementById("graph-canvas") as HTMLDivElement;
+        this._rootContainer = this.props.stateManager.hostDocument.getElementById("graph-container") as HTMLDivElement;
+        this._graphCanvas = this.props.stateManager.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
+        this._svgCanvas = this.props.stateManager.hostDocument.getElementById("graph-svg-container") as HTMLElement;
+        this._selectionContainer = this.props.stateManager.hostDocument.getElementById("selection-container") as HTMLDivElement;
+        this._frameContainer = this.props.stateManager.hostDocument.getElementById("frame-container") as HTMLDivElement;
 
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
@@ -566,7 +555,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this._selectionBox.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
             }
 
-            this.props.globalState.onSelectionBoxMoved.notifyObservers(this._selectionBox.getBoundingClientRect());
+            this.props.stateManager.onSelectionBoxMoved.notifyObservers(this._selectionBox.getBoundingClientRect());
 
             return;
         }
@@ -601,7 +590,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         if (this._candidateLink) {
             const rootRect = this.canvasContainer.getBoundingClientRect();
             this._candidatePort = null;
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(new Vector2(evt.pageX, evt.pageY));
+            this.props.stateManager.onCandidateLinkMoved.notifyObservers(new Vector2(evt.pageX, evt.pageY));
             this._dropPointX = (evt.pageX - rootRect.left) / this.zoom;
             this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
 
@@ -654,7 +643,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Selection?
         if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
-            this._selectionBox = this.props.globalState.hostDocument.createElement("div");
+            this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
             this._selectionBox.classList.add("selection-box");
             this._selectionContainer.appendChild(this._selectionBox);
 
@@ -670,7 +659,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Frame?
         if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
-            this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
+            this._frameCandidate = this.props.stateManager.hostDocument.createElement("div");
             this._frameCandidate.classList.add("frame-box");
             this._frameContainer.appendChild(this._frameCandidate);
 
@@ -694,7 +683,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
     }
@@ -708,7 +697,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         if (this._candidateLink) {
             if (this._candidateLinkedHasMoved) {
                 this.processCandidatePort();
-                this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+                this.props.stateManager.onCandidateLinkMoved.notifyObservers(null);
             } else {
                 // is a click event on NodePort
                 if (this._candidateLink.portA instanceof FrameNodePort) {
@@ -720,10 +709,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                             frame,
                             port,
                         };
-                        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: data });
+                        this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: data });
                     }
                 } else if (this._candidateLink.portA instanceof NodePort) {
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: this._candidateLink.portA });
+                    this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: this._candidateLink.portA });
                 }
             }
             this._candidateLink.dispose();
@@ -743,7 +732,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
 
-            this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
+            this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
         }
     }
 
@@ -844,10 +833,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             } else {
                 [emittedBlock, pointName] = customInputBlock;
             }
-            this.props.globalState.nodeMaterial.attachedBlocks.push(emittedBlock);
+            const nodeMaterial = (this.props.stateManager.data as GlobalState).nodeMaterial;
+            nodeMaterial.attachedBlocks.push(emittedBlock);
             pointA = (emittedBlock as any)[pointName];
             if (!emittedBlock.isInput) {
-                emittedBlock.autoConfigure(this.props.globalState.nodeMaterial);
+                emittedBlock.autoConfigure(nodeMaterial);
                 nodeA = this.props.onEmitNewBlock(emittedBlock);
             } else {
                 nodeA = this.appendBlock(emittedBlock);
@@ -936,7 +926,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     break;
             }
 
-            this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);
+            this.props.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(message);
             return;
         }
 
@@ -976,7 +966,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             link.onDisposedObservable.clear();
         });
 
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
     }
 
     connectNodes(nodeA: GraphNode, pointA: NodeMaterialConnectionPoint, nodeB: GraphNode, pointB: NodeMaterialConnectionPoint) {
@@ -1013,9 +1003,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     addFrame(frameData: IFrameData) {
-        const frame = GraphFrame.Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
+        const frame = GraphFrame.Parse(frameData, this, (this.props.stateManager.data as GlobalState).nodeMaterial.editorData.map);
         this._frames.push(frame);
-        this.globalState.onSelectionChangedObservable.notifyObservers({ selection: frame });
+        this.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame });
     }
 
     render() {

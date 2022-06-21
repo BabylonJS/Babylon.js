@@ -1,5 +1,4 @@
 import * as React from "react";
-import type { GlobalState } from "../../globalState";
 import { Color3 } from "core/Maths/math.color";
 import type { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { ColorPickerLineComponent } from "../../sharedComponents/colorPickerComponent";
@@ -7,9 +6,11 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 
 import deleteButton from "../../imgs/delete.svg";
 import copyIcon from "../../sharedComponents/copy.svg";
+import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { GlobalState } from "node-editor/globalState";
 
 interface IGradientStepComponentProps {
-    globalState: GlobalState;
+    stateManager: StateManager;
     step: GradientBlockColorStep;
     lineIndex: number;
     onDelete: () => void;
@@ -53,7 +54,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 <div className="color">
                     <ColorPickerLineComponent
                         value={step.color}
-                        globalState={this.props.globalState}
+                        globalState={this.props.stateManager.data as GlobalState}
                         onColorChanged={(color) => {
                             this.updateColor(color);
                         }}
@@ -61,7 +62,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 </div>
                 <div className="step-value">
                     <FloatLineComponent
-                        globalState={this.props.globalState}
+                        globalState={this.props.stateManager.data as GlobalState}
                         smallUI={true}
                         label=""
                         target={step}

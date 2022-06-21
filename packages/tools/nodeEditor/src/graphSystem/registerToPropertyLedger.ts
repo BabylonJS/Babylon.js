@@ -1,4 +1,4 @@
-import { PropertyLedger } from "node-editor/sharedComponents/nodeGraphSystem/propertyLedger";
+import { PropertyLedger } from "shared-ui-components/nodeGraphSystem/propertyLedger";
 import { ColorMergerPropertyTabComponent } from "./properties/colorMergerPropertyComponent";
 import { ConditionalPropertyTabComponent } from "./properties/conditionalNodePropertyComponent";
 import { GradientPropertyTabComponent } from "./properties/gradientNodePropertyComponent";

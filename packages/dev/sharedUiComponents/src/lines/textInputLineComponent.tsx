@@ -27,6 +27,7 @@ export interface ITextInputLineComponentProps {
     max?: number;
     placeholder?: string;
     unit?: React.ReactNode;
+    validator?: (value: string) => boolean;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
@@ -131,6 +132,13 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
+
+        if (this.props.validator) {
+            if (this.props.validator(value) == false) {
+                value = store;
+            }
+        }
+
         this.setState({ value: value });
 
         if (this.props.propertyName && !this.props.delayInput) {

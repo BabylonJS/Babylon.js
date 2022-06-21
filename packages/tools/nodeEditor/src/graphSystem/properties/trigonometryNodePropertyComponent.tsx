@@ -41,7 +41,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Operation"
@@ -49,8 +49,8 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
                         target={trigonometryBlock}
                         propertyName="operation"
                         onSelect={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(trigonometryBlock);
-                            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(trigonometryBlock);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             this.forceUpdate();
                         }}
                     />

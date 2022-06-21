@@ -1,10 +1,10 @@
-import { GraphCanvasComponent } from "../../../../tools/nodeEditor/src/diagram/graphCanvas";
-import type { GraphNode } from "../../../../tools/nodeEditor/src/diagram/graphNode";
-import type { NodePort } from "../../../../tools/nodeEditor/src/diagram/nodePort";
+import { GraphCanvasComponent } from "./graphCanvas";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import type { FrameNodePort } from "./frameNodePort";
+import { NodePort } from "./nodePort";
+import { GraphNode } from "./graphNode";
 
 declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
 
@@ -115,7 +115,7 @@ export class NodeLink {
             this.update();
         }
 
-        this._onSelectionChangedObserver = this._graphCanvas.globalState.stateManager.onSelectionChangedObservable.add((options) => {
+        this._onSelectionChangedObserver = this._graphCanvas.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
                 this._path.classList.add("selected");
@@ -128,7 +128,7 @@ export class NodeLink {
     }
 
     onClick(evt: MouseEvent) {
-        const stateManager = this._graphCanvas.globalState.stateManager;
+        const stateManager = this._graphCanvas.stateManager;
         if (evt.altKey) {
             const nodeA = this._nodeA;
             const pointA = this._portA.connectionPoint;
@@ -141,7 +141,7 @@ export class NodeLink {
 
             // Create an elbow at the clicked location
             stateManager.onNewNodeCreatedObservable.addOnce((newNode) => {
-                const newElbowBlock = newNode.block as ElbowBlock;
+                const newElbowBlock = newNode.block as any;
 
                 // Delete previous link
                 this.dispose();
@@ -166,7 +166,7 @@ export class NodeLink {
     }
 
     public dispose(notify = true) {
-        this._graphCanvas.globalState.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        this._graphCanvas.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
 
         if (this._path.parentElement) {
             this._path.parentElement.removeChild(this._path);

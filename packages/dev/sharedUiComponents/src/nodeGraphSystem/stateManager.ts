@@ -1,13 +1,16 @@
 import { Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 import { Nullable } from "core/types";
-import { GraphFrame } from "node-editor/diagram/graphFrame";
-import { GraphNode } from "node-editor/diagram/graphNode";
-import { NodePort } from "node-editor/diagram/nodePort";
 import { FrameNodePort } from "./frameNodePort";
+import { GraphFrame } from "./graphFrame";
+import { GraphNode } from "./graphNode";
 import { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { NodePort } from "./nodePort";
 
 export class StateManager {    
+    data: any;    
+    hostDocument: Document;
+
     onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();    
     onFrameCreatedObservable = new Observable<GraphFrame>();
     onUpdateRequiredObservable = new Observable<Nullable<any>>();
@@ -16,8 +19,15 @@ export class StateManager {
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();    
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
     onNewNodeCreatedObservable = new Observable<GraphNode>();
-    onRebuildRequiredObservable = new Observable<boolean>();
+    onRebuildRequiredObservable = new Observable<boolean>();    
+    onErrorMessageDialogRequiredObservable = new Observable<string>();    
+    onExposePortOnFrameObservable = new Observable<GraphNode>();    
+    onGridSizeChanged = new Observable<void>();
     onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean }>();    
 
+    exportData: (data: any) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
+    applyNodePortDesign: (data: any, element: HTMLElement, img: HTMLImageElement) => void;
+    
+    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 }

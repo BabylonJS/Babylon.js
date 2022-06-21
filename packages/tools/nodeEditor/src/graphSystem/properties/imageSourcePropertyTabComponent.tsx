@@ -3,7 +3,6 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
@@ -14,6 +13,8 @@ import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./gene
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { GlobalState } from "../../globalState";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {
@@ -46,8 +47,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     updateAfterTextureLoad() {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     }
 
@@ -72,7 +73,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         }
 
         if (!texture) {
-            this.imageSourceBlock.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false);
+            this.imageSourceBlock.texture = new Texture(null, (this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), false, false);
             texture = this.imageSourceBlock.texture;
             texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
         }
@@ -149,7 +150,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     {texture && texture.updateSamplingMode && (
                         <OptionsLineComponent
@@ -160,7 +161,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             propertyName="samplingMode"
                             onSelect={(value) => {
                                 texture.updateSamplingMode(value as number);
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -170,7 +171,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE}
                             onSelect={(value) => {
                                 texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -180,51 +181,51 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE}
                             onSelect={(value) => {
                                 texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Offset U"
                             target={texture}
                             propertyName="uOffset"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Offset V"
                             target={texture}
                             propertyName="vOffset"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Scale U"
                             target={texture}
                             propertyName="uScale"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Scale V"
                             target={texture}
                             propertyName="vScale"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -232,14 +233,14 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                         <SliderLineComponent
                             label="Rotation U"
                             target={texture}
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="uAng"
                             minimum={0}
                             maximum={Math.PI * 2}
                             useEuler={true}
                             step={0.1}
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -247,14 +248,14 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                         <SliderLineComponent
                             label="Rotation V"
                             target={texture}
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="vAng"
                             minimum={0}
                             maximum={Math.PI * 2}
                             useEuler={true}
                             step={0.1}
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -262,14 +263,14 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                         <SliderLineComponent
                             label="Rotation W"
                             target={texture}
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="wAng"
                             minimum={0}
                             maximum={Math.PI * 2}
                             useEuler={true}
                             step={0.1}
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -286,14 +287,14 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     />
                     {this.state.isEmbedded && <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />}
                     {!this.state.isEmbedded && (
-                        <TextInputLineComponent label="Link" globalState={this.props.globalState} value={url} onChange={(newUrl) => this.replaceTextureWithUrl(newUrl)} />
+                        <TextInputLineComponent label="Link" value={url} onChange={(newUrl) => this.replaceTextureWithUrl(newUrl)} />
                     )}
                     {!this.state.isEmbedded && url && (
                         <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())} />
                     )}
                     {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                 </LineContainerComponent>
-                <GenericPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
             </div>
         );
     }

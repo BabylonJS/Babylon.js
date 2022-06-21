@@ -3,7 +3,6 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
@@ -21,6 +20,8 @@ import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/partic
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { GlobalState } from "../../globalState";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
@@ -57,8 +58,8 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     updateAfterTextureLoad() {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     }
 
@@ -83,20 +84,21 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         }
 
         if (!texture) {
+            const globalState = this.props.stateManager.data as GlobalState;
             if (!this.state.loadAsCubeTexture) {
                 this.textureBlock.texture = new Texture(
                     null,
-                    this.props.globalState.nodeMaterial.getScene(),
+                    globalState.nodeMaterial.getScene(),
                     false,
                     this.textureBlock instanceof ReflectionTextureBlock ||
                         this.textureBlock instanceof ReflectionBlock ||
                         this.textureBlock instanceof RefractionBlock ||
-                        this.props.globalState.mode === NodeMaterialModes.PostProcess
+                        globalState.mode === NodeMaterialModes.PostProcess
                 );
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
             } else {
-                this.textureBlock.texture = new CubeTexture("", this.props.globalState.nodeMaterial.getScene());
+                this.textureBlock.texture = new CubeTexture("", globalState.nodeMaterial.getScene());
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = Texture.CUBIC_MODE;
             }
@@ -233,14 +235,14 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
                         label="Auto select UV"
                         propertyName="autoSelectUV"
                         target={block}
                         onValueChanged={() => {
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                         }}
                     />
                     {!isInReflectionMode && (
@@ -249,7 +251,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             propertyName="convertToGammaSpace"
                             target={block}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -259,7 +261,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             propertyName="convertToLinearSpace"
                             target={block}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -269,7 +271,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             propertyName="gammaSpace"
                             target={texture}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -279,8 +281,8 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             propertyName="disableLevelMultiplication"
                             target={block}
                             onValueChanged={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     }
@@ -293,7 +295,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             propertyName="samplingMode"
                             onSelect={(value) => {
                                 texture!.updateSamplingMode(value as number);
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -306,7 +308,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             onSelect={(value: any) => {
                                 texture!.coordinatesMode = value;
                                 this.forceUpdate();
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -316,7 +318,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             isSelected={() => texture!.wrapU === Texture.CLAMP_ADDRESSMODE}
                             onSelect={(value) => {
                                 texture!.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -326,51 +328,51 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             isSelected={() => texture!.wrapV === Texture.CLAMP_ADDRESSMODE}
                             onSelect={(value) => {
                                 texture!.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Offset U"
                             target={texture}
                             propertyName="uOffset"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Offset V"
                             target={texture}
                             propertyName="vOffset"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Scale U"
                             target={texture}
                             propertyName="uScale"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label="Scale V"
                             target={texture}
                             propertyName="vScale"
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -378,14 +380,14 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <SliderLineComponent
                             label="Rotation U"
                             target={texture}
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="uAng"
                             minimum={0}
                             maximum={Math.PI * 2}
                             useEuler={true}
                             step={0.1}
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -393,14 +395,14 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <SliderLineComponent
                             label="Rotation V"
                             target={texture}
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="vAng"
                             minimum={0}
                             maximum={Math.PI * 2}
                             useEuler={true}
                             step={0.1}
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -408,14 +410,14 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <SliderLineComponent
                             label="Rotation W"
                             target={texture}
-                            globalState={this.props.globalState}
+                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="wAng"
                             minimum={0}
                             maximum={Math.PI * 2}
                             useEuler={true}
                             step={0.1}
                             onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
@@ -447,7 +449,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         )}
                         {this.state.isEmbedded && <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />}
                         {!this.state.isEmbedded && (
-                            <TextInputLineComponent label="Link" globalState={this.props.globalState} value={url} onChange={(newUrl) => this.replaceTextureWithUrl(newUrl)} />
+                            <TextInputLineComponent label="Link" value={url} onChange={(newUrl) => this.replaceTextureWithUrl(newUrl)} />
                         )}
                         {!this.state.isEmbedded && url && (
                             <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())} />
@@ -455,7 +457,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                     </LineContainerComponent>
                 )}
-                <GenericPropertyTabComponent stateManager={this.props.globalState} globalState={this.props.globalState} data={this.props.data} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
             </div>
         );
     }

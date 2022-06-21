@@ -3,15 +3,15 @@ import type { GraphCanvasComponent } from "./graphCanvas";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
-import type { NodeLink } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
-import type { IFrameData } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo";
 import { Color3 } from "core/Maths/math.color";
 import type { NodePort } from "./nodePort";
-import { SerializationTools } from "../serializationTools";
-import { StringTools } from "shared-ui-components/stringTools";
-import { FrameNodePort } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
-import type { ISelectionChangedOptions } from "../globalState";
-import { ConnectionPointPortData } from "node-editor/graphSystem/connectionPointPortData";
+import { FrameNodePort } from "./frameNodePort";
+import { NodeLink } from "./nodeLink";
+import { TypeLedger } from "./typeLedger";
+import { IFrameData } from "./interfaces/nodeLocationInfo";
+import { StringTools } from "../stringTools";
+
+declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
 
 enum ResizingDirection {
     Right,
@@ -90,11 +90,11 @@ export class GraphFrame {
 
     private _createInputPort(port: NodePort, node: GraphNode) {
         const localPort = FrameNodePort.CreateFrameNodePortElement(
-            new ConnectionPointPortData(port.connectionPoint),
+            TypeLedger.PortDataBuilder(port),
             node,
             this._inputPortContainer,
             null,
-            this._ownerCanvas.globalState,
+            this._ownerCanvas.stateManager,
             true,
             GraphFrame._FramePortCounter++,
             this.id
@@ -268,11 +268,11 @@ export class GraphFrame {
                     if (!portAdded) {
                         portAdded = true;
                         localPort = FrameNodePort.CreateFrameNodePortElement(
-                            new ConnectionPointPortData(port.connectionPoint),
+                            TypeLedger.PortDataBuilder(port),
                             link.nodeA!,
                             this._outputPortContainer,
                             null,
-                            this._ownerCanvas.globalState,
+                            this._ownerCanvas.stateManager,
                             false,
                             GraphFrame._FramePortCounter++,
                             this.id
@@ -298,11 +298,11 @@ export class GraphFrame {
                     this._controlledPorts.push(port);
                 } else if (port.exposedPortPosition >= 0 && !portAdded) {
                     const localPort = FrameNodePort.CreateFrameNodePortElement(
-                        new ConnectionPointPortData(port.connectionPoint),
+                        TypeLedger.PortDataBuilder(port),
                         node,
                         this._outputPortContainer,
                         null,
-                        this._ownerCanvas.globalState,
+                        this._ownerCanvas.stateManager,
                         false,
                         GraphFrame._FramePortCounter++,
                         this.id
@@ -316,11 +316,11 @@ export class GraphFrame {
             if (portAdded) return true;
         } else if (port.exposedOnFrame) {
             const localPort = FrameNodePort.CreateFrameNodePortElement(
-                new ConnectionPointPortData(port.connectionPoint),
+                TypeLedger.PortDataBuilder(port),
                 node,
                 this._outputPortContainer,
                 null,
-                this._ownerCanvas.globalState,
+                this._ownerCanvas.stateManager,
                 false,
                 GraphFrame._FramePortCounter++,
                 this.id
@@ -663,7 +663,7 @@ export class GraphFrame {
         this._headerTextElement.addEventListener("pointerup", (evt) => this._onUp(evt));
         this._headerTextElement.addEventListener("pointermove", (evt) => this._onMove(evt));
 
-        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(() => {
+        this._onSelectionChangedObserver = canvas.stateManager.onSelectionChangedObservable.add(() => {
             if (this._ownerCanvas.selectedFrames.indexOf(this) !== -1) {
                 this.element.classList.add("selected");
             } else {
@@ -671,15 +671,15 @@ export class GraphFrame {
             }
         });
 
-        canvas.globalState.onSelectionBoxMoved.add((rect1) => {
+        canvas.stateManager.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this.element.getBoundingClientRect();
             const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
             if (overlap) {
-                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true, marqueeSelection: true });
+                canvas.stateManager.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true, marqueeSelection: true });
             }
         });
 
-        this._onGraphNodeRemovalObserver = canvas.globalState.onGraphNodeRemovalObservable.add((node: GraphNode) => {
+        this._onGraphNodeRemovalObserver = canvas.stateManager.onGraphNodeRemovalObservable.add((node: GraphNode) => {
             // remove node from this._nodes
             const index = this._nodes.indexOf(node);
             if (index === -1) {
@@ -690,7 +690,7 @@ export class GraphFrame {
             }
         });
 
-        this._onExposePortOnFrameObserver = canvas.globalState.onExposePortOnFrameObservable.add((node: GraphNode) => {
+        this._onExposePortOnFrameObserver = canvas.stateManager.onExposePortOnFrameObservable.add((node: GraphNode) => {
             if (this.nodes.indexOf(node) === -1) {
                 return;
             }
@@ -715,7 +715,7 @@ export class GraphFrame {
 
     public refresh() {
         this._nodes = [];
-        this._ownerCanvas.globalState.onFrameCreatedObservable.notifyObservers(this);
+        this._ownerCanvas.stateManager.onFrameCreatedObservable.notifyObservers(this);
     }
 
     public addNode(node: GraphNode) {
@@ -760,7 +760,7 @@ export class GraphFrame {
 
         const indexInSelection = this._ownerCanvas.selectedFrames.indexOf(this);
         if (indexInSelection === -1) {
-            this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
+            this._ownerCanvas.stateManager.onSelectionChangedObservable.notifyObservers({ selection: this });
         } else if (evt.ctrlKey) {
             this._ownerCanvas.selectedFrames.splice(indexInSelection, 1);
             this.element.classList.remove("selected");
@@ -1470,15 +1470,15 @@ export class GraphFrame {
 
     public dispose() {
         if (this._onSelectionChangedObserver) {
-            this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+            this._ownerCanvas.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
 
         if (this._onGraphNodeRemovalObserver) {
-            this._ownerCanvas.globalState.onGraphNodeRemovalObservable.remove(this._onGraphNodeRemovalObserver);
+            this._ownerCanvas.stateManager.onGraphNodeRemovalObservable.remove(this._onGraphNodeRemovalObserver);
         }
 
         if (this._onExposePortOnFrameObserver) {
-            this._ownerCanvas.globalState.onExposePortOnFrameObservable.remove(this._onExposePortOnFrameObserver);
+            this._ownerCanvas.stateManager.onExposePortOnFrameObservable.remove(this._onExposePortOnFrameObserver);
         }
 
         this.element.parentElement?.removeChild(this.element);
@@ -1515,8 +1515,8 @@ export class GraphFrame {
     }
 
     public export() {
-        const state = this._ownerCanvas.globalState;
-        const json = SerializationTools.Serialize(state.nodeMaterial, state, this);
+        const state = this._ownerCanvas.stateManager;
+        const json = state.exportData(state.data)
         StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 
