@@ -3,7 +3,7 @@ import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { IAnimation, IAnimationChannel, _IAnimationSamplerData, IAnimationSampler} from "../glTFLoaderInterfaces";
+import type { IAnimation, IAnimationChannel, _IAnimationSamplerData, IAnimationSampler } from "../glTFLoaderInterfaces";
 
 import { AccessorType, AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
@@ -15,7 +15,7 @@ interface IAnimationChannelTarget {
     stride?: number;
     target: any;
     properties: Array<IAnimationPointerPropertyInfos>;
-    params:any;
+    params: any;
 }
 
 /**
@@ -33,16 +33,22 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * @param type the accessor type
      * @returns the number of item to be gather at each keyframe
      */
-    static GetAnimationOutputStride(type:AccessorType): number {
-            switch (type) {
-                case AccessorType.SCALAR: return 1;
-                case AccessorType.VEC2: return 2;
-                case AccessorType.VEC3: return 3;
-                case AccessorType.VEC4: 
-                case AccessorType.MAT2: return 4;
-                case AccessorType.MAT3: return 9;
-                case AccessorType.MAT4: return 16;
-            }
+    static _GetAnimationOutputStride(type: AccessorType): number {
+        switch (type) {
+            case AccessorType.SCALAR:
+                return 1;
+            case AccessorType.VEC2:
+                return 2;
+            case AccessorType.VEC3:
+                return 3;
+            case AccessorType.VEC4:
+            case AccessorType.MAT2:
+                return 4;
+            case AccessorType.MAT3:
+                return 9;
+            case AccessorType.MAT4:
+                return 16;
+        }
     }
     /**
      * The name of this extension.
@@ -83,16 +89,15 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     }
 
     public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
-        
         // ensure an animation group is present.
-        if(!animation._babylonAnimationGroup){
+        if (!animation._babylonAnimationGroup) {
             this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
             const group = new AnimationGroup(animation.name || `animation${animation.index}`, this._loader.babylonScene);
             group._parentContainer = this._loader._assetContainer;
             this._loader.babylonScene._blockEntityCollection = false;
             animation._babylonAnimationGroup = group;
         }
-        const babylonAnimationGroup = animation._babylonAnimationGroup ;
+        const babylonAnimationGroup = animation._babylonAnimationGroup;
 
         const promises = new Array<Promise<any>>();
         ArrayItem.Assign(animation.channels);
@@ -114,10 +119,16 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property
      * @param channel The glTF animation channel property
-    * @param animationTargetOverride The babylon animation channel target override property. My be null.
+     * @param animationTargetOverride The babylon animation channel target override property. My be null.
      * @returns A void promise when the channel load is complete
      */
-    public _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, animationTargetOverride: Nullable<IAnimatable> = null): Promise<void> {
+    public _loadAnimationChannelAsync(
+        context: string,
+        animationContext: string,
+        animation: IAnimation,
+        channel: IAnimationChannel,
+        animationTargetOverride: Nullable<IAnimatable> = null
+    ): Promise<void> {
         if (channel.target.path != AnimationChannelTargetPath.POINTER) {
             throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
         }
@@ -145,10 +156,9 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                 // build the animations into the group
                 const babylonAnimationGroup = animation._babylonAnimationGroup;
                 if (babylonAnimationGroup) {
-
                     const outputAccessor = ArrayItem.Get(`${context}/output`, this._loader.gltf.accessors, sampler.output);
                     // stride is the size of each element stored into the output buffer.
-                    const stride = animationTarget.stride ?? KHR_animation_pointer.GetAnimationOutputStride(outputAccessor.type);
+                    const stride = animationTarget.stride ?? KHR_animation_pointer._GetAnimationOutputStride(outputAccessor.type);
                     const fps = this._loader.parent.targetFps;
 
                     // we extract the corresponding values from the readed value.
@@ -283,7 +293,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         if (parts.length >= 3) {
             let node = CoreAnimationPointerMap; // the map of possible path
             const indices = [];
-            let getTarget:Nullable<GetGltfNodeTargetFn> = null ;
+            let getTarget: Nullable<GetGltfNodeTargetFn> = null;
             for (let i = 0; i < parts.length; i++) {
                 const part = parts[i];
                 node = node[part];
@@ -293,17 +303,17 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                     break;
                 }
 
-                if( node.getTarget){
-                    getTarget = node.getTarget ;
+                if (node.getTarget) {
+                    getTarget = node.getTarget;
                 }
 
-                if (node.hasIndex ) {
+                if (node.hasIndex) {
                     indices.push(parts[++i]);
                     // move to the next part
                     continue;
                 }
-                
-                if (node.isIndex ) {
+
+                if (node.isIndex) {
                     indices.push(part);
                     // move to the next part
                     continue;
@@ -316,7 +326,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                             target: t,
                             stride: node.getStride ? node.getStride(t) : undefined,
                             properties: node.properties,
-                            params : indices,
+                            params: indices,
                         };
                     }
                 }

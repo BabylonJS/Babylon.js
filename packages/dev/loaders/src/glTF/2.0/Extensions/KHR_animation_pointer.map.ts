@@ -50,6 +50,16 @@ const _getGltfMaterial: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     return null;
 };
 
+const _getGltfCamera: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
+    if (gltf.cameras) {
+        const i = _parseIntIndex(index);
+        if (i != -1) {
+            return gltf.cameras[i];
+        }
+    }
+    return null;
+};
+
 const _getGltfExtension: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     if (gltf.extensions && index) {
         return gltf.extensions[index];
@@ -79,6 +89,10 @@ const _getAlpha: GetValueFn = (_target: any, source: Float32Array, offset: numbe
 
 const _getFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? source[offset] * scale : source[offset];
+};
+
+const _getMinusFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+    return -(scale ? source[offset] * scale : source[offset]);
 };
 
 const _getWeights: GetValueFn = (target: any, source: Float32Array, offset: number, scale?: number) => {
@@ -125,7 +139,7 @@ abstract class AbstractAnimationPointerPropertyInfos implements IAnimationPointe
 }
 
 class TransformNodeAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn) {
+    public constructor(type: number, name: string, get: GetValueFn = _getVector3) {
         super(type, name, get);
     }
     public isValid(target: any): boolean {
@@ -137,8 +151,22 @@ class TransformNodeAnimationPointerPropertyInfos extends AbstractAnimationPointe
     }
 }
 
+class CameraAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
+    public constructor(type: number, name: string, get: GetValueFn = _getFloat) {
+        super(type, name, get);
+    }
+
+    public isValid(_target: any): boolean {
+        return true;
+    }
+
+    public buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null): void {
+        return this._buildAnimation(target, fps, keys, group, animationTargetOverride);
+    }
+}
+
 class MaterialAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn, public fillMode: any = Material.TriangleFillMode) {
+    public constructor(type: number, name: string, get: GetValueFn = _getFloat, public fillMode: any = Material.TriangleFillMode) {
         super(type, name, get);
     }
 
@@ -159,7 +187,7 @@ class MaterialAnimationPointerPropertyInfos extends AbstractAnimationPointerProp
 }
 
 class LightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn, public fillMode: any = Material.TriangleFillMode) {
+    public constructor(type: number, name: string, get: GetValueFn = _getFloat) {
         super(type, name, get);
     }
 
@@ -170,13 +198,13 @@ class LightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropert
     // note : the extensions array store directly the BabylonLight reference
     public buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null, params: any): void {
         const i = _parseIntIndex(params[1]);
-        const l = i >= 0 && i < target.lights.length ? target.lights[i] : null ;
+        const l = i >= 0 && i < target.lights.length ? target.lights[i] : null;
         return this._buildAnimation(l, fps, keys, group, animationTargetOverride);
     }
 }
 
 class WeightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn) {
+    public constructor(type: number, name: string, get: GetValueFn = _getWeights) {
         super(type, name, get);
     }
     public isValid(target: any): boolean {
@@ -223,27 +251,62 @@ const CoreAnimationNodesPointerMap: any = {
     getTarget: _getGltfNode,
     hasIndex: true,
     matrix: {
-         properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_MATRIX, "matrix", _getMatrix)],
+        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_MATRIX, "matrix", _getMatrix)],
     },
     translation: {
-        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_VECTOR3, "position", _getVector3)],
+        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_VECTOR3, "position")],
     },
     rotation: {
         properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", _getQuaternion)],
     },
     scale: {
-        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_VECTOR3, "scaling", _getVector3)],
+        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_VECTOR3, "scaling")],
     },
     weights: {
         getStride: (target: any) => {
             return target._numMorphTargets;
         },
-        properties: [new WeightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "influence", _getWeights)],
+        properties: [new WeightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "influence")],
     },
 };
 
 const CoreAnimationCamerasPointerMap: any = {
     hasIndex: true,
+    getTarget: _getGltfCamera,
+    orthographic: {
+        xmag: {
+            properties: [
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoLeft", _getMinusFloat),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoRight"),
+            ],
+        },
+        ymag: {
+            properties: [
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoBottom", _getMinusFloat),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoTop"),
+            ],
+        },
+        zfar: {
+            properties: [new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "maxZ")],
+        },
+        znear: {
+            properties: [new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "minZ")],
+        },
+    },
+    perspective: {
+        aspectRatio: {
+            // not supported.
+        },
+        yfov: {
+            properties: [new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "fov")],
+        },
+        zfar: {
+            properties: [new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "maxZ")],
+        },
+        znear: {
+            properties: [new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "minZ")],
+        },
+    },
 };
 
 const CoreAnimationMaterialsPointerMap: any = {
@@ -257,116 +320,155 @@ const CoreAnimationMaterialsPointerMap: any = {
             ],
         },
         metallicFactor: {
-            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "metallic", _getFloat)],
+            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "metallic")],
         },
         roughnessFactor: {
-            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "roughness", _getFloat)],
+            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "roughness")],
         },
         baseColorTexture: {
             extensions: {
                 KHR_texture_transform: {
                     scale: {
-                         properties: [
+                        properties: [
                             // MAY introduce set scale(Vector2) into texture.
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uScale", _getFloat),
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vScale", _getFloat),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uScale"),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vScale"),
                         ],
                     },
                     offset: {
-                         properties: [
+                        properties: [
                             // MAY introduce set offset(Vector2) into texture.
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uOffset", _getFloat),
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vOffset", _getFloat),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uOffset"),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vOffset"),
                         ],
+                    },
+                    rotation: {
+                        properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.wAng", _getMinusFloat)],
                     },
                 },
             },
         },
     },
     emissiveFactor: {
-         properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", _getColor3)],
+        properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", _getColor3)],
     },
     normalTexture: {
         scale: {
-             properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "bumpTexture.level", _getFloat)],
+            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "bumpTexture.level")],
         },
     },
     occlusionTexture: {
         strength: {
-            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTextureStrength", _getFloat)],
+            properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTextureStrength")],
         },
         extensions: {
             KHR_texture_transform: {
                 scale: {
                     properties: [
                         // MAY introduce set scale(Vector2) into texture.
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uScale", _getFloat),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vScale", _getFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uScale"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vScale"),
                     ],
                 },
                 offset: {
                     properties: [
                         // MAY introduce set offset(Vector2) into texture.
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uOffset", _getFloat),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vOffset", _getFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uOffset"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vOffset"),
                     ],
                 },
+                rotation: {
+                    properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.wAng", _getMinusFloat)],
+                },
             },
-        },    },
+        },
+    },
     emissiveTexture: {
         extensions: {
             KHR_texture_transform: {
                 scale: {
                     properties: [
                         // MAY introduce set scale(Vector2) into texture.
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uScale", _getFloat),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vScale", _getFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uScale"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vScale"),
                     ],
                 },
                 offset: {
                     properties: [
                         // MAY introduce set offset(Vector2) into texture.
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uOffset", _getFloat),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vOffset", _getFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uOffset"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vOffset"),
                     ],
+                },
+                rotation: {
+                    properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.wAng", _getMinusFloat)],
                 },
             },
         },
     },
     extensions: {
+        KHR_materials_ior: {
+            ior: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "indexOfRefraction")],
+            },
+        },
+        KHR_materials_clearcoat: {
+            clearcoatFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.intensity")],
+            },
+            clearcoatRoughnessFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.roughness")],
+            },
+        },
+        KHR_materials_sheen: {
+            sheenColorFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", _getColor3)],
+            },
+            sheenRoughnessFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "sheen.roughness")],
+            },
+        },
+        KHR_materials_specular: {
+            specularFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "metallicF0Factor")],
+            },
+            specularColorFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", _getColor3)],
+            },
+        },
         KHR_materials_emissive_strength: {
             emissiveStrength: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveIntensity", _getFloat)],
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveIntensity")],
             },
         },
         KHR_materials_transmission: {
             transmissionFactor: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.refractionIntensity", _getFloat)],
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.refractionIntensity")],
             },
         },
         KHR_materials_volume: {
-            attenuationColor:{
+            attenuationColor: {
                 properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", _getColor3)],
             },
             attenuationDistance: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance", _getFloat)],
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance")],
             },
             thicknessFactor: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness", _getFloat)],
-            },        
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness")],
+            },
         },
-        KHR_materials_iridescence :{
-            iridescenceFactor :{
-                 properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.intensity", _getFloat)],
+        KHR_materials_iridescence: {
+            iridescenceFactor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.intensity")],
             },
-            iridescenceIor :{
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.indexOfRefraction", _getFloat)],
+            iridescenceIor: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.indexOfRefraction")],
             },
-            iridescenceThicknessMinimum :{
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness", _getFloat)],
+            iridescenceThicknessMinimum: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness")],
             },
-            iridescenceThicknessMaximum :{
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness", _getFloat)],
+            iridescenceThicknessMaximum: {
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness")],
             },
         },
     },
@@ -379,24 +481,24 @@ const CoreAnimationExtensionsPointerMap: any = {
         lights: {
             hasIndex: true, // we have an array of light into the extension.
             color: {
-                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "diffuseColor", _getColor3)],
+                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "diffuse", _getColor3)],
             },
             intensity: {
-                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "intensity", _getFloat)],
+                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "intensity")],
             },
             range: {
-                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "range", _getFloat)],
+                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "range")],
             },
             spot: {
                 innerConeAngle: {
-                     properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloat)],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle")],
                 },
                 outerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloat)],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle")],
                 },
             },
         },
-    }
+    },
 };
 
 export const CoreAnimationPointerMap: any = {
