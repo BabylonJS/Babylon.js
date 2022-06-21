@@ -30,7 +30,8 @@ export class KHR_lights implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _loader: GLTFLoader;
+    /** hidden */
+    public _loader: GLTFLoader;
     private _lights?: IKHRLightsPunctual_Light[];
 
     /**

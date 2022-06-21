@@ -122,7 +122,10 @@ export class ArrayItem {
  * The glTF 2.0 loader
  */
 export class GLTFLoader implements IGLTFLoader {
+    
     /** @hidden */
+    // note : KHR_animation_pointer is used to load animation in ALL case, turning everything
+    // into pointer. This is the reason why this value is located here.
     public static readonly _KHRAnimationPointerName = "KHR_animation_pointer";
 
     /** @hidden */

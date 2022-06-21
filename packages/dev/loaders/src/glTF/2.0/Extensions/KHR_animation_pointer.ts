@@ -2,19 +2,20 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import { AnimationGroup } from "core/Animations/animationGroup";
-import { Animation } from "core/Animations/animation";
+import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { IAnimation, IAnimationChannel, _IAnimationSamplerData, IAnimationSampler} from "../glTFLoaderInterfaces";
 
-import { AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
+import { AccessorType, AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { CoreAnimationPointerMap, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
+import { GetGltfNodeTargetFn, CoreAnimationPointerMap, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
 
 const NAME = GLTFLoader._KHRAnimationPointerName;
 
 interface IAnimationChannelTarget {
-    stride: number;
+    stride?: number;
     target: any;
     properties: Array<IAnimationPointerPropertyInfos>;
+    params:any;
 }
 
 /**
@@ -25,49 +26,24 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     /**
      * used to gently ignore invalid pointer. If false, invalid pointer will throw exception.
      */
-    public static IgnoreInvalidPointer: boolean = false;
+    public static IgnoreInvalidPointer: boolean = true;
 
     /**
      * Used internally to determine how much data to be gather from input buffer at each key frame.
-     * Normal usage do not call this function while a GetStrideFn is located into the map path.
-     * @param infos the informations
+     * @param type the accessor type
      * @returns the number of item to be gather at each keyframe
      */
-    static GetAnimationOutputStride(infos: Array<IAnimationPointerPropertyInfos>): number {
-        let stride = 0;
-        for (const info of infos) {
-            switch (info.type) {
-                case Animation.ANIMATIONTYPE_FLOAT: {
-                    stride++;
-                    break;
-                }
-                case Animation.ANIMATIONTYPE_VECTOR2:
-                case Animation.ANIMATIONTYPE_SIZE: {
-                    stride += 2;
-                    break;
-                }
-
-                case Animation.ANIMATIONTYPE_VECTOR3:
-                case Animation.ANIMATIONTYPE_COLOR3: {
-                    stride += 3;
-                    break;
-                }
-
-                case Animation.ANIMATIONTYPE_COLOR4:
-                case Animation.ANIMATIONTYPE_QUATERNION: {
-                    stride += 4;
-                    break;
-                }
-
-                case Animation.ANIMATIONTYPE_MATRIX: {
-                    stride += 16;
-                    break;
-                }
+    static GetAnimationOutputStride(type:AccessorType): number {
+            switch (type) {
+                case AccessorType.SCALAR: return 1;
+                case AccessorType.VEC2: return 2;
+                case AccessorType.VEC3: return 3;
+                case AccessorType.VEC4: 
+                case AccessorType.MAT2: return 4;
+                case AccessorType.MAT3: return 9;
+                case AccessorType.MAT4: return 16;
             }
-        }
-        return stride;
     }
-
     /**
      * The name of this extension.
      */
@@ -111,10 +87,10 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         // ensure an animation group is present.
         if(!animation._babylonAnimationGroup){
             this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
-            const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._loader.babylonScene);
-            babylonAnimationGroup._parentContainer = this._loader._assetContainer;
+            const group = new AnimationGroup(animation.name || `animation${animation.index}`, this._loader.babylonScene);
+            group._parentContainer = this._loader._assetContainer;
             this._loader.babylonScene._blockEntityCollection = false;
-            animation._babylonAnimationGroup = babylonAnimationGroup;
+            animation._babylonAnimationGroup = group;
         }
         const babylonAnimationGroup = animation._babylonAnimationGroup ;
 
@@ -138,9 +114,10 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property
      * @param channel The glTF animation channel property
+    * @param animationTargetOverride The babylon animation channel target override property. My be null.
      * @returns A void promise when the channel load is complete
      */
-    public _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel): Promise<void> {
+    public _loadAnimationChannelAsync(context: string, animationContext: string, animation: IAnimation, channel: IAnimationChannel, animationTargetOverride: Nullable<IAnimatable> = null): Promise<void> {
         if (channel.target.path != AnimationChannelTargetPath.POINTER) {
             throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
         }
@@ -168,9 +145,10 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                 // build the animations into the group
                 const babylonAnimationGroup = animation._babylonAnimationGroup;
                 if (babylonAnimationGroup) {
+
+                    const outputAccessor = ArrayItem.Get(`${context}/output`, this._loader.gltf.accessors, sampler.output);
                     // stride is the size of each element stored into the output buffer.
-                    // stride is the sum of property size or as per defined into the info.
-                    const stride = animationTarget.stride ?? KHR_animation_pointer.GetAnimationOutputStride(animationTarget.properties);
+                    const stride = animationTarget.stride ?? KHR_animation_pointer.GetAnimationOutputStride(outputAccessor.type);
                     const fps = this._loader.parent.targetFps;
 
                     // we extract the corresponding values from the readed value.
@@ -230,7 +208,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
 
                         // each properties has its own build animation process.
                         // these logics are located into KHR_animation_pointer.map.ts
-                        propertyInfo.buildAnimations(animationTarget.target, fps, keys, babylonAnimationGroup);
+                        propertyInfo.buildAnimations(animationTarget.target, fps, keys, babylonAnimationGroup, animationTargetOverride, animationTarget.params);
                     }
                 }
             }
@@ -304,7 +282,8 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         // we have a least 3 part
         if (parts.length >= 3) {
             let node = CoreAnimationPointerMap; // the map of possible path
-            let index: string = "";
+            const indices = [];
+            let getTarget:Nullable<GetGltfNodeTargetFn> = null ;
             for (let i = 0; i < parts.length; i++) {
                 const part = parts[i];
                 node = node[part];
@@ -314,20 +293,30 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                     break;
                 }
 
-                if (node.hasIndex) {
-                    index = parts[++i];
+                if( node.getTarget){
+                    getTarget = node.getTarget ;
+                }
+
+                if (node.hasIndex ) {
+                    indices.push(parts[++i]);
+                    // move to the next part
+                    continue;
+                }
+                
+                if (node.isIndex ) {
+                    indices.push(part);
                     // move to the next part
                     continue;
                 }
 
-                if (node.getTarget) {
-                    // this is a leaf
-                    const t = node.getTarget(this._loader.gltf, index);
+                if (node.properties && getTarget) {
+                    const t = getTarget(this._loader.gltf, indices[0]);
                     if (t != null) {
                         return {
                             target: t,
-                            stride: node.getStride ? node.getStride(t) : KHR_animation_pointer.GetAnimationOutputStride(node.properties),
+                            stride: node.getStride ? node.getStride(t) : undefined,
                             properties: node.properties,
+                            params : indices,
                         };
                     }
                 }
