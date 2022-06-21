@@ -63,21 +63,44 @@ export function CreateScreenshot(
     const offsetX = Math.max(0, width - newWidth) / 2;
     const offsetY = Math.max(0, height - newHeight) / 2;
 
-    engine.onEndFrameObservable.addOnce(() => {
-        const renderingCanvas = engine.getRenderingCanvas();
-        if (renderContext && renderingCanvas) {
-            renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
-        }
-
-        if (forceDownload) {
-            Tools.EncodeScreenshotCanvasData(undefined, mimeType);
-            if (successCallback) {
-                successCallback("");
+    const scene = camera.getScene();
+    if (scene.activeCamera !== camera) {
+        CreateScreenshotUsingRenderTarget(
+            engine,
+            camera,
+            size,
+            (data) => {
+                if (forceDownload) {
+                    const blob = new Blob([data]);
+                    Tools.DownloadBlob(blob);
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                } else if (successCallback) {
+                    successCallback(data);
+                }
+            },
+            mimeType,
+            1,
+            engine.getCreationOptions().antialias
+        );
+    } else {
+        engine.onEndFrameObservable.addOnce(() => {
+            const renderingCanvas = engine.getRenderingCanvas();
+            if (renderContext && renderingCanvas) {
+                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
-        } else {
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
-        }
-    });
+
+            if (forceDownload) {
+                Tools.EncodeScreenshotCanvasData(undefined, mimeType);
+                if (successCallback) {
+                    successCallback("");
+                }
+            } else {
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            }
+        });
+    }
 }
 
 /**
