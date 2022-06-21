@@ -1,4 +1,4 @@
-import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/displayManager";
+import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import type { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";

@@ -5,7 +5,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums
 import { GraphNode } from "./graphNode";
 import * as dagre from "dagre";
 import type { Nullable } from "core/types";
-import { NodeLink } from "./nodeLink";
+import { NodeLink } from "../sharedComponents/nodeGraphSystem/nodeLink";
 import { NodePort } from "./nodePort";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
@@ -14,7 +14,7 @@ import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fr
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
-import type { IEditorData, IFrameData } from "../sharedComponents/nodeGraphSystem/nodeLocationInfo";
+import type { IEditorData, IFrameData } from "../sharedComponents/nodeGraphSystem/interfaces/nodeLocationInfo";
 import { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
 
 import "./graphCanvas.scss";

@@ -1,4 +1,4 @@
-import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/displayManager";
+import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { RemapBlock } from "core/Materials/Node/Blocks/remapBlock";

@@ -1,19 +1,19 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { GlobalState, ISelectionChangedOptions } from "../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
 import { GenericPropertyComponent } from "../graphSystem/properties/genericNodePropertyComponent";
-import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/displayManager";
-import type { NodeLink } from "./nodeLink";
+import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/interfaces/displayManager";
+import type { NodeLink } from "../sharedComponents/nodeGraphSystem/nodeLink";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
-
 import triangle from "../imgs/triangle.svg";
 import { DisplayLedger } from "node-editor/sharedComponents/nodeGraphSystem/displayLedger";
 import { PropertyLedger } from "node-editor/sharedComponents/nodeGraphSystem/propertyLedger";
+import { StateManager } from "node-editor/sharedComponents/nodeGraphSystem/stateManager";
+import { ISelectionChangedOptions } from "node-editor/sharedComponents/nodeGraphSystem/interfaces/selectionChangedOptions";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -34,7 +34,7 @@ export class GraphNode {
     private _gridAlignedY = 0;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    private _globalState: GlobalState;
+    private _stateManager: StateManager;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
@@ -176,14 +176,14 @@ export class GraphNode {
                 this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
             }
         } else {
-            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this, marqueeSelection });
+            this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: this, marqueeSelection });
         }
     }
 
-    public constructor(public block: NodeMaterialBlock, globalState: GlobalState) {
-        this._globalState = globalState;
+    public constructor(public block: NodeMaterialBlock, stateManager: StateManager) {
+        this._stateManager = stateManager;
 
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
+        this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection: node } = options || {};
             if (node === this) {
                 this._visual.classList.add("selected");
@@ -196,21 +196,21 @@ export class GraphNode {
             }
         });
 
-        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add((block) => {
+        this._onUpdateRequiredObserver = this._stateManager.onUpdateRequiredObservable.add((block) => {
             if (block !== this.block) {
                 return;
             }
             this.refresh();
         });
 
-        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {
+        this._onSelectionBoxMovedObserver = this._stateManager.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this._visual.getBoundingClientRect();
             const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
             this.setIsSelected(overlap, true);
         });
 
-        this._onFrameCreatedObserver = this._globalState.onFrameCreatedObservable.add((frame) => {
+        this._onFrameCreatedObserver = this._stateManager.onFrameCreatedObservable.add((frame) => {
             if (this._ownerCanvas.frames.some((f) => f.nodes.indexOf(this) !== -1)) {
                 return;
             }
@@ -328,7 +328,7 @@ export class GraphNode {
 
         const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
         if (indexInSelection === -1) {
-            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
+            this._stateManager.onSelectionChangedObservable.notifyObservers({ selection: this });
         } else if (evt.ctrlKey) {
             this.setIsSelected(false, false);
         }
@@ -392,7 +392,7 @@ export class GraphNode {
         }
 
         return React.createElement(control, {
-            globalState: this._globalState,
+            stateManager: this._stateManager,
             data: this.block,
         });
     }
@@ -462,11 +462,11 @@ export class GraphNode {
 
         // Connections
         for (const input of this.block.inputs) {
-            this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._globalState));
+            this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
         }
 
         for (const output of this.block.outputs) {
-            this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._globalState));
+            this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
         }
 
         this.refresh();
@@ -474,18 +474,18 @@ export class GraphNode {
 
     public dispose() {
         // notify frame observers that this node is being deleted
-        this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);
+        this._stateManager.onGraphNodeRemovalObservable.notifyObservers(this);
 
         if (this._onSelectionChangedObserver) {
-            this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+            this._stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
 
         if (this._onUpdateRequiredObserver) {
-            this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+            this._stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         }
 
         if (this._onSelectionBoxMovedObserver) {
-            this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
+            this._stateManager.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
         }
 
         if (this._visual.parentElement) {
@@ -493,7 +493,7 @@ export class GraphNode {
         }
 
         if (this._onFrameCreatedObserver) {
-            this._globalState.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
+            this._stateManager.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
         }
 
         for (const port of this._inputPorts) {

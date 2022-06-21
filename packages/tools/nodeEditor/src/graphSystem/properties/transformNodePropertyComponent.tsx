@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";

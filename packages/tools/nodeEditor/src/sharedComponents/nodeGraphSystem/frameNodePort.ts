@@ -2,12 +2,12 @@ import { NodePort } from "../../diagram/nodePort";
 import type { GraphNode } from "../../diagram/graphNode";
 import type { FramePortPosition } from "../../diagram/graphFrame";
 import type { GlobalState } from "../../globalState";
-import type { IDisplayManager } from "./displayManager";
+import type { IDisplayManager } from "./interfaces/displayManager";
 import { Observable } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import type { FramePortData } from "../../diagram/graphCanvas";
 import { isFramePortData } from "../../diagram/graphCanvas";
-import { IPortData } from "./portData";
+import { IPortData } from "./interfaces/portData";
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;

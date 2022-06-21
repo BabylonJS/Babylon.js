@@ -14,7 +14,7 @@ import type { Nullable } from "core/types";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { BlockTools } from "./blockTools";
 import { PreviewManager } from "./components/preview/previewManager";
-import type { IEditorData } from "./sharedComponents/nodeGraphSystem/nodeLocationInfo";
+import type { IEditorData } from "./sharedComponents/nodeGraphSystem/interfaces/nodeLocationInfo";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";

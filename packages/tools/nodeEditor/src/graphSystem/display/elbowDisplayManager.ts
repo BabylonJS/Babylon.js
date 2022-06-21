@@ -1,4 +1,4 @@
-import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/displayManager";
+import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { BlockTools } from "../../blockTools";

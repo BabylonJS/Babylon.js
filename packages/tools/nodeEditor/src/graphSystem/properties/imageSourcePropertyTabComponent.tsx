@@ -8,7 +8,7 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";

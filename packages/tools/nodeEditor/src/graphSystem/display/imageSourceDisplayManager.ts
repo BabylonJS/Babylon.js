@@ -1,4 +1,4 @@
-import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/displayManager";
+import type { IDisplayManager } from "../../sharedComponents/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";

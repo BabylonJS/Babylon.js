@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
 import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
-import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/propertyComponentProps";
+import type { IPropertyComponentProps } from "../../sharedComponents/nodeGraphSystem/interfaces/propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {

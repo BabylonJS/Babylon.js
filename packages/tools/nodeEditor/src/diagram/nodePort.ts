@@ -1,18 +1,19 @@
 import { BlockTools } from "../blockTools";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import type { GlobalState, ISelectionChangedOptions } from "../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Vector2 } from "core/Maths/math.vector";
-import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/displayManager";
+import type { IDisplayManager } from "../sharedComponents/nodeGraphSystem/interfaces/displayManager";
 import type { GraphNode } from "./graphNode";
 import type { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
+import { StateManager } from "node-editor/sharedComponents/nodeGraphSystem/stateManager";
+import { ISelectionChangedOptions } from "node-editor/sharedComponents/nodeGraphSystem/interfaces/selectionChangedOptions";
 
 export class NodePort {
     protected _element: HTMLDivElement;
     protected _img: HTMLImageElement;
-    protected _globalState: GlobalState;
+    protected _stateManager: StateManager;
     protected _portLabelElement: Element;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
@@ -133,11 +134,11 @@ export class NodePort {
         }
     }
 
-    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState) {
+    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, stateManager: StateManager) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add("port");
         portContainer.appendChild(this._element);
-        this._globalState = globalState;
+        this._stateManager = stateManager;
 
         this._img = portContainer.ownerDocument!.createElement("img");
         this._element.appendChild(this._img);
@@ -152,7 +153,7 @@ export class NodePort {
         // Drag support
         this._element.ondragstart = () => false;
 
-        this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add((coords) => {
+        this._onCandidateLinkMovedObserver = stateManager.onCandidateLinkMoved.add((coords) => {
             const rect = this._element.getBoundingClientRect();
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
@@ -161,10 +162,10 @@ export class NodePort {
             }
 
             this._element.classList.add("selected");
-            this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
+            this._stateManager.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
+        this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
                 this._img.classList.add("selected");
@@ -177,10 +178,10 @@ export class NodePort {
     }
 
     public dispose() {
-        this._globalState.onCandidateLinkMoved.remove(this._onCandidateLinkMovedObserver);
+        this._stateManager.onCandidateLinkMoved.remove(this._onCandidateLinkMovedObserver);
 
         if (this._onSelectionChangedObserver) {
-            this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+            this._stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
     }
 
@@ -189,7 +190,7 @@ export class NodePort {
         node: GraphNode,
         root: HTMLElement,
         displayManager: Nullable<IDisplayManager>,
-        globalState: GlobalState
+        stateManager: StateManager
     ) {
         const portContainer = root.ownerDocument!.createElement("div");
         const block = connectionPoint.ownerBlock;
@@ -205,6 +206,6 @@ export class NodePort {
             portContainer.appendChild(portLabel);
         }
 
-        return new NodePort(portContainer, connectionPoint, node, globalState);
+        return new NodePort(portContainer, connectionPoint, node, stateManager);
     }
 }

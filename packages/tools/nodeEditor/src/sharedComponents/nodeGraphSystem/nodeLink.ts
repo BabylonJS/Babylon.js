@@ -1,13 +1,12 @@
-import { GraphCanvasComponent } from "./graphCanvas";
-import type { GraphNode } from "./graphNode";
-import type { NodePort } from "./nodePort";
+import { GraphCanvasComponent } from "../../diagram/graphCanvas";
+import type { GraphNode } from "../../diagram/graphNode";
+import type { NodePort } from "../../diagram/nodePort";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
-import type { FrameNodePort } from "../sharedComponents/nodeGraphSystem/frameNodePort";
-import type { ISelectionChangedOptions } from "../globalState";
-import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
-import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import type { FrameNodePort } from "./frameNodePort";
+
+declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -116,7 +115,7 @@ export class NodeLink {
             this.update();
         }
 
-        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add((options) => {
+        this._onSelectionChangedObserver = this._graphCanvas.globalState.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
                 this._path.classList.add("selected");
@@ -129,18 +128,19 @@ export class NodeLink {
     }
 
     onClick(evt: MouseEvent) {
+        const stateManager = this._graphCanvas.globalState.stateManager;
         if (evt.altKey) {
             const nodeA = this._nodeA;
             const pointA = this._portA.connectionPoint;
             const nodeB = this._nodeB!;
             const pointB = this._portB!.connectionPoint;
 
-            if (pointA.type === NodeMaterialBlockConnectionPointTypes.Object || pointB.type === NodeMaterialBlockConnectionPointTypes.Object) {
-                return; // We do not support Elbow on complex types
+            if (stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
+                return;
             }
 
             // Create an elbow at the clicked location
-            this._graphCanvas.globalState.onNewNodeCreatedObservable.addOnce((newNode) => {
+            stateManager.onNewNodeCreatedObservable.addOnce((newNode) => {
                 const newElbowBlock = newNode.block as ElbowBlock;
 
                 // Delete previous link
@@ -150,10 +150,10 @@ export class NodeLink {
                 this._graphCanvas.connectNodes(nodeA, pointA, newNode, newElbowBlock.input);
                 this._graphCanvas.connectNodes(newNode, newElbowBlock.output, nodeB, pointB);
 
-                this._graphCanvas.globalState.onRebuildRequiredObservable.notifyObservers(true);
+                stateManager.onRebuildRequiredObservable.notifyObservers(true);
             });
 
-            this._graphCanvas.globalState.onNewBlockRequiredObservable.notifyObservers({
+            stateManager.onNewBlockRequiredObservable.notifyObservers({
                 type: "ElbowBlock",
                 targetX: evt.clientX,
                 targetY: evt.clientY,
@@ -162,11 +162,11 @@ export class NodeLink {
             return;
         }
 
-        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
+        stateManager.onSelectionChangedObservable.notifyObservers({ selection: this });
     }
 
     public dispose(notify = true) {
-        this._graphCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        this._graphCanvas.globalState.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
 
         if (this._path.parentElement) {
             this._path.parentElement.removeChild(this._path);
