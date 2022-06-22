@@ -17,7 +17,7 @@ import { IPortData } from "./interfaces/portData";
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
-    private _promotionWarning: HTMLDivElement;
+    private _warning: HTMLDivElement;
     private _header: HTMLDivElement;
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
@@ -333,15 +333,17 @@ export class GraphNode {
                 this._ownerCanvas.frames[index].redrawFramePorts();
             }
         }
-        // TODO
-        // this._comments.innerHTML = this.data.comments || "";
-        // this._comments.title = this.data.comments || "";
 
-        // if (this.data.getClassName() !== "ElbowBlock" && this.data.willBeGeneratedIntoVertexShaderFromFragmentShader) {
-        //     this._promotionWarning.classList.add("visible");
-        // } else {
-        //     this._promotionWarning.classList.remove("visible");
-        // }
+        this._comments.innerHTML = this.content.comments || "";
+        this._comments.title = this.content.comments || "";
+
+        const warningMessage = this.content.getWarningMessage();
+        if (warningMessage) {
+            this._warning.classList.add("visible");
+            this._warning.title = warningMessage;        
+        } else {
+            this._warning.classList.remove("visible");
+        }
     }
 
     private _onDown(evt: PointerEvent) {
@@ -417,7 +419,7 @@ export class GraphNode {
 
         return React.createElement(control, {
             stateManager: this._stateManager,
-            data: this.content,
+            nodeData: this.content,
         });
     }
 
@@ -447,14 +449,12 @@ export class GraphNode {
         this._header.classList.add("header");
         this._headerContainer.appendChild(this._header);
 
-        this._promotionWarning = root.ownerDocument!.createElement("div");
-        this._promotionWarning.classList.add("promotion-warning");
-        this._promotionWarning.title =
-            "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        this._warning = root.ownerDocument!.createElement("div");
+        this._warning.classList.add("warning");
         const img = root.ownerDocument!.createElement("img");
         img.src = triangle;
-        this._promotionWarning.appendChild(img);
-        this._visual.appendChild(this._promotionWarning);
+        this._warning.appendChild(img);
+        this._visual.appendChild(this._warning);
 
         const selectionBorder = root.ownerDocument!.createElement("div");
         selectionBorder.classList.add("selection-border");
@@ -485,14 +485,13 @@ export class GraphNode {
         this._visual.appendChild(this._comments);
 
         // Connections
-        // TODO
-        // for (const input of this.block.inputs) {
-        //     this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
-        // }
+        for (const input of this.content.inputs) {
+            this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
+        }
 
-        // for (const output of this.block.outputs) {
-        //     this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
-        // }
+        for (const output of this.content.outputs) {
+            this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
+        }
 
         this.refresh();
     }

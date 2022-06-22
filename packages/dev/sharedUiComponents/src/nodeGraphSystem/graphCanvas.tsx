@@ -9,19 +9,14 @@ import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
 import type { IEditorData, IFrameData } from "./interfaces/nodeLocationInfo";
 import { FrameNodePort } from "./frameNodePort";
-
-import "./scss/graphCanvas.scss";
 import { StateManager } from "./stateManager";
 import { FramePortData } from "./types/framePortData";
-
-// To remove
-import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-
-
 import { INodeData } from "./interfaces/nodeData";
-import { IPortData, PortCompatibilityStates, PortDataDirection } from "./interfaces/portData";
+import { IPortData, PortDataDirection } from "./interfaces/portData";
 import { INodeContainer } from "./interfaces/nodeContainer";
+
+import "./scss/graphCanvas.scss";
+import { TypeLedger } from "./typeLedger";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -59,7 +54,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _selectionBox: Nullable<HTMLDivElement> = null;
     private _selectedFrames: GraphFrame[] = [];
     private _frameCandidate: Nullable<HTMLDivElement> = null;
-    private _frames: GraphFrame[] = [];
+    private _frames: GraphFrame[] = [];  
+    private _nodeDataContentList = new Array<any>();
 
     private _altKeyIsPressed = false;
     private _multiKeyIsPressed = false;
@@ -292,6 +288,51 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         };
     }
 
+    public getCachedData(): any[] {
+        return this._nodeDataContentList;
+    }
+
+    public removeDataFromCache(data: any) {
+        const dataIndex = this._nodeDataContentList.indexOf(data);
+
+        if (dataIndex > -1) {
+            this._nodeDataContentList.splice(dataIndex, 1);
+        }
+    }
+
+    public createNodeFromObject(nodeData: INodeData, onNodeCreated: (data: any) => void, recursion = true) {
+        if (this._nodeDataContentList.indexOf(nodeData.data) !== -1) {
+            return this.nodes.filter((n) => n.content.data === nodeData.data)[0];
+        }
+
+        this._nodeDataContentList.push(nodeData.data);
+
+        onNodeCreated(nodeData.data);
+
+        // Connections
+        if (nodeData.inputs.length) {
+            for (const input of nodeData.inputs) {
+                if (input.connectedPort && recursion) {
+                    this.createNodeFromObject(TypeLedger.NodeDataBuilder(input.connectedPort, this), onNodeCreated);
+                }
+            }
+        }
+
+        // Graph
+        const node = this.appendNode(nodeData);
+
+        // Links
+        if (nodeData.inputs.length && recursion) {
+            for (const input of nodeData.inputs) {
+                if (input.isConnected) {
+                    this.connectPorts(input.connectedPort!, input);
+                }
+            }
+        }
+
+        return node;
+    }   
+
     public static _RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visitedLinks?: Set<NodeLink>) => {
         node.refresh();
 
@@ -368,7 +409,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this.nodes.filter((n) => n.content.data === data)[0];
     }
 
-    reset() {
+    reset() {        
+        this._nodeDataContentList = [];
+
         for (const node of this._nodes) {
             node.dispose();
         }
@@ -475,22 +518,21 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         });
 
         this._nodes.forEach((node) => {
-            // TODO
-            // node.block.outputs.forEach((output) => {
-            //     if (!output.hasEndpoints) {
-            //         return;
-            //     }
+            node.content.outputs.forEach((output) => {
+                if (!output.hasEndpoints) {
+                    return;
+                }
 
-            //     output.endpoints.forEach((endpoint) => {
-            //         const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
-            //         const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.block === endpoint.ownerBlock));
+                output.endpoints!.forEach((endpoint) => {
+                    const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
+                    const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.content.data === endpoint.ownerData));
 
-            //         const sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
-            //         const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+                    const sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerData.uniqueId;
 
-            //         graph.setEdge(sourceId.toString(), targetId.toString());
-            //     });
-            // });
+                    graph.setEdge(sourceId.toString(), targetId.toString());
+                });
+            });
         });
 
         // Distribute
@@ -832,7 +874,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             const pointName = newDefaultInput.name;
             const emittedNodeData = newDefaultInput.data;
 
-            // TODO: type error
             pointA = emittedNodeData.getPortByName(pointName)!;
             if (!emittedNodeData.isInput) {
                 nodeA = this.props.onEmitNewNode(emittedNodeData);
@@ -889,40 +930,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         // Check compatibility
-        const isFragmentOutput = pointB.ownerData.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
         if (
             (pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) &&
-            compatibilityState === PortCompatibilityStates.Compatible &&
-            !(pointA instanceof InputBlock)
+            !compatibilityState
         ) {
             compatibilityState = pointB.checkCompatibilityState(pointA);
         }
-        if (compatibilityState === PortCompatibilityStates.Compatible) {
-            if (isFragmentOutput) {
-                const fragmentBlock = pointB.ownerData as FragmentOutputBlock;
 
-                if (pointB.name === "rgb" && fragmentBlock.rgba.isConnected) {
-                    nodeB.getLinksForPortDataContent(fragmentBlock.rgba)[0].dispose();
-                } else if (pointB.name === "rgba" && fragmentBlock.rgb.isConnected) {
-                    nodeB.getLinksForPortDataContent(fragmentBlock.rgb)[0].dispose();
-                }
-            }
-        } else {
-            let message = "";
+        const message = pointA.getCompatibilityIssueMessage(compatibilityState, nodeB, pointB);
 
-            switch (compatibilityState) {
-                case PortCompatibilityStates.TypeIncompatible:
-                    message = "Cannot connect two different connection types";
-                    break;
-                case PortCompatibilityStates.TargetIncompatible:
-                    message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
-                    break;
-                case PortCompatibilityStates.HierarchyIssue:
-                    message = "Source block cannot be connected with one of its ancestors";
-                    break;
-            }
-
+        if (message) {
             this.props.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(message);
             return;
         }
@@ -999,9 +1017,36 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
+    reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
+        if (!editorData || !editorData.locations) {
+            this.distributeGraph();
+        } else {
+            // Locations
+            for (const location of editorData.locations) {
+                for (const node of this.nodes) {
+                    const block = node.content.data;
+                    if (block && block.uniqueId === location.blockId) {
+                        node.x = location.x;
+                        node.y = location.y;
+                        node.cleanAccumulation();
+                        break;
+                    }
+                }
+            }
+
+            if (!isImportingAFrame) {
+                this.processEditorData(editorData);
+            }
+        }
+
+        this._isLoading = false;
+        for (const node of this.nodes) {
+            node._refreshLinks();
+        }
+    }
+
     addFrame(frameData: IFrameData) {
-        // TODO
-        const frame = GraphFrame.Parse(frameData, this, (this.props.stateManager.data as any).nodeMaterial.editorData.map);
+        const frame = GraphFrame.Parse(frameData, this, this.props.stateManager.getEditorDataMap());
         this._frames.push(frame);
         this.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame });
     }

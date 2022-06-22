@@ -11,7 +11,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
     }
 
     render() {
-        const vectorMergerBlock = this.props.data as VectorMergerBlock;
+        const vectorMergerBlock = this.props.nodeData.data as VectorMergerBlock;
 
         const targetOptions: { label: string; value: string }[] = [
             { label: "X", value: "x" },
@@ -22,7 +22,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SWIZZLES">
                     <OptionsLineComponent
                         label="X"

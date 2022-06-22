@@ -20,7 +20,7 @@ interface IPreviewAreaComponentProps {
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
     private _onIsLoadingChangedObserver: Nullable<Observer<boolean>>;
-    private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     constructor(props: IPreviewAreaComponentProps) {
         super(props);

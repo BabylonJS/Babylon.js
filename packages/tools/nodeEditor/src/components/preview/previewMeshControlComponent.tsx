@@ -21,7 +21,7 @@ interface IPreviewMeshControlComponent {
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
     private _colorInputRef: React.RefObject<HTMLInputElement>;
     private _filePickerRef: React.RefObject<HTMLInputElement>;
-    private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);

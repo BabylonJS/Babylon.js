@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { GlobalState } from "./globalState";
 
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
@@ -58,8 +58,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
-    private _nodeDataContentList = new Array<any>();
-
     private _previewManager: PreviewManager;
     private _copiedNodes: GraphNode[] = [];
     private _copiedFrames: GraphFrame[] = [];
@@ -70,56 +68,24 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
 
-    /**
-     * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeData
-     * @param recursion
-     */
-    public createNodeFromObject(nodeData: INodeData, recursion = true) {
-        if (this._nodeDataContentList.indexOf(nodeData.data) !== -1) {
-            return this._graphCanvas.nodes.filter((n) => n.content.data === nodeData.data)[0];
-        }
-
-        this._nodeDataContentList.push(nodeData.data);
-
-        if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(nodeData.data) === -1) {
-            this.props.globalState.nodeMaterial!.attachedBlocks.push(nodeData.data);
-        }
-
-        if (nodeData.data.isFinalMerger) {
-            this.props.globalState.nodeMaterial!.addOutputNode(nodeData.data);
-        }
-
-        // Connections
-        if (nodeData.inputs.length) {
-            for (const input of nodeData.inputs) {
-                if (input.isConnected && recursion) {
-                    this.createNodeFromObject(TypeLedger.NodeDataBuilder(input.ownerData, this._graphCanvas));
-                }
+    appendBlock(dataToAppend: NodeMaterialBlock | INodeData, recursion = true) {
+        return this._graphCanvas.createNodeFromObject(dataToAppend instanceof NodeMaterialBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend, (block: NodeMaterialBlock) => {            
+            if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(block) === -1) {
+                this.props.globalState.nodeMaterial!.attachedBlocks.push(block);
             }
-        }
 
-        // Graph
-        const node = this._graphCanvas.appendNode(nodeData);
-
-        // Links
-        if (nodeData.inputs.length && recursion) {
-            for (const input of nodeData.inputs) {
-                if (input.isConnected) {
-                    this._graphCanvas.connectPorts(input.connectedPort!, input);
-                }
+            if (block.isFinalMerger) {
+                this.props.globalState.nodeMaterial!.addOutputNode(block);
             }
-        }
-
-        return node;
+        }, recursion);
     }
 
     addValueNode(type: string) {
         const nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         const newInputBlock = new InputBlock(type, undefined, nodeType);
-        return this.createNodeFromObject(TypeLedger.NodeDataBuilder(newInputBlock, this._graphCanvas));
-    }
+        return this.appendBlock(newInputBlock);
+    } 
 
     componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
@@ -183,10 +149,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
-        this.props.globalState.onResetRequiredObservable.add(() => {
-            this.build();
-            if (this.props.globalState.nodeMaterial) {
-                this.buildMaterial();
+        this.props.globalState.onResetRequiredObservable.add((isDefault) => {
+            if (isDefault) {
+                if (this.props.globalState.nodeMaterial) {
+                    this.buildMaterial();
+                }
+                this.build(true);
+            } else {
+                this.build();
+                if (this.props.globalState.nodeMaterial) {
+                    this.buildMaterial();
+                }    
             }
         });
 
@@ -195,7 +168,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             // create new graph nodes for only blocks from frame (last blocks added)
             this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeMaterialBlock) => {
-                this.createNodeFromObject(TypeLedger.NodeDataBuilder(block, this._graphCanvas));
+                this.appendBlock(block);
             });
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
@@ -225,11 +198,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                         const targetBlock = selectedItem.content.data;
                         this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                        const blockIndex = this._nodeDataContentList.indexOf(targetBlock);
-
-                        if (blockIndex > -1) {
-                            this._nodeDataContentList.splice(blockIndex, 1);
-                        }
+                        this._graphCanvas.removeDataFromCache(targetBlock);
                     }
 
                     if (this._graphCanvas.selectedLink) {
@@ -242,11 +211,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 while (frame.nodes.length > 0) {
                                     const targetBlock = frame.nodes[0].content.data;
                                     this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                                    const blockIndex = this._nodeDataContentList.indexOf(targetBlock);
-
-                                    if (blockIndex > -1) {
-                                        this._nodeDataContentList.splice(blockIndex, 1);
-                                    }
+                                    this._graphCanvas.removeDataFromCache(targetBlock);
                                     frame.nodes[0].dispose();
                                 }
                                 frame.isCollapsed = false;
@@ -421,7 +386,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
-            const newNode = this.createNodeFromObject(clone, false);
+            const newNode = this.appendBlock(clone, false);
 
             let x = 0;
             let y = 0;
@@ -476,8 +441,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
-    build() {
-        let editorData = this.props.globalState.nodeMaterial.editorData;
+    build(ignoreEditorData = false) {
+        let editorData = ignoreEditorData ? null : this.props.globalState.nodeMaterial.editorData;
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
         if (editorData instanceof Array) {
@@ -487,7 +452,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         // setup the diagram model
-        this._nodeDataContentList = [];
         this._graphCanvas.reset();
 
         // Load graph of nodes from the material
@@ -501,14 +465,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     loadGraph() {
         const material = this.props.globalState.nodeMaterial;
         material._vertexOutputNodes.forEach((n: any) => {
-            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas), true);
+            this.appendBlock(n, true);
         });
         material._fragmentOutputNodes.forEach((n: any) => {
-            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas), true);
+            this.appendBlock(n, true);
         });
 
         material.attachedBlocks.forEach((n: any) => {
-            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas), true);
+            this.appendBlock(n, true);
         });
 
         // Links
@@ -537,31 +501,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
         setTimeout(() => {
-            if (!editorData || !editorData.locations) {
-                this._graphCanvas.distributeGraph();
-            } else {
-                // Locations
-                for (const location of editorData.locations) {
-                    for (const node of this._graphCanvas.nodes) {
-                        const block = node.content.data;
-                        if (block && block.uniqueId === location.blockId) {
-                            node.x = location.x;
-                            node.y = location.y;
-                            node.cleanAccumulation();
-                            break;
-                        }
-                    }
-                }
-
-                if (!isImportingAFrame) {
-                    this._graphCanvas.processEditorData(editorData);
-                }
-            }
-
-            this._graphCanvas._isLoading = false;
-            for (const node of this._graphCanvas.nodes) {
-                node._refreshLinks();
-            }
+            this._graphCanvas.reOrganize(editorData, isImportingAFrame);
             this.hideWaitScreen();
         });
     }
@@ -674,7 +614,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             if (block.isUnique) {
                 const className = block.getClassName();
-                for (const other of this._nodeDataContentList) {
+                for (const other of this._graphCanvas.getCachedData()) {
                     if (other !== block && other.getClassName() === className) {
                         this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
                         return;
@@ -683,7 +623,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             block.autoConfigure(this.props.globalState.nodeMaterial);
-            newNode = this.createNodeFromObject(TypeLedger.NodeDataBuilder(block, this._graphCanvas));
+            newNode = this.appendBlock(block);
         }
 
         // Size exceptions
@@ -947,7 +887,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             ref={this._graphCanvasRef}
                             stateManager={this.props.globalState.stateManager}
                             onEmitNewNode={(nodeData) => {
-                                return this.createNodeFromObject(nodeData);
+                                return this.appendBlock(nodeData.data as NodeMaterialBlock);
                             }}
                         />
                     </div>

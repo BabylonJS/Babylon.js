@@ -18,7 +18,7 @@ import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/in
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {
-        return this.props.data as ImageSourceBlock;
+        return this.props.nodeData.data as ImageSourceBlock;
     }
 
     constructor(props: IPropertyComponentProps) {
@@ -31,8 +31,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
-        if (nextProps.data !== this.props.data) {
-            const texture = (nextProps.data as ImageSourceBlock).texture as BaseTexture;
+        if (nextProps.nodeData.data !== this.props.nodeData.data) {
+            const texture = (nextProps.nodeData.data as ImageSourceBlock).texture as BaseTexture;
 
             nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
@@ -47,7 +47,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     updateAfterTextureLoad() {
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeMaterialBlock);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     }
@@ -120,7 +120,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
     render() {
         let url = "";
-        const block = this.props.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
 
         const texture = this.imageSourceBlock.texture as BaseTexture;
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
@@ -150,7 +150,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     {texture && texture.updateSamplingMode && (
                         <OptionsLineComponent
@@ -294,7 +294,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                 </LineContainerComponent>
-                <GenericPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
             </div>
         );
     }

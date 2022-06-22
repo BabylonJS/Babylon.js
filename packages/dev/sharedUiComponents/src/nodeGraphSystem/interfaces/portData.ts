@@ -1,4 +1,5 @@
 import { Nullable } from "core/types";
+import { GraphNode } from "../graphNode";
 import { INodeData } from "./nodeData";
 
 export enum PortDataDirection {
@@ -8,23 +9,11 @@ export enum PortDataDirection {
     Output,
 }
 
-/**
- * Enum used to define the compatibility state between two connection points
- */
- export enum PortCompatibilityStates {
-    /** Points are compatibles */
-    Compatible,
-    /** Points are incompatible because of their types */
-    TypeIncompatible,
-    /** Points are incompatible because of their targets (vertex vs fragment) */
-    TargetIncompatible,
-    /** Points are incompatible because they are in the same hierarchy **/
-    HierarchyIssue,
-}
 
 export interface IPortData {
     data: any;
     name: string;
+    internalName: string;
     isExposedOnFrame: boolean;
     exposedPortPosition: number;
     isConnected: boolean;
@@ -33,11 +22,13 @@ export interface IPortData {
     connectedPort: Nullable<IPortData>;
     needDualDirectionValidation: boolean;
     hasEndpoints: boolean;
+    endpoints: Nullable<IPortData[]>;
 
     updateDisplayName: (newName: string) => void;
     connectTo: (port: IPortData) => void;
     disconnectFrom: (port: IPortData) => void;
-    checkCompatibilityState(port: IPortData): PortCompatibilityStates;
+    checkCompatibilityState(port: IPortData): number;
+    getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData): string;
 
     createDefaultInputData(rootData: any): { data: INodeData, name: string};
 }

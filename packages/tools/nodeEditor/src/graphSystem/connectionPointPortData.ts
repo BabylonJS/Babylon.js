@@ -1,10 +1,12 @@
+import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointCompatibilityStates, NodeMaterialConnectionPointDirection } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { Nullable } from "core/types";
+import { GlobalState } from "node-editor/globalState";
+import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import { IPortData, PortCompatibilityStates, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { IPortData, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { BlockNodeData } from "./blockNodeData";
 
 export class ConnectionPointPortData implements IPortData {    
@@ -23,12 +25,24 @@ export class ConnectionPointPortData implements IPortData {
         return portName;
     }
 
+    public get internalName() {
+        return this.data.name;
+    }
+
     public get isExposedOnFrame() {
         return this.data.isExposedOnFrame;
     }
 
+    public set isExposedOnFrame(value: boolean) {
+        this.data.isExposedOnFrame = value;
+    }
+
     public get exposedPortPosition() {
         return this.data.exposedPortPosition;
+    }
+
+    public set exposedPortPosition(value: number) {
+        this.data.exposedPortPosition = value;
     }
 
     public get isConnected() {
@@ -72,13 +86,25 @@ export class ConnectionPointPortData implements IPortData {
         return this.data.hasEndpoints;
     }
 
+    public get endpoints() {
+        const endpoints: IPortData[] = [];
+        
+        this.data.endpoints.forEach(endpoint => {
+            const endpointOwnerBlock = endpoint.ownerBlock;
+            const endpointNode = this._nodeContainer.nodes.find(n => n.content.data === endpointOwnerBlock);
+            endpoints.push(endpointNode!.getPortDataForPortDataContent(endpoint)!);
+        });
+
+        return endpoints;
+    }
+
     public constructor(connectionPoint: NodeMaterialConnectionPoint, nodeContainer: INodeContainer) {
         this.data = connectionPoint;
         this._nodeContainer = nodeContainer;
     }
 
     public updateDisplayName(newName: string) {
-        this.data.displayName = newName;;
+        this.data.displayName = newName;
     }
 
     public connectTo(port: IPortData) {
@@ -96,17 +122,40 @@ export class ConnectionPointPortData implements IPortData {
 
         switch (state) {
             case NodeMaterialConnectionPointCompatibilityStates.Compatible:
-                return PortCompatibilityStates.Compatible;
+                return 0;
 
+            default:
+                return state;
+        }
+    }
+
+    public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
+        if (!issue) {
+            const isFragmentOutput = targetPort.ownerData.getClassName() === "FragmentOutputBlock";
+            if (isFragmentOutput) {
+                const fragmentBlock = targetPort.ownerData as FragmentOutputBlock;
+
+                if (targetPort.name === "rgb" && fragmentBlock.rgba.isConnected) {
+                    targetNode.getLinksForPortDataContent(fragmentBlock.rgba)[0].dispose();
+                } else if (targetPort.name === "rgba" && fragmentBlock.rgb.isConnected) {
+                    targetNode.getLinksForPortDataContent(fragmentBlock.rgb)[0].dispose();
+                }
+                return "";
+            }
+        }
+
+        switch (issue) {
             case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible:
-                return PortCompatibilityStates.TypeIncompatible;
+                return "Cannot connect two different connection types";
 
-            case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
-                return PortCompatibilityStates.TargetIncompatible;
+            case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:    
+                return "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
 
             case NodeMaterialConnectionPointCompatibilityStates.HierarchyIssue:
-                return PortCompatibilityStates.HierarchyIssue;
+                return "Source block cannot be connected with one of its ancestors"
         }
+
+        return "";
     }
 
     public createDefaultInputData(rootData: any) {
@@ -124,7 +173,7 @@ export class ConnectionPointPortData implements IPortData {
             [emittedBlock, pointName] = customInputBlock;
         }
 
-        const nodeMaterial = rootData as NodeMaterial;
+        const nodeMaterial = (rootData as GlobalState).nodeMaterial;
         nodeMaterial.attachedBlocks.push(emittedBlock);
         if (!emittedBlock.isInput) {
             emittedBlock.autoConfigure(nodeMaterial);

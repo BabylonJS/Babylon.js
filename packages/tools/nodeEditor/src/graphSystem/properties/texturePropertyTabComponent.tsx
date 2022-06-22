@@ -29,7 +29,7 @@ type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | Partic
 
 export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean; loadAsCubeTexture: boolean; textureIsPrefiltered: boolean }> {
     get textureBlock(): AnyTexture {
-        return this.props.data as AnyTexture;
+        return this.props.nodeData.data as AnyTexture;
     }
 
     constructor(props: IPropertyComponentProps) {
@@ -42,8 +42,8 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
-        if (nextProps.data !== this.props.data) {
-            const texture = (nextProps.data as AnyTexture).texture as BaseTexture;
+        if (nextProps.nodeData.data !== this.props.nodeData.data) {
+            const texture = (nextProps.nodeData.data as AnyTexture).texture as BaseTexture;
 
             nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
@@ -58,7 +58,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     updateAfterTextureLoad() {
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeMaterialBlock);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
         this.forceUpdate();
     }
@@ -161,7 +161,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
     render() {
         let url = "";
-        const block = this.props.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
 
         const texture = (this.textureBlock as TextureBlock).hasImageSource ? null : (this.textureBlock.texture as BaseTexture);
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
@@ -235,7 +235,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
                         label="Auto select UV"
@@ -457,7 +457,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                     </LineContainerComponent>
                 )}
-                <GenericPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
             </div>
         );
     }

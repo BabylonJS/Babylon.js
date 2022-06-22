@@ -206,7 +206,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
                 if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-                    this.props.globalState.onResetRequiredObservable.notifyObservers();
+                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 }
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
             },
@@ -323,7 +323,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             .then(() => {
                 material.build();
                 if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
-                    this.props.globalState.onResetRequiredObservable.notifyObservers();
+                    this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                 }
             })
             .catch((err) => {
@@ -378,7 +378,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         this.props.globalState.mode = value as NodeMaterialModes;
 
-        this.props.globalState.onResetRequiredObservable.notifyObservers();
+        this.props.globalState.onResetRequiredObservable.notifyObservers(true);
 
         return true;
     }
@@ -475,7 +475,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                         this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                                         break;
                                 }
-                                this.props.globalState.onResetRequiredObservable.notifyObservers();
+                                this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                             }}
                         />
                     </LineContainerComponent>

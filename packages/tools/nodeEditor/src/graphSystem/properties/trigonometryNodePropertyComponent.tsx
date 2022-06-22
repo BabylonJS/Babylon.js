@@ -12,7 +12,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
     }
 
     render() {
-        const trigonometryBlock = this.props.data as TrigonometryBlock;
+        const trigonometryBlock = this.props.nodeData.data as TrigonometryBlock;
 
         const operationOptions: { label: string; value: TrigonometryBlockOperations }[] = [
             { label: "Cos", value: TrigonometryBlockOperations.Cos },
@@ -41,7 +41,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Operation"

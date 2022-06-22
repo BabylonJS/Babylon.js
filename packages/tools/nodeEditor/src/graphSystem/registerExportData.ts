@@ -7,4 +7,8 @@ export const registerExportData = (stateManager: StateManager) => {
         const nodeMaterial = (data as GlobalState).nodeMaterial;
         return SerializationTools.Serialize(nodeMaterial, stateManager.data as GlobalState, this);
     }
+
+    stateManager.getEditorDataMap = () => {
+        return (stateManager.data as GlobalState).nodeMaterial.editorData.map;
+    }
 }

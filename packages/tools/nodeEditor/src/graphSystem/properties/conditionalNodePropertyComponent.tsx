@@ -12,7 +12,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
     }
 
     render() {
-        const conditionBlock = this.props.data as ConditionalBlock;
+        const conditionBlock = this.props.nodeData.data as ConditionalBlock;
 
         const conditionOptions: { label: string; value: ConditionalBlockConditions }[] = [
             { label: "Equal", value: ConditionalBlockConditions.Equal },
@@ -32,7 +32,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Condition"

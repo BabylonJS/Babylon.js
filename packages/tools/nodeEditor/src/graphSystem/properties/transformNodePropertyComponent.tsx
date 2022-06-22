@@ -13,12 +13,12 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
     render() {
         return (
             <>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
                         label="Transform as direction"
                         onSelect={(value) => {
-                            const transformBlock = this.props.data as TransformBlock;
+                            const transformBlock = this.props.nodeData.data as TransformBlock;
                             if (value) {
                                 transformBlock.complementW = 0;
                             } else {
@@ -26,7 +26,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
                             }
                             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                         }}
-                        isSelected={() => (this.props.data as TransformBlock).complementW === 0}
+                        isSelected={() => (this.props.nodeData.data as TransformBlock).complementW === 0}
                     />
                 </LineContainerComponent>
             </>

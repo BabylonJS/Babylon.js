@@ -30,7 +30,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     componentDidMount() {
-        const inputBlock = this.props.data as InputBlock;
+        const inputBlock = this.props.nodeData.data as InputBlock;
         this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
@@ -38,7 +38,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     componentWillUnmount() {
-        const inputBlock = this.props.data as InputBlock;
+        const inputBlock = this.props.nodeData.data as InputBlock;
         if (this._onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
             this._onValueChangedObserver = null;
@@ -46,7 +46,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     renderValue(globalState: GlobalState) {
-        const inputBlock = this.props.data as InputBlock;
+        const inputBlock = this.props.nodeData.data as InputBlock;
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
@@ -181,12 +181,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     setDefaultValue() {
-        const inputBlock = this.props.data as InputBlock;
+        const inputBlock = this.props.nodeData.data as InputBlock;
         inputBlock.setDefaultValue();
     }
 
     render() {
-        const inputBlock = this.props.data as InputBlock;
+        const inputBlock = this.props.nodeData.data as InputBlock;
 
         let systemValuesOptions: { label: string; value: NodeMaterialSystemValues }[] = [];
         let attributeOptions: { label: string; value: string }[] = [];
@@ -267,7 +267,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && (
                         <OptionsLineComponent

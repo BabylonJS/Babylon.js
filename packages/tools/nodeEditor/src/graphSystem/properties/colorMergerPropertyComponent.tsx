@@ -11,7 +11,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
     }
 
     render() {
-        const colorMergerBlock = this.props.data as ColorMergerBlock;
+        const colorMergerBlock = this.props.nodeData.data as ColorMergerBlock;
 
         const targetOptions: { label: string; value: string }[] = [
             { label: "R", value: "r" },
@@ -22,7 +22,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SWIZZLES">
                     <OptionsLineComponent
                         label="R"

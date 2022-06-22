@@ -1,6 +1,7 @@
 import { StateManager } from "../stateManager";
+import { INodeData } from "./nodeData";
 
 export interface IPropertyComponentProps {
     stateManager: StateManager;
-    data: any;
+    nodeData: INodeData;
 }

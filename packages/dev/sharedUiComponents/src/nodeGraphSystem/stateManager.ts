@@ -31,4 +31,6 @@ export class StateManager {
     applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement) => void;
     
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
+
+    getEditorDataMap: () => { [key: number]: number };
 }

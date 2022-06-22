@@ -70,7 +70,7 @@ export class NodeEditor {
             options.customLoadObservable.add((data) => {
                 SerializationTools.Deserialize(data, globalState);
                 globalState.mode = options.nodeMaterial.mode;
-                globalState.onResetRequiredObservable.notifyObservers();
+                globalState.onResetRequiredObservable.notifyObservers(false);
                 globalState.onBuiltObservable.notifyObservers();
             });
         }

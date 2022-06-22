@@ -24,8 +24,8 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
     render() {
         return (
             <>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
-                <GenericPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
             </>
         );
     }
@@ -43,7 +43,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
             { label: "Fragment", value: NodeMaterialBlockTargets.Fragment },
         ];
 
-        const block = this.props.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
 
         return (
             <>
@@ -98,7 +98,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
     forceRebuild(notifiers?: { rebuild?: boolean; update?: boolean; activatePreviewCommand?: boolean; callback?: (scene: Scene) => void }) {
         if (!notifiers || notifiers.update) {
-            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.data as NodeMaterialBlock);
+            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeMaterialBlock);
         }
 
         if (!notifiers || notifiers.rebuild) {
@@ -113,7 +113,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     render() {
-        const block = this.props.data as NodeMaterialBlock,
+        const block = this.props.nodeData.data as NodeMaterialBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 
         if (!propStore) {

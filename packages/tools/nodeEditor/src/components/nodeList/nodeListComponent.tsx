@@ -19,7 +19,7 @@ interface INodeListComponentProps {
 }
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
-    private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     private static _Tooltips: { [key: string]: string } = {
         BonesBlock: "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",

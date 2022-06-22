@@ -6,11 +6,14 @@ export interface INodeData {
     name: string;
     uniqueId: number;
     isInput: boolean;
+    comments: string;
+
+    getWarningMessage: () => string;
     getClassName: () => string;
     dispose: () => void;
 
     getPortByName: (name: string) => Nullable<IPortData>;
-
+    
     inputs: IPortData[];
     outputs: IPortData[];
 }

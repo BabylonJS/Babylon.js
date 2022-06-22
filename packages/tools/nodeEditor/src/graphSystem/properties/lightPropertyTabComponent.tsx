@@ -16,11 +16,11 @@ export class LightPropertyTabComponent extends React.Component<IPropertyComponen
 
         lightOptions.splice(0, 0, { label: "All", value: "" });
 
-        const lightBlock = this.props.data as LightBlock;
+        const lightBlock = this.props.nodeData.data as LightBlock;
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Light"

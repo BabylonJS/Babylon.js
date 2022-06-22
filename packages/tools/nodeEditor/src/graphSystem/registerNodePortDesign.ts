@@ -2,10 +2,11 @@ import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums
 import { BlockTools } from "../blockTools";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { ConnectionPointPortData } from "./connectionPointPortData";
 
 export const registerNodePortDesign = (stateManager: StateManager) => {
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement) => {
-    const type = portData.data as NodeMaterialBlockConnectionPointTypes;
+    const type = (portData as ConnectionPointPortData).data.type;
     
     element.style.background = BlockTools.GetColorFromConnectionNodeType(type);
     switch (type) {

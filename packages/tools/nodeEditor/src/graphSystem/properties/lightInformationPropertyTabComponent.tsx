@@ -14,11 +14,11 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
             return { label: l.name, value: l.name };
         });
 
-        const lightInformationBlock = this.props.data as LightInformationBlock;
+        const lightInformationBlock = this.props.nodeData.data as LightInformationBlock;
 
         return (
             <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} data={this.props.data} />
+                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
                         label="Light"

@@ -32,14 +32,18 @@ export class BlockNodeData implements INodeData {
         return this._outputs;
     }
 
+    public get comments() {
+        return this.data.comments;
+    }
+
     public getPortByName(name: string) {
         for (const input of this.inputs) {
-            if (input.name === name) {
+            if (input.internalName === name) {
                 return input;
             }
         }
         for (const output of this.outputs) {
-            if (output.name === name) {
+            if (output.internalName === name) {
                 return output;
             }
         }
@@ -49,6 +53,14 @@ export class BlockNodeData implements INodeData {
 
     public dispose() {
         this.data.dispose();
+    }
+
+    public getWarningMessage() {
+        if (this.data.getClassName() !== "ElbowBlock" && this.data.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+            return "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        }
+
+        return "";
     }
 
     public constructor(public data: NodeMaterialBlock, nodeContainer: INodeContainer) {
