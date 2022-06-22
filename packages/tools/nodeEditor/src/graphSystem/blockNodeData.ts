@@ -1,5 +1,5 @@
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
@@ -51,13 +51,13 @@ export class BlockNodeData implements INodeData {
         this.data.dispose();
     }
 
-    public constructor(public data: NodeMaterialBlock, existingNodes?: GraphNode[]) {
+    public constructor(public data: NodeMaterialBlock, nodeContainer: INodeContainer) {
         this.data.inputs.forEach(input => {
-            this._inputs.push(new ConnectionPointPortData(input, existingNodes));
+            this._inputs.push(new ConnectionPointPortData(input, nodeContainer));
         });
 
         this.data.outputs.forEach(output => {
-            this._outputs.push(new ConnectionPointPortData(output, existingNodes));
+            this._outputs.push(new ConnectionPointPortData(output, nodeContainer));
         });
     }
 }

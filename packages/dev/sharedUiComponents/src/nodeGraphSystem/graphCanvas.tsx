@@ -21,14 +21,14 @@ import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 
 import { INodeData } from "./interfaces/nodeData";
 import { IPortData, PortCompatibilityStates, PortDataDirection } from "./interfaces/portData";
-
+import { INodeContainer } from "./interfaces/nodeContainer";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
     onEmitNewNode: (nodeData: INodeData) => GraphNode;
 }
 
-export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
+export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> implements INodeContainer {
     private readonly _minZoom = 0.1;
     private readonly _maxZoom = 4;
 
@@ -385,6 +385,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     connectPorts(pointA: IPortData, pointB: IPortData) {
+        if (!pointA || !pointB) {
+            return;
+        }
+
         const ownerDataA = pointA.ownerData;
         const ownerDataB = pointB.ownerData;
         const nodeA = this.findNodeFromData(ownerDataA);

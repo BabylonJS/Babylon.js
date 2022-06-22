@@ -90,7 +90,7 @@ export class GraphFrame {
 
     private _createInputPort(port: NodePort, node: GraphNode) {
         const localPort = FrameNodePort.CreateFrameNodePortElement(
-            TypeLedger.PortDataBuilder(port),
+            TypeLedger.PortDataBuilder(port, this._ownerCanvas),
             node,
             this._inputPortContainer,
             null,
@@ -268,7 +268,7 @@ export class GraphFrame {
                     if (!portAdded) {
                         portAdded = true;
                         localPort = FrameNodePort.CreateFrameNodePortElement(
-                            TypeLedger.PortDataBuilder(port),
+                            TypeLedger.PortDataBuilder(port, this._ownerCanvas),
                             link.nodeA!,
                             this._outputPortContainer,
                             null,
@@ -298,7 +298,7 @@ export class GraphFrame {
                     this._controlledPorts.push(port);
                 } else if (port.exposedPortPosition >= 0 && !portAdded) {
                     const localPort = FrameNodePort.CreateFrameNodePortElement(
-                        TypeLedger.PortDataBuilder(port),
+                        TypeLedger.PortDataBuilder(port, this._ownerCanvas),
                         node,
                         this._outputPortContainer,
                         null,
@@ -316,7 +316,7 @@ export class GraphFrame {
             if (portAdded) return true;
         } else if (port.exposedOnFrame) {
             const localPort = FrameNodePort.CreateFrameNodePortElement(
-                TypeLedger.PortDataBuilder(port),
+                TypeLedger.PortDataBuilder(port, this._ownerCanvas),
                 node,
                 this._outputPortContainer,
                 null,

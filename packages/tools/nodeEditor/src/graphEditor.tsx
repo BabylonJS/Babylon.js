@@ -94,7 +94,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (nodeData.inputs.length) {
             for (const input of nodeData.inputs) {
                 if (input.isConnected && recursion) {
-                    this.createNodeFromObject(TypeLedger.NodeDataBuilder(input.ownerData, this._graphCanvas.nodes));
+                    this.createNodeFromObject(TypeLedger.NodeDataBuilder(input.ownerData, this._graphCanvas));
                 }
             }
         }
@@ -118,7 +118,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         const newInputBlock = new InputBlock(type, undefined, nodeType);
-        return this.createNodeFromObject(TypeLedger.NodeDataBuilder(newInputBlock, this._graphCanvas.nodes));
+        return this.createNodeFromObject(TypeLedger.NodeDataBuilder(newInputBlock, this._graphCanvas));
     }
 
     componentDidMount() {
@@ -195,7 +195,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             // create new graph nodes for only blocks from frame (last blocks added)
             this.props.globalState.nodeMaterial.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeMaterialBlock) => {
-                this.createNodeFromObject(TypeLedger.NodeDataBuilder(block, this._graphCanvas.nodes));
+                this.createNodeFromObject(TypeLedger.NodeDataBuilder(block, this._graphCanvas));
             });
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
@@ -501,14 +501,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     loadGraph() {
         const material = this.props.globalState.nodeMaterial;
         material._vertexOutputNodes.forEach((n: any) => {
-            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas.nodes), true);
+            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas), true);
         });
         material._fragmentOutputNodes.forEach((n: any) => {
-            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas.nodes), true);
+            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas), true);
         });
 
         material.attachedBlocks.forEach((n: any) => {
-            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas.nodes), true);
+            this.createNodeFromObject(TypeLedger.NodeDataBuilder(n, this._graphCanvas), true);
         });
 
         // Links
@@ -683,7 +683,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
 
             block.autoConfigure(this.props.globalState.nodeMaterial);
-            newNode = this.createNodeFromObject(TypeLedger.NodeDataBuilder(block, this._graphCanvas.nodes));
+            newNode = this.createNodeFromObject(TypeLedger.NodeDataBuilder(block, this._graphCanvas));
         }
 
         // Size exceptions

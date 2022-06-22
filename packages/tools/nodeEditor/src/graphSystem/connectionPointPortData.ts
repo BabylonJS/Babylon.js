@@ -3,12 +3,13 @@ import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointCompatibilityStates, NodeMaterialConnectionPointDirection } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { Nullable } from "core/types";
-import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import { IPortData, PortCompatibilityStates, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { BlockNodeData } from "./blockNodeData";
 
 export class ConnectionPointPortData implements IPortData {    
     private _connectedPort: Nullable<IPortData> = null;
+    private _nodeContainer: INodeContainer;
     
     public data: NodeMaterialConnectionPoint;
     
@@ -35,6 +36,18 @@ export class ConnectionPointPortData implements IPortData {
     }
 
     public get connectedPort() {
+        if (!this.isConnected) {
+            return null;
+        }
+        if (!this._connectedPort) {
+            const otherBlock = this.data.connectedPoint!.ownerBlock;
+            const otherNode = this._nodeContainer.nodes.find(n => n.content.data === otherBlock);
+
+            if (otherNode) {
+                this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);
+            }
+        }
+
         return this._connectedPort;
     }
 
@@ -59,17 +72,9 @@ export class ConnectionPointPortData implements IPortData {
         return this.data.hasEndpoints;
     }
 
-    public constructor(connectionPoint: NodeMaterialConnectionPoint, existingNodes?: GraphNode[]) {
+    public constructor(connectionPoint: NodeMaterialConnectionPoint, nodeContainer: INodeContainer) {
         this.data = connectionPoint;
-
-        if (connectionPoint.isConnected && existingNodes) {
-            const otherBlock = connectionPoint.connectedPoint!.ownerBlock;
-            const otherNode = existingNodes.find(n => n.content.data === otherBlock);
-
-            if (otherNode) {
-                this._connectedPort = otherNode.getPortDataForPortDataContent(connectionPoint.connectedPoint!);
-            }
-        }
+        this._nodeContainer = nodeContainer;
     }
 
     public updateDisplayName(newName: string) {
@@ -83,6 +88,7 @@ export class ConnectionPointPortData implements IPortData {
 
     public disconnectFrom(port: IPortData){
         this.data.disconnectFrom(port.data);
+        this._connectedPort = null;
     }
 
     public checkCompatibilityState(port: IPortData) {
@@ -125,7 +131,7 @@ export class ConnectionPointPortData implements IPortData {
         }
 
         return {
-            data: new BlockNodeData(emittedBlock),
+            data: new BlockNodeData(emittedBlock, this._nodeContainer),
             name: pointName
         }
     }
