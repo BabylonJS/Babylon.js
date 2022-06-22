@@ -141,7 +141,7 @@ export class NodeLink {
 
             // Create an elbow at the clicked location
             stateManager.onNewNodeCreatedObservable.addOnce((newNode) => {
-                const newElbowBlock = newNode.block as any;
+                const newElbowBlock = newNode.data as any;
 
                 // Delete previous link
                 this.dispose();

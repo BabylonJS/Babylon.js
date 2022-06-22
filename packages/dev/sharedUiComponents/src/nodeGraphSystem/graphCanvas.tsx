@@ -21,6 +21,7 @@ import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMateri
 import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { INodeData } from "./interfaces/nodeData";
 
 
 export interface IGraphCanvasComponentProps {
@@ -364,8 +365,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._oldY = -1;
     }
 
-    findNodeFromBlock(block: NodeMaterialBlock) {
-        return this.nodes.filter((n) => n.block === block)[0];
+    findNodeFromData(data: INodeData) {
+        return this.nodes.filter((n) => n.data === data)[0];
     }
 
     reset() {
@@ -385,10 +386,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     connectPorts(pointA: NodeMaterialConnectionPoint, pointB: NodeMaterialConnectionPoint) {
-        const blockA = pointA.ownerBlock;
-        const blockB = pointB.ownerBlock;
-        const nodeA = this.findNodeFromBlock(blockA);
-        const nodeB = this.findNodeFromBlock(blockB);
+        // TODO
+        const blockA = pointA.ownerBlock as any;
+        const blockB = pointB.ownerBlock as any;
+        const nodeA = this.findNodeFromData(blockA);
+        const nodeB = this.findNodeFromData(blockB);
 
         if (!nodeA || !nodeB) {
             return;
@@ -427,8 +429,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         link.dispose();
     }
 
-    appendBlock(block: NodeMaterialBlock) {
-        const newNode = new GraphNode(block, this.props.stateManager);
+    appendNode(data: INodeData) {
+        const newNode = new GraphNode(data, this.props.stateManager);
 
         newNode.appendVisual(this._graphCanvas, this);
 
@@ -471,21 +473,22 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         });
 
         this._nodes.forEach((node) => {
-            node.block.outputs.forEach((output) => {
-                if (!output.hasEndpoints) {
-                    return;
-                }
+            // TODO
+            // node.block.outputs.forEach((output) => {
+            //     if (!output.hasEndpoints) {
+            //         return;
+            //     }
 
-                output.endpoints.forEach((endpoint) => {
-                    const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
-                    const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.block === endpoint.ownerBlock));
+            //     output.endpoints.forEach((endpoint) => {
+            //         const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
+            //         const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.block === endpoint.ownerBlock));
 
-                    const sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
-                    const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+            //         const sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+            //         const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
 
-                    graph.setEdge(sourceId.toString(), targetId.toString());
-                });
-            });
+            //         graph.setEdge(sourceId.toString(), targetId.toString());
+            //     });
+            // });
         });
 
         // Distribute
@@ -843,7 +846,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 emittedBlock.autoConfigure(nodeMaterial);
                 nodeA = this.props.onEmitNewBlock(emittedBlock);
             } else {
-                nodeA = this.appendBlock(emittedBlock);
+                nodeA = this.appendNode(emittedBlock as any);
             }
             nodeA.x = this._dropPointX - 200;
             nodeA.y = this._dropPointY - 50;
@@ -854,7 +857,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             emittedBlock.inputs.forEach((connection) => {
                 if (connection.connectedPoint) {
                     const existingNodes = this.nodes.filter((n) => {
-                        return n.block === (connection as any).connectedPoint.ownerBlock;
+                        return n.data === (connection as any).connectedPoint.ownerBlock;
                     });
                     const connectedNode = existingNodes[0];
 

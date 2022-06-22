@@ -1509,7 +1509,7 @@ export class GraphFrame {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: saveCollapsedState ? this.isCollapsed : true, //keeping closed for stand along exporting.
-            blocks: this.nodes.map((n) => n.block.uniqueId),
+            blocks: this.nodes.map((n) => n.data.uniqueId),
             comments: this._comments,
         };
     }
@@ -1557,7 +1557,7 @@ export class GraphFrame {
         if (serializationData.blocks && map) {
             for (const blockId of serializationData.blocks) {
                 const actualId = map[blockId];
-                const node = canvas.nodes.filter((n) => n.block.uniqueId === actualId);
+                const node = canvas.nodes.filter((n) => n.data.uniqueId === actualId);
 
                 if (node.length) {
                     newFrame.nodes.push(node[0]);
