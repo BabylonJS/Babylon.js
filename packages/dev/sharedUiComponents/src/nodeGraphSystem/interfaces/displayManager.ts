@@ -1,7 +1,10 @@
+import { INodeData } from "./nodeData";
+import { IPortData } from "./portData";
+
 export interface IDisplayManager {
-    getHeaderClass(data: any): string;
-    shouldDisplayPortLabels(data: any): boolean;
-    updatePreviewContent(data: any, contentArea: HTMLDivElement): void;
-    getBackgroundColor(data: any): string;
-    getHeaderText(data: any): string;
+    getHeaderClass(data: INodeData): string;
+    shouldDisplayPortLabels(data: IPortData): boolean;
+    updatePreviewContent(data: INodeData, contentArea: HTMLDivElement): void;
+    getBackgroundColor(data: INodeData): string;
+    getHeaderText(data: INodeData): string;
 }

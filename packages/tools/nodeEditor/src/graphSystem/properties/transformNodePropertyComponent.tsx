@@ -1,9 +1,9 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 export class TransformPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

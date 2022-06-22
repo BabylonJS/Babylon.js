@@ -235,7 +235,7 @@ export class GraphFrame {
     }
 
     private _createInputPorts(port: NodePort, node: GraphNode) {
-        if (port.connectionPoint.isConnected) {
+        if (port.portData.isConnected) {
             let portAdded = false;
             for (const link of node.links) {
                 if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
@@ -259,7 +259,7 @@ export class GraphFrame {
     }
 
     private _createOutputPorts(port: NodePort, node: GraphNode) {
-        if (port.connectionPoint.hasEndpoints) {
+        if (port.portData.hasEndpoints) {
             let portAdded = false;
             for (const link of node.links) {
                 if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1) {
@@ -290,9 +290,9 @@ export class GraphFrame {
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                     } else if (this.nodes.indexOf(link.nodeB!) === -1) {
                         link.isVisible = true;
-                        localPort = this.ports.filter((p) => p.connectionPoint === port.connectionPoint)[0];
+                        localPort = this.ports.filter((p) => p.portData === port.portData)[0];
                     } else {
-                        localPort = this.ports.filter((p) => p.connectionPoint === port.connectionPoint)[0];
+                        localPort = this.ports.filter((p) => p.portData === port.portData)[0];
                     }
                     port.delegatedPort = localPort;
                     this._controlledPorts.push(port);
@@ -1509,7 +1509,7 @@ export class GraphFrame {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: saveCollapsedState ? this.isCollapsed : true, //keeping closed for stand along exporting.
-            blocks: this.nodes.map((n) => n.data.uniqueId),
+            blocks: this.nodes.map((n) => n.content.uniqueId),
             comments: this._comments,
         };
     }
@@ -1557,7 +1557,7 @@ export class GraphFrame {
         if (serializationData.blocks && map) {
             for (const blockId of serializationData.blocks) {
                 const actualId = map[blockId];
-                const node = canvas.nodes.filter((n) => n.data.uniqueId === actualId);
+                const node = canvas.nodes.filter((n) => n.content.uniqueId === actualId);
 
                 if (node.length) {
                     newFrame.nodes.push(node[0]);

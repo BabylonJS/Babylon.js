@@ -131,9 +131,9 @@ export class NodeLink {
         const stateManager = this._graphCanvas.stateManager;
         if (evt.altKey) {
             const nodeA = this._nodeA;
-            const pointA = this._portA.connectionPoint;
+            const pointA = this._portA.portData;
             const nodeB = this._nodeB!;
-            const pointB = this._portB!.connectionPoint;
+            const pointB = this._portB!.portData;
 
             if (stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
                 return;
@@ -141,7 +141,7 @@ export class NodeLink {
 
             // Create an elbow at the clicked location
             stateManager.onNewNodeCreatedObservable.addOnce((newNode) => {
-                const newElbowBlock = newNode.data as any;
+                const newElbowBlock = newNode.content.data as any;
 
                 // Delete previous link
                 this.dispose();
@@ -181,7 +181,7 @@ export class NodeLink {
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
 
-            this._portA.connectionPoint.disconnectFrom(this._portB!.connectionPoint);
+            this._portA.portData.disconnectFrom(this._portB!.portData);
 
             GraphCanvasComponent._RefreshNode(this._nodeB);
         }

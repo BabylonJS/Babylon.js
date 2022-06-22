@@ -2,15 +2,14 @@ import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import type { GlobalState } from "../../globalState";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
-import type { GraphFrame } from "../../diagram/graphFrame";
-import { FramePortPosition } from "../../diagram/graphFrame";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { FrameNodePort } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
-import { isFramePortData } from "../../diagram/graphCanvas";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { FramePortPosition, GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { isFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
+import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;

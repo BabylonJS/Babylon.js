@@ -2,12 +2,12 @@ import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { NodePort } from "../../diagram/nodePort";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;

@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
@@ -8,6 +6,8 @@ import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animat
 import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import type { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 const inputNameToAttributeValue: { [name: string]: string } = {
     position2d: "position",
@@ -26,8 +26,8 @@ const inputNameToAttributeName: { [name: string]: string } = {
 };
 
 export class InputDisplayManager implements IDisplayManager {
-    public getHeaderClass(block: NodeMaterialBlock) {
-        const inputBlock = block as InputBlock;
+    public getHeaderClass(nodeData: INodeData) {
+        const inputBlock = nodeData.data as InputBlock;
 
         if (inputBlock.isConstant) {
             return "constant";
@@ -44,8 +44,8 @@ export class InputDisplayManager implements IDisplayManager {
         return false;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        const inputBlock = block as InputBlock;
+    public getHeaderText(nodeData: INodeData): string {
+        const inputBlock = nodeData.data as InputBlock;
         let name = `${inputBlock.name} (${InputDisplayManager.GetBaseType(inputBlock.output.type)})`;
 
         if (inputBlock.isAttribute) {
@@ -59,9 +59,9 @@ export class InputDisplayManager implements IDisplayManager {
         return NodeMaterialBlockConnectionPointTypes[type];
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(nodeData: INodeData): string {
         let color = "";
-        const inputBlock = block as InputBlock;
+        const inputBlock = nodeData.data as InputBlock;
 
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Color3:
@@ -80,9 +80,9 @@ export class InputDisplayManager implements IDisplayManager {
         return color;
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         let value = "";
-        const inputBlock = block as InputBlock;
+        const inputBlock = nodeData.data as InputBlock;
 
         if (inputBlock.isAttribute) {
             const attrVal = inputNameToAttributeValue[inputBlock.name] ?? inputBlock.name;

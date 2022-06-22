@@ -9,8 +9,8 @@ import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { RegisterDisplayManagers } from "./graphSystem/registerToDisplayLedger";
-import { RegisterPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
+import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
+import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 /**
  * Interface used to specify creation options for the node editor
@@ -34,8 +34,8 @@ export class NodeEditor {
      */
     public static Show(options: INodeEditorOptions) {
         // Initial setup
-        RegisterDisplayManagers();
-        RegisterPropertyTabManagers();
+        RegisterToDisplayManagers();
+        RegisterToPropertyTabManagers();
         RegisterTypeLedger();
 
         if (this._CurrentState) {
@@ -58,6 +58,7 @@ export class NodeEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.stateManager.hostDocument = globalState.hostDocument;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState,

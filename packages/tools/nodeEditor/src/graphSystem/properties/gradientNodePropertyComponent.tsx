@@ -5,11 +5,11 @@ import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock
 import { GradientStepComponent } from "./gradientStepComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { Color3 } from "core/Maths/math.color";
-import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
+import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;

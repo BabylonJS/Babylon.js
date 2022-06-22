@@ -15,18 +15,17 @@ import { StateManager } from "./stateManager";
 import { FramePortData } from "./types/framePortData";
 
 // To remove
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+
+
 import { INodeData } from "./interfaces/nodeData";
+import { IPortData, PortCompatibilityStates, PortDataDirection } from "./interfaces/portData";
 
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
-    onEmitNewBlock: (block: NodeMaterialBlock) => GraphNode;
+    onEmitNewNode: (nodeData: INodeData) => GraphNode;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
@@ -365,8 +364,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._oldY = -1;
     }
 
-    findNodeFromData(data: INodeData) {
-        return this.nodes.filter((n) => n.data === data)[0];
+    findNodeFromData(data: any) {
+        return this.nodes.filter((n) => n.content.data === data)[0];
     }
 
     reset() {
@@ -385,19 +384,18 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._svgCanvas.innerHTML = "";
     }
 
-    connectPorts(pointA: NodeMaterialConnectionPoint, pointB: NodeMaterialConnectionPoint) {
-        // TODO
-        const blockA = pointA.ownerBlock as any;
-        const blockB = pointB.ownerBlock as any;
-        const nodeA = this.findNodeFromData(blockA);
-        const nodeB = this.findNodeFromData(blockB);
+    connectPorts(pointA: IPortData, pointB: IPortData) {
+        const ownerDataA = pointA.ownerData;
+        const ownerDataB = pointB.ownerData;
+        const nodeA = this.findNodeFromData(ownerDataA);
+        const nodeB = this.findNodeFromData(ownerDataB);
 
         if (!nodeA || !nodeB) {
             return;
         }
 
-        const portA = nodeA.getPortForConnectionPoint(pointA);
-        const portB = nodeB.getPortForConnectionPoint(pointB);
+        const portA = nodeA.getPortForPortData(pointA);
+        const portB = nodeB.getPortForPortData(pointB);
 
         if (!portA || !portB) {
             return;
@@ -812,41 +810,30 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     processCandidatePort() {
-        let pointB = this._candidateLink!.portA.connectionPoint;
+        let pointB = this._candidateLink!.portA.portData;
         let nodeB = this._candidateLink!.portA.node;
-        let pointA: NodeMaterialConnectionPoint;
+        let pointA: IPortData;
         let nodeA: GraphNode;
 
         if (this._candidatePort) {
-            pointA = this._candidatePort.connectionPoint;
+            pointA = this._candidatePort.portData;
             nodeA = this._candidatePort.node;
         } else {
-            if (pointB.direction === NodeMaterialConnectionPointDirection.Output) {
+            if (pointB.direction === PortDataDirection.Output) {
                 return;
             }
 
             // No destination so let's spin a new input block
-            let pointName = "output",
-                emittedBlock;
-            const customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
-            if (!customInputBlock) {
-                emittedBlock = new InputBlock(
-                    NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type],
-                    undefined,
-                    this._candidateLink!.portA.connectionPoint.type
-                );
-            } else {
-                [emittedBlock, pointName] = customInputBlock;
-            }
+            const newDefaultInput = this._candidateLink!.portA.portData.createDefaultInputData(this.props.stateManager.data);
+            const pointName = newDefaultInput.name;
+            const emittedNodeData = newDefaultInput.data;
+
             // TODO: type error
-            const nodeMaterial = (this.props.stateManager.data as any).nodeMaterial;
-            nodeMaterial.attachedBlocks.push(emittedBlock);
-            pointA = (emittedBlock as any)[pointName];
-            if (!emittedBlock.isInput) {
-                emittedBlock.autoConfigure(nodeMaterial);
-                nodeA = this.props.onEmitNewBlock(emittedBlock);
+            pointA = emittedNodeData.getPortByName(pointName)!;
+            if (!emittedNodeData.isInput) {
+                nodeA = this.props.onEmitNewNode(emittedNodeData);
             } else {
-                nodeA = this.appendNode(emittedBlock as any);
+                nodeA = this.appendNode(emittedNodeData as any);
             }
             nodeA.x = this._dropPointX - 200;
             nodeA.y = this._dropPointY - 50;
@@ -854,10 +841,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             const x = nodeA.x - 250;
             let y = nodeA.y;
 
-            emittedBlock.inputs.forEach((connection) => {
-                if (connection.connectedPoint) {
+            emittedNodeData.inputs.forEach((portData: IPortData) => {
+                if (portData.connectedPort) {
                     const existingNodes = this.nodes.filter((n) => {
-                        return n.data === (connection as any).connectedPoint.ownerBlock;
+                        return n.content === portData.connectedPort?.ownerData;
                     });
                     const connectedNode = existingNodes[0];
 
@@ -871,7 +858,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             });
         }
 
-        if (pointA.direction === NodeMaterialConnectionPointDirection.Input) {
+        if (pointA.direction === PortDataDirection.Input) {
             const temp = pointB;
             pointB = pointA;
             pointA = temp;
@@ -881,7 +868,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             nodeB = tempNode;
         }
 
-        if (pointB.connectedPoint === pointA) {
+        if (pointB.connectedPort === pointA) {
             return;
         }
 
@@ -893,41 +880,41 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        if (pointB.ownerBlock === pointA.ownerBlock) {
+        if (pointB.ownerData === pointA.ownerData) {
             return;
         }
 
         // Check compatibility
-        const isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
+        const isFragmentOutput = pointB.ownerData.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
         if (
             (pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) &&
-            compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible &&
+            compatibilityState === PortCompatibilityStates.Compatible &&
             !(pointA instanceof InputBlock)
         ) {
             compatibilityState = pointB.checkCompatibilityState(pointA);
         }
-        if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
+        if (compatibilityState === PortCompatibilityStates.Compatible) {
             if (isFragmentOutput) {
-                const fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;
+                const fragmentBlock = pointB.ownerData as FragmentOutputBlock;
 
                 if (pointB.name === "rgb" && fragmentBlock.rgba.isConnected) {
-                    nodeB.getLinksForConnectionPoint(fragmentBlock.rgba)[0].dispose();
+                    nodeB.getLinksForPortDataContent(fragmentBlock.rgba)[0].dispose();
                 } else if (pointB.name === "rgba" && fragmentBlock.rgb.isConnected) {
-                    nodeB.getLinksForConnectionPoint(fragmentBlock.rgb)[0].dispose();
+                    nodeB.getLinksForPortDataContent(fragmentBlock.rgb)[0].dispose();
                 }
             }
         } else {
             let message = "";
 
             switch (compatibilityState) {
-                case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible:
+                case PortCompatibilityStates.TypeIncompatible:
                     message = "Cannot connect two different connection types";
                     break;
-                case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
+                case PortCompatibilityStates.TargetIncompatible:
                     message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
                     break;
-                case NodeMaterialConnectionPointCompatibilityStates.HierarchyIssue:
+                case PortCompatibilityStates.HierarchyIssue:
                     message = "Source block cannot be connected with one of its ancestors";
                     break;
             }
@@ -939,7 +926,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         let linksToNotifyForDispose: Nullable<NodeLink[]> = null;
 
         if (pointB.isConnected) {
-            const links = nodeB.getLinksForConnectionPoint(pointB);
+            const links = nodeB.getLinksForPortData(pointB);
 
             linksToNotifyForDispose = links.slice();
 
@@ -948,10 +935,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             });
         }
 
-        if (pointB.ownerBlock.inputsAreExclusive) {
+        if (pointB.ownerData.inputsAreExclusive) {
             // Disconnect all inputs if block has exclusive inputs
-            pointB.ownerBlock.inputs.forEach((i) => {
-                const links = nodeB.getLinksForConnectionPoint(i);
+            pointB.ownerData.inputs.forEach((i: any) => {
+                const links = nodeB.getLinksForPortData(i);
 
                 if (!linksToNotifyForDispose) {
                     linksToNotifyForDispose = links.slice();
@@ -975,7 +962,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
     }
 
-    connectNodes(nodeA: GraphNode, pointA: NodeMaterialConnectionPoint, nodeB: GraphNode, pointB: NodeMaterialConnectionPoint) {
+    connectNodes(nodeA: GraphNode, pointA: IPortData, nodeB: GraphNode, pointB: IPortData) {
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 

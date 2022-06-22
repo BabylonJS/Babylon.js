@@ -1,5 +1,5 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class OutputDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -10,15 +10,15 @@ export class OutputDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        return block.name;
+    public getHeaderText(nodeData: INodeData): string {
+        return nodeData.data.name;
     }
 
     public getBackgroundColor(): string {
         return "rgb(106, 44, 131)";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         contentArea.classList.add("output-block");
     }
 }

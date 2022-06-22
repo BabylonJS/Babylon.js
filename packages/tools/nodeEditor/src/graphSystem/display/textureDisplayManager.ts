@@ -1,4 +1,3 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import type { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
@@ -7,6 +6,8 @@ import { TextureLineComponent } from "../../sharedComponents/textureLineComponen
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -20,15 +21,17 @@ export class TextureDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        return block.name;
+    public getHeaderText(nodeData: INodeData): string {
+        return (nodeData.data as NodeMaterialBlock).name;
     }
 
-    public getBackgroundColor(block: NodeMaterialBlock): string {
+    public getBackgroundColor(nodeData: INodeData): string {
+        const block = nodeData.data as NodeMaterialBlock;
         return block.getClassName() === "RefractionBlock" || block.getClassName() === "ReflectionBlock" ? "#6174FA" : "#323232";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+        const block = nodeData.data as NodeMaterialBlock;
         const textureBlock = block as TextureBlock | ReflectionTextureBlock | RefractionBlock | CurrentScreenBlock;
 
         if (!this._previewCanvas) {

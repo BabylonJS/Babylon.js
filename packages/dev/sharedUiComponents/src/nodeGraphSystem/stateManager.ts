@@ -4,6 +4,7 @@ import { Nullable } from "core/types";
 import { FrameNodePort } from "./frameNodePort";
 import { GraphFrame } from "./graphFrame";
 import { GraphNode } from "./graphNode";
+import { IPortData } from "./interfaces/portData";
 import { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { NodePort } from "./nodePort";
 
@@ -27,7 +28,7 @@ export class StateManager {
 
     exportData: (data: any) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
-    applyNodePortDesign: (data: any, element: HTMLElement, img: HTMLImageElement) => void;
+    applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement) => void;
     
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 }

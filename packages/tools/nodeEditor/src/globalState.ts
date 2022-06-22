@@ -7,17 +7,18 @@ import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { StateManager } from "../../../dev/sharedUiComponents/src/nodeGraphSystem/stateManager";
 import { registerElbowSupport } from "./graphSystem/registerElbowSupport";
 import { registerNodePortDesign } from "./graphSystem/registerNodePortDesign";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { Nullable } from "core/types";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
-    hostDocument: HTMLDocument;
+    hostDocument: Document;
     hostWindow: Window;
     stateManager: StateManager;
     onBuiltObservable = new Observable<void>();
@@ -43,7 +44,7 @@ export class GlobalState {
     backgroundColor: Color4;
     backFaceCulling: boolean;
     depthPrePass: boolean;
-    blockKeyboardEvents = false;
+    lockObject = new LockObject();
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;

@@ -1,8 +1,9 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { RemapBlock } from "core/Materials/Node/Blocks/remapBlock";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class RemapDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -13,8 +14,8 @@ export class RemapDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        return block.name;
+    public getHeaderText(nodeData: INodeData): string {
+        return (nodeData.data as NodeMaterialBlock).name;
     }
 
     public getBackgroundColor(): string {
@@ -35,8 +36,8 @@ export class RemapDisplayManager implements IDisplayManager {
         return "?";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
-        const remapBlock = block as RemapBlock;
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+        const remapBlock = nodeData.data as RemapBlock;
 
         const sourceRangeX = remapBlock.sourceMin.isConnected ? this._extractInputValue(remapBlock.sourceMin) : remapBlock.sourceRange.x;
         const sourceRangeY = remapBlock.sourceMax.isConnected ? this._extractInputValue(remapBlock.sourceMax) : remapBlock.sourceRange.y;

@@ -17,7 +17,7 @@ export class Color3PropertyTabComponent extends React.Component<IColor3PropertyT
                 target={this.props.inputBlock}
                 propertyName="value"
                 onChange={() => {
-                    this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+                    this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
                 }}
             ></Color3LineComponent>
         );

@@ -12,7 +12,7 @@ export class MessageDialogComponent extends React.Component<IMessageDialogCompon
 
         this.state = { message: "", isError: false };
 
-        this.props.globalState.onErrorMessageDialogRequiredObservable.add((message: string) => {
+        this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.add((message: string) => {
             this.setState({ message: message, isError: true });
         });
     }

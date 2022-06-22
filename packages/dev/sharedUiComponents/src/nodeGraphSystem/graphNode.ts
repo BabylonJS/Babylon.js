@@ -12,9 +12,7 @@ import { IDisplayManager } from "./interfaces/displayManager";
 import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
 import { INodeData } from "./interfaces/nodeData";
-
-// TODO
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { IPortData } from "./interfaces/portData";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -70,7 +68,7 @@ export class GraphNode {
     private _upateNodePortNames() {
         for (const port of this._inputPorts.concat(this._outputPorts)) {
             if (port.hasLabel()) {
-                port.portName = port.connectionPoint.displayName || port.connectionPoint.name;
+                port.portName = port.portData.name;
             }
         }
     }
@@ -139,11 +137,11 @@ export class GraphNode {
     }
 
     public get id() {
-        return this.data.uniqueId;
+        return this.content.uniqueId;
     }
 
     public get name() {
-        return this.data.name;
+        return this.content.name;
     }
 
     public get isSelected() {
@@ -181,7 +179,7 @@ export class GraphNode {
         }
     }
 
-    public constructor(public data: INodeData, stateManager: StateManager) {
+    public constructor(public content: INodeData, stateManager: StateManager) {
         this._stateManager = stateManager;
 
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
@@ -198,7 +196,7 @@ export class GraphNode {
         });
 
         this._onUpdateRequiredObserver = this._stateManager.onUpdateRequiredObservable.add((data) => {
-            if (data !== this.data) {
+            if (data !== this.content) {
                 return;
             }
             this.refresh();
@@ -238,19 +236,19 @@ export class GraphNode {
         return isOverlappingFrame;
     }
 
-    public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
+    public getPortForPortData(portData: IPortData) {
         for (const port of this._inputPorts) {
-            const attachedPoint = port.connectionPoint;
+            const attachedPoint = port.portData;
 
-            if (attachedPoint === point) {
+            if (attachedPoint === portData) {
                 return port;
             }
         }
 
         for (const port of this._outputPorts) {
-            const attachedPoint = port.connectionPoint;
+            const attachedPoint = port.portData;
 
-            if (attachedPoint === point) {
+            if (attachedPoint === portData) {
                 return port;
             }
         }
@@ -258,8 +256,32 @@ export class GraphNode {
         return null;
     }
 
-    public getLinksForConnectionPoint(point: NodeMaterialConnectionPoint) {
-        return this._links.filter((link) => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
+    public getPortDataForPortDataContent(data: any) {
+        for (const port of this._inputPorts) {
+            const attachedPoint = port.portData;
+
+            if (attachedPoint.data === data) {
+                return attachedPoint;
+            }
+        }
+
+        for (const port of this._outputPorts) {
+            const attachedPoint = port.portData;
+
+            if (attachedPoint.data === data) {
+                return attachedPoint;
+            }
+        }
+
+        return null;
+    }
+
+    public getLinksForPortDataContent(data: any) {
+        return this._links.filter((link) => link.portA.portData.data === data || link.portB!.portData.data === data);
+    }
+
+    public getLinksForPortData(portData: IPortData) {
+        return this._links.filter((link) => link.portA.portData === portData || link.portB!.portData === portData);
     }
 
     private _refreshFrames() {
@@ -284,17 +306,17 @@ export class GraphNode {
 
     public refresh() {
         if (this._displayManager) {
-            this._header.innerHTML = this._displayManager.getHeaderText(this.data);
-            this._displayManager.updatePreviewContent(this.data, this._content);
-            this._visual.style.background = this._displayManager.getBackgroundColor(this.data);
-            const additionalClass = this._displayManager.getHeaderClass(this.data);
+            this._header.innerHTML = this._displayManager.getHeaderText(this.content);
+            this._displayManager.updatePreviewContent(this.content, this._content);
+            this._visual.style.background = this._displayManager.getBackgroundColor(this.content);
+            const additionalClass = this._displayManager.getHeaderClass(this.content);
             this._header.classList.value = "header";
             this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
                 this._headerContainer.classList.add(additionalClass);
             }
         } else {
-            this._header.innerHTML = this.data.name;
+            this._header.innerHTML = this.content.name;
         }
 
         for (const port of this._inputPorts) {
@@ -387,7 +409,7 @@ export class GraphNode {
     }
 
     public renderProperties(): Nullable<JSX.Element> {
-        let control = PropertyLedger.RegisteredControls[this.data.getClassName()];
+        let control = PropertyLedger.RegisteredControls[this.content.getClassName()];
 
         if (!control) {
             control = PropertyLedger.DefaultControl;
@@ -395,7 +417,7 @@ export class GraphNode {
 
         return React.createElement(control, {
             stateManager: this._stateManager,
-            data: this.data,
+            data: this.content,
         });
     }
 
@@ -403,7 +425,7 @@ export class GraphNode {
         this._ownerCanvas = owner;
 
         // Display manager
-        const displayManagerClass = DisplayLedger.RegisteredControls[this.data.getClassName()];
+        const displayManagerClass = DisplayLedger.RegisteredControls[this.content.getClassName()];
 
         if (displayManagerClass) {
             this._displayManager = new displayManagerClass();
@@ -512,6 +534,6 @@ export class GraphNode {
             link.dispose();
         }
 
-        this.data.dispose();
+        this.content.dispose();
     }
 }

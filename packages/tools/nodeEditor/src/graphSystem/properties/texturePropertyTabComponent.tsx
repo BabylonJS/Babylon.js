@@ -10,7 +10,6 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
@@ -22,6 +21,7 @@ import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 

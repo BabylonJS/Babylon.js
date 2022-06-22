@@ -13,7 +13,6 @@ import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponen
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
-import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -21,6 +20,7 @@ import { Color4PropertyTabComponent } from "../../components/propertyTab/propert
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<InputBlock>>;

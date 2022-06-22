@@ -134,7 +134,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 className="numeric-input"
                                 onBlur={() => {
                                     this._onFocus = false;
-                                    this.props.globalState.blockKeyboardEvents = false;
+                                    this.props.globalState.lockObject.lock = false;
                                     if (this.props.onEnter) {
                                         this.props.onEnter(this._store);
                                     }
@@ -148,7 +148,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                     }
                                 }}
                                 onFocus={() => {
-                                    this.props.globalState.blockKeyboardEvents = true;
+                                    this.props.globalState.lockObject.lock = true;
                                     this._onFocus = true;
                                 }}
                                 value={this.state.value}

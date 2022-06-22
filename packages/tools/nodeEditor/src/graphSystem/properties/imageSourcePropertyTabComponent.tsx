@@ -7,7 +7,6 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
-import type { IPropertyComponentProps } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
@@ -15,6 +14,7 @@ import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent"
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {

@@ -1,4 +1,3 @@
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Vector2 } from "core/Maths/math.vector";
@@ -7,6 +6,7 @@ import type { StateManager } from "./stateManager";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import type { FrameNodePort } from "./frameNodePort";
 import type { IDisplayManager } from "./interfaces/displayManager";
+import { IPortData } from "./interfaces/portData";
 
 export class NodePort {
     protected _element: HTMLDivElement;
@@ -27,28 +27,24 @@ export class NodePort {
     }
 
     public get portName() {
-        let portName = this.connectionPoint.displayName || this.connectionPoint.name;
-        if (this.connectionPoint.ownerBlock.isInput) {
-            portName = this.node.name;
-        }
-        return portName;
+        return this.portData.name;
     }
 
     public set portName(newName: string) {
         if (this._portLabelElement) {
-            this.connectionPoint.displayName = newName;
+            this.portData.updateDisplayName(newName);
             this._portLabelElement.innerHTML = newName;
         }
     }
 
     public get disabled() {
-        if (!this.connectionPoint.isConnected) {
+        if (!this.portData.isConnected) {
             return false;
         } else if (this._isConnectedToNodeOutsideOfFrame()) {
             //connected to outside node
             return true;
         } else {
-            const link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+            const link = this.node.getLinksForPortData(this.portData);
             if (link.length) {
                 if (link[0].nodeB === this.node) {
                     // check if this node is the receiving
@@ -64,7 +60,7 @@ export class NodePort {
     }
 
     public get exposedOnFrame() {
-        if (!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+        if (!!this.portData.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
             return true;
         }
         return false;
@@ -74,19 +70,19 @@ export class NodePort {
         if (this.disabled) {
             return;
         }
-        this.connectionPoint.isExposedOnFrame = value;
+        this.portData.isExposedOnFrame = value;
     }
 
     public get exposedPortPosition() {
-        return this.connectionPoint.exposedPortPosition;
+        return this.portData.exposedPortPosition;
     }
 
     public set exposedPortPosition(value: number) {
-        this.connectionPoint.exposedPortPosition = value;
+        this.portData.exposedPortPosition = value;
     }
 
     private _isConnectedToNodeOutsideOfFrame() {
-        const link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+        const link = this.node.getLinksForPortData(this.portData);
         if (link.length) {
             for (let i = 0; i < link.length; i++) {
                 if (link[i].nodeA.enclosingFrameId !== link[i].nodeB!.enclosingFrameId) {
@@ -98,10 +94,10 @@ export class NodePort {
     }
 
     public refresh() {
-        this._stateManager.applyNodePortDesign(this.connectionPoint.type, this._element, this._img);
+        this._stateManager.applyNodePortDesign(this.portData, this._element, this._img);
     }
 
-    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, stateManager: StateManager) {
+    public constructor(portContainer: HTMLElement, public portData: IPortData, public node: GraphNode, stateManager: StateManager) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add("port");
         portContainer.appendChild(this._element);
@@ -153,26 +149,25 @@ export class NodePort {
     }
 
     public static CreatePortElement(
-        connectionPoint: NodeMaterialConnectionPoint,
+        portData: IPortData,
         node: GraphNode,
         root: HTMLElement,
         displayManager: Nullable<IDisplayManager>,
         stateManager: StateManager
     ) {
         const portContainer = root.ownerDocument!.createElement("div");
-        const block = connectionPoint.ownerBlock;
 
         portContainer.classList.add("portLine");
 
         root.appendChild(portContainer);
 
-        if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
+        if (!displayManager || displayManager.shouldDisplayPortLabels(portData)) {
             const portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
-            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;
+            portLabel.innerHTML = portData.name;
             portContainer.appendChild(portLabel);
         }
 
-        return new NodePort(portContainer, connectionPoint, node, stateManager);
+        return new NodePort(portContainer, portData, node, stateManager);
     }
 }

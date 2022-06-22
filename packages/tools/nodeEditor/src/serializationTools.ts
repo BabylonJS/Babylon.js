@@ -13,7 +13,7 @@ export class SerializationTools {
         };
 
         // Store node locations
-        const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map((n) => n.block) : material.attachedBlocks;
+        const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map((n) => n.content.data) : material.attachedBlocks;
 
         for (const block of blocks) {
             const node = globalState.onGetNodeFromBlock(block);
@@ -34,7 +34,7 @@ export class SerializationTools {
 
         this.UpdateLocations(material, globalState, frame);
 
-        const selectedBlocks = frame ? frame.nodes.map((n) => n.block) : undefined;
+        const selectedBlocks = frame ? frame.nodes.map((n) => n.content.data) : undefined;
 
         const serializationObject = material.serialize(selectedBlocks);
 

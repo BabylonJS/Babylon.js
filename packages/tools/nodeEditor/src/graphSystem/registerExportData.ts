@@ -1,6 +1,6 @@
 import { GlobalState } from "../globalState";
-import { SerializationTools } from "node-editor/serializationTools";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { SerializationTools } from "../serializationTools";
 
 export const registerExportData = (stateManager: StateManager) => {
     stateManager.exportData = (data) => {

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { GraphFrame } from "../../diagram/graphFrame";
 import type { GlobalState } from "../../globalState";
 import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
@@ -9,6 +8,8 @@ import type { Observer } from "core/Misc/observable";
 import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;
@@ -36,8 +37,9 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
     render() {
         let configurableInputBlocks: InputBlock[] = [];
         this.props.frame.nodes.forEach((node) => {
-            if (node.block.isInput && node.block.visibleOnFrame) {
-                configurableInputBlocks.push(node.block as InputBlock);
+            const block = node.content.data as NodeMaterialBlock;
+            if (block.isInput && block.visibleOnFrame) {
+                configurableInputBlocks.push(block as InputBlock);
             }
         });
 

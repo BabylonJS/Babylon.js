@@ -213,7 +213,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 try {
                     localStorage.setItem(frameName, JSON.stringify(frameData));
                 } catch (error) {
-                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
                     return;
                 }
 
@@ -257,7 +257,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 try {
                     localStorage.setItem(blockName, JSON.stringify(blockData));
                 } catch (error) {
-                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
                     return;
                 }
 
@@ -547,9 +547,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                             <input
                                 type="text"
                                 placeholder="Filter"
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
                                 onBlur={() => {
-                                    this.props.globalState.blockKeyboardEvents = false;
+                                    this.props.globalState.lockObject.lock = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)}
                             />

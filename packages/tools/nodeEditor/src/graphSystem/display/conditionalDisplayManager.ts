@@ -1,7 +1,7 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
 import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class ConditionalDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -12,8 +12,8 @@ export class ConditionalDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        const conditionBlock = block as ConditionalBlock;
+    public getHeaderText(nodeData: INodeData): string {
+        const conditionBlock = nodeData.data as ConditionalBlock;
         let desc = "";
 
         switch (conditionBlock.condition) {
@@ -46,7 +46,7 @@ export class ConditionalDisplayManager implements IDisplayManager {
                 break;
         }
 
-        return block.name + " (" + desc + ")";
+        return conditionBlock.name + " (" + desc + ")";
     }
 
     public getBackgroundColor(): string {

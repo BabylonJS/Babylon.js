@@ -1,6 +1,7 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class ClampDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -11,16 +12,16 @@ export class ClampDisplayManager implements IDisplayManager {
         return false;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        return block.name;
+    public getHeaderText(nodeData: INodeData): string {
+        return (nodeData.data as NodeMaterialBlock).name;
     }
 
     public getBackgroundColor(): string {
         return "#4086BB";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
-        const clampBlock = block as ClampBlock;
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+        const clampBlock = nodeData.data as ClampBlock;
 
         contentArea.classList.add("clamp-block");
         contentArea.innerHTML = `[${clampBlock.minimum}, ${clampBlock.maximum}]`;

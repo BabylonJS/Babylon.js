@@ -5,10 +5,9 @@ import { IPortData } from "./interfaces/portData";
 import { NodePort } from "./nodePort";
 import { GraphNode } from "./graphNode";
 import { isFramePortData } from "./tools";
-
-declare type StateManager = import("./stateManager").StateManager;
-declare type FramePortPosition = import("./graphFrame").FramePortPosition;
-declare type FramePortData = import("./types/framePortData").FramePortData;
+import type { FramePortPosition } from "./graphFrame";
+import type { StateManager } from "./stateManager";
+import type { FramePortData } from "./types/framePortData";
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;
@@ -91,7 +90,7 @@ export class FrameNodePort extends NodePort {
             const portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
 
-            portLabel.innerHTML = portData.getName();
+            portLabel.innerHTML = portData.name;
             portContainer.appendChild(portLabel);
         }
 

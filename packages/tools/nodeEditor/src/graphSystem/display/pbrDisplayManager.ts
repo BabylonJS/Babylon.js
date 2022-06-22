@@ -1,5 +1,6 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class PBRDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -10,15 +11,15 @@ export class PBRDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        return block.name;
+    public getHeaderText(nodeData: INodeData): string {
+        return (nodeData.data as NodeMaterialBlock).name;
     }
 
     public getBackgroundColor(): string {
         return "#6174FA";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         contentArea.classList.add("pbr-block");
     }
 }

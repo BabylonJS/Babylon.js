@@ -1,7 +1,8 @@
-import type { IDisplayManager } from "../../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
+import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class ImageSourceDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -15,16 +16,16 @@ export class ImageSourceDisplayManager implements IDisplayManager {
         return true;
     }
 
-    public getHeaderText(block: NodeMaterialBlock): string {
-        return block.name;
+    public getHeaderText(nodeData: INodeData): string {
+        return (nodeData.data as NodeMaterialBlock).name;
     }
 
     public getBackgroundColor(): string {
         return "#323232";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
-        const imageSourceBlock = block as ImageSourceBlock;
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+        const imageSourceBlock = nodeData.data as ImageSourceBlock;
 
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");
