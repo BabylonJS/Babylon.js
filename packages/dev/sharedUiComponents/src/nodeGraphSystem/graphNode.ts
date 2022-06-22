@@ -1,19 +1,20 @@
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
-import { GenericPropertyComponent } from "../graphSystem/properties/genericNodePropertyComponent";
-import type { IDisplayManager } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
-import type { NodeLink } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/nodeLink";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
 import triangle from "../imgs/triangle.svg";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
-import { DisplayLedger } from "shared-ui-components/nodeGraphSystem/displayLedger";
-import { PropertyLedger } from "shared-ui-components/nodeGraphSystem/propertyLedger";
+import type { NodeLink } from "./nodeLink";
+import type { StateManager } from "./stateManager";
+import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { IDisplayManager } from "./interfaces/displayManager";
+import { PropertyLedger } from "./propertyLedger";
+import { DisplayLedger } from "./displayLedger";
+import { INodeData } from "./interfaces/nodeData";
+
+// TODO
+import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -38,7 +39,7 @@ export class GraphNode {
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
-    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<Nullable<INodeData>>>;
     private _ownerCanvas: GraphCanvasComponent;
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
@@ -138,11 +139,11 @@ export class GraphNode {
     }
 
     public get id() {
-        return this.block.uniqueId;
+        return this.data.uniqueId;
     }
 
     public get name() {
-        return this.block.name;
+        return this.data.name;
     }
 
     public get isSelected() {
@@ -180,7 +181,7 @@ export class GraphNode {
         }
     }
 
-    public constructor(public block: NodeMaterialBlock, stateManager: StateManager) {
+    public constructor(public data: INodeData, stateManager: StateManager) {
         this._stateManager = stateManager;
 
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
@@ -196,8 +197,8 @@ export class GraphNode {
             }
         });
 
-        this._onUpdateRequiredObserver = this._stateManager.onUpdateRequiredObservable.add((block) => {
-            if (block !== this.block) {
+        this._onUpdateRequiredObserver = this._stateManager.onUpdateRequiredObservable.add((data) => {
+            if (data !== this.data) {
                 return;
             }
             this.refresh();
@@ -283,17 +284,17 @@ export class GraphNode {
 
     public refresh() {
         if (this._displayManager) {
-            this._header.innerHTML = this._displayManager.getHeaderText(this.block);
-            this._displayManager.updatePreviewContent(this.block, this._content);
-            this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
-            const additionalClass = this._displayManager.getHeaderClass(this.block);
+            this._header.innerHTML = this._displayManager.getHeaderText(this.data);
+            this._displayManager.updatePreviewContent(this.data, this._content);
+            this._visual.style.background = this._displayManager.getBackgroundColor(this.data);
+            const additionalClass = this._displayManager.getHeaderClass(this.data);
             this._header.classList.value = "header";
             this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
                 this._headerContainer.classList.add(additionalClass);
             }
         } else {
-            this._header.innerHTML = this.block.name;
+            this._header.innerHTML = this.data.name;
         }
 
         for (const port of this._inputPorts) {
@@ -310,14 +311,15 @@ export class GraphNode {
                 this._ownerCanvas.frames[index].redrawFramePorts();
             }
         }
-        this._comments.innerHTML = this.block.comments || "";
-        this._comments.title = this.block.comments || "";
+        // TODO
+        // this._comments.innerHTML = this.data.comments || "";
+        // this._comments.title = this.data.comments || "";
 
-        if (this.block.getClassName() !== "ElbowBlock" && this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
-            this._promotionWarning.classList.add("visible");
-        } else {
-            this._promotionWarning.classList.remove("visible");
-        }
+        // if (this.data.getClassName() !== "ElbowBlock" && this.data.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+        //     this._promotionWarning.classList.add("visible");
+        // } else {
+        //     this._promotionWarning.classList.remove("visible");
+        // }
     }
 
     private _onDown(evt: PointerEvent) {
@@ -385,15 +387,15 @@ export class GraphNode {
     }
 
     public renderProperties(): Nullable<JSX.Element> {
-        let control = PropertyLedger.RegisteredControls[this.block.getClassName()];
+        let control = PropertyLedger.RegisteredControls[this.data.getClassName()];
 
         if (!control) {
-            control = GenericPropertyComponent;
+            control = PropertyLedger.DefaultControl;
         }
 
         return React.createElement(control, {
             stateManager: this._stateManager,
-            data: this.block,
+            data: this.data,
         });
     }
 
@@ -401,7 +403,7 @@ export class GraphNode {
         this._ownerCanvas = owner;
 
         // Display manager
-        const displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
+        const displayManagerClass = DisplayLedger.RegisteredControls[this.data.getClassName()];
 
         if (displayManagerClass) {
             this._displayManager = new displayManagerClass();
@@ -461,13 +463,14 @@ export class GraphNode {
         this._visual.appendChild(this._comments);
 
         // Connections
-        for (const input of this.block.inputs) {
-            this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
-        }
+        // TODO
+        // for (const input of this.block.inputs) {
+        //     this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
+        // }
 
-        for (const output of this.block.outputs) {
-            this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
-        }
+        // for (const output of this.block.outputs) {
+        //     this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
+        // }
 
         this.refresh();
     }
@@ -509,6 +512,6 @@ export class GraphNode {
             link.dispose();
         }
 
-        this.block.dispose();
+        this.data.dispose();
     }
 }

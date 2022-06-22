@@ -2,11 +2,11 @@ import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMateri
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Vector2 } from "core/Maths/math.vector";
-import type { IDisplayManager } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/interfaces/displayManager";
 import type { GraphNode } from "./graphNode";
-import type { FrameNodePort } from "../../../../dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import type { StateManager } from "./stateManager";
+import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import type { FrameNodePort } from "./frameNodePort";
+import type { IDisplayManager } from "./interfaces/displayManager";
 
 export class NodePort {
     protected _element: HTMLDivElement;

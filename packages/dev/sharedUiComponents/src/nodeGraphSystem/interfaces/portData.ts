@@ -1,4 +1,4 @@
-export class IPortData {
-    public data: any;
-    public getName: () => string;
+export interface IPortData {
+    data: any;
+    getName: () => string;
 }

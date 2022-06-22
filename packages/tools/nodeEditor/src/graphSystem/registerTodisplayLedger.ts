@@ -12,7 +12,7 @@ import { ImageSourceDisplayManager } from "./display/imageSourceDisplayManager";
 import { ElbowDisplayManager } from "./display/elbowDisplayManager";
 import { DisplayLedger } from "shared-ui-components/nodeGraphSystem/displayLedger";
 
-export const RegisterDisplayManagers = () => {
+export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["InputBlock"] = InputDisplayManager;
     DisplayLedger.RegisteredControls["VertexOutputBlock"] = OutputDisplayManager;
     DisplayLedger.RegisteredControls["FragmentOutputBlock"] = OutputDisplayManager;

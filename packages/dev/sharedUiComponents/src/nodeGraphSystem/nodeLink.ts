@@ -4,9 +4,9 @@ import { Observable } from "core/Misc/observable";
 import type { FrameNodePort } from "./frameNodePort";
 import { NodePort } from "./nodePort";
 import { GraphNode } from "./graphNode";
+import { GraphCanvasComponent } from "./graphCanvas";
+import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 
-declare type GraphCanvasComponent = import("./graphCanvas").GraphCanvasComponent;
-declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;

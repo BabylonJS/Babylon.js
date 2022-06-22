@@ -6,7 +6,7 @@ import { NodeLink } from "../nodeLink";
 import { NodePort } from "../nodePort";
 import { FramePortData } from "../types/framePortData";
 
-export class ISelectionChangedOptions {
+export interface ISelectionChangedOptions {
     selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;
     forceKeepSelection?: boolean;
     marqueeSelection?: boolean;

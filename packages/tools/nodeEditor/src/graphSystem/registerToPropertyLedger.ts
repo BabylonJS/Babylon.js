@@ -1,6 +1,7 @@
 import { PropertyLedger } from "shared-ui-components/nodeGraphSystem/propertyLedger";
 import { ColorMergerPropertyTabComponent } from "./properties/colorMergerPropertyComponent";
 import { ConditionalPropertyTabComponent } from "./properties/conditionalNodePropertyComponent";
+import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent";
 import { GradientPropertyTabComponent } from "./properties/gradientNodePropertyComponent";
 import { ImageSourcePropertyTabComponent } from "./properties/imageSourcePropertyTabComponent";
 import { InputPropertyTabComponent } from "./properties/inputNodePropertyComponent";
@@ -11,7 +12,8 @@ import { TransformPropertyTabComponent } from "./properties/transformNodePropert
 import { TrigonometryPropertyTabComponent } from "./properties/trigonometryNodePropertyComponent";
 import { VectorMergerPropertyTabComponent } from "./properties/vectorMergerPropertyComponent";
 
-export const RegisterPropertyTabManagers = () => {
+export const RegisterToPropertyTabManagers = () => {
+    PropertyLedger.DefaultControl = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["TransformBlock"] = TransformPropertyTabComponent;
     PropertyLedger.RegisteredControls["InputBlock"] = InputPropertyTabComponent;
     PropertyLedger.RegisteredControls["GradientBlock"] = GradientPropertyTabComponent;

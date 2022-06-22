@@ -1,17 +1,10 @@
 import * as React from "react";
-import type { GlobalState } from "../../../../tools/nodeEditor/src/globalState";
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { GraphNode } from "./graphNode";
 import * as dagre from "dagre";
 import type { Nullable } from "core/types";
 import { NodeLink } from "./nodeLink";
 import { NodePort } from "./nodePort";
-import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { Vector2 } from "core/Maths/math.vector";
-import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
 import type { IEditorData, IFrameData } from "./interfaces/nodeLocationInfo";
@@ -20,6 +13,15 @@ import { FrameNodePort } from "./frameNodePort";
 import "./scss/graphCanvas.scss";
 import { StateManager } from "./stateManager";
 import { FramePortData } from "./types/framePortData";
+
+// To remove
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, NodeMaterialConnectionPointCompatibilityStates } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -833,7 +835,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             } else {
                 [emittedBlock, pointName] = customInputBlock;
             }
-            const nodeMaterial = (this.props.stateManager.data as GlobalState).nodeMaterial;
+            // TODO: type error
+            const nodeMaterial = (this.props.stateManager.data as any).nodeMaterial;
             nodeMaterial.attachedBlocks.push(emittedBlock);
             pointA = (emittedBlock as any)[pointName];
             if (!emittedBlock.isInput) {
@@ -1003,7 +1006,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     addFrame(frameData: IFrameData) {
-        const frame = GraphFrame.Parse(frameData, this, (this.props.stateManager.data as GlobalState).nodeMaterial.editorData.map);
+        // TODO
+        const frame = GraphFrame.Parse(frameData, this, (this.props.stateManager.data as any).nodeMaterial.editorData.map);
         this._frames.push(frame);
         this.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame });
     }
