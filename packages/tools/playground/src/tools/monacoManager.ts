@@ -452,6 +452,7 @@ class Playground {
             typescript.javascriptDefaults.setCompilerOptions({
                 noLib: false,
                 allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                allowJs: true,
             });
 
             typescript.javascriptDefaults.addExtraLib(libContent, "babylon.d.ts");

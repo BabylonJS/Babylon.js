@@ -31,7 +31,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 declare type Engine = import("../Engines/engine").Engine;
 
 /**
- *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+ *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
  */
 export class VolumetricLightScatteringPostProcess extends PostProcess {
     // Members
@@ -399,10 +399,16 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     }
                 }
 
+                if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
+                    effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                }
+
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
-                    effect.setMatrix("world", world)
-                );
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering, (isInstance, world) => {
+                    if (!isInstance) {
+                        effect.setMatrix("world", world);
+                    }
+                });
             }
         };
 

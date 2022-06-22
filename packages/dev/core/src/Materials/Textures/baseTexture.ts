@@ -599,9 +599,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param sampling
      * @param invertY
      * @param useSRGBBuffer
+     * @param isCube
      * @hidden
      */
-    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean): Nullable<InternalTexture> {
+    public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean, isCube?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
         if (!engine) {
             return null;
@@ -617,8 +618,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
                 if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
                     if (texturesCacheEntry.url === url && texturesCacheEntry.generateMipMaps === !noMipmap) {
                         if (!sampling || sampling === texturesCacheEntry.samplingMode) {
-                            texturesCacheEntry.incrementReferences();
-                            return texturesCacheEntry;
+                            if (isCube === undefined || isCube === texturesCacheEntry.isCube) {
+                                texturesCacheEntry.incrementReferences();
+                                return texturesCacheEntry;
+                            }
                         }
                     }
                 }

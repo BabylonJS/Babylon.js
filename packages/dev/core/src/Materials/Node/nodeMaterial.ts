@@ -164,7 +164,7 @@ export class NodeMaterial extends PushMaterial {
     public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
@@ -1251,7 +1251,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1331,6 +1331,7 @@ export class NodeMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
         return true;
     }
@@ -2027,16 +2028,19 @@ export class NodeMaterial extends PushMaterial {
      * @param url defines the url to load from
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL for nested url in the node material
+     * @param skipBuild defines whether to build the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl: string = ""): Promise<NodeMaterial> {
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl: string = "", skipBuild: boolean = false): Promise<NodeMaterial> {
         const material = new NodeMaterial(name, scene);
 
         return new Promise((resolve, reject) => {
             return material
                 .loadAsync(url, rootUrl)
                 .then(() => {
-                    material.build();
+                    if (!skipBuild) {
+                        material.build();
+                    }
                     resolve(material);
                 })
                 .catch(reject);
@@ -2049,9 +2053,16 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param nodeMaterial defines a node material to update (instead of creating a new one)
+     * @param skipBuild defines whether to build the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {
+    public static ParseFromSnippetAsync(
+        snippetId: string,
+        scene: Scene = EngineStore.LastCreatedScene!,
+        rootUrl: string = "",
+        nodeMaterial?: NodeMaterial,
+        skipBuild: boolean = false
+    ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(this.CreateDefault("blank", scene));
         }
@@ -2073,7 +2084,9 @@ export class NodeMaterial extends PushMaterial {
                         nodeMaterial.snippetId = snippetId;
 
                         try {
-                            nodeMaterial.build();
+                            if (!skipBuild) {
+                                nodeMaterial.build();
+                            }
                             resolve(nodeMaterial);
                         } catch (err) {
                             reject(err);

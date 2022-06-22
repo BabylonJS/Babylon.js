@@ -36,6 +36,10 @@ declare module "./material" {
  * @since 5.0
  */
 export class MaterialPluginManager {
+    /** Map a plugin class name to a #define name (used in the vertex/fragment shaders as a marker of the plugin usage) */
+    private static _MaterialPluginClassToMainDefine: { [name: string]: string } = {};
+    private static _MaterialPluginCounter: number = 0;
+
     protected _material: Material;
     protected _scene: Scene;
     protected _engine: Engine;
@@ -76,6 +80,11 @@ export class MaterialPluginManager {
             throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
         }
 
+        const pluginClassName = plugin.getClassName();
+        if (!MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]) {
+            MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName] = "MATERIALPLUGIN_" + ++MaterialPluginManager._MaterialPluginCounter;
+        }
+
         this._material._callbackPluginEventGeneric = this._handlePluginEvent.bind(this);
 
         this._plugins.push(plugin);
@@ -83,18 +92,19 @@ export class MaterialPluginManager {
 
         this._codeInjectionPoints = {};
 
-        const defineNamesFromPlugins = {};
+        const defineNamesFromPlugins: { [name: string]: { type: string; default: any } } = {};
+        defineNamesFromPlugins[MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]] = {
+            type: "boolean",
+            default: true,
+        };
+
         for (const plugin of this._plugins) {
             plugin.collectDefines(defineNamesFromPlugins);
             this._collectPointNames("vertex", plugin.getCustomCode("vertex"));
             this._collectPointNames("fragment", plugin.getCustomCode("fragment"));
         }
 
-        if (Object.keys(defineNamesFromPlugins).length > 0) {
-            this._defineNamesFromPlugins = defineNamesFromPlugins;
-        } else {
-            delete this._defineNamesFromPlugins;
-        }
+        this._defineNamesFromPlugins = defineNamesFromPlugins;
     }
 
     /**
@@ -107,6 +117,7 @@ export class MaterialPluginManager {
             this._activePlugins.sort((a, b) => a.priority - b.priority);
 
             this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
+            this._material._callbackPluginEventPrepareDefinesBeforeAttributes = this._handlePluginEventPrepareDefinesBeforeAttributes.bind(this);
             this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
             this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
 
@@ -140,6 +151,12 @@ export class MaterialPluginManager {
             isReady = isReady && plugin.isReadyForSubMesh(eventData.defines, this._scene, this._engine, eventData.subMesh);
         }
         eventData.isReadyForSubMesh = isReady;
+    }
+
+    protected _handlePluginEventPrepareDefinesBeforeAttributes(eventData: MaterialPluginPrepareDefines): void {
+        for (const plugin of this._activePlugins) {
+            plugin.prepareDefinesBeforeAttributes(eventData.defines, this._scene, eventData.mesh);
+        }
     }
 
     protected _handlePluginEventPrepareDefines(eventData: MaterialPluginPrepareDefines): void {
@@ -236,6 +253,7 @@ export class MaterialPluginManager {
                 const eventData = info as MaterialPluginPrepareEffect;
                 for (const plugin of this._activePlugins) {
                     eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
+                    plugin.getAttributes(eventData.attributes, this._scene, eventData.mesh);
                 }
                 if (this._uniformList.length > 0) {
                     eventData.uniforms.push(...this._uniformList);
@@ -327,7 +345,11 @@ export class MaterialPluginManager {
                         const rx = new RegExp(pointName.substring(1), "g");
                         let match = rx.exec(code);
                         while (match !== null) {
-                            code = code.replace(match[0], injectedCode);
+                            let newCode = injectedCode;
+                            for (let i = 0; i < match.length; ++i) {
+                                newCode = newCode.replace("$" + i, match[i]);
+                            }
+                            code = code.replace(match[0], newCode);
                             match = rx.exec(code);
                         }
                     } else {

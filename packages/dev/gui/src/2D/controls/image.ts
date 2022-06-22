@@ -64,6 +64,12 @@ export class Image extends Control {
     public onSVGAttributesComputedObservable = new Observable<Image>();
 
     /**
+     * Gets or sets the referrer policy to apply on the img element load request.
+     * You should set referrerPolicy before set the source of the image if you want to ensure the header will be present on the xhr loading request
+     */
+    public referrerPolicy: Nullable<ReferrerPolicy>;
+
+    /**
      * Gets a boolean indicating that the content is loaded
      */
     public get isLoaded(): boolean {
@@ -532,6 +538,7 @@ export class Image extends Control {
         };
         if (value) {
             Tools.SetCorsBehavior(value, this._domImage);
+            Tools.SetReferrerPolicyBehavior(this.referrerPolicy, this._domImage);
             this._domImage.src = value;
         }
     }
@@ -881,20 +888,28 @@ export class Image extends Control {
         //Top Left
         this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
         //Top
+        context.clearRect(centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
         this._drawImage(context, this._sliceLeft, 0, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
         //Top Right
-        this._drawImage(context, this.sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        context.clearRect(rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        this._drawImage(context, this._sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
         //Left
+        context.clearRect(this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         this._drawImage(context, 0, this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         // Center
+        context.clearRect(centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
         this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
         //Right
+        context.clearRect(rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
         this._drawImage(context, this._sliceRight, this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
         //Bottom Left
+        context.clearRect(this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
         this._drawImage(context, 0, this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
         //Bottom
+        context.clearRect(centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
         this._drawImage(context, this.sliceLeft, this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
         //Bottom Right
+        context.clearRect(rightOffset, bottomOffset, rightWidth, bottomHeight);
         this._drawImage(context, this._sliceRight, this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     }
 

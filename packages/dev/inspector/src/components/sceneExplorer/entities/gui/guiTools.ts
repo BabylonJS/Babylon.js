@@ -1,17 +1,19 @@
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Engine } from "core/Engines/engine";
 import { Tools } from "core/Misc/tools";
+import { GUIEditor } from "gui-editor/guiEditor";
 
-declare let GUIEDITOR: any;
 declare let BABYLON: any;
 
 let editorUrl = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
-let guiEditor: any = null;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+let guiEditorContainer: { GUIEditor: typeof GUIEditor };
 /** Get the inspector from bundle or global */
-function _getGlobalGUIEditor(): any {
+function _getGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
     // UMD Global name detection from Webpack Bundle UMD Name.
-    if (typeof GUIEDITOR !== "undefined") {
-        return GUIEDITOR;
+    if (typeof GUIEditor !== "undefined") {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        return { GUIEditor };
     }
 
     // In case of module let's check the global emitted from the editor entry point.
@@ -27,7 +29,7 @@ function _getGlobalGUIEditor(): any {
  * @param guiEditorPackage
  */
 export function InjectGUIEditor(guiEditorPackage: any) {
-    guiEditor = guiEditorPackage;
+    guiEditorContainer = guiEditorPackage;
 }
 
 /**
@@ -45,15 +47,15 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * @param adt
  */
 export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
-    if (!guiEditor) {
+    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
+    if (!guiEditorContainer) {
         if (typeof BABYLON !== "undefined") {
             // we are in UMD environment
-            guiEditor = guiEditor || _getGlobalGUIEditor();
-            if (typeof guiEditor === "undefined") {
+            if (typeof guiEditorContainer === "undefined") {
                 // Load editor and add it to the DOM
                 try {
                     await Tools.LoadScriptAsync(editorUrl);
-                    guiEditor = guiEditor || _getGlobalGUIEditor();
+                    guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
                 } catch {
                     throw `Failed to load GUI editor from ${editorUrl}`;
                 }
@@ -63,5 +65,5 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
             throw `Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`;
         }
     }
-    guiEditor.GUIEditor.Show({ liveGuiTexture: adt });
+    guiEditorContainer.GUIEditor.Show({ liveGuiTexture: adt });
 }

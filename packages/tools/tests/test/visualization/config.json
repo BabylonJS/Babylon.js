@@ -260,13 +260,13 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#2",
+            "playgroundId": "#NZ2RZY#3",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#27",
+            "playgroundId": "#QATUCH#32",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
@@ -376,7 +376,7 @@
         },
         {
             "title": "Fresnel",
-            "playgroundId": "#603JUZ#1",
+            "playgroundId": "#603JUZ#3",
             "referenceImage": "fresnel.png"
         },
         {
@@ -714,6 +714,11 @@
             "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
         },
         {
+            "title": "GLTF Serializer KHR gpu instancing",
+            "playgroundId": "#1Q2BWN#10",
+            "referenceImage": "glTFSerializerKhrGpuInstancing.png"
+        },   
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
@@ -815,7 +820,7 @@
         {
             "title": "Particles",
             "renderCount": 100,
-            "playgroundId": "#G3ZYFU#2",
+            "playgroundId": "#G3ZYFU#7",
             "referenceImage": "particles.png"
         },
         {
@@ -928,7 +933,7 @@
         {
             "title": "GlowLayer",
             "renderCount": 5,
-            "playgroundId": "#LRFB2D#1",
+            "playgroundId": "#LRFB2D#262",
             "referenceImage": "GlowLayer.png"
         },
         {
@@ -940,7 +945,7 @@
         {
             "title": "TGA",
             "renderCount": 5,
-            "playgroundId": "#ZI77S7#0",
+            "playgroundId": "#ZI77S7#4",
             "referenceImage": "tga.png"
         },
         {
@@ -1087,14 +1092,14 @@
         {
             "title": "Prepass SSAO + particles",
             "renderCount": 50,
-            "playgroundId": "#65MUMZ#46",
+            "playgroundId": "#65MUMZ#47",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-particles.png"
         },
         {
             "title": "Prepass SSAO + instances",
             "renderCount": 10,
-            "playgroundId": "#YB006J#383",
+            "playgroundId": "#YB006J#545",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instances.png"
         },
@@ -1115,14 +1120,14 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#352",
+            "playgroundId": "#PIZ1GK#459",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#340",
+            "playgroundId": "#PIZ1GK#460",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
@@ -1136,7 +1141,7 @@
         {
             "title": "Prepass SSAO + glow layer",
             "renderCount": 30,
-            "playgroundId": "#LRFB2D#114",
+            "playgroundId": "#LRFB2D#263",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-glow-layer.png"
         },
@@ -1274,14 +1279,14 @@
         {
             "title": "Instances + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#404",
+            "playgroundId": "#YB006J#547",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb.png"
         },
         {
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#403",
+            "playgroundId": "#YB006J#549",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png"
         },
@@ -1416,6 +1421,11 @@
             "playgroundId": "#EVX1DH#80",
             "excludedEngines": ["webgl1"],
             "referenceImage": "testUpdateTextureData.png"
+        },
+        {
+            "title": "Material Plugin",
+            "playgroundId": "#22HT5Z#10",
+            "referenceImage": "materialPlugin.png"
         }
     ]
 }

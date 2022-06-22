@@ -29,6 +29,8 @@ module.exports = (env) => {
                 materials: `@${source}/materials/dist`,
                 "post-processes": `@${source}/post-processes/dist`,
                 "procedural-textures": `@${source}/procedural-textures/dist`,
+                "gui-editor": `@tools/gui-editor/dist`,
+                "node-editor": `@tools/node-editor/dist`,
             },
         },
         experiments: {

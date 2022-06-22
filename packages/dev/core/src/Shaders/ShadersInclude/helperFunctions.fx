@@ -3,6 +3,8 @@ const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
+
+// The luminance weights used below are for a linear encoded color, not a gamma-corrected color.
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
 const float Epsilon = 0.0000001;
@@ -88,6 +90,7 @@ float pow5(float value) {
     return sq * sq * value;
 }
 
+// Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 float getLuminance(vec3 color)
 {
     return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);

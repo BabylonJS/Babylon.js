@@ -106,9 +106,21 @@ export class DeviceEventFactory {
 
         evt.type = "wheel";
         evt.deltaMode = EventConstants.DOM_DELTA_PIXEL;
-        evt.deltaX = inputIndex === PointerInput.MouseWheelX ? currentState : deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelX);
-        evt.deltaY = inputIndex === PointerInput.MouseWheelY ? currentState : deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelY);
-        evt.deltaZ = inputIndex === PointerInput.MouseWheelZ ? currentState : deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MouseWheelZ);
+        evt.deltaX = 0;
+        evt.deltaY = 0;
+        evt.deltaZ = 0;
+
+        switch (inputIndex) {
+            case PointerInput.MouseWheelX:
+                evt.deltaX = currentState;
+                break;
+            case PointerInput.MouseWheelY:
+                evt.deltaY = currentState;
+                break;
+            case PointerInput.MouseWheelZ:
+                evt.deltaZ = currentState;
+                break;
+        }
 
         return evt;
     }

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-editor",
-    "version": "5.1.0",
+    "version": "5.11.0",
     "main": "dist/babylon.nodeEditor.max.js",
     "module": "dist/babylon.nodeEditor.max.js",
     "esnext": "dist/babylon.nodeEditor.max.js",
@@ -17,14 +17,14 @@
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist"
     },
-    "dependencies": {
-        "@babylonjs/core": "^5.1.0"
-    },
+    "dependencies": {},
     "peerDependencies": {
+        "@babylonjs/core": "^5.0.0",
         "@types/react": ">=16.7.3",
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
+        "@babylonjs/core": "^5.11.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "rimraf": "^3.0.2",
@@ -48,3 +48,4 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
+

@@ -298,7 +298,7 @@ export class MaterialHelper {
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
 
-        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
+        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
             defines["INSTANCESCOLOR"] = true;
         }
 
@@ -863,6 +863,10 @@ export class MaterialHelper {
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
             this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
+        }
+
+        if (defines.INSTANCESCOLOR) {
+            attribs.push(VertexBuffer.ColorInstanceKind);
         }
     }
 

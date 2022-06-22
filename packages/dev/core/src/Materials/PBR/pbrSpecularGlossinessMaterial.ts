@@ -4,6 +4,7 @@ import type { Color3 } from "../../Maths/math.color";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
+import { Nullable } from "../../types";
 
 /**
  * The PBR material of BJS following the specular glossiness convention.
@@ -25,7 +26,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
-    public diffuseTexture: BaseTexture;
+    public diffuseTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the specular color of the material. This indicates how reflective is the material (none to mirror).
@@ -46,7 +47,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectivityTexture")
-    public specularGlossinessTexture: BaseTexture;
+    public specularGlossinessTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
@@ -104,6 +105,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
         serializationObject.subSurface = this.subSurface.serialize();
+        serializationObject.iridescence = this.iridescence.serialize();
 
         return serializationObject;
     }
@@ -130,6 +132,9 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         }
         if (source.subSurface) {
             material.subSurface.parse(source.subSurface, scene, rootUrl);
+        }
+        if (source.iridescence) {
+            material.iridescence.parse(source.iridescence, scene, rootUrl);
         }
         return material;
     }

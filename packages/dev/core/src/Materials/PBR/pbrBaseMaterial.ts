@@ -1035,7 +1035,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1196,6 +1196,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -1449,9 +1450,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.fallbackRank = fallbackRank;
         this._eventInfo.defines = defines;
         this._eventInfo.uniforms = uniforms;
+        this._eventInfo.attributes = attribs;
         this._eventInfo.samplers = samplers;
         this._eventInfo.uniformBuffersNames = uniformBuffers;
         this._eventInfo.customCode = undefined;
+        this._eventInfo.mesh = mesh;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
@@ -1556,7 +1559,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.REFLECTION = true;
                     defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
-                    defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
@@ -1576,6 +1578,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
 
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 
                     defines.REFLECTIONMAP_CUBIC = false;
                     defines.REFLECTIONMAP_EXPLICIT = false;
@@ -1818,16 +1821,19 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.DEBUGMODE = this._debugMode;
         }
 
-        // External config
-        this._eventInfo.defines = defines;
-        this._eventInfo.mesh = mesh;
-        this._callbackPluginEventPrepareDefines(this._eventInfo);
-
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
     }
 
     /**
@@ -2264,7 +2270,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // View
-            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || reflectionTexture || mesh.receiveShadows) {
+            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || reflectionTexture || mesh.receiveShadows || defines.PREPASS) {
                 this.bindView(effect);
             }
 

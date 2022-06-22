@@ -235,7 +235,7 @@ export class SubMesh implements ICullable {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public get IsGlobal(): boolean {
-        return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices();
+        return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices() && this.indexStart === 0 && this.indexCount === this._mesh.getTotalIndices();
     }
 
     /**
@@ -296,13 +296,14 @@ export class SubMesh implements ICullable {
 
     /**
      * Returns the submesh material
+     * @param getDefaultMaterial Defines whether or not to get the default material if nothing has been defined.
      * @returns null or the current material
      */
-    public getMaterial(): Nullable<Material> {
+    public getMaterial(getDefaultMaterial = true): Nullable<Material> {
         const rootMaterial = this._renderingMesh.getMaterialForRenderPass(this._engine.currentRenderPassId) ?? this._renderingMesh.material;
 
-        if (rootMaterial === null || rootMaterial === undefined) {
-            return this._mesh.getScene().defaultMaterial;
+        if (!rootMaterial) {
+            return getDefaultMaterial ? this._mesh.getScene().defaultMaterial : null;
         } else if (this._isMultiMaterial(rootMaterial)) {
             const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 

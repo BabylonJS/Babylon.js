@@ -377,6 +377,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      * @param samples sample count to use when creating the RTT
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param noColorTarget True to indicate that no color target should be created. Useful if you only want to write to the depth buffer, for eg
+     * @param useSRGBBuffer True to create a SRGB texture
      */
     constructor(
         name: string,
@@ -393,7 +395,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         format = Constants.TEXTUREFORMAT_RGBA,
         delayAllocation = false,
         samples?: number,
-        creationFlags?: number
+        creationFlags?: number,
+        noColorTarget = false,
+        useSRGBBuffer = false
     ) {
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
         scene = this.getScene();
@@ -437,6 +441,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             generateStencilBuffer: generateStencilBuffer,
             samples,
             creationFlags,
+            noColorTarget,
+            useSRGBBuffer,
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
@@ -1056,10 +1062,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = scene.getEngine();
 
-        if (!this._texture) {
-            return;
-        }
-
         engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 1);
 
         // Bind
@@ -1129,11 +1131,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 step.action(this, faceIndex, layer);
             }
 
-            const saveGenerateMipMaps = this._texture.generateMipMaps;
+            const saveGenerateMipMaps = this._texture?.generateMipMaps ?? false;
 
-            this._texture.generateMipMaps = false; // if left true, the mipmaps will be generated (if this._texture.generateMipMaps = true) when the first post process binds its own RTT: by doing so it will unbind the current RTT,
-            // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
-            // trigger the generation of the final mipmaps
+            if (this._texture) {
+                this._texture.generateMipMaps = false; // if left true, the mipmaps will be generated (if this._texture.generateMipMaps = true) when the first post process binds its own RTT: by doing so it will unbind the current RTT,
+                // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
+                // trigger the generation of the final mipmaps
+            }
 
             if (this._postProcessManager) {
                 this._postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex, this._postProcesses, this.ignoreCameraViewport);
@@ -1141,7 +1145,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 scene.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex);
             }
 
-            this._texture.generateMipMaps = saveGenerateMipMaps;
+            if (this._texture) {
+                this._texture.generateMipMaps = saveGenerateMipMaps;
+            }
 
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -1165,7 +1171,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         // Unbind
         this._unbindFrameBuffer(engine, faceIndex);
 
-        if (this.isCube && faceIndex === 5) {
+        if (this._texture && this.isCube && faceIndex === 5) {
             engine.generateMipMapsForCubemap(this._texture);
         }
 

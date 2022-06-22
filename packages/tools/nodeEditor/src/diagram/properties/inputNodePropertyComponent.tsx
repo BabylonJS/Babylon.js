@@ -217,7 +217,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 systemValuesOptions = [{ label: "Fog color", value: NodeMaterialSystemValues.FogColor }];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                attributeOptions = [{ label: "color", value: "color" }];
+                attributeOptions = [
+                    { label: "color", value: "color" },
+                    { label: "Instance Color", value: "instanceColor" },
+                ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 attributeOptions = [
@@ -234,13 +237,13 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
-                    { label: "tangent", value: "tangent" },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" },
+                    { label: "tangent", value: "tangent" },
                 ];
                 systemValuesOptions = [{ label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }];
                 break;

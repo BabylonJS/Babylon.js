@@ -477,7 +477,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             mesh.rotationQuaternion.x = body.orientation.x;
             mesh.rotationQuaternion.y = body.orientation.y;
             mesh.rotationQuaternion.z = body.orientation.z;
-            mesh.rotationQuaternion.w = body.orientation.s;
+            mesh.rotationQuaternion.w = body.orientation.w;
         }
     }
 

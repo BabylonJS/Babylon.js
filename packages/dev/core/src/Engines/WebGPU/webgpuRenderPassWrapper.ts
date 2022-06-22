@@ -7,7 +7,7 @@ export class WebGPURenderPassWrapper {
     public renderPass: Nullable<GPURenderPassEncoder>;
     public colorAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
     public depthAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
-    public colorAttachmentGPUTextures: WebGPUHardwareTexture[] = [];
+    public colorAttachmentGPUTextures: (WebGPUHardwareTexture | null)[] = [];
     public depthTextureFormat: GPUTextureFormat | undefined;
 
     constructor() {

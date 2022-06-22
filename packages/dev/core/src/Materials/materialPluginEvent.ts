@@ -42,9 +42,11 @@ export type MaterialPluginPrepareEffect = {
     fallbacks: EffectFallbacks;
     fallbackRank: number;
     customCode?: ShaderCustomProcessingFunction;
+    attributes: string[];
     uniforms: string[];
     samplers: string[];
     uniformBuffersNames: string[];
+    mesh: AbstractMesh;
 };
 
 /** @hidden */

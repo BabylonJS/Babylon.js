@@ -1082,7 +1082,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Executes a scissor clear (ie. a clear on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1096,7 +1096,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1973,6 +1973,7 @@ export class Engine extends ThinEngine {
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
         (this._renderingCanvas.style as any).msTouchAction = "none";
+        (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
     }
 
     // Loading screen
@@ -2061,6 +2062,7 @@ export class Engine extends ThinEngine {
             element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
             element.requestPointerLock();
+            element.focus();
         }
     }
 

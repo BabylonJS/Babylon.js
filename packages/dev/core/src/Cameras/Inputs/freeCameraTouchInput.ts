@@ -45,6 +45,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _pointerInput?: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
+    private _isSafari: boolean;
 
     /**
      * Manage the touch inputs to control the movement of a free camera.
@@ -56,7 +57,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
          * Define if mouse events can be treated as touch events
          */
         public allowMouse = false
-    ) {}
+    ) {
+        this._isSafari = Tools.IsSafari();
+    }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -76,9 +79,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 const evt = <IPointerEvent>p.event;
 
-                const isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+                const isMouseEvent = evt.pointerType === "mouse" || (this._isSafari && typeof evt.pointerType === "undefined");
 
-                if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
+                if (!this.allowMouse && isMouseEvent) {
                     return;
                 }
 
@@ -190,7 +193,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
         } else {
             const speed = camera._computeLocalCameraSpeed();
-            const direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);
+            const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
 
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
             camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));

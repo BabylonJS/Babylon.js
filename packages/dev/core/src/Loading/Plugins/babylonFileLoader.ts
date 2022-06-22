@@ -30,7 +30,6 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
-import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -49,7 +48,7 @@ export class BabylonFileLoaderConfiguration {
 }
 
 let tempIndexContainer: { [key: string]: Node } = {};
-const tempMaterialIndexContainer: { [key: string]: Material } = {};
+let tempMaterialIndexContainer: { [key: string]: Material } = {};
 
 const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -170,15 +169,24 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     scene,
                     hdrSize,
                     true,
-                    !isPBR
+                    !isPBR,
+                    undefined,
+                    parsedData.environmentTexturePrefilterOnLoad
                 );
                 if (parsedData.environmentTextureRotationY) {
                     hdrTexture.rotationY = parsedData.environmentTextureRotationY;
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (EndsWith(parsedData.environmentTexture, ".env")) {
-                    const compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                if (typeof parsedData.environmentTexture === "object") {
+                    const environmentTexture = CubeTexture.Parse(parsedData.environmentTexture, scene, rootUrl);
+                    scene.environmentTexture = environmentTexture;
+                } else if ((parsedData.environmentTexture as string).endsWith(".env")) {
+                    const compressedTexture = new CubeTexture(
+                        (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
+                        scene,
+                        parsedData.environmentTextureForcedExtension
+                    );
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
                     }
@@ -186,7 +194,8 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 } else {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
-                        scene
+                        scene,
+                        parsedData.environmentTextureForcedExtension
                     );
                     if (parsedData.environmentTextureRotationY) {
                         cubeTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -545,6 +554,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         }
     } finally {
         tempIndexContainer = {};
+        tempMaterialIndexContainer = {};
 
         if (!addToScene) {
             container.removeAllFromScene();

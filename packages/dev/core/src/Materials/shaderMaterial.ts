@@ -1,7 +1,7 @@
 import { SerializationHelper } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -20,6 +20,7 @@ import type { TextureSampler } from "./Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
+import { Constants } from "../Engines/constants";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -113,6 +114,8 @@ export class ShaderMaterial extends PushMaterial {
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
+    private _quaternions: { [name: string]: Quaternion } = {};
+    private _quaternionsArrays: { [name: string]: number[] } = {};
     private _matrices: { [name: string]: Matrix } = {};
     private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
     private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
@@ -126,10 +129,9 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview: boolean = false;
-    private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Snippet ID if the material was created from the snippet server */
     public snippetId: string;
@@ -407,6 +409,34 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
+     * Set a vec4 in the shader from a Quaternion.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setQuaternion(name: string, value: Quaternion): ShaderMaterial {
+        this._checkUniform(name);
+        this._quaternions[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set a vec4 array in the shader from a Quaternion array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setQuaternionArray(name: string, value: Quaternion[]): ShaderMaterial {
+        this._checkUniform(name);
+        this._quaternionsArrays[name] = value.reduce((arr, quaternion) => {
+            quaternion.toArray(arr, arr.length);
+            return arr;
+        }, []);
+        return this;
+    }
+
+    /**
      * Set a mat4 in the shader from a Matrix.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
@@ -579,7 +609,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             } else {
                 const effect = this._drawWrapper.effect;
-                if (effect && effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
+                if (effect && effect._wasPreviouslyReady && effect._wasPreviouslyUsingInstances === useInstances) {
                     return true;
                 }
             }
@@ -848,7 +878,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        this._effectUsesInstances = !!useInstances;
+        effect!._wasPreviouslyUsingInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
@@ -1040,6 +1070,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setVector4(name, this._vectors4[name]);
             }
 
+            // Quaternion
+            for (name in this._quaternions) {
+                effect.setQuaternion(name, this._quaternions[name]);
+            }
+
             // Matrix
             for (name in this._matrices) {
                 effect.setMatrix(name, this._matrices[name]);
@@ -1075,6 +1110,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setArray4(name, this._vectors4Arrays[name]);
             }
 
+            // QuaternionArray
+            for (name in this._quaternionsArrays) {
+                effect.setArray4(name, this._quaternionsArrays[name]);
+            }
+
             // Uniform buffers
             for (name in this._uniformBuffers) {
                 const buffer = this._uniformBuffers[name].getBuffer();
@@ -1104,7 +1144,7 @@ export class ShaderMaterial extends PushMaterial {
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
 
             if (bvaManager && bvaManager.isEnabled) {
-                mesh.bakedVertexAnimationManager?.bind(effect, this._effectUsesInstances);
+                mesh.bakedVertexAnimationManager?.bind(effect, !!effect._wasPreviouslyUsingInstances);
             }
         }
 
@@ -1254,6 +1294,16 @@ export class ShaderMaterial extends PushMaterial {
             result.setVector4(key, this._vectors4[key]);
         }
 
+        // Quaternion
+        for (const key in this._quaternions) {
+            result.setQuaternion(key, this._quaternions[key]);
+        }
+
+        // QuaternionArray
+        for (const key in this._quaternionsArrays) {
+            result._quaternionsArrays[key] = this._quaternionsArrays[key];
+        }
+
         // Matrix
         for (const key in this._matrices) {
             result.setMatrix(key, this._matrices[key]);
@@ -1340,6 +1390,7 @@ export class ShaderMaterial extends PushMaterial {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.ShaderMaterial";
+        serializationObject.uniqueId = this.uniqueId;
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;
@@ -1426,6 +1477,12 @@ export class ShaderMaterial extends PushMaterial {
             serializationObject.vectors4[name] = this._vectors4[name].asArray();
         }
 
+        // Quaternion
+        serializationObject.quaternions = {};
+        for (name in this._quaternions) {
+            serializationObject.quaternions[name] = this._quaternions[name].asArray();
+        }
+
         // Matrix
         serializationObject.matrices = {};
         for (name in this._matrices) {
@@ -1466,6 +1523,12 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.vectors4Arrays = {};
         for (name in this._vectors4Arrays) {
             serializationObject.vectors4Arrays[name] = this._vectors4Arrays[name];
+        }
+
+        // QuaternionArray
+        serializationObject.quaternionsArrays = {};
+        for (name in this._quaternionsArrays) {
+            serializationObject.quaternionsArrays[name] = this._quaternionsArrays[name];
         }
 
         return serializationObject;
@@ -1579,6 +1642,11 @@ export class ShaderMaterial extends PushMaterial {
             material.setVector4(name, Vector4.FromArray(source.vectors4[name]));
         }
 
+        // Quaternion
+        for (name in source.quaternions) {
+            material.setQuaternion(name, Quaternion.FromArray(source.quaternions[name]));
+        }
+
         // Matrix
         for (name in source.matrices) {
             material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
@@ -1612,6 +1680,11 @@ export class ShaderMaterial extends PushMaterial {
         // Vector4Array
         for (name in source.vectors4Arrays) {
             material.setArray4(name, source.vectors4Arrays[name]);
+        }
+
+        // QuaternionArray
+        for (name in source.quaternionsArrays) {
+            material.setArray4(name, source.quaternionsArrays[name]);
         }
 
         return material;

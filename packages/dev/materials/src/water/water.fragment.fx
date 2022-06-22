@@ -179,7 +179,7 @@ void main(void) {
 
     vec3 finalDiffuse = clamp(baseColor.rgb, 0.0, 1.0);
 
-    #ifdef VERTEXALPHA
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
         alpha *= vColor.a;
     #endif
 
@@ -232,7 +232,7 @@ void main(void) {
     vec3 finalDiffuse = clamp(baseColor.rgb, 0.0, 1.0);
 
 
-    #ifdef VERTEXALPHA
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
         alpha *= vColor.a;
     #endif
 

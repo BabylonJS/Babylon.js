@@ -62,7 +62,7 @@ void albedoOpacityBlock(
         alpha *= vOpacityInfos.y;
     #endif
 
-    #ifdef VERTEXALPHA
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
         alpha *= vColor.a;
     #endif
 

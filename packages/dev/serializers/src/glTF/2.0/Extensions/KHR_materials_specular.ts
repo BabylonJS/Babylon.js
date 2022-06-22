@@ -55,6 +55,10 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
     }
 
     private _isExtensionEnabled(mat: PBRMaterial): boolean {
+        // This extension must not be used on a material that also uses KHR_materials_unlit
+        if (mat.unlit) {
+            return false;
+        }
         return (
             (mat.metallicF0Factor != undefined && mat.metallicF0Factor != 1.0) ||
             (mat.metallicReflectanceColor != undefined && !mat.metallicReflectanceColor.equalsFloats(1.0, 1.0, 1.0)) ||

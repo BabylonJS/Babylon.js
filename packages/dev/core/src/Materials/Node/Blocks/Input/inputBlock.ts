@@ -113,7 +113,6 @@ export class InputBlock extends NodeMaterialBlock {
                 switch (this.name) {
                     case "position":
                     case "normal":
-                    case "tangent":
                     case "particle_positionw":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
@@ -133,9 +132,11 @@ export class InputBlock extends NodeMaterialBlock {
                     case "world1":
                     case "world2":
                     case "world3":
+                    case "tangent":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                     case "color":
+                    case "instanceColor":
                     case "particle_color":
                     case "particle_texturemask":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
@@ -812,6 +813,15 @@ export class InputBlock extends NodeMaterialBlock {
         this.groupInInspector = serializationObject.groupInInspector || "";
         this.convertToGammaSpace = !!serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
+
+        // Tangents back compat
+        if (
+            serializationObject.name === "tangent" &&
+            serializationObject.mode === NodeMaterialBlockConnectionPointMode.Attribute &&
+            serializationObject.type === NodeMaterialBlockConnectionPointTypes.Vector3
+        ) {
+            this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
+        }
 
         if (!serializationObject.valueType) {
             return;

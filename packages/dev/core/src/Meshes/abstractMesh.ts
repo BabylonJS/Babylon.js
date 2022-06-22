@@ -1,4 +1,3 @@
-import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import type { Camera } from "../Cameras/camera";
@@ -498,6 +497,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param material material to use for this render pass. If undefined is passed, no specific material will be used for this render pass but the regular material will be used instead (mesh.material)
      */
     public setMaterialForRenderPass(renderPassId: number, material?: Material): void {
+        this.resetDrawCache(renderPassId);
         if (!this._internalAbstractMeshDataInfo._materialForRenderPass) {
             this._internalAbstractMeshDataInfo._materialForRenderPass = [];
         }
@@ -726,8 +726,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _masterMesh: Nullable<AbstractMesh> = null;
-    private _boundingInfo: Nullable<BoundingInfo> = null;
-    private _boundingInfoIsDirty = true;
+    protected _boundingInfo: Nullable<BoundingInfo> = null;
+    protected _boundingInfoIsDirty = true;
     /** @hidden */
     public _renderId = 0;
 
@@ -1064,17 +1064,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         for (const subMesh of this.subMeshes) {
             subMesh.resetDrawCache(passId);
         }
-    }
-
-    /**
-     * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
-     */
-    public get scaling(): Vector3 {
-        return this._scaling;
-    }
-
-    public set scaling(newScaling: Vector3) {
-        this._scaling = newScaling;
     }
 
     // Methods
@@ -1456,14 +1445,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Get the position vertex data and optionally apply skeleton and morphing.
-     * @param applySkeleton defines whether to apply the skeleton
-     * @param applyMorph  defines whether to apply the morph target
-     * @param data defines the position data to apply the skeleton and morph to
-     * @returns the position data
+     * Internal function to get buffer data and possibly apply morphs and normals
+     * @param applySkeleton
+     * @param applyMorph
+     * @param data
+     * @param kind the kind of data you want. Can be Normal or Position
      */
-    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
-        data = data ?? Tools.Slice(this.getVerticesData(VertexBuffer.PositionKind));
+    private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
+        data = data ?? this.getVerticesData(kind)!.slice();
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
@@ -1481,12 +1470,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 }
 
                 faceIndexCount++;
-
-                if (this._positions && faceIndexCount === 3) {
-                    // We want to merge into positions every 3 indices starting (but not 0)
-                    faceIndexCount = 0;
-                    const index = positionIndex * 3;
-                    this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
+                if (kind === VertexBuffer.PositionKind) {
+                    if (this._positions && faceIndexCount === 3) {
+                        // We want to merge into positions every 3 indices starting (but not 0)
+                        faceIndexCount = 0;
+                        const index = positionIndex * 3;
+                        this._positions[positionIndex++].copyFromFloats(data[index], data[index + 1], data[index + 2]);
+                    }
                 }
             }
         }
@@ -1528,10 +1518,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                         }
                     }
 
-                    Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                    if (kind === VertexBuffer.NormalKind) {
+                        Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                    } else {
+                        Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                    }
                     tempVector.toArray(data, index);
 
-                    if (this._positions) {
+                    if (kind === VertexBuffer.PositionKind && this._positions) {
                         this._positions[index / 3].copyFrom(tempVector);
                     }
                 }
@@ -1539,6 +1533,27 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         return data;
+    }
+
+    /**
+     * Get the normals vertex data and optionally apply skeleton and morphing.
+     * @param applySkeleton defines whether to apply the skeleton
+     * @param applyMorph  defines whether to apply the morph target
+     * @returns the normals data
+     */
+    public getNormalsData(applySkeleton = false, applyMorph = false): Nullable<FloatArray> {
+        return this._getData(applySkeleton, applyMorph, null, VertexBuffer.NormalKind);
+    }
+
+    /**
+     * Get the position vertex data and optionally apply skeleton and morphing.
+     * @param applySkeleton defines whether to apply the skeleton
+     * @param applyMorph  defines whether to apply the morph target
+     * @param data defines the position data to apply the skeleton and morph to
+     * @returns the position data
+     */
+    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
+        return this._getData(applySkeleton, applyMorph, data, VertexBuffer.PositionKind);
     }
 
     /**
@@ -1554,7 +1569,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
-            data = Tools.Slice(data);
+            data = data.slice();
             this._generatePointsArray();
             if (this._positions) {
                 const pos = this._positions;
