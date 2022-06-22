@@ -310,6 +310,16 @@ export class Tools {
         SetCorsBehavior(url, element);
     }
 
+    /**
+     * Sets the referrerPolicy behavior on a dom element.
+     * @param referrerPolicy define the referrer policy to use
+     * @param element define the dom element where to configure the referrer policy
+     * @param element.referrerPolicy
+     */
+    public static SetReferrerPolicyBehavior(referrerPolicy: Nullable<ReferrerPolicy>, element: { referrerPolicy: string | null }): void {
+        element.referrerPolicy = referrerPolicy;
+    }
+
     // External files
 
     /**
