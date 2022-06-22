@@ -69,15 +69,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _popUpWindow: Window;
 
     appendBlock(dataToAppend: NodeMaterialBlock | INodeData, recursion = true) {
-        return this._graphCanvas.createNodeFromObject(dataToAppend instanceof NodeMaterialBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend, (block: NodeMaterialBlock) => {            
-            if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(block) === -1) {
-                this.props.globalState.nodeMaterial!.attachedBlocks.push(block);
-            }
+        return this._graphCanvas.createNodeFromObject(
+            dataToAppend instanceof NodeMaterialBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend,
+            (block: NodeMaterialBlock) => {
+                if (this.props.globalState.nodeMaterial!.attachedBlocks.indexOf(block) === -1) {
+                    this.props.globalState.nodeMaterial!.attachedBlocks.push(block);
+                }
 
-            if (block.isFinalMerger) {
-                this.props.globalState.nodeMaterial!.addOutputNode(block);
-            }
-        }, recursion);
+                if (block.isFinalMerger) {
+                    this.props.globalState.nodeMaterial!.addOutputNode(block);
+                }
+            },
+            recursion
+        );
     }
 
     addValueNode(type: string) {
@@ -85,7 +89,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         const newInputBlock = new InputBlock(type, undefined, nodeType);
         return this.appendBlock(newInputBlock);
-    } 
+    }
 
     componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
@@ -159,7 +163,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 this.build();
                 if (this.props.globalState.nodeMaterial) {
                     this.buildMaterial();
-                }    
+                }
             }
         });
 

@@ -135,12 +135,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
             switch (type) {
                 case PropertyTypeForEdition.Boolean: {
                     components.push(
-                        <CheckBoxLineComponent
-                            label={displayName}
-                            target={block}
-                            propertyName={propertyName}
-                            onValueChanged={() => this.forceRebuild(options.notifiers)}
-                        />
+                        <CheckBoxLineComponent label={displayName} target={block} propertyName={propertyName} onValueChanged={() => this.forceRebuild(options.notifiers)} />
                     );
                     break;
                 }
@@ -149,7 +144,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     if (cantDisplaySlider) {
                         components.push(
                             <FloatLineComponent
-                                globalState={(this.props.stateManager.data as GlobalState)}
+                                globalState={this.props.stateManager.data as GlobalState}
                                 label={displayName}
                                 propertyName={propertyName}
                                 target={block}
@@ -161,7 +156,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             <SliderLineComponent
                                 label={displayName}
                                 target={block}
-                                globalState={(this.props.stateManager.data as GlobalState)}
+                                globalState={this.props.stateManager.data as GlobalState}
                                 propertyName={propertyName}
                                 step={Math.abs((options.max as number) - (options.min as number)) / 100.0}
                                 minimum={Math.min(options.min as number, options.max as number)}
@@ -178,7 +173,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             digits={0}
                             step={"1"}
                             isInteger={true}
-                            globalState={(this.props.stateManager.data as GlobalState)}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label={displayName}
                             propertyName={propertyName}
                             target={block}
@@ -190,7 +185,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.Vector2: {
                     components.push(
                         <Vector2LineComponent
-                            globalState={(this.props.stateManager.data as GlobalState)}
+                            globalState={this.props.stateManager.data as GlobalState}
                             label={displayName}
                             propertyName={propertyName}
                             target={block}

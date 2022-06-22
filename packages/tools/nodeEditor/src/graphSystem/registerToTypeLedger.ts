@@ -7,9 +7,9 @@ import { ConnectionPointPortData } from "./connectionPointPortData";
 export const RegisterTypeLedger = () => {
     TypeLedger.PortDataBuilder = (data, nodeContainer) => {
         return new ConnectionPointPortData(data.portData.data as NodeMaterialConnectionPoint, nodeContainer);
-    }
+    };
 
     TypeLedger.NodeDataBuilder = (data, nodeContainer: INodeContainer) => {
         return new BlockNodeData(data, nodeContainer);
-    }
-}
+    };
+};

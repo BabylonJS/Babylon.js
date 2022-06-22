@@ -397,7 +397,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         if (this.state.currentFrameNodePort && this.state.currentFrame) {
-            return <FrameNodePortPropertyTabComponent globalState={this.props.globalState} stateManager={this.props.globalState.stateManager} frame={this.state.currentFrame} frameNodePort={this.state.currentFrameNodePort} />;
+            return (
+                <FrameNodePortPropertyTabComponent
+                    globalState={this.props.globalState}
+                    stateManager={this.props.globalState.stateManager}
+                    frame={this.state.currentFrame}
+                    frameNodePort={this.state.currentFrameNodePort}
+                />
+            );
         }
 
         if (this.state.currentNodePort) {

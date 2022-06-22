@@ -54,7 +54,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _selectionBox: Nullable<HTMLDivElement> = null;
     private _selectedFrames: GraphFrame[] = [];
     private _frameCandidate: Nullable<HTMLDivElement> = null;
-    private _frames: GraphFrame[] = [];  
+    private _frames: GraphFrame[] = [];
     private _nodeDataContentList = new Array<any>();
 
     private _altKeyIsPressed = false;
@@ -331,7 +331,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         return node;
-    }   
+    }
 
     public static _RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visitedLinks?: Set<NodeLink>) => {
         node.refresh();
@@ -409,7 +409,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this.nodes.filter((n) => n.content.data === data)[0];
     }
 
-    reset() {        
+    reset() {
         this._nodeDataContentList = [];
 
         for (const node of this._nodes) {
@@ -931,10 +931,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Check compatibility
         let compatibilityState = pointA.checkCompatibilityState(pointB);
-        if (
-            (pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) &&
-            !compatibilityState
-        ) {
+        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && !compatibilityState) {
             compatibilityState = pointB.checkCompatibilityState(pointA);
         }
 

@@ -27,7 +27,7 @@ export interface ITextInputLineComponentProps {
     max?: number;
     placeholder?: string;
     unit?: React.ReactNode;
-    validator?: (value: string) => boolean;    
+    validator?: (value: string) => boolean;
     multilines?: boolean;
 }
 
@@ -179,7 +179,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         return (
-            <div className={this.props.multilines ? "textInputArea" : (this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine")}>
+            <div className={this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 {this.props.label !== undefined && (
                     <div className="label" title={this.props.label}>
@@ -212,7 +212,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     </>
                 )}
                 {!this.props.multilines && (
-                    <div className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}>
+                    <div
+                        className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}
+                    >
                         <input
                             value={value}
                             onBlur={() => {
@@ -232,7 +234,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                             type={this.props.numeric ? "number" : "text"}
                             step={step}
                         />
-                        {this.props.arrows && <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />}
+                        {this.props.arrows && (
+                            <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />
+                        )}
                     </div>
                 )}
                 {this.props.unit}

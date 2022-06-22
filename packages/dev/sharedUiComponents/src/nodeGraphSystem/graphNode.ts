@@ -340,7 +340,7 @@ export class GraphNode {
         const warningMessage = this.content.getWarningMessage();
         if (warningMessage) {
             this._warning.classList.add("visible");
-            this._warning.title = warningMessage;        
+            this._warning.title = warningMessage;
         } else {
             this._warning.classList.remove("visible");
         }

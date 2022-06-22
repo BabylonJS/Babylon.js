@@ -11,7 +11,7 @@ export class BlockNodeData implements INodeData {
     public get uniqueId(): number {
         return this.data.uniqueId;
     }
-    
+
     public get name() {
         return this.data.name;
     }
@@ -64,11 +64,11 @@ export class BlockNodeData implements INodeData {
     }
 
     public constructor(public data: NodeMaterialBlock, nodeContainer: INodeContainer) {
-        this.data.inputs.forEach(input => {
+        this.data.inputs.forEach((input) => {
             this._inputs.push(new ConnectionPointPortData(input, nodeContainer));
         });
 
-        this.data.outputs.forEach(output => {
+        this.data.outputs.forEach((output) => {
             this._outputs.push(new ConnectionPointPortData(output, nodeContainer));
         });
     }

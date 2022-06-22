@@ -384,7 +384,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             }}
                         />
                     )}
-                    {inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None && this.renderValue(this.props.stateManager.data as GlobalState)}
+                    {inputBlock.isUniform &&
+                        !inputBlock.isSystemValue &&
+                        inputBlock.animationType === AnimatedInputBlockTypes.None &&
+                        this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isUniform && inputBlock.isSystemValue && (
                         <OptionsLineComponent
                             label="System value"

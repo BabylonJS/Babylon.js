@@ -10,7 +10,7 @@ import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/in
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     render() {
         const scene = (this.props.stateManager.data as GlobalState).nodeMaterial!.getScene();
-        const lightOptions = scene.lights.map((l:Light) => {
+        const lightOptions = scene.lights.map((l: Light) => {
             return { label: l.name, value: l.name };
         });
 

@@ -7,7 +7,6 @@ import { GraphNode } from "./graphNode";
 import { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 
-
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
     private _portA: NodePort | FrameNodePort;

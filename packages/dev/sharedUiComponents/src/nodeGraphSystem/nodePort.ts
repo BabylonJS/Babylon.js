@@ -148,13 +148,7 @@ export class NodePort {
         }
     }
 
-    public static CreatePortElement(
-        portData: IPortData,
-        node: GraphNode,
-        root: HTMLElement,
-        displayManager: Nullable<IDisplayManager>,
-        stateManager: StateManager
-    ) {
+    public static CreatePortElement(portData: IPortData, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, stateManager: StateManager) {
         const portContainer = root.ownerDocument!.createElement("div");
 
         portContainer.classList.add("portLine");

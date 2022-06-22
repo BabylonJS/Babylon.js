@@ -78,14 +78,14 @@ export class GlobalState {
         this.stateManager.data = this;
 
         registerElbowSupport(this.stateManager);
-        registerNodePortDesign(this.stateManager);        
+        registerNodePortDesign(this.stateManager);
 
         const r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
         const b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
     }
-       
+
     storeEditorData(serializationObject: any, frame?: Nullable<GraphFrame>) {
         this.stateManager.storeEditorData(serializationObject, frame);
     }

@@ -13,7 +13,7 @@ export interface INodeData {
     dispose: () => void;
 
     getPortByName: (name: string) => Nullable<IPortData>;
-    
+
     inputs: IPortData[];
     outputs: IPortData[];
 }

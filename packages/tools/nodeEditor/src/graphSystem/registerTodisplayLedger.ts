@@ -35,4 +35,4 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SubSurfaceBlock"] = PBRDisplayManager;
     DisplayLedger.RegisteredControls["ImageSourceBlock"] = ImageSourceDisplayManager;
     DisplayLedger.RegisteredControls["ElbowBlock"] = ElbowDisplayManager;
-}
+};

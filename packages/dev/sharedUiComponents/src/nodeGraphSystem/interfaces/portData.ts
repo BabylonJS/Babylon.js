@@ -9,7 +9,6 @@ export enum PortDataDirection {
     Output,
 }
 
-
 export interface IPortData {
     data: any;
     name: string;
@@ -30,5 +29,5 @@ export interface IPortData {
     checkCompatibilityState(port: IPortData): number;
     getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData): string;
 
-    createDefaultInputData(rootData: any): { data: INodeData, name: string};
+    createDefaultInputData(rootData: any): { data: INodeData; name: string };
 }
