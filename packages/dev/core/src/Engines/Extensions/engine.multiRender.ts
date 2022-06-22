@@ -193,14 +193,12 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             useSRGBBuffers = options.useSRGBBuffers;
         }
         if (
-            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24
-        ) {
-            depthTextureFormat = options.depthTextureFormat;
-        } else if (
             this.webGLVersion > 1 &&
-            (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT || options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8)
+            (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24 ||
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT ||
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8)
         ) {
             depthTextureFormat = options.depthTextureFormat;
         }
