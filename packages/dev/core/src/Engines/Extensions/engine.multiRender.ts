@@ -193,10 +193,14 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             useSRGBBuffers = options.useSRGBBuffers;
         }
         if (
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24
+        ) {
+            depthTextureFormat = options.depthTextureFormat;
+        } else if (
             this.webGLVersion > 1 &&
-            (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24 ||
-                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
+            (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT || options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8)
         ) {
             depthTextureFormat = options.depthTextureFormat;
         }
@@ -212,7 +216,12 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const textures: InternalTexture[] = [];
     const attachments: number[] = [];
 
-    const useStencilTexture = this.webGLVersion > 1 && generateDepthTexture && options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
+    const useStencilTexture =
+        this.webGLVersion > 1 &&
+        generateDepthTexture &&
+        (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8);
     const depthStencilBuffer = this._setupFramebufferDepthAttachments(!useStencilTexture && generateStencilBuffer, !generateDepthTexture && generateDepthBuffer, width, height);
 
     rtWrapper._framebuffer = framebuffer;
@@ -298,12 +307,19 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
+            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+                const gl2 = <WebGL2RenderingContext>(this._gl as any);
+                glDepthTextureInternalFormat = gl2.DEPTH32F_STENCIL8;
+                glDepthTextureFormat = gl.DEPTH_STENCIL;
+                glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
-            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 || depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
                 glDepthTextureType = gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;

@@ -132,21 +132,63 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalTexture,
         size,
         internalOptions.generateStencil,
-
         internalOptions.comparisonFunction === 0 ? false : internalOptions.bilinearFiltering,
         internalOptions.comparisonFunction
     );
 
-    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
+    if (internalOptions.depthTextureFormat !== undefined) {
+        if (
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH16 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH24 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH32_FLOAT &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8
+        ) {
+            Logger.Error("Depth texture format is not supported.");
+            return internalTexture;
+        }
+        internalTexture.format = internalOptions.depthTextureFormat;
+    } else {
+        internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
+    }
+    console.log(internalOptions.generateStencil);
+    console.log(internalTexture.format);
+
+    const hasStencil =
+        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
 
     rtWrapper._depthStencilTexture = internalTexture;
-    rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
+    rtWrapper._depthStencilTextureWithStencil = hasStencil;
 
-    const type = internalOptions.generateStencil ? gl.UNSIGNED_INT_24_8 : gl.UNSIGNED_INT;
-    const internalFormat = internalOptions.generateStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+    let type = gl.UNSIGNED_INT;
+    if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
+        type = gl.UNSIGNED_SHORT;
+    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+        type = gl.UNSIGNED_INT_24_8;
+    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+        type = gl.FLOAT;
+    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+        type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+    }
+
+    const internalFormat = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
     let sizedFormat = internalFormat;
     if (this.webGLVersion > 1) {
-        sizedFormat = internalOptions.generateStencil ? gl.DEPTH24_STENCIL8 : gl.DEPTH_COMPONENT24;
+        if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
+            sizedFormat = gl.DEPTH_COMPONENT16;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24) {
+            sizedFormat = gl.DEPTH_COMPONENT24;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+            sizedFormat = gl.DEPTH24_STENCIL8;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+            sizedFormat = gl.DEPTH_COMPONENT32F;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+            const gl2 = <WebGL2RenderingContext>(this._gl as any);
+            sizedFormat = gl2.DEPTH32F_STENCIL8;
+        }
     }
 
     if (internalTexture.is2DArray) {
