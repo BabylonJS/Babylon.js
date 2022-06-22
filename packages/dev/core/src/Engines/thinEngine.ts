@@ -4448,12 +4448,15 @@ export class ThinEngine {
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        if (comparisonFunction === 0) {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-        } else {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
+        if (this.webGLVersion > 1) {
+            if (comparisonFunction === 0) {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            } else {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
         }
     }
 
