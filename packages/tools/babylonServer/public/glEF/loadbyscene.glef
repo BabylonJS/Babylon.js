@@ -16,31 +16,38 @@
     "experience": {
         "version": "2.0"
     },
-    "interactivity": {
-        "actions": [
-            {
-                "infinite": true,
-                "subject": 0,
-                "type": "spin"
-            }
-        ],
-        "behaviors": [
-            {
-                "action": 0,
-                "trigger": 0
-            }
-        ],
-        "references": [
-            {
-                "index": 1,
-                "type": "node"
-            }
-        ],
-        "triggers": [
-            {
-                "type": "sceneStart"
-            }
-        ]
+    "extensionsUsed": [
+        "KHR_interactivity"
+    ],
+    "extensions": {
+        "KHR_interactivity": {
+            "actions": [
+                {
+                    "infinite": true,
+                    "parameters": {
+                        "subject": 0
+                    },
+                    "type": "spin"
+                }
+            ],
+            "behaviors": [
+                {
+                    "action": 0,
+                    "trigger": 0
+                }
+            ],
+            "references": [
+                {
+                    "index": 1,
+                    "type": "node"
+                }
+            ],
+            "triggers": [
+                {
+                    "type": "sceneStart"
+                }
+            ]
+        }
     },
     "nodes": [
         {
