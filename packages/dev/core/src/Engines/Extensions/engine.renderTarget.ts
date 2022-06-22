@@ -152,8 +152,6 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
     } else {
         internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
     }
-    console.log(internalOptions.generateStencil);
-    console.log(internalTexture.format);
 
     const hasStencil =
         internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
