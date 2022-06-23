@@ -1,11 +1,11 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { Light } from "core/Lights/light";
 import { GlobalState } from "../../globalState";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     render() {
@@ -27,7 +27,7 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
                         options={lightOptions}
                         target={lightInformationBlock}
                         propertyName="name"
-                        getSelection={(target) => target.light.name}
+                        extractValue={(target: LightInformationBlock) => target.light!.name}
                         onSelect={(name: any) => {
                             lightInformationBlock.light = scene.getLightByName(name);
                             this.forceUpdate();

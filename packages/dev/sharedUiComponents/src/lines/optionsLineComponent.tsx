@@ -13,13 +13,14 @@ export interface IOptionsLineComponentProps {
     options: IInspectableOptions[];
     noDirectUpdate?: boolean;
     onSelect?: (value: number | string) => void;
-    extractValue?: (target: any) => number;
+    extractValue?: (target: any) => number | string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     allowNullValue?: boolean;
     icon?: string;
     iconLabel?: string;
     className?: string;
-    valuesAreStrings?: string;
+    valuesAreStrings?: boolean;
+    defaultIfNull?: number;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
@@ -33,10 +34,17 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         return this.props.allowNullValue && value === Null_Value ? null : value;
     }
 
+    private _getValue(props: IOptionsLineComponentProps) {
+        if (props.extractValue) {
+            return props.extractValue(props.target);
+        }
+        return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+    }
+
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: this._remapValueIn(this.props.extractValue ? this.props.extractValue(this.props.target) : props.target[props.propertyName]) };
+        this.state = { value: this._remapValueIn(this._getValue(props)) };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {

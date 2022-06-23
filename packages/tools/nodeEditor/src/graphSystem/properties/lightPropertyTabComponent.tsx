@@ -1,11 +1,11 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { LightBlock } from "core/Materials/Node/Blocks/Dual/lightBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { Light } from "core/Lights/light";
 import { GlobalState } from "../../globalState";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     render() {

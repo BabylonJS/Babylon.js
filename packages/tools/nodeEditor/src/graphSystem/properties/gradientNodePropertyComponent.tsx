@@ -5,11 +5,12 @@ import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock
 import { GradientStepComponent } from "./gradientStepComponent";
 import { Color3 } from "core/Maths/math.color";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;
@@ -109,7 +110,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                         options={typeOptions}
                         target={gradientBlock}
                         noDirectUpdate={true}
-                        getSelection={(block) => {
+                        extractValue={(block: InputBlock) => {
                             if (block.visibleInInspector) {
                                 return 1;
                             }
@@ -119,7 +120,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             }
 
                             return 0;
-                        }}
+                        } }
                         onSelect={(value: any) => {
                             switch (value) {
                                 case 0:
@@ -132,8 +133,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             this.forceUpdate();
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
                             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-                        }}
-                    />
+                        } } propertyName={""}                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />

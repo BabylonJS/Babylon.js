@@ -4,7 +4,6 @@ import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Materials/Node/nodeMaterialDecorator";
 import { PropertyTypeForEdition } from "core/Materials/Node/nodeMaterialDecorator";
@@ -15,6 +14,7 @@ import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/in
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { GlobalState } from "../../globalState";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

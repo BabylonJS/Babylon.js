@@ -441,10 +441,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ref={this._modeSelect}
                             label="Mode"
                             target={this}
-                            getSelection={() => this.props.globalState.mode}
+                            extractValue={() => this.props.globalState.mode}
                             options={modeList}
-                            onSelect={(value) => this.changeMode(value)}
-                        />
+                            onSelect={(value) => this.changeMode(value)} propertyName={""}                        />
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"
