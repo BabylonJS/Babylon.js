@@ -131,7 +131,8 @@ export class WebXRExperienceHelper implements IDisposable {
             const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
 
             const xrRenderState: XRRenderStateInit = {
-                depthFar: this.camera.maxZ,
+                // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
+                depthFar: this.camera.maxZ || 10000,
                 depthNear: this.camera.minZ,
             };
 

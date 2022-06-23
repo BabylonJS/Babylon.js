@@ -246,9 +246,11 @@ export class MaterialPluginBase {
     /**
      * Gets the attributes used by the plugin.
      * @param attributes list that the attribute names should be added to.
+     * @param scene the scene that the material belongs to.
+     * @param mesh the mesh being rendered.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getAttributes(attributes: string[]): void {}
+    public getAttributes(attributes: string[], scene: Scene, mesh: AbstractMesh): void {}
 
     /**
      * Gets the uniform buffers names added by the plugin.

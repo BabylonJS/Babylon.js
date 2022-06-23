@@ -1068,6 +1068,7 @@ export class Material implements IAnimatable {
                 }
 
                 subMesh.effect._wasPreviouslyReady = false;
+                subMesh.effect._wasPreviouslyUsingInstances = null;
             }
         }
     }
