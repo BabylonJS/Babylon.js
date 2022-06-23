@@ -4,7 +4,7 @@
             "uri": "assets/bluecube.gltf"
         },
         {
-                "uri": "assets/greensphere.glb"
+            "uri": "assets/greensphere.glb"
         }
     ],
     "experience": {
@@ -17,46 +17,77 @@
         "KHR_interactivity": {
             "actions": [
                 {
-                    "infinite": true,
                     "parameters": {
-                        "subject": 0
+                        "subject": 0,
+                        "showHideEffect": 2,
+                        "duration": 2
                     },
-                    "type": "spin"
+                    "type": "show"
+                },
+                {
+                    "parameters": {
+                        "subject": 0,
+                        "showHideEffect": 2
+                    },
+                    "type": "hide"
                 }
             ],
             "behaviors": [
                 {
                     "action": 0,
                     "trigger": 0
+                },
+                {
+                    "action": 1,
+                    "trigger": 1
                 }
             ],
             "references": [
                 {
                     "index": 1,
                     "type": "node"
+                },
+                {
+                    "index": 0,
+                    "type": "node"
                 }
             ],
             "triggers": [
                 {
                     "type": "sceneStart"
+                },
+                {
+                    "type": "tap",
+                    "subject": 1
                 }
             ]
         }
     },
     "nodes": [
-	{
-		"children": [1,2]
-	},
+        {
+            "children": [
+                1,
+                2
+            ]
+        },
         {
             "asset": 0,
             "name": "character",
-            "translation": [1,0,0]
+            "translation": [
+                1,
+                0,
+                0
+            ]
         },
         {
             "asset": 1,
             "name": "character2",
-            "translation": [-1,0,0]
+            "translation": [
+                -1,
+                0,
+                0
+            ]
         }
-
     ]
 }
+

@@ -165,7 +165,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                             `gltf-${subject.name}-${actionData.type}`,
                             "visibility",
                             fps,
-                            Animation.ANIMATIONTYPE_VECTOR3,
+                            Animation.ANIMATIONTYPE_FLOAT,
                             Animation.ANIMATIONLOOPMODE_CONSTANT
                         );
                         animation.setKeys([
