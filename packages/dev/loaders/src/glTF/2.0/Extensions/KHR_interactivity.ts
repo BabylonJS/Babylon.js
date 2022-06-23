@@ -5,7 +5,7 @@ import { RegisterExtension } from "../BaseLoader";
 import { GLEFLoader } from "../glEFLoader";
 import { IGLEFLoaderExtension, IInteractivity } from "../glEFLoaderExtension";
 
-const NAME = "KHR_interactivity_behavior";
+const NAME = "KHR_interactivity";
 
 /*
 List of TODOs:
