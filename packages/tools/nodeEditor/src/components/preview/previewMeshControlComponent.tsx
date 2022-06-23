@@ -3,7 +3,6 @@ import type { GlobalState } from "../../globalState";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { PreviewType } from "./previewType";
 import { DataStorage } from "core/Misc/dataStorage";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
@@ -12,6 +11,7 @@ import popUpIcon from "./svgs/popOut.svg";
 import colorPicker from "./svgs/colorPicker.svg";
 import pauseIcon from "./svgs/pauseIcon.svg";
 import playIcon from "./svgs/playIcon.svg";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;

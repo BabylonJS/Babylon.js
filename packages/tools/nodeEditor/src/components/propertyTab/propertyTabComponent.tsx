@@ -19,7 +19,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { PreviewType } from "../preview/previewType";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
@@ -38,6 +37,7 @@ import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComp
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;

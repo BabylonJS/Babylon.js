@@ -9,7 +9,6 @@ import { Vector3PropertyTabComponent } from "../../components/propertyTab/proper
 import { Vector4PropertyTabComponent } from "../../components/propertyTab/properties/vector4PropertyTabComponent";
 import { MatrixPropertyTabComponent } from "../../components/propertyTab/properties/matrixPropertyTabComponent";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
 import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
@@ -21,6 +20,7 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<InputBlock>>;
@@ -275,7 +275,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             options={typeOptions}
                             target={inputBlock}
                             noDirectUpdate={true}
-                            getSelection={(block) => {
+                            extractValue={(block) => {
                                 if (block.visibleInInspector) {
                                     return 1;
                                 }
@@ -325,7 +325,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         options={modeOptions}
                         target={inputBlock}
                         noDirectUpdate={true}
-                        getSelection={(block) => {
+                        extractValue={(block) => {
                             if (block.isAttribute) {
                                 return 1;
                             }

@@ -8,7 +8,6 @@ import { Texture } from "core/Materials/Textures/texture";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
@@ -22,6 +21,7 @@ import { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
