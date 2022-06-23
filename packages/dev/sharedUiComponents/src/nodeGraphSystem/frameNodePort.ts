@@ -4,7 +4,7 @@ import type { Nullable } from "core/types";
 import { IPortData } from "./interfaces/portData";
 import { NodePort } from "./nodePort";
 import { GraphNode } from "./graphNode";
-import { isFramePortData } from "./tools";
+import { IsFramePortData } from "./tools";
 import type { FramePortPosition } from "./graphFrame";
 import type { StateManager } from "./stateManager";
 import type { FramePortData } from "./types/framePortData";
@@ -58,7 +58,7 @@ export class FrameNodePort extends NodePort {
 
         this._onSelectionChangedObserver = stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
-            if (isFramePortData(selection) && (selection as FramePortData).port === this) {
+            if (IsFramePortData(selection) && (selection as FramePortData).port === this) {
                 this._img.classList.add("selected");
             } else {
                 this._img.classList.remove("selected");

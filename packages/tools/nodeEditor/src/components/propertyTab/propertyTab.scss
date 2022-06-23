@@ -174,16 +174,16 @@
                 align-items: center;
             }
 
+            textarea {
+                width: calc(150% - 5px);
+                margin-left: -50%;
+                height: 40px;
+            }            
+
             .value {
                 display: flex;
                 align-items: center;
                 grid-column: 2;
-
-                textarea {
-                    width: calc(150% - 5px);
-                    margin-left: -50%;
-                    height: 40px;
-                }
             }
         }
 

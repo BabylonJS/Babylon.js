@@ -36,7 +36,7 @@ import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
-import { isFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
+import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 interface IPropertyTabComponentProps {
@@ -70,7 +70,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             } else if (selection instanceof GraphFrame) {
                 this.setState({ currentNode: null, currentFrame: selection, currentFrameNodePort: null, currentNodePort: null });
-            } else if (isFramePortData(selection)) {
+            } else if (IsFramePortData(selection)) {
                 this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
             } else if (selection instanceof NodePort) {
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection });

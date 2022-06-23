@@ -8,7 +8,7 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { FramePortPosition, GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import { isFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
+import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 
 export interface IFrameNodePortPropertyTabComponentProps {
@@ -31,7 +31,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
         const _this = this;
         this._onSelectionChangedObserver = this.props.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
-            if (isFramePortData(selection)) {
+            if (IsFramePortData(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
                 _this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add((port: FrameNodePort) => {
                     _this.setState({ port: port });

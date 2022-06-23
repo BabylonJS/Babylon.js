@@ -15,6 +15,7 @@ import { Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
+import { RegisterExportData } from "./graphSystem/registerExportData";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -81,6 +82,7 @@ export class GlobalState {
         RegisterElbowSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
+        RegisterExportData(this.stateManager);
 
         const r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
