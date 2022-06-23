@@ -1,20 +1,316 @@
 {
-    "fromTag": "5.10.0",
+    "fromTag": "5.12.0",
     "changelog": {
-        "5.10.0": [
+        "5.12.1": [],
+        "5.12.0": [
             {
-                "pr": "12622",
-                "title": "Disallow users to change the frame of the first key, ensuring that th…",
-                "description": "…ere is always a frame at 0. It was already not possible to drag the first frame outside of 0, but this covers the top bar input.",
+                "pr": "12664",
+                "title": "Added referrer policy support to GUI Image to control xhr request header",
+                "description": "This feature will allow user's to control the **header** in the **xhr request to load the image**, `Referrer Policy`.\r\n\r\nMore info here : \r\nThe Referrer-Policy [HTTP header](https://developer.mozilla.org/en-US/docs/Glossary/HTTP_header) \r\n\r\nDefault value is : `strict-origin-when-cross-origin`",
+                "author": {
+                    "name": "BrunevalPE",
+                    "url": "https://github.com/BrunevalPE"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12672",
+                "title": "fix cache miss with instances out of frustrum",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12671",
+                "title": "webgpu update",
+                "description": "https://forum.babylonjs.com/t/what-is-the-current-webgpu-support-status/31506/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.js",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.wasm"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "12670",
+                "title": "Lines array is generated later",
+                "description": "this._lines is generated when the  control is in view. If you create a control that is not in view it will fail.\n\nThis makes sure it doesn't fail even when out of view. \n\nTest playground - https://www.babylonjs-playground.com/#XCPP9Y#13890",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12668",
+                "title": "Add params scene, mesh to function getAttributes",
+                "description": "For the class MaterialPluginBase,  add params scene and mesh to the function getAttributes so that they can be used to determine which attributes to use.\r\n\r\nForum: https://forum.babylonjs.com/t/using-custom-attribute-with-material-plugin/31142/7",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/materialPluginEvent.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12659",
+                "title": "Adds ExtrudeShape* options firstNormal and adjustFrame",
+                "description": "firstNormal option allows one to pick the first normal of the underlying Path3D path, preventing, in some cases degenerate extrusions.\r\nadjustNormal option causes the underlying Path3D frame of tangents, normals, and binormals to be patched up when the they are either undefined (0,0,0) or reverse direction. This is useful for paths that reverse back on themselves.",
+                "author": {
+                    "name": "Lowclouds",
+                    "url": "https://github.com/Lowclouds"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/shapeBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12669",
+                "title": "Inspectable options fix",
+                "description": "Custom inspectables could not be provided with an appropriate options array as the type was either undefined or empty array, this way it can be undefined or an array of IInspectableOptions\r\n\r\nHere is an example of being forced to use \"as any\" with current babylonjs in typescript when using the custom inspectable type options, when removing the \"as any\" this will break:\r\nhttps://playground.babylonjs.com/#LTH16U\r\n\r\nHere is an example with the snapshot where we aren't forced to use \"as any\":\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/12669/merge#TCE5N9\r\n",
+                "author": {
+                    "name": "GordonTombola",
+                    "url": "https://github.com/GordonTombola"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/iInspectable.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12656",
+                "title": "Force render with just that camera on CreateScreenshot",
+                "description": "If a camera is specified as an argument, fall back on the CreateScreenshotUsingRenderTarget function.\r\nRelated forum issue: https://forum.babylonjs.com/t/screenshot-tool-does-not-seem-to-respect-camera-argument/31167\r\nRelated Playground: https://playground.babylonjs.com/#M6HFGB",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/rangeFrameBarComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/topBarComponent.tsx"
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "11710",
+                "title": "Creation of InputTextArea component",
+                "description": "Based on fneitzel prototype ([Added prototype of InputTextArea](https://github.com/BabylonJS/Babylon.js/pull/8275)), I improved the component to support the margin, the deletion (backspace/del.), the highlighting, deadkeys and copy/paste/cut shortcuts.\r\n\r\nA lot of things remained to do :\r\n- fix the CR on last line\r\n- find why the text clip on single line during autostreching\r\n- resolve todos\r\n- clean/fix/update the code\r\n\r\nMy approach was highly naïve, so maybe a cleaner architecture will be necessery.",
+                "author": {
+                    "name": "Valerian-Perez-Wanadev",
+                    "url": "https://github.com/Valerian-Perez-Wanadev"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/index.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12667",
+                "title": "changes to minZ and maxZ while a session is running should update the XR session",
+                "description": "Fixes #12448\r\n\r\nmaxZ should be infinity, but when setting is to a very large number, both the XR emulator and native XR fail. This is why 10000 was chosed to be max (which is 10000 meters in VR).\r\n\r\nTest playground (when merged) https://playground.babylonjs.com/#F41V6N#913",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12641",
+                "title": "Added Quaternion support in `ShaderMaterial`",
+                "description": "Last pull request about quaternions (until the next one maybe we never know ^^)\r\n\r\n- added `setQuaternion` as a method of `ShaderMaterial`\r\n- added `setQuaternionArray` as a method of `ShaderMaterial`\r\n- added `toArray` as a method of `Quaternion`",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12663",
+                "title": "Bug Fix - Vector3 project on plane",
+                "description": "This proposal fixes an apparent incorrect calculation in the `Vector3.projectOnPlaneToRef` method which returns confusing results for many planes, especially those not centered on the world origin.\r\n\r\nA couple of unit tests were added to logically demonstrate the failure of the existing code, as well as a new original implementation which seems to work correctly for various cases.\r\n\r\nPlayground demonstrating the behavior for testing:\r\nhttps://playground.babylonjs.com/#MHMIPM",
+                "author": {
+                    "name": "strutcode",
+                    "url": "https://github.com/strutcode"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12665",
+                "title": "move core dependencies to peer dependencies",
+                "description": "Addressing https://forum.babylonjs.com/t/babylon-materials-and-babylon-loaders-resolve-babylon-core-5-4-0-as-a-sub-dependency/30722",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/node-editor/package.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/serializers/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12666",
+                "title": "add support for custom attributes to convertToUnIndexedMesh",
+                "description": "Add support for custom attributes to the function convertToUnIndexedMesh. Currently calling it on a mesh with custom attribute(s) set causes an error to be thrown since the attribute's stride can't be deduced.\r\n\r\nForum: https://forum.babylonjs.com/t/allow-converttounindexedmesh-to-support-custom-attributes/31486",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12658",
+                "title": "update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/babylonjs-viewer-assets/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-viewer/package.json",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/tools/babylonServer/package.json",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/ktx2Decoder/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/reflector/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/viewer/package.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12660",
+                "title": "Fix bug that prevents subsequent elapsed time queries from completing",
+                "description": "Due to the fact an elapsed time query does not typically have results upon the first call to engine.endTimeQuery(), the previous logic that seems intended to prevent overlapping elapsed time queries was causing any subsequent query to always return -1 for the time. Basically, you could only have one query in flight at a given time.\r\n\r\nMoving around the bookkeeping logic fixes my repro playground: https://playground.babylonjs.com/#KBS9I5#23200",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12657",
+                "title": "Add meta key to the possible multi selection keys on NME",
+                "description": "Related Forum Issue: https://forum.babylonjs.com/t/nme-multi-select-ux-unusable-on-mac/30517/8\r\nOn Mac, the CTRL key always opens the browser context menu, making multi-select impossible. This PR adds the meta keys (windows/cmd) to the keys that can perform multi-select.\r\n\r\nPR to test: https://playground.babylonjs.com/#99SQQW",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/diagram/graphCanvas.tsx"
                 ],
                 "tags": []
             }
@@ -230,6 +526,24 @@
                     "enhancement",
                     "materials"
                 ]
+            }
+        ],
+        "5.10.0": [
+            {
+                "pr": "12622",
+                "title": "Disallow users to change the frame of the first key, ensuring that th…",
+                "description": "…ere is always a frame at 0. It was already not possible to drag the first frame outside of 0, but this covers the top bar input.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/rangeFrameBarComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/curveEditor.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/topBarComponent.tsx"
+                ],
+                "tags": []
             }
         ],
         "5.9.1": [
