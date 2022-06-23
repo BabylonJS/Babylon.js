@@ -199,6 +199,21 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
 
     this._internalTexturesCache.push(internalTexture);
 
+    // Dispose previous depth/stencil render buffers and clear the corresponding attachment.
+    // Next time the framebuffer is bound, the new depth/stencil texture will be attached.
+    const glRtWrapper = <WebGLRenderTargetWrapper>(rtWrapper as any);
+    if (glRtWrapper._depthStencilBuffer) {
+        const currentFrameBuffer = this._currentFramebuffer;
+        this._bindUnboundFramebuffer(glRtWrapper._framebuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
+        this._bindUnboundFramebuffer(currentFrameBuffer);
+
+        gl.deleteRenderbuffer(glRtWrapper._depthStencilBuffer);
+        glRtWrapper._depthStencilBuffer = null;
+    }
+
     return internalTexture;
 };
 
