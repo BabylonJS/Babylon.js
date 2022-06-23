@@ -78,6 +78,7 @@ export class GlobalState {
         this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
         this.stateManager = new StateManager();
         this.stateManager.data = this;
+        this.stateManager.lockObject = this.lockObject;
 
         RegisterElbowSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);

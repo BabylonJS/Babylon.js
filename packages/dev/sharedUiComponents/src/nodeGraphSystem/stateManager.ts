@@ -13,6 +13,7 @@ import { NodePort } from "./nodePort";
 export class StateManager {
     data: any;
     hostDocument: Document;
+    lockObject: any;
 
     onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
     onFrameCreatedObservable = new Observable<GraphFrame>();

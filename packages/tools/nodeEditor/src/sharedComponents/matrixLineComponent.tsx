@@ -3,10 +3,10 @@ import type { Vector3, Vector4 } from "core/Maths/math.vector";
 import { Matrix, Quaternion } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "./propertyChangedEvent";
-import { Vector4LineComponent } from "./vector4LineComponent";
 import { OptionsLineComponent } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
 import type { GlobalState } from "../globalState";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 
 interface IMatrixLineComponentProps {
     label: string;
@@ -156,25 +156,21 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                 {this.state.mode === 0 && (
                     <div className="secondLine">
                         <Vector4LineComponent
-                            globalState={this.props.globalState}
                             label="Row #0"
                             value={this.state.value.getRow(0)!}
                             onChange={(value) => this.updateRow(value, 0)}
                         />
                         <Vector4LineComponent
-                            globalState={this.props.globalState}
                             label="Row #1"
                             value={this.state.value.getRow(1)!}
                             onChange={(value) => this.updateRow(value, 1)}
                         />
                         <Vector4LineComponent
-                            globalState={this.props.globalState}
                             label="Row #2"
                             value={this.state.value.getRow(2)!}
                             onChange={(value) => this.updateRow(value, 2)}
                         />
                         <Vector4LineComponent
-                            globalState={this.props.globalState}
                             label="Row #3"
                             value={this.state.value.getRow(3)!}
                             onChange={(value) => this.updateRow(value, 3)}

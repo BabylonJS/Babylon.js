@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { GlobalState } from "../../../globalState";
-import { Color3LineComponent } from "../../../sharedComponents/color3LineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 
 interface IColor3PropertyTabComponentProps {
     globalState: GlobalState;
@@ -12,7 +12,6 @@ export class Color3PropertyTabComponent extends React.Component<IColor3PropertyT
     render() {
         return (
             <Color3LineComponent
-                globalState={this.props.globalState}
                 label="Value"
                 target={this.props.inputBlock}
                 propertyName="value"

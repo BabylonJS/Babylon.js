@@ -1,7 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import type { GlobalState } from "../../globalState";
-import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
@@ -10,6 +9,7 @@ import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;
@@ -55,9 +55,14 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent label="Name" propertyName="name" target={this.props.frame} />
-                        <Color3LineComponent globalState={this.props.globalState} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
-                        <TextInputLineComponent label="Comments" propertyName="comments" target={this.props.frame} />
+                        <TextInputLineComponent 
+                            label="Name" propertyName="name" 
+                            lockObject={this.props.globalState.lockObject}
+                            target={this.props.frame} />
+                        <Color3LineComponent label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
+                        <TextInputLineComponent                         
+                            lockObject={this.props.globalState.lockObject}
+                            label="Comments" propertyName="comments" target={this.props.frame} />
                         {!this.props.frame.isCollapsed && (
                             <ButtonLineComponent
                                 label="Collapse"

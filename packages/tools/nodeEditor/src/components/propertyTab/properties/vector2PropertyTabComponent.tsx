@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { GlobalState } from "../../../globalState";
-import { Vector2LineComponent } from "../../../sharedComponents/vector2LineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 
 interface IVector2PropertyTabComponentProps {
     globalState: GlobalState;
@@ -12,7 +12,6 @@ export class Vector2PropertyTabComponent extends React.Component<IVector2Propert
     render() {
         return (
             <Vector2LineComponent
-                globalState={this.props.globalState}
                 label="Value"
                 target={this.props.inputBlock}
                 propertyName="value"

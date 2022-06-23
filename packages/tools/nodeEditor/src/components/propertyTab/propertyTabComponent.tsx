@@ -17,12 +17,7 @@ import { FrameNodePortPropertyTabComponent } from "../../graphSystem/properties/
 import { NodePortPropertyTabComponent } from "../../graphSystem/properties/nodePortPropertyComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-import { Color4LineComponent } from "../../sharedComponents/color4LineComponent";
-import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
-import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponent";
-import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
 import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
@@ -38,6 +33,11 @@ import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -142,7 +142,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent
-                        globalState={this.props.globalState}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -153,7 +152,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color4LineComponent
-                        globalState={this.props.globalState}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -164,7 +162,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2LineComponent
-                        globalState={this.props.globalState}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -175,7 +172,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
                     <Vector3LineComponent
-                        globalState={this.props.globalState}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -186,7 +182,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return (
                     <Vector4LineComponent
-                        globalState={this.props.globalState}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}

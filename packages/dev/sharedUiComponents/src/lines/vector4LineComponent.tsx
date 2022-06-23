@@ -9,14 +9,15 @@ import type { PropertyChangedEvent } from "../propertyChangedEvent";
 
 interface IVector4LineComponentProps {
     label: string;
-    target: any;
-    propertyName: string;
+    target?: any;
+    propertyName?: string;
     step?: number;
     onChange?: (newvalue: Vector4) => void;
     useEuler?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     icon?: string;
-    iconLabel?: string;
+    iconLabel?: string;    
+    value?: Vector4;
 }
 
 export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, { isExpanded: boolean; value: Vector4 }> {
@@ -34,7 +35,7 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
     }
 
     getCurrentValue() {
-        return this.props.target[this.props.propertyName];
+        return this.props.value || this.props.target[this.props.propertyName!];
     }
 
     shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean; value: Vector4 }) {
@@ -63,16 +64,21 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
         }
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
-            property: this.props.propertyName,
+            property: this.props.propertyName || "",
             value: this.state.value,
             initialValue: previousValue,
         });
     }
 
     updateVector4() {
-        const store = this.props.target[this.props.propertyName].clone();
-        this.props.target[this.props.propertyName] = this.state.value;
+        const store = this.getCurrentValue().clone();
 
+        if (this.props.value) {
+            this.props.value.copyFrom(this.state.value);
+        } else {
+            this.props.target[this.props.propertyName!] = this.state.value;
+        }        
+        
         this.setState({ value: store });
 
         this.raiseOnPropertyChanged(store);

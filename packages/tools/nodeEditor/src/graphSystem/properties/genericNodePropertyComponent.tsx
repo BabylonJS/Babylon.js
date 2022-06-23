@@ -4,7 +4,6 @@ import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
-import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
 import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Materials/Node/nodeMaterialDecorator";
@@ -14,6 +13,7 @@ import type { Scene } from "core/scene";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { GlobalState } from "../../globalState";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
@@ -53,6 +53,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                             label="Name"
                             propertyName="name"
                             target={block}
+                            lockObject={this.props.stateManager.lockObject}
                             onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                             validator={(newName) => {
                                 if (!block.validateBlockName(newName)) {
@@ -82,6 +83,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     <TextInputLineComponent
                         label="Comments"
                         propertyName="comments"
+                        lockObject={this.props.stateManager.lockObject}
                         target={block}
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                     />
@@ -185,7 +187,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.Vector2: {
                     components.push(
                         <Vector2LineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
                             label={displayName}
                             propertyName={propertyName}
                             target={block}

@@ -33,7 +33,10 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
     render() {
         const info = this.props.nodePort.hasLabel() ? (
             <>
-                {this.props.nodePort.hasLabel() && <TextInputLineComponent label="Port Label" propertyName="portName" target={this.props.nodePort} />}
+                {this.props.nodePort.hasLabel() && 
+                    <TextInputLineComponent 
+                        lockObject={this.props.stateManager.lockObject}
+                        label="Port Label" propertyName="portName" target={this.props.nodePort} />}
                 {this.props.nodePort.node.enclosingFrameId !== -1 && (
                     <CheckBoxLineComponent
                         label="Expose Port on Frame"

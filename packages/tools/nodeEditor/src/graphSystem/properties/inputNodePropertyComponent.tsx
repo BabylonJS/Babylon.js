@@ -312,6 +312,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             label="Group"
                             propertyName="groupInInspector"
                             target={inputBlock}
+                            lockObject={this.props.stateManager.lockObject}
                             onChange={() => {
                                 this.forceUpdate();
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
