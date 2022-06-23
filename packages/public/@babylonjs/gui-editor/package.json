@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui-editor",
-    "version": "5.11.0",
+    "version": "5.12.0",
     "main": "dist/babylon.guiEditor.max.js",
     "module": "dist/babylon.guiEditor.max.js",
     "esnext": "dist/babylon.guiEditor.max.js",
@@ -17,7 +17,6 @@
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist"
     },
-    "dependencies": {},
     "peerDependencies": {
         "@babylonjs/core": "^5.0.0",
         "@babylonjs/gui": "^5.0.0",
@@ -25,8 +24,8 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^5.11.0",
-        "@babylonjs/gui": "^5.11.0",
+        "@babylonjs/core": "^5.12.0",
+        "@babylonjs/gui": "^5.12.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "rimraf": "^3.0.2",
@@ -50,4 +49,3 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
-
