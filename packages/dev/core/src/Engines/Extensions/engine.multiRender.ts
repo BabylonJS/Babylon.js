@@ -308,8 +308,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
-                const gl2 = <WebGL2RenderingContext>(this._gl as any);
-                glDepthTextureInternalFormat = gl2.DEPTH32F_STENCIL8;
+                glDepthTextureInternalFormat = gl.DEPTH32F_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
                 glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24) {

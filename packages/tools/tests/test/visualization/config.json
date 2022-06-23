@@ -1372,15 +1372,9 @@
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
-            "title": "Multi cameras and output render target with depth stencil texture (D24_S8)",
+            "title": "Multi cameras and output render target with depth texture (D24)",
             "renderCount": 2,
-            "playgroundId": "#BCYE7J#33",
-            "referenceImage": "multiCamerasOutputRenderTarget.png"
-        },
-        {
-            "title": "Multi cameras and output render target with depth stencil texture (D32F_S8)",
-            "renderCount": 2,
-            "playgroundId": "#BCYE7J#34",
+            "playgroundId": "#BCYE7J#36",
             "excludedEngines": ["webgl1"],
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },

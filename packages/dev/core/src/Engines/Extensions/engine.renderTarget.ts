@@ -184,8 +184,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
             internalFormat = gl.DEPTH_COMPONENT32F;
         } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
-            const gl2 = <WebGL2RenderingContext>(this._gl as any);
-            internalFormat = gl2.DEPTH32F_STENCIL8;
+            internalFormat = gl.DEPTH32F_STENCIL8;
         }
     }
 
