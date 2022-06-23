@@ -8,27 +8,22 @@ import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
 import { Scene } from "core/scene";
 import { Nullable } from "core/types";
-import { EventTrigger } from "core/Actions/VSM/Triggers/EventTrigger";
-import { TapTrigger } from "core/Actions/VSM/Triggers/TapTrigger";
-import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
-import { ShowAction } from "core/Actions/VSM/Actions/ShowAction";
-import { HideAction } from "core/Actions/VSM/Actions/HideAction";
-import { Animation } from "core/Animations/animation";
+
 import { BehaviorManager } from "core/Actions/VSM/behaviorManager";
 import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
 import type { GLEFFileLoader } from "../glEFFileLoader";
 import { GLTFFileLoader } from "../glTFFileLoader";
 import { ArrayItem, ILoaderProperty, registeredExtensions } from "./BaseLoader";
 import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
-import { IGLEFLoaderExtension, IInteractivity } from "./glEFLoaderExtension";
+import { IGLEFLoaderExtension } from "./glEFLoaderExtension";
 import { GLTFLoader } from "./glTFLoader";
 import { INode, IScene } from "./glTFLoaderInterfaces";
-import { EasingFunction, QuadraticEase } from "core/Animations/easing";
 
 export class GLEFLoader implements ILoader {
     /** @hidden */
     public _assetContainer: Nullable<AssetContainer> = null;
     public _completePromises: Array<Promise<any>> = [];
+    public _behaviorManager: BehaviorManager;
     private readonly _extensions: Array<IBaseLoaderExtension> = [];
     private _jsonData: Nullable<any> = null; // TODO - should not be any
     private _scene: Scene;
@@ -38,7 +33,6 @@ export class GLEFLoader implements ILoader {
     // private _fileName: Nullable<string> = null;
     // private _uniqueRootUrl: Nullable<string> = null;
     private _rootBabylonMesh: Nullable<Mesh> = null;
-    private _behaviorManager: BehaviorManager;
 
     /**
      * The object that represents the glTF JSON.
@@ -138,13 +132,7 @@ export class GLEFLoader implements ILoader {
             promises.push(this.loadSceneAsync("/nodes", { nodes: nodesToUse, index: -1 }));
         }
 
-        if (this._jsonData.interactivity) {
-            // promises.push();
-        }
-
         await Promise.all(promises);
-
-        this.loadInteractivityAsync("/interactivity", this._jsonData.interactivity);
 
         if (this._rootBabylonMesh) {
             this._rootBabylonMesh.setEnabled(true);
@@ -297,178 +285,10 @@ export class GLEFLoader implements ILoader {
         return node._babylonTransformNode!;
     }
 
-    public async loadInteractivityAsync(context: string, interactivity: IInteractivity): Promise<void> {
-        const extensionPromise = this._extensionsLoadInteractivityAsync(context, interactivity);
-        if (extensionPromise) {
-            return extensionPromise;
-        }
-        // generate all actions
-        const actions = interactivity.actions?.map((action) => {
-            action._babylonBehavior = this._processAction(action);
-            return action._babylonBehavior;
-        });
-        // generate all triggers
-        const triggers = interactivity.triggers?.map((trigger) => {
-            trigger._babylonTrigger = this._generateTrigger(trigger);
-            return trigger._babylonTrigger;
-        });
-        // connect all actions to triggers
-        interactivity.behaviors?.forEach((behavior) => {
-            const trigger = (triggers || [])[behavior.trigger];
-            const action = (actions || [])[behavior.action];
-            if (trigger && action) {
-                behavior._babylonBehavior = this._behaviorManager.addBehavior(trigger, action);
-            }
-        });
-    }
-
-    private _generateTrigger(triggerData: { type: string; index: number; subject?: number }) {
-        // optional subject for some triggers
-        const subject = this._getSubjectForData(triggerData.subject);
-        // TODO handle the other triggers
-        switch (triggerData.type) {
-            case "sceneStart":
-                return new EventTrigger({
-                    eventName: "sceneStart",
-                });
-            case "tap":
-                return new TapTrigger({
-                    subject,
-                });
-        }
-        return null;
-    }
-
-    private _generateAction(actionData: { type: string; parameters?: { subject?: number; [key: string]: any }; next?: number; parallel?: number }) {
-        const subject = this._getSubjectForData(actionData.parameters?.subject);
-        // TODO handle the other action types
-        switch (actionData.type) {
-            case "spin":
-                return new SpinAction({
-                    subject,
-                });
-            case "hide":
-            case "show": {
-                // calculate "fps" with duration
-                const fps = 100 / (actionData.parameters?.duration || 1);
-                // for now, create the animation here until the architecture change
-                let animation: Animation | undefined = undefined;
-                // no animation when it is 0 or undefined
-                if (actionData.parameters?.showHideEffect) {
-                    // support scaling/fading
-                    // TODO extract this to an external, reusable function
-
-                    // scaling
-                    if (actionData.parameters?.showHideEffect === 2) {
-                        animation = new Animation(`gltf-${subject.name}-${actionData.type}`, "scaling", fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
-                        animation.setKeys([
-                            {
-                                frame: 0,
-                                value: actionData.type === "hide" ? subject.scaling.clone() : new Vector3(0, 0, 0),
-                            },
-                            {
-                                frame: 100,
-                                value: actionData.type === "show" ? subject.scaling.clone() : new Vector3(0, 0, 0),
-                            },
-                        ]);
-                    } else if (actionData.parameters?.showHideEffect === 1) {
-                        animation = new Animation(
-                            `gltf-${subject.name}-${actionData.type}`,
-                            "visibility",
-                            fps,
-                            Animation.ANIMATIONTYPE_VECTOR3,
-                            Animation.ANIMATIONLOOPMODE_CONSTANT
-                        );
-                        animation.setKeys([
-                            {
-                                frame: 0,
-                                value: actionData.type === "hide" ? 1 : 0,
-                            },
-                            {
-                                frame: 100,
-                                value: actionData.type === "show" ? 1 : 0,
-                            },
-                        ]);
-                    } else {
-                        throw new Error("unknown animation type");
-                    }
-
-                    // Set easing. TODO - move it out to a private function
-                    if (actionData.parameters.easing) {
-                        const easing = new QuadraticEase();
-                        switch (actionData.parameters.easing) {
-                            case 3:
-                                easing.setEasingMode(EasingFunction.EASINGMODE_EASEIN);
-                                break;
-                            case 2:
-                                easing.setEasingMode(EasingFunction.EASINGMODE_EASEOUT);
-                                break;
-                            case 1:
-                                easing.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-                                break;
-                        }
-                        animation.setEasingFunction(easing);
-                    }
-                }
-                return actionData.type === "hide"
-                    ? new HideAction({
-                          subject,
-                          hideAnimation: animation,
-                          applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
-                      })
-                    : new ShowAction({
-                          subject,
-                          animation,
-                          applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
-                      });
-            }
-        }
-        return null;
-    }
-
-    private _processAction(actionData: { type: string; parameters?: { subject?: number }; next?: number; parallel?: number }) {
-        const actionForData = this._generateAction(actionData);
-        if (actionForData) {
-            if (typeof actionData.next === "number") {
-                const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.next}`, this._jsonData.interactivity.actions /* as IAction[]*/, actionData.next));
-                if (nextAction) {
-                    actionForData.nextActions.push(nextAction);
-                }
-            }
-            if (typeof actionData.parallel === "number") {
-                const parallelAction = this._processAction(
-                    ArrayItem.Get(`actions/${actionData.parallel}`, this._jsonData.interactivity.actions /* as IAction[]*/, actionData.parallel)
-                );
-                if (parallelAction) {
-                    actionForData.parallelActions.push(parallelAction);
-                }
-            }
-        }
-        return actionForData;
-    }
-
-    private _getSubjectForData(subject?: number) {
-        if (typeof subject === "number") {
-            const reference = this._jsonData.interactivity.references[subject];
-            // TODO handle the different types
-            switch (reference.type) {
-                case "node":
-                    return this._jsonData.nodes[reference.index]._babylonTransformNode;
-            }
-        }
-        return null;
-    }
 
     private _setupData(): void {
         ArrayItem.Assign(this._jsonData.assets);
         ArrayItem.Assign(this._jsonData.nodes);
-        if (this._jsonData.interactivity) {
-            ArrayItem.Assign(this._jsonData.interactivity.actions);
-            // TODO - discuss this with gary - is this always needed?
-            // ArrayItem.Assign(this._jsonData.interactivity.references);
-            ArrayItem.Assign(this._jsonData.interactivity.behaviors);
-            ArrayItem.Assign(this._jsonData.interactivity.triggers);
-        }
 
         if (this._jsonData.nodes) {
             const nodeParents: { [index: number]: number } = {};
@@ -621,14 +441,14 @@ export class GLEFLoader implements ILoader {
         return this._applyExtensions(node, "loadNode", (extension) => extension.loadNodeAsync && extension.loadNodeAsync(context, node, assign));
     }
 
-    // TODO - return type here?
-    private _extensionsLoadInteractivityAsync(context: string, interactivity: IInteractivity): Nullable<Promise<void>> {
-        return this._applyExtensions(
-            interactivity,
-            "loadInteractivity",
-            (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity)
-        );
-    }
+    // // TODO - return type here?
+    // private _extensionsLoadInteractivityAsync(context: string, interactivity: IInteractivity): Nullable<Promise<void>> {
+    //     return this._applyExtensions(
+    //         interactivity,
+    //         "loadInteractivity",
+    //         (extension) => extension.loadInteractivityAsync && extension.loadInteractivityAsync(context, interactivity)
+    //     );
+    // }
     private _forEachExtensions(action: (extension: IBaseLoaderExtension) => void): void {
         for (const extension of this._extensions) {
             if (extension.enabled) {
