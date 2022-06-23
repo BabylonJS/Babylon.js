@@ -1,219 +1,7 @@
 {
-    "fromTag": "5.11.0",
+    "fromTag": "5.12.0",
     "changelog": {
-        "5.11.0": [
-            {
-                "pr": "12652",
-                "title": "Fix texture caching.",
-                "description": "Related forum issue: https://forum.babylonjs.com/t/got-wrong-mapping-in-equirectangularcubetexture/31329\r\nRelated playground: https://playground.babylonjs.com/#NIWPUI#1",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12655",
-                "title": "Camera: Modified isMouseEvent bool logic for Safari",
-                "description": "There was an issue found in the forum where movement of the UniversalCamera, using a mouse, on Safari wasn't stopping properly.  After investigating the issue, it was found that the mouse events were triggering both mouse and touch movement.  The main issue was that, in FreeCameraTouchInput, the `isMouseEvent` boolean was incorrect being evaluated as false for mouse because the assigning logic was looking for a parameter that isn't available to mouse events generated in Safari.  The fix was to modify the logic to work with Safari-specific mouse events.\r\n\r\nRelevant Forum Link: https://forum.babylonjs.com/t/keyboard-control-not-working-for-latest-universalcamera-in-desktop-safari/31314/8",
-                "author": {
-                    "name": "PolygonalSun",
-                    "url": "https://github.com/PolygonalSun"
-                },
-                "files": [
-                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "12653",
-                "title": "Fix deletion of Grid items in Editor, also fix...",
-                "description": "the width of the button panel, and fix an exception that was being thrown when changing the grid row/column of a grid element.\r\n\r\nRelated playground: https://playground.babylonjs.com/#9FW40S",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/tools/guiEditor/src/components/parentingPropertyGridComponent.tsx",
-                    "packages/tools/guiEditor/src/globalState.ts",
-                    "packages/tools/guiEditor/src/main.scss"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12643",
-                "title": "Prepare plugin defines after material helper defines",
-                "description": "For PBRBaseMaterial, this PR moves the call to _callbackPluginEventPrepareDefines to right after the calls to PrepareDefinesForFrameBoundValues and PrepareDefinesForAttributes instead of right before them. This way values set by the plugin for these defines won't be overwritten by these MaterialHelper functions. For StandardMaterial this is already the case (_callbackPluginEventPrepareDefines is called right after them).\r\n\r\nSince the anisotropy plugin is relying on the current order of these function calls, PrepareDefinesBeforeAttributes was added to allow defines to be set right before MaterialHelper.PrepareDefinesForAttributes is called.\r\n\r\nForum: https://forum.babylonjs.com/t/pbrbasematerial-overwrites-plugins-defines/31262\r\nTest PG: https://playground.babylonjs.com/#UIXTIF#6",
-                "author": {
-                    "name": "BlakeOne",
-                    "url": "https://github.com/BlakeOne"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/PBR/pbrAnisotropicConfiguration.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/Materials/materialPluginBase.ts",
-                    "packages/dev/core/src/Materials/materialPluginManager.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12651",
-                "title": "make sure component init before render",
-                "description": "Reproduction:\n\nThis playground fails - https://www.babylonjs-playground.com/#XCPP9Y#13718\n\nBecause when setting the radius we are setting everything as dirty (including the fontOffset-related function, even though fontOffset is not yet set).\n\nfontOffset is being set when the UI element is being rendered. In this playground the initial state of the component is hidden (it is outside of the frustum).",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/gui/src/2D/controls/textBlock.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "12646",
-                "title": "Fix SSR and procedural textures clear order",
-                "description": "https://forum.babylonjs.com/t/ssr-with-noiseproceduraltexture-caused-scene-not-refreshing/31290",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/Meshes/subMesh.ts",
-                    "packages/dev/core/src/Rendering/prePassRendererSceneComponent.ts",
-                    "packages/dev/core/src/sceneComponent.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "materials"
-                ]
-            },
-            {
-                "pr": "12645",
-                "title": "Fix dirty on inactive meshes",
-                "description": "https://forum.babylonjs.com/t/texture-is-not-being-applied-to-out-of-view-meshes/31161/7",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/Meshes/subMesh.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "materials"
-                ]
-            },
-            {
-                "pr": "12648",
-                "title": "deprecate gltf 1.0 modules",
-                "description": null,
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/1.0/glTFBinaryExtension.ts",
-                    "packages/dev/loaders/src/glTF/1.0/glTFLoader.ts",
-                    "packages/dev/loaders/src/glTF/1.0/glTFLoaderUtils.ts",
-                    "packages/dev/loaders/src/glTF/1.0/glTFMaterialsCommonExtension.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12647",
-                "title": "Use the errorcallback to report errors",
-                "description": "Playground reproduction:\n\n#X2IZQ9#1\n\nwith this fix, the promise rejects correctly.",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Offline/database.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "12649",
-                "title": "Camera: Added divide by zero check FreeCameraTouchInput",
-                "description": "In the forums, there was an issue raised where movement wasn't working on Safari.  After some investigation, it was found that the `touchMoveSensibility` property was being used in a denominator inside of the `checkInputs` function.  Because of this, if `touchMoveSensibility` was zero, it'd create a divide by zero scenario that would effectively render the camera's `cameraDirection` vector to be a vector of NaNs.  The fix for this was to just add a check to see if `touchMoveSensibility` was zero and handle things accordingly.\r\n\r\nForum link: https://forum.babylonjs.com/t/keyboard-control-not-working-for-latest-universalcamera-in-desktop-safari/31314",
-                "author": {
-                    "name": "PolygonalSun",
-                    "url": "https://github.com/PolygonalSun"
-                },
-                "files": [
-                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "12644",
-                "title": "Fixed GPU Gems URL in API docs",
-                "description": "The URL was broken, so I changed it to a URL that seems to be correct.",
-                "author": {
-                    "name": "cx20",
-                    "url": "https://github.com/cx20"
-                },
-                "files": [
-                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "documentation"
-                ]
-            },
-            {
-                "pr": "12642",
-                "title": "Material plugins: Allow group replacements in injected code when using regular expression",
-                "description": "See https://forum.babylonjs.com/t/multiple-shadowgenerators-for-one-light-source/31236/6",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/materialPluginManager.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12640",
-                "title": "Add custom attributes for material plugins",
-                "description": "Allow material plugins to implement the method getAttributes which pushes the plugin's attribute names onto the array passed to it, similar to the getSamplers function.\r\n\r\nForum discussion: https://forum.babylonjs.com/t/using-custom-attribute-with-material-plugin/31142/3\r\nTest PG: https://playground.babylonjs.com/#UIXTIF",
-                "author": {
-                    "name": "BlakeOne",
-                    "url": "https://github.com/BlakeOne"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/materialPluginBase.ts",
-                    "packages/dev/core/src/Materials/materialPluginEvent.ts",
-                    "packages/dev/core/src/Materials/materialPluginManager.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
-                    "packages/dev/core/src/Misc/computePressure.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "materials"
-                ]
-            }
-        ],
+        "5.12.1": [],
         "5.12.0": [
             {
                 "pr": "12664",
@@ -525,6 +313,219 @@
                     "packages/tools/nodeEditor/src/diagram/graphCanvas.tsx"
                 ],
                 "tags": []
+            }
+        ],
+        "5.11.0": [
+            {
+                "pr": "12652",
+                "title": "Fix texture caching.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/got-wrong-mapping-in-equirectangularcubetexture/31329\r\nRelated playground: https://playground.babylonjs.com/#NIWPUI#1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12655",
+                "title": "Camera: Modified isMouseEvent bool logic for Safari",
+                "description": "There was an issue found in the forum where movement of the UniversalCamera, using a mouse, on Safari wasn't stopping properly.  After investigating the issue, it was found that the mouse events were triggering both mouse and touch movement.  The main issue was that, in FreeCameraTouchInput, the `isMouseEvent` boolean was incorrect being evaluated as false for mouse because the assigning logic was looking for a parameter that isn't available to mouse events generated in Safari.  The fix was to modify the logic to work with Safari-specific mouse events.\r\n\r\nRelevant Forum Link: https://forum.babylonjs.com/t/keyboard-control-not-working-for-latest-universalcamera-in-desktop-safari/31314/8",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12653",
+                "title": "Fix deletion of Grid items in Editor, also fix...",
+                "description": "the width of the button panel, and fix an exception that was being thrown when changing the grid row/column of a grid element.\r\n\r\nRelated playground: https://playground.babylonjs.com/#9FW40S",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/parentingPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/globalState.ts",
+                    "packages/tools/guiEditor/src/main.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12643",
+                "title": "Prepare plugin defines after material helper defines",
+                "description": "For PBRBaseMaterial, this PR moves the call to _callbackPluginEventPrepareDefines to right after the calls to PrepareDefinesForFrameBoundValues and PrepareDefinesForAttributes instead of right before them. This way values set by the plugin for these defines won't be overwritten by these MaterialHelper functions. For StandardMaterial this is already the case (_callbackPluginEventPrepareDefines is called right after them).\r\n\r\nSince the anisotropy plugin is relying on the current order of these function calls, PrepareDefinesBeforeAttributes was added to allow defines to be set right before MaterialHelper.PrepareDefinesForAttributes is called.\r\n\r\nForum: https://forum.babylonjs.com/t/pbrbasematerial-overwrites-plugins-defines/31262\r\nTest PG: https://playground.babylonjs.com/#UIXTIF#6",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrAnisotropicConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12651",
+                "title": "make sure component init before render",
+                "description": "Reproduction:\n\nThis playground fails - https://www.babylonjs-playground.com/#XCPP9Y#13718\n\nBecause when setting the radius we are setting everything as dirty (including the fontOffset-related function, even though fontOffset is not yet set).\n\nfontOffset is being set when the UI element is being rendered. In this playground the initial state of the component is hidden (it is outside of the frustum).",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12646",
+                "title": "Fix SSR and procedural textures clear order",
+                "description": "https://forum.babylonjs.com/t/ssr-with-noiseproceduraltexture-caused-scene-not-refreshing/31290",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Rendering/prePassRendererSceneComponent.ts",
+                    "packages/dev/core/src/sceneComponent.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12645",
+                "title": "Fix dirty on inactive meshes",
+                "description": "https://forum.babylonjs.com/t/texture-is-not-being-applied-to-out-of-view-meshes/31161/7",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12648",
+                "title": "deprecate gltf 1.0 modules",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/1.0/glTFBinaryExtension.ts",
+                    "packages/dev/loaders/src/glTF/1.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/1.0/glTFLoaderUtils.ts",
+                    "packages/dev/loaders/src/glTF/1.0/glTFMaterialsCommonExtension.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12647",
+                "title": "Use the errorcallback to report errors",
+                "description": "Playground reproduction:\n\n#X2IZQ9#1\n\nwith this fix, the promise rejects correctly.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Offline/database.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12649",
+                "title": "Camera: Added divide by zero check FreeCameraTouchInput",
+                "description": "In the forums, there was an issue raised where movement wasn't working on Safari.  After some investigation, it was found that the `touchMoveSensibility` property was being used in a denominator inside of the `checkInputs` function.  Because of this, if `touchMoveSensibility` was zero, it'd create a divide by zero scenario that would effectively render the camera's `cameraDirection` vector to be a vector of NaNs.  The fix for this was to just add a check to see if `touchMoveSensibility` was zero and handle things accordingly.\r\n\r\nForum link: https://forum.babylonjs.com/t/keyboard-control-not-working-for-latest-universalcamera-in-desktop-safari/31314",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12644",
+                "title": "Fixed GPU Gems URL in API docs",
+                "description": "The URL was broken, so I changed it to a URL that seems to be correct.",
+                "author": {
+                    "name": "cx20",
+                    "url": "https://github.com/cx20"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "documentation"
+                ]
+            },
+            {
+                "pr": "12642",
+                "title": "Material plugins: Allow group replacements in injected code when using regular expression",
+                "description": "See https://forum.babylonjs.com/t/multiple-shadowgenerators-for-one-light-source/31236/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialPluginManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12640",
+                "title": "Add custom attributes for material plugins",
+                "description": "Allow material plugins to implement the method getAttributes which pushes the plugin's attribute names onto the array passed to it, similar to the getSamplers function.\r\n\r\nForum discussion: https://forum.babylonjs.com/t/using-custom-attribute-with-material-plugin/31142/3\r\nTest PG: https://playground.babylonjs.com/#UIXTIF",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/materialPluginEvent.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Misc/computePressure.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
             }
         ],
         "5.10.0": [
