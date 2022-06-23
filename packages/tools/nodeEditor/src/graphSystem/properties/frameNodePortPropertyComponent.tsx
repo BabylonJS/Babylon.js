@@ -1,7 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import type { GlobalState } from "../../globalState";
-import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
@@ -10,6 +9,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { FramePortPosition, GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;

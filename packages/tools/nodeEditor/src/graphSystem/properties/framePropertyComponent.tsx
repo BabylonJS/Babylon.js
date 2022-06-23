@@ -1,7 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import type { GlobalState } from "../../globalState";
-import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
@@ -10,6 +9,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState;

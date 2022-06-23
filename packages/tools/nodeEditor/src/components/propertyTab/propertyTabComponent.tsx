@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
-import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { StringTools } from "shared-ui-components/stringTools";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
@@ -38,6 +37,7 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;

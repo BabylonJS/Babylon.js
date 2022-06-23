@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { GlobalState } from "../../../globalState";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { MatrixLineComponent } from "../../../sharedComponents/matrixLineComponent";
+import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
 
 interface IMatrixPropertyTabComponentProps {
     globalState: GlobalState;
@@ -12,7 +12,6 @@ export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyT
     render() {
         return (
             <MatrixLineComponent
-                globalState={this.props.globalState}
                 label="Value"
                 target={this.props.inputBlock}
                 propertyName="value"

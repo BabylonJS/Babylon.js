@@ -2,11 +2,10 @@ import * as React from "react";
 import type { Vector3, Vector4 } from "core/Maths/math.vector";
 import { Matrix, Quaternion } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
-import type { PropertyChangedEvent } from "./propertyChangedEvent";
+import { Vector4LineComponent } from "./vector4LineComponent";
+import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { OptionsLineComponent } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
-import type { GlobalState } from "../globalState";
-import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 
 interface IMatrixLineComponentProps {
     label: string;
@@ -17,7 +16,6 @@ interface IMatrixLineComponentProps {
     onModeChange?: (mode: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     mode?: number;
-    globalState: GlobalState;
 }
 
 export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, { value: Matrix; mode: number; angle: number }> {
@@ -137,7 +135,8 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                         options={modeOptions}
                         target={this}
                         noDirectUpdate={true}
-                        getSelection={() => {
+                        propertyName={""}
+                        extractValue={() => {
                             return this.state.mode;
                         }}
                         onSelect={(value: any) => {
@@ -185,7 +184,6 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                             maximum={2 * Math.PI}
                             useEuler={true}
                             step={0.1}
-                            globalState={this.props.globalState}
                             directValue={this.state.angle}
                             onChange={(value) => this.updateBasedOnMode(value)}
                         />
