@@ -172,27 +172,27 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
     }
 
-    const internalFormat = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
-    let sizedFormat = internalFormat;
+    const format = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+    let internalFormat = format;
     if (this.webGLVersion > 1) {
         if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
-            sizedFormat = gl.DEPTH_COMPONENT16;
+            internalFormat = gl.DEPTH_COMPONENT16;
         } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24) {
-            sizedFormat = gl.DEPTH_COMPONENT24;
+            internalFormat = gl.DEPTH_COMPONENT24;
         } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
-            sizedFormat = gl.DEPTH24_STENCIL8;
+            internalFormat = gl.DEPTH24_STENCIL8;
         } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
-            sizedFormat = gl.DEPTH_COMPONENT32F;
+            internalFormat = gl.DEPTH_COMPONENT32F;
         } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
             const gl2 = <WebGL2RenderingContext>(this._gl as any);
-            sizedFormat = gl2.DEPTH32F_STENCIL8;
+            internalFormat = gl2.DEPTH32F_STENCIL8;
         }
     }
 
     if (internalTexture.is2DArray) {
-        gl.texImage3D(target, 0, sizedFormat, internalTexture.width, internalTexture.height, layers, 0, internalFormat, type, null);
+        gl.texImage3D(target, 0, internalFormat, internalTexture.width, internalTexture.height, layers, 0, format, type, null);
     } else {
-        gl.texImage2D(target, 0, sizedFormat, internalTexture.width, internalTexture.height, 0, internalFormat, type, null);
+        gl.texImage2D(target, 0, internalFormat, internalTexture.width, internalTexture.height, 0, format, type, null);
     }
 
     this._bindTextureDirectly(target, null);
