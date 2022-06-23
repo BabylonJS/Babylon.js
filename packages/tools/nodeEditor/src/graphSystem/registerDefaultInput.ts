@@ -30,5 +30,5 @@ export const RegisterDefaultInput = (stateManager: StateManager) => {
             data: new BlockNodeData(emittedBlock, nodeContainer),
             name: pointName,
         };
-    }
-}
+    };
+};

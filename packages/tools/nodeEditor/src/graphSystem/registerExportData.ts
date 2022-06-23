@@ -1,5 +1,5 @@
 import type { GlobalState } from "../globalState";
-import type{ StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { SerializationTools } from "../serializationTools";
 
 export const RegisterExportData = (stateManager: StateManager) => {
