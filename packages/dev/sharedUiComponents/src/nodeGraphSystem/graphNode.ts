@@ -196,7 +196,7 @@ export class GraphNode {
         });
 
         this._onUpdateRequiredObserver = this._stateManager.onUpdateRequiredObservable.add((data) => {
-            if (data !== this.content) {
+            if (data !== this.content.data) {
                 return;
             }
             this.refresh();
