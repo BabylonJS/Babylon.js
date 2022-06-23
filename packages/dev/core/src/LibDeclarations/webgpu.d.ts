@@ -927,7 +927,7 @@ declare class GPUCanvasContext {
     getCurrentTexture(): GPUTexture;
 }
 
-type GPUCanvasCompositingAlphaMode = "opaque" | "premultiplied";
+type GPUCanvasAlphaMode = "opaque" | "premultiplied";
 
 interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
@@ -935,7 +935,7 @@ interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     usage?: GPUTextureUsageFlags /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */;
     viewFormats?: GPUTextureFormat[] /* default=[] */;
     colorSpace?: GPUPredefinedColorSpace /* default="srgb" */;
-    compositingAlphaMode?: GPUCanvasCompositingAlphaMode /* default="opaque" */;
+    alphaMode?: GPUCanvasAlphaMode /* default="opaque" */;
 }
 
 type GPUDeviceLostReason = "destroyed";
