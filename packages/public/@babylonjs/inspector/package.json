@@ -5,7 +5,7 @@
     "main": "dist/babylon.inspector.bundle.max.js",
     "typings": "dist/babylon.inspector.module.d.ts",
     "files": [
-        "dist",
+        "dist/**/*.*",
         "readme.md",
         "license.md"
     ],

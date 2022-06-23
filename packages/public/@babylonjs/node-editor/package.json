@@ -6,7 +6,7 @@
     "esnext": "dist/babylon.nodeEditor.max.js",
     "typings": "dist/babylon.nodeEditor.module.d.ts",
     "files": [
-        "dist",
+        "dist/**/*.*",
         "readme.md",
         "license.md"
     ],
