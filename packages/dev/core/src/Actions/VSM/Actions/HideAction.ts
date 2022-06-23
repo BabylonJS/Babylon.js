@@ -21,10 +21,12 @@ export class HideAction extends BaseAction<IHideActionOptions> {
                 const scene = this._options.subject.getScene();
                 const actOn = this._options.applyAnimationToChildren ? this._options.subject.getChildMeshes() : [this._options.subject];
                 this._animationGroup = new AnimationGroup("hide-animation-group", scene);
-                actOn.forEach(node => {
+                actOn.forEach((node) => {
                     this._animationGroup.addTargetedAnimation(this._options.hideAnimation!, node);
-                })
+                });
+                this._animationGroup.normalize(0, 100);
                 this._animationGroup.onAnimationGroupEndObservable.add(onEnd);
+                this._animationGroup.play();
             } else {
                 onEnd();
             }
