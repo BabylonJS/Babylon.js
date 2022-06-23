@@ -1,6 +1,5 @@
-import { Nullable } from "core/types";
-import { GraphNode } from "../graphNode";
-import { INodeData } from "./nodeData";
+import type { Nullable } from "core/types";
+import type { GraphNode } from "../graphNode";
 
 export enum PortDataDirection {
     /** Input */
@@ -28,6 +27,4 @@ export interface IPortData {
     disconnectFrom: (port: IPortData) => void;
     checkCompatibilityState(port: IPortData): number;
     getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData): string;
-
-    createDefaultInputData(rootData: any): { data: INodeData; name: string };
 }

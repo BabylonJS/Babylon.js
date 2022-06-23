@@ -4,8 +4,9 @@ import { Observable } from "core/Misc/observable";
 import type { FrameNodePort } from "./frameNodePort";
 import { NodePort } from "./nodePort";
 import { GraphNode } from "./graphNode";
-import { GraphCanvasComponent } from "./graphCanvas";
+import type { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
+import { RefreshNode } from "./tools";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -182,7 +183,7 @@ export class NodeLink {
 
             this._portA.portData.disconnectFrom(this._portB!.portData);
 
-            GraphCanvasComponent._RefreshNode(this._nodeB);
+            RefreshNode(this._nodeB);
         }
 
         if (notify) {

@@ -4,6 +4,8 @@ import { Nullable } from "core/types";
 import { FrameNodePort } from "./frameNodePort";
 import { GraphFrame } from "./graphFrame";
 import { GraphNode } from "./graphNode";
+import { INodeContainer } from "./interfaces/nodeContainer";
+import { INodeData } from "./interfaces/nodeData";
 import { IPortData } from "./interfaces/portData";
 import { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { NodePort } from "./nodePort";
@@ -33,4 +35,6 @@ export class StateManager {
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 
     getEditorDataMap: () => { [key: number]: number };
+
+    createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => { data: INodeData; name: string };
 }

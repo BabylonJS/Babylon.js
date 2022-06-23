@@ -4,7 +4,7 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
 
-export const registerNodePortDesign = (stateManager: StateManager) => {
+export const RegisterNodePortDesign = (stateManager: StateManager) => {
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement) => {
         const type = (portData as ConnectionPointPortData).data.type;
 

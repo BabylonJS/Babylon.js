@@ -7,13 +7,14 @@ import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { registerElbowSupport } from "./graphSystem/registerElbowSupport";
-import { registerNodePortDesign } from "./graphSystem/registerNodePortDesign";
+import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
+import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { Nullable } from "core/types";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -77,8 +78,9 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
 
-        registerElbowSupport(this.stateManager);
-        registerNodePortDesign(this.stateManager);
+        RegisterElbowSupport(this.stateManager);
+        RegisterNodePortDesign(this.stateManager);
+        RegisterDefaultInput(this.stateManager);
 
         const r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);

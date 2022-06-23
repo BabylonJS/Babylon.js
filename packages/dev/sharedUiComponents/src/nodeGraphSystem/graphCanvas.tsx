@@ -17,6 +17,7 @@ import { INodeContainer } from "./interfaces/nodeContainer";
 
 import "./scss/graphCanvas.scss";
 import { TypeLedger } from "./typeLedger";
+import { RefreshNode } from "./tools";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -332,42 +333,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         return node;
     }
-
-    public static _RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visitedLinks?: Set<NodeLink>) => {
-        node.refresh();
-
-        const links = node.links;
-
-        if (visitedNodes) {
-            // refresh first the nodes so that the right types are assigned to the auto-detect ports
-            links.forEach((link) => {
-                const nodeA = link.nodeA,
-                    nodeB = link.nodeB;
-
-                if (!visitedNodes.has(nodeA)) {
-                    visitedNodes.add(nodeA);
-                    this._RefreshNode(nodeA, visitedNodes, visitedLinks);
-                }
-
-                if (nodeB && !visitedNodes.has(nodeB)) {
-                    visitedNodes.add(nodeB);
-                    this._RefreshNode(nodeB, visitedNodes, visitedLinks);
-                }
-            });
-        }
-
-        if (!visitedLinks) {
-            return;
-        }
-
-        // then refresh the links to display the right color between ports
-        links.forEach((link) => {
-            if (!visitedLinks.has(link)) {
-                visitedLinks.add(link);
-                link.update();
-            }
-        });
-    };
 
     public getGridPosition(position: number, useCeil = false) {
         const gridSize = this.gridSize;
@@ -742,7 +707,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);
         this._oldY = -1;
-
         if (this._candidateLink) {
             if (this._candidateLinkedHasMoved) {
                 this.processCandidatePort();
@@ -870,7 +834,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             // No destination so let's spin a new input block
-            const newDefaultInput = this._candidateLink!.portA.portData.createDefaultInputData(this.props.stateManager.data);
+            const newDefaultInput = this.props.stateManager.createDefaultInputData(this.props.stateManager.data, this._candidateLink!.portA.portData, this);
             const pointName = newDefaultInput.name;
             const emittedNodeData = newDefaultInput.data;
 
@@ -991,7 +955,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const visitedNodes = new Set<GraphNode>([nodeA]);
         const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
 
-        GraphCanvasComponent._RefreshNode(nodeB, visitedNodes, visitedLinks);
+        RefreshNode(nodeB, visitedNodes, visitedLinks);
     }
 
     processEditorData(editorData: IEditorData) {

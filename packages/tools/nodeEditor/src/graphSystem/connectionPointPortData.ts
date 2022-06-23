@@ -1,17 +1,13 @@
 import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import {
     NodeMaterialConnectionPoint,
     NodeMaterialConnectionPointCompatibilityStates,
     NodeMaterialConnectionPointDirection,
 } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { Nullable } from "core/types";
-import { GlobalState } from "node-editor/globalState";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import { IPortData, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { BlockNodeData } from "./blockNodeData";
 
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;
@@ -69,6 +65,10 @@ export class ConnectionPointPortData implements IPortData {
         return this._connectedPort;
     }
 
+    public set connectedPort(value: Nullable<IPortData>) {
+        this._connectedPort = value;
+    }
+
     public get direction() {
         switch (this.data.direction) {
             case NodeMaterialConnectionPointDirection.Input:
@@ -118,7 +118,7 @@ export class ConnectionPointPortData implements IPortData {
 
     public disconnectFrom(port: IPortData) {
         this.data.disconnectFrom(port.data);
-        this._connectedPort = null;
+        port.connectedPort = null;
     }
 
     public checkCompatibilityState(port: IPortData) {
@@ -160,28 +160,5 @@ export class ConnectionPointPortData implements IPortData {
         }
 
         return "";
-    }
-
-    public createDefaultInputData(rootData: any) {
-        const customInputBlock = this.data.createCustomInputBlock();
-        let pointName = "output";
-        let emittedBlock;
-
-        if (!customInputBlock) {
-            emittedBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this.data.type], undefined, this.data.type);
-        } else {
-            [emittedBlock, pointName] = customInputBlock;
-        }
-
-        const nodeMaterial = (rootData as GlobalState).nodeMaterial;
-        nodeMaterial.attachedBlocks.push(emittedBlock);
-        if (!emittedBlock.isInput) {
-            emittedBlock.autoConfigure(nodeMaterial);
-        }
-
-        return {
-            data: new BlockNodeData(emittedBlock, this._nodeContainer),
-            name: pointName,
-        };
     }
 }

@@ -2,7 +2,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums
 import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
-export const registerElbowSupport = (stateManager: StateManager) => {
+export const RegisterElbowSupport = (stateManager: StateManager) => {
     stateManager.isElbowConnectionAllowed = (a, b) => {
         const pointA = a.portData.data as NodeMaterialConnectionPoint;
         const pointB = b.portData.data as NodeMaterialConnectionPoint;
