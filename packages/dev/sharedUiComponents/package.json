@@ -18,7 +18,7 @@
         "compile:assets": "build-tools -c process-assets --package core",
         "watch:assets": "build-tools -c process-assets --package core --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --package \"shared-ui-components\" -wa",
+        "watch": "build-tools -c dev-watch --packages \"shared-ui-components\" -wa",
         "storybook": "start-storybook -p 6006",
         "build-storybook": "build-storybook"
     },
