@@ -178,13 +178,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Using the attachedNode property in BoundingBoxGizmo is not supported. Please use attachedMesh instead.
      */
-    public get attachedNode() {
-        return super.attachedNode;
-    }
-
-    public set attachedNode(value) {
-        super.attachedNode = value;
-
+    public set attachedNode(value: any) {
         Logger.Warn("Using the attachedNode property in BoundingBoxGizmo is not supported. Please use attachedMesh instead.");
     }
 
