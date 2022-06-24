@@ -309,10 +309,10 @@ export class GizmoManager implements IDisposable {
     public set boundingBoxGizmoEnabled(value: boolean) {
         if (value) {
             this.gizmos.boundingBoxGizmo = this.gizmos.boundingBoxGizmo || new BoundingBoxGizmo(this._boundingBoxColor, this._defaultKeepDepthUtilityLayer);
-            if (this._attachedMesh) {
-                this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
-            } else {
+            if (this._attachedNode) {
                 this.gizmos.boundingBoxGizmo.attachedNode = this._attachedNode;
+            } else {
+                this.gizmos.boundingBoxGizmo.attachedMesh = this._attachedMesh;
             }
 
             if (this._attachedMesh) {

@@ -174,6 +174,20 @@ export class BoundingBoxGizmo extends Gizmo {
             }
         });
     }
+
+    /**
+     * Using the attachedNode property in BoundingBoxGizmo is not supported. Please use attachedMesh instead.
+     */
+     public get attachedNode() {
+        return super.attachedNode;
+    }
+
+    public set attachedNode(value) {
+        super.attachedNode = value;
+
+        Logger.Warn("Using the attachedNode property in BoundingBoxGizmo is not supported. Please use attachedMesh instead.");        
+    }
+
     /**
      * Creates an BoundingBoxGizmo
      * @param color The color of the gizmo
@@ -533,11 +547,6 @@ export class BoundingBoxGizmo extends Gizmo {
             this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
                 this._updateDummy();
             });
-        }
-        // If the attachedMesh property is not set, then the attachedNode constructor was used, which
-        // the BoundingBoxGizmo doesn't support
-        if (!this.attachedMesh) {
-            Logger.Warn("Using the attachedNode attribute in BoundingBoxGizmo is not supported. Please use attachedMesh instead.");
         }
     }
 
