@@ -182,6 +182,11 @@ export class BoundingBoxGizmo extends Gizmo {
         Logger.Warn("Using the attachedNode property in BoundingBoxGizmo is not supported. Please use attachedMesh instead.");
     }
 
+    public get attachedNode() {
+        // @ts-ignore
+        return this._attachedNode;
+    }
+
     /**
      * Creates an BoundingBoxGizmo
      * @param color The color of the gizmo
