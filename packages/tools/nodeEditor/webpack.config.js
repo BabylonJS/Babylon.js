@@ -13,9 +13,9 @@ module.exports = (env) => {
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
-            extensions: [".js", ".ts", ".tsx"],
+            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },
         },
         externals: [
