@@ -48,7 +48,6 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import { Camera } from "core/Cameras/camera";
 import { EngineStore } from "core/Engines/engineStore";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { TargetCamera } from "core/Cameras/targetCamera";
 
 /**
  * Utility interface for storing vertex attribute data
