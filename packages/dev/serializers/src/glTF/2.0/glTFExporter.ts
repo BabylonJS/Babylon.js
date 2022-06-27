@@ -1340,12 +1340,12 @@ export class _Exporter {
         }
     }
 
-    private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHandedSystem: boolean): void {
+    private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHandedSystem: boolean): void {
         if (!babylonCamera.position.equalsToFloats(0, 0, 0)) {
             node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
         }
 
-        const rotationQuaternion = babylonCamera.rotationQuaternion; // we target the local transformation if one.
+        const rotationQuaternion = (<any>babylonCamera).rotationQuaternion; // we target the local transformation if one.
 
         if (rotationQuaternion && !Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
@@ -2218,7 +2218,7 @@ export class _Exporter {
                     }
                     return node;
                 });
-            } else if (babylonNode instanceof TargetCamera) {
+            } else if (babylonNode instanceof Camera) {
                 this._setCameraTransformation(node, babylonNode, convertToRightHandedSystem);
                 return node;
             } else {
