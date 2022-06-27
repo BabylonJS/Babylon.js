@@ -32,7 +32,16 @@ module.exports = (env) => {
             // React, react dom etc'
         ],
         module: {
-            rules: webpackTools.getRules(),
+            rules: webpackTools.getRules({
+                includeCSS: true,
+                includeAssets: true,
+                sideEffects: true,
+                tsOptions: {
+                    compilerOptions: {
+                        "rootDir": "../../",
+                    }
+                }
+            }),
         },
         devServer: {
             static: {

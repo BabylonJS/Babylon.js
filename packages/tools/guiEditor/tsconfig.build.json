@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "../../",
+        "rootDir": "./src",
         "composite": true
     },
 
@@ -13,6 +13,9 @@
         },
         {
             "path": "../../dev/gui/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/sharedUiComponents/tsconfig.build.json"
         }
     ],
 

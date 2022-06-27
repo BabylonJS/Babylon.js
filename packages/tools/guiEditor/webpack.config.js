@@ -38,14 +38,11 @@ module.exports = (env) => {
                 includeCSS: true,
                 includeAssets: true,
                 sideEffects: true,
-                // extraRules: [
-                //     {
-                //         test: /\.svg$/,
-                //         use: {
-                //             loader: path.resolve('./svg.loader.js')
-                //         }
-                //     }
-                // ]
+                tsOptions: {
+                    compilerOptions: {
+                        "rootDir": "../../",
+                    }
+                }
             }),
         },
         devServer: {
