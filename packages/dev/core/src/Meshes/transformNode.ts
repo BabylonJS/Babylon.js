@@ -1364,17 +1364,12 @@ export class TransformNode extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
         serializationObject.isEnabled = this.isEnabled();
-
-        // Parent
-        if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
-        }
 
         return serializationObject;
     }
@@ -1401,6 +1396,10 @@ export class TransformNode extends Node {
         // Parent
         if (parsedTransformNode.parentId !== undefined) {
             transformNode._waitingParentId = parsedTransformNode.parentId;
+        }
+
+        if (parsedTransformNode.parentInstanceIndex !== undefined) {
+            transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
         }
 
         return transformNode;

@@ -1265,7 +1265,7 @@ export class Camera extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         if (this.inputs) {
@@ -1379,6 +1379,11 @@ export class Camera extends Node {
         if (parsedCamera.parentId !== undefined) {
             camera._waitingParentId = parsedCamera.parentId;
         }
+
+        // Parent instance index
+        if (parsedCamera.parentInstanceIndex !== undefined) {
+            camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
+        } 
 
         //If camera has an input manager, let it parse inputs settings
         if (camera.inputs) {

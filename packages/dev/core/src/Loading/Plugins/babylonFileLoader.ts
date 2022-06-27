@@ -123,12 +123,21 @@ const loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const findParent = (parentId: any, scene: Scene) => {
+const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     if (typeof parentId !== "number") {
-        return scene.getLastEntryById(parentId);
+        const parentEntry = scene.getLastEntryById(parentId);
+        if (parentEntry && parentInstanceIndex !== undefined) {
+            const instance = (parentEntry as Mesh).instances[parseInt(parentInstanceIndex)];
+            return instance;
+        }
+        return parentEntry;
     }
 
     const parent = tempIndexContainer[parentId];
+    if (parent && parentInstanceIndex !== undefined) {
+        const instance = (parent as Mesh).instances[parseInt(parentInstanceIndex)];
+        return instance;
+    }
 
     return parent;
 };
@@ -422,16 +431,18 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
-                camera.parent = findParent(camera._waitingParentId, scene);
+                camera.parent = findParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
                 camera._waitingParentId = null;
+                camera._waitingParentInstanceIndex = null;
             }
         }
 
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             const light = scene.lights[index];
             if (light && light._waitingParentId !== null) {
-                light.parent = findParent(light._waitingParentId, scene);
+                light.parent = findParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
                 light._waitingParentId = null;
+                light._waitingParentInstanceIndex = null;
             }
         }
 
@@ -439,15 +450,17 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             const transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId !== null) {
-                transformNode.parent = findParent(transformNode._waitingParentId, scene);
+                transformNode.parent = findParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
                 transformNode._waitingParentId = null;
+                transformNode._waitingParentInstanceIndex = null;
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
-                mesh.parent = findParent(mesh._waitingParentId, scene);
+                mesh.parent = findParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
                 mesh._waitingParentId = null;
+                mesh._waitingParentInstanceIndex = null;
             }
             if (mesh._waitingData.lods) {
                 loadDetailLevels(scene, mesh);
@@ -776,7 +789,13 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
                     const transformNode = scene.transformNodes[index];
                     if (transformNode._waitingParentId !== null) {
-                        transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        const parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        let parentNode = parent;
+                        if (transformNode._waitingParentInstanceIndex) {
+                            parentNode = (parent as Mesh).instances[parseInt(transformNode._waitingParentInstanceIndex)];
+                            transformNode._waitingParentInstanceIndex = null;
+                        }
+                        transformNode.parent = parentNode;
                         transformNode._waitingParentId = null;
                     }
                 }
@@ -784,7 +803,13 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
-                        currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        const parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        let parentNode = parent;
+                        if (currentMesh._waitingParentInstanceIndex) {
+                            parentNode = (parent as Mesh).instances[parseInt(currentMesh._waitingParentInstanceIndex)];
+                            currentMesh._waitingParentInstanceIndex = null;
+                        }
+                        currentMesh.parent = parentNode;
                         if (currentMesh.parent?.getClassName() === "TransformNode") {
                             const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent as TransformNode);
                             if (loadedTransformNodeIndex > -1) {
