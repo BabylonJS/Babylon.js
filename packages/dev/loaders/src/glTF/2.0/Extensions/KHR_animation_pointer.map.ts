@@ -3,10 +3,9 @@ import { Animation } from "core/Animations/animation";
 import type { AnimationGroup } from "core/Animations/animationGroup";
 import { Quaternion, Vector3, Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import type { IGLTF, INode } from "../glTFLoaderInterfaces";
+import type { IGLTF } from "../glTFLoaderInterfaces";
 import { Material } from "core/Materials/material";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
 import type { Nullable } from "core/types";
 
@@ -161,7 +160,7 @@ class CameraAnimationPointerPropertyInfos extends AbstractAnimationPointerProper
     }
 
     public isValid(target: any): boolean {
-        return target._babylonCamera != null;
+        return target._babylonCamera != null && target._babylonCamera !== undefined;
     }
 
     public buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null): void {
@@ -229,23 +228,17 @@ class WeightAnimationPointerPropertyInfos extends AbstractAnimationPointerProper
                     }))
                 );
 
-                this._forEachPrimitive(targetNode, (babylonAbstractMesh: AbstractMesh) => {
-                    const babylonMesh = babylonAbstractMesh as Mesh;
-                    if (babylonMesh.morphTargetManager) {
-                        const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
-                        const babylonAnimationClone = babylonAnimation.clone();
-                        morphTarget.animations.push(babylonAnimationClone);
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
+                if (targetNode._primitiveBabylonMeshes) {
+                    for (const m of targetNode._primitiveBabylonMeshes) {
+                        const babylonMesh = m as Mesh;
+                        if (babylonMesh.morphTargetManager) {
+                            const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
+                            const babylonAnimationClone = babylonAnimation.clone();
+                            morphTarget.animations.push(babylonAnimationClone);
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimationClone, morphTarget);
+                        }
                     }
-                });
-            }
-        }
-    }
-
-    private _forEachPrimitive(node: INode, callback: (babylonMesh: AbstractMesh) => void): void {
-        if (node._primitiveBabylonMeshes) {
-            for (const babylonMesh of node._primitiveBabylonMeshes) {
-                callback(babylonMesh);
+                }
             }
         }
     }

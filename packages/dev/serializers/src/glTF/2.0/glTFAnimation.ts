@@ -463,6 +463,8 @@ export class _GLTFAnimation {
                                 }
                             }
                         }
+                    } else {
+                        // this is the place for the KHR_animation_pointer.
                     }
                 }
                 morphAnimationMeshes.forEach((mesh) => {
