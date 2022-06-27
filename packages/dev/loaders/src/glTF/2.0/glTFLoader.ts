@@ -150,7 +150,7 @@ function mergeDeep(...objects: any[]): any {
     }, {});
 }
 
-  /**
+/**
  * The glTF 2.0 loader
  */
 export class GLTFLoader implements IGLTFLoader {
