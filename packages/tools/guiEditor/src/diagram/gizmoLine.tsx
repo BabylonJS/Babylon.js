@@ -1,9 +1,10 @@
 import * as React from "react";
-import { GlobalState } from "../globalState";
-import { GizmoScalePoint, IScalePoint, ScalePointPosition } from "./gizmoScalePoint";
+import type { GlobalState } from "../globalState";
+import type { IScalePoint} from "./gizmoScalePoint";
+import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { CoordinateHelper } from "./coordinateHelper";
 import { Vector2 } from "core/Maths/math";
-import { Line } from "gui/2D/controls/line";
+import type { Line } from "gui/2D/controls/line";
 
 interface IGizmoLineProps {
     globalState: GlobalState;

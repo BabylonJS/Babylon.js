@@ -5,10 +5,10 @@ import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../globalState";
-import { Node } from "core/node";
+import type { Node } from "core/node";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 interface IParentPropertyGridComponentProps {
     globalState: GlobalState;

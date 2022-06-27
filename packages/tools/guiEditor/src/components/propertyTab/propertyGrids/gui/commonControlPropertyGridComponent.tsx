@@ -47,7 +47,7 @@ import vAlignCenterIcon from "shared-ui-components/imgs/vAlignCenterIcon.svg";
 import vAlignTopIcon from "shared-ui-components/imgs/vAlignTopIcon.svg";
 import vAlignBottomIcon from "shared-ui-components/imgs/vAlignBottomIcon.svg";
 import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnlyPaddingIcon.svg";
-import { StackPanel } from "gui/2D/controls/stackPanel";
+import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
 
