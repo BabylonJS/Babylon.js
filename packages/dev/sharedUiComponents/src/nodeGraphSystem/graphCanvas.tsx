@@ -293,9 +293,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         };
     }
 
-    handleKeyDown(evt: KeyboardEvent, 
-        onRemove: (nodeData: INodeData) => void, mouseLocationX: number, mouseLocationY: number, 
-        dataGenerator: (nodeData: INodeData) => any, rootElement: HTMLDivElement) {
+    handleKeyDown(
+        evt: KeyboardEvent,
+        onRemove: (nodeData: INodeData) => void,
+        mouseLocationX: number,
+        mouseLocationY: number,
+        dataGenerator: (nodeData: INodeData) => any,
+        rootElement: HTMLDivElement
+    ) {
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
             // Delete
             const selectedItems = this.selectedNodes;
