@@ -58,6 +58,7 @@ interface WebGLRenderingContext {
     readonly UNSIGNED_INT_5_9_9_9_REV: number;
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
     readonly DEPTH_COMPONENT32F: number;
+    readonly DEPTH32F_STENCIL8: number;
 
     texImage3D(
         target: number,
