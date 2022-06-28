@@ -372,10 +372,12 @@ function workerFunc(): void {
                     wasmBinary: event.data.wasmBinary,
                 });
             }
-            transcoderModulePromise.then((m) => {
-                m.initializeBasis();
-                postMessage({ action: "init" });
-            });
+            if(transcoderModulePromise !== null) {
+                transcoderModulePromise.then((m) => {
+                    m.initializeBasis();
+                    postMessage({ action: "init" });
+                });
+            }
         } else if (event.data.action === "transcode") {
             // Transcode the basis image and return the resulting pixels
             const config: BasisTranscodeConfiguration = event.data.config;
