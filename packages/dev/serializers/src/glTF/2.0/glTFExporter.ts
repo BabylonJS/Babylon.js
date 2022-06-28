@@ -1344,8 +1344,9 @@ export class _Exporter {
             node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
         }
 
-        const rotationQuaternion = babylonCamera.absoluteRotation;
-        if (!Quaternion.IsIdentity(rotationQuaternion)) {
+        const rotationQuaternion = (<any>babylonCamera).rotationQuaternion; // we target the local transformation if one.
+
+        if (rotationQuaternion && !Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
             }
