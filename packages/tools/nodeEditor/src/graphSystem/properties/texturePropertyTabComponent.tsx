@@ -5,8 +5,6 @@ import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
@@ -22,6 +20,8 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
@@ -334,7 +334,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
                             label="Offset U"
                             target={texture}
                             propertyName="uOffset"
@@ -345,7 +344,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
                             label="Offset V"
                             target={texture}
                             propertyName="vOffset"
@@ -356,7 +354,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
                             label="Scale U"
                             target={texture}
                             propertyName="uScale"
@@ -367,7 +364,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     )}
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
                             label="Scale V"
                             target={texture}
                             propertyName="vScale"
@@ -380,7 +376,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <SliderLineComponent
                             label="Rotation U"
                             target={texture}
-                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="uAng"
                             minimum={0}
                             maximum={Math.PI * 2}
@@ -395,7 +390,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <SliderLineComponent
                             label="Rotation V"
                             target={texture}
-                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="vAng"
                             minimum={0}
                             maximum={Math.PI * 2}
@@ -410,7 +404,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <SliderLineComponent
                             label="Rotation W"
                             target={texture}
-                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="wAng"
                             minimum={0}
                             maximum={Math.PI * 2}

@@ -1,8 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
 import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent";
 import { Vector3PropertyTabComponent } from "../../components/propertyTab/properties/vector3PropertyTabComponent";
@@ -21,6 +19,8 @@ import type { Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<InputBlock>>;
@@ -70,7 +70,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
-                                globalState={this.props.stateManager.data as GlobalState}
                                 label="Min"
                                 target={inputBlock}
                                 propertyName="min"
@@ -87,7 +86,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
-                                globalState={this.props.stateManager.data as GlobalState}
                                 label="Max"
                                 target={inputBlock}
                                 propertyName="max"
@@ -106,7 +104,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         {!inputBlock.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
                                 label="Value"
-                                globalState={this.props.stateManager.data as GlobalState}
                                 target={inputBlock}
                                 propertyName="value"
                                 step={Math.abs(inputBlock.max - inputBlock.min) / 100.0}

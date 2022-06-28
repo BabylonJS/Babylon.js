@@ -1,9 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Materials/Node/nodeMaterialDecorator";
 import { PropertyTypeForEdition } from "core/Materials/Node/nodeMaterialDecorator";
@@ -15,6 +12,9 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { GlobalState } from "../../globalState";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -145,20 +145,13 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(
-                            <FloatLineComponent
-                                globalState={this.props.stateManager.data as GlobalState}
-                                label={displayName}
-                                propertyName={propertyName}
-                                target={block}
-                                onChange={() => this.forceRebuild(options.notifiers)}
-                            />
+                            <FloatLineComponent label={displayName} propertyName={propertyName} target={block} onChange={() => this.forceRebuild(options.notifiers)} />
                         );
                     } else {
                         components.push(
                             <SliderLineComponent
                                 label={displayName}
                                 target={block}
-                                globalState={this.props.stateManager.data as GlobalState}
                                 propertyName={propertyName}
                                 step={Math.abs((options.max as number) - (options.min as number)) / 100.0}
                                 minimum={Math.min(options.min as number, options.max as number)}
@@ -175,7 +168,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             digits={0}
                             step={"1"}
                             isInteger={true}
-                            globalState={this.props.stateManager.data as GlobalState}
                             label={displayName}
                             propertyName={propertyName}
                             target={block}
