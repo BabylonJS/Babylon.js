@@ -5,14 +5,14 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
 import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-import { Color4LineComponent } from "../../sharedComponents/color4LineComponent";
-import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
-import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponent";
-import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
 
 import "./propertyTab.scss";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 
 interface IInputsPropertyTabComponentProps {
     globalState: GlobalState;
@@ -25,10 +25,10 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
     }
 
     processInputBlockUpdate(ib: InputBlock) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(ib);
+        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
 
         if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+            this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(true);
         }
     }
 
@@ -76,60 +76,15 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return (
-                    <Color3LineComponent
-                        globalState={this.props.globalState}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Color3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return (
-                    <Color4LineComponent
-                        globalState={this.props.globalState}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Color4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return (
-                    <Vector2LineComponent
-                        globalState={this.props.globalState}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector2LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return (
-                    <Vector3LineComponent
-                        globalState={this.props.globalState}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4LineComponent
-                        globalState={this.props.globalState}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
         }
         return null;
     }

@@ -13,9 +13,9 @@ module.exports = (env) => {
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
-            extensions: [".js", ".ts", ".tsx", ".svg"],
+            extensions: [".js", ".ts", ".tsx", ".svg", "*.scss"],
             alias: {
-                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },
         },
         externals: [
@@ -38,14 +38,11 @@ module.exports = (env) => {
                 includeCSS: true,
                 includeAssets: true,
                 sideEffects: true,
-                // extraRules: [
-                //     {
-                //         test: /\.svg$/,
-                //         use: {
-                //             loader: path.resolve('./svg.loader.js')
-                //         }
-                //     }
-                // ]
+                tsOptions: {
+                    compilerOptions: {
+                        "rootDir": "../../",
+                    }
+                }
             }),
         },
         devServer: {
