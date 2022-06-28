@@ -1,10 +1,10 @@
-import { Nullable } from "core/types";
-import { GraphFrame } from "../graphFrame";
-import { GraphNode } from "../graphNode";
+import type { Nullable } from "core/types";
+import type { GraphFrame } from "../graphFrame";
+import type { GraphNode } from "../graphNode";
 
-import { NodeLink } from "../nodeLink";
-import { NodePort } from "../nodePort";
-import { FramePortData } from "../types/framePortData";
+import type { NodeLink } from "../nodeLink";
+import type { NodePort } from "../nodePort";
+import type { FramePortData } from "../types/framePortData";
 
 export interface ISelectionChangedOptions {
     selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;

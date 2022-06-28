@@ -1,8 +1,8 @@
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { BlockTools } from "../blockTools";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { ConnectionPointPortData } from "./connectionPointPortData";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { ConnectionPointPortData } from "./connectionPointPortData";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement) => {

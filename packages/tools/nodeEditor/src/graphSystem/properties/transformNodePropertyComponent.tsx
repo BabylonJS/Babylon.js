@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { TransformBlock } from "core/Materials/Node/Blocks/transformBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 
 export class TransformPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
