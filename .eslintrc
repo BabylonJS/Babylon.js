@@ -50,7 +50,7 @@
                     }
                 ],
                 "jsdoc/require-jsdoc": [
-                    "error",
+                    "warn",
                     {
                         "contexts": [
                             "TSInterfaceDeclaration",
@@ -64,28 +64,6 @@
                             "FunctionDeclaration:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
                         ],
                         "publicOnly": true
-                        //     "contexts": [
-                        //         // types from here - https://babeljs.io/docs/en/babel-types#functionexpression
-                        //         "TSInterfaceDeclaration",
-                        //         "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                        //         "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                        //         "ClassDeclaration",
-                        //         "ClassExpression",
-                        //         "TSInterfaceDeclaration",
-                        //         "TSMethodSignature",
-                        //         "FunctionDeclaration:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
-                        //     ]
-                        // }
-                        // {
-                        //     "publicOnly": true,
-                        //     "require": {
-                        //         "ArrowFunctionExpression": false,
-                        //         "ClassDeclaration": false,
-                        //         "ClassExpression": false,
-                        //         "FunctionDeclaration": false,
-                        //         "FunctionExpression": false,
-                        //         "MethodDefinition": true
-                        //     }
                     }
                 ]
             }

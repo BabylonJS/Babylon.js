@@ -8,7 +8,7 @@
     },
     "devDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5",
-        "@dev/build-tools": "^1.0.0",
+        "@dev/build-tools": "file:packages/dev/buildTools",
         "@nrwl/cli": "~13.9.4",
         "@nrwl/tao": "~13.9.4",
         "@nrwl/workspace": "~13.9.4",
@@ -70,7 +70,7 @@
         "watch-and-serve:dev": "concurrently \"npm run watch-dev-test\" \"npm run serve -w @tools/babylon-server\"",
         "watch-lts": "npx nx run-many --target=watch:lts --all --parallel --maxParallel=20",
         "build:babylonjs": "nx build babylonjs",
-        "build:tools": "npm run build -w @dev/build-tools",
+        "build:tools": "npm run build -w @dev/build-tools && npm run build -w eslint-plugin-babylonjs",
         "build:test-tools": "npm run build -w @tools/test-tools",
         "test": "jest --runInBand",
         "test:unit": "jest --selectProjects=unit",

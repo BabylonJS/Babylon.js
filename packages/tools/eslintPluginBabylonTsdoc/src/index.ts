@@ -52,9 +52,9 @@ function isDeclarationKind(kind: ts.SyntaxKind): boolean {
         kind === ts.SyntaxKind.JsxAttribute ||
         kind === ts.SyntaxKind.MethodDeclaration ||
         kind === ts.SyntaxKind.MethodSignature ||
-        kind === ts.SyntaxKind.ModuleDeclaration ||
-        kind === ts.SyntaxKind.NamespaceExportDeclaration ||
-        kind === ts.SyntaxKind.NamespaceImport ||
+        // kind === ts.SyntaxKind.ModuleDeclaration ||
+        // kind === ts.SyntaxKind.NamespaceExportDeclaration ||
+        // kind === ts.SyntaxKind.NamespaceImport ||
         // kind === ts.SyntaxKind.Parameter ||
         // kind === ts.SyntaxKind.PropertyAssignment ||
         kind === ts.SyntaxKind.PropertyDeclaration ||
@@ -97,11 +97,11 @@ function getJSDocCommentRanges(node: ts.Node, text: string): ts.CommentRange[] {
  *
  * @param node
  * @param indent
- * @param foundComments
+ * @param notFoundComments
  * @param sourceText
  * @returns
  */
-function walkCompilerAstAndFindComments(node: ts.Node, indent: string, foundComments: IFoundComment[], sourceText: string): void {
+function walkCompilerAstAndFindComments(node: ts.Node, indent: string, notFoundComments: IFoundComment[], sourceText: string, getterSetterFound: string[]): void {
     const buffer: string = sourceText; // node.getSourceFile().getFullText(); // don't use getText() here!
 
     // Only consider nodes that are part of a declaration form.  Without this, we could discover
@@ -113,25 +113,39 @@ function walkCompilerAstAndFindComments(node: ts.Node, indent: string, foundComm
                 skip = true;
             }
         });
+
         if (!skip) {
             // Find "/** */" style comments associated with this node.
             // Note that this reinvokes the compiler's scanner -- the result is not cached.
             const comments: ts.CommentRange[] = getJSDocCommentRanges(node, buffer);
 
+            const identifier = (node as ts.ParameterDeclaration).name as ts.Identifier;
             if (comments.length === 0) {
-                const identifier = (node as ts.ParameterDeclaration).name as ts.Identifier;
                 if (identifier) {
-                    foundComments.push({
+                    notFoundComments.push({
                         compilerNode: node,
-                        name: identifier.escapedText.toString(),
+                        name: identifier.escapedText && identifier.escapedText.toString(),
                         textRange: tsdoc.TextRange.fromStringRange(buffer, identifier ? identifier.pos + 1 : node.pos, identifier ? identifier.end : node.end),
                     });
+                }
+            } else {
+                // if this is a getter or setter
+                if (node.kind === ts.SyntaxKind.GetAccessor || node.kind === ts.SyntaxKind.SetAccessor) {
+                    getterSetterFound.push(identifier.escapedText.toString());
+                } else {
+                    // stop iterating anything with @hidden
+                    const comment = comments[0];
+                    // get the comment text
+                    const commentTest = tsdoc.TextRange.fromStringRange(buffer, comment.pos, comment.end).toString();
+                    if (commentTest.includes("@hidden")) {
+                        return;
+                    }
                 }
             }
         }
     }
 
-    return node.forEachChild((child) => walkCompilerAstAndFindComments(child, indent + "  ", foundComments, sourceText));
+    return node.forEachChild((child) => walkCompilerAstAndFindComments(child, indent + "  ", notFoundComments, sourceText, getterSetterFound));
 }
 
 const plugin: IPlugin = {
@@ -318,22 +332,33 @@ const plugin: IPlugin = {
             meta: {
                 messages: {
                     "error-no-tsdoc-found": "No TSDoc Found for {{details}}",
-                    "error-applying-config": "Error applying TSDoc configuration: {{details}}",
-                    ...tsdocMessageIds,
                 },
                 type: "problem",
                 docs: {
-                    description: "Validates that TypeScript documentation comments conform to the TSDoc standard",
+                    description: "Make sure a comment exists",
                     category: "Stylistic Issues",
-                    // This package is experimental
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
                 },
             },
             create: (context: eslint.Rule.RuleContext) => {
                 const sourceFilePath: string = context.getFilename();
-                console.log(`Linting: "${sourceFilePath}"`);
-                const program: ts.Program = ts.createProgram([sourceFilePath], {});
+                const program: ts.Program = ts.createProgram([sourceFilePath], {
+                    checkJs: false,
+                    resolveJsonModule: false,
+                    declaration: false,
+                    noEmit: true,
+                    stripInternal: true,
+                    noLib: true,
+                    noResolve: true,
+                    strictNullChecks: false,
+                    strictPropertyInitialization: false,
+                    skipLibCheck: true,
+                    skipDefaultLibCheck: true,
+                    sourceMap: false,
+                    inlineSourceMap: false,
+
+                });
 
                 const sourceCode: eslint.SourceCode = context.getSourceCode();
                 const sourceFile: ts.SourceFile | undefined = program.getSourceFile(sourceFilePath);
@@ -343,9 +368,13 @@ const plugin: IPlugin = {
 
                 const checkCommentBlocks: (node: ESTree.Node) => void = function (_node: ESTree.Node) {
                     const foundComments: IFoundComment[] = [];
-                    walkCompilerAstAndFindComments(sourceFile, "", foundComments, sourceCode.getText());
+                    const gettersSetters: string[] = [];
+                    walkCompilerAstAndFindComments(sourceFile, "", foundComments, sourceCode.getText(), gettersSetters);
                     for (const notFoundNode of foundComments) {
-                        // console.log(notFoundNode.name, notFoundNode.compilerNode.kind);
+                        // check if it is a getter/setter
+                        if (gettersSetters.includes(notFoundNode.name)) {
+                            continue;
+                        }
                         context.report({
                             loc: {
                                 start: sourceCode.getLocFromIndex(notFoundNode.textRange.pos),
