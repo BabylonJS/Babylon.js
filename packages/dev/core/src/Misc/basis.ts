@@ -378,7 +378,7 @@ function workerFunc(): void {
                     wasmBinary: event.data.wasmBinary,
                 });
             }
-            if(transcoderModulePromise !== null) {
+            if (transcoderModulePromise !== null) {
                 transcoderModulePromise.then((m) => {
                     BASIS = m;
                     m.initializeBasis();
