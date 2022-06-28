@@ -1,7 +1,7 @@
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { GlobalState } from "node-editor/globalState";
+import type { GlobalState } from "../globalState";
 import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
