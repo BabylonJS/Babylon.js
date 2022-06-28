@@ -25,6 +25,7 @@ export interface IGraphCanvasComponentProps {
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> implements INodeContainer {
+    public static readonly NodeWidth = 100;
     private readonly _minZoom = 0.1;
     private readonly _maxZoom = 4;
 
@@ -64,6 +65,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public _frameIsMoving = false;
     public _isLoading = false;
+
+    private _copiedNodes: GraphNode[] = [];
+    private _copiedFrames: GraphFrame[] = [];
 
     public get gridSize() {
         return this._gridSize;
@@ -287,6 +291,226 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }
             }
         };
+    }
+
+    handleKeyDown(evt: KeyboardEvent, onRemove: (nodeData: INodeData) => void, mouseLocationX: number, mouseLocationY: number, dataGenerator: (nodeData: INodeData) => any) {
+        if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
+            // Delete
+            const selectedItems = this.selectedNodes;
+
+            for (const selectedItem of selectedItems) {
+                selectedItem.dispose();
+
+                onRemove(selectedItem.content);
+                this.removeDataFromCache(selectedItem.content.data);
+            }
+
+            if (this.selectedLink) {
+                this.selectedLink.dispose();
+            }
+
+            if (this.selectedFrames.length) {
+                for (const frame of this.selectedFrames) {
+                    if (frame.isCollapsed) {
+                        while (frame.nodes.length > 0) {
+                            onRemove(frame.nodes[0].content);
+                            this.removeDataFromCache(frame.nodes[0].content.data);
+                            frame.nodes[0].dispose();
+                        }
+                        frame.isCollapsed = false;
+                    } else {
+                        frame.nodes.forEach((node) => {
+                            node.enclosingFrameId = -1;
+                        });
+                    }
+                    frame.dispose();
+                }
+            }
+
+            this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+            return;
+        }
+
+        if (!evt.ctrlKey || this.props.stateManager.lockObject.lock) {
+            return;
+        }
+
+        if (evt.key === "c" || evt.key === "C") {
+            // Copy
+            this._copiedNodes = [];
+            this._copiedFrames = [];
+
+            if (this.selectedFrames.length) {
+                for (const frame of this.selectedFrames) {
+                    frame.serialize(true);
+                    this._copiedFrames.push(frame);
+                }
+                return;
+            }
+
+            const selectedItems = this.selectedNodes;
+            if (!selectedItems.length) {
+                return;
+            }
+
+            const selectedItem = selectedItems[0] as GraphNode;
+
+            if (!selectedItem.content.data) {
+                return;
+            }
+
+            this._copiedNodes = selectedItems.slice(0);
+        } else if (evt.key === "v" || evt.key === "V") {
+            // Paste
+            const rootElement = this.props.stateManager.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
+            const zoomLevel = this.zoom;
+            let currentY = (mouseLocationY - rootElement.offsetTop - this.y - 20) / zoomLevel;
+
+            if (this._copiedFrames.length) {
+                for (const frame of this._copiedFrames) {
+                    // New frame
+                    const newFrame = new GraphFrame(null, this, true);
+                    this.frames.push(newFrame);
+
+                    newFrame.width = frame.width;
+                    newFrame.height = frame.height;
+                    newFrame.width / 2;
+                    newFrame.name = frame.name;
+                    newFrame.color = frame.color;
+
+                    let currentX = (mouseLocationX - rootElement.offsetLeft - this.x) / zoomLevel;
+                    newFrame.x = currentX - newFrame.width / 2;
+                    newFrame.y = currentY;
+
+                    // Paste nodes
+                    if (frame.nodes.length) {
+                        currentX = newFrame.x + frame.nodes[0].x - frame.x;
+                        currentY = newFrame.y + frame.nodes[0].y - frame.y;
+
+                        this._frameIsMoving = true;
+                        const newNodes = this.pasteSelection(frame.nodes, currentX, currentY, dataGenerator);
+                        if (newNodes) {
+                            for (const node of newNodes) {
+                                newFrame.syncNode(node);
+                            }
+                        }
+                        this._frameIsMoving = false;
+                    }
+
+                    newFrame.adjustPorts();
+
+                    if (frame.isCollapsed) {
+                        newFrame.isCollapsed = true;
+                    }
+
+                    // Select
+                    this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
+                    return;
+                }
+            }
+
+            if (!this._copiedNodes.length) {
+                return;
+            }
+
+            const currentX = (mouseLocationX - rootElement.offsetLeft - this.x - GraphCanvasComponent.NodeWidth) / zoomLevel;
+            this.pasteSelection(this._copiedNodes, currentX, currentY, dataGenerator, true);
+        }
+    }
+
+    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, dataGenerator: (nodeData: INodeData) => any, selectNew = false) {
+        let originalNode: Nullable<GraphNode> = null;
+
+        const newNodes: GraphNode[] = [];
+
+        // Copy to prevent recursive side effects while creating nodes.
+        copiedNodes = copiedNodes.slice();
+
+        // Cancel selection
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+
+        // Create new nodes
+        for (const node of copiedNodes) {
+            const data = node.content.data;
+
+            if (!data) {
+                continue;
+            }
+
+            const newNode = dataGenerator(node.content);
+
+            let x = 0;
+            let y = 0;
+            if (originalNode) {
+                x = currentX + node.x - originalNode.x;
+                y = currentY + node.y - originalNode.y;
+            } else {
+                originalNode = node;
+                x = currentX;
+                y = currentY;
+            }
+
+            newNode.x = x;
+            newNode.y = y;
+            newNode.cleanAccumulation();
+
+            newNodes.push(newNode);
+
+            if (selectNew) {
+                this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
+            }
+        }
+
+        // Relink
+        const done = new Array<boolean>(newNodes.length);
+        for (let index = 0; index < newNodes.length; index++) {
+            this.reconnectNewNodes(index, newNodes, copiedNodes, done);
+        }
+
+        return newNodes;
+    }
+
+    reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]) {
+        if (done[nodeIndex]) {
+            return;
+        }
+
+        const currentNode = newNodes[nodeIndex];
+        const sourceNode = sourceNodes[nodeIndex];
+
+        for (let inputIndex = 0; inputIndex < sourceNode.content.inputs.length; inputIndex++) {
+            const sourceInput = sourceNode.content.inputs[inputIndex];
+            const currentInput = currentNode.content.inputs[inputIndex];
+            if (!sourceInput.isConnected) {
+                continue;
+            }
+            const sourceContent = this.findNodeFromData(sourceInput.connectedPort!.ownerData).content;
+            const activeNodes = sourceNodes.filter((s) => s.content.data === sourceContent);
+
+            if (activeNodes.length > 0) {
+                const activeNode = activeNodes[0];
+                const indexInList = sourceNodes.indexOf(activeNode);
+
+                // First make sure to connect the other one
+                this.reconnectNewNodes(indexInList, newNodes, sourceNodes, done);
+
+                // Then reconnect
+                const outputIndex = sourceContent.outputs.indexOf(sourceInput.connectedPort!);
+                const newOutput = newNodes[indexInList].content.data.outputs[outputIndex];
+
+                newOutput.connectTo(currentInput);
+            } else {
+                // Connect with outside nodes
+                sourceInput.connectedPort!.connectTo(currentInput);
+            }
+
+            this.connectPorts(currentInput.connectedPort!, currentInput);
+        }
+
+        currentNode.refresh();
+
+        done[nodeIndex] = true;
     }
 
     public getCachedData(): any[] {
@@ -833,7 +1057,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 return;
             }
 
-            // No destination so let's spin a new input block
+            // No destination so let's spin a new input node
             const newDefaultInput = this.props.stateManager.createDefaultInputData(this.props.stateManager.data, this._candidateLink!.portA.portData, this);
             const pointName = newDefaultInput.name;
             const emittedNodeData = newDefaultInput.data;
@@ -919,7 +1143,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         if (pointB.ownerData.inputsAreExclusive) {
-            // Disconnect all inputs if block has exclusive inputs
+            // Disconnect all inputs if node has exclusive inputs
             pointB.ownerData.inputs.forEach((i: any) => {
                 const links = nodeB.getLinksForPortData(i);
 
@@ -949,13 +1173,44 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
-        // Need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+        // Need to potentially propagate the type of pointA to other ports of nodes connected to owner of pointB
         // We also need to check if we want to display the promotion warning
 
         const visitedNodes = new Set<GraphNode>([nodeA]);
         const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
 
         RefreshNode(nodeB, visitedNodes, visitedLinks);
+    }
+
+    drop(newNode: GraphNode, targetX: number, targetY: number, offsetX: number, offsetY: number) {
+        let x = targetX - this.x - offsetX * this.zoom;
+        let y = targetY - this.y - offsetY * this.zoom;
+
+        newNode.x = x / this.zoom;
+        newNode.y = y / this.zoom;
+        newNode.cleanAccumulation();
+
+        this.props.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
+
+        x -= GraphCanvasComponent.NodeWidth + 150;
+
+        newNode.content.inputs.forEach((portData) => {
+            if (portData.connectedPort) {
+                const existingNodes = this.nodes.filter((n) => {
+                    return n.content.data === portData.connectedPort?.ownerData;
+                });
+                const connectedNode = existingNodes[0];
+
+                if (connectedNode.x === 0 && connectedNode.y === 0) {
+                    connectedNode.x = x / this.zoom;
+                    connectedNode.y = y / this.zoom;
+                    connectedNode.cleanAccumulation();
+                    y += 80;
+                }
+            }
+        });
     }
 
     processEditorData(editorData: IEditorData) {
@@ -985,8 +1240,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             // Locations
             for (const location of editorData.locations) {
                 for (const node of this.nodes) {
-                    const block = node.content.data;
-                    if (block && block.uniqueId === location.blockId) {
+                    const data = node.content.data;
+                    if (data && data.uniqueId === location.blockId) {
                         node.x = location.x;
                         node.y = location.y;
                         node.cleanAccumulation();
