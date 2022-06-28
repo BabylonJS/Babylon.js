@@ -9,7 +9,7 @@ import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedgere";
+import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 
