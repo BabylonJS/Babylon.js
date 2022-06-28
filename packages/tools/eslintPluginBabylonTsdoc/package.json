@@ -1,5 +1,6 @@
 {
     "name": "eslint-plugin-babylonjs",
+    "private": true,
     "version": "1.0.0",
     "description": "An ESLint plugin that validates TypeScript doc comments for the babylon repository",
     "keywords": [

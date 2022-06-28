@@ -35,37 +35,58 @@
             }
         },
         {
-            "files": ["packages/dev/core/src/**/*.{ts,tsx}"],
+            "files": ["packages/**/src/**/*.{ts,tsx}"],
             "rules": {
+                // "babylonjs/existing": "error",
+                "babylonjs/available": [
+                    "warn",
+                    {
+                        "contexts": [
+                            "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            // "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            "MethodDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                        ]
+                    }
+                ],
                 "jsdoc/require-jsdoc": [
                     "error",
                     {
                         "contexts": [
-                            // types from here - https://babeljs.io/docs/en/babel-types#functionexpression
-                            // "TSInterfaceDeclaration",
-                            "TSMethodSignature",
+                            "TSInterfaceDeclaration",
+                            // "TSMethodSignature",
                             "TSPropertySignature",
                             "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                            // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
                             "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                            "MethodDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                            "ClassDeclaration",
+                            "ClassExpression",
+                            "TSInterfaceDeclaration",
+                            "FunctionDeclaration:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
                         ],
-                        "publicOnly": true,
-                        "exemptEmptyFunctions": true,
-                        "checkConstructors": true,
-                        "checkSetters": false
+                        "publicOnly": true
+                        //     "contexts": [
+                        //         // types from here - https://babeljs.io/docs/en/babel-types#functionexpression
+                        //         "TSInterfaceDeclaration",
+                        //         "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                        //         "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                        //         "ClassDeclaration",
+                        //         "ClassExpression",
+                        //         "TSInterfaceDeclaration",
+                        //         "TSMethodSignature",
+                        //         "FunctionDeclaration:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                        //     ]
+                        // }
+                        // {
+                        //     "publicOnly": true,
+                        //     "require": {
+                        //         "ArrowFunctionExpression": false,
+                        //         "ClassDeclaration": false,
+                        //         "ClassExpression": false,
+                        //         "FunctionDeclaration": false,
+                        //         "FunctionExpression": false,
+                        //         "MethodDefinition": true
+                        //     }
                     }
-                    // {
-                    //     "publicOnly": true,
-                    //     "require": {
-                    //         "ArrowFunctionExpression": false,
-                    //         "ClassDeclaration": false,
-                    //         "ClassExpression": false,
-                    //         "FunctionDeclaration": false,
-                    //         "FunctionExpression": false,
-                    //         "MethodDefinition": true
-                    //     }
-                    // }
                 ]
             }
         }
@@ -220,29 +241,10 @@
         "template-tag-spacing": "error",
         "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["afterEach"] }],
         "jest/valid-expect": "off",
-        "babylonjs/syntax": "error",
-        "babylonjs/available": [
-            "error",
-            {
-                "contexts": [
-                    // types from here - https://babeljs.io/docs/en/babel-types#functionexpression
-                    // "TSInterfaceDeclaration",
-                    "MethodDefinition",
-                    "PropertyDefinition"
-                    // "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                    // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                    // "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
-                    // "MethodDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
-                ]
-                // "publicOnly": true,
-                // "exemptEmptyFunctions": true,
-                // "checkConstructors": true,
-                // "checkSetters": false
-            }
-        ],
+        "babylonjs/syntax": "warn",
         "jsdoc/check-param-names": ["warn", { "checkRestProperty": false }],
         "jsdoc/check-property-names": "error",
-        "jsdoc/require-param": ["error", { "checkDestructured": false, "checkRestProperty": false }],
+        // "jsdoc/require-param": ["error", { "checkDestructured": false, "checkRestProperty": false }],
         "jsdoc/require-param-name": "error",
         // "jsdoc/require-returns": "warn",
         // "jsdoc/require-returns-check": "error",

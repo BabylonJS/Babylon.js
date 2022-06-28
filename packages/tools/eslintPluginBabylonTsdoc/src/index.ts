@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as eslint from "eslint";
 import * as ESTree from "estree";
 import { TSDocParser, TextRange, TSDocConfiguration, ParserContext } from "@microsoft/tsdoc";
+import * as tsdoc from "@microsoft/tsdoc";
 import { TSDocConfigFile } from "@microsoft/tsdoc-config";
+import * as ts from "typescript";
 
 // import { Debug } from "./Debug";
 import { ConfigCache } from "./ConfigCache";
@@ -22,6 +25,114 @@ const allowedTags: string[] = ["@hidden", "@since"];
 // const taskToMessageId = {
 //     "param-tag-missing-hyphen": "tsdoc-param-tag-missing-hyphen",
 // };
+
+interface IFoundComment {
+    compilerNode: ts.Node;
+    name: string;
+    textRange: tsdoc.TextRange;
+}
+
+function isDeclarationKind(kind: ts.SyntaxKind): boolean {
+    return (
+        kind === ts.SyntaxKind.ArrowFunction ||
+        // kind === ts.SyntaxKind.BindingElement ||
+        kind === ts.SyntaxKind.ClassDeclaration ||
+        kind === ts.SyntaxKind.ClassExpression ||
+        kind === ts.SyntaxKind.Constructor ||
+        kind === ts.SyntaxKind.EnumDeclaration ||
+        kind === ts.SyntaxKind.EnumMember ||
+        kind === ts.SyntaxKind.ExportSpecifier ||
+        kind === ts.SyntaxKind.FunctionDeclaration ||
+        kind === ts.SyntaxKind.FunctionExpression ||
+        kind === ts.SyntaxKind.GetAccessor ||
+        // kind === ts.SyntaxKind.ImportClause ||
+        // kind === ts.SyntaxKind.ImportEqualsDeclaration ||
+        // kind === ts.SyntaxKind.ImportSpecifier ||
+        kind === ts.SyntaxKind.InterfaceDeclaration ||
+        kind === ts.SyntaxKind.JsxAttribute ||
+        kind === ts.SyntaxKind.MethodDeclaration ||
+        kind === ts.SyntaxKind.MethodSignature ||
+        kind === ts.SyntaxKind.ModuleDeclaration ||
+        kind === ts.SyntaxKind.NamespaceExportDeclaration ||
+        kind === ts.SyntaxKind.NamespaceImport ||
+        // kind === ts.SyntaxKind.Parameter ||
+        // kind === ts.SyntaxKind.PropertyAssignment ||
+        kind === ts.SyntaxKind.PropertyDeclaration ||
+        // kind === ts.SyntaxKind.PropertySignature ||
+        kind === ts.SyntaxKind.SetAccessor // TODO - setters should technically be documented as well!
+        // kind === ts.SyntaxKind.ShorthandPropertyAssignment ||
+        // kind === ts.SyntaxKind.TypeAliasDeclaration
+        // kind === ts.SyntaxKind.TypeParameter ||
+        // kind === ts.SyntaxKind.VariableDeclaration
+        // kind === ts.SyntaxKind.JSDocTypedefTag ||
+        // kind === ts.SyntaxKind.JSDocCallbackTag ||
+        // kind === ts.SyntaxKind.JSDocPropertyTag
+    );
+}
+
+function getJSDocCommentRanges(node: ts.Node, text: string): ts.CommentRange[] {
+    const commentRanges: ts.CommentRange[] = [];
+
+    switch (node.kind) {
+        case ts.SyntaxKind.Parameter:
+        case ts.SyntaxKind.TypeParameter:
+        case ts.SyntaxKind.FunctionExpression:
+        case ts.SyntaxKind.ArrowFunction:
+        case ts.SyntaxKind.ParenthesizedExpression:
+            commentRanges.push(...(ts.getTrailingCommentRanges(text, node.pos) || []));
+            break;
+    }
+    commentRanges.push(...(ts.getLeadingCommentRanges(text, node.pos) || []));
+
+    // True if the comment starts with '/**' but not if it is '/**/'
+    return commentRanges.filter(
+        (comment) =>
+            text.charCodeAt(comment.pos + 1) === 0x2a /* ts.CharacterCodes.asterisk */ &&
+            text.charCodeAt(comment.pos + 2) === 0x2a /* ts.CharacterCodes.asterisk */ &&
+            text.charCodeAt(comment.pos + 3) !== 0x2f /* ts.CharacterCodes.slash */
+    );
+}
+
+/**
+ *
+ * @param node
+ * @param indent
+ * @param foundComments
+ * @param sourceText
+ * @returns
+ */
+function walkCompilerAstAndFindComments(node: ts.Node, indent: string, foundComments: IFoundComment[], sourceText: string): void {
+    const buffer: string = sourceText; // node.getSourceFile().getFullText(); // don't use getText() here!
+
+    // Only consider nodes that are part of a declaration form.  Without this, we could discover
+    // the same comment twice (e.g. for a MethodDeclaration and its PublicKeyword).
+    if (isDeclarationKind(node.kind)) {
+        let skip = false;
+        node.modifiers?.forEach((modifier) => {
+            if (modifier.kind === ts.SyntaxKind.PrivateKeyword || modifier.kind === ts.SyntaxKind.ProtectedKeyword) {
+                skip = true;
+            }
+        });
+        if (!skip) {
+            // Find "/** */" style comments associated with this node.
+            // Note that this reinvokes the compiler's scanner -- the result is not cached.
+            const comments: ts.CommentRange[] = getJSDocCommentRanges(node, buffer);
+
+            if (comments.length === 0) {
+                const identifier = (node as ts.ParameterDeclaration).name as ts.Identifier;
+                if (identifier) {
+                    foundComments.push({
+                        compilerNode: node,
+                        name: identifier.escapedText.toString(),
+                        textRange: tsdoc.TextRange.fromStringRange(buffer, identifier ? identifier.pos + 1 : node.pos, identifier ? identifier.end : node.end),
+                    });
+                }
+            }
+        }
+    }
+
+    return node.forEachChild((child) => walkCompilerAstAndFindComments(child, indent + "  ", foundComments, sourceText));
+}
 
 const plugin: IPlugin = {
     rules: {
@@ -86,7 +197,7 @@ const plugin: IPlugin = {
                 const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration);
 
                 const sourceCode: eslint.SourceCode = context.getSourceCode();
-                const checkCommentBlocks: (node: ESTree.Node) => void = function (node: ESTree.Node) {
+                const checkCommentBlocks: (node: ESTree.Node) => void = function (_node: ESTree.Node) {
                     for (const comment of sourceCode.getAllComments()) {
                         if (comment.type !== "Block") {
                             continue;
@@ -107,14 +218,14 @@ const plugin: IPlugin = {
                         }
 
                         const parserContext: ParserContext = tsdocParser.parseRange(textRange);
-                        if (parserContext.log.messages.length > 0) {
-                            console.log(`Linting: "${sourceFilePath}"`);
-                        }
+                        // if (parserContext.log.messages.length > 0) {
+                        //     console.log(`Linting: "${sourceFilePath}"`);
+                        // }
                         for (const message of parserContext.log.messages) {
                             if (message.messageId === "tsdoc-param-tag-missing-hyphen") {
                                 continue;
                             }
-                            console.log(message.messageId, message.unformattedText);
+                            // console.log(message.messageId, message.unformattedText);
                             if (message.messageId === "tsdoc-undefined-tag") {
                                 if (allowedTags.some((tag) => message.unformattedText.includes(tag))) {
                                     continue;
@@ -142,8 +253,7 @@ const plugin: IPlugin = {
         available: {
             meta: {
                 messages: {
-                    "error-loading-config-file": "Error loading TSDoc config file:\n{{details}}",
-                    "error-applying-config": "Error applying TSDoc configuration: {{details}}",
+                    "error-no-doc-found": "Error finding code doc for: {{name}}",
                     ...tsdocMessageIds,
                 },
                 type: "problem",
@@ -156,28 +266,101 @@ const plugin: IPlugin = {
                 },
             },
             create: (context: eslint.Rule.RuleContext) => {
-                // const sourceFilePath: string = context.getFilename();
-                // const sourceCode: eslint.SourceCode = context.getSourceCode();
-
+                const sourceCode: eslint.SourceCode = context.getSourceCode();
                 const checkCommentBlocks: (node: ESTree.MethodDefinition) => void = function (node: ESTree.MethodDefinition) {
-                    const sourceCode: eslint.SourceCode = context.getSourceCode();
-                    // for (const comment of sourceCode.getAllComments()) {
-                    //     console.log(comment);
-                    // }
-                    // const text = sourceCode.getText(node);
-                    const comments = sourceCode.getComments(node).leading;
-                    console.log((node.key as ESTree.Identifier).name);
-                    if (comments.length && node.value.body) {
-                        console.log(sourceCode.getTokensBefore(node));
+                    const text = sourceCode.getText(node);
+                    if (text.includes("private ") || text.includes("protected ")) {
+                        return;
                     }
-                    // console.log(text);
-                    // console.log(sourceCode.getComments(node).leading);
+                    if (sourceCode.getCommentsBefore(node).length === 0) {
+                        // check if  another one with the same name has a comment (for example getter/setter)
+                        const tokens = sourceCode.getTokensBefore(node, {
+                            filter: (token) => token.value === (node.key as ESTree.Identifier).name,
+                        });
+                        if (tokens.length) {
+                            const hasComment = tokens.some((token) => {
+                                const node = sourceCode.getNodeByRangeIndex(token.range[0]);
+
+                                return (
+                                    node &&
+                                    (node as any).parent &&
+                                    (node as any).parent.type === "MethodDefinition" &&
+                                    sourceCode.getCommentsBefore((node as any).parent).length > 0
+                                );
+                            });
+                            if (hasComment) {
+                                return;
+                            }
+                        }
+
+                        // }
+                        context.report({
+                            loc: {
+                                start: sourceCode.getLocFromIndex(node.key?.range![0]),
+                                end: sourceCode.getLocFromIndex(node.key?.range![1]),
+                            },
+                            messageId: "error-no-doc-found",
+                            data: {
+                                name: (node.key as ESTree.Identifier).name,
+                            },
+                        });
+                    }
                 };
 
                 return {
                     // Program: checkCommentBlocks,
                     MethodDefinition: checkCommentBlocks,
                     PropertyDefinition: checkCommentBlocks,
+                };
+            },
+        },
+        existing: {
+            meta: {
+                messages: {
+                    "error-no-tsdoc-found": "No TSDoc Found for {{details}}",
+                    "error-applying-config": "Error applying TSDoc configuration: {{details}}",
+                    ...tsdocMessageIds,
+                },
+                type: "problem",
+                docs: {
+                    description: "Validates that TypeScript documentation comments conform to the TSDoc standard",
+                    category: "Stylistic Issues",
+                    // This package is experimental
+                    recommended: false,
+                    url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
+                },
+            },
+            create: (context: eslint.Rule.RuleContext) => {
+                const sourceFilePath: string = context.getFilename();
+                console.log(`Linting: "${sourceFilePath}"`);
+                const program: ts.Program = ts.createProgram([sourceFilePath], {});
+
+                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceFile: ts.SourceFile | undefined = program.getSourceFile(sourceFilePath);
+                if (!sourceFile) {
+                    throw new Error("Error retrieving source file");
+                }
+
+                const checkCommentBlocks: (node: ESTree.Node) => void = function (_node: ESTree.Node) {
+                    const foundComments: IFoundComment[] = [];
+                    walkCompilerAstAndFindComments(sourceFile, "", foundComments, sourceCode.getText());
+                    for (const notFoundNode of foundComments) {
+                        // console.log(notFoundNode.name, notFoundNode.compilerNode.kind);
+                        context.report({
+                            loc: {
+                                start: sourceCode.getLocFromIndex(notFoundNode.textRange.pos),
+                                end: sourceCode.getLocFromIndex(notFoundNode.textRange.end),
+                            },
+                            messageId: "error-no-tsdoc-found",
+                            data: {
+                                details: (notFoundNode.compilerNode as any).name ? (notFoundNode.compilerNode as any).name.escapedText : "",
+                            },
+                        });
+                    }
+                };
+
+                return {
+                    Program: checkCommentBlocks,
                 };
             },
         },
