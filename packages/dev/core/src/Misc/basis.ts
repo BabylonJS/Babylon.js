@@ -374,6 +374,7 @@ function workerFunc(): void {
             }
             if(transcoderModulePromise !== null) {
                 transcoderModulePromise.then((m) => {
+                    BASIS = m;
                     m.initializeBasis();
                     postMessage({ action: "init" });
                 });
