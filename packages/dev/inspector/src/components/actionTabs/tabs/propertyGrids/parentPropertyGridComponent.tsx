@@ -55,7 +55,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                     target={node}
                     propertyName="parent"
                     noDirectUpdate={true}
-                    onSelect={(value: number) => {
+                    onSelect={(value) => {
                         const nodeAsTransform = node as TransformNode;
                         if (value < 0) {
                             if (nodeAsTransform.setParent) {
@@ -64,7 +64,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                                 node.parent = null;
                             }
                         } else {
-                            const newParent = sortedNodes[value];
+                            const newParent = sortedNodes[value as number];
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(newParent);
                             } else {
