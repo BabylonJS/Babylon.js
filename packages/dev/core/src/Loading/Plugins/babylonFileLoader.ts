@@ -126,7 +126,7 @@ const loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     if (typeof parentId !== "number") {
         const parentEntry = scene.getLastEntryById(parentId);
-        if (parentEntry && (parentInstanceIndex !== undefined && parentInstanceIndex !== null)) {
+        if (parentEntry && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
             const instance = (parentEntry as Mesh).instances[parseInt(parentInstanceIndex)];
             return instance;
         }
@@ -134,7 +134,7 @@ const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     }
 
     const parent = tempIndexContainer[parentId];
-    if (parent && (parentInstanceIndex !== undefined && parentInstanceIndex !== null)) {
+    if (parent && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
         const instance = (parent as Mesh).instances[parseInt(parentInstanceIndex)];
         return instance;
     }

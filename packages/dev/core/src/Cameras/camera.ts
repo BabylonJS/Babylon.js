@@ -1383,7 +1383,7 @@ export class Camera extends Node {
         // Parent instance index
         if (parsedCamera.parentInstanceIndex !== undefined) {
             camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
-        } 
+        }
 
         //If camera has an input manager, let it parse inputs settings
         if (camera.inputs) {
