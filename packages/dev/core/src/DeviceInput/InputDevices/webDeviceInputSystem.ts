@@ -21,8 +21,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
+    private _metaKeys: Set<number>;
     private readonly _engine: Engine;
     private readonly _usingSafari: boolean = Tools.IsSafari();
+    // Found solution for determining if MacOS is being used here:
+    // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
+    private readonly _usingMacOS: boolean = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
@@ -80,6 +84,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._onInputChanged = onInputChanged;
 
         this._enableEvents();
+
+        if (this._usingMacOS) {
+            this._metaKeys = new Set();
+        }
 
         // Set callback to enable event handler switching when inputElement changes
         if (!this._engine._onEngineViewChanged) {
@@ -326,6 +334,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
 
+                if (this._usingMacOS && evt.metaKey && evt.key !== "Meta") {
+                    this._metaKeys.add(evt.keyCode);
+                }
+
                 this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
             }
         };
@@ -342,6 +354,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
+
+                if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.size > 0) {
+                    for(const k of this._metaKeys) {
+                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, k, 0, this, this._elementToAttachTo);
+                        kbKey[k] = 0;
+                        this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
+                    }
+                    this._metaKeys.clear();
+                }
 
                 this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
             }
@@ -360,6 +381,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
                 }
+                this._metaKeys.clear();
             }
         };
 
