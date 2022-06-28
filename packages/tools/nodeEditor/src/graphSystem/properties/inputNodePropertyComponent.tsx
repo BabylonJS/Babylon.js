@@ -17,7 +17,7 @@ import { Color4PropertyTabComponent } from "../../components/propertyTab/propert
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";

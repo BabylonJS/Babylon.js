@@ -7,10 +7,17 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { Texture } from "core/Materials/Textures/texture";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
+<<<<<<< HEAD
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { GlobalState } from "../../globalState";
+=======
+import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
+import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GlobalState } from "../../globalState";
+>>>>>>> remotes/origin/master
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";

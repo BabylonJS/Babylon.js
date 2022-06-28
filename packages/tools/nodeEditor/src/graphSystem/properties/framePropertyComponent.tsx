@@ -6,8 +6,8 @@ import type { Observer } from "core/Misc/observable";
 import { InputsPropertyTabComponent } from "../../components/propertyTab/inputsPropertyTabComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 

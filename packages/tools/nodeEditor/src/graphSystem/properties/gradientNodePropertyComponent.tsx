@@ -7,9 +7,9 @@ import { Color3 } from "core/Maths/math.color";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {

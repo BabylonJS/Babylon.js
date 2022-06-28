@@ -23,10 +23,15 @@ import { Popup } from "./sharedComponents/popup";
 
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
+<<<<<<< HEAD
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+=======
+import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+>>>>>>> remotes/origin/master
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
-import { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 interface IGraphEditorProps {
     globalState: GlobalState;

@@ -5,9 +5,14 @@ import { ColorPickerLineComponent } from "../../sharedComponents/colorPickerComp
 
 import deleteButton from "../../imgs/delete.svg";
 import copyIcon from "../../sharedComponents/copy.svg";
+<<<<<<< HEAD
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { GlobalState } from "../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+=======
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { GlobalState } from "../../globalState";
+>>>>>>> remotes/origin/master
 
 interface IGradientStepComponentProps {
     stateManager: StateManager;

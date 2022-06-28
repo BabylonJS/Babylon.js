@@ -1,4 +1,4 @@
-import { Vector2 } from "core/Maths/math";
+import type { Vector2 } from "core/Maths/math";
 import * as React from "react";
 
 // which side of the bounding box are we on?

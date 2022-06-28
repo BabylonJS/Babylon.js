@@ -1,4 +1,4 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import type { IPortData } from "./portData";
 
 export interface INodeData {
