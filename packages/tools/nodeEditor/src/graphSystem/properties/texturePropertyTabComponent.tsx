@@ -145,6 +145,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         this._prepareTexture();
 
         const texture = this.textureBlock.texture as BaseTexture;
+        // We need to update the texture name with the url so later on the render
+        // doesn't overwrite the url texture with the name of the texture.
+        texture.name = url;
         if (texture.isCube || this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock) {
             let extension: string | undefined = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
