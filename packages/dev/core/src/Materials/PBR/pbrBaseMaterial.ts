@@ -1747,6 +1747,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                    defines.PARALLAX = false;
+                    defines.PARALLAXOCCLUSION = false;
+                    defines.PARALLAOBJECTSPACE_NORMALMAP = false;
                 }
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
