@@ -1,4 +1,4 @@
-import type { ToggleProps} from "../components/Toggle";
+import type { ToggleProps } from "../components/Toggle";
 import { Toggle } from "../components/Toggle";
 
 export default {

@@ -9,7 +9,7 @@ import { CoordinateHelper, Rect } from "./coordinateHelper";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
-import type { IScalePoint} from "./gizmoScalePoint";
+import type { IScalePoint } from "./gizmoScalePoint";
 import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 
 export interface IGuiGizmoProps {

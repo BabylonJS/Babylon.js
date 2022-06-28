@@ -1,4 +1,4 @@
-import type { LabelProps} from "../components/Label";
+import type { LabelProps } from "../components/Label";
 import { Label } from "../components/Label";
 import { Toggle } from "../components/Toggle";
 

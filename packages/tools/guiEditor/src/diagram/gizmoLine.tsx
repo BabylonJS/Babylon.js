@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../globalState";
-import type { IScalePoint} from "./gizmoScalePoint";
+import type { IScalePoint } from "./gizmoScalePoint";
 import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { CoordinateHelper } from "./coordinateHelper";
 import { Vector2 } from "core/Maths/math";
