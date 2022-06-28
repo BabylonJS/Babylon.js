@@ -90,8 +90,7 @@ export class _GLTFAnimation {
      * @param babylonNode the node to test
      * @returns true if can be animated, false otherwise. False if the parameter is nullm or undefined.
      */
-    public static IsAnimatable(babylonNode: Node): boolean {
-        // TODO - test the KHR_animation_pointer capability.
+    private static _IsAnimatable(babylonNode: Node): boolean {
         return babylonNode && (babylonNode instanceof TransformNode || babylonNode instanceof Camera || babylonNode instanceof Light);
     }
 
@@ -264,7 +263,7 @@ export class _GLTFAnimation {
         animationSampleRate: number
     ) {
         let glTFAnimation: IAnimation;
-        if (_GLTFAnimation.IsAnimatable(babylonNode)) {
+        if (_GLTFAnimation._IsAnimatable(babylonNode)) {
             if (babylonNode.animations) {
                 for (const animation of babylonNode.animations) {
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
