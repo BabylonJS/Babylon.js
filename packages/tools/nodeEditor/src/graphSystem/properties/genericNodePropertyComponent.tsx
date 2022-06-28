@@ -185,14 +185,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     break;
                 }
                 case PropertyTypeForEdition.Vector2: {
-                    components.push(
-                        <Vector2LineComponent
-                            label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => this.forceRebuild(options.notifiers)}
-                        />
-                    );
+                    components.push(<Vector2LineComponent label={displayName} propertyName={propertyName} target={block} onChange={() => this.forceRebuild(options.notifiers)} />);
                     break;
                 }
                 case PropertyTypeForEdition.List: {

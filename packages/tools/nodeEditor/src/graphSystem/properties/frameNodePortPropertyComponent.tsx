@@ -60,10 +60,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent 
-                            label="Port Name" 
-                            lockObject={this.props.stateManager.lockObject}
-                            propertyName="portName" target={this.props.frameNodePort} />
+                        <TextInputLineComponent label="Port Name" lockObject={this.props.stateManager.lockObject} propertyName="portName" target={this.props.frameNodePort} />
                         {this.props.frameNodePort.framePortPosition !== FramePortPosition.Top && (
                             <ButtonLineComponent
                                 label="Move Port Up"

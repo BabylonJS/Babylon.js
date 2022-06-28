@@ -286,10 +286,14 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                         }}
                     />
                     {this.state.isEmbedded && <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />}
-                    {!this.state.isEmbedded && 
-                        <TextInputLineComponent 
+                    {!this.state.isEmbedded && (
+                        <TextInputLineComponent
                             lockObject={this.props.stateManager.lockObject}
-                            label="Link" value={url} onChange={(newUrl) => this.replaceTextureWithUrl(newUrl)} />}
+                            label="Link"
+                            value={url}
+                            onChange={(newUrl) => this.replaceTextureWithUrl(newUrl)}
+                        />
+                    )}
                     {!this.state.isEmbedded && url && (
                         <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())} />
                     )}

@@ -76,55 +76,15 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return (
-                    <Color3LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Color3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return (
-                    <Color4LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Color4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return (
-                    <Vector2LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector2LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return (
-                    <Vector3LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
         }
         return null;
     }

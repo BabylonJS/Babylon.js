@@ -16,7 +16,7 @@ interface IVector4LineComponentProps {
     useEuler?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     icon?: string;
-    iconLabel?: string;    
+    iconLabel?: string;
     value?: Vector4;
 }
 
@@ -77,8 +77,8 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
             this.props.value.copyFrom(this.state.value);
         } else {
             this.props.target[this.props.propertyName!] = this.state.value;
-        }        
-        
+        }
+
         this.setState({ value: store });
 
         this.raiseOnPropertyChanged(store);

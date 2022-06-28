@@ -140,55 +140,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return (
-                    <Color3LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Color3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return (
-                    <Color4LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Color4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return (
-                    <Vector2LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector2LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return (
-                    <Vector3LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4LineComponent
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
+                return <Vector4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
         }
         return null;
     }
@@ -443,7 +403,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             target={this}
                             extractValue={() => this.props.globalState.mode}
                             options={modeList}
-                            onSelect={(value) => this.changeMode(value)} propertyName={""}                        />
+                            onSelect={(value) => this.changeMode(value)}
+                            propertyName={""}
+                        />
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"

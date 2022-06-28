@@ -285,7 +285,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 }
 
                                 return 0;
-                            } }
+                            }}
                             onSelect={(value: any) => {
                                 switch (value) {
                                     case 0:
@@ -304,7 +304,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.forceUpdate();
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-                            } } propertyName={""}                        />
+                            }}
+                            propertyName={""}
+                        />
                     )}
                     {inputBlock.visibleInInspector && (
                         <TextInputLineComponent
@@ -334,7 +336,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             }
 
                             return 0;
-                        } }
+                        }}
                         onSelect={(value: any) => {
                             switch (value) {
                                 case 0:
@@ -352,7 +354,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             this.forceUpdate();
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-                        } } propertyName={""}                    />
+                        }}
+                        propertyName={""}
+                    />
                     {inputBlock.isAttribute && (
                         <OptionsLineComponent
                             label="Attribute"

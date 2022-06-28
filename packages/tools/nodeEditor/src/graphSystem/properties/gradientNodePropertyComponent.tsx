@@ -120,7 +120,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             }
 
                             return 0;
-                        } }
+                        }}
                         onSelect={(value: any) => {
                             switch (value) {
                                 case 0:
@@ -133,7 +133,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             this.forceUpdate();
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
                             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-                        } } propertyName={""}                    />
+                        }}
+                        propertyName={""}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
