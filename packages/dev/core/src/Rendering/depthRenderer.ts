@@ -275,6 +275,9 @@ export class DepthRenderer {
                         }
                     }
 
+                    // Clip planes
+                    MaterialHelper.BindClipPlane(effect, scene);
+
                     // Morph targets
                     MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
                     if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
@@ -332,6 +335,7 @@ export class DepthRenderer {
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
+        const scene = mesh.getScene();
 
         const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 
@@ -418,6 +422,31 @@ export class DepthRenderer {
             defines.push("#define PACKED");
         }
 
+        // Clip planes
+        if (scene.clipPlane) {
+            defines.push("#define CLIPPLANE");
+        }
+
+        if (scene.clipPlane2) {
+            defines.push("#define CLIPPLANE2");
+        }
+
+        if (scene.clipPlane3) {
+            defines.push("#define CLIPPLANE3");
+        }
+
+        if (scene.clipPlane4) {
+            defines.push("#define CLIPPLANE4");
+        }
+
+        if (scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+
+        if (scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
+        }
+
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
@@ -437,6 +466,12 @@ export class DepthRenderer {
                         "morphTargetInfluences",
                         "morphTargetTextureInfo",
                         "morphTargetTextureIndices",
+                        "vClipPlane",
+                        "vClipPlane2",
+                        "vClipPlane3",
+                        "vClipPlane4",
+                        "vClipPlane5",
+                        "vClipPlane6",
                     ],
                     ["diffuseSampler", "morphTargets", "boneSampler"],
                     join,
