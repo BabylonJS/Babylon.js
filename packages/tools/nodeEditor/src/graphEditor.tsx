@@ -203,7 +203,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
 
                     return this.appendBlock(clone, false);
-                }
+                },
+                this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
             );
         });
     }

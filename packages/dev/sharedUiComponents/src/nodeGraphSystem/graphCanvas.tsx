@@ -293,7 +293,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         };
     }
 
-    handleKeyDown(evt: KeyboardEvent, onRemove: (nodeData: INodeData) => void, mouseLocationX: number, mouseLocationY: number, dataGenerator: (nodeData: INodeData) => any) {
+    handleKeyDown(evt: KeyboardEvent, 
+        onRemove: (nodeData: INodeData) => void, mouseLocationX: number, mouseLocationY: number, 
+        dataGenerator: (nodeData: INodeData) => any, rootElement: HTMLDivElement) {
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
             // Delete
             const selectedItems = this.selectedNodes;
@@ -363,7 +365,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._copiedNodes = selectedItems.slice(0);
         } else if (evt.key === "v" || evt.key === "V") {
             // Paste
-            const rootElement = this.props.stateManager.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
             const zoomLevel = this.zoom;
             let currentY = (mouseLocationY - rootElement.offsetTop - this.y - 20) / zoomLevel;
 
