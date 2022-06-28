@@ -357,7 +357,6 @@ const plugin: IPlugin = {
                     skipDefaultLibCheck: true,
                     sourceMap: false,
                     inlineSourceMap: false,
-
                 });
 
                 const sourceCode: eslint.SourceCode = context.getSourceCode();
