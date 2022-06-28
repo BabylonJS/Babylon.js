@@ -12,7 +12,7 @@ import { FrameNodePort } from "./frameNodePort";
 import type { StateManager } from "./stateManager";
 import type { FramePortData } from "./types/framePortData";
 import type { INodeData } from "./interfaces/nodeData";
-import type { IPortData} from "./interfaces/portData";
+import type { IPortData } from "./interfaces/portData";
 import { PortDataDirection } from "./interfaces/portData";
 import type { INodeContainer } from "./interfaces/nodeContainer";
 
