@@ -70,7 +70,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     render() {
         const color = this.state.color;
 
-        this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
+        this.props.globalState.lockObject.lock = this.state.pickerEnabled;
 
         return (
             <div className="color-picker">
