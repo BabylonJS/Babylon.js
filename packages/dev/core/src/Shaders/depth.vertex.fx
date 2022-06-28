@@ -6,6 +6,8 @@ attribute vec3 position;
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
+#include<clipPlaneVertexDeclaration>
+
 // Uniform
 #include<instancesDeclaration>
 
@@ -43,7 +45,9 @@ void main(void)
 #include<bonesVertex>
 #include<bakedVertexAnimation>
 
-	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+	#include<clipPlaneVertex>
+	gl_Position = viewProjection * worldPos;
 
     #ifdef USE_REVERSE_DEPTHBUFFER
 	    vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
