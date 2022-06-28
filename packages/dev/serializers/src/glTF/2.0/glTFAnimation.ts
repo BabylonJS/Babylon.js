@@ -15,6 +15,9 @@ import { _GLTFUtilities } from "./glTFUtilities";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 
+import { Camera } from "core/Cameras/camera";
+import { Light } from "core/Lights/light";
+
 /**
  * @hidden
  * Interface to store animation data.
@@ -83,6 +86,16 @@ enum _TangentType {
  */
 export class _GLTFAnimation {
     /**
+     * Determine if a node is animatable
+     * @param babylonNode the node to test
+     * @returns true if can be animated, false otherwise. False if the parameter is nullm or undefined.
+     */
+    public static IsAnimatable(babylonNode: Node): boolean {
+        // TODO - test the KHR_animation_pointer capability.
+        return babylonNode && (babylonNode instanceof TransformNode || babylonNode instanceof Camera || babylonNode instanceof Light);
+    }
+
+    /**
      * @ignore
      *
      * Creates glTF channel animation from BabylonJS animation.
@@ -94,7 +107,7 @@ export class _GLTFAnimation {
      * @returns nullable IAnimationData
      */
     public static _CreateNodeAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         convertToRightHandedSystem: boolean,
@@ -251,7 +264,7 @@ export class _GLTFAnimation {
         animationSampleRate: number
     ) {
         let glTFAnimation: IAnimation;
-        if (babylonNode instanceof TransformNode) {
+        if (_GLTFAnimation.IsAnimatable(babylonNode)) {
             if (babylonNode.animations) {
                 for (const animation of babylonNode.animations) {
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
@@ -541,7 +554,7 @@ export class _GLTFAnimation {
     private static _AddAnimation(
         name: string,
         glTFAnimation: IAnimation,
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         dataAccessorType: AccessorType,
         animationChannelTargetPath: AnimationChannelTargetPath,
@@ -669,7 +682,7 @@ export class _GLTFAnimation {
      * @param useQuaternion specifies if quaternions should be used
      */
     private static _CreateBakedAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         minFrame: number,
@@ -757,7 +770,7 @@ export class _GLTFAnimation {
 
     private static _ConvertFactorToVector3OrQuaternion(
         factor: number,
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationType: number,
         animationChannelTargetPath: AnimationChannelTargetPath,
@@ -806,7 +819,7 @@ export class _GLTFAnimation {
     }
 
     private static _SetInterpolatedValue(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         value: Nullable<number | Vector3 | Quaternion>,
         time: number,
         animation: Animation,
@@ -877,7 +890,7 @@ export class _GLTFAnimation {
      * @param useQuaternion Specifies if quaternions are used in the animation
      */
     private static _CreateLinearOrStepAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         frameDelta: number,
@@ -904,7 +917,7 @@ export class _GLTFAnimation {
      * @param useQuaternion Specifies if quaternions are used in the animation
      */
     private static _CreateCubicSplineAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         frameDelta: number,
@@ -943,7 +956,7 @@ export class _GLTFAnimation {
     }
 
     private static _GetBasePositionRotationOrScale(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: any,
         animationChannelTargetPath: AnimationChannelTargetPath,
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
@@ -993,7 +1006,7 @@ export class _GLTFAnimation {
         animation: Animation,
         outputs: number[][],
         animationChannelTargetPath: AnimationChannelTargetPath,
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
     ) {
@@ -1151,7 +1164,7 @@ export class _GLTFAnimation {
      * @param convertToRightHandedSystem Specifies if the values should be converted to right-handed
      */
     private static _AddSplineTangent(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         tangentType: _TangentType,
         outputs: number[][],
         animationChannelTargetPath: AnimationChannelTargetPath,
