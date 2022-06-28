@@ -128,20 +128,18 @@ export class ArrayItem {
 
 // https://stackoverflow.com/a/48218209
 function mergeDeep(...objects: any[]): any {
-    const isObject = (obj: any) => obj && typeof obj === 'object';
+    const isObject = (obj: any) => obj && typeof obj === "object";
 
     return objects.reduce((prev, obj) => {
-        Object.keys(obj).forEach(key => {
+        Object.keys(obj).forEach((key) => {
             const pVal = prev[key];
             const oVal = obj[key];
 
             if (Array.isArray(pVal) && Array.isArray(oVal)) {
                 prev[key] = pVal.concat(...oVal);
-            }
-            else if (isObject(pVal) && isObject(oVal)) {
+            } else if (isObject(pVal) && isObject(oVal)) {
                 prev[key] = mergeDeep(pVal, oVal);
-            }
-            else {
+            } else {
                 prev[key] = oVal;
             }
         });
