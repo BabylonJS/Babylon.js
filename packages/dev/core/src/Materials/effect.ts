@@ -8,7 +8,7 @@ import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
@@ -145,6 +145,12 @@ export class Effect implements IDisposable {
      * Specifies if the effect was previously ready
      */
     public _wasPreviouslyReady = false;
+
+    /**
+     * @hidden
+     * Specifies if the effect was previously using instances
+     */
+    public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
 
     private _isDisposed = false;
 
@@ -1295,6 +1301,17 @@ export class Effect implements IDisposable {
      */
     public setVector4(uniformName: string, vector4: IVector4Like): Effect {
         this._pipelineContext!.setVector4(uniformName, vector4);
+        return this;
+    }
+
+    /**
+     * Sets a Quaternion on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param quaternion Value to be set.
+     * @returns this effect.
+     */
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): Effect {
+        this._pipelineContext!.setQuaternion(uniformName, quaternion);
         return this;
     }
 

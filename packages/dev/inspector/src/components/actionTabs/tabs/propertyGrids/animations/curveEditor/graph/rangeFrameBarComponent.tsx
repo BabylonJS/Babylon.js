@@ -128,7 +128,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
     }
 
     private _buildActiveFrame() {
-        if (this.props.context.activeFrame !== null && this.props.context.activeFrame !== undefined) {
+        if (this.props.context.activeFrame === null || this.props.context.activeFrame === undefined) {
             return null;
         }
 

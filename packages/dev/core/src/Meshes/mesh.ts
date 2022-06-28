@@ -3137,7 +3137,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Updating vertex buffers
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
-            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
+            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable(), vbs[kind].getStrideSize());
         }
 
         // Updating submeshes

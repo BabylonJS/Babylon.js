@@ -1251,7 +1251,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1331,6 +1331,7 @@ export class NodeMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
         return true;
     }

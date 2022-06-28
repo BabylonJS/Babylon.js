@@ -296,13 +296,14 @@ export class SubMesh implements ICullable {
 
     /**
      * Returns the submesh material
+     * @param getDefaultMaterial Defines whether or not to get the default material if nothing has been defined.
      * @returns null or the current material
      */
-    public getMaterial(): Nullable<Material> {
+    public getMaterial(getDefaultMaterial = true): Nullable<Material> {
         const rootMaterial = this._renderingMesh.getMaterialForRenderPass(this._engine.currentRenderPassId) ?? this._renderingMesh.material;
 
         if (!rootMaterial) {
-            return this._mesh.getScene().defaultMaterial;
+            return getDefaultMaterial ? this._mesh.getScene().defaultMaterial : null;
         } else if (this._isMultiMaterial(rootMaterial)) {
             const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 

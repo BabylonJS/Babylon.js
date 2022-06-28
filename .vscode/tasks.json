@@ -83,7 +83,7 @@
                     "HEADLESS": "false"
                 }
             },
-            "args": ["run", "test", "-w", "@tools/visualization-tests"],
+            "args": ["run", "test:visualization"],
             "presentation": {
                 "group": "test"
             },
@@ -100,7 +100,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "test", "-w", "@tools/visualization-tests"],
+            "args": ["run", "test:visualization"],
             "presentation": {
                 "group": "test"
             }

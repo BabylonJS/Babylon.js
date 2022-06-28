@@ -72,6 +72,12 @@ export interface IImage {
      * thereby enabling the configuration of the CORS requests for the element's fetched data.
      */
     crossOrigin: string | null;
+
+    /**
+     * provides support for referrer policy on xhr load request,
+     * it is used to control the request header.
+     */
+    referrerPolicy: string;
 }
 
 /**

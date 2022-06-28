@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "5.9.0",
+    "version": "5.12.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -19,7 +19,7 @@
         "prepublishOnly": "build-tools -c prepare-es6-build -cf Engines/constants.js"
     },
     "dependencies": {
-        "tslib": "^2.3.1"
+        "tslib": "^2.4.0"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",

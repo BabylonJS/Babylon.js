@@ -19,7 +19,7 @@ import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from 
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike, IQuaternionLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
 import type { ISceneLike } from "./thinEngine";
@@ -598,6 +598,19 @@ class NativePipelineContext implements IPipelineContext {
     public setVector4(uniformName: string, vector4: IVector4Like): void {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
             if (!this.engine.setFloat4(this._uniforms[uniformName]!, vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a Quaternion on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param quaternion Value to be set.
+     */
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
+        if (this._cacheFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
                 this._valueCache[uniformName] = null;
             }
         }
@@ -2222,7 +2235,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,

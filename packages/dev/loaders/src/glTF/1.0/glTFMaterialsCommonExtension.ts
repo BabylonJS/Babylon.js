@@ -66,7 +66,10 @@ interface IGLTFSpotLightCommonExtension {
     quadraticAttenuation: number;
 }
 
-/** @hidden */
+/**
+ * @hidden
+ * @deprecated
+ */
 export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
     constructor() {
         super("KHR_materials_common");
