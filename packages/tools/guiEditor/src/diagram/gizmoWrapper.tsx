@@ -4,7 +4,7 @@ import * as React from "react";
 import type { GlobalState } from "../globalState";
 import { GizmoGeneric } from "./gizmoGeneric";
 import { GizmoLine } from "./gizmoLine";
-import { Line } from "gui/2D/controls/line";
+import type { Line } from "gui/2D/controls/line";
 
 export interface IGizmoWrapperProps {
     globalState: GlobalState;

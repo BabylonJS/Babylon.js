@@ -1,6 +1,6 @@
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 
 export const RegisterElbowSupport = (stateManager: StateManager) => {
     stateManager.isElbowConnectionAllowed = (a, b) => {

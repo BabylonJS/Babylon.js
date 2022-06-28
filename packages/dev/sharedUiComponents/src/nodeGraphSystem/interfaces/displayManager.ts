@@ -1,5 +1,5 @@
-import { INodeData } from "./nodeData";
-import { IPortData } from "./portData";
+import type { INodeData } from "./nodeData";
+import type { IPortData } from "./portData";
 
 export interface IDisplayManager {
     getHeaderClass(data: INodeData): string;

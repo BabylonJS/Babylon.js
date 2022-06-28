@@ -4,7 +4,7 @@ import type { Color3 } from "../../Maths/math.color";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * The PBR material of BJS following the metal roughness convention.

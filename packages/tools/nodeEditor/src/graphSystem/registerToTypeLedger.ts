@@ -1,5 +1,5 @@
-import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import { BlockNodeData } from "./blockNodeData";
 import { ConnectionPointPortData } from "./connectionPointPortData";

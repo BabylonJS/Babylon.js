@@ -9,11 +9,11 @@ import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from
 import { PropertyTypeForEdition } from "core/Materials/Node/nodeMaterialDecorator";
 import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
 import type { Scene } from "core/scene";
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import { GlobalState } from "../../globalState";
+import type { GlobalState } from "../../globalState";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {

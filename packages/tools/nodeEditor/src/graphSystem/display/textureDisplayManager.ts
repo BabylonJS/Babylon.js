@@ -6,8 +6,8 @@ import { TextureLineComponent } from "../../sharedComponents/textureLineComponen
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
-import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;

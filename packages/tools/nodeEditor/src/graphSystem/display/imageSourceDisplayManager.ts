@@ -1,8 +1,8 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
-import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class ImageSourceDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;

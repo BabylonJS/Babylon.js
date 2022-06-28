@@ -6,8 +6,8 @@ import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 
 import deleteButton from "../../imgs/delete.svg";
 import copyIcon from "../../sharedComponents/copy.svg";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import { GlobalState } from "../../globalState";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { GlobalState } from "../../globalState";
 
 interface IGradientStepComponentProps {
     stateManager: StateManager;

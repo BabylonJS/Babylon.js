@@ -6,8 +6,8 @@ import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animat
 import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import type { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
-import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 const inputNameToAttributeValue: { [name: string]: string } = {
     position2d: "position",

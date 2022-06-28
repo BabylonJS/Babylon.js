@@ -1,8 +1,8 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { BlockTools } from "../../blockTools";
-import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass() {

@@ -1,8 +1,8 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
 import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
-import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class TrigonometryDisplayManager implements IDisplayManager {
     public getHeaderClass() {

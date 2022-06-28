@@ -1,4 +1,4 @@
-import { GraphFrame } from "../graphFrame";
+import type { GraphFrame } from "../graphFrame";
 
 declare type FrameNodePort = import("../frameNodePort").FrameNodePort;
 

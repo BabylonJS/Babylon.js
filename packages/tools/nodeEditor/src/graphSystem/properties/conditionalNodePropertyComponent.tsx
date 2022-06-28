@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
 import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
-import { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 export class ConditionalPropertyTabComponent extends React.Component<IPropertyComponentProps> {

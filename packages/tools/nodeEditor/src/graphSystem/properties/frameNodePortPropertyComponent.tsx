@@ -3,12 +3,13 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { FramePortPosition, GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { FramePortPosition } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
-import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
+import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 export interface IFrameNodePortPropertyTabComponentProps {
@@ -28,21 +29,20 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
             port: this.props.frameNodePort,
         };
 
-        const _this = this;
         this._onSelectionChangedObserver = this.props.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (IsFramePortData(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
-                _this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add((port: FrameNodePort) => {
-                    _this.setState({ port: port });
+                this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add((port: FrameNodePort) => {
+                    this.setState({ port: port });
                 });
 
-                _this.setState({ port: selection.port });
+                this.setState({ port: selection.port });
             }
         });
 
         this._onFramePortPositionChangedObserver = this.props.frameNodePort.onFramePortPositionChangedObservable.add((port: FrameNodePort) => {
-            _this.setState({ port: port });
+            this.setState({ port: port });
         });
     }
 

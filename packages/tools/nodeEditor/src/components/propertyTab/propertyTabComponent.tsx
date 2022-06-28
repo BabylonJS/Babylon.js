@@ -28,7 +28,7 @@ import "./propertyTab.scss";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
-import { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
+import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNodePort";
 import { IsFramePortData } from "shared-ui-components/nodeGraphSystem/tools";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
