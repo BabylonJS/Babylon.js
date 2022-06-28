@@ -1426,6 +1426,11 @@
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
             "referenceImage": "materialPlugin.png"
+        },
+        {
+            "title": "Serialize and Load Instanced Hierarchy",
+            "playgroundId": "#3ZQ1SL#4",
+            "referenceImage": "serializeAndLoadInstancedHierarchy.png"
         }
     ]
 }
