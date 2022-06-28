@@ -577,7 +577,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 propertyName="fontStyle"
                                 options={fontStyleOptions}
                                 onSelect={(newValue) => {
-                                    proxy.fontStyle = ["", "italic", "oblique"][newValue];
+                                    proxy.fontStyle = ["", "italic", "oblique"][newValue as number];
                                 }}
                                 extractValue={() => {
                                     switch (proxy.fontStyle) {
