@@ -1,9 +1,9 @@
 import type { IDisplayManager } from "./interfaces/displayManager";
 import { Observable } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { IPortData } from "./interfaces/portData";
+import type { IPortData } from "./interfaces/portData";
 import { NodePort } from "./nodePort";
-import { GraphNode } from "./graphNode";
+import type { GraphNode } from "./graphNode";
 import { IsFramePortData } from "./tools";
 import type { FramePortPosition } from "./graphFrame";
 import type { StateManager } from "./stateManager";

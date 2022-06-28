@@ -6,7 +6,7 @@ import type { StateManager } from "./stateManager";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import type { FrameNodePort } from "./frameNodePort";
 import type { IDisplayManager } from "./interfaces/displayManager";
-import { IPortData } from "./interfaces/portData";
+import type { IPortData } from "./interfaces/portData";
 
 export class NodePort {
     protected _element: HTMLDivElement;

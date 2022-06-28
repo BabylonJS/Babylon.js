@@ -8,11 +8,11 @@ import triangle from "../imgs/triangle.svg";
 import type { NodeLink } from "./nodeLink";
 import type { StateManager } from "./stateManager";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
-import { IDisplayManager } from "./interfaces/displayManager";
+import type { IDisplayManager } from "./interfaces/displayManager";
 import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
-import { INodeData } from "./interfaces/nodeData";
-import { IPortData } from "./interfaces/portData";
+import type { INodeData } from "./interfaces/nodeData";
+import type { IPortData } from "./interfaces/portData";
 
 export class GraphNode {
     private _visual: HTMLDivElement;

@@ -1,13 +1,15 @@
-import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import type {
+    NodeMaterialConnectionPoint} from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import {
-    NodeMaterialConnectionPoint,
     NodeMaterialConnectionPointCompatibilityStates,
     NodeMaterialConnectionPointDirection,
 } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import { Nullable } from "core/types";
-import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import { IPortData, PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { Nullable } from "core/types";
+import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import type { IPortData} from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;

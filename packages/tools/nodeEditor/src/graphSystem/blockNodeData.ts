@@ -1,7 +1,7 @@
-import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
 
 export class BlockNodeData implements INodeData {

@@ -6,9 +6,9 @@ import { Observable } from "core/Misc/observable";
 import { Color3 } from "core/Maths/math.color";
 import type { NodePort } from "./nodePort";
 import { FrameNodePort } from "./frameNodePort";
-import { NodeLink } from "./nodeLink";
+import type { NodeLink } from "./nodeLink";
 import { TypeLedger } from "./typeLedger";
-import { IFrameData } from "./interfaces/nodeLocationInfo";
+import type { IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
 
 declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;

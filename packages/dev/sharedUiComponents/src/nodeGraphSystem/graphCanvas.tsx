@@ -9,11 +9,12 @@ import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
 import type { IEditorData, IFrameData } from "./interfaces/nodeLocationInfo";
 import { FrameNodePort } from "./frameNodePort";
-import { StateManager } from "./stateManager";
-import { FramePortData } from "./types/framePortData";
-import { INodeData } from "./interfaces/nodeData";
-import { IPortData, PortDataDirection } from "./interfaces/portData";
-import { INodeContainer } from "./interfaces/nodeContainer";
+import type { StateManager } from "./stateManager";
+import type { FramePortData } from "./types/framePortData";
+import type { INodeData } from "./interfaces/nodeData";
+import type { IPortData} from "./interfaces/portData";
+import { PortDataDirection } from "./interfaces/portData";
+import type { INodeContainer } from "./interfaces/nodeContainer";
 
 import "./scss/graphCanvas.scss";
 import { TypeLedger } from "./typeLedger";

@@ -4,10 +4,10 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
-import { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
-import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;

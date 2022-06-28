@@ -1,6 +1,6 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
-import { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
+import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 
 export class PBRDisplayManager implements IDisplayManager {
     public getHeaderClass() {
