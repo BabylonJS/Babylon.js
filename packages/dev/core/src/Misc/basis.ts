@@ -140,6 +140,12 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
         case BASIS_FORMATS.cTFBC4:
             format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
             break;
+        case BASIS_FORMATS.cTFASTC_4x4:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
+            break;
+        case BASIS_FORMATS.cTFETC2:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
+            break;
     }
 
     if (format === undefined) {
