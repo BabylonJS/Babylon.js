@@ -383,7 +383,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
                 }
-                this._metaKeys.splice(0, this._metaKeys.length);
+                if (this._usingMacOS) {
+                    this._metaKeys.splice(0, this._metaKeys.length);
+                }
             }
         };
 
