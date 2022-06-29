@@ -104,7 +104,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
-        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense && navigator.getGamepads) {
+        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense) {
             this._updateDevice(deviceType, deviceSlot, inputIndex);
         }
 
@@ -456,7 +456,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         }
                     }
 
-                    if (!document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
+                    if (!document.pointerLockElement) {
                         try {
                             this._elementToAttachTo.setPointerCapture(this._mouseId);
                         } catch (e) {
@@ -465,7 +465,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 } else {
                     // Touch; Since touches are dynamically assigned, only set capture if we have an id
-                    if (evt.pointerId && !document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
+                    if (evt.pointerId && !document.pointerLockElement) {
                         try {
                             this._elementToAttachTo.setPointerCapture(evt.pointerId);
                         } catch (e) {
@@ -592,13 +592,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         const noop = function () {};
 
         try {
-            const options: object = {
-                passive: {
-                    get: function () {
-                        passiveSupported = true;
-                    },
+            const options = Object.defineProperty({}, "passive", {
+                get: function () {
+                    passiveSupported = true;
                 },
-            };
+            });
 
             this._elementToAttachTo.addEventListener("test", noop, options);
             this._elementToAttachTo.removeEventListener("test", noop, options);
