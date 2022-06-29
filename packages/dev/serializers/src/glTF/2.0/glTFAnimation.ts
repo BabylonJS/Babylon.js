@@ -431,10 +431,10 @@ export class _GLTFAnimation {
                     const targetAnimation = animationGroup.targetedAnimations[i];
                     const target = targetAnimation.target;
                     const animation = targetAnimation.animation;
-                    if (target instanceof TransformNode || (target.length === 1 && target[0] instanceof TransformNode)) {
+                    if (this._IsTransformable(target) || (target.length === 1 && this._IsTransformable(target[0]))) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            const babylonTransformNode = target instanceof TransformNode ? (target as TransformNode) : (target[0] as TransformNode);
+                            const babylonTransformNode = this._IsTransformable(target) ? target : (target[0] as TransformableType);
                             const convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
                             _GLTFAnimation._AddAnimation(
                                 `${animation.name}`,
@@ -686,7 +686,7 @@ export class _GLTFAnimation {
      * @param useQuaternion specifies if quaternions should be used
      */
     private static _CreateBakedAnimation(
-        babylonTransformNode: Node,
+        babylonTransformNode: TransformableType,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         minFrame: number,
@@ -823,7 +823,7 @@ export class _GLTFAnimation {
     }
 
     private static _SetInterpolatedValue(
-        babylonTransformNode: Node,
+        babylonTransformNode: TransformableType,
         value: Nullable<number | Vector3 | Quaternion>,
         time: number,
         animation: Animation,
@@ -837,18 +837,25 @@ export class _GLTFAnimation {
         const animationType = animation.dataType;
         let cacheValue: Vector3 | Quaternion | number;
         inputs.push(time);
-        if (typeof value === "number" && babylonTransformNode instanceof TransformNode) {
-            value = this._ConvertFactorToVector3OrQuaternion(
-                value as number,
-                babylonTransformNode,
-                animation,
-                animationType,
-                animationChannelTargetPath,
-                convertToRightHandedSystem,
-                useQuaternion
-            );
-        }
+
         if (value) {
+            if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+                outputs.push([value as number]);
+                return;
+            }
+
+            if (typeof value === "number") {
+                value = this._ConvertFactorToVector3OrQuaternion(
+                    value as number,
+                    babylonTransformNode,
+                    animation,
+                    animationType,
+                    animationChannelTargetPath,
+                    convertToRightHandedSystem,
+                    useQuaternion
+                );
+            }
+
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 if (useQuaternion) {
                     quaternionCache = value as Quaternion;
@@ -864,8 +871,6 @@ export class _GLTFAnimation {
                     }
                 }
                 outputs.push(quaternionCache.asArray());
-            } else if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
-                outputs.push([value as number]);
             } else {
                 // scaling and position animation
                 cacheValue = value as Vector3;
@@ -1168,7 +1173,7 @@ export class _GLTFAnimation {
      * @param convertToRightHandedSystem Specifies if the values should be converted to right-handed
      */
     private static _AddSplineTangent(
-        babylonTransformNode: Node,
+        babylonTransformNode: TransformableType,
         tangentType: _TangentType,
         outputs: number[][],
         animationChannelTargetPath: AnimationChannelTargetPath,
