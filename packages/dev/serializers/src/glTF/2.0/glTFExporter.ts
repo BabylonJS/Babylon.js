@@ -26,7 +26,7 @@ import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { Node } from "core/node";
 import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { SubMesh } from "core/Meshes/subMesh";
 import { Mesh } from "core/Meshes/mesh";
 import type { MorphTarget } from "core/Morph/morphTarget";
