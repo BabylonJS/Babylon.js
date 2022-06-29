@@ -2062,8 +2062,9 @@ export class _Exporter {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 exportNodes.push(babylonNode);
 
-                if (babylonNode instanceof AbstractMesh) {
-                    const material = babylonNode.material || babylonNode.getScene().defaultMaterial;
+                const babylonMesh = babylonNode as AbstractMesh;
+                if (babylonMesh.subMeshes && babylonMesh.subMeshes.length > 0) {
+                    const material = babylonMesh.material || babylonMesh.getScene().defaultMaterial;
                     if (material instanceof MultiMaterial) {
                         for (const subMaterial of material.subMaterials) {
                             if (subMaterial) {
