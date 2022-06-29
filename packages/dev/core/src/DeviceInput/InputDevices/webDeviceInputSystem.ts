@@ -21,7 +21,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
-    private _metaKeys: Set<number>;
+    private _metaKeys: Array<number>;
     private readonly _engine: Engine;
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
@@ -86,7 +86,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._enableEvents();
 
         if (this._usingMacOS) {
-            this._metaKeys = new Set();
+            this._metaKeys = [];
         }
 
         // Set callback to enable event handler switching when inputElement changes
@@ -335,7 +335,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.inputIndex = evt.keyCode;
 
                 if (this._usingMacOS && evt.metaKey && evt.key !== "Meta") {
-                    this._metaKeys.add(evt.keyCode);
+                    if (!this._metaKeys.includes(evt.keyCode)) {
+                        this._metaKeys.push(evt.keyCode);
+                    }
                 }
 
                 this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
@@ -355,14 +357,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
 
-                if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.size > 0) {
-                    for (const k in this._metaKeys.values) {
-                        const keyCode: number = +k;
+                if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.length > 0) {
+                    for (const keyCode of this._metaKeys) {
                         const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, keyCode, 0, this, this._elementToAttachTo);
                         kbKey[keyCode] = 0;
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
-                    this._metaKeys.clear();
+                    this._metaKeys.splice(0, this._metaKeys.length);
                 }
 
                 this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
@@ -382,7 +383,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
                 }
-                this._metaKeys.clear();
+                this._metaKeys.splice(0, this._metaKeys.length);
             }
         };
 
