@@ -112,7 +112,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
-        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense && navigator.getGamepads) {
+        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense) {
             this._updateDevice(deviceType, deviceSlot, inputIndex);
         }
 
@@ -356,9 +356,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.inputIndex = evt.keyCode;
 
                 if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.size > 0) {
-                    for(const k of this._metaKeys) {
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, k, 0, this, this._elementToAttachTo);
-                        kbKey[k] = 0;
+                    for (const k in this._metaKeys.values) {
+                        const keyCode: number = +k;
+                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, keyCode, 0, this, this._elementToAttachTo);
+                        kbKey[keyCode] = 0;
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
                     this._metaKeys.clear();
@@ -478,7 +479,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         }
                     }
 
-                    if (!document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
+                    if (!document.pointerLockElement) {
                         try {
                             this._elementToAttachTo.setPointerCapture(this._mouseId);
                         } catch (e) {
@@ -487,7 +488,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 } else {
                     // Touch; Since touches are dynamically assigned, only set capture if we have an id
-                    if (evt.pointerId && !document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
+                    if (evt.pointerId && !document.pointerLockElement) {
                         try {
                             this._elementToAttachTo.setPointerCapture(evt.pointerId);
                         } catch (e) {
