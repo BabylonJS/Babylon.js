@@ -154,7 +154,8 @@ checkBabylonVersionAsync().then(() => {
                     action: (data) => {
                         return new Promise((resolve, reject) => {
                             let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                            let newUrl = baseUrl + "#" + data;
+                            let dataHash = data.startsWith('#') ? data : '#' + data;
+                            let newUrl = baseUrl + dataHash;
                             currentSnippetToken = data;
                             location.href = newUrl;
                             resolve();
