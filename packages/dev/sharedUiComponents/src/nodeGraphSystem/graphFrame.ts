@@ -7,7 +7,6 @@ import { Color3 } from "core/Maths/math.color";
 import type { NodePort } from "./nodePort";
 import { FrameNodePort } from "./frameNodePort";
 import type { NodeLink } from "./nodeLink";
-import { TypeLedger } from "./typeLedger";
 import type { IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
 
