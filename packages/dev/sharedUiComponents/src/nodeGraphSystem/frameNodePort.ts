@@ -50,7 +50,7 @@ export class FrameNodePort extends NodePort {
         framePortId: number,
         parentFrameId: number
     ) {
-        super(portContainer, portData.data, node, stateManager);
+        super(portContainer, portData, node, stateManager);
 
         this._parentFrameId = parentFrameId;
         this._isInput = isInput;
