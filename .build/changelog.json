@@ -1,6 +1,23 @@
 {
-    "fromTag": "5.13.1",
+    "fromTag": "5.13.2",
     "changelog": {
+        "5.13.3": [
+            {
+                "pr": "12701",
+                "title": "Fix loading skinned model with multiple primitives",
+                "description": "https://forum.babylonjs.com/t/3d-model-not-showing-up-in-playground-or-sandbox/31821",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "5.13.2": [
             {
                 "pr": "12700",
