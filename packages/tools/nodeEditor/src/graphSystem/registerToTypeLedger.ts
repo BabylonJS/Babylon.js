@@ -1,5 +1,4 @@
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
-import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import { BlockNodeData } from "./blockNodeData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
@@ -9,7 +8,7 @@ export const RegisterTypeLedger = () => {
         return new ConnectionPointPortData(data.portData.data as NodeMaterialConnectionPoint, nodeContainer);
     };
 
-    TypeLedger.NodeDataBuilder = (data, nodeContainer: INodeContainer) => {
+    TypeLedger.NodeDataBuilder = (data, nodeContainer) => {
         return new BlockNodeData(data, nodeContainer);
     };
 };
