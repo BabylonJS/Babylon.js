@@ -396,7 +396,7 @@ export class Engine extends ThinEngine {
     public disableManifestCheck = false;
 
     /**
-     * Gets or sets a boolean to enable/disable the context (right-click) menu from appearing on the main canvas
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
      */
     public disableContextMenu: boolean = true;
 
