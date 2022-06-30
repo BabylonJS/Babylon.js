@@ -366,22 +366,7 @@ export class ThinEngine {
     public _gl: WebGLRenderingContext;
     /** @hidden */
     public _webGLVersion = 1.0;
-    private _renCanvas: Nullable<HTMLCanvasElement>;
-    private _preventContextMenu: (evt: any) => void = (evt: any) => {
-        evt.preventDefault();
-    };
-    protected set _renderingCanvas (renderingCanvas: Nullable<HTMLCanvasElement>) {
-        if (this._renCanvas) {
-            this._renCanvas.removeEventListener("contextmenu", this._preventContextMenu);
-        }
-        this._renCanvas = renderingCanvas;
-        if (this._renCanvas) {
-            this._renCanvas.addEventListener("contextmenu", this._preventContextMenu);
-        }
-    }
-    protected get _renderingCanvas () {
-        return this._renCanvas;
-    }
+    protected _renderingCanvas: Nullable<HTMLCanvasElement>;
     protected _windowIsBackground = false;
     protected _creationOptions: EngineOptions;
     protected _audioContext: Nullable<AudioContext>;
@@ -5265,10 +5250,6 @@ export class ThinEngine {
 
                 window.removeEventListener("resize", this._checkForMobile);
             }
-        }
-
-        if (this._renCanvas) {
-            this._renCanvas.removeEventListener("contextmenu", this._preventContextMenu);
         }
 
         this._workingCanvas = null;
