@@ -107,7 +107,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             })
             .catch((err) => {
                 Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
-                Tools.Warn(err);
+                Tools.Warn(`Failed to transcode Basis file: ${err}`);
                 callback(0, 0, false, false, () => {}, true);
             });
     }
