@@ -610,7 +610,7 @@ class Playground {
     // So we need to be super fast.
     private async _hookMonacoCompletionProvider() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
-        // tslint:disable-next-line:no-this-assignment
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const owner = this;
 
         languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function (model: any, position: any, context: any, token: any) {

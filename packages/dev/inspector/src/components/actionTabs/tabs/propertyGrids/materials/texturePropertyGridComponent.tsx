@@ -381,7 +381,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         target={texture}
                         propertyName="coordinatesMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onSelect={(value) => (texture.coordinatesMode = value)}
+                        onSelect={(value) => (texture.coordinatesMode = value as number)}
                     />
                     <SliderLineComponent
                         label="Level"
@@ -400,7 +400,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             noDirectUpdate={true}
                             propertyName="samplingMode"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            onSelect={(value) => texture.updateSamplingMode(value)}
+                            onSelect={(value) => texture.updateSamplingMode(value as number)}
                         />
                     )}
                 </LineContainerComponent>

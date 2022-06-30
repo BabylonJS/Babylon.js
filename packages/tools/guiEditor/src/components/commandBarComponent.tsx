@@ -1,6 +1,7 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
-import { GlobalState, GUIEditorTool } from "../globalState";
+import type { GlobalState } from "../globalState";
+import { GUIEditorTool } from "../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";

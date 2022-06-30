@@ -8,7 +8,7 @@ import type { Container } from "./container";
 import type { TextBlock } from "./textBlock";
 import type { InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
-import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
  * Class used to store key control properties

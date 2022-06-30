@@ -3,7 +3,7 @@ import type { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Nullable } from "../../types";
+import type { Nullable } from "../../types";
 
 /**
  * The Physically based simple base material of BJS.
