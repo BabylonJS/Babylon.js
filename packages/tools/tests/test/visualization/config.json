@@ -1372,6 +1372,13 @@
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
+            "title": "Multi cameras and output render target with depth texture (D24)",
+            "renderCount": 2,
+            "playgroundId": "#BCYE7J#36",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "multiCamerasOutputRenderTarget.png"
+        },
+        {
             "title": "Sample depth texture",
             "renderCount": 5,
             "playgroundId": "#8RU8Q3#108",
@@ -1426,6 +1433,11 @@
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
             "referenceImage": "materialPlugin.png"
+        },
+        {
+            "title": "Serialize and Load Instanced Hierarchy",
+            "playgroundId": "#3ZQ1SL#7",
+            "referenceImage": "serializeAndLoadInstancedHierarchy.png"
         }
     ]
 }

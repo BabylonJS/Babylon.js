@@ -423,7 +423,7 @@ export enum QueryType {
 }
 
 /** @hidden */
-export enum CanvasCompositingAlphaMode {
+export enum CanvasAlphaMode {
     Opaque = "opaque",
     Premultiplied = "premultiplied",
 }

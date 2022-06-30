@@ -405,8 +405,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         target={system}
                         propertyName="emitter"
                         noDirectUpdate={true}
-                        onSelect={(value: number) => {
-                            switch (value) {
+                        onSelect={(value) => {
+                            const valueAsNumber = value as number;
+                            switch (valueAsNumber) {
                                 case -1:
                                     this.raiseOnPropertyChanged("emitter", null, system.emitter);
                                     system.emitter = null;
@@ -416,8 +417,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     system.emitter = Vector3.Zero();
                                     break;
                                 default:
-                                    this.raiseOnPropertyChanged("emitter", meshEmitters[value - 1], system.emitter);
-                                    system.emitter = meshEmitters[value - 1];
+                                    this.raiseOnPropertyChanged("emitter", meshEmitters[valueAsNumber - 1], system.emitter);
+                                    system.emitter = meshEmitters[valueAsNumber - 1];
                             }
                             this.forceUpdate();
                         }}
@@ -455,9 +456,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         target={system}
                         propertyName="particleEmitterType"
                         noDirectUpdate={true}
-                        onSelect={(value: number) => {
+                        onSelect={(value) => {
+                            const valueAsNumber = value as number;
                             const currentType = system.particleEmitterType;
-                            switch (value) {
+                            switch (valueAsNumber) {
                                 case 0:
                                     system.particleEmitterType = new BoxParticleEmitter();
                                     break;

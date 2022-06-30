@@ -13,6 +13,9 @@
         },
         {
             "path": "../../dev/gui/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/sharedUiComponents/tsconfig.build.json"
         }
     ],
 

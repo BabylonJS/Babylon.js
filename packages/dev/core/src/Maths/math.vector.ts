@@ -1150,22 +1150,42 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
-        const n = plane.normal;
-        const d = plane.d;
+        // Use the normal scaled to the plane offset as the origin for the formula
+        const planeOrigin = MathTmp.Vector3[0];
+        plane.normal.scaleToRef(-plane.d, planeOrigin);
 
-        const V = MathTmp.Vector3[0];
+        // Since the normal in Babylon should point toward the viewer, invert it for the dot product
+        const inverseNormal = MathTmp.Vector3[1];
+        plane.normal.negateToRef(inverseNormal);
 
-        // ray direction
-        this.subtractToRef(origin, V);
+        // This vector is the direction
+        const { x, y, z } = this;
 
-        V.normalize();
+        // Calculate how close the direction is to the normal of the plane
+        const dotProduct = Vector3.Dot(inverseNormal, this);
 
-        const denom = Vector3.Dot(V, n);
-        const t = -(Vector3.Dot(origin, n) + d) / denom;
+        /*
+         * Early out in case the direction will never hit the plane.
+         *
+         * Epsilon is used to avoid issues with rays very near to parallel with the
+         * plane, and squared because as of writing the value is not sufficiently
+         * small for this use case.
+         */
+        if (dotProduct <= Epsilon * Epsilon) {
+            // No good option for setting the result vector here, so just take the origin of the ray
+            result.copyFrom(origin);
+            return;
+        }
 
-        // P = P0 + t*V
-        const scaledV = V.scaleInPlace(t);
-        origin.addToRef(scaledV, result);
+        // Calculate the offset
+        const relativeOrigin = MathTmp.Vector3[2];
+        planeOrigin.subtractToRef(origin, relativeOrigin);
+
+        // Calculate the length along the direction vector to the hit point
+        const hitDistance = Vector3.Dot(relativeOrigin, inverseNormal) / dotProduct;
+
+        // Apply the hit point by adding the direction scaled by the distance to the origin
+        result.set(origin.x + x * hitDistance, origin.y + y * hitDistance, origin.z + z * hitDistance);
     }
 
     /**
@@ -3518,6 +3538,21 @@ export class Quaternion {
     public asArray(): number[] {
         return [this._x, this._y, this._z, this._w];
     }
+
+    /**
+     * Stores from the starting index in the given array the Quaternion successive values
+     * @param array defines the array where to store the x,y,z,w components
+     * @param index defines an optional index in the target array to define where to start storing values
+     * @returns the current Quaternion object
+     */
+    public toArray(array: FloatArray, index: number = 0): Quaternion {
+        array[index] = this.x;
+        array[index + 1] = this.y;
+        array[index + 2] = this.z;
+        array[index + 3] = this.w;
+        return this;
+    }
+
     /**
      * Check if two quaternions are equals
      * @param otherQuaternion defines the second operand
