@@ -26,7 +26,7 @@ import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { Node } from "core/node";
 import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { SubMesh } from "core/Meshes/subMesh";
 import { Mesh } from "core/Meshes/mesh";
 import type { MorphTarget } from "core/Morph/morphTarget";
@@ -239,8 +239,14 @@ export class _Exporter {
         );
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: { [key: number]: number }): Promise<Nullable<INode>> {
-        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap));
+    public _extensionsPostExportNodeAsync(
+        context: string,
+        node: Nullable<INode>,
+        babylonNode: Node,
+        nodeMap?: { [key: number]: number },
+        binaryWriter?: _BinaryWriter
+    ): Promise<Nullable<INode>> {
+        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, binaryWriter));
     }
 
     public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
@@ -364,6 +370,10 @@ export class _Exporter {
 
             extension.dispose();
         }
+    }
+
+    public get options() {
+        return this._options;
     }
 
     /**
@@ -1334,8 +1344,9 @@ export class _Exporter {
             node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
         }
 
-        const rotationQuaternion = babylonCamera.absoluteRotation;
-        if (!Quaternion.IsIdentity(rotationQuaternion)) {
+        const rotationQuaternion = (<any>babylonCamera).rotationQuaternion; // we target the local transformation if one.
+
+        if (rotationQuaternion && !Quaternion.IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
             }
@@ -2052,8 +2063,9 @@ export class _Exporter {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 exportNodes.push(babylonNode);
 
-                if (babylonNode instanceof AbstractMesh) {
-                    const material = babylonNode.material || babylonNode.getScene().defaultMaterial;
+                const babylonMesh = babylonNode as AbstractMesh;
+                if (babylonMesh.subMeshes && babylonMesh.subMeshes.length > 0) {
+                    const material = babylonMesh.material || babylonMesh.getScene().defaultMaterial;
                     if (material instanceof MultiMaterial) {
                         for (const subMaterial of material.subMaterials) {
                             if (subMaterial) {
@@ -2094,7 +2106,7 @@ export class _Exporter {
             promiseChain = promiseChain.then(() => {
                 const convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
                 return this._createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem).then((node) => {
-                    const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
+                    const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap, binaryWriter);
                     if (promise == null) {
                         Tools.Warn(`Not exporting node ${babylonNode.name}`);
                         return Promise.resolve();
@@ -2488,6 +2500,46 @@ export class _BinaryWriter {
             }
             this._dataView.setUint32(this._byteOffset, entry, true);
             this._byteOffset += 4;
+        }
+    }
+    /**
+     * Stores an Int16 in the array buffer
+     * @param entry
+     * @param byteOffset If defined, specifies where to set the value as an offset.
+     */
+    public setInt16(entry: number, byteOffset?: number) {
+        if (byteOffset != null) {
+            if (byteOffset < this._byteOffset) {
+                this._dataView.setInt16(byteOffset, entry, true);
+            } else {
+                Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            }
+        } else {
+            if (this._byteOffset + 2 > this._arrayBuffer.byteLength) {
+                this._resizeBuffer(this._arrayBuffer.byteLength * 2);
+            }
+            this._dataView.setInt16(this._byteOffset, entry, true);
+            this._byteOffset += 2;
+        }
+    }
+    /**
+     * Stores a byte in the array buffer
+     * @param entry
+     * @param byteOffset If defined, specifies where to set the value as an offset.
+     */
+    public setByte(entry: number, byteOffset?: number) {
+        if (byteOffset != null) {
+            if (byteOffset < this._byteOffset) {
+                this._dataView.setInt8(byteOffset, entry);
+            } else {
+                Tools.Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            }
+        } else {
+            if (this._byteOffset + 1 > this._arrayBuffer.byteLength) {
+                this._resizeBuffer(this._arrayBuffer.byteLength * 2);
+            }
+            this._dataView.setInt8(this._byteOffset, entry);
+            this._byteOffset++;
         }
     }
 }

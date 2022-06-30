@@ -59,6 +59,12 @@ export class Image extends Control {
     public onSVGAttributesComputedObservable = new Observable<Image>();
 
     /**
+     * Gets or sets the referrer policy to apply on the img element load request.
+     * You should set referrerPolicy before set the source of the image if you want to ensure the header will be present on the xhr loading request
+     */
+    public referrerPolicy: Nullable<ReferrerPolicy>;
+
+    /**
      * Gets a boolean indicating that the content is loaded
      */
     public get isLoaded(): boolean {
@@ -527,6 +533,7 @@ export class Image extends Control {
         };
         if (value) {
             Tools.SetCorsBehavior(value, this._domImage);
+            Tools.SetReferrerPolicyBehavior(this.referrerPolicy, this._domImage);
             this._domImage.src = value;
         }
     }

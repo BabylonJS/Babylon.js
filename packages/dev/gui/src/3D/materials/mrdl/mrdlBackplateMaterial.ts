@@ -28,7 +28,7 @@ class MRDLBackplateMaterialDefines extends MaterialDefines {
     /*
         "IRIDESCENCE_ENABLE", "SMOOTH_EDGES"
     */
-    public IRIDESCENCE_ENABLED = true;
+    public IRIDESCENCE_ENABLE = true;
     public SMOOTH_EDGES = true;
 
     constructor() {
@@ -337,7 +337,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                 "_Line_Gradient_Blend_",
                 "_Fade_Out_",
             ];
-            const samplers: string[] = [];
+            const samplers: string[] = ["_Iridescent_Map_"];
             const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{

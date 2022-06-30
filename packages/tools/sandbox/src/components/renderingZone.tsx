@@ -21,7 +21,6 @@ import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { StringTools } from "core/Misc/stringTools";
 
 function isTextureAsset(name: string): boolean {
     const queryStringIndex = name.indexOf("?");
@@ -29,13 +28,7 @@ function isTextureAsset(name: string): boolean {
         name = name.substring(0, queryStringIndex);
     }
 
-    return (
-        StringTools.EndsWith(name, ".ktx") ||
-        StringTools.EndsWith(name, ".ktx2") ||
-        StringTools.EndsWith(name, ".png") ||
-        StringTools.EndsWith(name, ".jpg") ||
-        StringTools.EndsWith(name, ".jpeg")
-    );
+    return name.endsWith(".ktx") || name.endsWith(".ktx2") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
 }
 
 interface IRenderingZoneProps {

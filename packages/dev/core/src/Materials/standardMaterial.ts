@@ -890,7 +890,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1063,6 +1063,8 @@ export class StandardMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                    defines.PARALLAX = false;
+                    defines.PARALLAXOCCLUSION = false;
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1167,15 +1169,18 @@ export class StandardMaterial extends PushMaterial {
             defines
         );
 
-        // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
-
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
+        // Attribs
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
+
+        // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect
@@ -1364,9 +1369,11 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.fallbackRank = 0;
             this._eventInfo.defines = defines;
             this._eventInfo.uniforms = uniforms;
+            this._eventInfo.attributes = attribs;
             this._eventInfo.samplers = samplers;
             this._eventInfo.uniformBuffersNames = uniformBuffers;
             this._eventInfo.customCode = undefined;
+            this._eventInfo.mesh = mesh;
             this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
             PrePassConfiguration.AddUniforms(uniforms);
@@ -1443,6 +1450,7 @@ export class StandardMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
         return true;
     }

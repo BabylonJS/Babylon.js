@@ -714,6 +714,11 @@
             "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
         },
         {
+            "title": "GLTF Serializer KHR gpu instancing",
+            "playgroundId": "#1Q2BWN#10",
+            "referenceImage": "glTFSerializerKhrGpuInstancing.png"
+        },   
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
@@ -1115,14 +1120,14 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#352",
+            "playgroundId": "#PIZ1GK#459",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#340",
+            "playgroundId": "#PIZ1GK#460",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
@@ -1367,6 +1372,13 @@
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
+            "title": "Multi cameras and output render target with depth texture (D24)",
+            "renderCount": 2,
+            "playgroundId": "#BCYE7J#36",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "multiCamerasOutputRenderTarget.png"
+        },
+        {
             "title": "Sample depth texture",
             "renderCount": 5,
             "playgroundId": "#8RU8Q3#108",
@@ -1421,6 +1433,11 @@
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
             "referenceImage": "materialPlugin.png"
+        },
+        {
+            "title": "Serialize and Load Instanced Hierarchy",
+            "playgroundId": "#3ZQ1SL#7",
+            "referenceImage": "serializeAndLoadInstancedHierarchy.png"
         }
     ]
 }

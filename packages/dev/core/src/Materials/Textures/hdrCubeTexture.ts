@@ -151,7 +151,7 @@ export class HDRCubeTexture extends BaseTexture {
         this._size = size;
         this._generateHarmonics = generateHarmonics;
 
-        this._texture = this._getFromCache(url, this._noMipmap);
+        this._texture = this._getFromCache(url, this._noMipmap, undefined, undefined, undefined, this.isCube);
 
         if (!this._texture) {
             if (!this.getScene()?.useDelayedTextureLoading) {

@@ -196,14 +196,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.8.0";
+        return "babylonjs@5.13.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.8.0";
+        return "5.13.2";
     }
 
     /**
@@ -3804,7 +3804,7 @@ export class ThinEngine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         prepareTexture: (
             texture: InternalTexture,
@@ -4077,7 +4077,7 @@ export class ThinEngine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
@@ -4448,12 +4448,15 @@ export class ThinEngine {
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        if (comparisonFunction === 0) {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-        } else {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
+        if (this.webGLVersion > 1) {
+            if (comparisonFunction === 0) {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            } else {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
         }
     }
 

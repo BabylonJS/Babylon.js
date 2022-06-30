@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Observable, Observer } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { Image } from "gui/2D/controls/image";

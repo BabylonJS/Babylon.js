@@ -72,7 +72,6 @@ import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Mi
 import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
-import { StringTools } from "core/Misc/stringTools";
 import type { AssetContainer } from "core/assetContainer";
 
 interface TypedArrayLike extends ArrayBufferView {
@@ -125,6 +124,28 @@ export class ArrayItem {
             }
         }
     }
+}
+
+// https://stackoverflow.com/a/48218209
+function mergeDeep(...objects: any[]): any {
+    const isObject = (obj: any) => obj && typeof obj === "object";
+
+    return objects.reduce((prev, obj) => {
+        Object.keys(obj).forEach((key) => {
+            const pVal = prev[key];
+            const oVal = obj[key];
+
+            if (Array.isArray(pVal) && Array.isArray(oVal)) {
+                prev[key] = pVal.concat(...oVal);
+            } else if (isObject(pVal) && isObject(oVal)) {
+                prev[key] = mergeDeep(pVal, oVal);
+            } else {
+                prev[key] = oVal;
+            }
+        });
+
+        return prev;
+    }, {});
 }
 
 /**
@@ -347,7 +368,7 @@ export class GLTFLoader implements IGLTFLoader {
         return Promise.resolve()
             .then(() => {
                 this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !StringTools.StartsWith(rootUrl, "file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
 
                 this._loadExtensions();
@@ -799,6 +820,9 @@ export class GLTFLoader implements IGLTFLoader {
                     this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
+                        // Merge the metadata from the skin node to the skinned mesh in case a loader extension added metadata.
+                        babylonTransformNode.metadata = mergeDeep(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata || {});
+
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(
                             this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
@@ -813,7 +837,7 @@ export class GLTFLoader implements IGLTFLoader {
                                         // Handle special case when the parent of the skeleton root is the skinned mesh.
                                         const parentNode = ArrayItem.Get(`/skins/${skin.index}/skeleton`, this._gltf.nodes, skin.skeleton).parent!;
                                         if (node.index === parentNode.index) {
-                                            babylonTransformNode.parent = node._babylonTransformNodeForSkin!.parent;
+                                            babylonTransformNode.parent = babylonTransformNodeForSkin.parent;
                                         } else {
                                             babylonTransformNode.parent = parentNode._babylonTransformNode!;
                                         }

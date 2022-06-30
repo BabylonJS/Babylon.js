@@ -3137,7 +3137,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Updating vertex buffers
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
-            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
+            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable(), vbs[kind].getStrideSize());
         }
 
         // Updating submeshes
@@ -3572,7 +3572,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         // Geometry
@@ -3657,7 +3657,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             };
 
             if (instance.parent) {
-                serializationInstance.parentId = instance.parent.uniqueId;
+                instance.parent._serializeAsParent(serializationInstance);
             }
 
             if (instance.rotationQuaternion) {
@@ -3694,7 +3694,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
             serializationObject.thinInstances = {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
-                matrixData: Tools.SliceToArray(this._thinInstanceDataStorage.matrixData),
+                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
                 matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
                 enablePicking: this.thinInstanceEnablePicking,
             };
@@ -3707,7 +3707,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 };
 
                 for (const kind in this._userThinInstanceBuffersStorage.data) {
-                    userThinInstance.data[kind] = Tools.SliceToArray(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
                     userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
                     userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
                 }
@@ -3930,6 +3930,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh._waitingParentId = parsedMesh.parentId;
         }
 
+        if (parsedMesh.parentInstanceIndex !== undefined) {
+            mesh._waitingParentInstanceIndex = parsedMesh.parentInstanceIndex;
+        }
+
         // Actions
         if (parsedMesh.actions !== undefined) {
             mesh._waitingData.actions = parsedMesh.actions;
@@ -4090,6 +4094,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (parsedInstance.parentId !== undefined) {
                     instance._waitingParentId = parsedInstance.parentId;
+                }
+
+                if (parsedInstance.parentInstanceIndex !== undefined) {
+                    instance._waitingParentInstanceIndex = parsedInstance.parentInstanceIndex;
                 }
 
                 if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {

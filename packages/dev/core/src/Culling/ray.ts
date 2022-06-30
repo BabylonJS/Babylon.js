@@ -998,7 +998,7 @@ Scene.prototype.multiPick = function (
     return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
 };
 
-Scene.prototype.multiPickWithRay = function (ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+Scene.prototype.multiPickWithRay = function (ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     return this._internalMultiPick(
         (world) => {
             if (!this._pickWithRayInverseMatrix) {
