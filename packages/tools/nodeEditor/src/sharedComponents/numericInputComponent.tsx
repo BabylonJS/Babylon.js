@@ -64,9 +64,9 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                 )}
                 <input
                     type="number"
-                    onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
+                    onFocus={() => (this.props.globalState.lockObject.lock = true)}
                     onBlur={() => {
-                        this.props.globalState.blockKeyboardEvents = false;
+                        this.props.globalState.lockObject.lock = false;
                     }}
                     step={this.props.step}
                     className="numeric-input"

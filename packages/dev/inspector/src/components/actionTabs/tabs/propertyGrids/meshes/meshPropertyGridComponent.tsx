@@ -451,11 +451,11 @@ export class MeshPropertyGridComponent extends React.Component<
                             target={mesh}
                             propertyName="material"
                             noDirectUpdate={true}
-                            onSelect={(value: number) => {
+                            onSelect={(value) => {
                                 if (value < 0) {
                                     mesh.material = null;
                                 } else {
-                                    mesh.material = sortedMaterials[value];
+                                    mesh.material = sortedMaterials[value as number];
                                 }
 
                                 this.forceUpdate();
@@ -725,8 +725,8 @@ export class MeshPropertyGridComponent extends React.Component<
                             target={mesh.reservedDataStore}
                             propertyName="displayBoneIndex"
                             noDirectUpdate={true}
-                            onSelect={(value: number) => {
-                                this.onBoneDisplayIndexChange(value);
+                            onSelect={(value) => {
+                                this.onBoneDisplayIndexChange(value as number);
                                 this.forceUpdate();
                             }}
                         />

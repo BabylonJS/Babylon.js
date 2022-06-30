@@ -9,6 +9,10 @@ import type { Observable } from "core/Misc/observable";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
+import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
+import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
+import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
+
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -30,6 +34,11 @@ export class NodeEditor {
      * @param options defines the options to use to configure the node editor
      */
     public static Show(options: INodeEditorOptions) {
+        // Initial setup
+        RegisterToDisplayManagers();
+        RegisterToPropertyTabManagers();
+        RegisterTypeLedger();
+
         if (this._CurrentState) {
             const popupWindow = (Popup as any)["node-editor"];
             if (popupWindow) {
@@ -50,6 +59,7 @@ export class NodeEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.stateManager.hostDocument = globalState.hostDocument;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState,
@@ -61,7 +71,7 @@ export class NodeEditor {
             options.customLoadObservable.add((data) => {
                 SerializationTools.Deserialize(data, globalState);
                 globalState.mode = options.nodeMaterial.mode;
-                globalState.onResetRequiredObservable.notifyObservers();
+                globalState.onResetRequiredObservable.notifyObservers(false);
                 globalState.onBuiltObservable.notifyObservers();
             });
         }
