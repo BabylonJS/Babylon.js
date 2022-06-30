@@ -156,11 +156,13 @@ export class GraphFrame {
         for (let i = 0; i < this._exposedOutPorts.length; ) {
             // Output
             const port = this._exposedOutPorts[i];
-            if (port.node === null || port.node.enclosingFrameId != this.id) {
-                if (this._removePortFromExposedWithNode(port, this._exposedOutPorts)) continue;
-            } else {
-                if (!this._createOutputPorts(port, port.node) && this._removePortFromExposedWithNode(port, this._exposedOutPorts)) {
-                    continue;
+            if (port) {
+                if (port.node === null || port.node.enclosingFrameId != this.id) {
+                    if (this._removePortFromExposedWithNode(port, this._exposedOutPorts)) continue;
+                } else {
+                    if (!this._createOutputPorts(port, port.node) && this._removePortFromExposedWithNode(port, this._exposedOutPorts)) {
+                        continue;
+                    }
                 }
             }
             ++i;
