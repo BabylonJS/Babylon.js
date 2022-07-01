@@ -6,7 +6,6 @@ import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
@@ -76,11 +75,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * This param is no longer used because wheel events should be treated as passive.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public attachControl(noPreventDefault?: boolean): void {
-        // was there a second variable defined?
-        // eslint-disable-next-line prefer-rest-params
-        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p) => {
             //sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) {
@@ -129,12 +127,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                     this._zoomToMouse(delta);
                 } else {
                     this.camera.inertialRadiusOffset += delta;
-                }
-            }
-
-            if (event.preventDefault) {
-                if (!noPreventDefault) {
-                    event.preventDefault();
                 }
             }
         };

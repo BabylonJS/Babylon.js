@@ -6,7 +6,6 @@ import type { Camera } from "../../Cameras/camera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 
@@ -53,13 +52,11 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls
-     *   should call preventdefault().
+     *   should call preventdefault().  This param is no longer used because wheel events should be treated as passive.
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
-        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-
         this._wheel = (pointer) => {
             // sanity check - this should be a PointerWheel event.
             if (pointer.type !== PointerEventTypes.POINTERWHEEL) {
@@ -89,12 +86,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // IE >= v9   (Has WebGL >= v11)
                 // Maybe others?
                 this._wheelDeltaY -= (this.wheelPrecisionY * (<any>event).wheelDelta) / this._normalize;
-            }
-
-            if (event.preventDefault) {
-                if (!noPreventDefault) {
-                    event.preventDefault();
-                }
             }
         };
 
