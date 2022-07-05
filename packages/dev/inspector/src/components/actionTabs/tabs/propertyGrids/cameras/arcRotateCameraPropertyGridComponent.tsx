@@ -37,7 +37,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent
                         label="Alpha"
                         useEuler={this.props.globalState.onlyUseEulers}
@@ -118,6 +118,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Vector3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Collision radius"
                         target={camera}
                         propertyName="collisionRadius"

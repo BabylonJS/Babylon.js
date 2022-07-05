@@ -34,9 +34,10 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Position" target={camera} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Position" target={camera} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Rotation"
                         noSlider={true}
                         useEuler={this.props.globalState.onlyUseEulers}
@@ -69,8 +70,9 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <CheckBoxLineComponent label="Apply gravity" target={camera} propertyName="applyGravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Ellipsoid" target={camera} propertyName="ellipsoid" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Ellipsoid" target={camera} propertyName="ellipsoid" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Ellipsoid offset"
                         target={camera}
                         propertyName="ellipsoidOffset"

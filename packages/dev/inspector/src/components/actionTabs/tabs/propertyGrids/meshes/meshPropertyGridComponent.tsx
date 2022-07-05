@@ -476,9 +476,10 @@ export class MeshPropertyGridComponent extends React.Component<
                 <CommonPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <VariantsPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {!mesh.rotationQuaternion && (
                         <Vector3LineComponent
+                            lockObject={this.props.lockObject} 
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={mesh}
@@ -489,6 +490,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     )}
                     {mesh.rotationQuaternion && (
                         <QuaternionLineComponent
+                            lockObject={this.props.lockObject} 
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={mesh}
@@ -496,7 +498,7 @@ export class MeshPropertyGridComponent extends React.Component<
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true} selection={this.props.globalState}>
                     {!mesh.isAnInstance && (
@@ -684,7 +686,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         propertyName="edgesWidth"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Color3LineComponent label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent lockObject={this.props.lockObject} label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 {!mesh.isAnInstance && (
                     <LineContainerComponent title="OUTLINE & OVERLAY" closed={true} selection={this.props.globalState}>
@@ -694,14 +696,14 @@ export class MeshPropertyGridComponent extends React.Component<
                             propertyName="renderOverlay"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
-                        <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent lockObject={this.props.lockObject} label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         <CheckBoxLineComponent
                             label="Render outline"
                             target={mesh}
                             propertyName="renderOutline"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
-                        <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent lockObject={this.props.lockObject} label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 )}
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>

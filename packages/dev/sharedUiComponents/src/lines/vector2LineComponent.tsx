@@ -6,6 +6,7 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IVector2LineComponentProps {
     label: string;
@@ -16,6 +17,7 @@ interface IVector2LineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     icon?: string;
     iconLabel?: string;
+    lockObject: LockObject;
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean; value: Vector2 }> {
@@ -101,8 +103,8 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={(value) => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={(value) => this.updateStateY(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="x" step={this.props.step} value={this.state.value.x} onChange={(value) => this.updateStateX(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="y" step={this.props.step} value={this.state.value.y} onChange={(value) => this.updateStateY(value)} />
                     </div>
                 )}
             </div>

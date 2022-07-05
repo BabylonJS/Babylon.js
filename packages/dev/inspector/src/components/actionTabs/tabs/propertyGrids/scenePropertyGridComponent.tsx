@@ -173,14 +173,14 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="ENVIRONMENT" selection={this.props.globalState}>
-                    <Color3LineComponent label="Clear color" target={scene} propertyName="clearColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent lockObject={this.props.lockObject} label="Clear color" target={scene} propertyName="clearColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent
                         label="Clear color enabled"
                         target={scene}
                         propertyName="autoClear"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Color3LineComponent label="Ambient color" target={scene} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent lockObject={this.props.lockObject} label="Ambient color" target={scene} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Environment texture (IBL)" isSelected={() => scene.environmentTexture != null} onSelect={() => this.switchIBL()} />
                     {scene.environmentTexture && (
                         <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
@@ -288,6 +288,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Vignette color"
                         target={imageProcessing}
                         propertyName="vignetteColor"
@@ -313,6 +314,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                         <Vector3LineComponent
+                            lockObject={this.props.lockObject}
                             label="Gravity"
                             target={dummy}
                             propertyName="gravity"
@@ -322,7 +324,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     </LineContainerComponent>
                 )}
                 <LineContainerComponent title="COLLISIONS" closed={true} selection={this.props.globalState}>
-                    <Vector3LineComponent label="Gravity" target={scene} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent lockObject={this.props.lockObject} label="Gravity" target={scene} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="SHADOWS" closed={true} selection={this.props.globalState}>
                     <ButtonLineComponent label="Normalize scene" onClick={() => this.normalizeScene()} />

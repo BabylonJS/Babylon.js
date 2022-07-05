@@ -13,7 +13,7 @@ export interface IColor4LineComponentProps {
     isLinear?: boolean;
     icon?: string;
     iconLabel?: string;
-    lockObject?: LockObject;
+    lockObject: LockObject;
 }
 
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps> {
