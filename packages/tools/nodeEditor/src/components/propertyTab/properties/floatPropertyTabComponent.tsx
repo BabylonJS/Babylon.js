@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { GlobalState } from "../../../globalState";
-import { FloatLineComponent } from "../../../sharedComponents/floatLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface IFloatPropertyTabComponentProps {
     globalState: GlobalState;
@@ -12,7 +12,6 @@ export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTab
     render() {
         return (
             <FloatLineComponent
-                globalState={this.props.globalState}
                 label="Value"
                 target={this.props.inputBlock}
                 propertyName="value"

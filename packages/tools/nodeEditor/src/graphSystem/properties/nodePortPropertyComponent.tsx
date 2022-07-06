@@ -3,11 +3,11 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;
