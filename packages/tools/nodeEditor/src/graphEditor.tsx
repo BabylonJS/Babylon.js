@@ -24,7 +24,6 @@ import { Popup } from "./sharedComponents/popup";
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
-import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
@@ -46,7 +45,6 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    public static readonly NodeWidth = 100;
     private _graphCanvasRef: React.RefObject<GraphCanvasComponent>;
     private _diagramContainerRef: React.RefObject<HTMLDivElement>;
     private _graphCanvas: GraphCanvasComponent;
@@ -59,8 +57,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     private _previewManager: PreviewManager;
-    private _copiedNodes: GraphNode[] = [];
-    private _copiedFrames: GraphFrame[] = [];
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
@@ -190,237 +186,27 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument!.addEventListener(
-            "keydown",
-            (evt) => {
-                if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.lockObject.lock) {
-                    // Delete
-                    const selectedItems = this._graphCanvas.selectedNodes;
+        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+            this._graphCanvas.handleKeyDown(
+                evt,
+                (nodeData) => {
+                    this.props.globalState.nodeMaterial!.removeBlock(nodeData.data as NodeMaterialBlock);
+                },
+                this._mouseLocationX,
+                this._mouseLocationY,
+                (nodeData) => {
+                    const block = nodeData.data as NodeMaterialBlock;
+                    const clone = block.clone(this.props.globalState.nodeMaterial.getScene());
 
-                    for (const selectedItem of selectedItems) {
-                        selectedItem.dispose();
-
-                        const targetBlock = selectedItem.content.data;
-                        this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                        this._graphCanvas.removeDataFromCache(targetBlock);
+                    if (!clone) {
+                        return null;
                     }
 
-                    if (this._graphCanvas.selectedLink) {
-                        this._graphCanvas.selectedLink.dispose();
-                    }
-
-                    if (this._graphCanvas.selectedFrames.length) {
-                        for (const frame of this._graphCanvas.selectedFrames) {
-                            if (frame.isCollapsed) {
-                                while (frame.nodes.length > 0) {
-                                    const targetBlock = frame.nodes[0].content.data;
-                                    this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                                    this._graphCanvas.removeDataFromCache(targetBlock);
-                                    frame.nodes[0].dispose();
-                                }
-                                frame.isCollapsed = false;
-                            } else {
-                                frame.nodes.forEach((node) => {
-                                    node.enclosingFrameId = -1;
-                                });
-                            }
-                            frame.dispose();
-                        }
-                    }
-
-                    this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-                    this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(false);
-                    return;
-                }
-
-                if (!evt.ctrlKey || this.props.globalState.lockObject.lock) {
-                    return;
-                }
-
-                if (evt.key === "c" || evt.key === "C") {
-                    // Copy
-                    this._copiedNodes = [];
-                    this._copiedFrames = [];
-
-                    if (this._graphCanvas.selectedFrames.length) {
-                        for (const frame of this._graphCanvas.selectedFrames) {
-                            frame.serialize(true);
-                            this._copiedFrames.push(frame);
-                        }
-                        return;
-                    }
-
-                    const selectedItems = this._graphCanvas.selectedNodes;
-                    if (!selectedItems.length) {
-                        return;
-                    }
-
-                    const selectedItem = selectedItems[0] as GraphNode;
-
-                    if (!selectedItem.content.data) {
-                        return;
-                    }
-
-                    this._copiedNodes = selectedItems.slice(0);
-                } else if (evt.key === "v" || evt.key === "V") {
-                    // Paste
-                    const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
-                    const zoomLevel = this._graphCanvas.zoom;
-                    let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
-
-                    if (this._copiedFrames.length) {
-                        for (const frame of this._copiedFrames) {
-                            // New frame
-                            const newFrame = new GraphFrame(null, this._graphCanvas, true);
-                            this._graphCanvas.frames.push(newFrame);
-
-                            newFrame.width = frame.width;
-                            newFrame.height = frame.height;
-                            newFrame.width / 2;
-                            newFrame.name = frame.name;
-                            newFrame.color = frame.color;
-
-                            let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x) / zoomLevel;
-                            newFrame.x = currentX - newFrame.width / 2;
-                            newFrame.y = currentY;
-
-                            // Paste nodes
-                            if (frame.nodes.length) {
-                                currentX = newFrame.x + frame.nodes[0].x - frame.x;
-                                currentY = newFrame.y + frame.nodes[0].y - frame.y;
-
-                                this._graphCanvas._frameIsMoving = true;
-                                const newNodes = this.pasteSelection(frame.nodes, currentX, currentY);
-                                if (newNodes) {
-                                    for (const node of newNodes) {
-                                        newFrame.syncNode(node);
-                                    }
-                                }
-                                this._graphCanvas._frameIsMoving = false;
-                            }
-
-                            newFrame.adjustPorts();
-
-                            if (frame.isCollapsed) {
-                                newFrame.isCollapsed = true;
-                            }
-
-                            // Select
-                            this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
-                            return;
-                        }
-                    }
-
-                    if (!this._copiedNodes.length) {
-                        return;
-                    }
-
-                    const currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - GraphEditor.NodeWidth) / zoomLevel;
-                    this.pasteSelection(this._copiedNodes, currentX, currentY, true);
-                }
-            },
-            false
-        );
-    }
-
-    reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]) {
-        if (done[nodeIndex]) {
-            return;
-        }
-
-        const currentNode = newNodes[nodeIndex];
-        const sourceNode = sourceNodes[nodeIndex];
-
-        for (let inputIndex = 0; inputIndex < sourceNode.content.inputs.length; inputIndex++) {
-            const sourceInput = sourceNode.content.inputs[inputIndex];
-            const currentInput = currentNode.content.inputs[inputIndex];
-            if (!sourceInput.isConnected) {
-                continue;
-            }
-            const sourceBlock = this._graphCanvas.findNodeFromData(sourceInput.connectedPort!.ownerData).content;
-            const activeNodes = sourceNodes.filter((s) => s.content.data === sourceBlock);
-
-            if (activeNodes.length > 0) {
-                const activeNode = activeNodes[0];
-                const indexInList = sourceNodes.indexOf(activeNode);
-
-                // First make sure to connect the other one
-                this.reconnectNewNodes(indexInList, newNodes, sourceNodes, done);
-
-                // Then reconnect
-                const outputIndex = sourceBlock.outputs.indexOf(sourceInput.connectedPort!);
-                const newOutput = newNodes[indexInList].content.data.outputs[outputIndex];
-
-                newOutput.connectTo(currentInput);
-            } else {
-                // Connect with outside blocks
-                sourceInput.connectedPort!.connectTo(currentInput);
-            }
-
-            this._graphCanvas.connectPorts(currentInput.connectedPort!, currentInput);
-        }
-
-        currentNode.refresh();
-
-        done[nodeIndex] = true;
-    }
-
-    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew = false) {
-        let originalNode: Nullable<GraphNode> = null;
-
-        const newNodes: GraphNode[] = [];
-
-        // Copy to prevent recursive side effects while creating nodes.
-        copiedNodes = copiedNodes.slice();
-
-        // Cancel selection
-        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-
-        // Create new nodes
-        for (const node of copiedNodes) {
-            const block = node.content.data;
-
-            if (!block) {
-                continue;
-            }
-
-            const clone = block.clone(this.props.globalState.nodeMaterial.getScene());
-
-            if (!clone) {
-                return;
-            }
-
-            const newNode = this.appendBlock(clone, false);
-
-            let x = 0;
-            let y = 0;
-            if (originalNode) {
-                x = currentX + node.x - originalNode.x;
-                y = currentY + node.y - originalNode.y;
-            } else {
-                originalNode = node;
-                x = currentX;
-                y = currentY;
-            }
-
-            newNode.x = x;
-            newNode.y = y;
-            newNode.cleanAccumulation();
-
-            newNodes.push(newNode);
-
-            if (selectNew) {
-                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
-            }
-        }
-
-        // Relink
-        const done = new Array<boolean>(newNodes.length);
-        for (let index = 0; index < newNodes.length; index++) {
-            this.reconnectNewNodes(index, newNodes, copiedNodes, done);
-        }
-
-        return newNodes;
+                    return this.appendBlock(clone, false);
+                },
+                this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
+            );
+        });
     }
 
     zoomToFit() {
@@ -587,7 +373,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 const frameData = JSON.parse(storageData);
 
                 //edit position before loading.
-                const newX = (targetX - this._graphCanvas.x - GraphEditor.NodeWidth) / this._graphCanvas.zoom;
+                const newX = (targetX - this._graphCanvas.x - GraphCanvasComponent.NodeWidth) / this._graphCanvas.zoom;
                 const newY = (targetY - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
                 const oldX = frameData.editorData.frames[0].x;
                 const oldY = frameData.editorData.frames[0].y;
@@ -631,7 +417,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         // Size exceptions
-        let offsetX = GraphEditor.NodeWidth;
+        let offsetX = GraphCanvasComponent.NodeWidth;
         let offsetY = 20;
 
         if (blockType === "ElbowBlock") {
@@ -640,36 +426,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         // Drop
-        let x = targetX - this._graphCanvas.x - offsetX * this._graphCanvas.zoom;
-        let y = targetY - this._graphCanvas.y - offsetY * this._graphCanvas.zoom;
-
-        newNode.x = x / this._graphCanvas.zoom;
-        newNode.y = y / this._graphCanvas.zoom;
-        newNode.cleanAccumulation();
-
-        this.props.globalState.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
-        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
-
-        const block = newNode.content.data as NodeMaterialBlock;
-
-        x -= GraphEditor.NodeWidth + 150;
-
-        block.inputs.forEach((connection) => {
-            if (connection.connectedPoint) {
-                const existingNodes = this._graphCanvas.nodes.filter((n) => {
-                    return n.content.data === (connection as any).connectedPoint.ownerBlock;
-                });
-                const connectedNode = existingNodes[0];
-
-                if (connectedNode.x === 0 && connectedNode.y === 0) {
-                    connectedNode.x = x / this._graphCanvas.zoom;
-                    connectedNode.y = y / this._graphCanvas.zoom;
-                    connectedNode.cleanAccumulation();
-                    y += 80;
-                }
-            }
-        });
+        this._graphCanvas.drop(newNode, targetX, targetY, offsetX, offsetY);
 
         this.forceUpdate();
     }
