@@ -11,7 +11,7 @@ export interface IColor3LineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     isLinear?: boolean;
     icon?: string;
-    lockObject?: LockObject;
+    lockObject: LockObject;
     iconLabel?: string;
     onChange?: () => void;
 }

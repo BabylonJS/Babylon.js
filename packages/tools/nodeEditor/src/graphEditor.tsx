@@ -662,7 +662,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     {/* Property tab */}
                     <div className="right-panel">
-                        <PropertyTabComponent globalState={this.props.globalState} />
+                        <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
                         {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
                         {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth} /> : null}
                     </div>

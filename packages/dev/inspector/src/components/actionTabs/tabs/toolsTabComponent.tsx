@@ -380,6 +380,7 @@ export class ToolsTabComponent extends PaneComponent {
                         {this._useWidthHeight && (
                             <div className="secondLine">
                                 <NumericInputComponent
+                                    lockObject={this._lockObject}
                                     label="Width"
                                     precision={0}
                                     step={1}
@@ -387,6 +388,7 @@ export class ToolsTabComponent extends PaneComponent {
                                     onChange={(value) => (this._screenShotSize.width = value)}
                                 />
                                 <NumericInputComponent
+                                    lockObject={this._lockObject}
                                     label="Height"
                                     precision={0}
                                     step={1}
