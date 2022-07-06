@@ -80,6 +80,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                         <div className="color-picker-cover" onClick={() => this.setPickerState(false)}>
                             <div className="color-picker-float" onClick={(ev) => ev.stopPropagation()} ref={this._floatRef}>
                                 <ColorPicker
+                                    lockObject={this.props.globalState.lockObject}
                                     color={color}
                                     onColorChanged={(color: Color3 | Color4) => {
                                         const hex = color.toHexString();

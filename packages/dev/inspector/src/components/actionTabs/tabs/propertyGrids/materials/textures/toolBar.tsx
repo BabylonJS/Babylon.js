@@ -3,6 +3,7 @@ import type { IToolData, IToolType, IMetadata } from "./textureEditorComponent";
 import type { Color3 } from "core/Maths/math.color";
 import { Color4 } from "core/Maths/math.color";
 import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 export interface ITool extends IToolData {
     instance: IToolType;
@@ -27,6 +28,7 @@ interface IToolBarState {
 }
 
 export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
+    private _lockObject = new LockObject();
     constructor(props: IToolBarProps) {
         super(props);
         this.state = {
@@ -87,6 +89,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                 {this.props.pickerOpen && (
                     <div id="color-picker" ref={this.props.pickerRef}>
                         <ColorPicker
+                            lockObject={this._lockObject}
                             color={this.computeRGBAColor()}
                             onColorChanged={(color: Color3 | Color4) => {
                                 const metadata = { color: color.toHexString(true), alpha: (color as unknown as Color4).a };
