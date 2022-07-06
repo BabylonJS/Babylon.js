@@ -57,6 +57,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Vector3:
                 return (
                     <Vector3LineComponent
+                        lockObject={this.props.lockObject}
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}
@@ -67,6 +68,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Quaternion:
                 return (
                     <QuaternionLineComponent
+                        lockObject={this.props.lockObject}
                         useEuler={this.props.globalState.onlyUseEulers}
                         key={inspectable.label}
                         label={inspectable.label}
@@ -78,6 +80,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Color3:
                 return (
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}

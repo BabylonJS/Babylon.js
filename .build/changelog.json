@@ -1,7 +1,108 @@
 {
-    "fromTag": "5.12.1",
+    "fromTag": "5.13.2",
     "changelog": {
-        "5.12.1": [],
+        "5.13.3": [
+            {
+                "pr": "12701",
+                "title": "Fix loading skinned model with multiple primitives",
+                "description": "https://forum.babylonjs.com/t/3d-model-not-showing-up-in-playground-or-sandbox/31821",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "5.13.2": [
+            {
+                "pr": "12700",
+                "title": "Fix port duplication",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeContainer.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToTypeLedger.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "5.13.1": [
+            {
+                "pr": "12697",
+                "title": "Engine: Add event listener to disable right-click menu when there's a canvas element",
+                "description": "There was an issue found on the forums where the right-click context menu was appearing when a user used custom mouse controls.  Upon closer investigation, it was determined that the reason the context menu didn't appear in other scenarios was that there was specific code to suppress it in all of our cameras' mouse input code.  This proposed fix will add code to suppress the context menu when the rendering canvas is set to a non-null HTMLElement.\r\n\r\nForum Post: https://forum.babylonjs.com/t/even-by-using-evt-preventdefault-the-browser-menu-pops-up-after-i-changed-from-bjs-5-0-to-5-10/31383/8",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12698",
+                "title": "Fix node decomposing at drop time",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeContainer.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToTypeLedger.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12699",
+                "title": "Fix snippet loading on GUI Editor",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-editor-loading-from-snippet-id-only-not-entering-full-link-is-incomplete/31803",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12696",
+                "title": "DeviceInputSystem: Fixed Passive Support Check to prevent Violation Warning",
+                "description": "There was a warning found by a user on the forums that, in Verbose mode, a Violation warning was occurring:\r\n![image](https://user-images.githubusercontent.com/50599569/176553040-80f67f6f-a818-4494-9f8a-f36f5e4c4739.png)\r\nThis warning was happening because the `wheel` event listener didn't have the \"passive\" option set to true when able.  After closer investigation, it was found that the code used to determine if passive was supported was always returning false, causing this warning to occur.  This PR modifies the logic to fix this.\r\n\r\nForum link: https://forum.babylonjs.com/t/bjs-console-warnings-when-using-cleargizmoonemptypointerevent/31447/8",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/InputDevices/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "5.13.0": [
             {
                 "pr": "12694",
@@ -461,6 +562,7 @@
                 "tags": []
             }
         ],
+        "5.12.1": [],
         "5.12.0": [
             {
                 "pr": "12664",

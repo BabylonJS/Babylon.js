@@ -1,8 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
 import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent";
 import { Vector3PropertyTabComponent } from "../../components/propertyTab/properties/vector3PropertyTabComponent";
@@ -21,6 +19,8 @@ import type { Observer } from "core/Misc/observable";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<InputBlock>>;
@@ -70,7 +70,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
-                                globalState={this.props.stateManager.data as GlobalState}
                                 label="Min"
                                 target={inputBlock}
                                 propertyName="min"
@@ -87,7 +86,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
-                                globalState={this.props.stateManager.data as GlobalState}
                                 label="Max"
                                 target={inputBlock}
                                 propertyName="max"
@@ -106,7 +104,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         {!inputBlock.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
                                 label="Value"
-                                globalState={this.props.stateManager.data as GlobalState}
                                 target={inputBlock}
                                 propertyName="value"
                                 step={Math.abs(inputBlock.max - inputBlock.min) / 100.0}
@@ -124,11 +121,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <Vector2PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <>
-                        <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        <Color3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
                         <CheckBoxLineComponent
                             label="Convert to gamma space"
                             propertyName="convertToGammaSpace"
@@ -150,7 +147,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <>
-                        <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        <Color4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
                         <CheckBoxLineComponent
                             label="Convert to gamma space"
                             propertyName="convertToGammaSpace"
@@ -170,11 +167,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     </>
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <Vector3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return <Vector4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <Vector4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return <MatrixPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <MatrixPropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
         }
 
         return null;

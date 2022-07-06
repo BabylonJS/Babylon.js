@@ -145,8 +145,20 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                 />
                 {this.renderTextures()}
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
-                    <Color3LineComponent label="Diffuse" target={material} propertyName="diffuseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Specular" target={material} propertyName="specularColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Diffuse"
+                        target={material}
+                        propertyName="diffuseColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Specular"
+                        target={material}
+                        propertyName="specularColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <SliderLineComponent
                         label="Specular power"
                         target={material}
@@ -156,8 +168,20 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                         step={0.1}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Ambient" target={material} propertyName="ambientColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Emissive"
+                        target={material}
+                        propertyName="emissiveColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Ambient"
+                        target={material}
+                        propertyName="ambientColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <CheckBoxLineComponent
                         label="Use specular over alpha"
                         target={material}

@@ -8,15 +8,12 @@ import { Tools } from "core/Misc/tools";
 import { SerializationTools } from "../../serializationTools";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { DataStorage } from "core/Misc/dataStorage";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
-import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { Engine } from "core/Engines/engine";
 import { FramePropertyTabComponent } from "../../graphSystem/properties/framePropertyComponent";
 import { FrameNodePortPropertyTabComponent } from "../../graphSystem/properties/frameNodePortPropertyComponent";
 import { NodePortPropertyTabComponent } from "../../graphSystem/properties/nodePortPropertyComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
 import type { Observer } from "core/Misc/observable";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
@@ -38,9 +35,14 @@ import { Color3LineComponent } from "shared-ui-components/lines/color3LineCompon
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
+    lockObject: LockObject;
 }
 
 interface IPropertyTabComponentState {
@@ -114,14 +116,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         )}
                         {!block.isBoolean && cantDisplaySlider && (
-                            <FloatLineComponent
-                                globalState={this.props.globalState}
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                onChange={() => this.processInputBlockUpdate(block)}
-                            />
+                            <FloatLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />
                         )}
                         {!block.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
@@ -132,7 +127,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 step={(block.max - block.min) / 100.0}
                                 minimum={block.min}
                                 maximum={block.max}
-                                globalState={this.props.globalState}
                                 onChange={() => this.processInputBlockUpdate(block)}
                             />
                         )}
@@ -140,15 +134,60 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Color3:
-                return <Color3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
+                return (
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
+                );
             case NodeMaterialBlockConnectionPointTypes.Color4:
-                return <Color4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
+                return (
+                    <Color4LineComponent
+                        lockObject={this.props.lockObject}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
+                );
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return <Vector2LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
+                return (
+                    <Vector2LineComponent
+                        lockObject={this.props.lockObject}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
+                );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return <Vector3LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
+                return (
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
+                );
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return <Vector4LineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />;
+                return (
+                    <Vector4LineComponent
+                        lockObject={this.props.lockObject}
+                        key={block.uniqueId}
+                        label={block.name}
+                        target={block}
+                        propertyName="value"
+                        onChange={() => this.processInputBlockUpdate(block)}
+                    />
+                );
         }
         return null;
     }
@@ -470,7 +509,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             maximum={100}
                             step={5}
                             decimalCount={0}
-                            globalState={this.props.globalState}
                             directValue={gridSize}
                             onChange={(value) => {
                                 DataStorage.WriteNumber("GridSize", value);
@@ -546,7 +584,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
                         />
                     </LineContainerComponent>
-                    <InputsPropertyTabComponent globalState={this.props.globalState} inputs={this.props.globalState.nodeMaterial.getInputBlocks()}></InputsPropertyTabComponent>
+                    <InputsPropertyTabComponent
+                        lockObject={this.props.lockObject}
+                        globalState={this.props.globalState}
+                        inputs={this.props.globalState.nodeMaterial.getInputBlocks()}
+                    ></InputsPropertyTabComponent>
                 </div>
             </div>
         );
