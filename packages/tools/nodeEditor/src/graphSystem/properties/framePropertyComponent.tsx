@@ -81,7 +81,11 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                             }}
                         />
                     </LineContainerComponent>
-                    <InputsPropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} inputs={configurableInputBlocks}></InputsPropertyTabComponent>
+                    <InputsPropertyTabComponent
+                        lockObject={this.props.globalState.lockObject}
+                        globalState={this.props.globalState}
+                        inputs={configurableInputBlocks}
+                    ></InputsPropertyTabComponent>
                 </div>
             </div>
         );

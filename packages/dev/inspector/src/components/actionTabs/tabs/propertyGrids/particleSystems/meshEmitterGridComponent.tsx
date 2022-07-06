@@ -38,10 +38,22 @@ export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridCo
                     property="mesh"
                 />
                 {!emitter.useMeshNormalsForDirection && (
-                    <Vector3LineComponent lockObject={this.props.lockObject} label="Direction 1" target={emitter} propertyName="direction1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Direction 1"
+                        target={emitter}
+                        propertyName="direction1"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 )}
                 {!emitter.useMeshNormalsForDirection && (
-                    <Vector3LineComponent lockObject={this.props.lockObject} label="Direction 2" target={emitter} propertyName="direction2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Direction 2"
+                        target={emitter}
+                        propertyName="direction2"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 )}
                 <CheckBoxLineComponent
                     label="Use normals for direction"

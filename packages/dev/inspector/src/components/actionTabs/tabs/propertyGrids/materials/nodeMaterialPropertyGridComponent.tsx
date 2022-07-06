@@ -113,7 +113,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         key={block.name}
                         label={block.name}
                         target={block}
@@ -124,7 +124,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color4LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         key={block.name}
                         label={block.name}
                         target={block}
@@ -135,7 +135,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         key={block.name}
                         label={block.name}
                         target={block}
@@ -146,7 +146,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
                     <Vector3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         key={block.name}
                         label={block.name}
                         target={block}
@@ -157,7 +157,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return (
                     <Vector4LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         key={block.name}
                         label={block.name}
                         target={block}

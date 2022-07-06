@@ -100,7 +100,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
                 {this.renderTextures()}
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Base"
                         target={material}
                         propertyName="baseColor"
@@ -108,7 +108,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
                         isLinear={true}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Emissive"
                         target={material}
                         propertyName="emissiveColor"

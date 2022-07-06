@@ -156,10 +156,30 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                 </div>
                 {this.state.mode === 0 && (
                     <div className="secondLine">
-                        <Vector4LineComponent lockObject={this.props.lockObject} label="Row #0" value={this.state.value.getRow(0)!} onChange={(value) => this.updateRow(value, 0)} />
-                        <Vector4LineComponent lockObject={this.props.lockObject} label="Row #1" value={this.state.value.getRow(1)!} onChange={(value) => this.updateRow(value, 1)} />
-                        <Vector4LineComponent lockObject={this.props.lockObject} label="Row #2" value={this.state.value.getRow(2)!} onChange={(value) => this.updateRow(value, 2)} />
-                        <Vector4LineComponent lockObject={this.props.lockObject} label="Row #3" value={this.state.value.getRow(3)!} onChange={(value) => this.updateRow(value, 3)} />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #0"
+                            value={this.state.value.getRow(0)!}
+                            onChange={(value) => this.updateRow(value, 0)}
+                        />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #1"
+                            value={this.state.value.getRow(1)!}
+                            onChange={(value) => this.updateRow(value, 1)}
+                        />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #2"
+                            value={this.state.value.getRow(2)!}
+                            onChange={(value) => this.updateRow(value, 2)}
+                        />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #3"
+                            value={this.state.value.getRow(3)!}
+                            onChange={(value) => this.updateRow(value, 3)}
+                        />
                     </div>
                 )}
                 {this.state.mode !== 0 && (

@@ -25,7 +25,13 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="COLORPICKER">
-                    <Color3LineComponent lockObject={this.props.lockObject} label="Color" target={colorPicker} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Color"
+                        target={colorPicker}
+                        propertyName="value"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
             </div>
         );

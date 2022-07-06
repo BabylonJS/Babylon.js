@@ -23,8 +23,20 @@ export class PointEmitterGridComponent extends React.Component<IPointEmitterGrid
         const emitter = this.props.emitter;
         return (
             <>
-                <Vector3LineComponent lockObject={this.props.lockObject} label="Direction 1" target={emitter} propertyName="direction1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <Vector3LineComponent lockObject={this.props.lockObject} label="Direction 2" target={emitter} propertyName="direction2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Vector3LineComponent
+                    lockObject={this.props.lockObject}
+                    label="Direction 1"
+                    target={emitter}
+                    propertyName="direction1"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <Vector3LineComponent
+                    lockObject={this.props.lockObject}
+                    label="Direction 2"
+                    target={emitter}
+                    propertyName="direction2"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </>
         );
     }

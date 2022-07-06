@@ -103,8 +103,20 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent lockObject={this.props.lockObject} label="x" step={this.props.step} value={this.state.value.x} onChange={(value) => this.updateStateX(value)} />
-                        <NumericInputComponent lockObject={this.props.lockObject} label="y" step={this.props.step} value={this.state.value.y} onChange={(value) => this.updateStateY(value)} />
+                        <NumericInputComponent
+                            lockObject={this.props.lockObject}
+                            label="x"
+                            step={this.props.step}
+                            value={this.state.value.x}
+                            onChange={(value) => this.updateStateX(value)}
+                        />
+                        <NumericInputComponent
+                            lockObject={this.props.lockObject}
+                            label="y"
+                            step={this.props.step}
+                            value={this.state.value.y}
+                            onChange={(value) => this.updateStateY(value)}
+                        />
                     </div>
                 )}
             </div>

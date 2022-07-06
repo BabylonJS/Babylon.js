@@ -354,8 +354,20 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="blendMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Vector3LineComponent lockObject={this.props.lockObject} label="World offset" target={system} propertyName="worldOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent lockObject={this.props.lockObject} label="Gravity" target={system} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="World offset"
+                        target={system}
+                        propertyName="worldOffset"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Gravity"
+                        target={system}
+                        propertyName="gravity"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <CheckBoxLineComponent
                         label="Is billboard"
                         target={system}
@@ -449,7 +461,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         />
                     )}
                     {system.emitter && (system.emitter as Vector3).x !== undefined && (
-                        <Vector3LineComponent lockObject={this.props.lockObject} label="Position" target={system} propertyName="emitter" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Position"
+                            target={system}
+                            propertyName="emitter"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
                     )}
                     <OptionsLineComponent
                         label="Type"
@@ -709,9 +727,27 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <LineContainerComponent title="COLORS" closed={true} selection={this.props.globalState}>
                     {(!system.getColorGradients() || system.getColorGradients()?.length === 0) && (
                         <>
-                            <Color4LineComponent lockObject={this.props.lockObject} label="Color 1" target={system} propertyName="color1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Color4LineComponent lockObject={this.props.lockObject} label="Color 2" target={system} propertyName="color2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Color4LineComponent lockObject={this.props.lockObject} label="Color dead" target={system} propertyName="colorDead" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Color4LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color 1"
+                                target={system}
+                                propertyName="color1"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color4LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color 2"
+                                target={system}
+                                propertyName="color2"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color4LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color dead"
+                                target={system}
+                                propertyName="colorDead"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </>
                     )}
                     <ValueGradientGridComponent

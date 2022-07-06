@@ -100,7 +100,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
                 {this.renderTextures()}
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Diffuse"
                         target={material}
                         propertyName="diffuseColor"
@@ -108,7 +108,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
                         isLinear={true}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Specular"
                         target={material}
                         propertyName="specularColor"

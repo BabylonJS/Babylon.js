@@ -127,9 +127,27 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
-                        <NumericInputComponent label="x" lockObject={this.props.lockObject} step={this.props.step} value={this.state.value.x} onChange={(value) => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" lockObject={this.props.lockObject} step={this.props.step} value={this.state.value.y} onChange={(value) => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" lockObject={this.props.lockObject} step={this.props.step} value={this.state.value.z} onChange={(value) => this.updateStateZ(value)} />
+                        <NumericInputComponent
+                            label="x"
+                            lockObject={this.props.lockObject}
+                            step={this.props.step}
+                            value={this.state.value.x}
+                            onChange={(value) => this.updateStateX(value)}
+                        />
+                        <NumericInputComponent
+                            label="y"
+                            lockObject={this.props.lockObject}
+                            step={this.props.step}
+                            value={this.state.value.y}
+                            onChange={(value) => this.updateStateY(value)}
+                        />
+                        <NumericInputComponent
+                            label="z"
+                            lockObject={this.props.lockObject}
+                            step={this.props.step}
+                            value={this.state.value.z}
+                            onChange={(value) => this.updateStateZ(value)}
+                        />
                     </div>
                 )}
                 {this.state.isExpanded && this.props.useEuler && !this.props.noSlider && (

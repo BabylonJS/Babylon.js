@@ -223,7 +223,9 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                         <NumericInputComponent lockObject={this.props.lockObject} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
                         <NumericInputComponent lockObject={this.props.lockObject} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
                         <NumericInputComponent lockObject={this.props.lockObject} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
-                        {this.props.disableAlpha || <NumericInputComponent lockObject={this.props.lockObject} label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />}
+                        {this.props.disableAlpha || (
+                            <NumericInputComponent lockObject={this.props.lockObject} label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
+                        )}
                     </div>
                 )}
             </div>

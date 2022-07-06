@@ -247,7 +247,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 {this.renderTextures(this._onDebugSelectionChangeObservable)}
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Albedo"
                         target={material}
                         propertyName="albedoColor"
@@ -255,7 +255,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         isLinear={true}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Reflectivity"
                         target={material}
                         propertyName="reflectivityColor"
@@ -272,7 +272,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Emissive"
                         target={material}
                         propertyName="emissiveColor"
@@ -280,7 +280,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         isLinear={true}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Ambient"
                         target={material}
                         propertyName="ambientColor"
@@ -332,7 +332,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Reflectance Color"
                         target={material}
                         propertyName="metallicReflectanceColor"
@@ -459,7 +459,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             />
                             {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
                                 <Color3LineComponent
-                                    lockObject={this.props.lockObject} 
+                                    lockObject={this.props.lockObject}
                                     label="Tint Color"
                                     target={material.clearCoat}
                                     propertyName="tintColor"
@@ -590,7 +590,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Vector2LineComponent
-                                lockObject={this.props.lockObject} 
+                                lockObject={this.props.lockObject}
                                 label="Direction"
                                 target={material.anisotropy}
                                 propertyName="direction"
@@ -634,7 +634,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Color3LineComponent
-                                lockObject={this.props.lockObject} 
+                                lockObject={this.props.lockObject}
                                 label="Color"
                                 target={material.sheen}
                                 propertyName="color"
@@ -736,7 +736,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
-                        lockObject={this.props.lockObject} 
+                        lockObject={this.props.lockObject}
                         label="Tint Color"
                         target={material.subSurface}
                         propertyName="tintColor"
@@ -852,7 +852,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Color3LineComponent
-                                lockObject={this.props.lockObject} 
+                                lockObject={this.props.lockObject}
                                 label="Diffusion Distance"
                                 target={material.subSurface}
                                 propertyName="diffusionDistance"
