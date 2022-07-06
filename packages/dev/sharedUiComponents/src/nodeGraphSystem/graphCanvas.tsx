@@ -1083,7 +1083,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             emittedNodeData.inputs.forEach((portData: IPortData) => {
                 if (portData.connectedPort) {
                     const existingNodes = this.nodes.filter((n) => {
-                        return n.content === portData.connectedPort?.ownerData;
+                        return n.content.data === portData.connectedPort?.ownerData;
                     });
                     const connectedNode = existingNodes[0];
 
