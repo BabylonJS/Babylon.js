@@ -6,6 +6,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;
@@ -53,11 +54,13 @@ export class ConnectionPointPortData implements IPortData {
         }
         if (!this._connectedPort) {
             const otherBlock = this.data.connectedPoint!.ownerBlock;
-            const otherNode = this._nodeContainer.nodes.find((n) => n.content.data === otherBlock);
+            let otherNode = this._nodeContainer.nodes.find((n) => n.content.data === otherBlock);
 
-            if (otherNode) {
-                this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);
+            if (!otherNode) {
+                otherNode = this._nodeContainer.appendNode(TypeLedger.NodeDataBuilder(otherBlock, this._nodeContainer));
             }
+
+            this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);
         }
 
         return this._connectedPort;

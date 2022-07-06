@@ -537,15 +537,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return this.nodes.filter((n) => n.content.data === nodeData.data)[0];
         }
 
-        this._nodeDataContentList.push(nodeData.data);
-
         onNodeCreated(nodeData.data);
 
         // Connections
         if (nodeData.inputs.length) {
             for (const input of nodeData.inputs) {
                 if (input.connectedPort && recursion) {
-                    this.createNodeFromObject(TypeLedger.NodeDataBuilder(input.connectedPort, this), onNodeCreated);
+                    this.createNodeFromObject(TypeLedger.NodeDataBuilder(input.connectedPort.ownerData, this), onNodeCreated);
                 }
             }
         }
@@ -670,12 +668,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         link.dispose();
     }
 
-    appendNode(data: INodeData) {
-        const newNode = new GraphNode(data, this.props.stateManager);
+    appendNode(nodeData: INodeData) {
+        const newNode = new GraphNode(nodeData, this.props.stateManager);
 
         newNode.appendVisual(this._graphCanvas, this);
 
         this._nodes.push(newNode);
+        this._nodeDataContentList.push(nodeData.data);
 
         return newNode;
     }
@@ -887,7 +886,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Selection?
-        if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
+        if (evt.currentTarget === this._hostCanvas && this._multiKeyIsPressed) {
             this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
             this._selectionBox.classList.add("selection-box");
             this._selectionContainer.appendChild(this._selectionBox);

@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-serializers",
-    "version": "5.12.1",
+    "version": "5.13.3",
     "main": "babylonjs.serializers.js",
     "types": "babylonjs.serializers.module.d.ts",
     "files": [
@@ -14,8 +14,8 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.12.1",
-        "babylonjs-gltf2interface": "^5.12.1"
+        "babylonjs": "^5.13.3",
+        "babylonjs-gltf2interface": "^5.13.3"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

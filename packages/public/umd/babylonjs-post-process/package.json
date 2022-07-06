@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-post-process",
-    "version": "5.12.1",
+    "version": "5.13.3",
     "main": "babylonjs.postProcess.min.js",
     "types": "babylonjs.postProcess.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.12.1"
+        "babylonjs": "^5.13.3"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
