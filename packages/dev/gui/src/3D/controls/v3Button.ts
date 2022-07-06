@@ -44,8 +44,8 @@ export class V3Button extends TouchButton3D {
      */
     public static BACKPLATE_MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
     /**
-      * File name for the backplate model.
-      */
+     * File name for the backplate model.
+     */
     public static BACKPLATE_MODEL_FILENAME = "mrtk-fluent-backplate.glb";
     /**
      * Base Url for the backglow model.
@@ -410,27 +410,26 @@ export class V3Button extends TouchButton3D {
         backPlateMesh.isPickable = false;
         backPlateMesh.visibility = 0;
 
-        SceneLoader.ImportMeshAsync(undefined, V3Button.BACKPLATE_MODEL_BASE_URL, V3Button.BACKPLATE_MODEL_FILENAME, scene)
-            .then((result) => {
-                const backPlateModel = result.meshes[1];
-                backPlateModel.visibility = 0;
-                
-                if (this._isBackplateVisible) {
-                    backPlateModel.visibility = 1;
-                    backPlateModel.name = `${this.name}_backPlate`;
-                    backPlateModel.isPickable = false;
-                    backPlateModel.scaling.x = this.width;
-                    backPlateModel.scaling.y = this.height;
-                    backPlateModel.scaling.z = 0.2;
-                    backPlateModel.parent = backPlateMesh;
-    
-                    if (this._backMaterial) {
-                        backPlateModel.material = this._backMaterial;
-                    }
-    
-                    this._backPlate = backPlateModel;
+        SceneLoader.ImportMeshAsync(undefined, V3Button.BACKPLATE_MODEL_BASE_URL, V3Button.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
+            const backPlateModel = result.meshes[1];
+            backPlateModel.visibility = 0;
+
+            if (this._isBackplateVisible) {
+                backPlateModel.visibility = 1;
+                backPlateModel.name = `${this.name}_backPlate`;
+                backPlateModel.isPickable = false;
+                backPlateModel.scaling.x = this.width;
+                backPlateModel.scaling.y = this.height;
+                backPlateModel.scaling.z = 0.2;
+                backPlateModel.parent = backPlateMesh;
+
+                if (this._backMaterial) {
+                    backPlateModel.material = this._backMaterial;
                 }
-            });
+
+                this._backPlate = backPlateModel;
+            }
+        });
 
         return backPlateMesh;
     }
@@ -444,23 +443,22 @@ export class V3Button extends TouchButton3D {
         backGlowMesh.isPickable = false;
         backGlowMesh.visibility = 0;
 
-        SceneLoader.ImportMeshAsync(undefined, V3Button.BACKGLOW_MODEL_BASE_URL, V3Button.BACKGLOW_MODEL_FILENAME, scene)
-            .then((result) => {
-                const backGlowModel = result.meshes[1];
-                backGlowModel.name = `${this.name}_backGlow`;
-                backGlowModel.isPickable = false;
-                backGlowModel.scaling.x = this.width - 0.1;
-                backGlowModel.scaling.y = this.height - 0.1;
-                backGlowModel.scaling.z = 0.001;
-                backGlowModel.position.z = this._backPlateDepth / 2;
-                backGlowModel.parent = backGlowMesh;
+        SceneLoader.ImportMeshAsync(undefined, V3Button.BACKGLOW_MODEL_BASE_URL, V3Button.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
+            const backGlowModel = result.meshes[1];
+            backGlowModel.name = `${this.name}_backGlow`;
+            backGlowModel.isPickable = false;
+            backGlowModel.scaling.x = this.width - 0.1;
+            backGlowModel.scaling.y = this.height - 0.1;
+            backGlowModel.scaling.z = 0.001;
+            backGlowModel.position.z = this._backPlateDepth / 2;
+            backGlowModel.parent = backGlowMesh;
 
-                if (this._backGlowMaterial) {
-                    backGlowModel.material = this._backGlowMaterial;
-                }
+            if (this._backGlowMaterial) {
+                backGlowModel.material = this._backGlowMaterial;
+            }
 
-                this._backGlow = backGlowModel;
-            });
+            this._backGlow = backGlowModel;
+        });
     }
 
     private _createFrontPlate(scene: Scene) {
@@ -476,41 +474,40 @@ export class V3Button extends TouchButton3D {
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
-    
-        SceneLoader.ImportMeshAsync(undefined, V3Button.FRONTPLATE_MODEL_BASE_URL, V3Button.FRONTPLATE_MODEL_FILENAME, scene)
-            .then((result) => {
-                const collisionPlate = CreateBox(
-                    `${this.name}_collisionPlate`,
-                    {
-                        width: this.width,
-                        height: this.height,
-                    },
-                    scene
-                );
-                collisionPlate.isPickable = false;
-                collisionPlate.scaling.z = this._frontPlateDepth;
-                collisionPlate.visibility = 0;
-                collisionPlate.parent = collisionMesh;
-                this._collisionPlate = collisionPlate;
-    
-                const frontPlateModel = result.meshes[1];
-                frontPlateModel.name = `${this.name}_frontPlate`;
-                frontPlateModel.isPickable = false;
-                frontPlateModel.scaling.x = this.width - 0.1;
-                frontPlateModel.scaling.y = this.height - 0.1;
-                frontPlateModel.parent = collisionPlate;
 
-                if (this.isToggleButton) {
-                    frontPlateModel.visibility = 0;
-                }
+        SceneLoader.ImportMeshAsync(undefined, V3Button.FRONTPLATE_MODEL_BASE_URL, V3Button.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
+            const collisionPlate = CreateBox(
+                `${this.name}_collisionPlate`,
+                {
+                    width: this.width,
+                    height: this.height,
+                },
+                scene
+            );
+            collisionPlate.isPickable = false;
+            collisionPlate.scaling.z = this._frontPlateDepth;
+            collisionPlate.visibility = 0;
+            collisionPlate.parent = collisionMesh;
+            this._collisionPlate = collisionPlate;
 
-                if (this._frontMaterial) {
-                    frontPlateModel.material = this._frontMaterial;
-                }
+            const frontPlateModel = result.meshes[1];
+            frontPlateModel.name = `${this.name}_frontPlate`;
+            frontPlateModel.isPickable = false;
+            frontPlateModel.scaling.x = this.width - 0.1;
+            frontPlateModel.scaling.y = this.height - 0.1;
+            frontPlateModel.parent = collisionPlate;
 
-                this._textPlate.parent = frontPlateModel;
-                this._frontPlate = frontPlateModel;
-            });
+            if (this.isToggleButton) {
+                frontPlateModel.visibility = 0;
+            }
+
+            if (this._frontMaterial) {
+                frontPlateModel.material = this._frontMaterial;
+            }
+
+            this._textPlate.parent = frontPlateModel;
+            this._frontPlate = frontPlateModel;
+        });
 
         return collisionMesh;
     }
@@ -519,24 +516,23 @@ export class V3Button extends TouchButton3D {
         const innerQuadMesh = CreateBox(`${this.name}_innerQuad`, {}, scene);
         innerQuadMesh.isPickable = false;
         innerQuadMesh.visibility = 0;
-    
-        SceneLoader.ImportMeshAsync(undefined, V3Button.INNERQUAD_MODEL_BASE_URL, V3Button.INNERQUAD_MODEL_FILENAME, scene)
-            .then((result) => {
-                const innerQuadModel = result.meshes[1];
-                innerQuadModel.name = `${this.name}_innerQuad`;
-                innerQuadModel.isPickable = false;
-                innerQuadModel.scaling.x = this.width - 0.09;
-                innerQuadModel.scaling.y = this.height - 0.09;
-                innerQuadModel.scaling.z = 0.01;
-                innerQuadModel.position.z = 0.001;
-                innerQuadModel.parent = innerQuadMesh;
 
-                if (this._innerQuadMaterial) {
-                    innerQuadModel.material = this._innerQuadMaterial;
-                }
+        SceneLoader.ImportMeshAsync(undefined, V3Button.INNERQUAD_MODEL_BASE_URL, V3Button.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
+            const innerQuadModel = result.meshes[1];
+            innerQuadModel.name = `${this.name}_innerQuad`;
+            innerQuadModel.isPickable = false;
+            innerQuadModel.scaling.x = this.width - 0.09;
+            innerQuadModel.scaling.y = this.height - 0.09;
+            innerQuadModel.scaling.z = 0.01;
+            innerQuadModel.position.z = 0.001;
+            innerQuadModel.parent = innerQuadMesh;
 
-                this._innerQuad = innerQuadModel;
-            });
+            if (this._innerQuadMaterial) {
+                innerQuadModel.material = this._innerQuadMaterial;
+            }
+
+            this._innerQuad = innerQuadModel;
+        });
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
@@ -557,20 +553,20 @@ export class V3Button extends TouchButton3D {
                 keys: [
                     {
                         frame: 0,
-                        values: [0, 0, 0]
+                        values: [0, 0, 0],
                     },
                     {
                         frame: 20,
-                        values: [1, 0.0144, 0.0144]
+                        values: [1, 0.0144, 0.0144],
                     },
                     {
                         frame: 40,
-                        values: [0.0027713229489760476, 0, 0]
+                        values: [0.0027713229489760476, 0, 0],
                     },
                     {
                         frame: 45,
-                        values: [0.0027713229489760476]
-                    }
+                        values: [0.0027713229489760476],
+                    },
                 ],
             },
             {
@@ -623,7 +619,7 @@ export class V3Button extends TouchButton3D {
 
         for (const animation of animations) {
             const anim = new Animation(animation.name, animation.property, frameRate, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animkeyFrames = []; 
+            const animkeyFrames = [];
 
             for (const key of animation.keys) {
                 animkeyFrames.push({
@@ -666,8 +662,8 @@ export class V3Button extends TouchButton3D {
                     },
                     {
                         frame: 40,
-                        values: [1.00205599570012, 0.025045314830017686, 0, 0]
-                    }
+                        values: [1.00205599570012, 0.025045314830017686, 0, 0],
+                    },
                 ],
             },
             {
@@ -689,7 +685,7 @@ export class V3Button extends TouchButton3D {
 
         for (const animation of animations) {
             const anim = new Animation(animation.name, animation.property, frameRate, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animkeyFrames = []; 
+            const animkeyFrames = [];
 
             for (const key of animation.keys) {
                 animkeyFrames.push({
@@ -737,7 +733,7 @@ export class V3Button extends TouchButton3D {
     }
 
     private _createInnerQuadMaterial(mesh: Mesh) {
-        this._innerQuadMaterial = this._innerQuadMaterial ?? new MRDLInnerquadMaterial('inner_quad', mesh.getScene());
+        this._innerQuadMaterial = this._innerQuadMaterial ?? new MRDLInnerquadMaterial("inner_quad", mesh.getScene());
 
         if (this.isToggleButton) {
             this._innerQuadColor = new Color4(0, 0, 0, 0);

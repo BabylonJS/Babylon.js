@@ -33,13 +33,13 @@ class MRDLBackglowMaterialDefines extends MaterialDefines {
 
 export class MRDLBackglowMaterial extends PushMaterial {
     /**
-	 * Gets or sets the bevel radius on the backglow. If this value is changed, update the lineWidth to match.
-	 */
+     * Gets or sets the bevel radius on the backglow. If this value is changed, update the lineWidth to match.
+     */
     @serialize()
     public bevelRadius = 0.16;
 
     /**
-	 * Gets or sets the line width of the backglow.
+     * Gets or sets the line width of the backglow.
      */
     @serialize()
     public lineWidth = 0.16;
@@ -52,67 +52,67 @@ export class MRDLBackglowMaterial extends PushMaterial {
     public absoluteSizes = false;
 
     /**
-	 * Gets or sets the tuning motion of the backglow.
+     * Gets or sets the tuning motion of the backglow.
      */
     @serialize()
     public tuningMotion = 0.0;
 
     /**
-	 * Gets or sets the motion of the backglow.
+     * Gets or sets the motion of the backglow.
      */
     @serialize()
     public motion = 1.0;
 
     /**
-	 * Gets or sets the maximum intensity of the backglow.
+     * Gets or sets the maximum intensity of the backglow.
      */
     @serialize()
     public maxIntensity = 0.7;
 
     /**
-	 * Gets or sets the fade-in exponent of the intensity of the backglow.
+     * Gets or sets the fade-in exponent of the intensity of the backglow.
      */
     @serialize()
     public intensityFadeInExponent = 2.0;
 
     /**
-	 * Gets or sets the start of the outer fuzz effect on the backglow.
+     * Gets or sets the start of the outer fuzz effect on the backglow.
      */
     @serialize()
     public outerFuzzStart = 0.04;
 
     /**
-	 * Gets or sets the end of the outer fuzz effect on the backglow.
+     * Gets or sets the end of the outer fuzz effect on the backglow.
      */
     @serialize()
     public outerFuzzEnd = 0.04;
 
     /**
-	 * Gets or sets the color of the backglow.
+     * Gets or sets the color of the backglow.
      */
     @serialize()
     public color: Color4 = new Color4(0.682353, 0.698039, 1, 1);
 
     /**
-	 * Gets or sets the inner color of the backglow.
+     * Gets or sets the inner color of the backglow.
      */
     @serialize()
     public innerColor: Color4 = new Color4(0.356863, 0.392157, 0.796078, 1);
 
     /**
-	 * Gets or sets the blend exponent of the backglow.
+     * Gets or sets the blend exponent of the backglow.
      */
     @serialize()
     public blendExponent = 1.5;
 
     /**
-	 * Gets or sets the falloff of the backglow.
+     * Gets or sets the falloff of the backglow.
      */
     @serialize()
     public falloff = 2.0;
 
     /**
-	 * Gets or sets the bias of the backglow.
+     * Gets or sets the bias of the backglow.
      */
     @serialize()
     public bias = 0.5;
@@ -159,7 +159,6 @@ export class MRDLBackglowMaterial extends PushMaterial {
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
-
 
         // Get correct effect
         if (defines.isDirty) {
@@ -237,21 +236,27 @@ export class MRDLBackglowMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-				<IEffectCreationOptions>{
-				    attributes: attribs,
-				    uniformsNames: uniforms,
-				    uniformBuffersNames: uniformBuffers,
-				    samplers: samplers,
-				    defines: join,
-				    fallbacks: fallbacks,
-				    onCompiled: this.onCompiled,
-				    onError: this.onError,
-				    indexParameters: { maxSimultaneousLights: 4 }
-				}, engine), defines);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -282,7 +287,7 @@ export class MRDLBackglowMaterial extends PushMaterial {
         this.bindOnlyWorldMatrix(world);
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
         this._activeEffect.setVector3("cameraPosition", scene.activeCamera!.position);
-		
+
         // "Rounded Rectangle"
         this._activeEffect.setFloat("_Bevel_Radius_", this.bevelRadius);
         this._activeEffect.setFloat("_Line_Width_", this.lineWidth);
@@ -309,9 +314,9 @@ export class MRDLBackglowMaterial extends PushMaterial {
     }
 
     /**
-	 * Get the list of animatables in the material.
-	 * @returns the list of animatables object used in the material
-	 */
+     * Get the list of animatables in the material.
+     * @returns the list of animatables object used in the material
+     */
     public getAnimatables(): IAnimatable[] {
         return [];
     }

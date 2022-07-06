@@ -37,8 +37,8 @@ export class MRDLInnerquadMaterial extends PushMaterial {
     @serialize()
     public color: Color4 = new Color4(1, 1, 1, 0.05);
     /**
-	 * Gets or sets the corner radius on the innerquad. If this value is changed, update the lineWidth to match.
-	 */
+     * Gets or sets the corner radius on the innerquad. If this value is changed, update the lineWidth to match.
+     */
     @serialize()
     public radius = 0.12;
 
@@ -47,25 +47,25 @@ export class MRDLInnerquadMaterial extends PushMaterial {
      */
     @serialize()
     public fixedRadius = true;
- 
+
     /** @hidden */
     public _filterWidth = 1.0;
- 
+
     /**
-	 * Gets or sets the glow fraction of the innerquad.
+     * Gets or sets the glow fraction of the innerquad.
      */
     @serialize()
     public glowFraction = 0.0;
- 
+
     /**
-	 * Gets or sets the maximum glow intensity of the innerquad.
+     * Gets or sets the maximum glow intensity of the innerquad.
      */
     @serialize()
     public glowMax = 0.5;
- 
+
     /**
-	 * Gets or sets the glow falloff effect of the innerquad.
-     */   
+     * Gets or sets the glow falloff effect of the innerquad.
+     */
     @serialize()
     public glowFalloff = 2.0;
 
@@ -110,7 +110,6 @@ export class MRDLInnerquadMaterial extends PushMaterial {
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
-
 
         // Get correct effect
         if (defines.isDirty) {
@@ -171,7 +170,7 @@ export class MRDLInnerquadMaterial extends PushMaterial {
                 "_Filter_Width_",
                 "_Glow_Fraction_",
                 "_Glow_Max_",
-                "_Glow_Falloff_"
+                "_Glow_Falloff_",
             ];
             const samplers: string[] = [];
             const uniformBuffers = new Array<string>();
@@ -181,21 +180,27 @@ export class MRDLInnerquadMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -226,15 +231,15 @@ export class MRDLInnerquadMaterial extends PushMaterial {
         this.bindOnlyWorldMatrix(world);
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
         this._activeEffect.setVector3("cameraPosition", scene.activeCamera!.position);
-        
+
         // "Color"
         this._activeEffect.setDirectColor4("_Color_", this.color);
-         
+
         // "Shape"
         this._activeEffect.setFloat("_Radius_", this.radius);
         this._activeEffect.setFloat("_Fixed_Radius_", this.fixedRadius ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
-         
+
         // "Glow"
         this._activeEffect.setFloat("_Glow_Fraction_", this.glowFraction);
         this._activeEffect.setFloat("_Glow_Max_", this.glowMax);
