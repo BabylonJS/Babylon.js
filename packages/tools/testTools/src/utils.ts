@@ -74,6 +74,10 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string) =>
             url: baseUrl + "/meshopt_decoder.js",
         };
     }
+
+    BABYLON.BasisToolsOptions.JSModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.js";
+    BABYLON.BasisToolsOptions.WasmModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.wasm";
+
     const canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement;
     if (!canvas) return;
     window.canvas = canvas;
