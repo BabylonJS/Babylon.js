@@ -240,7 +240,7 @@ export class GraphNode {
         for (const port of this._inputPorts) {
             const attachedPoint = port.portData;
 
-            if (attachedPoint === portData) {
+            if (attachedPoint === portData || (attachedPoint.ownerData === portData.ownerData && attachedPoint.internalName === portData.internalName)) {
                 return port;
             }
         }
@@ -248,7 +248,7 @@ export class GraphNode {
         for (const port of this._outputPorts) {
             const attachedPoint = port.portData;
 
-            if (attachedPoint === portData) {
+            if (attachedPoint === portData || (attachedPoint.ownerData === portData.ownerData && attachedPoint.internalName === portData.internalName)) {
                 return port;
             }
         }
