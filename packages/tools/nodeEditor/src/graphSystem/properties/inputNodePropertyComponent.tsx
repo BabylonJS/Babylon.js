@@ -121,11 +121,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 );
             }
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <Vector2PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <>
-                        <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        <Color3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
                         <CheckBoxLineComponent
                             label="Convert to gamma space"
                             propertyName="convertToGammaSpace"
@@ -147,7 +147,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <>
-                        <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                        <Color4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />
                         <CheckBoxLineComponent
                             label="Convert to gamma space"
                             propertyName="convertToGammaSpace"
@@ -167,11 +167,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     </>
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return <Vector3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <Vector3PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return <Vector4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <Vector4PropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return <MatrixPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />;
+                return <MatrixPropertyTabComponent lockObject={globalState.lockObject} globalState={globalState} inputBlock={inputBlock} />;
         }
 
         return null;

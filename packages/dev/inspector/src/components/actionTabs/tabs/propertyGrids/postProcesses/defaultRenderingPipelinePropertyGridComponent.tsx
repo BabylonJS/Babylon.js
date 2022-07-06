@@ -130,12 +130,14 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Vector2LineComponent
+                                lockObject={this.props.lockObject}
                                 label="Center"
                                 target={renderPipeline.chromaticAberration}
                                 propertyName="centerPosition"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Vector2LineComponent
+                                lockObject={this.props.lockObject}
                                 label="Direction"
                                 target={renderPipeline.chromaticAberration}
                                 propertyName="direction"
@@ -363,6 +365,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Color3LineComponent
+                                lockObject={this.props.lockObject}
                                 label="Vignette color"
                                 target={renderPipeline.imageProcessing}
                                 propertyName="vignetteColor"
