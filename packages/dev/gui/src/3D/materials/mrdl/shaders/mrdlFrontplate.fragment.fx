@@ -34,7 +34,6 @@ uniform float _Blob_Pulse_2_;
 uniform float _Blob_Fade_2_;
 uniform float _Gaze_Intensity_;
 uniform float _Gaze_Focus_;
-uniform float _Pinched_;
 uniform sampler2D _Blob_Texture_;
 uniform float _Selection_Fuzz_;
 uniform float _Selected_;
