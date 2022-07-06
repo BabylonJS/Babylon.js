@@ -52,6 +52,9 @@ export class MRDLFrontplateMaterial extends PushMaterial {
     @serialize()
     public lineWidth = 0.01;
 
+    /**
+	 * TODO Gets or sets whether the line width of the frontplate.
+	 */
     @serialize()
     public relativeToHeight = false;
 
@@ -65,199 +68,193 @@ export class MRDLFrontplateMaterial extends PushMaterial {
     public edgeColor: Color4 = new Color4(0.53, 0.53, 0.53, 1);
 
     /**
-	 * TODO: Docs
+	 * Gets or sets whether to enable blob effects on the frontplate.
      */
     @serialize()
     public blobEnable = true;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob position on the frontplate.
      */
     @serialize()
     public blobPosition: Vector3 = new Vector3(100, 100, 100);
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob intensity of the frontplate.
      */
     @serialize()
     public blobIntensity = 0.5;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob near size of the frontplate.
      */
     @serialize()
     public blobNearSize = 0.032;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob far size of the frontplate.
      */
     @serialize()
     public blobFarSize = 0.048;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob near distance of the frontplate.
      */
     @serialize()
     public blobNearDistance = 0.008;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob far distance of the frontplate.
      */
     @serialize()
     public blobFarDistance = 0.064;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob fade length of the frontplate.
      */
     @serialize()
     public blobFadeLength = 0.04;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob inner fade of the frontplate.
      */
     @serialize()
     public blobInnerFade = 0.01;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob pulse of the frontplate.
      */
     @serialize()
     public blobPulse = 0.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob fade effect on the frontplate.
      */
     @serialize()
     public blobFade = 1.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the maximum size of the blob pulse on the frontplate.
      */
     @serialize()
     public blobPulseMaxSize = 0.05;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets whether to enable extra blob effects of the frontplate.
      */
     @serialize()
     public blobEnable2 = true;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets blob2 position of the frontplate.
      */
     @serialize()
     public blobPosition2: Vector3 = new Vector3(10, 10.1, -0.6);
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob2 near size of the frontplate.
      */
     @serialize()
     public blobNearSize2 = 0.008;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob2 inner fade of the frontplate.
      */
     @serialize()
     public blobInnerFade2 = 0.1;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob2 pulse of the frontplate.
      */
     @serialize()
     public blobPulse2 = 0.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the blob2 fade effect on the frontplate.
      */
     @serialize()
     public blobFade2 = 1.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the gaze intensity of the frontplate.
      */
     @serialize()
     public gazeIntensity = 0.8;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the gaze focus of the frontplate.
      */
     @serialize()
     public gazeFocus = 0.0;
 
     /**
-	 * TODO: Docs
-     */
-    @serialize()
-    public pinched = 0.0;
-
-    /**
-	 * TODO: Docs
+	 * Gets or sets the selection fuzz of the frontplate.
      */
     @serialize()
     public selectionFuzz = 0.5;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the fade intensity of the frontplate.
      */
     @serialize()
     public selected = 1.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the selection fade intensity of the frontplate.
      */
     @serialize()
     public selectionFade = 0.2;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the selection fade size of the frontplate.
      */
     @serialize()
     public selectionFadeSize = 0.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the selected distance of the frontplate.
      */
     @serialize()
     public selectedDistance = 0.08;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the selected fade length of the frontplate.
      */
     @serialize()
     public selectedFadeLength = 0.08;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the proximity maximum intensity of the frontplate.
      */
     @serialize()
     public proximityMaxIntensity = 0.45;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the proximity far distance of the frontplate.
      */
     @serialize()
     public proximityFarDistance = 0.16;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the proximity near radius of the frontplate.
      */
     @serialize()
     public proximityNearRadius = 0.016;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets the proximity anisotropy of the frontplate.
      */
     @serialize()
     public proximityAnisotropy = 1.0;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets whether to use global left index on the frontplate.
      */
     @serialize()
     public useGlobalLeftIndex = true;
     
     /**
-	 * TODO: Docs
+	 * Gets or sets  whether to use global right index of the frontplate.
      */
     @serialize()
     public useGlobalRightIndex = true;
@@ -266,12 +263,14 @@ export class MRDLFrontplateMaterial extends PushMaterial {
 	 * URL pointing to the texture used to define the coloring for the BLOB.
 	 */
     public static BLOB_TEXTURE_URL = "";
-    private _blobTexture: Texture;
 
     /**
 	 * Gets or sets the opacity of the frontplate (0.0 - 1.0).
 	 */
     public fadeOut = 1.0;
+
+    private _blobTexture: Texture;
+
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
@@ -398,7 +397,6 @@ export class MRDLFrontplateMaterial extends PushMaterial {
                 "_Blob_Fade_2_",
                 "_Gaze_Intensity_",
                 "_Gaze_Focus_",
-                "_Pinched_",
                 "_Blob_Texture_",
                 "_Selection_Fuzz_",
                 "_Selected_",
@@ -504,7 +502,6 @@ export class MRDLFrontplateMaterial extends PushMaterial {
         // "Gaze"
         this._activeEffect.setFloat("_Gaze_Intensity_", this.gazeIntensity);
         this._activeEffect.setFloat("_Gaze_Focus_", this.gazeFocus);
-        this._activeEffect.setFloat("_Pinched_", this.pinched);
          
         // "Blob Texture"
         this._activeEffect.setTexture("_Blob_Texture_", this._blobTexture);

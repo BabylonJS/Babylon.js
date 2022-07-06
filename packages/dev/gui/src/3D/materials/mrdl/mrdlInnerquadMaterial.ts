@@ -43,28 +43,28 @@ export class MRDLInnerquadMaterial extends PushMaterial {
     public radius = 0.12;
 
     /**
-     * Gets or sets the fixed radius of the innerquad.
+     * Gets or sets whether the radius of the innerquad should be fixed.
      */
     @serialize()
-    public fixedRadius = false;
+    public fixedRadius = true;
  
     /** @hidden */
     public _filterWidth = 1.0;
  
     /**
-	 * TODO: Docs
+	 * Gets or sets the glow fraction of the innerquad.
      */
     @serialize()
     public glowFraction = 0.0;
  
     /**
-	 * TODO: Docs
+	 * Gets or sets the maximum glow intensity of the innerquad.
      */
     @serialize()
     public glowMax = 0.5;
  
     /**
-	 * TODO: Docs
+	 * Gets or sets the glow falloff effect of the innerquad.
      */   
     @serialize()
     public glowFalloff = 2.0;
@@ -231,7 +231,7 @@ export class MRDLInnerquadMaterial extends PushMaterial {
         this._activeEffect.setDirectColor4("_Color_", this.color);
          
         // "Shape"
-        this._activeEffect.setFloat("_Radius_", 0.12);
+        this._activeEffect.setFloat("_Radius_", this.radius);
         this._activeEffect.setFloat("_Fixed_Radius_", this.fixedRadius ? 1.0 : 0.0);
         this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
          

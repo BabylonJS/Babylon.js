@@ -52,67 +52,67 @@ export class MRDLBackglowMaterial extends PushMaterial {
     public absoluteSizes = false;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the tuning motion of the backglow.
      */
     @serialize()
     public tuningMotion = 0.0;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the motion of the backglow.
      */
     @serialize()
     public motion = 1.0;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the maximum intensity of the backglow.
      */
     @serialize()
     public maxIntensity = 0.7;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the fade-in exponent of the intensity of the backglow.
      */
     @serialize()
     public intensityFadeInExponent = 2.0;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the start of the outer fuzz effect on the backglow.
      */
     @serialize()
     public outerFuzzStart = 0.04;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the end of the outer fuzz effect on the backglow.
      */
     @serialize()
     public outerFuzzEnd = 0.04;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the color of the backglow.
      */
     @serialize()
     public color: Color4 = new Color4(0.682353, 0.698039, 1, 1);
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the inner color of the backglow.
      */
     @serialize()
     public innerColor: Color4 = new Color4(0.356863, 0.392157, 0.796078, 1);
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the blend exponent of the backglow.
      */
     @serialize()
     public blendExponent = 1.5;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the falloff of the backglow.
      */
     @serialize()
     public falloff = 2.0;
 
     /**
-	 * TODO: Docs
+	 * Gets or sets the bias of the backglow.
      */
     @serialize()
     public bias = 0.5;
