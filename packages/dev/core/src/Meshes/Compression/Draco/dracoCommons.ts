@@ -1,4 +1,4 @@
-import { VertexData, IGetSetVerticesData } from "../../mesh.vertexData";
+import type { VertexData, IGetSetVerticesData } from "../../mesh.vertexData";
 import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
 import type { IDisposable } from "../../../scene";

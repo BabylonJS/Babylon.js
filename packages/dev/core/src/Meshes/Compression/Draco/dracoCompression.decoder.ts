@@ -1,6 +1,7 @@
 import { VertexData } from "../../mesh.vertexData";
-import { Nullable } from "../../../types";
-import { IDracoDecoder, DracoCompressionBase, IDracoCompressionEngineConfiguration } from "./dracoCommons";
+import type { Nullable } from "../../../types";
+import type { IDracoDecoder, IDracoCompressionEngineConfiguration } from "./dracoCommons";
+import { DracoCompressionBase } from "./dracoCommons";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: any;
