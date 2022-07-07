@@ -1,8 +1,8 @@
 import type { IGetSetVerticesData } from "../../mesh.vertexData";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import type { Nullable, FloatArray } from "../../../types";
-import { DracoAttributeName, DracoAttribute, DracoGeometryType, DracoEncoderMethod, IDracoEncoder, DracoCompressionBase } from "./dracoCommons";
-import type { IDracoCompressionEngineConfiguration, IDracoEncodedPrimitive, IDracoEncoderOptions } from "./dracoCommons";
+import { DracoAttributeName, DracoAttribute, DracoGeometryType, DracoEncoderMethod, DracoCompressionBase } from "./dracoCommons";
+import type { IDracoEncoder, IDracoCompressionEngineConfiguration, IDracoEncodedPrimitive, IDracoEncoderOptions } from "./dracoCommons";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: any;
