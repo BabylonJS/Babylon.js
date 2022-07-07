@@ -1,6 +1,8 @@
 import { DeviceSource, DeviceSourceManager, DeviceType, PointerInput } from "core/DeviceInput";
 import type { IDeviceInputSystem } from "core/DeviceInput/InputDevices/inputInterfaces";
 import type { InternalDeviceSourceManager, IObservableManager } from "core/DeviceInput/InputDevices/internalDeviceSourceManager";
+import { WebDeviceInputSystem } from "core/DeviceInput/InputDevices/webDeviceInputSystem";
+import { Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import type { IPointerEvent, IUIEvent, IWheelEvent } from "core/Events";
 import type { Nullable } from "core/types";
@@ -8,7 +10,7 @@ import type { Nullable } from "core/types";
 /**
  * This class mocks up the basic functionality required from the DeviceInputSystem
  */
-class MockDeviceInputSystem implements IDeviceInputSystem {
+/*class MockDeviceInputSystem implements IDeviceInputSystem {
     constructor(
         public onDeviceConnected: Nullable<(deviceType: DeviceType, deviceSlot: number) => void>,
         public onDeviceDisconnected: Nullable<(deviceType: DeviceType, deviceSlot: number) => void>,
@@ -27,9 +29,10 @@ class MockDeviceInputSystem implements IDeviceInputSystem {
     dispose(): void {
         // Do nothing
     }
-}
+}*/
+jest.mock("core/DeviceInput/InputDevices/webDeviceInputSystem");
 
-class MockInternalDeviceSourceManager {
+/*class MockInternalDeviceSourceManager {
     public _refCount = 0;
 
     constructor() {}
@@ -45,30 +48,57 @@ class MockInternalDeviceSourceManager {
     };
 
     public dispose(): void {}
-}
+}*/
 
 describe("DeviceSource", () => {
+    let engine: Nullable<NullEngine> = null;
+    let wdis: Nullable<IDeviceInputSystem> = null;
+    const onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => {};
+    const onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => {};
+    let onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {};
+
+    beforeAll(() => {
+        WebDeviceInputSystem.mockImplementation(() => {
+            return {
+                pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
+                    if (deviceType) {
+                        return 1;
+                    }
+                    return 0;
+                },
+                isDeviceAvailable(deviceType: DeviceType): boolean {
+                    return true;
+                },
+                dispose: void {
+                    // Do Nothing
+                },
+            }
+        });
+    });
+
+    beforeEach(() => {
+        engine = new NullEngine();
+        wdis = new WebDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
+    });
+
     it("should exist", () => {
-        const deviceInputSystem = new MockDeviceInputSystem(null, null, null);
-        const mouseSource = new DeviceSource(deviceInputSystem, DeviceType.Mouse, 0);
+        const mouseSource = new DeviceSource(wdis!, DeviceType.Mouse, 0);
         expect(mouseSource).not.toBeNull();
         expect(mouseSource.deviceType).toBe(DeviceType.Mouse);
         expect(mouseSource.deviceSlot).toBe(0);
         expect(mouseSource.onInputChangedObservable).not.toBeUndefined();
     });
     it("can poll with getInput", () => {
-        const deviceInputSystem = new MockDeviceInputSystem(null, null, null);
-        const mouseSource = new DeviceSource(deviceInputSystem, DeviceType.Mouse, 0);
+        const mouseSource = new DeviceSource(wdis!, DeviceType.Mouse, 0);
         const leftClick = mouseSource.getInput(PointerInput.LeftClick);
         expect(leftClick).toBe(1);
     });
     it("can use onInputChangedObservable", () => {
         expect.assertions(2);
         let resultEvent: Nullable<IWheelEvent | IPointerEvent> = null;
-        let onInputChanged = null;
+
         // Create DeviceSource and add to its observable
-        const deviceInputSystem = new MockDeviceInputSystem(null, null, onInputChanged);
-        const mouseSource = new DeviceSource(deviceInputSystem, DeviceType.Mouse, 0);
+        const mouseSource = new DeviceSource(wdis!, DeviceType.Mouse, 0);
         onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {
             mouseSource.onInputChangedObservable.notifyObservers(eventData as IPointerEvent);
         };
@@ -83,7 +113,7 @@ describe("DeviceSource", () => {
         expect(resultEvent).toEqual(mouseEvent);
     });
 });
-
+/*
 describe("DeviceSourceManager", () => {
     let engine: Nullable<NullEngine> = null;
 
@@ -223,4 +253,4 @@ describe("DeviceSourceManager", () => {
         expect(unregisterSpy).toBeCalledTimes(3);
         expect(disposeSpy).toBeCalledTimes(1);
     });
-});
+});*/
