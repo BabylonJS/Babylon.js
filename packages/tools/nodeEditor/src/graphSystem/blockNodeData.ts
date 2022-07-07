@@ -5,6 +5,7 @@ import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import triangle from "../imgs/triangle.svg";
+import square from "../imgs/square.svg";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -65,6 +66,7 @@ export class BlockNodeData implements INodeData {
         if (this.data.target === NodeMaterialBlockTargets.Fragment) {
             iconDiv.classList.add("visible");
             iconDiv.title = "In the fragment shader";
+            img.src = square;
 
             return;
         }
