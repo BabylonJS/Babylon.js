@@ -8,7 +8,7 @@ export interface INodeData {
     isInput: boolean;
     comments: string;
 
-    getWarningMessage: () => string;
+    prepareHeaderIcon: (iconDiv: HTMLDivElement, img: HTMLImageElement) => void;
     getClassName: () => string;
     dispose: () => void;
 
