@@ -433,7 +433,7 @@ export class _GLTFAnimation {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
                             const babylonTransformNode = this._IsTransformable(target) ? target : this._IsTransformable(target[0]) ? target[0] : null;
-                            if( babylonTransformNode) {
+                            if (babylonTransformNode) {
                                 const convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
                                 _GLTFAnimation._AddAnimation(
                                     `${animation.name}`,
