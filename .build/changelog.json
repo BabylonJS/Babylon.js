@@ -1,17 +1,51 @@
 {
-    "fromTag": "5.13.3",
+    "fromTag": "5.14.0",
     "changelog": {
-        "5.13.3": [
+        "5.14.1": [
             {
-                "pr": "12701",
-                "title": "Fix loading skinned model with multiple primitives",
-                "description": "https://forum.babylonjs.com/t/3d-model-not-showing-up-in-playground-or-sandbox/31821",
+                "pr": "12720",
+                "title": "Move common controls out of NME",
+                "description": null,
                 "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/colorPickerComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/minus.svg",
+                    "packages/tools/nodeEditor/src/sharedComponents/numericInputComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/plus.svg"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12719",
+                "title": "Warning for protected block names pops while still typing",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/colorPicker/hexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12686",
+                "title": "Update GLTF Animation serializer to include Camera.",
+                "description": "`Camera `and `Light` was not exported to GLTF due to single test about `TransformNode`. We introduce a test function, which encompass test for `TransformNode`, `Camera `and `Light`. This test function will evolve to add support for `KHR_animation_pointer`.\r\nSee [this](https://forum.babylonjs.com/t/gltf-bug-freecamera-animation-not-being-exported/31259) forum thread.",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts"
                 ],
                 "tags": [
                     "bug"
@@ -195,6 +229,23 @@
                     "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
                 ],
                 "tags": []
+            }
+        ],
+        "5.13.3": [
+            {
+                "pr": "12701",
+                "title": "Fix loading skinned model with multiple primitives",
+                "description": "https://forum.babylonjs.com/t/3d-model-not-showing-up-in-playground-or-sandbox/31821",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "5.13.2": [
