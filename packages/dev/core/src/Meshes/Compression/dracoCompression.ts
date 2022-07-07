@@ -11,8 +11,8 @@ export class DracoCompression extends DracoDecoder {
         return DracoDecoder.Configuration;
     }
 
-    public static set Configuration(value: IDracoCompressionEngineConfiguration) {
-        DracoDecoder.Configuration = value;
+    public static set Configuration(value: any) {
+        DracoDecoder.Configuration = value.decoder;
     }
 
     private static _Default0: Nullable<DracoDecoder> = null;
