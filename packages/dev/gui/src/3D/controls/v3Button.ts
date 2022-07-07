@@ -580,7 +580,7 @@ export class V3Button extends TouchButton3D {
                     },
                     {
                         frame: 20,
-                        values: [-this._frontPlateDepth / 2, 0.0, 0.0],
+                        values: [Vector3.Forward(this._collisionPlate._scene.useRightHandedSystem).scale(this._frontPlateDepth / 2).z, 0.0, 0.0],
                     },
                     {
                         frame: 40,
@@ -677,7 +677,7 @@ export class V3Button extends TouchButton3D {
                     },
                     {
                         frame: 40,
-                        values: [0.15, 0.0, 0.0],
+                        values: [Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-0.15).z, 0.0, 0.0],
                     },
                 ],
             },
