@@ -193,6 +193,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                     </div>
                     <div className="color3">
                         <ColorPickerLineComponent
+                            lockObject={this.props.lockObject}
                             linearHint={this.props.isLinear}
                             value={this.props.disableAlpha ? this._toColor3(this.state.color) : this.state.color}
                             onColorChanged={(colorString) => {

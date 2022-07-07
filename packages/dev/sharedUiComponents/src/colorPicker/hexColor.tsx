@@ -1,9 +1,11 @@
 import * as React from "react";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 export interface IHexColorProps {
     value: string;
     expectedLength: number;
     onChange: (value: string) => void;
+    lockObject: LockObject;
 }
 
 export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
@@ -21,6 +23,18 @@ export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
         return true;
     }
 
+    lock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    }
+
+    unlock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    }
+
     updateHexValue(valueString: string) {
         if (valueString != "" && /^[0-9A-Fa-f]+$/g.test(valueString) == false) {
             return;
@@ -36,6 +50,15 @@ export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
     }
 
     public render() {
-        return <input type="string" className="hex-input" value={this.state.hex} onChange={(evt) => this.updateHexValue(evt.target.value)} />;
+        return (
+            <input
+                type="string"
+                className="hex-input"
+                value={this.state.hex}
+                onBlur={() => this.unlock()}
+                onFocus={() => this.lock()}
+                onChange={(evt) => this.updateHexValue(evt.target.value)}
+            />
+        );
     }
 }
