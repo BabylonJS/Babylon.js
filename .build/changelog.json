@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.13.2",
+    "fromTag": "5.13.3",
     "changelog": {
         "5.13.3": [
             {
@@ -16,6 +16,185 @@
                 "tags": [
                     "bug"
                 ]
+            }
+        ],
+        "5.14.0": [
+            {
+                "pr": "12714",
+                "title": "Pasting hex color from one color3 to another actually pastes the original node as a new node",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/gradientStepComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/hexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorPickerComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/colorPickerComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12706",
+                "title": "Move lock object down the graph",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/arcRotateCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/freeCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/fogPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/hemisphericLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/pointLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/backgroundMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/standardMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/boxEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/meshEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/pointEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/color3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/color4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/matrixLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector2LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/color3PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/color4PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/matrixPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/vector2PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/vector3PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/vector4PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/framePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12709",
+                "title": "Created Visual Tests for GUI Input and Pick Testing",
+                "description": "This PR adds two visual tests to our testing suite to check some higher level input functionality.\r\n\r\nPicking Visual Test: https://playground.babylonjs.com/#4J7Y7V#1\r\nThis test validates that picking should work for POINTERMOVE, POINTERDOWN, and POINTERUP.  Additionally, there are tests to verify that our skip booleans (eg. skipPointerUpPredicate) will prevent picking in scenarios where we don't want to pick.  As part of this process, we also can verify that the DeviceInputSystem/DeviceSourceManager can talk to the InputManager to propagate pointer events up.\r\n\r\nGUI Input Test: https://playground.babylonjs.com/#UB4F3B#7\r\nThis test validates that GUI elements such as TextBlocks, InputTexts, and Buttons are usable with Keyboard and Mouse input.  Furthermore, this will verify that the 6 observables will work with our buttons (move, up, down, out, enter, click).  While the first test verifies that the DIS/DSM can talk with the InputManager, this one will show that the InputManager can also talk with GUI elements.\r\n\r\nIt should be noted that all simulated input is done with Pointer/KeyboardEvent objects and the `dispatchEvent` function.  Some modifications will be needed if these tests are to run on Babylon Native.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/guiInputTest.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pickingVisualTest.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "gui",
+                    "picking",
+                    "inputs",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12708",
+                "title": "Fix some additional issues",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12691",
+                "title": "move more code to shared-ui",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/floatPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/checkBoxLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/floatLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/propertyChangedEvent.ts",
+                    "packages/tools/nodeEditor/src/sharedComponents/sliderLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/textLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12703",
+                "title": "Camera: Remove code execute preventDefault for wheel events",
+                "description": "Recently, there was a fix done for mouse wheel events to allow them to properly be identified as supporting the passive flag.  Because of this, there was a side effect introduced where if preventDefault is enabled for camera wheel input objects, it will throw an error because passive events ignore preventDefault calls.  This was brought to our attention in this forum post: https://forum.babylonjs.com/t/updated-babylon-now-getting-unable-to-preventdefault-inside-passive-event-listener-invocation-error/31842\r\n\r\nThis PR removes the, now obsolete, preventDefault calls from our wheel inputs to prevent this error from popping up.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12704",
+                "title": "Fix command-drag multiselect for NME on Mac",
+                "description": "When doing click-and-drag multiselect of NME nodes, check _multiKeyIsPressed which will be true if either ctrl or command (for Mac) key is pressed down, instead of just checking for ctrl key.\r\n\r\nForum: https://forum.babylonjs.com/t/is-it-possible-to-change-shoutcut-for-node-material-editor/31808/14",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": []
             }
         ],
         "5.13.2": [
