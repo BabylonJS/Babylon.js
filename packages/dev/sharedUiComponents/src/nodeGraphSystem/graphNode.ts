@@ -316,9 +316,9 @@ export class GraphNode {
                 this._headerContainer.classList.add(additionalClass);
             }
         } else {
-            this._header.innerHTML = this.content.name;            
+            this._header.innerHTML = this.content.name;
         }
-        
+
         for (const port of this._inputPorts) {
             port.refresh();
         }
@@ -445,7 +445,7 @@ export class GraphNode {
 
         this._headerIcon = root.ownerDocument!.createElement("div");
         this._headerIcon.classList.add("headerIcon");
-        this._headerIconImg = root.ownerDocument!.createElement("img");       
+        this._headerIconImg = root.ownerDocument!.createElement("img");
         this._headerIcon.appendChild(this._headerIconImg);
         this._visual.appendChild(this._headerIcon);
 

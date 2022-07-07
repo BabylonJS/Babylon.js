@@ -64,16 +64,16 @@ export class BlockNodeData implements INodeData {
     public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
         if (this.data.target === NodeMaterialBlockTargets.Fragment) {
             iconDiv.classList.add("visible");
-            iconDiv.title = "Fragment";
-    
+            iconDiv.title = "In the fragment shader";
+
             return;
         }
 
         if (this.data.target === NodeMaterialBlockTargets.Vertex) {
             iconDiv.classList.add("visible");
-            iconDiv.title = "Vertex";            
+            iconDiv.title = "In the vertex shader";
             img.src = triangle;
-    
+
             return;
         }
 
