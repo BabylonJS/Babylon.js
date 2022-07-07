@@ -8,56 +8,126 @@ import { NullEngine } from "core/Engines/nullEngine";
 import type { IPointerEvent, IUIEvent } from "core/Events";
 import type { Nullable } from "core/types";
 
-jest.mock("core/DeviceInput/InputDevices/webDeviceInputSystem");
+interface ITestDeviceInputSystem {
+    connectDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number): void;
+    disconnectDevice(deviceType: DeviceType, deviceSlot: number): void;
+    changeInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number): void;
+}
+
+class TestDeviceInputSystem implements ITestDeviceInputSystem{
+    // Values to use for numberOfInputs
+    public static MAX_KEYCODES = 255;
+    public static MAX_POINTER_INPUTS = 12;
+
+    private _inputs: Array<{ [deviceSlot: number]: Array<number> }>;
+    private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
+    private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+    private _onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
+
+    constructor (
+        _engine: Engine,
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
+    ) {
+        this._inputs = new Array<{ [deviceSlot: number]: Array<number> }>();
+        this._onDeviceConnected = onDeviceConnected;
+        this._onDeviceDisconnected = onDeviceDisconnected;
+        this._onInputChanged = onInputChanged;
+    }
+
+    public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
+        const device = this._inputs[deviceType][deviceSlot];
+
+        if (!device) {
+            throw `Unable to find device ${DeviceType[deviceType]}`;
+        }
+
+        const currentValue = device[inputIndex];
+        if (currentValue === undefined) {
+            throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
+        }
+
+        return currentValue;
+    }
+
+    public isDeviceAvailable(deviceType: DeviceType): boolean {
+        return this._inputs[deviceType] !== undefined;
+    }
+
+    public connectDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number): void {
+        if (!this._inputs[deviceType]) {
+            this._inputs[deviceType] = {};
+        }
+
+        if (!this._inputs[deviceType][deviceSlot]) {
+            const device = new Array<number>(numberOfInputs);
+            device.fill(0);
+            this._inputs[deviceType][deviceSlot] = device;
+            this._onDeviceConnected(deviceType, deviceSlot);
+        }
+    }
+
+    public disconnectDevice(deviceType: DeviceType, deviceSlot: number): void {
+        if (this._inputs[deviceType][deviceSlot]) {
+            delete this._inputs[deviceType][deviceSlot];
+            this._onDeviceDisconnected(deviceType, deviceSlot);
+        }
+    }
+
+    public changeInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number): void {
+        const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this as unknown as IDeviceInputSystem);
+
+        if (!this._inputs[deviceType]) {
+            throw `Unable to find device type ${DeviceType[deviceType]}`;
+        }
+
+        const device = this._inputs[deviceType][deviceSlot];
+        if (device) {
+            device[inputIndex] = currentState;
+            this._onInputChanged(deviceType, deviceSlot, evt);
+        }
+        else {
+            throw `Unable to find device type ${DeviceType[deviceType]}:${deviceSlot}`;
+        }
+    }
+
+    public dispose(): void {
+        this._onDeviceConnected = () => {};
+        this._onDeviceDisconnected = () => {};
+        this._onInputChanged = () => {};
+    }
+}
+
+jest.mock("core/DeviceInput/InputDevices/webDeviceInputSystem", () => {
+    return {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        WebDeviceInputSystem: jest.fn().mockImplementation((
+            engine: Engine,
+            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
+            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
+        ) => {
+            return new TestDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
+        }),
+    }
+});
 
 describe("DeviceSource", () => {
     let engine: Nullable<NullEngine> = null;
     let wdis: Nullable<IDeviceInputSystem> = null;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => {};
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => {};
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {};
-
-    beforeAll(() => {
-        WebDeviceInputSystem.mockImplementation((
-            engine: Engine,
-            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
-            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
-            onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) => {
-            return {
-                _onDeviceConnected: onDeviceConnected,
-                _onDeviceDisconnected: onDeviceDisconnected,
-                _onInputChanged: onInputChanged,
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
-                    return 0;
-                },
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                isDeviceAvailable(deviceType: DeviceType): boolean {
-                    return true;
-                },
-                connectDevice(deviceType: DeviceType, deviceSlot: number): void {
-                    onDeviceConnected(deviceType, deviceSlot);
-                },
-                disconnectDevice(deviceType: DeviceType, deviceSlot: number): void {
-                    onDeviceDisconnected(deviceType, deviceSlot);
-                },
-                changeInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number): void {
-                    const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this as unknown as IDeviceInputSystem);
-                    onInputChanged(deviceType, deviceSlot, evt);
-                },
-                dispose(): void {
-                    // Do Nothing
-                },
-            }
-        });
-    });
+    const onDeviceConnected = (_deviceType: DeviceType, _deviceSlot: number) => {};
+    const onDeviceDisconnected = (_deviceType: DeviceType, _deviceSlot: number) => {};
+    const onInputChanged = (_deviceType: DeviceType, _deviceSlot: number, _eventData: IUIEvent) => {};
 
     beforeEach(() => {
         engine = new NullEngine();
         wdis = new WebDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
+    });
+
+    afterEach(() => {
+        engine!.dispose();
+        wdis!.dispose();
     });
 
     it("should exist", () => {
@@ -66,76 +136,51 @@ describe("DeviceSource", () => {
         expect(mouseSource.deviceSlot).toBe(0);
         expect(mouseSource.onInputChangedObservable).not.toBeUndefined();
     });
+
     it("can poll with getInput", () => {
+        const testDIS: ITestDeviceInputSystem = wdis as unknown as ITestDeviceInputSystem;
+        // Connect Mouse
+        testDIS.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+
+        // Create source and check that left click is there but not pressed
         const mouseSource = new DeviceSource(wdis!, DeviceType.Mouse, 0);
-        const leftClick = mouseSource.getInput(PointerInput.LeftClick);
-        expect(leftClick).toBe(0);
+        const leftClickUp = mouseSource.getInput(PointerInput.LeftClick);
+        expect(leftClickUp).toBe(0);
+
+        // Press left-click and check again
+        testDIS.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+        const leftClickDown = mouseSource.getInput(PointerInput.LeftClick);
+        expect(leftClickDown).toBe(1);
     });
 });
 
 describe("DeviceSourceManager", () => {
     let engine: Nullable<NullEngine> = null;
 
-    beforeAll(() => {
-        WebDeviceInputSystem.mockImplementation((
-            engine: Engine,
-            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
-            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
-            onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) => {
-            return {
-                _onDeviceConnected: onDeviceConnected,
-                _onDeviceDisconnected: onDeviceDisconnected,
-                _onInputChanged: onInputChanged,
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
-                    return 0;
-                },
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                isDeviceAvailable(deviceType: DeviceType): boolean {
-                    return true;
-                },
-                connectDevice(deviceType: DeviceType, deviceSlot: number): void {
-                    onDeviceConnected(deviceType, deviceSlot);
-                },
-                disconnectDevice(deviceType: DeviceType, deviceSlot: number): void {
-                    onDeviceDisconnected(deviceType, deviceSlot);
-                },
-                changeInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number): void {
-                    const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this as unknown as IDeviceInputSystem);
-                    onInputChanged(deviceType, deviceSlot, evt);
-                },
-                dispose(): void {
-                    // Do Nothing
-                },
-            }
-        });
-    });
-
     beforeEach(() => {
         engine = new NullEngine();
     });
 
-    afterEach(function () {
+    afterEach(() => {
         engine!.dispose();
     });
 
     it("should exist", () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const deviceSourceManager = new DeviceSourceManager(engine!);
+        new DeviceSourceManager(engine!);
         expect(engine!._deviceSourceManager).not.toBe(null);
         expect(engine!._deviceSourceManager!._refCount).toBe(1);
     });
 
     it("can use getDeviceSource", () => {
         const deviceSourceManager = new DeviceSourceManager(engine!);
-        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as any;
+        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as unknown as ITestDeviceInputSystem;
         const nullSource = deviceSourceManager.getDeviceSource(DeviceType.Touch, 0);
-        
+
         // Verify that non-existant sources will be null
         expect(nullSource).toBe(null);
 
-        deviceInputSystem.connectDevice(DeviceType.Touch, 0);
-        deviceInputSystem.connectDevice(DeviceType.Touch, 1);
+        deviceInputSystem.connectDevice(DeviceType.Touch, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+        deviceInputSystem.connectDevice(DeviceType.Touch, 1, TestDeviceInputSystem.MAX_POINTER_INPUTS);
 
         // After adding touches, get their DeviceSource objects
         const touchSource = deviceSourceManager.getDeviceSource(DeviceType.Touch, 0);
@@ -156,13 +201,13 @@ describe("DeviceSourceManager", () => {
 
     it("can use getDeviceSources", () => {
         const deviceSourceManager = new DeviceSourceManager(engine!);
-        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as any;
+        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as unknown as ITestDeviceInputSystem;
 
         const emptyArray = deviceSourceManager.getDeviceSources(DeviceType.Touch);
         expect(emptyArray.length).toBe(0);
 
-        deviceInputSystem.connectDevice(DeviceType.Touch, 0);
-        deviceInputSystem.connectDevice(DeviceType.Touch, 1);
+        deviceInputSystem.connectDevice(DeviceType.Touch, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+        deviceInputSystem.connectDevice(DeviceType.Touch, 1, TestDeviceInputSystem.MAX_POINTER_INPUTS);
 
         const touchArray = deviceSourceManager.getDeviceSources(DeviceType.Touch);
         const touchSource = deviceSourceManager.getDeviceSource(DeviceType.Touch, 0);
@@ -175,14 +220,14 @@ describe("DeviceSourceManager", () => {
     it("can use onDeviceConnectedObservable", () => {
         expect.assertions(1);
         const deviceSourceManager = new DeviceSourceManager(engine!);
-        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as any;
+        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as unknown as ITestDeviceInputSystem;
         let observableSource = null;
 
         deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             observableSource = deviceSource;
         });
 
-        deviceInputSystem.connectDevice(DeviceType.Touch, 0);
+        deviceInputSystem.connectDevice(DeviceType.Touch, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
         const touchSource = deviceSourceManager.getDeviceSource(DeviceType.Touch, 0);
 
         expect(observableSource).toEqual(touchSource);
@@ -191,7 +236,7 @@ describe("DeviceSourceManager", () => {
     it("can use onDeviceDisconnectedObservable", () => {
         expect.assertions(3);
         const deviceSourceManager = new DeviceSourceManager(engine!);
-        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as any;
+        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as unknown as ITestDeviceInputSystem;
         let observableSource = null;
 
         deviceSourceManager.onDeviceDisconnectedObservable.add((deviceSource) => {
@@ -199,7 +244,7 @@ describe("DeviceSourceManager", () => {
         });
 
         // Connect Device and check for existence
-        deviceInputSystem.connectDevice(DeviceType.Touch, 0);
+        deviceInputSystem.connectDevice(DeviceType.Touch, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
         expect(deviceSourceManager.getDeviceSources(DeviceType.Touch).length).toBe(1);
         const touchSource = deviceSourceManager.getDeviceSource(DeviceType.Touch, 0);
 
@@ -211,23 +256,22 @@ describe("DeviceSourceManager", () => {
     });
 
     it("can talk to DeviceSource onInputChangedObservable", () => {
-        expect.assertions(3);
+        expect.assertions(2);
         const deviceSourceManager = new DeviceSourceManager(engine!);
-        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as any;
+        const deviceInputSystem = engine!._deviceSourceManager!._deviceInputSystem as unknown as ITestDeviceInputSystem;
         let observableEvent: Nullable<IPointerEvent> = null;
 
         // Connect device and grab DeviceSource
-        deviceInputSystem.connectDevice(DeviceType.Mouse, 0);
+        deviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
         const mouseSource = deviceSourceManager.getDeviceSource(DeviceType.Mouse, 0);
 
         // Set observable for change in input
         mouseSource!.onInputChangedObservable.add((eventData) => {
-            observableEvent = eventData as IPointerEvent;
+            if ("pointerId" in eventData) {
+                observableEvent = eventData;
+            }
         });
 
-        // Click a non-existent mouse and nothing should come up
-        deviceInputSystem.changeInput(DeviceType.Mouse, 1, PointerInput.LeftClick, 1);
-        expect(observableEvent).toBe(null);
         // Click proper mouse LMB and verify event
         deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
         expect(observableEvent!.pointerId).toEqual(1);
