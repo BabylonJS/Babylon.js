@@ -9,10 +9,24 @@
     description?: string;
 
     /**
-     * ARIA lables to customize accessibility support.
+     * Customize the event of the accessible object.
+     * This will be applied on the generated HTML twin node.
+     */
+    eventHandler?: {[key in EventHandler]: Function}
+
+    /**
+     * ARIA roles and attributes to customize accessibility support.
      * If you use BabylonJS's accessibility html twin renderer, and want to override the default behavior (not suggested), this can be your way.
      * Learn more about ARIA: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA
      */
-    role?: string;
-    aria?: {[key: string]: string}
+    role?: AcceptedRole;
+    aria?: {[key in AcceptedARIA]: string};
 }
+
+type EventHandler = "onclick" | "onmousedown" | "oncontextmenu" | "onfocus" | "onblur";
+
+// Based on https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
+type AcceptedRole = "toolbar" | "tooltip" | "feed" | "math" | "presentation" | "none" | "note" | "application" | "article" | "cell" | "columnheader" | "definition" | "directory" | "document" | "figure" | "group" | "heading" | "img" | "list" | "listitem" | "meter" | "row" | "rowgroup" | "rowheader" | "separator" | "table" | "term" | "scrollbar" | "searchbox" | "separator" | "slider" | "spinbutton" | "switch" | "tab" | "tabpanel" | "treeitem" | "combobox" | "menu" | "menubar" | "tablist" | "tree" | "treegrid" | "banner" | "complementary" | "contentinfo" | "form" | "main" | "navigation" | "region" | "search" | "alert" | "log" | "marquee" | "status" | "timer" | "alertdialog" | "dialog";
+
+// Based on https://developer.mozilla.org/en-US/docs/web/Accessibility/ARIA/Attributes#aria_attribute_types
+type AcceptedARIA = "aria-autocomplete" | "aria-checked" | "aria-disabled" | "aria-errormessage" | "aria-expanded" | "aria-haspopup" | "aria-hidden" | "aria-invalid" | "aria-label" | "aria-level" | "aria-modal" | "aria-multiline" | "aria-multiselectable" | "aria-orientation" | "aria-placeholder" | "aria-pressed" | "aria-readonly" | "aria-required" | "aria-selected" | "aria-sort" | "aria-valuemax" | "aria-valuemin" | "aria-valuenow" | "aria-valuetext" | "aria-busy" | "aria-live" | "aria-relevant" | "aria-atomic" | "aria-dropeffect" | "aria-grabbed" | "aria-activedescendant" | "aria-colcount" | "aria-colindex" | "aria-colspan" | "aria-controls" | "aria-describedby" | "aria-description" | "aria-details" | "aria-errormessage" | "aria-flowto" | "aria-labelledby" | "aria-owns" | "aria-posinset" | "aria-rowcount" | "aria-rowindex" | "aria-rowspan" | "aria-setsize";
