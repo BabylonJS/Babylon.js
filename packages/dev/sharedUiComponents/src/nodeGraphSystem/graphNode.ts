@@ -4,7 +4,6 @@ import type { GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
-import triangle from "../imgs/triangle.svg";
 import type { NodeLink } from "./nodeLink";
 import type { StateManager } from "./stateManager";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
@@ -17,7 +16,8 @@ import type { IPortData } from "./interfaces/portData";
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
-    private _warning: HTMLDivElement;
+    private _headerIcon: HTMLDivElement;
+    private _headerIconImg: HTMLImageElement;
     private _header: HTMLDivElement;
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
@@ -337,13 +337,7 @@ export class GraphNode {
         this._comments.innerHTML = this.content.comments || "";
         this._comments.title = this.content.comments || "";
 
-        const warningMessage = this.content.getWarningMessage();
-        if (warningMessage) {
-            this._warning.classList.add("visible");
-            this._warning.title = warningMessage;
-        } else {
-            this._warning.classList.remove("visible");
-        }
+        this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
     }
 
     private _onDown(evt: PointerEvent) {
@@ -449,12 +443,11 @@ export class GraphNode {
         this._header.classList.add("header");
         this._headerContainer.appendChild(this._header);
 
-        this._warning = root.ownerDocument!.createElement("div");
-        this._warning.classList.add("warning");
-        const img = root.ownerDocument!.createElement("img");
-        img.src = triangle;
-        this._warning.appendChild(img);
-        this._visual.appendChild(this._warning);
+        this._headerIcon = root.ownerDocument!.createElement("div");
+        this._headerIcon.classList.add("headerIcon");
+        this._headerIconImg = root.ownerDocument!.createElement("img");
+        this._headerIcon.appendChild(this._headerIconImg);
+        this._visual.appendChild(this._headerIcon);
 
         const selectionBorder = root.ownerDocument!.createElement("div");
         selectionBorder.classList.add("selection-border");

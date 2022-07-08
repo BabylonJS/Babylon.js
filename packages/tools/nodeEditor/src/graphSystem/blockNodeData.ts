@@ -1,8 +1,11 @@
+import { NodeMaterialBlockTargets } from "core/Materials/Node/Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { ConnectionPointPortData } from "./connectionPointPortData";
+import triangle from "../imgs/triangle.svg";
+import square from "../imgs/square.svg";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -59,12 +62,24 @@ export class BlockNodeData implements INodeData {
         this.data.dispose();
     }
 
-    public getWarningMessage() {
-        if (this.data.getClassName() !== "ElbowBlock" && this.data.willBeGeneratedIntoVertexShaderFromFragmentShader) {
-            return "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+    public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
+        if (this.data.target === NodeMaterialBlockTargets.Fragment) {
+            iconDiv.classList.add("visible");
+            iconDiv.title = "In the fragment shader";
+            img.src = square;
+
+            return;
         }
 
-        return "";
+        if (this.data.target === NodeMaterialBlockTargets.Vertex) {
+            iconDiv.classList.add("visible");
+            iconDiv.title = "In the vertex shader";
+            img.src = triangle;
+
+            return;
+        }
+
+        iconDiv.classList.remove("visible");
     }
 
     public constructor(public data: NodeMaterialBlock, nodeContainer: INodeContainer) {
