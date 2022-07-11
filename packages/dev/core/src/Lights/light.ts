@@ -617,7 +617,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         // Inclusion / exclusions
@@ -690,6 +690,10 @@ export abstract class Light extends Node implements ISortableLight {
         // Parent
         if (parsedLight.parentId !== undefined) {
             light._waitingParentId = parsedLight.parentId;
+        }
+
+        if (parsedLight.parentInstanceIndex !== undefined) {
+            light._waitingParentInstanceIndex = parsedLight.parentInstanceIndex;
         }
 
         // Falloff

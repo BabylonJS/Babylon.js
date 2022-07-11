@@ -1,4 +1,5 @@
-import { ToggleProps, Toggle } from "../components/Toggle";
+import type { ToggleProps } from "../components/Toggle";
+import { Toggle } from "../components/Toggle";
 
 export default {
     title: "Inputs/Toggle",

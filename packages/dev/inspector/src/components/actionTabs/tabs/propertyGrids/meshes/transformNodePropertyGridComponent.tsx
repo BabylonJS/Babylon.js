@@ -67,9 +67,16 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                 <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <VariantsPropertyGridComponent host={transformNode as Mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent title="TRANSFORMATIONS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Position"
+                        target={transformNode}
+                        propertyName="position"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {!transformNode.rotationQuaternion && (
                         <Vector3LineComponent
+                            lockObject={this.props.lockObject}
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={transformNode}
@@ -80,6 +87,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     )}
                     {transformNode.rotationQuaternion && (
                         <QuaternionLineComponent
+                            lockObject={this.props.lockObject}
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={transformNode}
@@ -87,7 +95,13 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    <Vector3LineComponent label="Scaling" target={transformNode} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Scaling"
+                        target={transformNode}
+                        propertyName="scaling"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={transformNode} scene={transformNode.getScene()} lockObject={this.props.lockObject} />
             </div>

@@ -26,7 +26,7 @@ import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { Node } from "core/node";
 import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { SubMesh } from "core/Meshes/subMesh";
 import { Mesh } from "core/Meshes/mesh";
 import type { MorphTarget } from "core/Morph/morphTarget";
@@ -2063,8 +2063,9 @@ export class _Exporter {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 exportNodes.push(babylonNode);
 
-                if (babylonNode instanceof AbstractMesh) {
-                    const material = babylonNode.material || babylonNode.getScene().defaultMaterial;
+                const babylonMesh = babylonNode as AbstractMesh;
+                if (babylonMesh.subMeshes && babylonMesh.subMeshes.length > 0) {
+                    const material = babylonMesh.material || babylonMesh.getScene().defaultMaterial;
                     if (material instanceof MultiMaterial) {
                         for (const subMaterial of material.subMaterials) {
                             if (subMaterial) {

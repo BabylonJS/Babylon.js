@@ -19,7 +19,7 @@ import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
-import { IFocusableControl } from "./controls/focusableControl";
+import type { IFocusableControl } from "./controls/focusableControl";
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from "core/Engines/constants";

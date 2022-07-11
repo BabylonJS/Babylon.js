@@ -7,6 +7,7 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IQuaternionLineComponentProps {
     label: string;
@@ -14,6 +15,7 @@ interface IQuaternionLineComponentProps {
     useEuler?: boolean;
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    lockObject: LockObject;
 }
 
 export class QuaternionLineComponent extends React.Component<IQuaternionLineComponentProps, { isExpanded: boolean; value: Quaternion; eulerValue: Vector3 }> {
@@ -162,10 +164,10 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
-                        <NumericInputComponent label="x" value={quat.x} onChange={(value) => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" value={quat.y} onChange={(value) => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" value={quat.z} onChange={(value) => this.updateStateZ(value)} />
-                        <NumericInputComponent label="w" value={quat.w} onChange={(value) => this.updateStateW(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="x" value={quat.x} onChange={(value) => this.updateStateX(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="y" value={quat.y} onChange={(value) => this.updateStateY(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="z" value={quat.z} onChange={(value) => this.updateStateZ(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="w" value={quat.w} onChange={(value) => this.updateStateW(value)} />
                     </div>
                 )}
                 {this.state.isExpanded && this.props.useEuler && (

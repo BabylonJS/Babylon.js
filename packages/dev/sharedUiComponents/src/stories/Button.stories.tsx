@@ -1,4 +1,5 @@
-import { Button, ButtonProps } from "../components/Button";
+import type { ButtonProps } from "../components/Button";
+import { Button } from "../components/Button";
 
 import { Icon } from "../components/Icon";
 import resizeToFitIcon from "../imgs/resizeToFitIcon.svg";

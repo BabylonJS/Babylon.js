@@ -1159,10 +1159,10 @@ export class Vector3 {
         plane.normal.negateToRef(inverseNormal);
 
         // This vector is the direction
-        const direction = this;
+        const { x, y, z } = this;
 
         // Calculate how close the direction is to the normal of the plane
-        const dotProduct = Vector3.Dot(inverseNormal, direction);
+        const dotProduct = Vector3.Dot(inverseNormal, this);
 
         /*
          * Early out in case the direction will never hit the plane.
@@ -1185,7 +1185,7 @@ export class Vector3 {
         const hitDistance = Vector3.Dot(relativeOrigin, inverseNormal) / dotProduct;
 
         // Apply the hit point by adding the direction scaled by the distance to the origin
-        result.set(origin.x + direction.x * hitDistance, origin.y + direction.y * hitDistance, origin.z + direction.z * hitDistance);
+        result.set(origin.x + x * hitDistance, origin.y + y * hitDistance, origin.z + z * hitDistance);
     }
 
     /**

@@ -204,6 +204,9 @@ export function CreateScreenshotUsingRenderTarget(
         return;
     }
 
+    const originalSize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
+    engine.setSize(width, height); // we need this call to trigger onResizeObservable with the screenshot width/height on all the subsystems that are observing this event and that needs to (re)create some resources with the right dimensions
+
     const scene = camera.getScene();
     let previousCamera: Nullable<Camera> = null;
     const previousCameras = scene.activeCameras;
@@ -259,6 +262,7 @@ export function CreateScreenshotUsingRenderTarget(
             scene.activeCamera = previousCamera;
         }
         scene.activeCameras = previousCameras;
+        engine.setSize(originalSize.width, originalSize.height);
         camera.getProjectionMatrix(true); // Force cache refresh;
         scene.render();
     };

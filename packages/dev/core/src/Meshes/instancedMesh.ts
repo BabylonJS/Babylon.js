@@ -541,6 +541,17 @@ export class InstancedMesh extends AbstractMesh {
         this._sourceMesh.removeInstance(this);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
+
+    /**
+     * @param serializationObject
+     * @hidden
+     */
+    public _serializeAsParent(serializationObject: any) {
+        super._serializeAsParent(serializationObject);
+
+        serializationObject.parentId = this._sourceMesh.uniqueId;
+        serializationObject.parentInstanceIndex = this._indexInSourceMeshInstanceArray;
+    }
 }
 
 declare module "./mesh" {

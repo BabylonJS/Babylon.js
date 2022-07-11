@@ -1433,6 +1433,23 @@
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
             "referenceImage": "materialPlugin.png"
+        },
+        {
+            "title": "Serialize and Load Instanced Hierarchy",
+            "playgroundId": "#3ZQ1SL#7",
+            "referenceImage": "serializeAndLoadInstancedHierarchy.png"
+        },
+        {
+            "title": "Picking Visual Test",
+            "renderCount": 2,
+            "playgroundId": "#4J7Y7V#1",
+            "referenceImage": "pickingVisualTest.png"
+        },
+        {
+            "title": "GUI Input Test",
+            "renderCount": 2,
+            "playgroundId": "#UB4F3B#7",
+            "referenceImage": "guiInputTest.png"
         }
     ]
 }
