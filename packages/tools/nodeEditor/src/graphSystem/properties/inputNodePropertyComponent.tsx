@@ -70,6 +70,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
+                                lockObject={this.props.stateManager.lockObject}
                                 label="Min"
                                 target={inputBlock}
                                 propertyName="min"
@@ -86,6 +87,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         )}
                         {!inputBlock.isBoolean && (
                             <FloatLineComponent
+                                lockObject={this.props.stateManager.lockObject}
                                 label="Max"
                                 target={inputBlock}
                                 propertyName="max"
@@ -103,6 +105,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         {!inputBlock.isBoolean && cantDisplaySlider && <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />}
                         {!inputBlock.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
+                                lockObject={this.props.stateManager.lockObject}
                                 label="Value"
                                 target={inputBlock}
                                 propertyName="value"

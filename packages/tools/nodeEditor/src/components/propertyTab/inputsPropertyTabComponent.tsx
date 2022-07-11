@@ -52,10 +52,18 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                             />
                         )}
                         {!block.isBoolean && cantDisplaySlider && (
-                            <FloatLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />
+                            <FloatLineComponent
+                                lockObject={this.props.lockObject}
+                                key={block.uniqueId}
+                                label={block.name}
+                                target={block}
+                                propertyName="value"
+                                onChange={() => this.processInputBlockUpdate(block)}
+                            />
                         )}
                         {!block.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 key={block.uniqueId}
                                 label={block.name}
                                 target={block}

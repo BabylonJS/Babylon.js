@@ -250,6 +250,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         {!DataStorage.ReadBoolean("Responsive", true) && (
                             <>
                                 <FloatLineComponent
+                                    lockObject={this._lockObject}
                                     label="W"
                                     target={size}
                                     propertyName="width"
@@ -271,6 +272,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     isInteger={true}
                                 />
                                 <FloatLineComponent
+                                    lockObject={this._lockObject}
                                     label="H"
                                     target={size}
                                     propertyName="height"
