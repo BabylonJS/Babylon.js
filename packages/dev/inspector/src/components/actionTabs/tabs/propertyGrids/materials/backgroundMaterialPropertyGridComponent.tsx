@@ -76,7 +76,13 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
-                    <Color3LineComponent label="Primary" target={material} propertyName="primaryColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Primary"
+                        target={material}
+                        propertyName="primaryColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <SliderLineComponent
                         label="Shadow level"
                         target={material}

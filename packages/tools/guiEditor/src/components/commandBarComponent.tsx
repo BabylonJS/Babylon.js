@@ -1,12 +1,14 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
-import { GlobalState, GUIEditorTool } from "../globalState";
+import type { GlobalState } from "../globalState";
+import { GUIEditorTool } from "../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
 import pointerIcon from "../imgs/pointerIcon.svg";
@@ -59,8 +61,12 @@ const MAX_TEXTURE_SIZE = 16384; //2^14
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _sizeOption: number = 0;
     private _stopUpdating: boolean = false;
+    private _lockObject: LockObject;
+
     public constructor(props: ICommandBarComponentProps) {
         super(props);
+
+        this._lockObject = new LockObject();
 
         props.globalState.onToolChangeObservable.add(() => {
             this.forceUpdate();
@@ -204,7 +210,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         />
                     </div>
                     <div className="divider padded">
-                        <ColorLineComponent label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
+                        <ColorLineComponent lockObject={this._lockObject} label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
                     </div>
                     <div className="divider padded">
                         <CheckBoxLineComponent

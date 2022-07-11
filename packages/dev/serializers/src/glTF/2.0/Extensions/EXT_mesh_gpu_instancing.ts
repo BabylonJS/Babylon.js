@@ -1,7 +1,8 @@
 import type { IBufferView, IAccessor, INode, IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 import { AccessorType, AccessorComponentType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import { _Exporter, _BinaryWriter } from "../glTFExporter";
+import type { _BinaryWriter } from "../glTFExporter";
+import { _Exporter } from "../glTFExporter";
 import type { Nullable } from "core/types";
 import type { Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";

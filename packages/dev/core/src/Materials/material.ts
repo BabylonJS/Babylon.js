@@ -799,6 +799,8 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
     /** @hidden */
+    public _callbackPluginEventPrepareDefinesBeforeAttributes: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
+    /** @hidden */
     public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void 0;
     /** @hidden */
     public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void 0;
@@ -1066,6 +1068,7 @@ export class Material implements IAnimatable {
                 }
 
                 subMesh.effect._wasPreviouslyReady = false;
+                subMesh.effect._wasPreviouslyUsingInstances = null;
             }
         }
     }
@@ -1504,7 +1507,7 @@ export class Material implements IAnimatable {
             }
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                if (mesh._renderId === 0 || subMesh.getMaterial() !== this) {
+                if (subMesh.getMaterial(false) !== this) {
                     continue;
                 }
 

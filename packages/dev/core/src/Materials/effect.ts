@@ -146,6 +146,12 @@ export class Effect implements IDisposable {
      */
     public _wasPreviouslyReady = false;
 
+    /**
+     * @hidden
+     * Specifies if the effect was previously using instances
+     */
+    public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
+
     private _isDisposed = false;
 
     /**

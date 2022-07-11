@@ -83,7 +83,7 @@ export class PreviewManager {
             this._prepareLights();
         });
 
-        this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(() => {
+        this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
             const serializationObject = this._nodeMaterial.serialize();
             this._updatePreview(serializationObject);
         });
@@ -549,7 +549,7 @@ export class PreviewManager {
     public dispose() {
         this._nodeMaterial.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
-        this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);

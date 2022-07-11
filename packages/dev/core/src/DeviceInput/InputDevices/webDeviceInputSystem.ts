@@ -21,8 +21,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
+    private _metaKeys: Array<number>;
     private readonly _engine: Engine;
     private readonly _usingSafari: boolean = Tools.IsSafari();
+    // Found solution for determining if MacOS is being used here:
+    // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
+    private readonly _usingMacOS: boolean = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
@@ -81,6 +85,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._enableEvents();
 
+        if (this._usingMacOS) {
+            this._metaKeys = [];
+        }
+
         // Set callback to enable event handler switching when inputElement changes
         if (!this._engine._onEngineViewChanged) {
             this._engine._onEngineViewChanged = () => {
@@ -104,7 +112,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             throw `Unable to find device ${DeviceType[deviceType]}`;
         }
 
-        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense && navigator.getGamepads) {
+        if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense) {
             this._updateDevice(deviceType, deviceSlot, inputIndex);
         }
 
@@ -288,9 +296,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         if (!this._inputs[deviceType][deviceSlot]) {
             const device = new Array<number>(numberOfInputs);
 
-            for (let i = 0; i < numberOfInputs; i++) {
-                device[i] = 0; /* set device input as unpressed */
-            }
+            device.fill(0);
 
             this._inputs[deviceType][deviceSlot] = device;
             this._onDeviceConnected(deviceType, deviceSlot);
@@ -326,6 +332,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
 
+                if (this._usingMacOS && evt.metaKey && evt.key !== "Meta") {
+                    if (!this._metaKeys.includes(evt.keyCode)) {
+                        this._metaKeys.push(evt.keyCode);
+                    }
+                }
+
                 this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
             }
         };
@@ -343,6 +355,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IUIEvent;
                 deviceEvent.inputIndex = evt.keyCode;
 
+                if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.length > 0) {
+                    for (const keyCode of this._metaKeys) {
+                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, keyCode, 0, this, this._elementToAttachTo);
+                        kbKey[keyCode] = 0;
+                        this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
+                    }
+                    this._metaKeys.splice(0, this._metaKeys.length);
+                }
+
                 this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
             }
         };
@@ -359,6 +380,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
+                }
+                if (this._usingMacOS) {
+                    this._metaKeys.splice(0, this._metaKeys.length);
                 }
             }
         };
@@ -456,7 +480,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                         }
                     }
 
-                    if (!document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
+                    if (!document.pointerLockElement) {
                         try {
                             this._elementToAttachTo.setPointerCapture(this._mouseId);
                         } catch (e) {
@@ -465,7 +489,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     }
                 } else {
                     // Touch; Since touches are dynamically assigned, only set capture if we have an id
-                    if (evt.pointerId && !document.pointerLockElement && this._elementToAttachTo.hasPointerCapture) {
+                    if (evt.pointerId && !document.pointerLockElement) {
                         try {
                             this._elementToAttachTo.setPointerCapture(evt.pointerId);
                         } catch (e) {
@@ -592,13 +616,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         const noop = function () {};
 
         try {
-            const options: object = {
-                passive: {
-                    get: function () {
-                        passiveSupported = true;
-                    },
+            const options = Object.defineProperty({}, "passive", {
+                get: function () {
+                    passiveSupported = true;
                 },
-            };
+            });
 
             this._elementToAttachTo.addEventListener("test", noop, options);
             this._elementToAttachTo.removeEventListener("test", noop, options);
@@ -692,7 +714,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
-        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
+        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: true } : false);
 
         // Since there's no up or down event for mouse wheel or delta x/y, clear mouse values at end of frame
         this._pointerInputClearObserver = this._engine.onEndFrameObservable.add(() => {

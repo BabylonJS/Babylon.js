@@ -2,21 +2,23 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { Color3LineComponent } from "../../sharedComponents/color3LineComponent";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-import { Color4LineComponent } from "../../sharedComponents/color4LineComponent";
-import { Vector2LineComponent } from "../../sharedComponents/vector2LineComponent";
-import { Vector3LineComponent } from "../../sharedComponents/vector3LineComponent";
-import { Vector4LineComponent } from "../../sharedComponents/vector4LineComponent";
 
 import "./propertyTab.scss";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 interface IInputsPropertyTabComponentProps {
     globalState: GlobalState;
     inputs: InputBlock[];
+    lockObject: LockObject;
 }
 
 export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
@@ -25,10 +27,10 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
     }
 
     processInputBlockUpdate(ib: InputBlock) {
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(ib);
+        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
 
         if (ib.isConstant) {
-            this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+            this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(true);
         }
     }
 
@@ -50,14 +52,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                             />
                         )}
                         {!block.isBoolean && cantDisplaySlider && (
-                            <FloatLineComponent
-                                globalState={this.props.globalState}
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                onChange={() => this.processInputBlockUpdate(block)}
-                            />
+                            <FloatLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />
                         )}
                         {!block.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
@@ -68,7 +63,6 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                                 step={(block.max - block.min) / 100.0}
                                 minimum={block.min}
                                 maximum={block.max}
-                                globalState={this.props.globalState}
                                 onChange={() => this.processInputBlockUpdate(block)}
                             />
                         )}
@@ -78,7 +72,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
                     <Color3LineComponent
-                        globalState={this.props.globalState}
+                        lockObject={this.props.lockObject}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -89,7 +83,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color4LineComponent
-                        globalState={this.props.globalState}
+                        lockObject={this.props.lockObject}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -100,7 +94,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2LineComponent
-                        globalState={this.props.globalState}
+                        lockObject={this.props.lockObject}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -111,7 +105,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
                     <Vector3LineComponent
-                        globalState={this.props.globalState}
+                        lockObject={this.props.lockObject}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}
@@ -122,7 +116,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return (
                     <Vector4LineComponent
-                        globalState={this.props.globalState}
+                        lockObject={this.props.lockObject}
                         key={block.uniqueId}
                         label={block.name}
                         target={block}

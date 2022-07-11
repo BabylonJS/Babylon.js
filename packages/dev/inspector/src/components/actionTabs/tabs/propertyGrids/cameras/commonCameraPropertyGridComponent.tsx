@@ -95,7 +95,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         target={camera}
                         propertyName="mode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onSelect={(value) => this.setState({ mode: value })}
+                        onSelect={(value) => this.setState({ mode: value as number })}
                     />
                     {camera.mode === Camera.PERSPECTIVE_CAMERA && (
                         <SliderLineComponent
