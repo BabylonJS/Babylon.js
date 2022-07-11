@@ -534,7 +534,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public createNodeFromObject(nodeData: INodeData, onNodeCreated: (data: any) => void, recursion = true) {
         if (this._nodeDataContentList.indexOf(nodeData.data) !== -1) {
-             // Links
+            // Links
             if (nodeData.inputs.length && recursion) {
                 for (const input of nodeData.inputs) {
                     if (input.isConnected) {
