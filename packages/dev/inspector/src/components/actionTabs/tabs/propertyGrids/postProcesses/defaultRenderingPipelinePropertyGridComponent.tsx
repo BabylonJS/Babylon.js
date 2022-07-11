@@ -62,6 +62,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     {renderPipeline.bloomEnabled && (
                         <div>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Threshold"
                                 minimum={0}
                                 maximum={1}
@@ -71,6 +72,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Weight"
                                 minimum={0}
                                 maximum={1}
@@ -80,6 +82,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Kernel"
                                 minimum={0}
                                 maximum={128}
@@ -90,6 +93,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 decimalCount={0}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Scale"
                                 minimum={0}
                                 maximum={1}
@@ -112,6 +116,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     {renderPipeline.chromaticAberrationEnabled && (
                         <div>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="aberrationAmount"
                                 minimum={0}
                                 maximum={128}
@@ -121,6 +126,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Radial intensity"
                                 minimum={0}
                                 maximum={1}
@@ -157,6 +163,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     {renderPipeline.depthOfFieldEnabled && (
                         <div>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Focal length"
                                 minimum={0}
                                 maximum={camera.maxZ}
@@ -166,6 +173,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="fStop"
                                 minimum={0}
                                 maximum={32}
@@ -175,6 +183,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Distance"
                                 minimum={0}
                                 maximum={camera.maxZ}
@@ -184,6 +193,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Lens size"
                                 minimum={0}
                                 maximum={1000}
@@ -214,6 +224,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     {renderPipeline.glowLayerEnabled && (
                         <div>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Blur kernel size"
                                 minimum={1}
                                 maximum={128}
@@ -224,6 +235,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 minimum={0}
                                 maximum={10}
@@ -252,6 +264,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 minimum={0}
                                 maximum={50}
@@ -282,6 +295,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onClick={() => (renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toGammaSpace())}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={4}
                                 step={0.1}
@@ -291,6 +305,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={4}
                                 step={0.1}
@@ -320,6 +335,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={4}
                                 step={0.1}
@@ -329,6 +345,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={1}
                                 step={0.1}
@@ -338,6 +355,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={Math.PI}
                                 step={0.1}
@@ -347,6 +365,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={1}
                                 step={0.1}
@@ -356,6 +375,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 minimum={0}
                                 maximum={1}
                                 step={0.1}
@@ -393,6 +413,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                     {renderPipeline.sharpenEnabled && (
                         <div>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Color amount"
                                 minimum={0}
                                 maximum={1}
@@ -402,6 +423,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Edge amount"
                                 minimum={0}
                                 maximum={5}

@@ -118,6 +118,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
                 </LineContainerComponent>
                 <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Metallic"
                         target={material}
                         propertyName="metallic"
@@ -127,6 +128,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Roughness"
                         target={material}
                         propertyName="roughness"

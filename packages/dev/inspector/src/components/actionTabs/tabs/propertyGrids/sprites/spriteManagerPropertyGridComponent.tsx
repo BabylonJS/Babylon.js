@@ -203,6 +203,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Rendering group ID"
                         decimalCount={0}
                         target={spriteManager}
@@ -223,6 +224,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                 </LineContainerComponent>
                 <LineContainerComponent title="CELLS" selection={this.props.globalState}>
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell width"
                         isInteger={true}
                         target={spriteManager}
@@ -231,6 +233,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell height"
                         isInteger={true}
                         target={spriteManager}

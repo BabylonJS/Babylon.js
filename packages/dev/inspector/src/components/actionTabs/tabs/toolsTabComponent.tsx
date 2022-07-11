@@ -364,6 +364,7 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent
+                            lockObject={this._lockObject}
                             label="Precision"
                             target={this._screenShotSize}
                             propertyName="precision"
@@ -404,8 +405,8 @@ export class ToolsTabComponent extends PaneComponent {
                     {!this._crunchingGIF && <ButtonLineComponent label={this._gifRecorder ? "Stop" : "Record"} onClick={() => this.recordGIF()} />}
                     {!this._crunchingGIF && !this._gifRecorder && (
                         <>
-                            <FloatLineComponent label="Resolution" isInteger={true} target={this._gifOptions} propertyName="width" />
-                            <FloatLineComponent label="Frequency (ms)" isInteger={true} target={this._gifOptions} propertyName="frequency" />
+                            <FloatLineComponent lockObject={this._lockObject} label="Resolution" isInteger={true} target={this._gifOptions} propertyName="width" />
+                            <FloatLineComponent lockObject={this._lockObject} label="Frequency (ms)" isInteger={true} target={this._gifOptions} propertyName="frequency" />
                         </>
                     )}
                 </LineContainerComponent>
@@ -450,7 +451,15 @@ export class ToolsTabComponent extends PaneComponent {
                                 }}
                             />
                             {this._envOptions.imageTypeIndex > 0 && (
-                                <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
+                                <FloatLineComponent
+                                    lockObject={this._lockObject}
+                                    label="Quality"
+                                    isInteger={false}
+                                    min={0}
+                                    max={1}
+                                    target={this._envOptions}
+                                    propertyName="imageQuality"
+                                />
                             )}
                         </>
                     )}
@@ -483,7 +492,7 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     )}
                 </LineContainerComponent>
-                {GLTFFileLoader && <GLTFComponent scene={scene} globalState={this.props.globalState!} />}
+                {GLTFFileLoader && <GLTFComponent lockObject={this._lockObject} scene={scene} globalState={this.props.globalState!} />}
                 <LineContainerComponent title="REFLECTOR" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />
