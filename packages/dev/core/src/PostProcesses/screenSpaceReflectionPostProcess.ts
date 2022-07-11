@@ -1,16 +1,17 @@
-import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
+import type { Nullable } from "../types";
+import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
-import { PostProcess, PostProcessOptions } from "./postProcess";
+import { PostProcess } from "./postProcess";
+import type { PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { PrePassRenderer } from "../Rendering/prePassRenderer";
+import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceReflectionsConfiguration";
 
 import "../Shaders/screenSpaceReflection.fragment";
 import { RegisterClass } from "../Misc/typeStore";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
+import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
