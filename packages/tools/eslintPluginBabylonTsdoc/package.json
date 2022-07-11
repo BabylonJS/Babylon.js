@@ -26,6 +26,6 @@
     "devDependencies": {
         "@types/eslint": "~8.4.2",
         "@types/estree": "~0.0.39",
-        "eslint": "~8.16.0"
+        "eslint": "^8.19.0"
     }
 }

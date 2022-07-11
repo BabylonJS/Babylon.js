@@ -24,7 +24,7 @@
         "chokidar": "~3.5.2",
         "concurrently": "~7.2.0",
         "dotenv": "~16.0.0",
-        "eslint": "^8.11.0",
+        "eslint": "^8.19.0",
         "eslint-config-prettier": "~8.5.0",
         "eslint-plugin-import": "~2.26.0",
         "eslint-plugin-jest": "~26.5.3",
