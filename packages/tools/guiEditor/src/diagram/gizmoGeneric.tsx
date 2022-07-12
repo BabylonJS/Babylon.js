@@ -108,7 +108,7 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
         // Calculating the offsets for each scale point.
         const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
         const localBounds = CoordinateHelper.ComputeLocalBounds(node);
-        this.state.scalePoints.forEach((scalePoint) => {
+        const updatedPoints = this.state.scalePoints.map((scalePoint) => {
             const nodeSpace = new Vector2();
             switch (scalePoint.horizontalPosition) {
                 case ScalePointPosition.Left:
@@ -157,10 +157,11 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             scalePoint.position.x = canvas.x;
             scalePoint.position.y = canvas.y;
             scalePoint.rotation = CoordinateHelper.GetRotation(node) * (180 / Math.PI);
+            return scalePoint;
         });
         this.setState({
             canvasBounds,
-            scalePoints: [...this.state.scalePoints],
+            scalePoints: [...updatedPoints],
         });
     }
 
