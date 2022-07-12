@@ -178,10 +178,12 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     public distanceFade: number = 1000.0;
 
     /**
-     * Gets or sets the boolean deciding if we display only backUp reflections and no SSR reflection (true), or a mix of both (false) when model is too specular. Default value is false.
+     * Gets or sets the reflectivity value beyond which the SSR is no longer computed. Default value is 1.1.
+     * It may be needed when the scene contains mirror like materials.
+     * SSR and an other method may not match well, and it can be prettier to use only one method rather than a mix of methods in this case.
      */
     @serialize()
-    public backupOnlyWhenTooSpecular: boolean = false;
+    public maxReflectivityForSSRReflections: number = 1.1;
 
     @serialize()
     private _backUpTextureSkybox: Nullable<CubeTexture> = null;
@@ -287,7 +289,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 "minZ",
                 "maxZ",
                 "cameraPos",
-                "backupOnlyWhenTooSpecular",
+                "maxReflectivityForSSRReflections",
                 "roughnessFactor",
             ],
             ["textureSampler", "normalSampler", "depthSampler", "positionSampler", "reflectivitySampler", "backUpSampler"],
@@ -367,7 +369,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 effect.setFloat("thickness", this.thickness);
                 effect.setFloat("distanceFade", this.distanceFade);
                 effect.setFloat("maxDistance", this.maxDistance);
-                effect.setBool("backupOnlyWhenTooSpecular", this.backupOnlyWhenTooSpecular);
+                effect.setFloat("maxReflectivityForSSRReflections", this.maxReflectivityForSSRReflections);
                 effect.setFloat("minZ", camera.minZ);
                 effect.setFloat("maxZ", camera.maxZ);
                 effect.setVector3("cameraPos", camera.position);

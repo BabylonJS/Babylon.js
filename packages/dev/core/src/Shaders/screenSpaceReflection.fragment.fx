@@ -22,7 +22,7 @@ uniform float strength;
 uniform float falloffExponent;
 uniform float roughnessFactor;
 uniform float distanceFade;
-uniform bool backupOnlyWhenTooSpecular;
+uniform float maxReflectivityForSSRReflections;
 #include<helperFunctions>
 #endif // SSR_SUPPORTED
 
@@ -285,7 +285,6 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
     float offset; // use to compute maxTol offset
     float maxTol = thickness; // will be increased depending on distance between two adjacent pixels in view space
 
-    float level = 0.0;
     // start of the first pass: looking for intersection position
     for (int i = 0; i < int(delta); i++) {
         // move from the startSS to endSS using linear interpolation
@@ -316,11 +315,9 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
             deltaDepth *= -1.0;
         #endif
 
-        if (deltaDepth > 0.001 && deltaDepth < maxTol) {
+        if (deltaDepth > 0.0 && deltaDepth < maxTol) {
             hit0 = 1.0;
-        } else {
-            hit0 = 0.0;
-        }
+        } 
         
         if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0){ 
             #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
@@ -384,28 +381,26 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
     // end of the second pass
       
     // compute how much the reflection is visible
-    if (hit0 == 0.0){
+    if (hit1 == 0.0){
         #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
             info.visibilityBackup = 1.0;
         #endif
 
     } else {
         info.miss = false;
-
-        if (length(rayDepth - hitCoordVS) < thickness * 0.05 //){
-                   || dot(normalize(dirVS), normalize(texture2D(normalSampler, uv).xyz)) > -0.085 ){
-            info.visibility = 0.0; // avoid displaying reflection when search level is low (auto intersection)
+        if (dot(normalize(dirVS), normalize(texture2D(normalSampler, uv).xyz)) > 0.0){
+            info.visibility = 0.0; // hit backface of a mesh
         } else {
             vec2 dCoordScreen = smoothstep(vec2(0.2), vec2(0.6), abs(vec2(0.5, 0.5) - uv)); // HermiteInterpolation
             info.visibility = texture2D(textureSampler, uv).a // alpha value of the reflected scene position 
-                * abs(dot(normalize(hitCoordVS), normalize( texture2D(normalSampler, uv).xyz))) // to avoid artifacts due to missing information when refleted face is almost perpendicular to the camera view direction
-                
-                // reduce back face limits artifacts
+                * abs(dot(normalize(hitCoordVS), normalize( texture2D(normalSampler, uv).xyz))) // to avoid artifacts due to missing information when reflected face is almost perpendicular to the camera view direction
+        
+                // reduce back face limits artifacts (false positive intersections)
                 * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag + increment * resolution)/texSize).xyz)), 0.0, 1.0)
                 * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag - increment * resolution)/texSize).xyz)), 0.0, 1.0)
                 * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag + increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
                 * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag - increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
-              
+                
                 * (1.0 - max (dot(-normalize(hitCoordVS), normalize(dirVS)), 0.0)) // to fade out the reflection as the reflected direction point to the camera's position (hit behind the camera)
                 * (1.0 - currSearch) // the reflection should be sharper when near from the starting point
                 * (1.0 - clamp (abs(hitCoordVS.z / distanceFade), 0.0, 1.0)) // to fade out the reflection near the distanceFade
@@ -434,7 +429,7 @@ void main(void)
     vec3 spec = toLinearSpace(texture2D(reflectivitySampler, vUV).rgb);
 
     if (dot(spec, vec3(1.0)) <= 0.0){
-        gl_FragColor = texture2D(textureSampler, vUV); // no reflectivity, no need to compute reflection
+        gl_FragColor = original; // no reflectivity, no need to compute reflection
         return;
     }
 
@@ -462,7 +457,7 @@ void main(void)
                 info.miss = true;
                 info.visibilityBackup = 1.0;
             #else
-                gl_FragColor = texture2D(textureSampler, vUV);
+                gl_FragColor = original;
                 return;
             #endif
         } else {
@@ -477,7 +472,7 @@ void main(void)
                 info.miss = true;
                 info.visibilityBackup = 1.0;
             #else
-                gl_FragColor = texture2D(textureSampler, vUV); 
+                gl_FragColor = original; 
                 return;
             #endif
         } else {
@@ -492,7 +487,7 @@ void main(void)
     vec3 reflectedColor;
     
     #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
-        if (backupOnlyWhenTooSpecular && dot(spec, vec3(1.0))/3.0 > 0.9) {
+        if (dot(spec, vec3(1.0))/3.0 > maxReflectivityForSSRReflections) {
             info.visibility = 0.0;
             info.visibilityBackup = 1.0;
         }
@@ -512,12 +507,12 @@ void main(void)
             reflectedColor += texture2D(textureSampler, info.coords).xyz * info.visibility;
         }
     #else 
-        if (backupOnlyWhenTooSpecular && dot(spec, vec3(1.0))/3.0 > 0.9) {
+        if (dot(spec, vec3(1.0))/3.0 > maxReflectivityForSSRReflections) {
             info.visibility = 0.0;
             info.visibilityBackup = 0.0;
         }
         if (info.miss){
-            gl_FragColor = texture2D(textureSampler, vUV);
+            gl_FragColor = original;
             return;
         } else {
             reflectedColor = texture2D(textureSampler, info.coords).xyz;
@@ -539,7 +534,7 @@ void main(void)
     gl_FragColor = vec4((original.xyz * (vec3(1.0) - reflectionCoeff)) + (reflectedColor * reflectionCoeff), original.a);
 
     #else // SSR not SUPPORTED
-    gl_FragColor = texture2D(textureSampler, vUV);
+    gl_FragColor = original;
     #endif // SSR_SUPPORTED
 }
 
