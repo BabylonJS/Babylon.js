@@ -23,7 +23,14 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @returns the VertexData of the box
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function CreateDiscVertexData(options: { radius?: number; tessellation?: number; arc?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 }): VertexData {
+export function CreateDiscVertexData(options: {
+    radius?: number;
+    tessellation?: number;
+    arc?: number;
+    sideOrientation?: number;
+    frontUVs?: Vector4;
+    backUVs?: Vector4;
+}): VertexData {
     const positions = new Array<number>();
     const indices = new Array<number>();
     const normals = new Array<number>();
