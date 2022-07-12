@@ -6,7 +6,7 @@ uniform sampler2D textureSampler;
 #ifdef SSR_SUPPORTED
 uniform sampler2D normalSampler;
 uniform sampler2D positionSampler;
-uniform sampler2D specularSampler;
+uniform sampler2D reflectivitySampler;
 uniform sampler2D depthSampler;
 #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
     uniform samplerCube backUpSampler;
@@ -158,7 +158,7 @@ void main()
         // Intensity
         vec4 albedoFull = texture2D(textureSampler, vUV);
         vec3 albedo = albedoFull.rgb;
-        float spec = texture2D(specularSampler, vUV).r;
+        float spec = texture2D(reflectivitySampler, vUV).r;
         if (spec == 0.0) {
             gl_FragColor = albedoFull;
             return;
@@ -169,7 +169,7 @@ void main()
         vec3 position = (view * texture2D(positionSampler, vUV)).xyz;
         vec3 reflected = normalize(reflect(normalize(position), normalize(normal)));
 
-        float roughness = 1.0 - texture2D(specularSampler, vUV).a;
+        float roughness = 1.0 - texture2D(reflectivitySampler, vUV).a;
         vec3 jitt = mix(vec3(0.0), hash(position), roughness) * roughnessFactor;
         
         ReflectionInfo info = getReflectionInfo(jitt + reflected, position);
@@ -429,14 +429,14 @@ void main(void)
     // *************** Get data from samplers ***************
 
     vec4 original = texture2D(textureSampler, vUV);
-    vec3 spec = toLinearSpace(texture2D(specularSampler, vUV).rgb);
+    vec3 spec = toLinearSpace(texture2D(reflectivitySampler, vUV).rgb);
 
     if (dot(spec, vec3(1.0)) <= 0.0){
         gl_FragColor = texture2D(textureSampler, vUV); // no reflectivity, no need to compute reflection
         return;
     }
 
-    float roughness = 1.0 - texture2D(specularSampler, vUV).a;
+    float roughness = 1.0 - texture2D(reflectivitySampler, vUV).a;
 
     // Get coordinates of the direction of the reflected ray
     // according to the pixel's position and normal.

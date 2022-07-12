@@ -21,16 +21,24 @@ declare type Scene = import("../scene").Scene;
  * Basically, the screen space reflection post-process will compute reflections according the material's properties.
  */
 export class ScreenSpaceReflectionPostProcess extends PostProcess {
-    @serialize()
-    private _backwardCompatibility: Nullable<Boolean> = true;
+    @serialize("_backwardCompatibility")
+    private _backwardCompatibility: boolean = true;
+
+    /**
+     * Gets the boolean deciding if we should use the old SSR version or the new one. Default value is true.
+     */
+    public get backwardCompatibility(): boolean {
+        return this._backwardCompatibility;
+    }
 
     /**
      * Sets the boolean deciding if we should use the old SSR version or the new one. Default value is true.
      */
-    public set backwardCompatibility(backCompat: Nullable<boolean>) {
+    public set backwardCompatibility(backCompat: boolean) {
         this._backwardCompatibility = backCompat;
         this._updateEffectDefines();
     }
+
     /**
      * Gets or sets a reflection threshold mainly used to adjust the reflection's height.
      * For backward compatibility only. Default value is 1.2.
@@ -45,15 +53,14 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     @serialize()
     public step: number = 1.0;
 
-    private _enableSmoothReflections: boolean = false;
-    private _reflectionSamples: number = 64;
-    private _smoothSteps: number = 5;
     private _isSceneRightHanded: boolean;
+    private _smoothSteps: number = 5;
 
     /**
      * Gets the number of samples taken while smoothing reflections. More samples count is high,
      * more the post-process will require GPU power and can generate a drop in FPS.
      * Default value (5.0) work pretty well in all cases but can be adjusted.
+     * For backward compatibility only.
      */
     @serialize()
     public get smoothSteps(): number {
@@ -64,6 +71,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
      * Sets the number of samples taken while smoothing reflections. More samples count is high,
      * more the post-process will require GPU power and can generate a drop in FPS.
      * Default value (5.0) work pretty well in all cases but can be adjusted.
+     * For backward compatibility only.
      */
     public set smoothSteps(steps: number) {
         if (steps === this._smoothSteps) {
@@ -71,6 +79,58 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         }
 
         this._smoothSteps = steps;
+        this._updateEffectDefines();
+    }
+
+    private _enableSmoothReflections: boolean = false;
+
+    /**
+     * Gets whether or not smoothing reflections is enabled.
+     * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+     * For backward compatibility only.
+     */
+    @serialize()
+    public get enableSmoothReflections(): boolean {
+        return this._enableSmoothReflections;
+    }
+
+    /**
+     * Sets whether or not smoothing reflections is enabled.
+     * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+     * For backward compatibility only.
+     */
+    public set enableSmoothReflections(enabled: boolean) {
+        if (enabled === this._enableSmoothReflections) {
+            return;
+        }
+
+        this._enableSmoothReflections = enabled;
+        this._updateEffectDefines();
+    }
+
+    private _reflectionSamples: number = 64;
+
+    /**
+     * Gets the number of samples taken while computing reflections. More samples count is high,
+     * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
+     * For backward compatibility only.
+     */
+    @serialize()
+    public get reflectionSamples(): number {
+        return this._reflectionSamples;
+    }
+
+    /**
+     * Sets the number of samples taken while computing reflections. More samples count is high,
+     * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
+     * For backward compatibility only.
+     */
+    public set reflectionSamples(samples: number) {
+        if (samples === this._reflectionSamples) {
+            return;
+        }
+
+        this._reflectionSamples = samples;
         this._updateEffectDefines();
     }
 
@@ -230,7 +290,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 "backupOnlyWhenTooSpecular",
                 "roughnessFactor",
             ],
-            ["textureSampler", "normalSampler", "depthSampler", "positionSampler", "specularSampler", "backUpSampler"],
+            ["textureSampler", "normalSampler", "depthSampler", "positionSampler", "reflectivitySampler", "backUpSampler"],
             options,
             camera,
             samplingMode,
@@ -280,7 +340,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 effect.setTexture("normalSampler", this._geometryBufferRenderer!.getGBuffer().textures[1]);
                 effect.setTexture("positionSampler", this._geometryBufferRenderer!.getGBuffer().textures[positionIndex]);
                 effect.setTexture("depthSampler", this._geometryBufferRenderer!.getGBuffer().textures[0]);
-                effect.setTexture("specularSampler", this._geometryBufferRenderer!.getGBuffer().textures[reflectivityIndex]);
+                effect.setTexture("reflectivitySampler", this._geometryBufferRenderer!.getGBuffer().textures[reflectivityIndex]);
             } else if (this._prePassRenderer) {
                 // Samplers
                 const normalIndex = this._prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
@@ -290,7 +350,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 effect.setTexture("normalSampler", this._prePassRenderer.getRenderTarget().textures[normalIndex]);
                 effect.setTexture("positionSampler", this._prePassRenderer.getRenderTarget().textures[positionIndex]);
                 effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[depthIndex]);
-                effect.setTexture("specularSampler", this._prePassRenderer.getRenderTarget().textures[reflectivityIndex]);
+                effect.setTexture("reflectivitySampler", this._prePassRenderer.getRenderTarget().textures[reflectivityIndex]);
             }
             if (this._backUpTextureSkybox) {
                 effect.setTexture("backUpSampler", this._backUpTextureSkybox);
