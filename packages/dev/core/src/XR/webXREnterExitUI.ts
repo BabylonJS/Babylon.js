@@ -112,8 +112,7 @@ export class WebXREnterExitUI implements IDisposable {
     ) {
         this.overlay = document.createElement("div");
         this.overlay.classList.add("xr-button-overlay");
-        this.overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
-
+        
         // prepare for session granted event
         if (!options.ignoreSessionGrantedEvent && (navigator as any).xr) {
             (navigator as any).xr.addEventListener("sessiongranted", this._onSessionGranted);
@@ -127,10 +126,11 @@ export class WebXREnterExitUI implements IDisposable {
                 throw new Error("WebXR can only be served over HTTPS");
             }
         }
-
+        
         if (options.customButtons) {
             this._buttons = options.customButtons;
         } else {
+            this.overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
             const sessionMode = options.sessionMode || "immersive-vr";
             const referenceSpaceType = options.referenceSpaceType || "local-floor";
             const url =
