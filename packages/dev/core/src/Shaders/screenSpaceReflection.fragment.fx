@@ -1,5 +1,3 @@
-// Screen Space Reflection Post-Process based on the following tutorial:
-// https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 precision highp float;
 uniform sampler2D textureSampler;
 
@@ -59,6 +57,8 @@ vec3 hash(vec3 a)
 
 
 #ifdef BACK_COMPATIBILITY // --------------------------- BACKWARD COMPATIBILITY PART -----------------------------------
+// Screen Space Reflection Post-Process based on the tutorial
+// http://imanolfotia.com/blog/update/2017/03/11/ScreenSpaceReflections.html
 
 // Structs
 struct ReflectionInfo {
@@ -198,6 +198,8 @@ void main()
 }
 
 #else // -------------------------  NEW VERSION --------------------------
+// Screen Space Reflection Post-Process based on the following tutorial:
+// https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
 // Structs
 struct ReflectionInfo {
