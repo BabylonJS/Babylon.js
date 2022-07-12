@@ -52,6 +52,14 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    _onPointerOverCanvas = () => {
+        this.props.globalState.pointerOverCanvas = true;
+    };
+
+    _onPointerOutCanvas = () => {
+        this.props.globalState.pointerOverCanvas = false;
+    };
+
     changeParticleSystemBlendMode(newOne: number) {
         if (this.props.globalState.particleSystemBlendMode === newOne) {
             return;
@@ -77,7 +85,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         return (
             <>
                 <div id="preview" style={{ height: this.props.width + "px" }}>
-                    <canvas id="preview-canvas" />
+                    <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                 </div>
                 {this.props.globalState.mode === NodeMaterialModes.Particle && (
