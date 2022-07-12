@@ -294,6 +294,37 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         };
     }
 
+    populateConnectedEntriesBeforeRemoval(item: GraphNode, items: GraphNode[], inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[]) {
+        inputs.push(
+            ...item.content.inputs.filter((i) => i.isConnected && items.every((selected) => selected.content.data !== i.connectedPort?.ownerData)).map((i) => i.connectedPort)
+        );
+
+        outputs.push(
+            ...item.content.outputs
+                .filter((i) => i.isConnected)
+                .map((i) => i.endpoints)
+                .flat()
+                .filter((i) => i && items.every((selected) => selected.content.data !== i.ownerData))
+        );
+    }
+
+    automaticRewire(inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[]) {
+        if (outputs.length && inputs.length) {
+            inputs.forEach((input) => {
+                if (!input) {
+                    return;
+                }
+                const output = outputs[0];
+                if (output && input.canConnectTo(output)) {
+                    const nodeInput = this.findNodeFromData(input.ownerData);
+                    const nodeOutput = this.findNodeFromData(output.ownerData);
+                    this.connectNodes(nodeInput, input, nodeOutput, output);
+                    outputs.shift();
+                }
+            });
+        }
+    }
+
     handleKeyDown(
         evt: KeyboardEvent,
         onRemove: (nodeData: INodeData) => void,
@@ -305,12 +336,20 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
             // Delete
             const selectedItems = this.selectedNodes;
+            const inputs: Nullable<IPortData>[] = [];
+            const outputs: Nullable<IPortData>[] = [];
 
-            for (const selectedItem of selectedItems) {
-                selectedItem.dispose();
+            if (selectedItems.length > 0) {
+                for (const selectedItem of selectedItems) {
+                    if (evt.altKey) {
+                        this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
+                    }
 
-                onRemove(selectedItem.content);
-                this.removeDataFromCache(selectedItem.content.data);
+                    selectedItem.dispose();
+
+                    onRemove(selectedItem.content);
+                    this.removeDataFromCache(selectedItem.content.data);
+                }
             }
 
             if (this.selectedLink) {
@@ -334,6 +373,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     frame.dispose();
                 }
             }
+
+            // Reconnect if required
+            this.automaticRewire(inputs, outputs);
 
             this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
