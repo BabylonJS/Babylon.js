@@ -72,6 +72,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             case "ConeParticleEmitter":
                 return (
                     <ConeEmitterGridComponent
+                        lockObject={this.props.lockObject}
                         globalState={this.props.globalState}
                         emitter={system.particleEmitterType as ConeParticleEmitter}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -382,6 +383,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Update speed"
                         target={system}
                         propertyName="updateSpeed"
@@ -866,6 +868,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="First sprite index"
                         isInteger={true}
                         target={system}
@@ -873,6 +876,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Last sprite index"
                         isInteger={true}
                         target={system}
@@ -892,6 +896,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell width"
                         isInteger={true}
                         target={system}
@@ -899,6 +904,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell height"
                         isInteger={true}
                         target={system}
@@ -906,6 +912,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell change speed"
                         target={system}
                         propertyName="spriteCellChangeSpeed"

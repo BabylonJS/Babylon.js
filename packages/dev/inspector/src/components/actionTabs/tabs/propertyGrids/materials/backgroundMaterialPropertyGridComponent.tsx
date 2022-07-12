@@ -51,6 +51,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                 />
                 {material.reflectionTexture && (
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Reflection blur"
                         target={material}
                         propertyName="reflectionBlur"
@@ -84,6 +85,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Shadow level"
                         target={material}
                         propertyName="primaryColorShadowLevel"
@@ -93,6 +95,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Highlight level"
                         target={material}
                         propertyName="primaryColorHighlightLevel"
@@ -118,6 +121,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Reflection amount"
                         target={material}
                         propertyName="reflectionAmount"
