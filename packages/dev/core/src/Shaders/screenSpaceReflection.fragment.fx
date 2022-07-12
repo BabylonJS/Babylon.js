@@ -226,30 +226,31 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
     vec4 endVS = vec4(hitCoordVS + (dirVS * maxDistance), 1.0);
 
     #ifdef RIGHT_HANDED_SCENE
-        if (endVS.z > minZ){ // no need to compute anything, the max depth of reflection is not in the view space (not behind the near plane)
-            #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
-                info.visibilityBackup = 1.0;
-            #endif
-            return info;
-        }
+        if (endVS.z > minZ) // no need to compute anything, the max depth of reflection is not in the view space (not behind the near plane)
     #else 
-        if (endVS.z < minZ){ 
-            #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
-                info.visibilityBackup = 1.0;
-            #endif
-            return info;
-        }
+        if (endVS.z < minZ) 
     #endif
+    {
+    #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
+        info.visibilityBackup = 1.0;
+    #endif
+    return info;
+    }
+
 
     // Calculate the start and end point of the reflection ray in screen space.
     vec4 startSS = projection * startVS; // Project to screen space.
     startSS.xyz /= startSS.w; // Perform the perspective divide.
+    #ifndef WEBGPU
     startSS.xy = startSS.xy * 0.5 + vec2(0.5); // Convert from clip space to texture space.
+    #endif
     startSS.xy *= texSize; // Convert the UV coordinates to fragment/pixel coordinates.
 
     vec4 endSS = projection * endVS;
     endSS.xyz /= endSS.w;
+    #ifndef WEBGPU
     endSS.xy = endSS.xy * 0.5 + vec2(0.5);
+    #endif
     endSS.xy *= texSize;
 
     vec2 currFrag = startSS.xy; // (currFrag / texSize) equivalent to vUV at this point
@@ -365,11 +366,8 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
         #endif
 
         if (deltaDepth > 0.0 && deltaDepth < maxTol ) {
-            if (deltaDepth < thickness * 0.1) {
+            if (deltaDepth < thickness) {
                 hit1 = 1.0;
-                if (deltaDepth < thickness * 0.01) {
-                    break;
-                }
             }
             search1 = currSearch;
             currSearch = ((search1 + search0) / 2.0);
@@ -388,18 +386,19 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
 
     } else {
         info.miss = false;
-        if (dot(normalize(dirVS), normalize(texture2D(normalSampler, uv).xyz)) > 0.0){
+        vec3 normalInUV = normalize(texture2D(normalSampler, uv).xyz);
+        if (dot(normalize(dirVS), normalInUV) > 0.0){
             info.visibility = 0.0; // hit backface of a mesh
         } else {
             vec2 dCoordScreen = smoothstep(vec2(0.2), vec2(0.6), abs(vec2(0.5, 0.5) - uv)); // HermiteInterpolation
             info.visibility = texture2D(textureSampler, uv).a // alpha value of the reflected scene position 
-                * abs(dot(normalize(hitCoordVS), normalize( texture2D(normalSampler, uv).xyz))) // to avoid artifacts due to missing information when reflected face is almost perpendicular to the camera view direction
+                * abs(dot(normalize(hitCoordVS), normalInUV)) // to avoid artifacts due to missing information when reflected face is almost perpendicular to the camera view direction
         
-                // reduce back face limits artifacts (false positive intersections)
-                * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag + increment * resolution)/texSize).xyz)), 0.0, 1.0)
-                * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag - increment * resolution)/texSize).xyz)), 0.0, 1.0)
-                * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag + increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
-                * clamp(dot(normalize( texture2D(normalSampler, uv).xyz), normalize( texture2D(normalSampler, (currFrag - increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
+                // reduce back face limit artifacts (false positive intersections)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag + increment * resolution)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag - increment * resolution)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag + increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag - increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
                 
                 * (1.0 - max (dot(-normalize(hitCoordVS), normalize(dirVS)), 0.0)) // to fade out the reflection as the reflected direction point to the camera's position (hit behind the camera)
                 * (1.0 - currSearch) // the reflection should be sharper when near from the starting point
@@ -450,37 +449,24 @@ void main(void)
     vec3 jitt = mix(vec3(0.0), hash(texture2D(positionSampler, vUV).xyz), roughness) * roughnessFactor;
 
     #ifdef RIGHT_HANDED_SCENE
-        if (position.z < -distanceFade || distanceFade == 0.0){ // no need to compute reflection, the point we are evaluating is further than the distanceFade
-            #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
-                info.coords = vUV;
-                info.visibility = 0.0;
-                info.miss = true;
-                info.visibilityBackup = 1.0;
-            #else
-                gl_FragColor = original;
-                return;
-            #endif
-        } else {
-            vec2 texSize = gl_FragCoord.xy / vUV;
-            info = getReflectionInfo2DRayMarching(reflected + jitt, position, texSize);
-        }
+    if (position.z < -distanceFade || distanceFade == 0.0) // no need to compute reflection, the point we are evaluating is further than the distanceFade
     #else // if left handed scene
-        if (position.z > distanceFade || distanceFade == 0.0){ // no need to compute reflection, the point we are evaluating is further than the distanceFade
-            #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
-                info.coords = vUV;
-                info.visibility = 0.0;
-                info.miss = true;
-                info.visibilityBackup = 1.0;
-            #else
-                gl_FragColor = original; 
-                return;
-            #endif
-        } else {
-            vec2 texSize = gl_FragCoord.xy / vUV;
-            info = getReflectionInfo2DRayMarching(reflected + jitt, position, texSize);
-
-        }
+    if (position.z > distanceFade || distanceFade == 0.0)
+    #endif 
+    {       
+    #if defined(BACKUP_TEXTURE_SKYBOX) || defined(BACKUP_TEXTURE_PROBE)
+        info.coords = vUV;
+        info.visibility = 0.0;
+        info.miss = true;
+        info.visibilityBackup = 1.0;
+    #else
+        gl_FragColor = original;
+        return;
     #endif
+    } else {
+        vec2 texSize = gl_FragCoord.xy / vUV;
+        info = getReflectionInfo2DRayMarching(reflected + jitt, position, texSize);
+    }
 
     // *************** Get reflection color ***************
 
@@ -527,7 +513,7 @@ void main(void)
   
     vec3 reflectionCoeff = fresnelSchlick(max(dot(unitNormal, -unitPosition), 0.0), F0) // https://lettier.github.io/3d-game-shaders-for-beginners/fresnel-factor.html
                             * (info.visibility + info.visibilityBackup); 
-    reflectionCoeff = clamp(vec3(pow(reflectionCoeff.x * strength, falloffExponent - 2.0), pow(reflectionCoeff.y * strength, falloffExponent - 2.0), pow(reflectionCoeff.z * strength, falloffExponent - 2.0)), 0.0, 1.0); // -2 to compensate for default value (3.0)
+    reflectionCoeff = clamp(pow(reflectionCoeff * strength, vec3(falloffExponent - 2.0)), 0.0, 1.0); // -2 to compensate for default value (3.0)
 
     // Render the final color
     // (no refraction) and (AbsorbtionCoeff + RefractionCoeff + ReflectionCoeff = 1)  => AbsorbtionCoeff = 1 - ReflectionCoeff
