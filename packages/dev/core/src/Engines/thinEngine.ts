@@ -544,8 +544,12 @@ export class ThinEngine {
 
     private _activeRequests = new Array<IFileRequest>();
 
+    /**
+     * If set to true zooming in and out in the browser will rescale the hardware-scaling correctly.
+     */
+    public adaptToDeviceRatio: boolean = false;
     /** @hidden */
-    private _adaptToDeviceRatio: boolean = false;
+    private _lastDevicePixelRatio: number = 1.0;
 
     /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
@@ -751,7 +755,7 @@ export class ThinEngine {
         this._creationOptions = options;
 
         // Save this off for use in resize().
-        this._adaptToDeviceRatio = adaptToDeviceRatio ?? false;
+        this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
@@ -962,6 +966,7 @@ export class ThinEngine {
 
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
         this._isStencilEnable = options.stencil ? true : false;
@@ -1729,10 +1734,11 @@ export class ThinEngine {
         let height: number;
 
         // Requery hardware scaling level to handle zoomed-in resizing.
-        if (this._adaptToDeviceRatio) {
+        if (this.adaptToDeviceRatio) {
             const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-            const limitDeviceRatio = this._creationOptions.limitDeviceRatio || devicePixelRatio;
-            this._hardwareScalingLevel = this._adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+            const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
+            this._lastDevicePixelRatio = devicePixelRatio;
+            this._hardwareScalingLevel *= changeRatio;
         }
 
         if (IsWindowObjectExist()) {
