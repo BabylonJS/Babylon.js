@@ -1,17 +1,19 @@
-import { AssetContainer } from "core/assetContainer";
-import { Camera } from "core/Cameras/camera";
-import { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
-import { Material } from "core/Materials/material";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AssetContainer } from "core/assetContainer";
+import type { Camera } from "core/Cameras/camera";
+import type { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync} from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import type { Material } from "core/Materials/material";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { DataReader } from "core/Misc/dataReader";
 import { Observable } from "core/Misc/observable";
 import { GLTFValidation } from "./glTFValidation";
-import { AbstractFileLoader, ILoader, ILoaderData, readAsync } from "./abstractFileLoader";
+import type { ILoader, ILoaderData} from "./abstractFileLoader";
+import { AbstractFileLoader, readAsync } from "./abstractFileLoader";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Scene } from "core/scene";
 
 /**
  * Mode that determines the coordinate system to use.
