@@ -122,6 +122,8 @@ export class V3Button extends TouchButton3D {
     private _pointerClickObserver: Nullable<Observer<Vector3WithInfo>>;
     private _frontPlateDepth = 0.4;
     private _backPlateDepth = 0.04;
+    private _backGlowOffset = 0.1;
+    private _innerQuadRadius = this.radius - 0.03;
     private _innerQuadColor: Color4;
     private _innerQuadToggledColor = new Color4(0.5197843, 0.6485234, 0.9607843, 0.6);
     private _innerQuadHoverColor = new Color4(1, 1, 1, 0.05);
@@ -498,8 +500,8 @@ export class V3Button extends TouchButton3D {
             const backGlowModel = result.meshes[1];
             backGlowModel.name = `${this.name}_backGlow`;
             backGlowModel.isPickable = false;
-            backGlowModel.scaling.x = this.width - 0.1;
-            backGlowModel.scaling.y = this.height - 0.1;
+            backGlowModel.scaling.x = this.width - this._backGlowOffset;
+            backGlowModel.scaling.y = this.height - this._backGlowOffset;
             backGlowModel.scaling.z = 0.001;
             backGlowModel.position.z = this._backPlateDepth / 2;
             backGlowModel.parent = backGlowMesh;
@@ -544,8 +546,8 @@ export class V3Button extends TouchButton3D {
             const frontPlateModel = result.meshes[1];
             frontPlateModel.name = `${this.name}_frontPlate`;
             frontPlateModel.isPickable = false;
-            frontPlateModel.scaling.x = this.width - 0.1;
-            frontPlateModel.scaling.y = this.height - 0.1;
+            frontPlateModel.scaling.x = this.width - this._backGlowOffset;
+            frontPlateModel.scaling.y = this.height - this._backGlowOffset;
             frontPlateModel.parent = collisionPlate;
 
             if (this.isToggleButton) {
@@ -572,8 +574,8 @@ export class V3Button extends TouchButton3D {
             const innerQuadModel = result.meshes[1];
             innerQuadModel.name = `${this.name}_innerQuad`;
             innerQuadModel.isPickable = false;
-            innerQuadModel.scaling.x = this.width - 0.09;
-            innerQuadModel.scaling.y = this.height - 0.09;
+            innerQuadModel.scaling.x = this.width - this._backGlowOffset;
+            innerQuadModel.scaling.y = this.height - this._backGlowOffset;
             innerQuadModel.scaling.z = 0.01;
             innerQuadModel.position.z = 0.001;
             innerQuadModel.parent = innerQuadMesh;
@@ -771,7 +773,7 @@ export class V3Button extends TouchButton3D {
 
     private _createFrontMaterial(mesh: Mesh) {
         this._frontMaterial = this._frontMaterial ?? new MRDLFrontplateMaterial(this.name + "Front Material", mesh.getScene());
-        this.frontMaterial.radius = this.radius - 0.02;
+        this.frontMaterial.radius = this._innerQuadRadius;
         this.frontMaterial.fadeOut = 0.0;
     }
 
@@ -785,6 +787,7 @@ export class V3Button extends TouchButton3D {
 
     private _createInnerQuadMaterial(mesh: Mesh) {
         this._innerQuadMaterial = this._innerQuadMaterial ?? new MRDLInnerquadMaterial("inner_quad", mesh.getScene());
+        this._innerQuadMaterial.radius = this._innerQuadRadius;
 
         if (this.isToggleButton) {
             this._innerQuadColor = new Color4(0, 0, 0, 0);
