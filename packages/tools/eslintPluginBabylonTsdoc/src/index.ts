@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as eslint from "eslint";
-import * as ESTree from "estree";
-import { TSDocParser, TextRange, TSDocConfiguration, ParserContext } from "@microsoft/tsdoc";
+import type * as eslint from "eslint";
+import type * as ESTree from "estree";
+import type { ParserContext } from "@microsoft/tsdoc";
+import { TSDocConfiguration, TSDocParser, TextRange } from "@microsoft/tsdoc";
 import * as tsdoc from "@microsoft/tsdoc";
-import { TSDocConfigFile } from "@microsoft/tsdoc-config";
+import type { TSDocConfigFile } from "@microsoft/tsdoc-config";
 import * as ts from "typescript";
 
 // import { Debug } from "./Debug";
