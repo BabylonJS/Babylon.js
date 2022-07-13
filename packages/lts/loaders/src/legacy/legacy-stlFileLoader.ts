@@ -8,7 +8,9 @@ import * as Loaders from "loaders/STL/index";
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
     for (const key in Loaders) {
-        (<any>globalObject).BABYLON[key] = (<any>Loaders)[key];
+        if (!(<any>globalObject).BABYLON[key]) {
+            (<any>globalObject).BABYLON[key] = (<any>Loaders)[key];
+        }
     }
 }
 
