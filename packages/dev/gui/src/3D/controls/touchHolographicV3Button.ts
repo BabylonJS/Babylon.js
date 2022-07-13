@@ -123,7 +123,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     private _frontPlateDepth = 0.4;
     private _backPlateDepth = 0.04;
     private _backGlowOffset = 0.1;
-    private _innerQuadRadius = this.radius - 0.03;
+    private _innerQuadRadius = this.radius - 0.04;
     private _innerQuadColor: Color4;
     private _innerQuadToggledColor = new Color4(0.5197843, 0.6485234, 0.9607843, 0.6);
     private _innerQuadHoverColor = new Color4(1, 1, 1, 0.05);
