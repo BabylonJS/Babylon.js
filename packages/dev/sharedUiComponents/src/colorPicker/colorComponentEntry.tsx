@@ -1,4 +1,5 @@
 import * as React from "react";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 export interface IColorComponentEntryProps {
     value: number;
@@ -7,6 +8,7 @@ export interface IColorComponentEntryProps {
     min?: number;
     onChange: (value: number) => void;
     disabled?: boolean;
+    lockObject: LockObject;
 }
 
 export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
@@ -34,6 +36,18 @@ export class ColorComponentEntry extends React.Component<IColorComponentEntryPro
         this.props.onChange(valueAsNumber);
     }
 
+    lock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    }
+
+    unlock() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    }
+
     public render() {
         return (
             <div className="color-picker-component">
@@ -43,6 +57,8 @@ export class ColorComponentEntry extends React.Component<IColorComponentEntryPro
                         step={1}
                         className="numeric-input"
                         value={this.props.value}
+                        onBlur={() => this.unlock()}
+                        onFocus={() => this.lock()}
                         onChange={(evt) => this.updateValue(evt.target.value)}
                         disabled={this.props.disabled}
                     />

@@ -19,7 +19,7 @@ import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
-import { IFocusableControl } from "./controls/focusableControl";
+import type { IFocusableControl } from "./controls/focusableControl";
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from "core/Engines/constants";
@@ -1091,7 +1091,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
             delete this._lastControlOver[pointerEvent.pointerId];
             if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
-                this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
+                this._lastControlDown[pointerEvent.pointerId]._forcePointerUp(pointerEvent.pointerId);
                 delete this._lastControlDown[pointerEvent.pointerId];
             }
         });

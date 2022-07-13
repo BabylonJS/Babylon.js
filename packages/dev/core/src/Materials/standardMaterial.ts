@@ -1063,6 +1063,8 @@ export class StandardMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                    defines.PARALLAX = false;
+                    defines.PARALLAXOCCLUSION = false;
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {

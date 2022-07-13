@@ -22,8 +22,8 @@ export interface IColorLineComponentProps {
     isLinear?: boolean;
     icon?: string;
     iconLabel?: string;
-    lockObject?: LockObject;
     disableAlpha?: boolean;
+    lockObject: LockObject;
 }
 
 interface IColorLineComponentState {
@@ -193,6 +193,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                     </div>
                     <div className="color3">
                         <ColorPickerLineComponent
+                            lockObject={this.props.lockObject}
                             linearHint={this.props.isLinear}
                             value={this.props.disableAlpha ? this._toColor3(this.state.color) : this.state.color}
                             onColorChanged={(colorString) => {
@@ -220,10 +221,12 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
-                        {this.props.disableAlpha || <NumericInputComponent label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />}
+                        <NumericInputComponent lockObject={this.props.lockObject} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        {this.props.disableAlpha || (
+                            <NumericInputComponent lockObject={this.props.lockObject} label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
+                        )}
                     </div>
                 )}
             </div>

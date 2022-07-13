@@ -14,7 +14,7 @@ import { Plane } from "../../Maths/math.plane";
 import { EncodeArrayBufferToBase64 } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
-import { InternalTexture } from "./internalTexture";
+import type { InternalTexture } from "./internalTexture";
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
