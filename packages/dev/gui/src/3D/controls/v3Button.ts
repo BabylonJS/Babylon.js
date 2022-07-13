@@ -9,6 +9,7 @@ import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Animation } from "core/Animations/animation";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Color3, Color4 } from "core/Maths/math.color";
+import { Control } from "../../2D/controls/control";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { DomManagement } from "core/Misc/domManagement";
@@ -19,10 +20,11 @@ import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
 import { MRDLFrontplateMaterial } from "../materials/mrdl/mrdlFrontplateMaterial";
 import { MRDLBackglowMaterial } from "../materials/mrdl/mrdlBackglowMaterial";
 import { MRDLInnerquadMaterial } from "../materials/mrdl/mrdlInnerquadMaterial";
+import { Rectangle } from "../../2D/controls/rectangle";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { TextBlock } from "../../2D/controls/textBlock";
+import { TextBlock, TextWrapping } from "../../2D/controls/textBlock";
 import { TouchButton3D } from "./touchButton3D";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Vector3 } from "core/Maths/math.vector";
@@ -35,46 +37,71 @@ export class V3Button extends TouchButton3D {
      * Base Url for the frontplate model.
      */
     public static FRONTPLATE_MODEL_BASE_URL = "https://raw.githubusercontent.com/chinezenwosu-ms/TempAssets/main/GLB/";
+
     /**
      * File name for the frontplate model.
      */
     public static FRONTPLATE_MODEL_FILENAME = "mrtk-fluent-frontplate.glb";
+
     /**
      * Base Url for the backplate model.
      */
     public static BACKPLATE_MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
+
     /**
      * File name for the backplate model.
      */
     public static BACKPLATE_MODEL_FILENAME = "mrtk-fluent-backplate.glb";
+
     /**
      * Base Url for the backglow model.
      */
     public static BACKGLOW_MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
+
     /**
      * File name for the backglow model.
      */
     public static BACKGLOW_MODEL_FILENAME = "mrtk-fluent-button.glb";
+
     /**
      * Base Url for the innerquad model.
      */
     public static INNERQUAD_MODEL_BASE_URL = "https://raw.githubusercontent.com/chinezenwosu-ms/TempAssets/main/GLB/";
+
     /**
      * File name for the innerquad model.
      */
     public static INNERQUAD_MODEL_FILENAME = "SlateProximity.glb";
+
     /**
-     * Horizontal scaling for the button.
+     * Gets or sets the horizontal scaling for the button.
      */
     public width = 1;
+
     /**
-     * Vertical scaling for the button.
+     * Gets or sets the vertical scaling for the button.
      */
     public height = 1;
+
     /**
-     * Bevel radius for the button.
+     * Gets or sets the bevel radius for the button.
      */
     public radius = 0.14;
+
+    /**
+     * Gets or sets the font size of the button text in pixels.
+     */
+    public textSizeInPixels = 18;
+
+    /**
+     * Gets or sets the size of the button image in pixels.
+     */
+    public imageSizeInPixels = 40;
+
+    /**
+     * Gets or sets the enum that determines the text-wrapping mode to use for the button text.
+     */
+    public textWrapping = TextWrapping.Clip;
 
     private _backPlate: AbstractMesh;
     private _textPlate: Mesh;
@@ -350,31 +377,55 @@ export class V3Button extends TouchButton3D {
     }
 
     private _rebuildContent(): void {
-        const panel = new StackPanel();
-        panel.isVertical = true;
+        let totalPanelWidthInPixels = 240;
+        const padding = 15;
+        const aspectRatio = this.width / this.height;
+        
+        const contentContainer = new Rectangle();
+        contentContainer.widthInPixels = totalPanelWidthInPixels;
+        contentContainer.heightInPixels = totalPanelWidthInPixels;
+        contentContainer.color = "transparent";
+        contentContainer.setPaddingInPixels(padding, padding, padding, padding);
+        totalPanelWidthInPixels -= padding * 2;
 
+        const panel = new StackPanel();
+        panel.isVertical = false;
+        panel.scaleY = aspectRatio;
+        
         if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
+                const imageContainer = new Rectangle(`${this.name}_image`);
+                imageContainer.widthInPixels = this.imageSizeInPixels;
+                imageContainer.heightInPixels = this.imageSizeInPixels;
+                imageContainer.color = "transparent";
+                totalPanelWidthInPixels -= this.imageSizeInPixels;
+                
                 const image = new Image();
                 image.source = this._imageUrl;
-                image.paddingTop = "40px";
-                image.height = "180px";
-                image.width = "100px";
-                image.paddingBottom = "40px";
-                panel.addControl(image);
+
+                imageContainer.addControl(image);
+                panel.addControl(imageContainer);
             }
         }
 
         if (this._text) {
-            const text = new TextBlock();
+            const text = new TextBlock(`${this.name}_text`);
             text.text = this._text;
+            text.textWrapping = this.textWrapping;
             text.color = "white";
-            text.height = "30px";
-            text.fontSize = 24;
+            text.fontSize = this.textSizeInPixels;
+            text.widthInPixels = totalPanelWidthInPixels;
+            
+            if (this._imageUrl) {
+                text.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+                text.paddingLeftInPixels = 20;
+            }
+
             panel.addControl(text);
         }
 
-        this.content = panel;
+        contentContainer.addControl(panel);
+        this.content = contentContainer;
     }
 
     // Mesh association
