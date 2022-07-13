@@ -32,7 +32,7 @@ import { Vector3 } from "core/Maths/math.vector";
 /**
  * Class used to create the mrtkv3 button
  */
-export class V3Button extends TouchButton3D {
+export class TouchHolographicV3Button extends TouchButton3D {
     /**
      * Base Url for the frontplate model.
      */
@@ -375,7 +375,7 @@ export class V3Button extends TouchButton3D {
     }
 
     protected _getTypeName(): string {
-        return "V3Button";
+        return "TouchHolographicV3Button";
     }
 
     private _rebuildContent(): void {
@@ -432,7 +432,7 @@ export class V3Button extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this.name = this.name ?? "V3Button";
+        this.name = this.name ?? "TouchHolographicV3Button";
 
         const collisionMesh = this._createFrontPlate(scene);
         const backPlateMesh = this._createBackPlate(scene);
@@ -463,7 +463,7 @@ export class V3Button extends TouchButton3D {
         backPlateMesh.isPickable = false;
         backPlateMesh.visibility = 0;
 
-        SceneLoader.ImportMeshAsync(undefined, V3Button.BACKPLATE_MODEL_BASE_URL, V3Button.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.BACKPLATE_MODEL_BASE_URL, TouchHolographicV3Button.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
             const backPlateModel = result.meshes[1];
             backPlateModel.visibility = 0;
 
@@ -496,7 +496,7 @@ export class V3Button extends TouchButton3D {
         backGlowMesh.isPickable = false;
         backGlowMesh.visibility = 0;
 
-        SceneLoader.ImportMeshAsync(undefined, V3Button.BACKGLOW_MODEL_BASE_URL, V3Button.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.BACKGLOW_MODEL_BASE_URL, TouchHolographicV3Button.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
             const backGlowModel = result.meshes[1];
             backGlowModel.name = `${this.name}_backGlow`;
             backGlowModel.isPickable = false;
@@ -528,7 +528,7 @@ export class V3Button extends TouchButton3D {
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
 
-        SceneLoader.ImportMeshAsync(undefined, V3Button.FRONTPLATE_MODEL_BASE_URL, V3Button.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.FRONTPLATE_MODEL_BASE_URL, TouchHolographicV3Button.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
             const collisionPlate = CreateBox(
                 `${this.name}_collisionPlate`,
                 {
@@ -570,7 +570,7 @@ export class V3Button extends TouchButton3D {
         innerQuadMesh.isPickable = false;
         innerQuadMesh.visibility = 0;
 
-        SceneLoader.ImportMeshAsync(undefined, V3Button.INNERQUAD_MODEL_BASE_URL, V3Button.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.INNERQUAD_MODEL_BASE_URL, TouchHolographicV3Button.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
             const innerQuadModel = result.meshes[1];
             innerQuadModel.name = `${this.name}_innerQuad`;
             innerQuadModel.isPickable = false;

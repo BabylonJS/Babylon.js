@@ -19,4 +19,4 @@ export * from "./touchMeshButton3D";
 export * from "./touchHolographicButton";
 export * from "./touchHolographicMenu";
 export * from "./volumeBasedPanel";
-export * from "./v3Button";
+export * from "./touchHolographicV3Button";
