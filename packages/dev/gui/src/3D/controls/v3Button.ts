@@ -382,7 +382,7 @@ export class V3Button extends TouchButton3D {
         let totalPanelWidthInPixels = 240;
         const padding = 15;
         const aspectRatio = this.width / this.height;
-        
+
         const contentContainer = new Rectangle();
         contentContainer.widthInPixels = totalPanelWidthInPixels;
         contentContainer.heightInPixels = totalPanelWidthInPixels;
@@ -393,7 +393,7 @@ export class V3Button extends TouchButton3D {
         const panel = new StackPanel();
         panel.isVertical = false;
         panel.scaleY = aspectRatio;
-        
+
         if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 const imageContainer = new Rectangle(`${this.name}_image`);
@@ -401,7 +401,7 @@ export class V3Button extends TouchButton3D {
                 imageContainer.heightInPixels = this.imageSizeInPixels;
                 imageContainer.color = "transparent";
                 totalPanelWidthInPixels -= this.imageSizeInPixels;
-                
+
                 const image = new Image();
                 image.source = this._imageUrl;
 
@@ -417,7 +417,7 @@ export class V3Button extends TouchButton3D {
             text.color = "white";
             text.fontSize = this.textSizeInPixels;
             text.widthInPixels = totalPanelWidthInPixels;
-            
+
             if (this._imageUrl) {
                 text.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
                 text.paddingLeftInPixels = 20;
