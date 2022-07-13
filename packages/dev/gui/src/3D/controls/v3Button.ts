@@ -767,6 +767,7 @@ export class V3Button extends TouchButton3D {
 
     private _createBackMaterial(mesh: Mesh) {
         this._backMaterial = this._backMaterial ?? new MRDLBackplateMaterial(this.name + "backPlateMaterial", mesh.getScene());
+        this._backMaterial.absoluteSizes = true;
         this._backMaterial.radius = this.radius;
         this._backMaterial.lineWidth = 0.02;
     }
