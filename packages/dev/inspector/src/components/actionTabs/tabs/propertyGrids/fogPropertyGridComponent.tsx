@@ -40,10 +40,16 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
                     target={scene}
                     propertyName="fogMode"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onSelect={(value) => this.setState({ mode: value })}
+                    onSelect={(value) => this.setState({ mode: value as number })}
                 />
                 {this.state.mode !== Scene.FOGMODE_NONE && (
-                    <Color3LineComponent label="Fog color" target={scene} propertyName="fogColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Fog color"
+                        target={scene}
+                        propertyName="fogColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 )}
                 {(this.state.mode === Scene.FOGMODE_EXP || this.state.mode === Scene.FOGMODE_EXP2) && (
                     <FloatLineComponent

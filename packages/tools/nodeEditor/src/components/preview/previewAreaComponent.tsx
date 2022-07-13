@@ -4,7 +4,6 @@ import { DataStorage } from "core/Misc/dataStorage";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
-import { OptionsLineComponent } from "../../sharedComponents/optionsLineComponent";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
 import doubleSided from "./svgs/doubleSided.svg";
@@ -12,6 +11,7 @@ import depthPass from "./svgs/depthPass.svg";
 import omni from "./svgs/omni.svg";
 import directionalRight from "./svgs/directionalRight.svg";
 import directionalLeft from "./svgs/directionalLeft.svg";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -20,7 +20,7 @@ interface IPreviewAreaComponentProps {
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
     private _onIsLoadingChangedObserver: Nullable<Observer<boolean>>;
-    private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     constructor(props: IPreviewAreaComponentProps) {
         super(props);
@@ -52,13 +52,21 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    _onPointerOverCanvas = () => {
+        this.props.globalState.pointerOverCanvas = true;
+    };
+
+    _onPointerOutCanvas = () => {
+        this.props.globalState.pointerOverCanvas = false;
+    };
+
     changeParticleSystemBlendMode(newOne: number) {
         if (this.props.globalState.particleSystemBlendMode === newOne) {
             return;
         }
 
         this.props.globalState.particleSystemBlendMode = newOne;
-        this.props.globalState.onUpdateRequiredObservable.notifyObservers(null);
+        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null);
 
         DataStorage.WriteNumber("DefaultParticleSystemBlendMode", newOne);
 
@@ -77,7 +85,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         return (
             <>
                 <div id="preview" style={{ height: this.props.width + "px" }}>
-                    <canvas id="preview-canvas" />
+                    <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                 </div>
                 {this.props.globalState.mode === NodeMaterialModes.Particle && (
