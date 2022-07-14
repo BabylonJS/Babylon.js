@@ -103,23 +103,32 @@ export class TouchHolographicV3Button extends TouchButton3D {
      */
     public textWrapping = TextWrapping.Clip;
 
+    // Meshes
     private _backPlate: AbstractMesh;
     private _textPlate: Mesh;
     private _frontPlate: AbstractMesh;
     private _backGlow: AbstractMesh;
     private _innerQuad: AbstractMesh;
     private _collisionPlate: AbstractMesh;
+    private _isBackplateVisible = true;
+
+    // Content
     private _text: string;
     private _imageUrl: string;
+    
+    // Materials
     private _shareMaterials = true;
-    private _isBackplateVisible = true;
     private _frontMaterial: MRDLFrontplateMaterial;
     private _backMaterial: MRDLBackplateMaterial;
     private _backGlowMaterial: MRDLBackglowMaterial;
     private _innerQuadMaterial: MRDLInnerquadMaterial;
     private _plateMaterial: StandardMaterial;
+
+    // Events
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _pointerClickObserver: Nullable<Observer<Vector3WithInfo>>;
+
+    // Shared variables for meshes
     private _frontPlateDepth = 0.3;
     private _backPlateDepth = 0.04;
     private _backGlowOffset = 0.1;
