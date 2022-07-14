@@ -31,7 +31,15 @@ export class AccessibilityNodeItem extends AccessibilityItem {
             return this._isActionable;
         }
 
-        this._isActionable = (this.entity as Node)._getActionManagerForTrigger()?.hasPickTriggers!!;
+        // If defined onclick, override default.
+        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        if (eventHandler?.onclick || eventHandler?.oncontextmenu) {
+            this._isActionable = true;
+        }
+        else {
+            this._isActionable = (this.entity as Node)._getActionManagerForTrigger()?.hasPickTriggers!!;
+        }
+
         return this._isActionable;
     }
 
@@ -50,6 +58,13 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      * Callback when the HTML element is focused. Show visual indication on BabylonJS entity.
      */
     public override focus(): void {
+        // If defined eventHandler, override default.
+        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        if (eventHandler?.onfocus) {
+            eventHandler.onfocus();
+            return;
+        }
+
         if (this.entity instanceof Mesh) {
             const mesh = this.entity as Mesh;
             mesh.enableEdgesRendering(0.999);
@@ -62,6 +77,13 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      * Callback when the HTML element is blured. Dismiss visual indication on BabylonJS entity.
      */
     public override blur(): void {
+        // If defined eventHandler, override default.
+        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        if (eventHandler?.onblur) {
+            eventHandler.onblur();
+            return;
+        }
+
         if (this.entity instanceof Mesh) {
             const mesh = this.entity as Mesh;
             mesh.disableEdgesRendering();
@@ -72,8 +94,14 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
      */
     public override click(): void {
-        let actions: IAction[] = [];
+        // If defined eventHandler, override default.
+        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        if (eventHandler?.onclick) {
+            eventHandler.onclick();
+            return;
+        }
 
+        let actions: IAction[] = [];
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnLeftPickTrigger));
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
 
@@ -86,8 +114,14 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
      */
     public override rightClick(): void {
-        let actions: IAction[] = [];
+        // If defined eventHandler, override default.
+        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        if (eventHandler?.oncontextmenu) {
+            eventHandler.oncontextmenu();
+            return;
+        }
 
+        let actions: IAction[] = [];
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnRightPickTrigger));
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
 

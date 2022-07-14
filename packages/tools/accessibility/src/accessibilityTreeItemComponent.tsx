@@ -56,7 +56,8 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
     private _renderParentNode(a11yItem: AccessibilityItem, level: number): JSX.Element {
         return (
             <div>
-                {!!a11yItem.description && <div role={a11yItem.entity.accessibilityTag?.role ?? 'heading'}
+                {!!a11yItem.description &&
+                <div role={a11yItem.entity.accessibilityTag?.role ?? 'heading'}
                     aria-level={level}
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
                     onFocus={() => {a11yItem.focus();}}

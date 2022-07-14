@@ -20,7 +20,7 @@
      * Learn more about ARIA: https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA
      */
     role?: AcceptedRole;
-    aria?: {[key in AcceptedARIA]: string};
+    aria?: {[key in AcceptedARIA]: any};
 }
 
 type EventHandler = "onclick" | "onmousedown" | "oncontextmenu" | "onfocus" | "onblur";
