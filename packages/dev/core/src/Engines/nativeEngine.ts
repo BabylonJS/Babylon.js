@@ -3237,16 +3237,13 @@ export class NativeEngine extends Engine {
             throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
         }
 
-        if (level !== undefined && level != 0) {
-            throw new Error(`Only reading mip level 0 is supported, but level is ${level}.`);
-        }
-
         return this._engine.readTexture(
             texture._hardwareTexture?.underlyingResource,
+            level ?? 0,
             x ?? 0,
             y ?? 0,
-            Math.min(width, texture.width),
-            Math.min(height, texture.height),
+            width,
+            height,
             buffer ?? null,
         );
     }
