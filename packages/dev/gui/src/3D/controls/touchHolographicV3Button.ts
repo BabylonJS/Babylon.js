@@ -120,7 +120,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     private _plateMaterial: StandardMaterial;
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _pointerClickObserver: Nullable<Observer<Vector3WithInfo>>;
-    private _frontPlateDepth = 0.4;
+    private _frontPlateDepth = 0.3;
     private _backPlateDepth = 0.04;
     private _backGlowOffset = 0.1;
     private _innerQuadRadius = this.radius - 0.04;
@@ -436,8 +436,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
         const collisionMesh = this._createFrontPlate(scene);
         const backPlateMesh = this._createBackPlate(scene);
-        this._createBackGlow(scene);
-        this._createInnerQuad(scene);
+        const innerQuadMesh = this._createInnerQuad(scene);
+        const backGlowMesh = this._createBackGlow(scene);
 
         this._backPlate = backPlateMesh;
         this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this._backPlateDepth / 2);
@@ -448,6 +448,11 @@ export class TouchHolographicV3Button extends TouchButton3D {
         this._textPlate.isPickable = false;
 
         this._backPlate.addChild(collisionMesh);
+        this._backPlate.addChild(innerQuadMesh);
+
+        if (backGlowMesh) {
+            this._backPlate.addChild(backGlowMesh);
+        }
 
         const tn = new TransformNode(`${this.name}_root`, scene);
         this._backPlate.setParent(tn);
@@ -512,6 +517,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
             this._backGlow = backGlowModel;
         });
+
+        return backGlowMesh;
     }
 
     private _createFrontPlate(scene: Scene) {
@@ -526,7 +533,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
+        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this._backPlateDepth - this._frontPlateDepth) / 2);
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.FRONTPLATE_MODEL_BASE_URL, TouchHolographicV3Button.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
             const collisionPlate = CreateBox(
@@ -548,6 +555,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
             frontPlateModel.isPickable = false;
             frontPlateModel.scaling.x = this.width - this._backGlowOffset;
             frontPlateModel.scaling.y = this.height - this._backGlowOffset;
+            frontPlateModel.position.z = -this._frontPlateDepth;
             frontPlateModel.parent = collisionPlate;
 
             if (this.isToggleButton) {
@@ -577,7 +585,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
             innerQuadModel.scaling.x = this.width - this._backGlowOffset;
             innerQuadModel.scaling.y = this.height - this._backGlowOffset;
             innerQuadModel.scaling.z = 0.01;
-            innerQuadModel.position.z = 0.001;
+            innerQuadModel.position.z = this._backPlateDepth / 2 - 0.001;
             innerQuadModel.parent = innerQuadMesh;
 
             if (this._innerQuadMaterial) {
@@ -586,6 +594,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
             this._innerQuad = innerQuadModel;
         });
+
+        return innerQuadMesh;
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
