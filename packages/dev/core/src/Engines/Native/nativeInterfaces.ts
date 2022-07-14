@@ -55,6 +55,7 @@ export interface INativeEngine {
     getTextureHeight(texture: WebGLTexture): number;
     copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
+    readTexture(texture: WebGLTexture, x: number, y: number, width: number, height: number, buffer: Nullable<ArrayBufferView>): Promise<ArrayBufferView>;
 
     createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;

@@ -3218,4 +3218,36 @@ export class NativeEngine extends Engine {
         const result = { ascent: 0, height: 0, descent: 0 };
         return result;
     }
+
+    public _readTexturePixels(
+        texture: InternalTexture,
+        width: number,
+        height: number,
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean,
+        x?: number,
+        y?: number
+    ): Promise<ArrayBufferView> {
+        // TODO: Bump the protocol version, or check for the existence of the readTexture function.
+
+        if (faceIndex !== undefined && faceIndex !== -1) {
+            throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
+        }
+
+        if (level !== undefined && level != 0) {
+            throw new Error(`Only reading mip level 0 is supported, but level is ${level}.`);
+        }
+
+        return this._engine.readTexture(
+            texture._hardwareTexture?.underlyingResource,
+            x ?? 0,
+            y ?? 0,
+            Math.min(width, texture.width),
+            Math.min(height, texture.height),
+            buffer ?? null,
+        );
+    }
 }
