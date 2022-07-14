@@ -23,6 +23,7 @@ export interface IImageProcessingConfiguration {
     colorGradingBGR?: boolean;
     exposure?: number;
     toneMappingEnabled?: boolean;
+    useExactSrgbConversions?: boolean;
     contrast?: number;
     vignetteEnabled?: boolean;
     vignetteStretch?: number;
