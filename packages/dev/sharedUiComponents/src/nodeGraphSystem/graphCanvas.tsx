@@ -535,7 +535,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 continue;
             }
             const sourceContent = this.findNodeFromData(sourceInput.connectedPort!.ownerData).content;
-            const activeNodes = sourceNodes.filter((s) => s.content.data === sourceContent);
+            const activeNodes = sourceNodes.filter((s) => s.content === sourceContent);
 
             if (activeNodes.length > 0) {
                 const activeNode = activeNodes[0];
@@ -548,7 +548,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 const outputIndex = sourceContent.outputs.indexOf(sourceInput.connectedPort!);
                 const newOutput = newNodes[indexInList].content.data.outputs[outputIndex];
 
-                newOutput.connectTo(currentInput);
+                newOutput.connectTo(currentInput.data);
             } else {
                 // Connect with outside nodes
                 sourceInput.connectedPort!.connectTo(currentInput);
