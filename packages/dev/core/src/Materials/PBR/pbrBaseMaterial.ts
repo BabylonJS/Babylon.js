@@ -1036,7 +1036,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1197,6 +1197,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -1454,6 +1455,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.samplers = samplers;
         this._eventInfo.uniformBuffersNames = uniformBuffers;
         this._eventInfo.customCode = undefined;
+        this._eventInfo.mesh = mesh;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
@@ -1746,6 +1748,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                    defines.PARALLAX = false;
+                    defines.PARALLAXOCCLUSION = false;
+                    defines.PARALLAOBJECTSPACE_NORMALMAP = false;
                 }
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {

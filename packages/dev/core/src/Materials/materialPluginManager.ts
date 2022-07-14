@@ -253,7 +253,7 @@ export class MaterialPluginManager {
                 const eventData = info as MaterialPluginPrepareEffect;
                 for (const plugin of this._activePlugins) {
                     eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
-                    plugin.getAttributes(eventData.attributes);
+                    plugin.getAttributes(eventData.attributes, this._scene, eventData.mesh);
                 }
                 if (this._uniformList.length > 0) {
                     eventData.uniforms.push(...this._uniformList);

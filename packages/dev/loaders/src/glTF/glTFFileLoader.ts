@@ -29,7 +29,7 @@ import { GLTFValidation } from "./glTFValidation";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;

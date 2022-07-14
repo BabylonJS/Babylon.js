@@ -1270,6 +1270,13 @@ export class ArcRotateCamera extends TargetCamera {
         rigCam.isRigCamera = true;
         rigCam.rigParent = this;
         rigCam.upVector = this.upVector;
+
+        rigCam.mode = this.mode;
+        rigCam.orthoLeft = this.orthoLeft;
+        rigCam.orthoRight = this.orthoRight;
+        rigCam.orthoBottom = this.orthoBottom;
+        rigCam.orthoTop = this.orthoTop;
+
         return rigCam;
     }
 

@@ -173,6 +173,19 @@ export class WebXRCamera extends FreeCamera {
         const trackingState = pose.emulatedPosition ? WebXRTrackingState.TRACKING_LOST : WebXRTrackingState.TRACKING;
         this._setTrackingState(trackingState);
 
+        // check min/max Z and update if not the same as in cache
+        if (this.minZ !== this._cache.minZ || this.maxZ !== this._cache.maxZ) {
+            const xrRenderState: XRRenderStateInit = {
+                // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
+                depthFar: this.maxZ || 10000,
+                depthNear: this.minZ,
+            };
+
+            this._xrSessionManager.updateRenderState(xrRenderState);
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+        }
+
         if (pose.transform) {
             const orientation = pose.transform.orientation;
             if (pose.transform.orientation.x === undefined) {

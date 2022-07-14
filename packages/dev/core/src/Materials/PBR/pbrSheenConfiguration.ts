@@ -154,7 +154,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialSheenDefines, scene: Scene): void {
+    public prepareDefinesBeforeAttributes(defines: MaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.SHEEN = true;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;

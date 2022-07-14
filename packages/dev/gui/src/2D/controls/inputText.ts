@@ -21,39 +21,39 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
  * Class used to create input text control
  */
 export class InputText extends Control implements IFocusableControl {
-    private _textWrapper: TextWrapper;
-    private _placeholderText = "";
-    private _background = "#222222";
-    private _focusedBackground = "#000000";
-    private _focusedColor = "white";
-    private _placeholderColor = "gray";
-    private _thickness = 1;
-    private _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
-    private _autoStretchWidth = true;
-    private _maxWidth = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    private _isFocused = false;
+    protected _textWrapper: TextWrapper;
+    protected _placeholderText = "";
+    protected _background = "#222222";
+    protected _focusedBackground = "#000000";
+    protected _focusedColor = "white";
+    protected _placeholderColor = "gray";
+    protected _thickness = 1;
+    protected _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
+    protected _autoStretchWidth = true;
+    protected _maxWidth = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
+    protected _isFocused = false;
     /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
-    private _focusedBy: string;
-    private _blinkTimeout: number;
-    private _blinkIsEven = false;
+    protected _focusedBy: string;
+    protected _blinkTimeout: number;
+    protected _blinkIsEven = false;
     private _cursorOffset = 0;
-    private _scrollLeft: Nullable<number>;
-    private _textWidth: number;
-    private _clickedCoordinate: Nullable<number>;
-    private _deadKey = false;
-    private _addKey = true;
-    private _currentKey = "";
-    private _isTextHighlightOn = false;
-    private _textHighlightColor = "#d5e0ff";
-    private _highligherOpacity = 0.4;
-    private _highlightedText = "";
+    protected _scrollLeft: Nullable<number>;
+    protected _textWidth: number;
+    protected _clickedCoordinate: Nullable<number>;
+    protected _deadKey = false;
+    protected _addKey = true;
+    protected _currentKey = "";
+    protected _isTextHighlightOn = false;
+    protected _textHighlightColor = "#d5e0ff";
+    protected _highligherOpacity = 0.4;
+    protected _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
     private _cursorIndex = -1;
-    private _onFocusSelectAll = false;
-    private _isPointerDown = false;
-    private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
-    private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
+    protected _onFocusSelectAll = false;
+    protected _isPointerDown = false;
+    protected _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
+    protected _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
 
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
@@ -332,7 +332,7 @@ export class InputText extends Control implements IFocusableControl {
         this._textHasChanged();
     }
 
-    private _textHasChanged(): void {
+    protected _textHasChanged(): void {
         this._markAsDirty();
         this.onTextChangedObservable.notifyObservers(this);
     }
@@ -761,7 +761,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param offset
      * @hidden
      */
-    private _updateValueFromCursorIndex(offset: number) {
+    protected _updateValueFromCursorIndex(offset: number) {
         //update the cursor
         this._blinkIsEven = false;
 
@@ -788,7 +788,7 @@ export class InputText extends Control implements IFocusableControl {
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _processDblClick(evt: PointerInfo) {
+    protected _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
         this._endHighlightIndex = this._startHighlightIndex;
@@ -808,7 +808,7 @@ export class InputText extends Control implements IFocusableControl {
         this._markAsDirty();
     }
     /** @hidden */
-    private _selectAllText() {
+    protected _selectAllText() {
         this._blinkIsEven = true;
         this._isTextHighlightOn = true;
 
@@ -834,7 +834,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param ev
      * @hidden
      */
-    private _onCopyText(ev: ClipboardEvent): void {
+    protected _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
@@ -846,7 +846,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param ev
      * @hidden
      */
-    private _onCutText(ev: ClipboardEvent): void {
+    protected _onCutText(ev: ClipboardEvent): void {
         if (!this._highlightedText) {
             return;
         }
@@ -866,7 +866,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param ev
      * @hidden
      */
-    private _onPasteText(ev: ClipboardEvent): void {
+    protected _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
             data = ev.clipboardData.getData("text/plain");

@@ -351,7 +351,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene): void {
+    public prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_TRANSLUCENCY = false;

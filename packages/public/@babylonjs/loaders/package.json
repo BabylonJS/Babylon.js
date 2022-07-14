@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/loaders",
-    "version": "5.11.0",
+    "version": "5.15.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -19,15 +19,19 @@
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.11.0",
-        "babylonjs-gltf2interface": "^5.11.0",
-        "tslib": "^2.3.1"
+        "tslib": "^2.4.0"
     },
     "devDependencies": {
+        "@babylonjs/core": "^5.15.1",
         "@dev/build-tools": "^1.0.0",
         "@lts/loaders": "^1.0.0",
+        "babylonjs-gltf2interface": "^5.15.1",
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^5.0.0",
+        "babylonjs-gltf2interface": "^5.0.0"
     },
     "keywords": [
         "3D",
