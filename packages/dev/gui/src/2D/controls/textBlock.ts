@@ -547,7 +547,7 @@ export class TextBlock extends Control {
     }
 
     protected _renderLines(context: ICanvasRenderingContext): void {
-        if (!this._fontOffset) {
+        if (!this._fontOffset || !this._lines) {
             return;
         }
         const height = this._currentMeasure.height;

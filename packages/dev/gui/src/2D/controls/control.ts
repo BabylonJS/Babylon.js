@@ -549,7 +549,7 @@ export class Control {
     @serialize()
     public fixedRatio = 0;
 
-    private _fixedRatioMasterIsWidth = true;
+    protected _fixedRatioMasterIsWidth = true;
 
     /**
      * Gets or sets control width

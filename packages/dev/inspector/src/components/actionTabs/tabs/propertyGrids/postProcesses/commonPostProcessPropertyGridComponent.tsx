@@ -45,6 +45,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
                     <CheckBoxLineComponent label="Auto clear" target={postProcess} propertyName="autoClear" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {postProcess.clearColor && (
                         <Color3LineComponent
+                            lockObject={this.props.lockObject}
                             label="Clear color"
                             target={postProcess}
                             propertyName="clearColor"
@@ -64,6 +65,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Samples"
                         target={postProcess}
                         propertyName="samples"

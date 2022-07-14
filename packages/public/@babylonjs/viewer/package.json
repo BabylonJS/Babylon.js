@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "5.11.0",
+    "version": "5.15.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -19,14 +19,14 @@
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.11.0",
-        "@babylonjs/loaders": "^5.11.0",
-        "babylonjs-gltf2interface": "^5.11.0",
-        "babylonjs-viewer-assets": "^5.11.0",
+        "@babylonjs/core": "^5.15.1",
+        "@babylonjs/loaders": "^5.15.1",
+        "babylonjs-gltf2interface": "^5.15.1",
+        "babylonjs-viewer-assets": "^5.15.1",
         "deepmerge": "~4.2.2",
         "handlebars": "~4.7.7",
-        "pepjs": "~0.4.3",
-        "tslib": "^2.3.1"
+        "pepjs": "~0.5.3",
+        "tslib": "^2.4.0"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",

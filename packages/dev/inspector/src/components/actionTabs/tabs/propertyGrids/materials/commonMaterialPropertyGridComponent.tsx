@@ -163,6 +163,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <CheckBoxLineComponent label="Wireframe" target={material} propertyName="wireframe" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Point cloud" target={material} propertyName="pointsCloud" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Point size"
                         target={material}
                         propertyName="pointSize"
@@ -172,6 +173,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Z-offset Factor"
                         target={material}
                         propertyName="zOffset"
@@ -181,6 +183,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Z-offset Units"
                         target={material}
                         propertyName="zOffsetUnits"
@@ -199,6 +202,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                 </LineContainerComponent>
                 <LineContainerComponent title="TRANSPARENCY" selection={this.props.globalState}>
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Alpha"
                         target={material}
                         propertyName="alpha"
