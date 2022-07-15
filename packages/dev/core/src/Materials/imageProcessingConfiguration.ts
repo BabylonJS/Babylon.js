@@ -246,26 +246,6 @@ export class ImageProcessingConfiguration {
     }
 
     @serialize()
-    private _useExactSrgbConversions = false;
-    /**
-     * Gets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
-     */
-    public get useExactSrgbConversions(): boolean {
-        return this._useExactSrgbConversions;
-    }
-    /**
-     * Sets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
-     */
-    public set useExactSrgbConversions(value: boolean) {
-        if (this._useExactSrgbConversions === value) {
-            return;
-        }
-
-        this._useExactSrgbConversions = value;
-        this._updateParameters();
-    }
-
-    @serialize()
     protected _contrast = 1.0;
     /**
      * Gets the contrast used in the effect.
@@ -486,8 +466,9 @@ export class ImageProcessingConfiguration {
      * Prepare the list of defines associated to the shader.
      * @param defines the list of defines to complete
      * @param forPostProcess Define if we are currently in post process mode or not
+     * @param useExactSrgbConversions true if the engine is using exact srgb conversions
      */
-    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
+    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false, useExactSrgbConversions = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
             defines.VIGNETTE = false;
             defines.TONEMAPPING = false;
@@ -498,7 +479,7 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
-            defines.USEEXACTSRGBCONVERSIONS = false;
+            defines.USEEXACTSRGBCONVERSIONS = useExactSrgbConversions;
             defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
@@ -518,7 +499,7 @@ export class ImageProcessingConfiguration {
                 break;
         }
 
-        defines.USEEXACTSRGBCONVERSIONS = this.useExactSrgbConversions;
+        defines.USEEXACTSRGBCONVERSIONS = useExactSrgbConversions;
 
         defines.CONTRAST = this.contrast !== 1.0;
         defines.EXPOSURE = this.exposure !== 1.0;
