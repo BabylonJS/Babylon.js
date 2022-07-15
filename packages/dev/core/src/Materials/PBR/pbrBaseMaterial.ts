@@ -1530,7 +1530,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             if (scene.texturesEnabled) {
-                if (scene.getEngine().getCaps().textureLOD) {
+                if (engine.getCaps().textureLOD) {
                     defines.LODBASEDMICROSFURACE = true;
                 }
 
@@ -1633,7 +1633,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || this.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || this.realTimeFiltering || engine.getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             } else {
                                 defines.USESPHERICALINVERTEX = true;
@@ -1735,7 +1735,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.MICROSURFACEMAP = false;
                 }
 
-                if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
+                if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                     MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                     if (this._useParallax && this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -1789,7 +1789,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 defines.TWOSIDEDLIGHTING = false;
             }
 
-            defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
+            defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
         if (defines._areTexturesDirty || defines._areMiscDirty) {
@@ -1801,7 +1801,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
-            this._imageProcessingConfiguration.prepareDefines(defines, false, mesh.getEngine().useExactSrgbConversions);
+            this._imageProcessingConfiguration.prepareDefines(defines, false, engine.useExactSrgbConversions);
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;
