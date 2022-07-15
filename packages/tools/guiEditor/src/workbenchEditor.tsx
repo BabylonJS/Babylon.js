@@ -13,10 +13,13 @@ import { GizmoWrapper } from "./diagram/gizmoWrapper";
 import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
 import type { Control } from "gui/2D/controls/control";
-import { ControlTypes } from "./controlTypes";
+import { ControlTypes, ControlTypesFHalf, ControlTypesSHalf} from "./controlTypes";
 
 import "./main.scss";
 import "./scss/header.scss";
+
+import toolbarExpandIcon from "./imgs/toolbarExpandIcon.svg";
+import toolbarCollapseIcon from "./imgs/toolbarCollapseIcon.svg";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -24,6 +27,7 @@ interface IGraphEditorProps {
 
 interface IGraphEditorState {
     showPreviewPopUp: boolean;
+    toolbarExpand: boolean;
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
@@ -45,9 +49,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     constructor(props: IGraphEditorProps) {
         super(props);
         this._rootRef = React.createRef();
-
         this.state = {
             showPreviewPopUp: false,
+            toolbarExpand: true,
         };
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
@@ -97,7 +101,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
-
+    
         this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
@@ -191,9 +195,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             }
         }
     };
-
+    switchExpandedState(): void { 
+        this.setState({ toolbarExpand: !this.state.toolbarExpand});
+    };
+    
     render() {
-        return (
+        if(this.state.toolbarExpand){ return (
             <Portal globalState={this.props.globalState}>
                 <div id="ge-header">
                     <div className="command-bar">
@@ -214,7 +221,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     onPointerUp={(evt) => this.onPointerUp(evt)}
                 >
                     {/* Node creation menu */}
-
                     <div className="left-panel">
                         <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                         {this.createToolbar()}
@@ -253,7 +259,71 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 <div className="blocker">GUI Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
-        );
+        ); 
+        }
+        else{
+            return (
+                <Portal globalState={this.props.globalState}>
+                    <div id="ge-header">
+                        <div className="command-bar">
+                            <CommandBarComponent globalState={this.props.globalState} />
+                        </div>
+                    </div>
+                    <div
+                        id="gui-editor-workbench-root"
+                        style={{
+                            gridTemplateColumns: this.buildColumnLayout(),
+                        }}
+                        onMouseDown={(evt) => {
+                            if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                                return;
+                            }
+                        }}
+                        ref={this._rootRef}
+                        onPointerUp={(evt) => this.onPointerUp(evt)}
+                    >
+                        {/* Node creation menu */}
+                        <div className="left-panel-expand">
+                            <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
+                            {this.createToolbar()}
+                            <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
+                        </div>
+                        <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
+                        {this.createToolbar()}
+                        {/* The gui workbench diagram */}
+                        <div
+                            className="diagram-container"
+                            onDrop={(event) => {
+                                event.preventDefault();
+                                this.props.globalState.onDropObservable.notifyObservers();
+                                this.props.globalState.onParentingChangeObservable.notifyObservers(null);
+                            }}
+                            onDragOver={(event) => {
+                                event.preventDefault();
+                            }}
+                            style={{
+                                backgroundColor: this.props.globalState.backgroundColor.toHexString(),
+                            }}
+                        >
+                            <ArtBoardComponent globalState={this.props.globalState} />
+                            <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                            <GizmoWrapper globalState={this.props.globalState} />
+                        </div>
+                        {/* Property tab */}
+                        <div className="right-panel">
+                            <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
+                            <PropertyTabComponent globalState={this.props.globalState} />
+                        </div>
+    
+                        <LogComponent globalState={this.props.globalState} />
+                    </div>
+                    <MessageDialogComponent globalState={this.props.globalState} />
+                    <div className="blocker">GUI Editor runs only on desktop</div>
+                    <div className="wait-screen hidden">Processing...please wait</div>
+                </Portal>
+            );
+        } 
+        
     }
 
     onCreate(value: string): Control {
@@ -264,39 +334,108 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.forceUpdate();
         return newGuiNode;
     }
-
     createToolbar() {
-        return (
-            <>
-                <div id="toolbarGrab">
-                    {<div className="blackLine"></div>}
-                    {
-                        <div className={"toolbar-content sub1"}>
-                            {ControlTypes.map((type) => {
-                                return (
-                                    <div
-                                        className={"toolbar-label"}
-                                        key={type.className}
-                                        onDragStart={() => {
-                                            this._draggedItem = type.className;
-                                        }}
-                                        onClick={() => {
-                                            this.onCreate(type.className);
-                                        }}
-                                        title={type.className}
-                                    >
-                                        {type.icon && (
-                                            <div className="toolbar-icon" draggable={true}>
-                                                <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    }
-                </div>
-            </>
-        );
+        const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />; 
+        if(this.state.toolbarExpand){
+            return (
+                <>
+                    <div id="toolbarGrab">
+                        {<div className="blackLine">
+                            <div className="arrow" onClick={() => this.switchExpandedState()}> 
+                                {icon}
+                            </div>
+                         </div>}
+                        {
+                            <div className={"toolbar-content-sub1"}>
+                                {ControlTypes.map((type) => {
+                                    return (
+                                        <div
+                                            className={"toolbar-label"}
+                                            key={type.className}
+                                            onDragStart={() => {
+                                                this._draggedItem = type.className;
+                                            }}
+                                            onClick={() => {
+                                                this.onCreate(type.className);
+                                            }}
+                                            title={type.className}
+                                        >
+                                            {type.icon && (
+                                                <div className="toolbar-icon" draggable={true}>
+                                                    <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        }
+                    </div>
+                </>
+            );
+        }
+        else{
+            return (
+                <>
+                    <div id="toolbarGrabExpanded">
+                        {<div className="blackLine">
+                            <div className="arrow" onClick={() => this.switchExpandedState()}> 
+                                {icon}
+                            </div>
+                         </div>}
+                        {
+                            <div className={"toolbar-content-sub1"}>
+                                {ControlTypesFHalf.map((type) => {
+                                    return (
+                                        <div
+                                            className={"toolbar-label"}
+                                            key={type.className}
+                                            onDragStart={() => {
+                                                this._draggedItem = type.className;
+                                            }}
+                                            onClick={() => {
+                                                this.onCreate(type.className);
+                                            }}
+                                            title={type.className}
+                                        >
+                                            {type.icon && (
+                                                <div className="toolbar-icon" draggable={true}>
+                                                    <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {ControlTypesSHalf.map((type) => {
+                                    return (
+                                        <div
+                                            className={"toolbar-label"}
+                                            key={type.className}
+                                            onDragStart={() => {
+                                                this._draggedItem = type.className;
+                                            }}
+                                            onClick={() => {
+                                                this.onCreate(type.className);
+                                            }}
+                                            title={type.className}
+                                        >
+                                            {type.icon && (
+                                                <div className="toolbar-icon" draggable={true}>
+                                                    <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {
+                        }
+                            </div>
+                        }
+                    </div>
+                </>
+            );
+            
+        }
+        
     }
 }
