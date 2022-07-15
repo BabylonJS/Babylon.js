@@ -25,7 +25,9 @@ export interface ITreeItemSelectableComponentProps {
     filter: Nullable<string>;
 }
 
+
 export interface ITreeItemSelectableComponentState {
+    isExpanded: boolean;
     dragOver: boolean;
     isSelected: boolean;
     isHovered: boolean;
@@ -45,7 +47,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { dragOver: false, dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.selectedEntities.includes(this.props.entity) };
+        this.state = {isExpanded: true, dragOver: false, dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.selectedEntities.includes(this.props.entity) };
 
         this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(() => {
             this.setState({ isSelected: this.props.globalState.selectedControls.includes(this.props.entity) });
@@ -59,8 +61,8 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         });
     }
 
-    switchExpandedState(): void {
-        this.props.entity.reservedDataStore.setExpandedState(!this.props.entity.reservedDataStore.isExpanded);
+    switchExpandedState(): void { 
+       this.setState({ isExpanded: !this.state.isExpanded });
     }
 
     shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isSelected: boolean }) {
@@ -103,7 +105,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         if ((!entity.getChildren && !entity.children) || !isExpanded) {
             return null;
         }
-
+        
         const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         if (entity.typeName === "StackPanel" || entity.typeName === "VirtualKeyboard") {
             children.reverse();
@@ -112,6 +114,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             if (item.name == "Art-Board-Background") {
                 return null;
             }
+          
             return (
                 <TreeItemSelectableComponent
                     globalState={this.props.globalState}
@@ -119,37 +122,38 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntities={this.props.selectedEntities}
                     key={i}
-                    offset={this.props.offset + (offset ? 2 : 0)}
+                    offset={this.props.offset + (offset ? 2 : 0)} 
                     entity={item}
                     filter={this.props.filter}
                 />
             );
-        });
+        })
+        ;
     }
 
-    render() {
+    // lines(offset:number){
+    //     console.log("I'm here");
+    //     <div className="lineBelow" onClick={() => this.switchExpandedState()}>
+                            
+    //                     </div> 
+    // }
+    render() { 
         if (
             this.props.entity === this.props.globalState.workbench.trueRootContainer ||
             this.props.entity === this.props.globalState.workbench.visibleRegionContainer ||
             this.props.entity === this.props.globalState.workbench.panAndZoomContainer
         ) {
-            return this.renderChildren(true, false);
+            return this.renderChildren(true, false); 
         }
         const marginStyle = {
             paddingLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
         };
         const entity = this.props.entity;
 
-        if (!entity.reservedDataStore) {
-            entity.reservedDataStore = {
-                isExpanded: true,
-                setExpandedState: (expanded: boolean) => (entity.reservedDataStore.isExpanded = expanded),
-            };
-        }
-        const isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
-        entity.reservedDataStore.isExpanded = isExpanded;
+        const isExpanded = this.state.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities); 
 
-        const chevron = isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />;
+        const chevron = isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />; 
+
         const children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
@@ -172,6 +176,13 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             }
         }
 
+        // if(this.state.dragOver && this.state.dragOverLocation == DragOverLocation.ABOVE && entity.parent){
+        //     const offset = this.props.offset;
+        //     <div>
+        //         {this.lines(offset)};
+        //     </div>
+        // }
+
         let className = "itemContainer"; //setting class name plus whatever extras based on states
         className += this.state.isSelected && this.props.globalState.draggedControl === null ? " selected" : "";
         className += this.state.isHovered && this.props.globalState.draggedControl === null ? " hover" : "";
@@ -179,8 +190,12 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         className += this.props.globalState.draggedControl === this.props.entity ? " dragged" : "";
         className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.ABOVE && entity.parent ? " seAbove" : "";
         className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.BELOW && entity.parent ? " seBelow" : "";
-
+        // if(this.state.dragOver && this.state.dragOverLocation == DragOverLocation.ABOVE && entity.parent){
+        //     className = "lineBelow";
+        // }
+        
         return (
+            
             <div>
                 <div
                     className={className}
@@ -215,12 +230,15 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                             this.setState({ dragOver: false });
                         }
                     }}
+                    
                 >
+                   
                     {hasChildren && (
-                        <div className="arrow icon" onClick={() => this.switchExpandedState()}>
+                        <div className="arrow" onClick={() => this.switchExpandedState()}> 
                             {chevron}
                         </div>
                     )}
+                    
                     <ControlTreeItemComponent
                         globalState={this.props.globalState}
                         extensibilityGroups={this.props.extensibilityGroups}
@@ -231,11 +249,11 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                         dragOverLocation={this.state.dragOverLocation}
                     />
                 </div>
-                {this.renderChildren(isExpanded)}
+                {this.renderChildren(this.state.isExpanded)} 
             </div>
         );
     }
-
+    
     dragOver(event: React.DragEvent<HTMLDivElement>): void {
         this.updateDragOverLocation(event);
         // if we've already hovered the element, record a new drag event
@@ -247,7 +265,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     }
 
     updateDragOverLocation(event: React.DragEvent<HTMLDivElement>) {
-        //check the positions of the mouse cursor.
+        //check the positions of the mouse cursor. 
         const target = event.target as HTMLElement;
         const rect = target.getBoundingClientRect();
         const y = event.clientY - rect.top;
@@ -259,7 +277,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             } else if (y > (4 * CONTROL_HEIGHT) / 5) {
                 this.setState({ dragOverLocation: DragOverLocation.BELOW });
             } else {
-                this.setState({ dragOverLocation: DragOverLocation.CENTER });
+               this.setState({ dragOverLocation: DragOverLocation.CENTER });
             }
         } else {
             if (y < CONTROL_HEIGHT / 2) {
