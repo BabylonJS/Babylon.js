@@ -64,7 +64,7 @@ vec3 toLinearSpaceExact(vec3 color)
 vec3 toGammaSpaceExact(vec3 color)
 {
     vec3 nearZeroSection = 12.92 * color;
-    vec3 remainingSection = 1.055 * pow(color, vec3(0.416666667)) - vec3(0.055);
+    vec3 remainingSection = 1.055 * pow(color, vec3(0.41666)) - vec3(0.055);
     #if defined(WEBGL2) || defined(WEBGPU)
         return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.0031308)));
     #else
@@ -80,58 +80,58 @@ vec3 toGammaSpaceExact(vec3 color)
 float toLinearSpace(float color)
 {
     #if USEEXACTSRGBCONVERSIONS
-    float nearZeroSection = 0.0773993808 * color;
-    float remainingSection = pow(0.947867299 * (color + 0.055), 2.4);
-    return color <= 0.04045 ? nearZeroSection : remainingSection;
+        float nearZeroSection = 0.0773993808 * color;
+        float remainingSection = pow(0.947867299 * (color + 0.055), 2.4);
+        return color <= 0.04045 ? nearZeroSection : remainingSection;
     #else
-    return pow(color, LinearEncodePowerApprox);
+        return pow(color, LinearEncodePowerApprox);
     #endif
 }
 
 vec3 toLinearSpace(vec3 color)
 {
     #if USEEXACTSRGBCONVERSIONS
-    return toLinearSpaceExact(color);
+        return toLinearSpaceExact(color);
     #else
-    return pow(color, vec3(LinearEncodePowerApprox));
+        return pow(color, vec3(LinearEncodePowerApprox));
     #endif
 }
 
 vec4 toLinearSpace(vec4 color)
 {
     #if USEEXACTSRGBCONVERSIONS
-    return vec4(toLinearSpaceExact(color.rgb), color.a);
+        return vec4(toLinearSpaceExact(color.rgb), color.a);
     #else
-    return vec4(pow(color.rgb, vec3(LinearEncodePowerApprox)), color.a);
-    #endif
-}
-
-vec3 toGammaSpace(vec3 color)
-{
-    #if USEEXACTSRGBCONVERSIONS
-    return toGammaSpaceExact(color);
-    #else
-    return pow(color, vec3(GammaEncodePowerApprox));
-    #endif
-}
-
-vec4 toGammaSpace(vec4 color)
-{
-    #if USEEXACTSRGBCONVERSIONS
-    return vec4(toGammaSpaceExact(color.rgb), color.a);
-    #else
-    return vec4(pow(color.rgb, vec3(GammaEncodePowerApprox)), color.a);
+        return vec4(pow(color.rgb, vec3(LinearEncodePowerApprox)), color.a);
     #endif
 }
 
 float toGammaSpace(float color)
 {
     #if USEEXACTSRGBCONVERSIONS
-    float nearZeroSection = 12.92 * color;
-    float remainingSection = 1.055 * pow(color, 0.416666667) - 0.055;
-    return color <= 0.0031308 ? nearZeroSection : remainingSection;
+        float nearZeroSection = 12.92 * color;
+        float remainingSection = 1.055 * pow(color, 0.41666) - 0.055;
+        return color <= 0.0031308 ? nearZeroSection : remainingSection;
     #else
-    return pow(color, GammaEncodePowerApprox);
+        return pow(color, GammaEncodePowerApprox);
+    #endif
+}
+
+vec3 toGammaSpace(vec3 color)
+{
+    #if USEEXACTSRGBCONVERSIONS
+        return toGammaSpaceExact(color);
+    #else
+        return pow(color, vec3(GammaEncodePowerApprox));
+    #endif
+}
+
+vec4 toGammaSpace(vec4 color)
+{
+    #if USEEXACTSRGBCONVERSIONS
+        return vec4(toGammaSpaceExact(color.rgb), color.a);
+    #else
+        return vec4(pow(color.rgb, vec3(GammaEncodePowerApprox)), color.a);
     #endif
 }
 

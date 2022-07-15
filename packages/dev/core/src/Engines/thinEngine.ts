@@ -166,7 +166,7 @@ export interface EngineOptions extends WebGLContextAttributes {
      */
     forceSRGBBufferSupportState?: boolean;
     /**
-     * True if the more expensive but exact conversion should be used for transforming colors to and from linear space within shaders.
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
      * Otherwise, the default is to use a cheaper approximation.
      */
     useExactSrgbConversions?: boolean;
@@ -705,7 +705,7 @@ export class ThinEngine {
 
     protected _useExactSrgbConversions = false;
     /**
-     * Gets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
+     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
      */
     public get useExactSrgbConversions(): boolean {
         return this._useExactSrgbConversions;
