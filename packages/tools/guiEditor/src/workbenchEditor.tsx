@@ -13,7 +13,7 @@ import { GizmoWrapper } from "./diagram/gizmoWrapper";
 import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
 import type { Control } from "gui/2D/controls/control";
-import { ControlTypes, ControlTypesFHalf, ControlTypesSHalf} from "./controlTypes";
+import { ControlTypes, ControlTypesFHalf, ControlTypesSHalf } from "./controlTypes";
 
 import "./main.scss";
 import "./scss/header.scss";
@@ -101,7 +101,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
-    
+
         this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
@@ -195,73 +195,73 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             }
         }
     };
-    switchExpandedState(): void { 
-        this.setState({ toolbarExpand: !this.state.toolbarExpand});
-    };
-    
+    switchExpandedState(): void {
+        this.setState({ toolbarExpand: !this.state.toolbarExpand });
+    }
+
     render() {
-        if(this.state.toolbarExpand){ return (
-            <Portal globalState={this.props.globalState}>
-                <div id="ge-header">
-                    <div className="command-bar">
-                        <CommandBarComponent globalState={this.props.globalState} />
+        if (this.state.toolbarExpand) {
+            return (
+                <Portal globalState={this.props.globalState}>
+                    <div id="ge-header">
+                        <div className="command-bar">
+                            <CommandBarComponent globalState={this.props.globalState} />
+                        </div>
                     </div>
-                </div>
-                <div
-                    id="gui-editor-workbench-root"
-                    style={{
-                        gridTemplateColumns: this.buildColumnLayout(),
-                    }}
-                    onMouseDown={(evt) => {
-                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
-                            return;
-                        }
-                    }}
-                    ref={this._rootRef}
-                    onPointerUp={(evt) => this.onPointerUp(evt)}
-                >
-                    {/* Node creation menu */}
-                    <div className="left-panel">
+                    <div
+                        id="gui-editor-workbench-root"
+                        style={{
+                            gridTemplateColumns: this.buildColumnLayout(),
+                        }}
+                        onMouseDown={(evt) => {
+                            if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                                return;
+                            }
+                        }}
+                        ref={this._rootRef}
+                        onPointerUp={(evt) => this.onPointerUp(evt)}
+                    >
+                        {/* Node creation menu */}
+                        <div className="left-panel">
+                            <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
+                            {this.createToolbar()}
+                            <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
+                        </div>
                         <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                         {this.createToolbar()}
-                        <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
-                    </div>
-                    <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
-                    {this.createToolbar()}
-                    {/* The gui workbench diagram */}
-                    <div
-                        className="diagram-container"
-                        onDrop={(event) => {
-                            event.preventDefault();
-                            this.props.globalState.onDropObservable.notifyObservers();
-                            this.props.globalState.onParentingChangeObservable.notifyObservers(null);
-                        }}
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                        }}
-                        style={{
-                            backgroundColor: this.props.globalState.backgroundColor.toHexString(),
-                        }}
-                    >
-                        <ArtBoardComponent globalState={this.props.globalState} />
-                        <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
-                        <GizmoWrapper globalState={this.props.globalState} />
-                    </div>
-                    {/* Property tab */}
-                    <div className="right-panel">
-                        <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
-                        <PropertyTabComponent globalState={this.props.globalState} />
-                    </div>
+                        {/* The gui workbench diagram */}
+                        <div
+                            className="diagram-container"
+                            onDrop={(event) => {
+                                event.preventDefault();
+                                this.props.globalState.onDropObservable.notifyObservers();
+                                this.props.globalState.onParentingChangeObservable.notifyObservers(null);
+                            }}
+                            onDragOver={(event) => {
+                                event.preventDefault();
+                            }}
+                            style={{
+                                backgroundColor: this.props.globalState.backgroundColor.toHexString(),
+                            }}
+                        >
+                            <ArtBoardComponent globalState={this.props.globalState} />
+                            <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                            <GizmoWrapper globalState={this.props.globalState} />
+                        </div>
+                        {/* Property tab */}
+                        <div className="right-panel">
+                            <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
+                            <PropertyTabComponent globalState={this.props.globalState} />
+                        </div>
 
-                    <LogComponent globalState={this.props.globalState} />
-                </div>
-                <MessageDialogComponent globalState={this.props.globalState} />
-                <div className="blocker">GUI Editor runs only on desktop</div>
-                <div className="wait-screen hidden">Processing...please wait</div>
-            </Portal>
-        ); 
-        }
-        else{
+                        <LogComponent globalState={this.props.globalState} />
+                    </div>
+                    <MessageDialogComponent globalState={this.props.globalState} />
+                    <div className="blocker">GUI Editor runs only on desktop</div>
+                    <div className="wait-screen hidden">Processing...please wait</div>
+                </Portal>
+            );
+        } else {
             return (
                 <Portal globalState={this.props.globalState}>
                     <div id="ge-header">
@@ -314,7 +314,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             <div id="rightGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt, false)}></div>
                             <PropertyTabComponent globalState={this.props.globalState} />
                         </div>
-    
+
                         <LogComponent globalState={this.props.globalState} />
                     </div>
                     <MessageDialogComponent globalState={this.props.globalState} />
@@ -322,8 +322,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <div className="wait-screen hidden">Processing...please wait</div>
                 </Portal>
             );
-        } 
-        
+        }
     }
 
     onCreate(value: string): Control {
@@ -335,16 +334,18 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         return newGuiNode;
     }
     createToolbar() {
-        const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />; 
-        if(this.state.toolbarExpand){
+        const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />;
+        if (this.state.toolbarExpand) {
             return (
                 <>
                     <div id="toolbarGrab">
-                        {<div className="blackLine">
-                            <div className="arrow" onClick={() => this.switchExpandedState()}> 
-                                {icon}
+                        {
+                            <div className="blackLine">
+                                <div className="arrow" onClick={() => this.switchExpandedState()}>
+                                    {icon}
+                                </div>
                             </div>
-                         </div>}
+                        }
                         {
                             <div className={"toolbar-content-sub1"}>
                                 {ControlTypes.map((type) => {
@@ -373,16 +374,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     </div>
                 </>
             );
-        }
-        else{
+        } else {
             return (
                 <>
                     <div id="toolbarGrabExpanded">
-                        {<div className="blackLine">
-                            <div className="arrow" onClick={() => this.switchExpandedState()}> 
-                                {icon}
+                        {
+                            <div className="blackLine">
+                                <div className="arrow" onClick={() => this.switchExpandedState()}>
+                                    {icon}
+                                </div>
                             </div>
-                         </div>}
+                        }
                         {
                             <div className={"toolbar-content-sub1"}>
                                 {ControlTypesFHalf.map((type) => {
@@ -427,15 +429,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                         </div>
                                     );
                                 })}
-                                {
-                        }
+                                {}
                             </div>
                         }
                     </div>
                 </>
             );
-            
         }
-        
     }
 }
