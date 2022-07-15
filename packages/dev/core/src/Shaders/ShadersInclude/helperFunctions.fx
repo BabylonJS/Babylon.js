@@ -51,7 +51,7 @@ vec3 toLinearSpaceExact(vec3 color)
     vec3 nearZeroSection = 0.0773993808 * color;
     vec3 remainingSection = pow(0.947867299 * (color + vec3(0.055)), vec3(2.4));
     #if defined(WEBGL2) || defined(WEBGPU)
-        return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.01)));
+        return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.04045)));
     #else
         return
             vec3(
@@ -66,7 +66,7 @@ vec3 toGammaSpaceExact(vec3 color)
     vec3 nearZeroSection = 12.92 * color;
     vec3 remainingSection = 1.055 * pow(color, vec3(0.416666667)) - vec3(0.055);
     #if defined(WEBGL2) || defined(WEBGPU)
-        return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.01)));
+        return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.0031308)));
     #else
         return
             vec3(
