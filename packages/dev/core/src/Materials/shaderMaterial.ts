@@ -834,6 +834,10 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        if (engine.useExactSrgbConversions) {
+            defines.push("#define USEEXACTSRGBCONVERSIONS");
+        }
+
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();

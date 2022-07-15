@@ -204,19 +204,6 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
-     */
-    public get useExactSrgbConversions(): boolean {
-        return this._imageProcessingConfiguration.useExactSrgbConversions;
-    }
-    /**
-     * Sets whether the exact sRGB conversion or a faster approximate conversion is used for converting to and from linear space.
-     */
-    public set useExactSrgbConversions(value: boolean) {
-        this._imageProcessingConfiguration.useExactSrgbConversions = value;
-    }
-
-    /**
      * Gets contrast used in the effect.
      */
     public get contrast(): number {
@@ -421,7 +408,7 @@ export class ImageProcessingPostProcess extends PostProcess {
      */
     public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
-        this.imageProcessingConfiguration.prepareDefines(this._defines, true);
+        this.imageProcessingConfiguration.prepareDefines(this._defines, true, this.getEngine().useExactSrgbConversions);
         let defines = "";
         for (const define in this._defines) {
             if ((<any>this._defines)[define]) {
