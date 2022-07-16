@@ -1339,7 +1339,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (this._imageProcessingConfiguration) {
-            this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines, false);
+            this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
             defines.push("" + this._imageProcessingConfigurationDefines.toString());
         }
     }
