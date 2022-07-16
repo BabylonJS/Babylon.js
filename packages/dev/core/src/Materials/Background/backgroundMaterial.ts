@@ -137,7 +137,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
     public MULTIVIEW = false;
-    public USEEXACTSRGBCONVERSIONS = false;
 
     // Reflection.
     public REFLECTION = false;
@@ -833,7 +832,7 @@ export class BackgroundMaterial extends PushMaterial {
                 return false;
             }
 
-            this._imageProcessingConfiguration.prepareDefines(defines, false, engine.useExactSrgbConversions);
+            this._imageProcessingConfiguration.prepareDefines(defines, false);
         }
 
         // Misc.

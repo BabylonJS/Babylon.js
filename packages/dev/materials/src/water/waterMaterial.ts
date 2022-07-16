@@ -74,7 +74,6 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
-    public USEEXACTSRGBCONVERSIONS = false;
 
     constructor() {
         super();
@@ -382,7 +381,7 @@ export class WaterMaterial extends PushMaterial {
                 return false;
             }
 
-            this._imageProcessingConfiguration.prepareDefines(defines, false, engine.useExactSrgbConversions);
+            this._imageProcessingConfiguration.prepareDefines(defines, false);
 
             defines.IS_REFLECTION_LINEAR = this.reflectionTexture != null && !this.reflectionTexture.gammaSpace;
             defines.IS_REFRACTION_LINEAR = this.refractionTexture != null && !this.refractionTexture.gammaSpace;

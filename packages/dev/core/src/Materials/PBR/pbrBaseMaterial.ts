@@ -222,7 +222,6 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
     public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
-    public USEEXACTSRGBCONVERSIONS = false;
 
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
@@ -1801,7 +1800,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
-            this._imageProcessingConfiguration.prepareDefines(defines, false, engine.useExactSrgbConversions);
+            this._imageProcessingConfiguration.prepareDefines(defines, false);
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;

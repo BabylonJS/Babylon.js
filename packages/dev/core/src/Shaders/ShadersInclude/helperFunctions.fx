@@ -45,7 +45,10 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
-#if USEEXACTSRGBCONVERSIONS
+// The linear and gamma space conversions below are used to transform linear colors to and from the sRGB colorspace.
+// The conversions are described in more detail here: https://en.wikipedia.org/wiki/SRGB#Transformation
+
+#if USE_EXACT_SRGB_CONVERSIONS
 vec3 toLinearSpaceExact(vec3 color)
 {
     vec3 nearZeroSection = 0.0773993808 * color;
@@ -79,7 +82,7 @@ vec3 toGammaSpaceExact(vec3 color)
 
 float toLinearSpace(float color)
 {
-    #if USEEXACTSRGBCONVERSIONS
+    #if USE_EXACT_SRGB_CONVERSIONS
         float nearZeroSection = 0.0773993808 * color;
         float remainingSection = pow(0.947867299 * (color + 0.055), 2.4);
         return color <= 0.04045 ? nearZeroSection : remainingSection;
@@ -90,7 +93,7 @@ float toLinearSpace(float color)
 
 vec3 toLinearSpace(vec3 color)
 {
-    #if USEEXACTSRGBCONVERSIONS
+    #if USE_EXACT_SRGB_CONVERSIONS
         return toLinearSpaceExact(color);
     #else
         return pow(color, vec3(LinearEncodePowerApprox));
@@ -99,7 +102,7 @@ vec3 toLinearSpace(vec3 color)
 
 vec4 toLinearSpace(vec4 color)
 {
-    #if USEEXACTSRGBCONVERSIONS
+    #if USE_EXACT_SRGB_CONVERSIONS
         return vec4(toLinearSpaceExact(color.rgb), color.a);
     #else
         return vec4(pow(color.rgb, vec3(LinearEncodePowerApprox)), color.a);
@@ -108,7 +111,7 @@ vec4 toLinearSpace(vec4 color)
 
 float toGammaSpace(float color)
 {
-    #if USEEXACTSRGBCONVERSIONS
+    #if USE_EXACT_SRGB_CONVERSIONS
         float nearZeroSection = 12.92 * color;
         float remainingSection = 1.055 * pow(color, 0.41666) - 0.055;
         return color <= 0.0031308 ? nearZeroSection : remainingSection;
@@ -119,7 +122,7 @@ float toGammaSpace(float color)
 
 vec3 toGammaSpace(vec3 color)
 {
-    #if USEEXACTSRGBCONVERSIONS
+    #if USE_EXACT_SRGB_CONVERSIONS
         return toGammaSpaceExact(color);
     #else
         return pow(color, vec3(GammaEncodePowerApprox));
@@ -128,7 +131,7 @@ vec3 toGammaSpace(vec3 color)
 
 vec4 toGammaSpace(vec4 color)
 {
-    #if USEEXACTSRGBCONVERSIONS
+    #if USE_EXACT_SRGB_CONVERSIONS
         return vec4(toGammaSpaceExact(color.rgb), color.a);
     #else
         return vec4(pow(color.rgb, vec3(GammaEncodePowerApprox)), color.a);

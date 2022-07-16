@@ -31,7 +31,6 @@ export interface IImageProcessingConfigurationDefines {
     SAMPLER3DBGRMAP: boolean;
     IMAGEPROCESSINGPOSTPROCESS: boolean;
     SKIPFINALCOLORCLAMP: boolean;
-    USEEXACTSRGBCONVERSIONS: boolean;
 }
 
 /**
@@ -53,7 +52,6 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
     public SKIPFINALCOLORCLAMP = false;
-    public USEEXACTSRGBCONVERSIONS = false;
 
     constructor() {
         super();
@@ -466,9 +464,8 @@ export class ImageProcessingConfiguration {
      * Prepare the list of defines associated to the shader.
      * @param defines the list of defines to complete
      * @param forPostProcess Define if we are currently in post process mode or not
-     * @param useExactSrgbConversions true if the engine is using exact srgb conversions
      */
-    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false, useExactSrgbConversions = false): void {
+    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
             defines.VIGNETTE = false;
             defines.TONEMAPPING = false;
@@ -479,7 +476,6 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
-            defines.USEEXACTSRGBCONVERSIONS = useExactSrgbConversions;
             defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
@@ -498,8 +494,6 @@ export class ImageProcessingConfiguration {
                 defines.TONEMAPPING_ACES = false;
                 break;
         }
-
-        defines.USEEXACTSRGBCONVERSIONS = useExactSrgbConversions;
 
         defines.CONTRAST = this.contrast !== 1.0;
         defines.EXPOSURE = this.exposure !== 1.0;
