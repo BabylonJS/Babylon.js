@@ -1805,7 +1805,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._imageProcessingConfiguration) {
-            this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines, false, this._engine.useExactSrgbConversions);
+            this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines, false);
             defines.push(this._imageProcessingConfigurationDefines.toString());
         }
     }

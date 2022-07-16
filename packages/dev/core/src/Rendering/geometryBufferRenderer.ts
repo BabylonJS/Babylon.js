@@ -571,12 +571,8 @@ export class GeometryBufferRenderer {
             defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
         }
 
-        const engine = this._scene.getEngine();
-        if (engine.useExactSrgbConversions) {
-            defines.push("#define USEEXACTSRGBCONVERSIONS");
-        }
-
         // Get correct effect
+        const engine = this._scene.getEngine();
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");

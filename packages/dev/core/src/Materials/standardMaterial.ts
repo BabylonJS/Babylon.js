@@ -180,7 +180,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
     public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
-    public USEEXACTSRGBCONVERSIONS = false;
 
     /**
      * If the reflection texture on this material is in linear color space
@@ -1123,7 +1122,7 @@ export class StandardMaterial extends PushMaterial {
                 return false;
             }
 
-            this._imageProcessingConfiguration.prepareDefines(defines, false, engine.useExactSrgbConversions);
+            this._imageProcessingConfiguration.prepareDefines(defines, false);
 
             defines.IS_REFLECTION_LINEAR = this.reflectionTexture != null && !this.reflectionTexture.gammaSpace;
             defines.IS_REFRACTION_LINEAR = this.refractionTexture != null && !this.refractionTexture.gammaSpace;

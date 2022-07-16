@@ -357,7 +357,6 @@ export class ImageProcessingPostProcess extends PostProcess {
         COLORGRADING: false,
         COLORGRADING3D: false,
         FROMLINEARSPACE: false,
-        USEEXACTSRGBCONVERSIONS: false,
         SAMPLER3DGREENDEPTH: false,
         SAMPLER3DBGRMAP: false,
         IMAGEPROCESSINGPOSTPROCESS: false,
@@ -408,7 +407,7 @@ export class ImageProcessingPostProcess extends PostProcess {
      */
     public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
-        this.imageProcessingConfiguration.prepareDefines(this._defines, true, this.getEngine().useExactSrgbConversions);
+        this.imageProcessingConfiguration.prepareDefines(this._defines, true);
         let defines = "";
         for (const define in this._defines) {
             if ((<any>this._defines)[define]) {

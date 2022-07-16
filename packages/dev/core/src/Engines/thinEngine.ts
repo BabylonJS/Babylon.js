@@ -2726,6 +2726,11 @@ export class ThinEngine {
             } else {
                 delete defines["USE_REVERSE_DEPTHBUFFER"];
             }
+            if (this.useExactSrgbConversions) {
+                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+            } else {
+                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+            }
             return;
         } else {
             let s = "";
@@ -2737,6 +2742,12 @@ export class ThinEngine {
                     s += "\n";
                 }
                 s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            if (this.useExactSrgbConversions) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_EXACT_SRGB_CONVERSIONS";
             }
             return s;
         }
