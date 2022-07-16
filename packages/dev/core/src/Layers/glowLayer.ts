@@ -92,6 +92,11 @@ export interface IGlowLayerOptions {
      * Defines the blend mode used by the merge
      */
     alphaBlendingMode?: number;
+
+    /**
+     * Defines the sampling mode used by the blur textures.
+     */
+    samplingMode?: number;
 }
 
 /**
@@ -196,6 +201,7 @@ export class GlowLayer extends EffectLayer {
             renderingGroupId: -1,
             ldrMerge: false,
             alphaBlendingMode: Constants.ALPHA_ADD,
+            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             ...options,
         };
 
@@ -260,7 +266,7 @@ export class GlowLayer extends EffectLayer {
         );
         this._blurTexture1.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._blurTexture1.wrapV = Texture.CLAMP_ADDRESSMODE;
-        this._blurTexture1.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+        this._blurTexture1.updateSamplingMode(<number>(this._options.samplingMode));
         this._blurTexture1.renderParticles = false;
         this._blurTexture1.ignoreCameraViewport = true;
 
@@ -280,7 +286,7 @@ export class GlowLayer extends EffectLayer {
         );
         this._blurTexture2.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._blurTexture2.wrapV = Texture.CLAMP_ADDRESSMODE;
-        this._blurTexture2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+        this._blurTexture2.updateSamplingMode(<number>(this._options.samplingMode));
         this._blurTexture2.renderParticles = false;
         this._blurTexture2.ignoreCameraViewport = true;
 

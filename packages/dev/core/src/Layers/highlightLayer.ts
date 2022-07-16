@@ -115,6 +115,11 @@ export interface IHighlightLayerOptions {
     alphaBlendingMode: number;
 
     /**
+     * Defines the sampling mode used by the blur textures.
+     */
+    samplingMode?: number;
+
+    /**
      * The camera attached to the layer.
      */
     camera: Nullable<Camera>;
@@ -293,6 +298,7 @@ export class HighlightLayer extends EffectLayer {
             blurHorizontalSize: 1.0,
             blurVerticalSize: 1.0,
             alphaBlendingMode: Constants.ALPHA_COMBINE,
+            samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
             camera: null,
             renderingGroupId: -1,
             ...options,
@@ -362,7 +368,7 @@ export class HighlightLayer extends EffectLayer {
         this._blurTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._blurTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._blurTexture.anisotropicFilteringLevel = 16;
-        this._blurTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+        this._blurTexture.updateSamplingMode(<number>(this._options.samplingMode));
         this._blurTexture.renderParticles = false;
         this._blurTexture.ignoreCameraViewport = true;
 
