@@ -1800,7 +1800,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
-            this._imageProcessingConfiguration.prepareDefines(defines, false);
+            this._imageProcessingConfiguration.prepareDefines(defines);
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;

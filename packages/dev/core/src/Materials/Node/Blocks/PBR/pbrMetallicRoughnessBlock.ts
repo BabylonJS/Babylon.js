@@ -724,7 +724,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
-            nodeMaterial.imageProcessingConfiguration.prepareDefines(defines, false);
+            nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
         }
 
         if (!defines._areLightsDirty) {

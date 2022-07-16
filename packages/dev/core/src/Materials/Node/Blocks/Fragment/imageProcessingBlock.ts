@@ -88,7 +88,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
-            nodeMaterial.imageProcessingConfiguration.prepareDefines(defines, false);
+            nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
         }
     }
 

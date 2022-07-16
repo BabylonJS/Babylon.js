@@ -832,7 +832,7 @@ export class BackgroundMaterial extends PushMaterial {
                 return false;
             }
 
-            this._imageProcessingConfiguration.prepareDefines(defines, false);
+            this._imageProcessingConfiguration.prepareDefines(defines);
         }
 
         // Misc.
