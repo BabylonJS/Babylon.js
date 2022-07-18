@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { ArrayItem, RegisterExtension } from "../BaseLoader";
-import { GLEFLoader } from "../glEFLoader";
-import { IGLEFLoaderExtension } from "../glEFLoaderExtension";
+import type { GLEFLoader } from "../glEFLoader";
+import type { IGLEFLoaderExtension } from "../glEFLoaderExtension";
 import { EventTrigger } from "core/Actions/VSM/Triggers/EventTrigger";
 import { TapTrigger } from "core/Actions/VSM/Triggers/TapTrigger";
 import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
+import { RotateAction } from "core/Actions/VSM/Actions/RotateAction";
 import { ShowAction } from "core/Actions/VSM/Actions/ShowAction";
 import { HideAction } from "core/Actions/VSM/Actions/HideAction";
 import { Animation } from "core/Animations/animation";
 
 import { EasingFunction, QuadraticEase } from "core/Animations/easing";
-import { Vector3 } from "core/Maths/math.vector";
+import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import type { IActionOptions } from "core/Actions/VSM/Actions/BaseAction";
 
 const NAME = "KHR_interactivity";
 
@@ -130,16 +132,37 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
 
     private _generateAction(actionData: { type: string; parameters?: { subject?: number; [key: string]: any }; next?: number; parallel?: number }) {
         const subject = this._getSubjectForData(actionData.parameters?.subject);
+        // get the next action and parallel action, if defined
+        // TODO - cache actions to not create an infinite loop if two actions reference themselves
+        const nextAction = actionData.next !== undefined ? this._generateAction(this._actions[actionData.next]) : null;
+        const parallelAction = actionData.parallel !== undefined ? this._generateAction(this._actions[actionData.parallel]) : null;
+
+        console.log("subject", subject);
+        const options: IActionOptions = {
+            playCount: actionData.parameters?.playCount,
+            repeatUntilStopped: !actionData.parameters?.playCount,
+            delay: actionData.parameters?.delay,
+            nextActions: nextAction ? [nextAction] : [],
+            parallelActions: parallelAction ? [parallelAction] : [],
+        };
         // TODO handle the other action types
         switch (actionData.type) {
             case "spin":
                 return new SpinAction({
                     subject,
+                    ...options,
+                });
+            case "rotate":
+                return new RotateAction({
+                    subject,
+                    rotationQuaternion: Quaternion.FromArray(actionData.parameters?.rotation),
+                    duration: (actionData.parameters?.duration !== undefined) ?  actionData.parameters?.duration * 1000 : undefined,
+                    ...options,
                 });
             case "hide":
             case "show": {
                 // calculate "fps" with duration
-                const fps = 100 / (actionData.parameters?.duration || 1);
+                const fps = 100;
                 // for now, create the animation here until the architecture change
                 let animation: Animation | undefined = undefined;
                 // no animation when it is 0 or undefined
@@ -156,7 +179,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                                 value: actionData.type === "hide" ? subject.scaling.clone() : new Vector3(0, 0, 0),
                             },
                             {
-                                frame: 100,
+                                frame: fps,
                                 value: actionData.type === "show" ? subject.scaling.clone() : new Vector3(0, 0, 0),
                             },
                         ]);
@@ -174,7 +197,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                                 value: actionData.type === "hide" ? 1 : 0,
                             },
                             {
-                                frame: 100,
+                                frame: fps,
                                 value: actionData.type === "show" ? 1 : 0,
                             },
                         ]);
@@ -203,11 +226,13 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     ? new HideAction({
                           subject,
                           hideAnimation: animation,
+                          duration: (actionData.parameters?.duration !== undefined) ?  actionData.parameters?.duration * 1000 : undefined,
                           applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
                       })
                     : new ShowAction({
                           subject,
                           animation,
+                          duration: (actionData.parameters?.duration !== undefined) ?  actionData.parameters?.duration * 1000 : undefined,
                           applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
                       });
             }
@@ -225,9 +250,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                 }
             }
             if (typeof actionData.parallel === "number") {
-                const parallelAction = this._processAction(
-                    ArrayItem.Get(`actions/${actionData.parallel}`, this._actions /* as IAction[]*/, actionData.parallel)
-                );
+                const parallelAction = this._processAction(ArrayItem.Get(`actions/${actionData.parallel}`, this._actions /* as IAction[]*/, actionData.parallel));
                 if (parallelAction) {
                     actionForData.parallelActions.push(parallelAction);
                 }

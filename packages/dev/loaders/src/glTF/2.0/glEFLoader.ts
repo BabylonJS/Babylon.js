@@ -1,23 +1,26 @@
-import { IProperty } from "babylonjs-gltf2interface";
-import { AssetContainer } from "core/assetContainer";
-import { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoader } from "core/Loading/sceneLoader";
+import type { IProperty } from "babylonjs-gltf2interface";
+import type { AssetContainer } from "core/assetContainer";
+import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent} from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 
 import { BehaviorManager } from "core/Actions/VSM/behaviorManager";
-import { AbstractFileLoader, ILoader, ILoaderData, LoaderState } from "../abstractFileLoader";
+import type { AbstractFileLoader, ILoader, ILoaderData} from "../abstractFileLoader";
+import { LoaderState } from "../abstractFileLoader";
 import type { GLEFFileLoader } from "../glEFFileLoader";
-import { GLTFFileLoader } from "../glTFFileLoader";
-import { ArrayItem, ILoaderProperty, registeredExtensions } from "./BaseLoader";
-import { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
-import { IGLEFLoaderExtension } from "./glEFLoaderExtension";
-import { GLTFLoader } from "./glTFLoader";
-import { INode, IScene } from "./glTFLoaderInterfaces";
+import type { GLTFFileLoader } from "../glTFFileLoader";
+import type { ILoaderProperty} from "./BaseLoader";
+import { ArrayItem, registeredExtensions } from "./BaseLoader";
+import type { IBaseLoaderExtension } from "./Extensions/BaseLoaderExtension";
+import type { IGLEFLoaderExtension } from "./glEFLoaderExtension";
+import type { GLTFLoader } from "./glTFLoader";
+import type { INode, IScene } from "./glTFLoaderInterfaces";
 
 export class GLEFLoader implements ILoader {
     /** @hidden */
