@@ -165,6 +165,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+    /**
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
+     * Otherwise, the default is to use a cheaper approximation.
+     */
+    useExactSrgbConversions?: boolean;
 }
 
 /**
@@ -698,6 +703,14 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
+    protected _useExactSrgbConversions = false;
+    /**
+     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
+     */
+    public get useExactSrgbConversions(): boolean {
+        return this._useExactSrgbConversions;
+    }
+
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
      */
@@ -813,6 +826,10 @@ export class ThinEngine {
 
             if (options.xrCompatible === undefined) {
                 options.xrCompatible = true;
+            }
+
+            if (options.useExactSrgbConversions !== undefined) {
+                this._useExactSrgbConversions = options.useExactSrgbConversions;
             }
 
             this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
@@ -2709,6 +2726,11 @@ export class ThinEngine {
             } else {
                 delete defines["USE_REVERSE_DEPTHBUFFER"];
             }
+            if (this.useExactSrgbConversions) {
+                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+            } else {
+                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+            }
             return;
         } else {
             let s = "";
@@ -2720,6 +2742,12 @@ export class ThinEngine {
                     s += "\n";
                 }
                 s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            if (this.useExactSrgbConversions) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_EXACT_SRGB_CONVERSIONS";
             }
             return s;
         }
