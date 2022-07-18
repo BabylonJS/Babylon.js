@@ -7,7 +7,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.

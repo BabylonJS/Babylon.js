@@ -12,7 +12,7 @@ import { Epsilon } from "../../Maths/math.constants";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Firefox uses a different scheme to report scroll distances to other
