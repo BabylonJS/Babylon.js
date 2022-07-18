@@ -60,8 +60,8 @@ declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper
  * @hidden
  */
 export interface ISceneLike {
-    _addPendingData(data: any): void;
-    _removePendingData(data: any): void;
+    addPendingData(data: any): void;
+    removePendingData(data: any): void;
     offlineProvider: IOfflineProvider;
 }
 
@@ -3910,7 +3910,7 @@ export class ThinEngine {
         }
 
         if (scene) {
-            scene._addPendingData(texture);
+            scene.addPendingData(texture);
         }
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -3934,7 +3934,7 @@ export class ThinEngine {
 
         const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             if (url === originalUrl) {
@@ -4702,7 +4702,7 @@ export class ThinEngine {
 
         // this.resetTextureCache();
         if (scene) {
-            scene._removePendingData(texture);
+            scene.removePendingData(texture);
         }
 
         texture.onLoadedObservable.notifyObservers(texture);
@@ -4739,7 +4739,7 @@ export class ThinEngine {
         if (!texture._hardwareTexture) {
             //  this.resetTextureCache();
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             return;

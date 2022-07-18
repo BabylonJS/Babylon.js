@@ -2271,7 +2271,7 @@ export class NativeEngine extends Engine {
         }
 
         if (scene) {
-            scene._addPendingData(texture);
+            scene.addPendingData(texture);
         }
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -2295,7 +2295,7 @@ export class NativeEngine extends Engine {
 
         const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             if (url === originalUrl) {
@@ -2324,7 +2324,7 @@ export class NativeEngine extends Engine {
             const onload = (data: ArrayBufferView) => {
                 if (!texture._hardwareTexture) {
                     if (scene) {
-                        scene._removePendingData(texture);
+                        scene.removePendingData(texture);
                     }
 
                     return;
@@ -2349,7 +2349,7 @@ export class NativeEngine extends Engine {
                         this._setTextureSampling(underlyingResource, filter);
 
                         if (scene) {
-                            scene._removePendingData(texture);
+                            scene.removePendingData(texture);
                         }
 
                         texture.onLoadedObservable.notifyObservers(texture);
