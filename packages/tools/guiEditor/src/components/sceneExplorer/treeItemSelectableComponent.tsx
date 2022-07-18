@@ -234,7 +234,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                         dragOverLocation={this.state.dragOverLocation}
                     />
                 </div>
-                {this.renderChildren(this.state.isExpanded)}
+                {this.renderChildren(isExpanded)}
             </div>
         );
     }
