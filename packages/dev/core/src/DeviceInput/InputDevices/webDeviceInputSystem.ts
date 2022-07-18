@@ -296,9 +296,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         if (!this._inputs[deviceType][deviceSlot]) {
             const device = new Array<number>(numberOfInputs);
 
-            for (let i = 0; i < numberOfInputs; i++) {
-                device[i] = 0; /* set device input as unpressed */
-            }
+            device.fill(0);
 
             this._inputs[deviceType][deviceSlot] = device;
             this._onDeviceConnected(deviceType, deviceSlot);

@@ -8,6 +8,7 @@ import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComp
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
 import pointerIcon from "../imgs/pointerIcon.svg";
@@ -60,8 +61,12 @@ const MAX_TEXTURE_SIZE = 16384; //2^14
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _sizeOption: number = 0;
     private _stopUpdating: boolean = false;
+    private _lockObject: LockObject;
+
     public constructor(props: ICommandBarComponentProps) {
         super(props);
+
+        this._lockObject = new LockObject();
 
         props.globalState.onToolChangeObservable.add(() => {
             this.forceUpdate();
@@ -205,7 +210,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         />
                     </div>
                     <div className="divider padded">
-                        <ColorLineComponent label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
+                        <ColorLineComponent lockObject={this._lockObject} label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
                     </div>
                     <div className="divider padded">
                         <CheckBoxLineComponent
@@ -245,6 +250,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         {!DataStorage.ReadBoolean("Responsive", true) && (
                             <>
                                 <FloatLineComponent
+                                    lockObject={this._lockObject}
                                     label="W"
                                     target={size}
                                     propertyName="width"
@@ -266,6 +272,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     isInteger={true}
                                 />
                                 <FloatLineComponent
+                                    lockObject={this._lockObject}
                                     label="H"
                                     target={size}
                                     propertyName="height"

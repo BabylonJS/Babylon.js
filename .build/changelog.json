@@ -1,7 +1,749 @@
 {
-    "fromTag": "5.12.1",
+    "fromTag": "5.15.0",
     "changelog": {
-        "5.12.1": [],
+        "5.15.1": [
+            {
+                "pr": "12749",
+                "title": "Fix colorline incorrect use of hex line",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12746",
+                "title": "Add VirtualKeyboard support to InputTextArea",
+                "description": "This PR adds VirtualKeyboard support to InputTextArea.\r\n\r\nI check  if `this._currentlyConnectedInputText instanceof InputTextArea` to call matching method `this._currentlyConnectedInputText.alternativeProcessKey`, or call `processKey` for InputText.\r\n\r\nBesides, pass different parameters for the input of `Enter` and `Backspace`.\r\n```\r\ninputText.processKey(8);\r\ninputTextArea.alternativeProcessKey('Backspace');\r\n```\r\n\r\n\r\nSo that an InputTextArea could be connected by a VirtualKeyboard and respond to virtual keyboard input.\r\n```\r\nconst textarea = new InputTextArea('Textarea');\r\nconst keyboard = new VirtualKeyboard('Keyboard');\r\nkeyboard.connect(textarea);\r\n\r\n```\r\n \r\nDiscussed in https://forum.babylonjs.com/t/improve-gui-virtualkeyboard-to-support-inputtextarea/32108.",
+                "author": {
+                    "name": "ycaptain",
+                    "url": "https://github.com/ycaptain"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/virtualKeyboard.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12747",
+                "title": "Fix copy pasting of frames.",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": []
+            }
+        ],
+        "5.15.0": [
+            {
+                "pr": "12744",
+                "title": "Make sure legacy support doesn't throw exceptions",
+                "description": "When loading the framework twice on the same page an exception was thrown, as we were re-setting unsettable parameters.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/lts/core/src/Legacy/legacy.ts",
+                    "packages/lts/gui/src/legacy/legacy.ts",
+                    "packages/lts/loaders/src/legacy/legacy-objFileLoader.ts",
+                    "packages/lts/loaders/src/legacy/legacy-stlFileLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12743",
+                "title": "If controls are reordered, relink them to mesh",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-control-zindex-update-unlinks-mesh/32113",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12738",
+                "title": "Do not style overlay if custom buttons provided",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXREnterExitUI.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12741",
+                "title": "Pass ortho camera values down to rigCameras",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/is-a-camera-able-to-be-both-anaglyphic-and-orthographic/31887/6",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12740",
+                "title": "Fix internal plugins that use prepareDefines",
+                "description": "Stemming from this [prev PR](https://github.com/BabylonJS/Babylon.js/pull/12643) prepareDefines is now called after PrepareDefinesForAttributes so that the plugin's defines aren't overwritten. However some of the built-in plugins rely on prepareDefines being called before PrepareDefinesForAttributes (in particular the ones that call PrepareDefinesForMergedUV which needs to be called before PrepareDefinesForAttributes).\r\n\r\nSo this PR just changes these plugins to use prepareDefinesBeforeAttributes, which is called before PrepareDefinesForAttributes to match the original behavior (this is the same fix that was created for the PBRAnisotropicConfiguration plugin in the original PR, which I thought was the only one affected).\r\n\r\nForum issue about the PBRSheenConfiguration plugin: https://forum.babylonjs.com/t/texture-not-displaying-for-sheen-extension/32110",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrClearCoatConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrIridescenceConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSheenConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12742",
+                "title": "Shortcuts for search and placement",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/portData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12725",
+                "title": "Export method 'CreateDiscVertexData'",
+                "description": "Exports the local method `CreateDiscVertexData` so it is accessible outside of `discBuilder.ts`",
+                "author": {
+                    "name": "chapmankyle",
+                    "url": "https://github.com/chapmankyle"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/discBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12739",
+                "title": "Fix gizmos on elements with padded parents",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/gizmoGeneric.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "12737",
+                "title": "Automatically change hardware scaling based on browser zoom level",
+                "description": "Fixes #12711\nThis does 2 things:\n1) If adapt to device ratio is turned on we are using the delta between the last recorded device pixel ratio and the current one to change the hardware scaling rate.\n2) adaptToDeviceRatio is not public and can be changed not only in the constructor.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12730",
+                "title": "Check if the mouse is over canvas and if it is, stop the scroll from …",
+                "description": "…happening.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12733",
+                "title": "Remove icon from elbowblock in NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12734",
+                "title": "Add scaleInPlace to Color3 and Color4",
+                "description": "And fix some bugs in the existing documentation.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12736",
+                "title": "updated documentation of hoverRadius",
+                "description": "fixes https://github.com/BabylonJS/Babylon.js/issues/12724",
+                "author": {
+                    "name": "marpro200",
+                    "url": "https://github.com/marpro200"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12732",
+                "title": "Fix frame linking",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12729",
+                "title": "Fix delete key issue with NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/arcRotateCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/commonCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/layers/layerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/backgroundMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/standardMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/coneEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/cylinderEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/hemisphericEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/sphereEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sounds/soundPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/matrixLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/inputTextPropertyGridComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/floatPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12731",
+                "title": "Fix frame export",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerExportData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12727",
+                "title": "Volumetric post process: Add support for setMaterialForRendering",
+                "description": "See https://forum.babylonjs.com/t/shadows-and-post-processing-with-custom-material/32034",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12726",
+                "title": "Create screenshot: Fix resources not recreated with the right sizes",
+                "description": "See https://forum.babylonjs.com/t/babylonjs-5-0-5-5-5-ios-15-4-safari-15-4-issues/30195/27",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12723",
+                "title": "Nme improvements",
+                "description": "Fix #12721\r\nFix #12722 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/elbowBlock.ts",
+                    "packages/dev/sharedUiComponents/src/imgs/triangle.svg",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeData.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/scss/graphCanvas.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/imgs/square.svg",
+                    "packages/tools/nodeEditor/src/imgs/triangle.svg"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12662",
+                "title": "Basis transcoder update",
+                "description": "This is an update to the basis transcoder. This allows users to also take advantage of the `UASTC` option of the basis format. \r\n\r\nThe `basis_transcoder.js` and `basis_transcoder.wasm` are a direct copy from the [Basis Universal repository](https://github.com/BinomialLLC/basis_universal/tree/7a2094b/webgl/transcoder/build).",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/tools/babylonServer/public/basisTranscoder/1/basis_transcoder.js",
+                    "packages/tools/babylonServer/public/basisTranscoder/1/basis_transcoder.wasm",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12702",
+                "title": "Initial Device Input Test Pattern Setup: Unit Tests",
+                "description": "This PR contains a set of tests to verify the functionality of the DeviceSource and DeviceSourceManager objects.  These tests will serve as a baseline for other tests coming up in the future.\r\n\r\nThis also contains a small fix to the DeviceSourceManager when a user tries to query for a device that has no active entries.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSourceManager.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/internalDeviceSourceManager.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/webDeviceInputSystem.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.deviceInput.test.ts"
+                ],
+                "tags": [
+                    "inputs"
+                ]
+            }
+        ],
+        "5.14.1": [
+            {
+                "pr": "12720",
+                "title": "Move common controls out of NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/colorPickerComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/minus.svg",
+                    "packages/tools/nodeEditor/src/sharedComponents/numericInputComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/plus.svg"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12719",
+                "title": "Warning for protected block names pops while still typing",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/colorPicker/hexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12686",
+                "title": "Update GLTF Animation serializer to include Camera.",
+                "description": "`Camera `and `Light` was not exported to GLTF due to single test about `TransformNode`. We introduce a test function, which encompass test for `TransformNode`, `Camera `and `Light`. This test function will evolve to add support for `KHR_animation_pointer`.\r\nSee [this](https://forum.babylonjs.com/t/gltf-bug-freecamera-animation-not-being-exported/31259) forum thread.",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "5.14.0": [
+            {
+                "pr": "12714",
+                "title": "Pasting hex color from one color3 to another actually pastes the original node as a new node",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/gradientStepComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/hexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorPickerComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/colorPickerComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12706",
+                "title": "Move lock object down the graph",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/arcRotateCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/freeCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/fogPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/hemisphericLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/pointLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/backgroundMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/standardMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/boxEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/meshEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/pointEmitterGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/color3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/color4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/matrixLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector2LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/color3PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/color4PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/matrixPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/vector2PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/vector3PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/vector4PropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/framePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12709",
+                "title": "Created Visual Tests for GUI Input and Pick Testing",
+                "description": "This PR adds two visual tests to our testing suite to check some higher level input functionality.\r\n\r\nPicking Visual Test: https://playground.babylonjs.com/#4J7Y7V#1\r\nThis test validates that picking should work for POINTERMOVE, POINTERDOWN, and POINTERUP.  Additionally, there are tests to verify that our skip booleans (eg. skipPointerUpPredicate) will prevent picking in scenarios where we don't want to pick.  As part of this process, we also can verify that the DeviceInputSystem/DeviceSourceManager can talk to the InputManager to propagate pointer events up.\r\n\r\nGUI Input Test: https://playground.babylonjs.com/#UB4F3B#7\r\nThis test validates that GUI elements such as TextBlocks, InputTexts, and Buttons are usable with Keyboard and Mouse input.  Furthermore, this will verify that the 6 observables will work with our buttons (move, up, down, out, enter, click).  While the first test verifies that the DIS/DSM can talk with the InputManager, this one will show that the InputManager can also talk with GUI elements.\r\n\r\nIt should be noted that all simulated input is done with Pointer/KeyboardEvent objects and the `dispatchEvent` function.  Some modifications will be needed if these tests are to run on Babylon Native.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/guiInputTest.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/pickingVisualTest.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "gui",
+                    "picking",
+                    "inputs",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12708",
+                "title": "Fix some additional issues",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12691",
+                "title": "move more code to shared-ui",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/floatPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/checkBoxLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/floatLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/propertyChangedEvent.ts",
+                    "packages/tools/nodeEditor/src/sharedComponents/sliderLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/textLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12703",
+                "title": "Camera: Remove code execute preventDefault for wheel events",
+                "description": "Recently, there was a fix done for mouse wheel events to allow them to properly be identified as supporting the passive flag.  Because of this, there was a side effect introduced where if preventDefault is enabled for camera wheel input objects, it will throw an error because passive events ignore preventDefault calls.  This was brought to our attention in this forum post: https://forum.babylonjs.com/t/updated-babylon-now-getting-unable-to-preventdefault-inside-passive-event-listener-invocation-error/31842\r\n\r\nThis PR removes the, now obsolete, preventDefault calls from our wheel inputs to prevent this error from popping up.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12704",
+                "title": "Fix command-drag multiselect for NME on Mac",
+                "description": "When doing click-and-drag multiselect of NME nodes, check _multiKeyIsPressed which will be true if either ctrl or command (for Mac) key is pressed down, instead of just checking for ctrl key.\r\n\r\nForum: https://forum.babylonjs.com/t/is-it-possible-to-change-shoutcut-for-node-material-editor/31808/14",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": []
+            }
+        ],
+        "5.13.3": [
+            {
+                "pr": "12701",
+                "title": "Fix loading skinned model with multiple primitives",
+                "description": "https://forum.babylonjs.com/t/3d-model-not-showing-up-in-playground-or-sandbox/31821",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "5.13.2": [
+            {
+                "pr": "12700",
+                "title": "Fix port duplication",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeContainer.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToTypeLedger.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "5.13.1": [
+            {
+                "pr": "12697",
+                "title": "Engine: Add event listener to disable right-click menu when there's a canvas element",
+                "description": "There was an issue found on the forums where the right-click context menu was appearing when a user used custom mouse controls.  Upon closer investigation, it was determined that the reason the context menu didn't appear in other scenarios was that there was specific code to suppress it in all of our cameras' mouse input code.  This proposed fix will add code to suppress the context menu when the rendering canvas is set to a non-null HTMLElement.\r\n\r\nForum Post: https://forum.babylonjs.com/t/even-by-using-evt-preventdefault-the-browser-menu-pops-up-after-i-changed-from-bjs-5-0-to-5-10/31383/8",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12698",
+                "title": "Fix node decomposing at drop time",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/frameNodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeContainer.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToTypeLedger.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12699",
+                "title": "Fix snippet loading on GUI Editor",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-editor-loading-from-snippet-id-only-not-entering-full-link-is-incomplete/31803",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12696",
+                "title": "DeviceInputSystem: Fixed Passive Support Check to prevent Violation Warning",
+                "description": "There was a warning found by a user on the forums that, in Verbose mode, a Violation warning was occurring:\r\n![image](https://user-images.githubusercontent.com/50599569/176553040-80f67f6f-a818-4494-9f8a-f36f5e4c4739.png)\r\nThis warning was happening because the `wheel` event listener didn't have the \"passive\" option set to true when able.  After closer investigation, it was found that the code used to determine if passive was supported was always returning false, causing this warning to occur.  This PR modifies the logic to fix this.\r\n\r\nForum link: https://forum.babylonjs.com/t/bjs-console-warnings-when-using-cleargizmoonemptypointerevent/31447/8",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/InputDevices/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "5.13.0": [
             {
                 "pr": "12694",
@@ -461,6 +1203,7 @@
                 "tags": []
             }
         ],
+        "5.12.1": [],
         "5.12.0": [
             {
                 "pr": "12664",

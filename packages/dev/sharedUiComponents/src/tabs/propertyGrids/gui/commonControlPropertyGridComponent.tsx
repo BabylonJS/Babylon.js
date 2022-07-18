@@ -88,6 +88,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                     <TextLineComponent label="Unique ID" value={control.uniqueId.toString()} />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Alpha"
                         target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
                         propertyName="alpha"
@@ -213,6 +214,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Rotation"
                         target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
                         propertyName="rotation"

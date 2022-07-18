@@ -1,4 +1,5 @@
 import * as React from "react";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface INumericInputComponentProps {
     label: string;
@@ -8,6 +9,7 @@ interface INumericInputComponentProps {
     precision?: number;
     icon?: string;
     iconLabel?: string;
+    lockObject: LockObject;
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
@@ -21,6 +23,12 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         super(props);
 
         this.state = { value: this.props.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3) };
+    }
+
+    componentWillUnmount() {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
     }
 
     shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
@@ -58,6 +66,10 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this._localChange = false;
         const valueAsNumber = parseFloat(this.state.value);
 
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+
         if (isNaN(valueAsNumber)) {
             this.props.onChange(this.props.value);
             return;
@@ -81,6 +93,11 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                     className="numeric-input"
                     value={this.state.value}
                     onChange={(evt) => this.updateValue(evt)}
+                    onFocus={() => {
+                        if (this.props.lockObject) {
+                            this.props.lockObject.lock = true;
+                        }
+                    }}
                     onBlur={() => this.onBlur()}
                 />
             </div>
