@@ -2546,7 +2546,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _queueLoad(scene: Scene): Mesh {
-        scene._addPendingData(this);
+        scene.addPendingData(this);
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
 
@@ -2565,7 +2565,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 });
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-                scene._removePendingData(this);
+                scene.removePendingData(this);
             },
             () => {},
             scene.offlineProvider,

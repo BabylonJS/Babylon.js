@@ -1865,6 +1865,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 continue;
             }
 
+            // Do not stop at the first encountered "unready" object as we want to ensure
+            // all materials are starting off their compilation in parallel.
             if (!mesh.isReady(true)) {
                 isReady = false;
                 continue;
@@ -2029,18 +2031,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param data
-     * @hidden
+     * This function can help adding any object to the list of data awaited to be ready in order to check for a complete scene loading.
+     * @param data defines the object to wait for
      */
-    public _addPendingData(data: any): void {
+    public addPendingData(data: any): void {
         this._pendingData.push(data);
     }
 
     /**
-     * @param data
-     * @hidden
+     * Remove a pending data from the loading list which has previously been added with addPendingData.
+     * @param data defines the object to remove from the pending list
      */
-    public _removePendingData(data: any): void {
+    public removePendingData(data: any): void {
         const wasLoading = this.isLoading;
         const index = this._pendingData.indexOf(data);
 
