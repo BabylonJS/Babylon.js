@@ -1,7 +1,8 @@
 import { Tools } from "../../../Misc/tools";
+import type { IActionOptions } from "./BaseAction";
 import { BaseAction } from "./BaseAction";
 
-export interface IRaiseEventAction {
+export interface IRaiseEventAction extends IActionOptions {
     eventName: string;
 }
 

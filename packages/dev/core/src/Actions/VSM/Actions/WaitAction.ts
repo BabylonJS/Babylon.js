@@ -1,8 +1,9 @@
 import { AdvancedTimer } from "../../../Misc/timer";
-import { Observable } from "../../../Misc/observable";
+import type { Observable } from "../../../Misc/observable";
+import type { IActionOptions } from "./BaseAction";
 import { BaseAction } from "./BaseAction";
 
-export interface IWaitActionOptions {
+export interface IWaitActionOptions extends IActionOptions {
     duration?: number;
     timeMeasuringObservable: Observable<any>;
 }

@@ -1,10 +1,12 @@
-import { Animation } from "../../../Animations/animation";
-import { TransformNode } from "../../../Meshes/transformNode";
+import type { Animation } from "../../../Animations/animation";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { IActionOptions } from "./BaseAction";
 import { BaseAction } from "./BaseAction";
 import { AnimationGroup } from "../../../Animations/animationGroup";
 
-export interface IHideActionOptions {
+export interface IHideActionOptions extends IActionOptions {
     subject: TransformNode;
+    duration?: number;
     hideAnimation?: Animation;
     applyAnimationToChildren?: boolean;
 }
@@ -26,6 +28,7 @@ export class HideAction extends BaseAction<IHideActionOptions> {
                 });
                 this._animationGroup.normalize(0, 100);
                 this._animationGroup.onAnimationGroupEndObservable.add(onEnd);
+                this._animationGroup.speedRatio = 1000 / (this._options.duration || 1000);
                 this._animationGroup.play();
             } else {
                 onEnd();

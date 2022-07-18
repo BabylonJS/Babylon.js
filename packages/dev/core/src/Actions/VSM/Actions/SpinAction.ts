@@ -1,44 +1,71 @@
-import { Space } from "../../../Maths/math.axis";
+import { AdvancedTimer } from "../../../Misc/timer";
+import type { Space } from "../../../Maths/math.axis";
 import { Vector3 } from "../../../Maths/math.vector";
-import { TransformNode } from "../../../Meshes/transformNode";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { IActionOptions } from "./BaseAction";
 import { BaseAction } from "./BaseAction";
+import type { Scene } from "../../../scene";
 
-export interface ISpinActionOptions {
+export interface ISpinActionOptions extends IActionOptions {
     subject: TransformNode;
+    // target?: TransformNode | Vector3;
     direction?: Vector3;
     space?: Space;
-    duration?: number;
+    duration?: number; // in miliseconds
     amount?: number;
-    delay?: number;
+    playCount?: number;
     // easing - TODO
-    repeat?: number;
     // pingPong - what's a good way of implementing that?
 }
 
 export class SpinAction extends BaseAction<ISpinActionOptions> {
-    private _cancelRun = false;
+    private _timer: AdvancedTimer<Scene>;
     protected async _execute(): Promise<void> {
+        if (!this._options.subject) {
+            return;
+        }
         return new Promise((resolve) => {
-            if (!this._options.subject) {
-                resolve();
-                return;
-            }
-            const rotatePerFrame = Math.PI / 120;
-            let rotated = 0;
-            this._runAgainTimes = Number.MAX_SAFE_INTEGER;
-            const observer = this._options.subject.getScene().onBeforeRenderObservable.add(() => {
-                this._options.subject.rotate(this._options.direction || Vector3.UpReadOnly, rotatePerFrame, this._options.space);
-                rotated += rotatePerFrame;
-                // TODO - this will rotate one extra frame. Question to the specs?
-                if (rotated >= Math.PI * 2 || this._cancelRun) {
-                    this._options.subject.getScene().onBeforeRenderObservable.remove(observer);
+            const timeout = this._options.duration ?? 1000;
+            this._timer = new AdvancedTimer<Scene>({
+                contextObservable: this._options.subject.getScene().onBeforeRenderObservable,
+                timeout: timeout,
+                onTick: (data) => {
+                    let amountRotated = 0;
+                    let amountToRotate = (data.timeSincePreviousTick / timeout) * Math.PI * 2;
+                    if ((amountRotated + amountToRotate) > Math.PI * 2) {
+                        amountToRotate = Math.PI * 2 - amountRotated;
+                    }
+                    this._options.subject.rotate(this._options.direction || Vector3.UpReadOnly, amountToRotate, this._options.space);
+                    amountRotated += amountToRotate;
+                },
+                onEnded: (data) => {
                     resolve();
-                }
+                },
             });
+            this._timer.start();
+            // const rotatePerFrame = (2 * Math.PI) / (60 * (this._options.duration ?? 1));
+            // let rotated = 0;
+            // const observer = this._options.subject.getScene().onBeforeRenderObservable.add(() => {
+            //     this._options.subject.rotate(this._options.direction || Vector3.UpReadOnly, rotatePerFrame, this._options.space);
+            //     rotated += rotatePerFrame;
+            //     // TODO - this will rotate one extra frame. Question to the specs?
+            //     if (rotated >= Math.PI * 2 || this._cancelRun) {
+            //         this._options.subject.getScene().onBeforeRenderObservable.remove(observer);
+            //         resolve();
+            //     }
+            // });
         });
     }
 
     protected _stop(): void {
-        this._cancelRun = true;
+        this._timer.stop();
+    }
+
+    protected _pause(): void {
+        this._timer.pause();
+    }
+
+    protected _resume(): void {
+        this._timer.resume();
     }
 }
