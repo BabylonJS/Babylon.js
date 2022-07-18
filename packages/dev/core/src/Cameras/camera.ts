@@ -169,7 +169,6 @@ export class Camera extends Node {
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
-    @serialize()
     private _orthoLeft: Nullable<number> = null;
 
     public set orthoLeft(value: Nullable<number>) {
@@ -180,6 +179,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoLeft(): Nullable<number> {
         return this._orthoLeft;
     }
@@ -188,7 +188,6 @@ export class Camera extends Node {
      * Define the current limit on the right side for an orthographic camera
      * In scene unit
      */
-    @serialize()
     private _orthoRight: Nullable<number> = null;
 
     public set orthoRight(value: Nullable<number>) {
@@ -199,6 +198,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoRight(): Nullable<number> {
         return this._orthoRight;
     }
@@ -207,7 +207,6 @@ export class Camera extends Node {
      * Define the current limit on the bottom side for an orthographic camera
      * In scene unit
      */
-    @serialize()
     private _orthoBottom: Nullable<number> = null;
 
     public set orthoBottom(value: Nullable<number>) {
@@ -218,6 +217,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoBottom(): Nullable<number> {
         return this._orthoBottom;
     }
@@ -226,7 +226,6 @@ export class Camera extends Node {
      * Define the current limit on the top side for an orthographic camera
      * In scene unit
      */
-    @serialize()
     private _orthoTop: Nullable<number> = null;
 
     public set orthoTop(value: Nullable<number>) {
@@ -237,6 +236,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoTop(): Nullable<number> {
         return this._orthoTop;
     }
@@ -281,7 +281,6 @@ export class Camera extends Node {
     /**
      * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
-    @serialize()
     private _mode = Camera.PERSPECTIVE_CAMERA;
     set mode(mode: number) {
         this._mode = mode;
@@ -292,6 +291,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     get mode(): number {
         return this._mode;
     }
