@@ -1163,11 +1163,11 @@ export class Sound {
                 soundUrl,
                 scene,
                 () => {
-                    scene._removePendingData(newSound);
+                    scene.removePendingData(newSound);
                 },
                 options
             );
-            scene._addPendingData(newSound);
+            scene.addPendingData(newSound);
         } else {
             const setBufferAndRun = () => {
                 if (sourceSound._isReadyToPlay) {
