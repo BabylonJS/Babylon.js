@@ -812,7 +812,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             }
 
             // Remove from scene
-            this._scene._removePendingData(this);
+            this._scene.removePendingData(this);
             const index = this._scene.textures.indexOf(this);
 
             if (index >= 0) {

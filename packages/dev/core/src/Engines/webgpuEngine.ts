@@ -2087,7 +2087,7 @@ export class WebGPUEngine extends Engine {
                 }
 
                 if (scene) {
-                    scene._removePendingData(texture);
+                    scene.removePendingData(texture);
                 }
 
                 texture.isReady = true;
