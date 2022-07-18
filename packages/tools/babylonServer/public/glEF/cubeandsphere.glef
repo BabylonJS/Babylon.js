@@ -20,8 +20,10 @@
                     "parameters": {
                         "subject": 0,
                         "showHideEffect": 2,
-                        "duration": 0.5
+                        "duration": 1.2
                     },
+                    "next": 3,
+                    "parallel": 4,
                     "type": "show"
                 },
                 {
@@ -31,6 +33,43 @@
                         "duration": 2.5
                     },
                     "type": "hide"
+                },
+                {
+                    "parameters": {
+                        "subject": 1,
+                        "playCount": 2
+                    },
+                    "type": "spin"
+                },
+                {
+                    "parameters": {
+                        "duration": 2,
+                        "space": "object",
+                        "subject": 0,
+                        "playCount": 1,
+                        "rotation": [
+                            0.4150627,
+                            0.1483714,
+                            0.2717211,
+                            0.8554978
+                        ]
+                    },
+                    "type": "rotate"
+                },
+                {
+                    "parameters": {
+                        "duration": 1.2,
+                        "space": "object",
+                        "subject": 0,
+                        "playCount": 1,
+                        "rotation": [
+                            0.1,
+                            0.2,
+                            0.3,
+                            0.8
+                        ]
+                    },
+                    "type": "rotate"
                 }
             ],
             "behaviors": [
@@ -41,6 +80,10 @@
                 {
                     "action": 1,
                     "trigger": 1
+                },
+                {
+                    "action": 2,
+                    "trigger": 0
                 }
             ],
             "references": [
@@ -49,7 +92,7 @@
                     "type": "node"
                 },
                 {
-                    "index": 0,
+                    "index": 2,
                     "type": "node"
                 }
             ],
