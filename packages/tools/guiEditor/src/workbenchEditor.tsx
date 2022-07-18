@@ -271,104 +271,58 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.forceUpdate();
         return newGuiNode;
     }
-    createToolbar() {
+    createBlackLine() {
         const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />;
-        const idForElement = this.state.toolbarExpand ? "toolbarGrab" : "toolbarGrab expanded"; //changed id to className
+        return (
+            <div className="blackLine">
+                <div className="arrow" onClick={() => this.switchExpandedState()}>
+                    {icon}
+                </div>
+            </div>
+        );
+    }
+    createToolbarHelper(ct: { className: string; icon: string }[]) {
+        return ct.map((type) => {
+            return (
+                <div
+                    className={"toolbar-label"}
+                    key={type.className}
+                    onDragStart={() => {
+                        this._draggedItem = type.className;
+                    }}
+                    onClick={() => {
+                        this.onCreate(type.className);
+                    }}
+                    title={type.className}
+                >
+                    {type.icon && (
+                        <div className="toolbar-icon" draggable={true}>
+                            <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                        </div>
+                    )}
+                </div>
+            );
+        });
+    }
+    createToolbar() {
         if (this.state.toolbarExpand) {
             return (
                 <>
-                    <div className={idForElement}>
-                        {
-                            <div className="blackLine">
-                                <div className="arrow" onClick={() => this.switchExpandedState()}>
-                                    {icon}
-                                </div>
-                            </div>
-                        }
-                        {
-                            <div className={"toolbar-content-sub1"}>
-                                {ControlTypes.map((type) => {
-                                    return (
-                                        <div
-                                            className={"toolbar-label"}
-                                            key={type.className}
-                                            onDragStart={() => {
-                                                this._draggedItem = type.className;
-                                            }}
-                                            onClick={() => {
-                                                this.onCreate(type.className);
-                                            }}
-                                            title={type.className}
-                                        >
-                                            {type.icon && (
-                                                <div className="toolbar-icon" draggable={true}>
-                                                    <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        }
+                    <div className="toolbarGrab">
+                        {this.createBlackLine()}
+                        {<div className={"toolbar-content-sub1"}>{this.createToolbarHelper(ControlTypes)}</div>}
                     </div>
                 </>
             );
         } else {
             return (
                 <>
-                    <div className={idForElement}>
-                        {
-                            <div className="blackLine">
-                                <div className="arrow" onClick={() => this.switchExpandedState()}>
-                                    {icon}
-                                </div>
-                            </div>
-                        }
+                    <div className="toolbarGrab expanded">
+                        {this.createBlackLine()}
                         {
                             <div className={"toolbar-content-sub1"}>
-                                {ControlTypes.slice(0, 9).map((type) => {
-                                    return (
-                                        <div
-                                            className={"toolbar-label"}
-                                            key={type.className}
-                                            onDragStart={() => {
-                                                this._draggedItem = type.className;
-                                            }}
-                                            onClick={() => {
-                                                this.onCreate(type.className);
-                                            }}
-                                            title={type.className}
-                                        >
-                                            {type.icon && (
-                                                <div className="toolbar-icon" draggable={true}>
-                                                    <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {ControlTypes.slice(9, 18).map((type) => {
-                                    return (
-                                        <div
-                                            className={"toolbar-label"}
-                                            key={type.className}
-                                            onDragStart={() => {
-                                                this._draggedItem = type.className;
-                                            }}
-                                            onClick={() => {
-                                                this.onCreate(type.className);
-                                            }}
-                                            title={type.className}
-                                        >
-                                            {type.icon && (
-                                                <div className="toolbar-icon" draggable={true}>
-                                                    <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {}
+                                {this.createToolbarHelper(ControlTypes.slice(0, Math.floor(ControlTypes.length / 2)))}
+                                {this.createToolbarHelper(ControlTypes.slice(ControlTypes.length / 2))}
                             </div>
                         }
                     </div>
