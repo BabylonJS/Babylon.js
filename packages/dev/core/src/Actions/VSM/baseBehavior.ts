@@ -1,5 +1,5 @@
-import { BaseAction } from "./Actions/BaseAction";
-import { BaseTrigger } from "./Triggers/BaseTrigger";
+import type { BaseAction, IActionOptions } from "./Actions/BaseAction";
+import type { BaseTrigger } from "./Triggers/BaseTrigger";
 
 export enum BehaviorRepetitionMode {
     RESTART = 0,
@@ -13,7 +13,7 @@ export interface IBehaviorOptions {
 
 export class BaseBehavior {
     public enabled = true;
-    constructor(private _trigger: BaseTrigger, private _action: BaseAction, private _options: IBehaviorOptions = {}) {
+    constructor(private _trigger: BaseTrigger, private _action: BaseAction<IActionOptions>, private _options: IBehaviorOptions = {}) {
         this._trigger.onTriggeredObservable.add(() => {
             if (this.enabled) {
                 this._checkExecution();

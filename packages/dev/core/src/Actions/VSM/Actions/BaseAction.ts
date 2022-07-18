@@ -1,45 +1,72 @@
-import { IDisposable } from "../../../scene";
+import type { IDisposable, Scene } from "../../../scene";
 import { Observable } from "../../../Misc/observable";
-import { Nullable } from "../../../types";
-import { CustomEventManager } from "../customEventManager";
+import type { Nullable } from "../../../types";
+import type { CustomEventManager } from "../customEventManager";
 import { Tools } from "../../../Misc/tools";
+import { setAndStartTimer } from "../../../Misc/timer";
 
-export abstract class BaseAction<T = any> implements IDisposable {
+export interface IActionOptions {
+    delay?: number; // in ms
+    playCount?: number;
+    repeatUntilStopped?: boolean;
+    parallelActions?: BaseAction<IActionOptions>[];
+    separateParallelExecution?: boolean;
+    nextActions?: BaseAction<IActionOptions>[];
+}
+
+let idCounter = 0;
+
+export abstract class BaseAction<T extends IActionOptions> implements IDisposable {
     protected _isRunning: boolean = false;
+    protected _uniqueId: number = idCounter++;
     // isRunning can be true while this is true!
     protected _isPaused: boolean = false;
-    // TODO - run parallel and next actions
     // glEF sees that as a single action
-    public parallelActions: BaseAction[] = [];
+    public parallelActions: BaseAction<IActionOptions>[] = [];
     // Actions in this array will run IN PARALLEL after this action is done
-    public nextActions: BaseAction[] = [];
+    public nextActions: BaseAction<IActionOptions>[] = [];
 
-    protected _runAgainTimes: number = 0;
-
-    public onActionExecutionStartedObservable = new Observable<BaseAction>();
-    public onActionDoneObservable = new Observable<BaseAction>();
+    public onActionExecutionStartedObservable = new Observable<BaseAction<IActionOptions>>();
+    public onActionDoneObservable = new Observable<BaseAction<IActionOptions>>();
+    public waitForDoneAsync: Promise<void>;
 
     protected _customEventManager: Nullable<CustomEventManager> = null;
     public set customEventManager(customEventManager: Nullable<CustomEventManager>) {
         this._customEventManager = customEventManager;
     }
 
-    constructor(protected _options: T) {
+    constructor(protected _options: T, protected _scene?: Nullable<Scene>) {
+        if (!this._options) {
+            this._options = {} as T;
+        }
+        if (this._options.parallelActions) {
+            this.parallelActions.push(...this._options.parallelActions);
+        }
+        if (this._options.nextActions) {
+            this.nextActions.push(...this._options.nextActions);
+        }
         this.onActionExecutionStartedObservable.add(() => {
+            this._options.playCount && this._options.playCount--;
             this.parallelActions.forEach((action) => {
                 action.execute();
             });
         });
-        this.onActionDoneObservable.add(() => {
-            if (this._runAgainTimes) {
-                this._runAgainTimes--;
-                this.execute();
-            } else {
-                this.nextActions.forEach((action) => {
-                    action.execute();
-                });
-            }
+        this.waitForDoneAsync = new Promise((resolve) => {
+            this.onActionDoneObservable.add(() => {
+                if (this._options.playCount || this._options.repeatUntilStopped) {
+                    this.execute();
+                } else {
+                    resolve();
+                    this.nextActions.forEach((action) => {
+                        action.execute();
+                    });
+                }
+            });
         });
+    }
+
+    public set separateParallelExecution(value: boolean) {
+        this._options.separateParallelExecution = value;
     }
 
     public get isRunning(): boolean {
@@ -62,10 +89,38 @@ export abstract class BaseAction<T = any> implements IDisposable {
         }
         this._isRunning = true;
         this.onActionExecutionStartedObservable.notifyObservers(this);
-        this._execute().then(() => {
+        const executeFunction = async () => {
+            await this._execute();
+            if (!this._options.separateParallelExecution && this.parallelActions.length) {
+                // need to wait for all parallel actions to be done
+                await Promise.all(this.parallelActions.map((action) => action.waitForDoneAsync));
+            }
             this._isRunning = false;
             this.onActionDoneObservable.notifyObservers(this);
-        });
+        };
+        // check for delay!
+        if (this._options.delay) {
+            // if a scene was provided use its before-render context for the timer
+            if (this._scene) {
+                setAndStartTimer({
+                    contextObservable: this._scene.onBeforeRenderObservable,
+                    timeout: this._options.delay,
+                    onEnded: executeFunction,
+                    breakCondition: () => {
+                        return !this._isRunning;
+                    },
+                });
+            } else {
+                // otherwise use setTimeout
+                setTimeout(() => {
+                    if (this._isRunning) {
+                        executeFunction();
+                    }
+                }, this._options.delay);
+            }
+        } else {
+            executeFunction();
+        }
     }
     // Not sure this is the right architecture. This expects execute to resolve when the action is done.
     protected abstract _execute(): Promise<void>;
