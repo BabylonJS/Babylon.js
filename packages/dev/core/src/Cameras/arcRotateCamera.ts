@@ -921,9 +921,9 @@ export class ArcRotateCamera extends TargetCamera {
             if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) {
                 inertialAlphaOffset *= -1;
             }
-            this.alpha += inertialAlphaOffset;
+            this.alpha += inertialAlphaOffset * (this.invertRotation ? -this.inverseRotationSpeed : 1);
 
-            this.beta += this.inertialBetaOffset;
+            this.beta += this.inertialBetaOffset * (this.invertRotation ? -this.inverseRotationSpeed : 1);
 
             this.radius -= this.inertialRadiusOffset;
             this.inertialAlphaOffset *= this.inertia;
