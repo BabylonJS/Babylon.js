@@ -1,10 +1,11 @@
-import { IDisposable, Scene } from "../../scene";
+import type { IDisposable, Scene } from "../../scene";
 import { ActionManager } from "../actionManager";
 import { ExecuteCodeAction } from "../directActions";
-import { BaseAction } from "./Actions/BaseAction";
-import { BaseBehavior, IBehaviorOptions } from "./baseBehavior";
+import type { BaseAction } from "./Actions/BaseAction";
+import type { IBehaviorOptions } from "./baseBehavior";
+import { BaseBehavior } from "./baseBehavior";
 import { CustomEventManager } from "./customEventManager";
-import { BaseTrigger } from "./Triggers/BaseTrigger";
+import type { BaseTrigger } from "./Triggers/BaseTrigger";
 
 /**
  * Behavior manager is in charge of connecting actions and triggers
@@ -32,7 +33,7 @@ export class BehaviorManager implements IDisposable {
         return this._customEventManager;
     }
 
-    public addBehavior(trigger: BaseTrigger, action: BaseAction, options?: IBehaviorOptions): BaseBehavior {
+    public addBehavior(trigger: BaseTrigger, action: BaseAction<any>, options?: IBehaviorOptions): BaseBehavior {
         const behavior = new BaseBehavior(trigger, action, options);
         // this._behaviors.push(behavior);
         if (!this._triggers.includes(trigger)) {
