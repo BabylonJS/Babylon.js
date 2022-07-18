@@ -65,6 +65,10 @@ export interface ITimerData<T> {
      */
     completeRate: number;
     /**
+     * The time that has passed since the previous tick.
+     */
+    timeSincePreviousTick: number;
+    /**
      * What the registered observable sent in the last count
      */
     payload: T;
@@ -102,12 +106,14 @@ export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer
     const observer = options.contextObservable.add(
         (payload: any) => {
             const now = Date.now();
+            const previousTimer = timer;
             timer = now - startTime;
             const data: ITimerData<any> = {
                 startTime,
                 currentTime: now,
                 deltaTime: timer,
                 completeRate: timer / options.timeout,
+                timeSincePreviousTick: timer - previousTimer,
                 payload,
             };
             options.onTick && options.onTick(data);
@@ -261,12 +267,14 @@ export class AdvancedTimer<T = any> implements IDisposable {
         // avoid running the tick function when paused
         if (this._state === TimerState.STARTED || this._state === TimerState.RESUMED) {
             const now = Date.now();
+            const previousTimer = this._timer;
             this._timer = now - this._startTime;
             const data: ITimerData<T> = {
                 startTime: this._startTime,
                 currentTime: now,
                 deltaTime: this._timer,
                 completeRate: this._timer / this._timeToEnd,
+                timeSincePreviousTick: this._timer - previousTimer,
                 payload,
             };
             const shouldBreak = this._breakOnNextTick || this._breakCondition(data);
