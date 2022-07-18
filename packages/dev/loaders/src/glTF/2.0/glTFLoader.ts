@@ -821,7 +821,7 @@ export class GLTFLoader implements IGLTFLoader {
                         const babylonTransformNodeForSkin = node._babylonTransformNodeForSkin!;
 
                         // Merge the metadata from the skin node to the skinned mesh in case a loader extension added metadata.
-                        babylonTransformNode.metadata = mergeDeep(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata);
+                        babylonTransformNode.metadata = mergeDeep(babylonTransformNodeForSkin.metadata, babylonTransformNode.metadata || {});
 
                         const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                         promises.push(

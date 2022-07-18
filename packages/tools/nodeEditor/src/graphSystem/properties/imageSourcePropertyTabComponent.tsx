@@ -7,14 +7,14 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import { Texture } from "core/Materials/Textures/texture";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {
@@ -187,7 +187,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
+                            lockObject={this.props.stateManager.lockObject}
                             label="Offset U"
                             target={texture}
                             propertyName="uOffset"
@@ -198,7 +198,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
+                            lockObject={this.props.stateManager.lockObject}
                             label="Offset V"
                             target={texture}
                             propertyName="vOffset"
@@ -209,7 +209,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
+                            lockObject={this.props.stateManager.lockObject}
                             label="Scale U"
                             target={texture}
                             propertyName="uScale"
@@ -220,7 +220,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            globalState={this.props.stateManager.data as GlobalState}
+                            lockObject={this.props.stateManager.lockObject}
                             label="Scale V"
                             target={texture}
                             propertyName="vScale"
@@ -231,9 +231,9 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <SliderLineComponent
+                            lockObject={this.props.stateManager.lockObject}
                             label="Rotation U"
                             target={texture}
-                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="uAng"
                             minimum={0}
                             maximum={Math.PI * 2}
@@ -246,9 +246,9 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <SliderLineComponent
+                            lockObject={this.props.stateManager.lockObject}
                             label="Rotation V"
                             target={texture}
-                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="vAng"
                             minimum={0}
                             maximum={Math.PI * 2}
@@ -261,9 +261,9 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <SliderLineComponent
+                            lockObject={this.props.stateManager.lockObject}
                             label="Rotation W"
                             target={texture}
-                            globalState={this.props.stateManager.data as GlobalState}
                             propertyName="wAng"
                             minimum={0}
                             maximum={Math.PI * 2}

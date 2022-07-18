@@ -14,10 +14,12 @@ import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "lo
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IGLTFComponentProps {
     scene: Scene;
     globalState: GlobalState;
+    lockObject: LockObject;
 }
 
 export class GLTFComponent extends React.Component<IGLTFComponentProps> {
@@ -123,7 +125,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="Create instances" target={loaderState} propertyName="createInstances" />
                     <CheckBoxLineComponent label="Enable logging" target={loaderState} propertyName="loggingEnabled" />
                     <CheckBoxLineComponent label="Load all materials" target={loaderState} propertyName="loadAllMaterials" />
-                    <FloatLineComponent label="Target FPS" target={loaderState} propertyName="targetFps" isInteger={true} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Target FPS" target={loaderState} propertyName="targetFps" isInteger={true} />
                     <CheckBoxLineComponent label="Transparency as coverage" target={loaderState} propertyName="transparencyAsCoverage" />
                     <CheckBoxLineComponent label="Use clip plane" target={loaderState} propertyName="useClipPlane" />
                     <CheckBoxLineComponent label="Use sRGB buffers" target={loaderState} propertyName="useSRGBBuffers" />
@@ -242,6 +244,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                         onSelect={(value) => (extensionStates["MSFT_lod"].enabled = value)}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Maximum LODs"
                         target={extensionStates["MSFT_lod"]}
                         propertyName="maxLODsToLoad"
