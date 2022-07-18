@@ -13,7 +13,7 @@ import { GizmoWrapper } from "./diagram/gizmoWrapper";
 import type { Nullable } from "core/types";
 import { ArtBoardComponent } from "./diagram/artBoard";
 import type { Control } from "gui/2D/controls/control";
-import { ControlTypes} from "./controlTypes";
+import { ControlTypes } from "./controlTypes";
 
 import "./main.scss";
 import "./scss/header.scss";
@@ -101,7 +101,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
-    
+
         this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
@@ -195,13 +195,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             }
         }
     };
-    switchExpandedState(): void { 
-        this.setState({ toolbarExpand: !this.state.toolbarExpand});
-    };
-    
+    switchExpandedState(): void {
+        this.setState({ toolbarExpand: !this.state.toolbarExpand });
+    }
+
     render() {
         const classForElement = this.state.toolbarExpand ? "left-panel" : "left-panel expand";
-            return (
+        return (
             <Portal globalState={this.props.globalState}>
                 <div id="ge-header">
                     <div className="command-bar">
@@ -222,7 +222,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     onPointerUp={(evt) => this.onPointerUp(evt)}
                 >
                     {/* Node creation menu */}
-                    <div className = {classForElement}>
+                    <div className={classForElement}>
                         <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                         {this.createToolbar()}
                         <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
@@ -261,7 +261,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );
-        
     }
 
     onCreate(value: string): Control {
@@ -273,17 +272,19 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         return newGuiNode;
     }
     createToolbar() {
-        const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />; 
+        const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />;
         const idForElement = this.state.toolbarExpand ? "toolbarGrab" : "toolbarGrab expanded"; //changed id to className
-        if(this.state.toolbarExpand){
+        if (this.state.toolbarExpand) {
             return (
                 <>
-                    <div className = {idForElement}> 
-                        {<div className="blackLine">
-                            <div className="arrow" onClick={() => this.switchExpandedState()}> 
-                                {icon}
+                    <div className={idForElement}>
+                        {
+                            <div className="blackLine">
+                                <div className="arrow" onClick={() => this.switchExpandedState()}>
+                                    {icon}
+                                </div>
                             </div>
-                         </div>}
+                        }
                         {
                             <div className={"toolbar-content-sub1"}>
                                 {ControlTypes.map((type) => {
@@ -312,16 +313,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     </div>
                 </>
             );
-        }
-        else{
+        } else {
             return (
                 <>
-                    <div className = {idForElement}>
-                        {<div className="blackLine">
-                            <div className="arrow" onClick={() => this.switchExpandedState()}> 
-                                {icon}
+                    <div className={idForElement}>
+                        {
+                            <div className="blackLine">
+                                <div className="arrow" onClick={() => this.switchExpandedState()}>
+                                    {icon}
+                                </div>
                             </div>
-                         </div>}
+                        }
                         {
                             <div className={"toolbar-content-sub1"}>
                                 {ControlTypes.slice(0, 9).map((type) => {
@@ -366,15 +368,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                         </div>
                                     );
                                 })}
-                                {
-                        }
+                                {}
                             </div>
                         }
                     </div>
                 </>
             );
-            
         }
-        
     }
 }
