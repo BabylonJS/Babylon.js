@@ -9,6 +9,7 @@ import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
 import { RotateAction } from "core/Actions/VSM/Actions/RotateAction";
 import { ShowAction } from "core/Actions/VSM/Actions/ShowAction";
 import { HideAction } from "core/Actions/VSM/Actions/HideAction";
+import { RaiseEventAction } from "core/Actions/VSM/Actions/RaiseEventAction";
 import { Animation } from "core/Animations/animation";
 
 import { EasingFunction, QuadraticEase } from "core/Animations/easing";
@@ -95,8 +96,8 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         console.log("KHR_interactivity_behavior: loadInteractivityAsync");
         // generate all actions
         const actions = this._actions?.map((action) => {
-            action._babylonBehavior = this._processAction(action);
-            return action._babylonBehavior;
+            // it is possible this action was already created
+            return this._processAction(action);
         });
         // generate all triggers
         const triggers = this._triggers?.map((trigger) => {
@@ -113,9 +114,9 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         });
     }
 
-    private _generateTrigger(triggerData: { type: string; index: number; subject?: number }) {
+    private _generateTrigger(triggerData: { type: string; index: number; parameters?: { subject?: number; [key: string]: any } }) {
         // optional subject for some triggers
-        const subject = this._getSubjectForData(triggerData.subject);
+        const subject = this._getSubjectForData(triggerData.parameters?.subject);
         // TODO handle the other triggers
         switch (triggerData.type) {
             case "sceneStart":
@@ -126,24 +127,21 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                 return new TapTrigger({
                     subject,
                 });
+            case "event":
+                return new EventTrigger({
+                    eventName: triggerData.parameters?.event,
+                });
         }
         return null;
     }
 
     private _generateAction(actionData: { type: string; parameters?: { subject?: number; [key: string]: any }; next?: number; parallel?: number }) {
         const subject = this._getSubjectForData(actionData.parameters?.subject);
-        // get the next action and parallel action, if defined
-        // TODO - cache actions to not create an infinite loop if two actions reference themselves
-        const nextAction = actionData.next !== undefined ? this._generateAction(this._actions[actionData.next]) : null;
-        const parallelAction = actionData.parallel !== undefined ? this._generateAction(this._actions[actionData.parallel]) : null;
-
-        console.log("subject", subject);
         const options: IActionOptions = {
             playCount: actionData.parameters?.playCount,
             repeatUntilStopped: !actionData.parameters?.playCount,
             delay: actionData.parameters?.delay,
-            nextActions: nextAction ? [nextAction] : [],
-            parallelActions: parallelAction ? [parallelAction] : [],
+            customEventManager: this._loader._behaviorManager.customEventManager,
         };
         // TODO handle the other action types
         switch (actionData.type) {
@@ -158,6 +156,12 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     rotationQuaternion: Quaternion.FromArray(actionData.parameters?.rotation),
                     duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                     ...options,
+                });
+            case "raiseEvent":
+                return new RaiseEventAction({
+                    eventName: actionData.parameters?.event,
+                    ...options,
+                    repeatUntilStopped: false,
                 });
             case "hide":
             case "show": {
@@ -240,23 +244,26 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         return null;
     }
 
-    private _processAction(actionData: { type: string; parameters?: { subject?: number }; next?: number; parallel?: number }) {
-        const actionForData = this._generateAction(actionData);
-        if (actionForData) {
-            if (typeof actionData.next === "number") {
-                const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.next}`, this._actions /* as IAction[]*/, actionData.next));
-                if (nextAction) {
-                    actionForData.nextActions.push(nextAction);
+    private _processAction(actionData: { type: string; parameters?: { subject?: number }; next?: number; parallel?: number; _babylonAction?: any }) {
+        if (!actionData._babylonAction) {
+            const actionForData = this._generateAction(actionData);
+            if (actionForData) {
+                if (typeof actionData.next === "number") {
+                    const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.next}`, this._actions /* as IAction[]*/, actionData.next));
+                    if (nextAction) {
+                        actionForData.nextActions.push(nextAction);
+                    }
+                }
+                if (typeof actionData.parallel === "number") {
+                    const parallelAction = this._processAction(ArrayItem.Get(`actions/${actionData.parallel}`, this._actions /* as IAction[]*/, actionData.parallel));
+                    if (parallelAction) {
+                        actionForData.parallelActions.push(parallelAction);
+                    }
                 }
             }
-            if (typeof actionData.parallel === "number") {
-                const parallelAction = this._processAction(ArrayItem.Get(`actions/${actionData.parallel}`, this._actions /* as IAction[]*/, actionData.parallel));
-                if (parallelAction) {
-                    actionForData.parallelActions.push(parallelAction);
-                }
-            }
+            actionData._babylonAction = actionForData;
         }
-        return actionForData;
+        return actionData._babylonAction;
     }
 
     private _getSubjectForData(subject?: number) {
@@ -270,10 +277,6 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         }
         return null;
     }
-
-    // private _getReference(reference: string): any {
-
-    // }
 }
 
 RegisterExtension("glef", NAME, (loader) => new KHR_Interactivity(loader as GLEFLoader));
