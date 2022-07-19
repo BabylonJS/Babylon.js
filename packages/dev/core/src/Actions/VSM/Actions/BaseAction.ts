@@ -61,9 +61,7 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
                     this.execute();
                 } else {
                     resolve();
-                    console.log("Action done", this);
                     this.nextActions.forEach((action) => {
-                        console.log("Next action: ", action);
                         action.execute();
                     });
                 }
@@ -98,7 +96,6 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
         const executeFunction = async () => {
             await this._execute();
             if (!this._options.separateParallelExecution && this.parallelActions.length) {
-                console.log("done, waiting for parallel actions to finish", this);
                 // need to wait for all parallel actions to be done
                 await Promise.all(this.parallelActions.map((action) => action.waitForDoneAsync));
             }
