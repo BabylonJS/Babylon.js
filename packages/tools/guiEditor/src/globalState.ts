@@ -96,6 +96,7 @@ export class GlobalState {
     onCopyObservable = new Observable<(content: string) => void>();
     onCutObservable = new Observable<(content: string) => void>();
     onPasteObservable = new Observable<string>();
+    //onPasteObservable = new Observable<(content: string) => void>();
     isSaving = false;
     public lockObject = new LockObject();
     storeEditorData: (serializationObject: any) => void;
@@ -134,7 +135,8 @@ export class GlobalState {
         });
         this.hostDocument.addEventListener("paste", (event) => {
             if (!isElementEditable(event.target as HTMLElement)) {
-                this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "");
+                this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "")
+                //this.onPasteObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
