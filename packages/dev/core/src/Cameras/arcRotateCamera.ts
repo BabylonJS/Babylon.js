@@ -911,7 +911,7 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-            const directionModifier = (this.invertRotation ? -1 : 1);
+            const directionModifier = this.invertRotation ? -1 : 1;
             let inertialAlphaOffset = this.inertialAlphaOffset;
             if (this.beta <= 0) {
                 inertialAlphaOffset *= -1;
