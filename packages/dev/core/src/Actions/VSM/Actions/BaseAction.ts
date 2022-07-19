@@ -12,6 +12,7 @@ export interface IActionOptions {
     parallelActions?: BaseAction<IActionOptions>[];
     separateParallelExecution?: boolean;
     nextActions?: BaseAction<IActionOptions>[];
+    customEventManager?: CustomEventManager;
 }
 
 let idCounter = 0;
@@ -44,6 +45,9 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
         }
         if (this._options.nextActions) {
             this.nextActions.push(...this._options.nextActions);
+        }
+        if(this._options.customEventManager) {
+            this._customEventManager = this._options.customEventManager;
         }
         this.onActionExecutionStartedObservable.add(() => {
             this._options.playCount && this._options.playCount--;
