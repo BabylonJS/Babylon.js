@@ -74,14 +74,54 @@
                 },
                 {
                     "parameters": {
+                        "subject": 0,
+                        "target": 1,
+                        "duration": 10
+                    },
+                    "type": "aim"
+                },
+                {
+                    "parameters": {
                         "event": "rotationEnded"
                     },
                     "type": "raiseEvent"
+                },
+                {
+                    "next": 8,
+                    "parameters": {
+                        "duration": 2,
+                        "space": "object",
+                        "subject": 1,
+                        "direction": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "type": "move"
+                },
+                {
+                    "next": 7,
+                    "parameters": {
+                        "duration": 2,
+                        "space": "object",
+                        "subject": 1,
+                        "direction": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "type": "move"
                 }
             ],
             "behaviors": [
                 {
                     "action": 0,
+                    "trigger": 0
+                },
+                {
+                    "action": 7,
                     "trigger": 0
                 },
                 {
