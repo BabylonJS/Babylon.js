@@ -108,7 +108,7 @@ export class AssetContainer extends AbstractScene {
     public instantiateModelsToScene(
         nameFunction?: (sourceName: string) => string,
         cloneMaterials = false,
-        options?: { doNotInstantiate?: boolean | ((node: TransformNode) => boolean), predicate?: (entity: any) => boolean }
+        options?: { doNotInstantiate?: boolean | ((node: TransformNode) => boolean); predicate?: (entity: any) => boolean }
     ): InstantiatedEntries {
         const convertionMap: { [key: number]: number } = {};
         const storeMap: { [key: number]: any } = {};
@@ -118,7 +118,7 @@ export class AssetContainer extends AbstractScene {
 
         const localOptions = {
             doNotInstantiate: true,
-            ...options
+            ...options,
         };
 
         if (!localOptions.doNotInstantiate) {
