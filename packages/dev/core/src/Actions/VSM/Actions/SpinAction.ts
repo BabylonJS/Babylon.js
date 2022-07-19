@@ -38,22 +38,11 @@ export class SpinAction extends BaseAction<ISpinActionOptions> {
                     this._options.subject.rotate(this._options.direction || Vector3.UpReadOnly, amountToRotate, this._options.space);
                     amountRotated += amountToRotate;
                 },
-                onEnded: (data) => {
+                onEnded: () => {
                     resolve();
                 },
             });
             this._timer.start();
-            // const rotatePerFrame = (2 * Math.PI) / (60 * (this._options.duration ?? 1));
-            // let rotated = 0;
-            // const observer = this._options.subject.getScene().onBeforeRenderObservable.add(() => {
-            //     this._options.subject.rotate(this._options.direction || Vector3.UpReadOnly, rotatePerFrame, this._options.space);
-            //     rotated += rotatePerFrame;
-            //     // TODO - this will rotate one extra frame. Question to the specs?
-            //     if (rotated >= Math.PI * 2 || this._cancelRun) {
-            //         this._options.subject.getScene().onBeforeRenderObservable.remove(observer);
-            //         resolve();
-            //     }
-            // });
         });
     }
 
