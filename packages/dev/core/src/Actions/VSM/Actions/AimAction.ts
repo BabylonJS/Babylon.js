@@ -25,7 +25,7 @@ export class AimAction extends BaseAction<IAimActionOptions> {
             // TODO if transitionTime is set (i.e. not 0 or undefined), we need to animate the rotation
             this._timer = new AdvancedTimer<Scene>({
                 contextObservable: this._options.subject.getScene().onBeforeRenderObservable,
-                timeout: this._options.duration ?? 1,
+                timeout: this._options.duration ?? 1000,
                 onTick: () => {
                     this._options.subject.lookAt(this._options.target.position);
                 },
@@ -33,6 +33,7 @@ export class AimAction extends BaseAction<IAimActionOptions> {
                     resolve();
                 },
             });
+            this._timer.start();
         });
     }
 
