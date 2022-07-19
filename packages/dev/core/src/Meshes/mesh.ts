@@ -625,8 +625,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
-            // Enabled
-            this.setEnabled(source.isEnabled());
+            // Enabled. We shouldn't need to check the source's ancestors, as this mesh
+            // will have the same ones.
+            this.setEnabled(source.isEnabled(false));
 
             // Parent
             this.parent = source.parent;
