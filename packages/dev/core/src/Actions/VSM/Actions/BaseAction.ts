@@ -10,6 +10,9 @@ export interface IActionOptions {
     playCount?: number;
     repeatUntilStopped?: boolean;
     parallelActions?: BaseAction<IActionOptions>[];
+    /**
+     * If set to true the action will be considered done after it is done with its own action, not waiting for the parallel actions to be done.
+     */
     separateParallelExecution?: boolean;
     nextActions?: BaseAction<IActionOptions>[];
     customEventManager?: CustomEventManager;
@@ -46,7 +49,7 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
         if (this._options.nextActions) {
             this.nextActions.push(...this._options.nextActions);
         }
-        if(this._options.customEventManager) {
+        if (this._options.customEventManager) {
             this._customEventManager = this._options.customEventManager;
         }
         this.onActionExecutionStartedObservable.add(() => {
@@ -61,7 +64,9 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
                     this.execute();
                 } else {
                     resolve();
+                    console.log("Action done", this);
                     this.nextActions.forEach((action) => {
+                        console.log("Next action: ", action);
                         action.execute();
                     });
                 }
@@ -96,6 +101,7 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
         const executeFunction = async () => {
             await this._execute();
             if (!this._options.separateParallelExecution && this.parallelActions.length) {
+                console.log("done, waiting for parallel actions to finish", this);
                 // need to wait for all parallel actions to be done
                 await Promise.all(this.parallelActions.map((action) => action.waitForDoneAsync));
             }

@@ -20,7 +20,7 @@
                     "parameters": {
                         "subject": 0,
                         "showHideEffect": 2,
-                        "duration": 1.2
+                        "duration": 1
                     },
                     "next": 3,
                     "parallel": 4,
@@ -54,11 +54,12 @@
                             0.8554978
                         ]
                     },
-                    "type": "rotate"
+                    "type": "rotate",
+                    "next": 5
                 },
                 {
                     "parameters": {
-                        "duration": 1.2,
+                        "duration": 2,
                         "space": "object",
                         "subject": 0,
                         "playCount": 1,
@@ -70,12 +71,22 @@
                         ]
                     },
                     "type": "rotate"
+                },
+                {
+                    "parameters": {
+                        "event": "rotationEnded"
+                    },
+                    "type": "raiseEvent"
                 }
             ],
             "behaviors": [
                 {
                     "action": 0,
                     "trigger": 0
+                },
+                {
+                    "action": 1,
+                    "trigger": 2
                 },
                 {
                     "action": 1,
@@ -102,7 +113,15 @@
                 },
                 {
                     "type": "tap",
-                    "subject": 1
+                    "parameters": {
+                        "subject": 1
+                    }
+                },
+                {
+                    "type": "event",
+                    "parameters": {
+                        "event": "rotationEnded"
+                    }
                 }
             ]
         }
