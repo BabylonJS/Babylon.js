@@ -6,7 +6,7 @@ import { Color3 } from "core/Maths/math.color";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 import { Material } from "core/Materials/material";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "core/Meshes/mesh";
 import type { Nullable } from "core/types";
 
 export type GetGltfNodeTargetFn = (source: IGLTF, indices: string) => any;

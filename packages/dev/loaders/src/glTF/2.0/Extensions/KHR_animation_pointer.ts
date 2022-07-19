@@ -7,7 +7,8 @@ import type { IAnimation, IAnimationChannel, _IAnimationSamplerData, IAnimationS
 
 import { AccessorType, AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { GetGltfNodeTargetFn, CoreAnimationPointerMap, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
+import { CoreAnimationPointerMap } from "./KHR_animation_pointer.map";
+import type { GetGltfNodeTargetFn, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
 
 const NAME = GLTFLoader._KHRAnimationPointerName;
 

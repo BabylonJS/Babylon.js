@@ -73,7 +73,7 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * The name of the node's TRS property to modify, 
+     * The name of the node's TRS property to modify,
      * or the weights of the Morph Targets it instantiates,
      * or pointer is use of KHR_animation_pointer extension
      */
@@ -93,7 +93,7 @@ declare module BABYLON.GLTF2 {
         /**
          * Weights
          */
-        WEIGHTS = "weights",        
+        WEIGHTS = "weights",
         /**
          * Pointer
          */
