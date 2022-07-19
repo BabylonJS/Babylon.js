@@ -1,6 +1,6 @@
 import type { AssetContainer } from "core/assetContainer";
 import type { Camera } from "core/Cameras/camera";
-import type { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync} from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -8,7 +8,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { DataReader } from "core/Misc/dataReader";
 import { Observable } from "core/Misc/observable";
 import { GLTFValidation } from "./glTFValidation";
-import type { ILoader, ILoaderData} from "./abstractFileLoader";
+import type { ILoader, ILoaderData } from "./abstractFileLoader";
 import { AbstractFileLoader, readAsync } from "./abstractFileLoader";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";

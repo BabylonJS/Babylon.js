@@ -35,7 +35,9 @@ export class RotateAction extends BaseAction<IRotateActionOptions> {
                     value: this._options.rotationQuaternion.clone() ?? new Quaternion(),
                 },
             ]);
-            this._animatable = this._options.subject.getScene().beginDirectAnimation(this._options.subject, [rotateAnimation], 0, frameRate, false,  1000 / (this._options.duration || 1000), resolve);
+            this._animatable = this._options.subject
+                .getScene()
+                .beginDirectAnimation(this._options.subject, [rotateAnimation], 0, frameRate, false, 1000 / (this._options.duration || 1000), resolve);
         });
     }
 
