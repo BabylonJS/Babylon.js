@@ -1,3 +1,5 @@
-export function Workbench() {
-    return <div>Hello, world! I am the VSM!</div>;
-}
+export type WorkbenchProps = {};
+
+export const Workbench: React.FC<WorkbenchProps> = () => {
+    return <div>VSM Initial Skeleton</div>;
+};
