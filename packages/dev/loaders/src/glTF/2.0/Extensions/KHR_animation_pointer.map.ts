@@ -94,7 +94,11 @@ const _getMinusFloat: GetValueFn = (_target: any, source: Float32Array, offset: 
     return -(scale ? source[offset] * scale : source[offset]);
 };
 
-const _getFloat2: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const _getNextFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+    return (scale ? source[offset + 1] * scale : source[offset + 1]);
+};
+
+const _getFloatBy2: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return (scale ? source[offset] * scale : source[offset]) * 2;
 };
 
@@ -274,13 +278,13 @@ const CoreAnimationCamerasPointerMap: any = {
         xmag: {
             properties: [
                 new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoLeft", _getMinusFloat),
-                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoRight"),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoRight", _getNextFloat),
             ],
         },
         ymag: {
             properties: [
                 new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoBottom", _getMinusFloat),
-                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoTop"),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoTop", _getNextFloat),
             ],
         },
         zfar: {
@@ -329,14 +333,14 @@ const CoreAnimationMaterialsPointerMap: any = {
                         properties: [
                             // MAY introduce set scale(Vector2) into texture.
                             new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uScale"),
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vScale"),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vScale", _getNextFloat),
                         ],
                     },
                     offset: {
                         properties: [
                             // MAY introduce set offset(Vector2) into texture.
                             new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uOffset"),
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vOffset"),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vOffset", _getNextFloat),
                         ],
                     },
                     rotation: {
@@ -364,14 +368,14 @@ const CoreAnimationMaterialsPointerMap: any = {
                     properties: [
                         // MAY introduce set scale(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uScale"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vScale"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vScale", _getNextFloat),
                     ],
                 },
                 offset: {
                     properties: [
                         // MAY introduce set offset(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uOffset"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vOffset"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vOffset", _getNextFloat),
                     ],
                 },
                 rotation: {
@@ -387,14 +391,14 @@ const CoreAnimationMaterialsPointerMap: any = {
                     properties: [
                         // MAY introduce set scale(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uScale"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vScale"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vScale", _getNextFloat),
                     ],
                 },
                 offset: {
                     properties: [
                         // MAY introduce set offset(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uOffset"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vOffset"),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vOffset", _getNextFloat),
                     ],
                 },
                 rotation: {
@@ -488,10 +492,10 @@ const CoreAnimationExtensionsPointerMap: any = {
             },
             spot: {
                 innerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloat2 )],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloatBy2 )],
                 },
                 outerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloat2 )],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloatBy2 )],
                 },
             },
         },
