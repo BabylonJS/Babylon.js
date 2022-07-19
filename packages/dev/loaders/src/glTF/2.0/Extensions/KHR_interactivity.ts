@@ -10,6 +10,7 @@ import { RotateAction } from "core/Actions/VSM/Actions/RotateAction";
 import { ShowAction } from "core/Actions/VSM/Actions/ShowAction";
 import { HideAction } from "core/Actions/VSM/Actions/HideAction";
 import { RaiseEventAction } from "core/Actions/VSM/Actions/RaiseEventAction";
+import { NullAction } from "core/Actions/VSM/Actions/NullAction";
 import { Animation } from "core/Animations/animation";
 
 import { EasingFunction, QuadraticEase } from "core/Animations/easing";
@@ -142,9 +143,15 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
             repeatUntilStopped: !actionData.parameters?.playCount,
             delay: actionData.parameters?.delay,
             customEventManager: this._loader._behaviorManager.customEventManager,
+            separateParallelExecution: true,
         };
         // TODO handle the other action types
         switch (actionData.type) {
+            case "group":
+                return new NullAction({
+                    ...options,
+                    separateParallelExecution: false,
+                });
             case "spin":
                 return new SpinAction({
                     subject,
@@ -232,12 +239,16 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                           hideAnimation: animation,
                           duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                           applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
+                          ...options,
+                          repeatUntilStopped: false,
                       })
                     : new ShowAction({
                           subject,
                           animation,
                           duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                           applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
+                          ...options,
+                          repeatUntilStopped: false,
                       });
             }
         }
