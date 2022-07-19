@@ -7,3 +7,4 @@ export * from "./WaitAction";
 export * from "./ShowAction";
 export * from "./HideAction";
 export * from "./NullAction";
+export * from "./TranslateAction";
