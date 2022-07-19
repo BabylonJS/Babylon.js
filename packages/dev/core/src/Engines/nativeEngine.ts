@@ -3231,8 +3231,6 @@ export class NativeEngine extends Engine {
         x?: number,
         y?: number
     ): Promise<ArrayBufferView> {
-        // TODO: Bump the protocol version, or check for the existence of the readTexture function.
-
         if (faceIndex !== undefined && faceIndex !== -1) {
             throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
         }
