@@ -3244,7 +3244,15 @@ export class NativeEngine extends Engine {
             y ?? 0,
             width,
             height,
-            buffer ?? null,
-        );
+            buffer?.buffer ?? null,
+            buffer?.byteOffset ?? 0,
+            buffer?.byteLength ?? 0,
+        ).then((rawBuffer) => {
+            if (!buffer) {
+                buffer = new Uint8Array(rawBuffer);
+            }
+    
+            return buffer;
+        });
     }
 }
