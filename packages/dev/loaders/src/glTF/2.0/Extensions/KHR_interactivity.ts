@@ -156,7 +156,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                 return new RotateAction({
                     subject,
                     rotationQuaternion: Quaternion.FromArray(actionData.parameters?.rotation),
-                    duration: (actionData.parameters?.duration !== undefined) ?  actionData.parameters?.duration * 1000 : undefined,
+                    duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                     ...options,
                 });
             case "hide":
@@ -226,13 +226,13 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     ? new HideAction({
                           subject,
                           hideAnimation: animation,
-                          duration: (actionData.parameters?.duration !== undefined) ?  actionData.parameters?.duration * 1000 : undefined,
+                          duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                           applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
                       })
                     : new ShowAction({
                           subject,
                           animation,
-                          duration: (actionData.parameters?.duration !== undefined) ?  actionData.parameters?.duration * 1000 : undefined,
+                          duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                           applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
                       });
             }

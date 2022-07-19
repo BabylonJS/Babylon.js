@@ -32,7 +32,7 @@ export class SpinAction extends BaseAction<ISpinActionOptions> {
                 onTick: (data) => {
                     let amountRotated = 0;
                     let amountToRotate = (data.timeSincePreviousTick / timeout) * Math.PI * 2;
-                    if ((amountRotated + amountToRotate) > Math.PI * 2) {
+                    if (amountRotated + amountToRotate > Math.PI * 2) {
                         amountToRotate = Math.PI * 2 - amountRotated;
                     }
                     this._options.subject.rotate(this._options.direction || Vector3.UpReadOnly, amountToRotate, this._options.space);
