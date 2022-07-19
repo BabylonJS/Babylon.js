@@ -95,7 +95,7 @@ const _getMinusFloat: GetValueFn = (_target: any, source: Float32Array, offset: 
 };
 
 const _getNextFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
-    return (scale ? source[offset + 1] * scale : source[offset + 1]);
+    return scale ? source[offset + 1] * scale : source[offset + 1];
 };
 
 const _getFloatBy2: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
@@ -492,10 +492,10 @@ const CoreAnimationExtensionsPointerMap: any = {
             },
             spot: {
                 innerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloatBy2 )],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloatBy2)],
                 },
                 outerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloatBy2 )],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloatBy2)],
                 },
             },
         },
