@@ -5,8 +5,8 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import type { Buffer, VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Mesh } from "core/Meshes/mesh";
-import { Camera } from "core/Cameras/camera";
-import { Light } from "core/Lights/light";
+import type { Camera } from "core/Cameras/camera";
+import type { Light } from "core/Lights/light";
 
 import type * as GLTF2 from "babylonjs-gltf2interface";
 
