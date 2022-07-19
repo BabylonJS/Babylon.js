@@ -6,3 +6,4 @@ export * from "./AimAction";
 export * from "./WaitAction";
 export * from "./ShowAction";
 export * from "./HideAction";
+export * from "./NullAction";
