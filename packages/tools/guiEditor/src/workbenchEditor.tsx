@@ -321,8 +321,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         {this.createBlackLine()}
                         {
                             <div className={"toolbar-content-sub1"}>
-                                {this.createToolbarHelper(ControlTypes.slice(0, Math.floor(ControlTypes.length / 2)))}
-                                {this.createToolbarHelper(ControlTypes.slice(ControlTypes.length / 2))}
+                                {this.createToolbarHelper(ControlTypes.slice(0, Math.ceil(ControlTypes.length / 2)))}
+                                {this.createToolbarHelper(ControlTypes.slice(Math.ceil(ControlTypes.length / 2)))}
                             </div>
                         }
                     </div>
