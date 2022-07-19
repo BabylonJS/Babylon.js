@@ -76,7 +76,7 @@
                     "parameters": {
                         "subject": 0,
                         "target": 1,
-                        "duration": 10
+                        "duration": 8
                     },
                     "type": "aim"
                 },
@@ -107,9 +107,9 @@
                         "space": "object",
                         "subject": 1,
                         "direction": [
-                            0,
-                            0,
-                            0
+                            3,
+                            2,
+                            1
                         ]
                     },
                     "type": "move"
