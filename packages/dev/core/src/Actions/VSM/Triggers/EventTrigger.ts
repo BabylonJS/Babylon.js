@@ -1,5 +1,5 @@
-import { Nullable } from "../../../types";
-import { ICustomEvent } from "../customEventManager";
+import type { Nullable } from "../../../types";
+import type { ICustomEvent } from "../customEventManager";
 import { BaseTrigger } from "./BaseTrigger";
 
 // Hover trigger is basically OnPointerOver trigger (and OnPointerOut trigger)
