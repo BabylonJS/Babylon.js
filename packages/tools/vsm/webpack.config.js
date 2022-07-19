@@ -9,7 +9,7 @@ module.exports = (env) => {
         devtool: production ? "source-map" : "eval-cheap-module-source-map",
         output: {
             path: path.resolve(__dirname, "dist"),
-            filename: "babylon.guiEditor.js",
+            filename: "babylon.vsm.js",
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
@@ -40,9 +40,9 @@ module.exports = (env) => {
                 sideEffects: true,
                 tsOptions: {
                     compilerOptions: {
-                        "rootDir": "../../",
-                    }
-                }
+                        rootDir: "../../",
+                    },
+                },
             }),
         },
         devServer: {

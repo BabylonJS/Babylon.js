@@ -110,58 +110,6 @@ checkBabylonVersionAsync().then(() => {
 
             BABYLON.VSM.Show({
                 hostElement: hostElement,
-                //customLoadObservable: customLoadObservable,
-                //currentSnippetToken: currentSnippetToken,
-                /*customSave: {
-                    label: "Save as unique URL",
-                    action: (data) => {
-                        return new Promise((resolve, reject) => {
-                            const xmlHttp = new XMLHttpRequest();
-                            xmlHttp.onreadystatechange = () => {
-                                if (xmlHttp.readyState == 4) {
-                                    if (xmlHttp.status == 200) {
-                                        const snippet = JSON.parse(xmlHttp.responseText);
-                                        let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                                        let newUrl = baseUrl + "#" + snippet.id;
-                                        currentSnippetToken = snippet.id;
-                                        if (snippet.version && snippet.version != "0") {
-                                            newUrl += "#" + snippet.version;
-                                            currentSnippetToken += "#" + snippet.version;
-                                        }
-                                        location.href = newUrl;
-                                        resolve(currentSnippetToken);
-                                    } else {
-                                        reject("Unable to save");
-                                    }
-                                }
-                            };
-                            xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
-                            xmlHttp.setRequestHeader("Content-Type", "application/json");
-                            const dataToSend = {
-                                payload: JSON.stringify({
-                                    gui: data,
-                                }),
-                                name: "",
-                                description: "",
-                                tags: "",
-                            };
-                            xmlHttp.send(JSON.stringify(dataToSend));
-                        });
-                    },
-                },
-                customLoad: {
-                    label: "Load as unique URL",
-                    action: (data) => {
-                        return new Promise((resolve, reject) => {
-                            let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                            let dataHash = data.startsWith('#') ? data : '#' + data;
-                            let newUrl = baseUrl + dataHash;
-                            currentSnippetToken = data;
-                            location.href = newUrl;
-                            resolve();
-                        });
-                    },
-                },*/
             });
         };
 
