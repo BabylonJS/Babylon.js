@@ -263,9 +263,6 @@
             "preLaunchTask": "VSM Serve (Dev)"
         },
         {
-            /*
-            Launch the playground to be use to test changes in dev packages
-            */
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch VSM (Edge)",
@@ -274,9 +271,6 @@
             "preLaunchTask": "VSM Serve for core (Dev)"
         },
         {
-            /*
-            Launch the playground to be use to test changes in dev packages
-            */
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch VSM (Chrome)",

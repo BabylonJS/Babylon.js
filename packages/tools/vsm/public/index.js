@@ -75,7 +75,7 @@ let checkBabylonVersionAsync = function () {
 };
 
 checkBabylonVersionAsync().then(() => {
-    loadScriptAsync("babylon.guiEditor.js").then(() => {
+    loadScriptAsync("babylon.vsm.js").then(() => {
         let customLoadObservable = new BABYLON.Observable();
         let editorDisplayed = false;
 
