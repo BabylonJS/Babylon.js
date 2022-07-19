@@ -3235,22 +3235,24 @@ export class NativeEngine extends Engine {
             throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
         }
 
-        return this._engine.readTexture(
-            texture._hardwareTexture?.underlyingResource,
-            level ?? 0,
-            x ?? 0,
-            y ?? 0,
-            width,
-            height,
-            buffer?.buffer ?? null,
-            buffer?.byteOffset ?? 0,
-            buffer?.byteLength ?? 0,
-        ).then((rawBuffer) => {
-            if (!buffer) {
-                buffer = new Uint8Array(rawBuffer);
-            }
-    
-            return buffer;
-        });
+        return this._engine
+            .readTexture(
+                texture._hardwareTexture?.underlyingResource,
+                level ?? 0,
+                x ?? 0,
+                y ?? 0,
+                width,
+                height,
+                buffer?.buffer ?? null,
+                buffer?.byteOffset ?? 0,
+                buffer?.byteLength ?? 0
+            )
+            .then((rawBuffer) => {
+                if (!buffer) {
+                    buffer = new Uint8Array(rawBuffer);
+                }
+
+                return buffer;
+            });
     }
 }
