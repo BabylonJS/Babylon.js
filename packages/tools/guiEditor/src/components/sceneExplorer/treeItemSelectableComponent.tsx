@@ -26,6 +26,7 @@ export interface ITreeItemSelectableComponentProps {
 }
 
 export interface ITreeItemSelectableComponentState {
+    isExpanded: boolean;
     dragOver: boolean;
     isSelected: boolean;
     isHovered: boolean;
@@ -45,7 +46,13 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { dragOver: false, dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.selectedEntities.includes(this.props.entity) };
+        this.state = {
+            isExpanded: true,
+            dragOver: false,
+            dragOverLocation: DragOverLocation.NONE,
+            isHovered: false,
+            isSelected: this.props.selectedEntities.includes(this.props.entity),
+        };
 
         this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(() => {
             this.setState({ isSelected: this.props.globalState.selectedControls.includes(this.props.entity) });
@@ -60,7 +67,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     }
 
     switchExpandedState(): void {
-        this.props.entity.reservedDataStore.setExpandedState(!this.props.entity.reservedDataStore.isExpanded);
+        this.setState({ isExpanded: !this.state.isExpanded });
     }
 
     shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isSelected: boolean }) {
@@ -112,6 +119,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             if (item.name == "Art-Board-Background") {
                 return null;
             }
+
             return (
                 <TreeItemSelectableComponent
                     globalState={this.props.globalState}
@@ -140,16 +148,10 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         };
         const entity = this.props.entity;
 
-        if (!entity.reservedDataStore) {
-            entity.reservedDataStore = {
-                isExpanded: true,
-                setExpandedState: (expanded: boolean) => (entity.reservedDataStore.isExpanded = expanded),
-            };
-        }
-        const isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
-        entity.reservedDataStore.isExpanded = isExpanded;
+        const isExpanded = this.state.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
 
         const chevron = isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />;
+
         const children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
@@ -217,10 +219,11 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     }}
                 >
                     {hasChildren && (
-                        <div className="arrow icon" onClick={() => this.switchExpandedState()}>
+                        <div className="arrow" onClick={() => this.switchExpandedState()}>
                             {chevron}
                         </div>
                     )}
+
                     <ControlTreeItemComponent
                         globalState={this.props.globalState}
                         extensibilityGroups={this.props.extensibilityGroups}
