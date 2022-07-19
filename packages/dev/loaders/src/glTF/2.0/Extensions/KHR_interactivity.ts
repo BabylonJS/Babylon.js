@@ -7,6 +7,8 @@ import { EventTrigger } from "core/Actions/VSM/Triggers/EventTrigger";
 import { TapTrigger } from "core/Actions/VSM/Triggers/TapTrigger";
 import { SpinAction } from "core/Actions/VSM/Actions/SpinAction";
 import { RotateAction } from "core/Actions/VSM/Actions/RotateAction";
+import { AimAction } from "core/Actions/VSM/Actions/AimAction";
+import { TranslateAction } from "core/Actions/VSM/Actions/TranslateAction";
 import { ShowAction } from "core/Actions/VSM/Actions/ShowAction";
 import { HideAction } from "core/Actions/VSM/Actions/HideAction";
 import { RaiseEventAction } from "core/Actions/VSM/Actions/RaiseEventAction";
@@ -164,12 +166,28 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                     ...options,
                 });
+                case "move":
+                    return new TranslateAction({
+                        subject,
+                        translation: Vector3.FromArray(actionData.parameters?.direction),
+                        duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
+                        ...options,
+                        repeatUntilStopped: false,
+                    });
             case "raiseEvent":
                 return new RaiseEventAction({
                     eventName: actionData.parameters?.event,
                     ...options,
                     repeatUntilStopped: false,
                 });
+            case "aim": {
+                return new AimAction({
+                    subject,
+                    target: this._getSubjectForData(actionData.parameters?.target),
+                    duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
+                    ...options,
+                });
+            }
             case "hide":
             case "show": {
                 // calculate "fps" with duration
@@ -258,6 +276,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
     private _processAction(actionData: { type: string; parameters?: { subject?: number }; next?: number; parallel?: number; _babylonAction?: any }) {
         if (!actionData._babylonAction) {
             const actionForData = this._generateAction(actionData);
+            actionData._babylonAction = actionForData;
             if (actionForData) {
                 if (typeof actionData.next === "number") {
                     const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.next}`, this._actions /* as IAction[]*/, actionData.next));
@@ -272,7 +291,6 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     }
                 }
             }
-            actionData._babylonAction = actionForData;
         }
         return actionData._babylonAction;
     }
