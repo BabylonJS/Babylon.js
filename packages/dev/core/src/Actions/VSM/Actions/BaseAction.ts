@@ -34,24 +34,21 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
     public onActionDoneObservable = new Observable<BaseAction<IActionOptions>>();
     public waitForDoneAsync: Promise<void>;
 
-    protected _customEventManager: Nullable<CustomEventManager> = null;
+    protected _customEventManager: Nullable<CustomEventManager>;
     public set customEventManager(customEventManager: Nullable<CustomEventManager>) {
         this._customEventManager = customEventManager;
     }
 
     constructor(protected _options: T, protected _scene?: Nullable<Scene>) {
-        if (!this._options) {
-            this._options = {} as T;
-        }
+        this._options = this._options || ({} as T);
+
         if (this._options.parallelActions) {
             this.parallelActions.push(...this._options.parallelActions);
         }
         if (this._options.nextActions) {
             this.nextActions.push(...this._options.nextActions);
         }
-        if (this._options.customEventManager) {
-            this._customEventManager = this._options.customEventManager;
-        }
+        this._customEventManager = this._options.customEventManager ?? null;
         this.onActionExecutionStartedObservable.add(() => {
             this._options.playCount && this._options.playCount--;
             this.parallelActions.forEach((action) => {
