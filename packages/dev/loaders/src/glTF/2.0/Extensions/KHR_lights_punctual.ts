@@ -8,7 +8,7 @@ import { SpotLight } from "core/Lights/spotLight";
 import { Light } from "core/Lights/light";
 import type { TransformNode } from "core/Meshes/transformNode";
 
-import type { IKHRLightsPunctual_LightReference} from "babylonjs-gltf2interface";
+import type { IKHRLightsPunctual_LightReference } from "babylonjs-gltf2interface";
 import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { INode, IKHRLight } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
