@@ -186,6 +186,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     target: this._getSubjectForData(actionData.parameters?.target),
                     duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                     ...options,
+                    repeatUntilStopped: actionData.parameters?.duration === undefined,
                 });
             }
             case "hide":
