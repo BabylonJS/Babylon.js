@@ -911,6 +911,7 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
+            const directionModifier = (this.invertRotation ? -1 : 1);
             let inertialAlphaOffset = this.inertialAlphaOffset;
             if (this.beta <= 0) {
                 inertialAlphaOffset *= -1;
@@ -921,9 +922,9 @@ export class ArcRotateCamera extends TargetCamera {
             if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) {
                 inertialAlphaOffset *= -1;
             }
-            this.alpha += inertialAlphaOffset * (this.invertRotation ? -this.inverseRotationSpeed : 1);
+            this.alpha += inertialAlphaOffset * directionModifier;
 
-            this.beta += this.inertialBetaOffset * (this.invertRotation ? -this.inverseRotationSpeed : 1);
+            this.beta += this.inertialBetaOffset * directionModifier;
 
             this.radius -= this.inertialRadiusOffset;
             this.inertialAlphaOffset *= this.inertia;
