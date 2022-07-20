@@ -1907,7 +1907,7 @@ export class ThinEngine {
      * Gets a boolean indicating if depth testing is enabled
      * @returns the current state
      */
-     public getDepthBuffer(): boolean {
+    public getDepthBuffer(): boolean {
         return this._depthCullingState.depthTest;
     }
 
