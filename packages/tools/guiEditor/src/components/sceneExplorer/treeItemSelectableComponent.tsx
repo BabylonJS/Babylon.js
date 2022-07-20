@@ -46,9 +46,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-<<<<<<< Updated upstream
-        this.state = {expand: true, dragOver: false, dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.selectedEntities.includes(this.props.entity) };
-=======
         this.state = {
             expand: true,
             dragOver: false,
@@ -56,7 +53,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             isHovered: false,
             isSelected: this.props.selectedEntities.includes(this.props.entity),
         };
->>>>>>> Stashed changes
 
         this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(() => {
             this.setState({ isSelected: this.props.globalState.selectedControls.includes(this.props.entity) });
@@ -72,12 +68,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
     switchExpandedState(): void {
         this.props.entity.reservedDataStore.setExpandedState(!this.props.entity.reservedDataStore.isExpanded);
-<<<<<<< Updated upstream
-        //this.forceUpdate()
-        this.setState({expand: !this.state.expand});
-=======
         this.setState({ expand: !this.state.expand });
->>>>>>> Stashed changes
     }
 
     shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isSelected: boolean }) {
@@ -115,15 +106,9 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this.props.globalState.selectionLock = true;
     }
 
-    
     renderChildren(isExpanded: boolean, offset = true) {
-      
         const entity = this.props.entity;
-<<<<<<< Updated upstream
-        
-=======
 
->>>>>>> Stashed changes
         if ((!entity.getChildren && !entity.children) || !isExpanded) {
             return null;
         }
@@ -170,11 +155,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                 setExpandedState: (expanded: boolean) => (entity.reservedDataStore.isExpanded = expanded),
             };
         }
-<<<<<<< Updated upstream
-        const isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities)
-=======
         const isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
->>>>>>> Stashed changes
 
         entity.reservedDataStore.isExpanded = isExpanded;
 
@@ -247,22 +228,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     }}
                 >
                     {hasChildren && (
-<<<<<<< Updated upstream
-                        <div className="arrow icon" onClick={(event) => {
-                            this.switchExpandedState();
-                            if(event.shiftKey){
-                                    while(hasChildren){
-                                        this.renderChildren(true);
-                                        entity = entity.children[0];
-                                        children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
-                                        hasChildren = children.length > 0;
-                                        entity.reservedDataStore.isExpanded = true;
-                                        
-                                    }
-                                    
-                                }
-                            }}>
-=======
                         <div
                             className="arrow icon"
                             onClick={(event) => {
@@ -281,7 +246,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                                 }
                             }}
                         >
->>>>>>> Stashed changes
                             {chevron}
                         </div>
                     )}
@@ -349,6 +313,3 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this._secondDragEnter = false;
     }
 }
-
-
-
