@@ -3218,4 +3218,41 @@ export class NativeEngine extends Engine {
         const result = { ascent: 0, height: 0, descent: 0 };
         return result;
     }
+
+    public _readTexturePixels(
+        texture: InternalTexture,
+        width: number,
+        height: number,
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean,
+        x?: number,
+        y?: number
+    ): Promise<ArrayBufferView> {
+        if (faceIndex !== undefined && faceIndex !== -1) {
+            throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
+        }
+
+        return this._engine
+            .readTexture(
+                texture._hardwareTexture?.underlyingResource,
+                level ?? 0,
+                x ?? 0,
+                y ?? 0,
+                width,
+                height,
+                buffer?.buffer ?? null,
+                buffer?.byteOffset ?? 0,
+                buffer?.byteLength ?? 0
+            )
+            .then((rawBuffer) => {
+                if (!buffer) {
+                    buffer = new Uint8Array(rawBuffer);
+                }
+
+                return buffer;
+            });
+    }
 }

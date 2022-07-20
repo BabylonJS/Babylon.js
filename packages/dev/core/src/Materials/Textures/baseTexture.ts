@@ -687,7 +687,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
      * @param noDataConversion false to convert the data to Uint8Array (if texture type is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
      * @param x defines the region x coordinates to start reading from (default to 0)
-     * @param y defines the region y coordinates to start reading from (default to 0)pe is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
+     * @param y defines the region y coordinates to start reading from (default to 0)
      * @param width defines the region width to read from (default to the texture size at level)
      * @param height defines the region width to read from (default to the texture size at level)
      * @returns The Array buffer promise containing the pixels data.
