@@ -259,6 +259,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     public copyToClipboard(copyFn: (content: string) => void) {
+        console.log(this.props.globalState.selectedControls);
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
             const obj = {};
@@ -280,6 +281,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public pasteFromClipboard(clipboardContents: string) {
         try {
+            const ct = this.props.globalState.selectedControls[0];
+            if( ct !== null && ct.name !== "root"){
+                this.parent(ct);
+            }
+            
             const parsed = JSON.parse(clipboardContents);
             if (parsed.GUIClipboard) {
                 const newSelection = [];
