@@ -5,10 +5,11 @@ import { AnimationGroup } from "core/Animations/animationGroup";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { IAnimation, IAnimationChannel, _IAnimationSamplerData, IAnimationSampler } from "../glTFLoaderInterfaces";
 
-import { AccessorType, AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
+import { AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babylonjs-gltf2interface";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { CoreAnimationPointerMap } from "./KHR_animation_pointer.map";
 import type { GetGltfNodeTargetFn, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
+import { _GLTFUtilities } from "../glTFUtilities";
 
 const NAME = GLTFLoader._KHRAnimationPointerName;
 
@@ -29,28 +30,6 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      */
     public static IgnoreInvalidPointer: boolean = true;
 
-    /**
-     * Used internally to determine how much data to be gather from input buffer at each key frame.
-     * @param type the accessor type
-     * @returns the number of item to be gather at each keyframe
-     */
-    static _GetAnimationOutputStride(type: AccessorType): number {
-        switch (type) {
-            case AccessorType.SCALAR:
-                return 1;
-            case AccessorType.VEC2:
-                return 2;
-            case AccessorType.VEC3:
-                return 3;
-            case AccessorType.VEC4:
-            case AccessorType.MAT2:
-                return 4;
-            case AccessorType.MAT3:
-                return 9;
-            case AccessorType.MAT4:
-                return 16;
-        }
-    }
     /**
      * The name of this extension.
      */
@@ -143,7 +122,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
 
         const pointer = channel.target.extensions?.KHR_animation_pointer?.pointer;
         if (!pointer) {
-            throw new Error(`${context}/target/extensions.KHR_animation_pointer.pointer MUST be set.`);
+            throw new Error(`${context}/target/extensions/${this.name}: Pointer is missing`);
         }
 
         const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
@@ -159,10 +138,10 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                 if (babylonAnimationGroup) {
                     const outputAccessor = ArrayItem.Get(`${context}/output`, this._loader.gltf.accessors, sampler.output);
                     // stride is the size of each element stored into the output buffer.
-                    const stride = animationTarget.stride ?? KHR_animation_pointer._GetAnimationOutputStride(outputAccessor.type);
+                    const stride = animationTarget.stride ?? _GLTFUtilities._GetDataAccessorElementCount(outputAccessor.type);
                     const fps = this._loader.parent.targetFps;
 
-                    // we extract the corresponding values from the readed value.
+                    // we extract the corresponding values from the read value.
                     // the reason for that is one GLTF value may be dispatched to several Babylon properties
                     // one of example is baseColorFactor which is a Color4 under GLTF and dispatched to
                     // - albedoColor as Color3(Color4.r,Color4.g,Color4.b)

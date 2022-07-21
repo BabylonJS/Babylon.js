@@ -10,8 +10,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { Nullable } from "core/types";
 
 export type GetGltfNodeTargetFn = (source: IGLTF, indices: string) => any;
-export type GetValueFn = (target: any, source: Float32Array, offset: number, scale?: number) => any;
-export type GetStrideFn = (target: any) => number;
+type GetValueFn = (target: any, source: Float32Array, offset: number, scale?: number) => any;
 
 export interface IAnimationPointerPropertyInfos {
     type: number;
@@ -21,7 +20,7 @@ export interface IAnimationPointerPropertyInfos {
     buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable>, params?: any): void;
 }
 
-const _parseIntIndex = (str: string) => {
+const parseIntIndex = (str: string) => {
     const targetIndex = parseInt(str);
     if (isNaN(targetIndex)) {
         return -1;
@@ -29,9 +28,9 @@ const _parseIntIndex = (str: string) => {
     return targetIndex;
 };
 
-const _getGltfNode: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
+const getGltfNode: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     if (gltf.nodes) {
-        const i = _parseIntIndex(index);
+        const i = parseIntIndex(index);
         if (i != -1) {
             return gltf.nodes[i];
         }
@@ -39,9 +38,9 @@ const _getGltfNode: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     return null;
 };
 
-const _getGltfMaterial: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
+const getGltfMaterial: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     if (gltf.materials) {
-        const i = _parseIntIndex(index);
+        const i = parseIntIndex(index);
         if (i != -1) {
             return gltf.materials[i];
         }
@@ -49,9 +48,9 @@ const _getGltfMaterial: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     return null;
 };
 
-const _getGltfCamera: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
+const getGltfCamera: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     if (gltf.cameras) {
-        const i = _parseIntIndex(index);
+        const i = parseIntIndex(index);
         if (i != -1) {
             return gltf.cameras[i];
         }
@@ -59,50 +58,50 @@ const _getGltfCamera: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     return null;
 };
 
-const _getGltfExtension: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
+const getGltfExtension: GetGltfNodeTargetFn = (gltf: IGLTF, index: string) => {
     if (gltf.extensions && index) {
         return gltf.extensions[index];
     }
     return null;
 };
 
-const _getMatrix: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getMatrix: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? Matrix.FromArray(source, offset).scale(scale) : Matrix.FromArray(source, offset);
 };
 
-const _getVector3: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getVector3: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? Vector3.FromArray(source, offset).scaleInPlace(scale) : Vector3.FromArray(source, offset);
 };
 
-const _getQuaternion: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getQuaternion: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? Quaternion.FromArray(source, offset).scaleInPlace(scale) : Quaternion.FromArray(source, offset);
 };
 
-const _getColor3: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getColor3: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? Color3.FromArray(source, offset).scale(scale) : Color3.FromArray(source, offset);
 };
 
-const _getAlpha: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getAlpha: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? source[offset + 3] * scale : source[offset + 3];
 };
 
-const _getFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? source[offset] * scale : source[offset];
 };
 
-const _getMinusFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getMinusFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return -(scale ? source[offset] * scale : source[offset]);
 };
 
-const _getNextFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getNextFloat: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return scale ? source[offset + 1] * scale : source[offset + 1];
 };
 
-const _getFloatBy2: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
+const getFloatBy2: GetValueFn = (_target: any, source: Float32Array, offset: number, scale?: number) => {
     return (scale ? source[offset] * scale : source[offset]) * 2;
 };
 
-const _getWeights: GetValueFn = (target: any, source: Float32Array, offset: number, scale?: number) => {
+const getWeights: GetValueFn = (target: any, source: Float32Array, offset: number, scale?: number) => {
     if (target._numMorphTargets) {
         const value = new Array<number>(target._numMorphTargets!);
         for (let i = 0; i < target._numMorphTargets!; i++) {
@@ -146,7 +145,7 @@ abstract class AbstractAnimationPointerPropertyInfos implements IAnimationPointe
 }
 
 class TransformNodeAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn = _getVector3) {
+    public constructor(type: number, name: string, get: GetValueFn = getVector3) {
         super(type, name, get);
     }
     public isValid(target: any): boolean {
@@ -159,7 +158,7 @@ class TransformNodeAnimationPointerPropertyInfos extends AbstractAnimationPointe
 }
 
 class CameraAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn = _getFloat) {
+    public constructor(type: number, name: string, get: GetValueFn = getFloat) {
         super(type, name, get);
     }
 
@@ -173,7 +172,7 @@ class CameraAnimationPointerPropertyInfos extends AbstractAnimationPointerProper
 }
 
 class MaterialAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn = _getFloat, public fillMode: any = Material.TriangleFillMode) {
+    public constructor(type: number, name: string, get: GetValueFn = getFloat, public fillMode: any = Material.TriangleFillMode) {
         super(type, name, get);
     }
 
@@ -194,7 +193,7 @@ class MaterialAnimationPointerPropertyInfos extends AbstractAnimationPointerProp
 }
 
 class LightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn = _getFloat) {
+    public constructor(type: number, name: string, get: GetValueFn = getFloat) {
         super(type, name, get);
     }
 
@@ -204,14 +203,14 @@ class LightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropert
 
     // note : the extensions array store directly the BabylonLight reference
     public buildAnimations(target: any, fps: number, keys: any[], group: AnimationGroup, animationTargetOverride: Nullable<IAnimatable> = null, params: any): void {
-        const i = _parseIntIndex(params[1]);
+        const i = parseIntIndex(params[1]);
         const l = i >= 0 && i < target.lights.length ? target.lights[i] : null;
         return this._buildAnimation(l._babylonLight, fps, keys, group, animationTargetOverride);
     }
 }
 
 class WeightAnimationPointerPropertyInfos extends AbstractAnimationPointerPropertyInfos {
-    public constructor(type: number, name: string, get: GetValueFn = _getWeights) {
+    public constructor(type: number, name: string, get: GetValueFn = getWeights) {
         super(type, name, get);
     }
     public isValid(target: any): boolean {
@@ -249,16 +248,16 @@ class WeightAnimationPointerPropertyInfos extends AbstractAnimationPointerProper
 }
 
 const CoreAnimationNodesPointerMap: any = {
-    getTarget: _getGltfNode,
+    getTarget: getGltfNode,
     hasIndex: true,
     matrix: {
-        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_MATRIX, "matrix", _getMatrix)],
+        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_MATRIX, "matrix", getMatrix)],
     },
     translation: {
         properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_VECTOR3, "position")],
     },
     rotation: {
-        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", _getQuaternion)],
+        properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", getQuaternion)],
     },
     scale: {
         properties: [new TransformNodeAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_VECTOR3, "scaling")],
@@ -273,18 +272,18 @@ const CoreAnimationNodesPointerMap: any = {
 
 const CoreAnimationCamerasPointerMap: any = {
     hasIndex: true,
-    getTarget: _getGltfCamera,
+    getTarget: getGltfCamera,
     orthographic: {
         xmag: {
             properties: [
-                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoLeft", _getMinusFloat),
-                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoRight", _getNextFloat),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoLeft", getMinusFloat),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoRight", getNextFloat),
             ],
         },
         ymag: {
             properties: [
-                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoBottom", _getMinusFloat),
-                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoTop", _getNextFloat),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoBottom", getMinusFloat),
+                new CameraAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "orthoTop", getNextFloat),
             ],
         },
         zfar: {
@@ -312,12 +311,12 @@ const CoreAnimationCamerasPointerMap: any = {
 
 const CoreAnimationMaterialsPointerMap: any = {
     hasIndex: true,
-    getTarget: _getGltfMaterial,
+    getTarget: getGltfMaterial,
     pbrMetallicRoughness: {
         baseColorFactor: {
             properties: [
-                new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "albedoColor", _getColor3),
-                new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "alpha", _getAlpha),
+                new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "albedoColor", getColor3),
+                new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "alpha", getAlpha),
             ],
         },
         metallicFactor: {
@@ -333,25 +332,25 @@ const CoreAnimationMaterialsPointerMap: any = {
                         properties: [
                             // MAY introduce set scale(Vector2) into texture.
                             new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uScale"),
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vScale", _getNextFloat),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vScale", getNextFloat),
                         ],
                     },
                     offset: {
                         properties: [
                             // MAY introduce set offset(Vector2) into texture.
                             new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.uOffset"),
-                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vOffset", _getNextFloat),
+                            new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.vOffset", getNextFloat),
                         ],
                     },
                     rotation: {
-                        properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.wAng", _getMinusFloat)],
+                        properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "albedoTexture.wAng", getMinusFloat)],
                     },
                 },
             },
         },
     },
     emissiveFactor: {
-        properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", _getColor3)],
+        properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3)],
     },
     normalTexture: {
         scale: {
@@ -368,18 +367,18 @@ const CoreAnimationMaterialsPointerMap: any = {
                     properties: [
                         // MAY introduce set scale(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uScale"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vScale", _getNextFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vScale", getNextFloat),
                     ],
                 },
                 offset: {
                     properties: [
                         // MAY introduce set offset(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.uOffset"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vOffset", _getNextFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.vOffset", getNextFloat),
                     ],
                 },
                 rotation: {
-                    properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.wAng", _getMinusFloat)],
+                    properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "ambientTexture.wAng", getMinusFloat)],
                 },
             },
         },
@@ -391,18 +390,18 @@ const CoreAnimationMaterialsPointerMap: any = {
                     properties: [
                         // MAY introduce set scale(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uScale"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vScale", _getNextFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vScale", getNextFloat),
                     ],
                 },
                 offset: {
                     properties: [
                         // MAY introduce set offset(Vector2) into texture.
                         new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.uOffset"),
-                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vOffset", _getNextFloat),
+                        new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.vOffset", getNextFloat),
                     ],
                 },
                 rotation: {
-                    properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.wAng", _getMinusFloat)],
+                    properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "emissiveTexture.wAng", getMinusFloat)],
                 },
             },
         },
@@ -423,7 +422,7 @@ const CoreAnimationMaterialsPointerMap: any = {
         },
         KHR_materials_sheen: {
             sheenColorFactor: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", _getColor3)],
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3)],
             },
             sheenRoughnessFactor: {
                 properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "sheen.roughness")],
@@ -434,7 +433,7 @@ const CoreAnimationMaterialsPointerMap: any = {
                 properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "metallicF0Factor")],
             },
             specularColorFactor: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", _getColor3)],
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", getColor3)],
             },
         },
         KHR_materials_emissive_strength: {
@@ -449,7 +448,7 @@ const CoreAnimationMaterialsPointerMap: any = {
         },
         KHR_materials_volume: {
             attenuationColor: {
-                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", _getColor3)],
+                properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", getColor3)],
             },
             attenuationDistance: {
                 properties: [new MaterialAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance")],
@@ -476,13 +475,13 @@ const CoreAnimationMaterialsPointerMap: any = {
 };
 
 const CoreAnimationExtensionsPointerMap: any = {
-    getTarget: _getGltfExtension,
+    getTarget: getGltfExtension,
     KHR_lights_punctual: {
         isIndex: true,
         lights: {
             hasIndex: true, // we have an array of light into the extension.
             color: {
-                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "diffuse", _getColor3)],
+                properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3)],
             },
             intensity: {
                 properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "intensity")],
@@ -492,10 +491,10 @@ const CoreAnimationExtensionsPointerMap: any = {
             },
             spot: {
                 innerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", _getFloatBy2)],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", getFloatBy2)],
                 },
                 outerConeAngle: {
-                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", _getFloatBy2)],
+                    properties: [new LightAnimationPointerPropertyInfos(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2)],
                 },
             },
         },
