@@ -1509,9 +1509,9 @@ export class GLTFLoader implements IGLTFLoader {
             channel.target.extensions = channel.target.extensions || {};
             channel.target.extensions.KHR_animation_pointer = {
                 pointer: `/nodes/${channel.target.node}/${channel.target.path}`,
-                lazzy: true,
             };
-
+            channel.target.path = AnimationChannelTargetPath.POINTER;
+            delete channel.target.node;
             // ensure to declare extension used.
             this._gltf.extensionsUsed = this._gltf.extensionsUsed || [];
             if (this._gltf.extensionsUsed.indexOf(GLTFLoader._KHRAnimationPointerName) === -1) {

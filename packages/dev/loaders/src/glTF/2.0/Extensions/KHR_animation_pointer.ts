@@ -9,7 +9,7 @@ import { AnimationChannelTargetPath, AnimationSamplerInterpolation } from "babyl
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { CoreAnimationPointerMap } from "./KHR_animation_pointer.map";
 import type { GetGltfNodeTargetFn, IAnimationPointerPropertyInfos } from "./KHR_animation_pointer.map";
-import { _GLTFUtilities } from "../glTFUtilities";
+import { getDataAccessorElementCount } from "../glTFUtilities";
 
 const NAME = GLTFLoader._KHRAnimationPointerName;
 
@@ -29,11 +29,6 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * used to gently ignore invalid pointer. If false, invalid pointer will throw exception.
      */
     public ignoreInvalidPointer: boolean = true;
-
-    /**
-     * used to define the extension as additional one created during the loading process.
-     */
-    public lazzy: boolean = false;
 
     /**
      * The name of this extension.
@@ -114,13 +109,11 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         channel: IAnimationChannel,
         animationTargetOverride: Nullable<IAnimatable> = null
     ): Promise<void> {
-        const lazzy = channel.target.extensions?.KHR_animation_pointer?.lazzy;
-
-        if (!lazzy && channel.target.path != AnimationChannelTargetPath.POINTER) {
+        if (channel.target.path != AnimationChannelTargetPath.POINTER) {
             throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
         }
 
-        if (!lazzy && channel.target.node != undefined) {
+        if (channel.target.node != undefined) {
             // According to KHR_animation_pointer specification
             // If this extension is used, the animation.channel.target.node must not be set.
             // Because the node is defined, the channel is ignored and not animated due to the specification.
@@ -138,78 +131,80 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
             // this is where we process the pointer.
             const animationTarget = this._parseAnimationPointer(`${context}/extensions/${this.name}/pointer`, pointer);
 
-            if (animationTarget) {
-                // build the keys
-                // build the animations into the group
-                const babylonAnimationGroup = animation._babylonAnimationGroup;
-                if (babylonAnimationGroup) {
-                    const outputAccessor = ArrayItem.Get(`${context}/output`, this._loader.gltf.accessors, sampler.output);
-                    // stride is the size of each element stored into the output buffer.
-                    const stride = animationTarget.stride ?? _GLTFUtilities._GetDataAccessorElementCount(outputAccessor.type);
-                    const fps = this._loader.parent.targetFps;
+            if (!animationTarget) {
+                return;
+            }
+            // build the keys
+            // build the animations into the group
+            const babylonAnimationGroup = animation._babylonAnimationGroup;
+            if (!babylonAnimationGroup) {
+                return;
+            }
 
-                    // we extract the corresponding values from the read value.
-                    // the reason for that is one GLTF value may be dispatched to several Babylon properties
-                    // one of example is baseColorFactor which is a Color4 under GLTF and dispatched to
-                    // - albedoColor as Color3(Color4.r,Color4.g,Color4.b)
-                    // - alpha as Color4.a
-                    for (const propertyInfo of animationTarget.properties) {
-                        // Ignore animations that have no animation valid targets.
-                        if (!propertyInfo.isValid(animationTarget.target)) {
-                            return Promise.resolve();
+            const outputAccessor = ArrayItem.Get(`${context}/output`, this._loader.gltf.accessors, sampler.output);
+            // stride is the size of each element stored into the output buffer.
+            const stride = animationTarget.stride ?? getDataAccessorElementCount(outputAccessor.type);
+            const fps = this._loader.parent.targetFps;
+
+            // we extract the corresponding values from the read value.
+            // the reason for that is one GLTF value may be dispatched to several Babylon properties
+            // one of example is baseColorFactor which is a Color4 under GLTF and dispatched to
+            // - albedoColor as Color3(Color4.r,Color4.g,Color4.b)
+            // - alpha as Color4.a
+            for (const propertyInfo of animationTarget.properties) {
+                // Ignore animations that have no animation valid targets.
+                if (!propertyInfo.isValid(animationTarget.target)) {
+                    return;
+                }
+
+                // build the keys.
+                const keys = new Array(data.input.length);
+                let outputOffset = 0;
+
+                switch (data.interpolation) {
+                    case AnimationSamplerInterpolation.STEP: {
+                        for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
+                            keys[frameIndex] = {
+                                frame: data.input[frameIndex] * fps,
+                                value: propertyInfo.get(animationTarget.target, data.output, outputOffset),
+                                interpolation: AnimationKeyInterpolation.STEP,
+                            };
+                            outputOffset += stride;
                         }
+                        break;
+                    }
+                    case AnimationSamplerInterpolation.CUBICSPLINE: {
+                        const invfps = 1 / fps;
+                        for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
+                            const k: any = {
+                                frame: data.input[frameIndex] * fps,
+                            };
 
-                        // build the keys.
-                        const keys = new Array(data.input.length);
-                        let outputOffset = 0;
+                            (k.inTangent = propertyInfo.get(animationTarget.target, data.output, outputOffset, invfps)), (outputOffset += stride);
+                            (k.value = propertyInfo.get(animationTarget.target, data.output, outputOffset)), (outputOffset += stride);
+                            (k.outTangent = propertyInfo.get(animationTarget.target, data.output, outputOffset, invfps)), (outputOffset += stride);
 
-                        switch (data.interpolation) {
-                            case AnimationSamplerInterpolation.STEP: {
-                                for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
-                                    keys[frameIndex] = {
-                                        frame: data.input[frameIndex] * fps,
-                                        value: propertyInfo.get(animationTarget.target, data.output, outputOffset),
-                                        interpolation: AnimationKeyInterpolation.STEP,
-                                    };
-                                    outputOffset += stride;
-                                }
-                                break;
-                            }
-                            case AnimationSamplerInterpolation.CUBICSPLINE: {
-                                const invfps = 1 / fps;
-                                for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
-                                    const k: any = {
-                                        frame: data.input[frameIndex] * fps,
-                                    };
-
-                                    (k.inTangent = propertyInfo.get(animationTarget.target, data.output, outputOffset, invfps)), (outputOffset += stride);
-                                    (k.value = propertyInfo.get(animationTarget.target, data.output, outputOffset)), (outputOffset += stride);
-                                    (k.outTangent = propertyInfo.get(animationTarget.target, data.output, outputOffset, invfps)), (outputOffset += stride);
-
-                                    keys[frameIndex] = k;
-                                }
-                                break;
-                            }
-                            case AnimationSamplerInterpolation.LINEAR:
-                            default: {
-                                for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
-                                    keys[frameIndex] = {
-                                        frame: data.input[frameIndex] * fps,
-                                        value: propertyInfo.get(animationTarget.target, data.output, outputOffset),
-                                    };
-                                    outputOffset += stride;
-                                }
-                                break;
-                            }
+                            keys[frameIndex] = k;
                         }
-
-                        // each properties has its own build animation process.
-                        // these logics are located into KHR_animation_pointer.map.ts
-                        propertyInfo.buildAnimations(animationTarget.target, fps, keys, babylonAnimationGroup, animationTargetOverride, animationTarget.params);
+                        break;
+                    }
+                    case AnimationSamplerInterpolation.LINEAR:
+                    default: {
+                        for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
+                            keys[frameIndex] = {
+                                frame: data.input[frameIndex] * fps,
+                                value: propertyInfo.get(animationTarget.target, data.output, outputOffset),
+                            };
+                            outputOffset += stride;
+                        }
+                        break;
                     }
                 }
+
+                // each properties has its own build animation process.
+                // these logics are located into KHR_animation_pointer.map.ts
+                propertyInfo.buildAnimations(animationTarget.target, fps, keys, babylonAnimationGroup, animationTargetOverride, animationTarget.params);
             }
-            return Promise.resolve();
         });
     }
 
