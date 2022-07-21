@@ -24,7 +24,7 @@ import { Rectangle } from "../../2D/controls/rectangle";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { StackPanel } from "../../2D/controls/stackPanel";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { TextBlock, TextWrapping } from "../../2D/controls/textBlock";
+import { TextBlock } from "../../2D/controls/textBlock";
 import { TouchButton3D } from "./touchButton3D";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Vector3 } from "core/Maths/math.vector";
@@ -90,18 +90,15 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
     /**
      * Gets or sets the font size of the button text in pixels.
+     * This is only adjustable for a button with width to height ratio greater than 1.
      */
     public textSizeInPixels = 18;
 
     /**
      * Gets or sets the size of the button image in pixels.
+     * This is only adjustable for a button with width to height ratio greater than 1.
      */
     public imageSizeInPixels = 40;
-
-    /**
-     * Gets or sets the enum that determines the text-wrapping mode to use for the button text.
-     */
-    public textWrapping = TextWrapping.Clip;
 
     // Meshes
     private _backPlate: AbstractMesh;
@@ -114,6 +111,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
     // Content
     private _text: string;
+    private _subtext: string;
     private _imageUrl: string;
     
     // Materials
@@ -263,6 +261,22 @@ export class TouchHolographicV3Button extends TouchButton3D {
     }
 
     /**
+     * Gets or sets subtext for a button with larger width
+     */
+    public get subtext(): string {
+        return this._subtext;
+    }
+
+    public set subtext(value: string) {
+        if (this._subtext === value) {
+            return;
+        }
+
+        this._subtext = value;
+        this._rebuildContent();
+    }
+
+    /**
      * Gets or sets the image url for the button
      */
     public get imageUrl(): string {
@@ -389,9 +403,51 @@ export class TouchHolographicV3Button extends TouchButton3D {
     }
 
     private _rebuildContent(): void {
+        const aspectRatio = this.width / this.height;
+        let content: Control;
+
+        if (aspectRatio <= 1) {
+            // align text and image vertically
+            content = this._alignContentVertically();
+        } else {
+            // align text and image horizontally
+            content = this._alignContentHorizontally(aspectRatio);
+        }
+
+        this.content = content;
+    }
+
+    private _alignContentVertically() {
+        const panel = new StackPanel();
+        panel.isVertical = true;
+
+        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+            if (this._imageUrl) {
+                const image = new Image();
+                image.source = this._imageUrl;
+                image.heightInPixels = 180;
+                image.widthInPixels = 100;
+                image.paddingTopInPixels = 40;
+                image.paddingBottomInPixels = 40;
+                panel.addControl(image);
+            }
+        }
+
+        if (this._text) {
+            const text = new TextBlock();
+            text.text = this._text;
+            text.color = "white";
+            text.heightInPixels = 30;
+            text.fontSize = 24;
+            panel.addControl(text);
+        }
+
+        return panel;
+    }
+
+    private _alignContentHorizontally(aspectRatio: number) {
         let totalPanelWidthInPixels = 240;
         const padding = 15;
-        const aspectRatio = this.width / this.height;
 
         const contentContainer = new Rectangle();
         contentContainer.widthInPixels = totalPanelWidthInPixels;
@@ -423,7 +479,6 @@ export class TouchHolographicV3Button extends TouchButton3D {
         if (this._text) {
             const text = new TextBlock(`${this.name}_text`);
             text.text = this._text;
-            text.textWrapping = this.textWrapping;
             text.color = "white";
             text.fontSize = this.textSizeInPixels;
             text.widthInPixels = totalPanelWidthInPixels;
@@ -433,24 +488,52 @@ export class TouchHolographicV3Button extends TouchButton3D {
                 text.paddingLeftInPixels = 20;
             }
 
-            panel.addControl(text);
+            if (this._subtext) {
+                text.paddingBottomInPixels = 22.5;
+
+                const textContainer = new StackPanel();
+                textContainer.isVertical = true;
+                textContainer.widthInPixels = totalPanelWidthInPixels;
+                textContainer.heightInPixels = totalPanelWidthInPixels;
+    
+                const subtext = new TextBlock(`${this.name}_subtext`);
+                subtext.text = this._subtext;
+                subtext.color = "#EEEEEEAB";
+                subtext.paddingTopInPixels = 22.5;
+                subtext.fontSize = this.textSizeInPixels * 0.75;
+                subtext.fontWeight = "600";
+    
+                if (this._imageUrl) {
+                    subtext.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+                    subtext.paddingLeftInPixels = 20;
+                }
+    
+                textContainer.addControl(subtext);
+                textContainer.addControl(text);
+                panel.addControl(textContainer);
+            } else {
+                panel.addControl(text);
+            }
         }
 
         contentContainer.addControl(panel);
-        this.content = contentContainer;
+        return contentContainer;
     }
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         this.name = this.name ?? "TouchHolographicV3Button";
-        this._textPlate = <Mesh>super._createNode(scene);
-        this._textPlate.name = `${this.name}_textPlate`;
-        this._textPlate.isPickable = false;
 
         const backPlateMesh = this._createBackPlate(scene);
         const collisionMesh = this._createFrontPlate(scene);
         const innerQuadMesh = this._createInnerQuad(scene);
         const backGlowMesh = this._createBackGlow(scene);
+
+        this._textPlate = <Mesh>super._createNode(scene);
+        this._textPlate.name = `${this.name}_textPlate`;
+        this._textPlate.isPickable = false;
+        this._textPlate.scaling.x = this.width;
+        this._textPlate.parent = collisionMesh;
 
         this._backPlate = backPlateMesh;
         this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this._backPlateDepth / 2);
@@ -547,6 +630,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
                 frontPlateModel.material = this._frontMaterial;
             }
 
+            this._textPlate.scaling.x = 1;
             this._textPlate.parent = frontPlateModel;
             this._frontPlate = frontPlateModel;
         });
