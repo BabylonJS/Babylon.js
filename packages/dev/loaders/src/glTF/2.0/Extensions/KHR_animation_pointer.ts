@@ -28,7 +28,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     /**
      * used to gently ignore invalid pointer. If false, invalid pointer will throw exception.
      */
-    public static IgnoreInvalidPointer: boolean = true;
+    public ignoreInvalidPointer: boolean = true;
 
     /**
      * The name of this extension.
@@ -312,7 +312,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
                 }
             }
         }
-        if (KHR_animation_pointer.IgnoreInvalidPointer) {
+        if (this.ignoreInvalidPointer) {
             return null;
         }
         throw new Error(`${context} invalid pointer. ${pointer}`);
