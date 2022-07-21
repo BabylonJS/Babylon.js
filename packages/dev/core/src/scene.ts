@@ -439,6 +439,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
+     * This is triggered for each "sub" camera in a Camera Rig unlike onAfterCameraRenderObservable
      */
     public onAfterRenderCameraObservable = new Observable<Camera>();
 
@@ -496,6 +497,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * An event triggered after rendering a camera
+     * This is triggered for the full rig Camera only unlike onAfterRenderCameraObservable
      */
     public onAfterCameraRenderObservable = new Observable<Camera>();
 
