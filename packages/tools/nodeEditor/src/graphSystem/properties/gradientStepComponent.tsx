@@ -1,13 +1,11 @@
 import * as React from "react";
 import { Color3 } from "core/Maths/math.color";
 import type { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
-import { ColorPickerLineComponent } from "../../sharedComponents/colorPickerComponent";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-
 import deleteButton from "../../imgs/delete.svg";
 import copyIcon from "../../sharedComponents/copy.svg";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
-import type { GlobalState } from "../../globalState";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
 
 interface IGradientStepComponentProps {
     stateManager: StateManager;
@@ -53,8 +51,8 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 <div className="step">{`#${this.props.lineIndex}`}</div>
                 <div className="color">
                     <ColorPickerLineComponent
+                        lockObject={this.props.stateManager.lockObject}
                         value={step.color}
-                        globalState={this.props.stateManager.data as GlobalState}
                         onColorChanged={(color) => {
                             this.updateColor(color);
                         }}
@@ -62,7 +60,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 </div>
                 <div className="step-value">
                     <FloatLineComponent
-                        globalState={this.props.stateManager.data as GlobalState}
+                        lockObject={this.props.stateManager.lockObject}
                         smallUI={true}
                         label=""
                         target={step}

@@ -121,6 +121,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             if (item.name == "Art-Board-Background") {
                 return null;
             }
+
             return (
                 <TreeItemSelectableComponent
                     globalState={this.props.globalState}

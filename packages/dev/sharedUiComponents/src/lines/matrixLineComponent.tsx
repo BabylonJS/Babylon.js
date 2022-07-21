@@ -6,6 +6,7 @@ import { Vector4LineComponent } from "./vector4LineComponent";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { OptionsLineComponent } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IMatrixLineComponentProps {
     label: string;
@@ -16,6 +17,7 @@ interface IMatrixLineComponentProps {
     onModeChange?: (mode: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     mode?: number;
+    lockObject: LockObject;
 }
 
 export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, { value: Matrix; mode: number; angle: number }> {
@@ -154,16 +156,37 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                 </div>
                 {this.state.mode === 0 && (
                     <div className="secondLine">
-                        <Vector4LineComponent label="Row #0" value={this.state.value.getRow(0)!} onChange={(value) => this.updateRow(value, 0)} />
-                        <Vector4LineComponent label="Row #1" value={this.state.value.getRow(1)!} onChange={(value) => this.updateRow(value, 1)} />
-                        <Vector4LineComponent label="Row #2" value={this.state.value.getRow(2)!} onChange={(value) => this.updateRow(value, 2)} />
-                        <Vector4LineComponent label="Row #3" value={this.state.value.getRow(3)!} onChange={(value) => this.updateRow(value, 3)} />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #0"
+                            value={this.state.value.getRow(0)!}
+                            onChange={(value) => this.updateRow(value, 0)}
+                        />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #1"
+                            value={this.state.value.getRow(1)!}
+                            onChange={(value) => this.updateRow(value, 1)}
+                        />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #2"
+                            value={this.state.value.getRow(2)!}
+                            onChange={(value) => this.updateRow(value, 2)}
+                        />
+                        <Vector4LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Row #3"
+                            value={this.state.value.getRow(3)!}
+                            onChange={(value) => this.updateRow(value, 3)}
+                        />
                     </div>
                 )}
                 {this.state.mode !== 0 && (
                     <div className="secondLine">
                         <SliderLineComponent
                             label="Angle"
+                            lockObject={this.props.lockObject}
                             minimum={0}
                             maximum={2 * Math.PI}
                             useEuler={true}

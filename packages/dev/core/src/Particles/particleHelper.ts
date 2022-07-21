@@ -81,18 +81,18 @@ export class ParticleHelper {
 
         const token = {};
 
-        scene!._addPendingData(token);
+        scene!.addPendingData(token);
 
         return new Promise((resolve, reject) => {
             if (gpu && !GPUParticleSystem.IsSupported) {
-                scene!._removePendingData(token);
+                scene!.removePendingData(token);
                 return reject("Particle system with GPU is not supported.");
             }
 
             Tools.LoadFile(
                 `${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`,
                 (data) => {
-                    scene!._removePendingData(token);
+                    scene!.removePendingData(token);
                     const newData = JSON.parse(data.toString());
                     return resolve(ParticleSystemSet.Parse(newData, scene!, gpu, capacity));
                 },
@@ -100,7 +100,7 @@ export class ParticleHelper {
                 undefined,
                 undefined,
                 () => {
-                    scene!._removePendingData(token);
+                    scene!.removePendingData(token);
                     return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
                 }
             );

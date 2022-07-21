@@ -296,9 +296,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         if (!this._inputs[deviceType][deviceSlot]) {
             const device = new Array<number>(numberOfInputs);
 
-            for (let i = 0; i < numberOfInputs; i++) {
-                device[i] = 0; /* set device input as unpressed */
-            }
+            device.fill(0);
 
             this._inputs[deviceType][deviceSlot] = device;
             this._onDeviceConnected(deviceType, deviceSlot);
@@ -716,7 +714,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
-        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: true } : false);
+        this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
         // Since there's no up or down event for mouse wheel or delta x/y, clear mouse values at end of frame
         this._pointerInputClearObserver = this._engine.onEndFrameObservable.add(() => {
