@@ -31,6 +31,11 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     public ignoreInvalidPointer: boolean = true;
 
     /**
+     * used to define the extension as additional one created during the loading process.
+     */
+    public lazzy: boolean = false;
+
+    /**
      * The name of this extension.
      */
     public readonly name = NAME;
@@ -109,11 +114,13 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         channel: IAnimationChannel,
         animationTargetOverride: Nullable<IAnimatable> = null
     ): Promise<void> {
-        if (channel.target.path != AnimationChannelTargetPath.POINTER) {
+        const lazzy = channel.target.extensions?.KHR_animation_pointer?.lazzy;
+
+        if (!lazzy && channel.target.path != AnimationChannelTargetPath.POINTER) {
             throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
         }
 
-        if (channel.target.node != undefined) {
+        if (!lazzy && channel.target.node != undefined) {
             // According to KHR_animation_pointer specification
             // If this extension is used, the animation.channel.target.node must not be set.
             // Because the node is defined, the channel is ignored and not animated due to the specification.
