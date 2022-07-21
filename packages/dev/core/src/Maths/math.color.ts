@@ -151,12 +151,24 @@ export class Color3 {
     }
 
     /**
-     * Multiplies in place each rgb value by scale
-     * @param scale defines the scaling factor
-     * @returns the updated Color3
+     * Creates a new Color3 with the current Color3 values multiplied by scale
+     * @param scale defines the scaling factor to apply
+     * @returns a new Color3 object
      */
     public scale(scale: number): Color3 {
         return new Color3(this.r * scale, this.g * scale, this.b * scale);
+    }
+
+    /**
+     * Multiplies the Color3 values by the float "scale"
+     * @param scale defines the scaling factor to apply
+     * @returns the current updated Color3
+     */
+    public scaleInPlace(scale: number): Color3 {
+        this.r *= scale;
+        this.g *= scale;
+        this.b *= scale;
+        return this;
     }
 
     /**
@@ -797,6 +809,19 @@ export class Color4 {
      */
     public scale(scale: number): Color4 {
         return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
+    }
+
+    /**
+     * Multiplies the Color4 values by the float "scale"
+     * @param scale defines the scaling factor to apply
+     * @returns the current updated Color4
+     */
+    public scaleInPlace(scale: number): Color4 {
+        this.r *= scale;
+        this.g *= scale;
+        this.b *= scale;
+        this.a *= scale;
+        return this;
     }
 
     /**

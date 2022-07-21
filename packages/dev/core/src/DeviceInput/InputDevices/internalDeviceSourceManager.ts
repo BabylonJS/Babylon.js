@@ -35,11 +35,12 @@ export interface IObservableManager {
 
 /** @hidden */
 export class InternalDeviceSourceManager implements IDisposable {
+    // Public Members
+    public readonly _deviceInputSystem: IDeviceInputSystem;
+
     // Private Members
     // This is a master list of all device type/slot combos
     private readonly _devices: Array<Array<number>>;
-
-    private readonly _deviceInputSystem: IDeviceInputSystem;
 
     private readonly _registeredManagers = new Array<IObservableManager>();
 

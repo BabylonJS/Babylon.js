@@ -6,11 +6,13 @@ import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPicker
 
 import deleteButton from "../lines/delete.svg";
 import copyIcon from "../lines/copyStep.svg";
+import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IGradientStepComponentProps {
     globalState: GlobalState;
     step: GradientBlockColorStep;
     lineIndex: number;
+    lockObject?: LockObject;
     onDelete: () => void;
     onUpdateStep: () => void;
     onCheckForReOrder: () => void;
@@ -51,6 +53,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 <div className="step">{`#${this.props.lineIndex}`}</div>
                 <div className="color">
                     <ColorPickerLineComponent
+                        lockObject={this.props.lockObject}
                         value={step.color}
                         onColorChanged={(color) => {
                             this.updateColor(color);

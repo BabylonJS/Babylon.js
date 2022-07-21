@@ -8,6 +8,7 @@ import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Base class for mouse wheel input..
@@ -52,11 +53,12 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls
-     *   should call preventdefault().  This param is no longer used because wheel events should be treated as passive.
+     *   should call preventdefault().
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+
         this._wheel = (pointer) => {
             // sanity check - this should be a PointerWheel event.
             if (pointer.type !== PointerEventTypes.POINTERWHEEL) {
@@ -86,6 +88,12 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // IE >= v9   (Has WebGL >= v11)
                 // Maybe others?
                 this._wheelDeltaY -= (this.wheelPrecisionY * (<any>event).wheelDelta) / this._normalize;
+            }
+
+            if (event.preventDefault) {
+                if (!noPreventDefault) {
+                    event.preventDefault();
+                }
             }
         };
 

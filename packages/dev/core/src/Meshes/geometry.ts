@@ -792,7 +792,7 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        scene._addPendingData(this);
+        scene.addPendingData(this);
         scene._loadFile(
             this.delayLoadingFile,
             (data) => {
@@ -805,7 +805,7 @@ export class Geometry implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
-                scene._removePendingData(this);
+                scene.removePendingData(this);
 
                 const meshes = this._meshes;
                 const numOfMeshes = meshes.length;

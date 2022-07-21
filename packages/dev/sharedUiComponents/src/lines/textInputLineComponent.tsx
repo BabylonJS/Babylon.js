@@ -102,7 +102,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return 0;
     }
 
-    updateValue(value: string) {
+    updateValue(value: string, valueToValidate?: string) {
         if (this.props.numbersOnly) {
             if (/[^0-9.\p\x%-]/g.test(value)) {
                 return;
@@ -134,8 +134,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
 
-        if (this.props.validator) {
-            if (this.props.validator(value) == false) {
+        if (this.props.validator && valueToValidate) {
+            if (this.props.validator(valueToValidate) == false) {
                 value = store;
             }
         }
@@ -203,7 +203,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                                 this.updateValue(this.state.value);
                             }}
                             onBlur={(evt) => {
-                                this.updateValue(evt.target.value);
+                                this.updateValue(evt.target.value, evt.target.value);
                                 if (this.props.lockObject) {
                                     this.props.lockObject.lock = false;
                                 }
@@ -217,11 +217,11 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     >
                         <input
                             value={value}
-                            onBlur={() => {
+                            onBlur={(evt) => {
                                 if (this.props.lockObject) {
                                     this.props.lockObject.lock = false;
                                 }
-                                this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "");
+                                this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "", evt.target.value);
                             }}
                             onFocus={() => {
                                 if (this.props.lockObject) {

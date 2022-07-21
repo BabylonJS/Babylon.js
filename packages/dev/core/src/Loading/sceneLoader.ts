@@ -719,10 +719,10 @@ export class SceneLoader {
         }
 
         const loadingToken = {};
-        scene._addPendingData(loadingToken);
+        scene.addPendingData(loadingToken);
 
         const disposeHandler = () => {
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         const errorHandler = (message?: string, exception?: any) => {
@@ -759,7 +759,7 @@ export class SceneLoader {
                 }
             }
 
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         return SceneLoader._LoadData(
@@ -955,10 +955,10 @@ export class SceneLoader {
         }
 
         const loadingToken = {};
-        scene._addPendingData(loadingToken);
+        scene.addPendingData(loadingToken);
 
         const disposeHandler = () => {
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         const errorHandler = (message?: string, exception?: any) => {
@@ -993,7 +993,7 @@ export class SceneLoader {
                 }
             }
 
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         return SceneLoader._LoadData(
@@ -1092,10 +1092,10 @@ export class SceneLoader {
         }
 
         const loadingToken = {};
-        scene._addPendingData(loadingToken);
+        scene.addPendingData(loadingToken);
 
         const disposeHandler = () => {
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         const errorHandler = (message?: string, exception?: any) => {
@@ -1130,7 +1130,7 @@ export class SceneLoader {
                 }
             }
 
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         return SceneLoader._LoadData(

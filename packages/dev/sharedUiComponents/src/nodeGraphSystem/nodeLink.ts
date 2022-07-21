@@ -135,7 +135,7 @@ export class NodeLink {
             const nodeB = this._nodeB!;
             const pointB = this._portB!.portData;
 
-            if (stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
+            if (!stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
                 return;
             }
 
@@ -147,8 +147,8 @@ export class NodeLink {
                 this.dispose();
 
                 // Connect to Elbow block
-                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newElbowBlock.input);
-                this._graphCanvas.connectNodes(newNode, newElbowBlock.output, nodeB, pointB);
+                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newNode.getPortDataForPortDataContent(newElbowBlock.input)!);
+                this._graphCanvas.connectNodes(newNode, newNode.getPortDataForPortDataContent(newElbowBlock.output)!, nodeB, pointB);
 
                 stateManager.onRebuildRequiredObservable.notifyObservers(true);
             });
