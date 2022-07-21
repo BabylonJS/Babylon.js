@@ -485,7 +485,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
             if (this._imageUrl) {
                 text.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-                text.paddingLeftInPixels = 20;
+                text.paddingLeftInPixels = padding;
             }
 
             if (this._subtext) {
@@ -505,7 +505,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     
                 if (this._imageUrl) {
                     subtext.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-                    subtext.paddingLeftInPixels = 20;
+                    subtext.paddingLeftInPixels = padding;
                 }
     
                 textContainer.addControl(subtext);
