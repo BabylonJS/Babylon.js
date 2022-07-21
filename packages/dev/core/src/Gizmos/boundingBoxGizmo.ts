@@ -544,6 +544,12 @@ export class BoundingBoxGizmo extends Gizmo {
                 m.isVisible = !selectedMesh || m == selectedMesh;
             });
     }
+    /**
+     * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
+    */
+    public getScaleBoxes() {
+        return this._scaleBoxesParent.getChildMeshes();
+    }
 
     /**
      * Updates the bounding box information for the Gizmo
