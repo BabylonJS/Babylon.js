@@ -536,7 +536,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
             frontPlateModel.isPickable = false;
             frontPlateModel.scaling.x = this.width - this._backGlowOffset;
             frontPlateModel.scaling.y = this.height - this._backGlowOffset;
-            frontPlateModel.position.z += collisionPlate.absoluteScaling.z / 2;
+            frontPlateModel.position = Vector3.Forward(scene.useRightHandedSystem).scale(-0.5);
             frontPlateModel.parent = collisionPlate;
 
             if (this.isToggleButton) {
@@ -559,6 +559,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         innerQuadMesh.isPickable = false;
         innerQuadMesh.visibility = 0;
         innerQuadMesh.scaling.z = this._flatPlaneDepth;
+        innerQuadMesh.position.z += this._backPlateDepth / 2 - this._flatPlaneDepth;
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.INNERQUAD_MODEL_BASE_URL, TouchHolographicV3Button.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
             const innerQuadModel = result.meshes[1];
@@ -566,8 +567,6 @@ export class TouchHolographicV3Button extends TouchButton3D {
             innerQuadModel.isPickable = false;
             innerQuadModel.scaling.x = this.width - this._backGlowOffset;
             innerQuadModel.scaling.y = this.height - this._backGlowOffset;
-            innerQuadModel.scaling.z = this._flatPlaneDepth;
-            innerQuadModel.position.z += this._backPlateDepth / 2;
             innerQuadModel.parent = innerQuadMesh;
 
             if (this._innerQuadMaterial) {
@@ -589,6 +588,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         backGlowMesh.isPickable = false;
         backGlowMesh.visibility = 0;
         backGlowMesh.scaling.z = this._flatPlaneDepth;
+        backGlowMesh.position.z += this._backPlateDepth / 2 - this._flatPlaneDepth * 2;
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.BACKGLOW_MODEL_BASE_URL, TouchHolographicV3Button.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
             const backGlowModel = result.meshes[1];
@@ -596,8 +596,6 @@ export class TouchHolographicV3Button extends TouchButton3D {
             backGlowModel.isPickable = false;
             backGlowModel.scaling.x = this.width - this._backGlowOffset;
             backGlowModel.scaling.y = this.height - this._backGlowOffset;
-            backGlowModel.scaling.z = this._flatPlaneDepth;
-            backGlowModel.position.z += this._backPlateDepth / 2;
             backGlowModel.parent = backGlowMesh;
 
             if (this._backGlowMaterial) {
