@@ -4,7 +4,6 @@ import { AccessorType } from "babylonjs-gltf2interface";
  * @hidden
  */
 export class _GLTFUtilities {
-
     /**
      * Used internally to determine how much data to be gather from input buffer at each key frame.
      * @param accessorType the accessor type

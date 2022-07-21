@@ -116,7 +116,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         if (channel.target.node != undefined) {
             // According to KHR_animation_pointer specification
             // If this extension is used, the animation.channel.target.node must not be set.
-            // Because the node isn’t defined, the channel is ignored and not animated due to the specification.
+            // Because the node is defined, the channel is ignored and not animated due to the specification.
             return Promise.resolve();
         }
 
