@@ -1101,7 +1101,7 @@ export class NativeEngine extends Engine {
                 const vertexBuffer = vertexBuffers[kind];
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
-                    if (buffer) {
+                    if (buffer && buffer.nativeVertexBuffer) {
                         this._engine.recordVertexBuffer(
                             vertexArray,
                             buffer.nativeVertexBuffer!,
