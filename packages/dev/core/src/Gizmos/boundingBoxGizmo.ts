@@ -546,7 +546,7 @@ export class BoundingBoxGizmo extends Gizmo {
     }
     /**
      * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
-    */
+     */
     public getScaleBoxes() {
         return this._scaleBoxesParent.getChildMeshes();
     }
