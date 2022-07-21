@@ -187,6 +187,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
     /**
      * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
+     * Set this property after adding the button to the GUI3DManager
      */
     public set tooltipText(text: Nullable<string>) {
         if (!text) {
