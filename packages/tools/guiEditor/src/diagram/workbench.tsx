@@ -287,6 +287,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
             
             const parsed = JSON.parse(clipboardContents);
+            console.log(parsed);
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
