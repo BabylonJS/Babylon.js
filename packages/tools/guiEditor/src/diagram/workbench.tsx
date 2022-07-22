@@ -263,7 +263,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         for (const control of this.props.globalState.selectedControls) {
             const obj = {};
             control.serialize(obj);
-
             controlList.push(obj);
         }
         copyFn(
@@ -281,22 +280,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public pasteFromClipboard(clipboardContents: string) {
         try {
-            const ct = this.props.globalState.selectedControls[0];
-            if (ct !== null && ct.name !== "root") {
-                this.parent(ct);
-            }
-
             const parsed = JSON.parse(clipboardContents);
-
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
                     newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
                 }
-                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
-
                 this.props.globalState.setSelection(newSelection);
-                this.parent(newSelection[0]);
                 return true;
             }
         } catch {
