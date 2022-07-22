@@ -1098,8 +1098,8 @@ export class InputText extends Control implements IFocusableControl {
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         this._isPointerDown = false;
-        delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+        delete this._host._capturingControl[pointerId];
     }
 
     protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper {
