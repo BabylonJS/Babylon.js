@@ -16,7 +16,6 @@ const playgrounds = [
     "#6FBD14#2004",
     "#KQV9SA",
     "#7CBW04",
-    "#IC07YA#2",
 ];
 
 // IN TESTS
