@@ -771,6 +771,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
+            if (this._capturingControl[pointerId].isPointerBlocker) {
+                this._shouldBlockPointer = true;
+            }
             this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
