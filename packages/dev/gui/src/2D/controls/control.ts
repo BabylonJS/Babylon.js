@@ -160,7 +160,13 @@ export class Control {
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
     @serialize()
     public isHitTestVisible = true;
-    /** Gets or sets a boolean indicating if the control can block pointer events */
+    /** Gets or sets a boolean indicating if the control can block pointer events. False by default except on the following controls:
+     * * Button controls (Button, RadioButton, ToggleButton)
+     * * Checkbox
+     * * ColorPicker
+     * * InputText
+     * * Slider
+     */
     @serialize()
     public isPointerBlocker = false;
     /** Gets or sets a boolean indicating if the control can be focusable */
