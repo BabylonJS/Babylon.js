@@ -94,8 +94,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         };
 
         const oldSplice = array.splice;
-        array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
+        array.splice = (index: number, deleteCount?: number, ...items: AbstractMesh[]) => {
+            deleteCount = deleteCount === undefined ? array.length : deleteCount;
+            const deleted = oldSplice.apply(array, [index, deleteCount, ...items]);
 
             if (array.length === 0) {
                 this.getScene()?.meshes.forEach((mesh) => {
