@@ -286,8 +286,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (const control of parsed.controls) {
                     newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
                 }
-                newSelection[0].leftInPixels = newSelection[0].leftInPixels + 10;
-                newSelection[0].topInPixels = newSelection[0].topInPixels + 10;
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }
