@@ -945,6 +945,13 @@ export class SceneLoader {
             return null;
         }
 
+        const loadingToken = {};
+        scene.addPendingData(loadingToken);
+
+        const disposeHandler = () => {
+            scene.removePendingData(loadingToken);
+        };
+
         if (SceneLoader.ShowLoadingScreen && !this._ShowingLoadingScreen) {
             this._ShowingLoadingScreen = true;
             scene.getEngine().displayLoadingUI();
@@ -953,13 +960,6 @@ export class SceneLoader {
                 this._ShowingLoadingScreen = false;
             });
         }
-
-        const loadingToken = {};
-        scene.addPendingData(loadingToken);
-
-        const disposeHandler = () => {
-            scene.removePendingData(loadingToken);
-        };
 
         const errorHandler = (message?: string, exception?: any) => {
             const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
