@@ -88,7 +88,7 @@
         }
     }
     .toolbar-icon {
-        width: 20px;
+        width: 40px;
         height: 40px;
     }
     &.expanded {
@@ -302,7 +302,7 @@
     }
 }
 #workbench-canvas {
-    position: relative;
+    position: absolute;
 }
 .artboard-stroke {
     outline: 1px solid black;
