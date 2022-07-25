@@ -91,7 +91,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         spriteManager.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        SpriteManager.CreateFromSnippetAsync(snippedId, scene)
+        SpriteManager.ParseFromSnippetAsync(snippedId, scene)
             .then((newManager) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
             })
@@ -123,8 +123,8 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(`SpriteManager.CreateFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `SpriteManager.CreateFromSnippetAsync("${spriteManager.snippetId}`,
+                            regex: new RegExp(`SpriteManager.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `SpriteManager.ParseFromSnippetAsync("${spriteManager.snippetId}`,
                         });
                     }
 
