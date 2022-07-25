@@ -280,7 +280,7 @@ void main(void)
     vec4 original = texture2D(textureSampler, vUV);
     vec4 spec = toLinearSpace(texture2D(reflectivitySampler, vUV));
 
-    if (dot(spec.xyz, vec3(1.0)) <= 0.0){
+    if (dot(spec.xyz, vec3(1.0)) <= 0.0){ // TODO ? 0.04 * 3.0
         gl_FragColor = original; // no reflectivity, no need to compute reflection
         return;
     }
@@ -317,7 +317,7 @@ void main(void)
         return;
     #endif
     } else {
-        vec2 texSize = gl_FragCoord.xy / vUV;
+        vec2 texSize = vec2(textureSize(textureSampler, 0));
         info = getReflectionInfo2DRayMarching(reflected + jitt, position, texSize);
     }
 
