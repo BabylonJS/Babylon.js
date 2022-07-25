@@ -173,7 +173,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
-     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
             const system = this.CreateDefault(null);
             system.start();

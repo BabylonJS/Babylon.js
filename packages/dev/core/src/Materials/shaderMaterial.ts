@@ -1730,7 +1730,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {

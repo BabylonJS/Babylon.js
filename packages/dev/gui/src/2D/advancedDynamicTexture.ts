@@ -1171,7 +1171,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"), true);
         adt.parseSerializedObject(serialized, scaleToSize);
-        return adt
+        return adt;
     }
 
     /**
@@ -1191,7 +1191,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
      * @returns a promise that will resolve on success
      */
-     public static async ParseFromFileAsync(url: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+    public static async ParseFromFileAsync(url: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
         const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from URL");
         const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(url);
         adt.parseSerializedObject(serialized, scaleToSize);
