@@ -232,7 +232,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         system.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        ParticleHelper.CreateFromSnippetAsync(snippedId, scene, isGpu)
+        ParticleHelper.ParseFromSnippetAsync(snippedId, scene, isGpu)
             .then((newSystem) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             })
@@ -264,8 +264,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(`ParticleHelper.CreateFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `ParticleHelper.CreateFromSnippetAsync("${system.snippetId}`,
+                            regex: new RegExp(`ParticleHelper.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `ParticleHelper.ParseFromSnippetAsync("${system.snippetId}`,
                         });
                     }
 
