@@ -284,8 +284,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
-                    newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
+                    newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
+                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }
