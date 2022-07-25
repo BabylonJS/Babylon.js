@@ -50,7 +50,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
-    private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
+    private _prePointerObserver: Nullable<Observer<PointerInfoPre>>;
     private _sceneRenderObserver: Nullable<Observer<Scene>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
@@ -549,8 +549,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._resizeObserver) {
             scene.getEngine().onResizeObservable.remove(this._resizeObserver);
         }
-        if (this._pointerMoveObserver) {
-            scene.onPrePointerObservable.remove(this._pointerMoveObserver);
+        if (this._prePointerObserver) {
+            scene.onPrePointerObservable.remove(this._prePointerObserver);
         }
         if (this._sceneRenderObserver) {
             scene.onBeforeRenderObservable.remove(this._sceneRenderObserver);
@@ -771,6 +771,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
+            if (this._capturingControl[pointerId].isPointerBlocker) {
+                this._shouldBlockPointer = true;
+            }
             this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
@@ -882,10 +885,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const tempViewport = new Viewport(0, 0, 0, 0);
 
-        this._pointerMoveObserver = scene.onPrePointerObservable.add((pi) => {
-            if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
-                return;
-            }
+        this._prePointerObserver = scene.onPrePointerObservable.add((pi) => {
             if (
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
@@ -895,8 +895,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
 
-            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
-                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            if (pi.type === PointerEventTypes.POINTERMOVE) {
+                // Avoid pointerMove events firing while the pointer is captured by the scene
+                if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
+                    return;
+                }
+                if ((pi.event as IPointerEvent).pointerId) {
+                    this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+                }
             }
 
             this._translateToPicking(scene, tempViewport, pi);
