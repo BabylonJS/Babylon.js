@@ -1134,7 +1134,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
      */
-    public parseContent(serializedObject: any, scaleToSize?: boolean) {
+    public parseSerializedObject(serializedObject: any, scaleToSize?: boolean) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
         if (scaleToSize) {
             const width = serializedObject.width;
@@ -1149,37 +1149,53 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @deprecated Please use parseSerializedObject instead
+     */
+    public parseContent = this.parseSerializedObject;
+
+    /**
+     * Recreate the content of the ADT from a snippet saved by the GUI editor
+     * @param snippetId defines the snippet to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @returns a promise that will resolve on success
+     */
+    public static async ParseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+        const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from snippet");
+        if (snippetId === "_BLANK") {
+            return adt;
+        }
+
+        const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"), true);
+        adt.parseSerializedObject(serialized, scaleToSize);
+        return adt
+    }
+
+    /**
      * Recreate the content of the ADT from a snippet saved by the GUI editor
      * @param snippetId defines the snippet to load
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @returns a promise that will resolve on success
      */
-    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void> {
-        if (snippetId === "_BLANK") {
-            return Promise.resolve();
-        }
+    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this);
+    }
 
-        return new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const serializationObject = JSON.parse(snippet.gui);
-
-                        this.parseContent(serializationObject, scaleToSize);
-                        this.snippetId = snippetId;
-
-                        resolve();
-                    } else {
-                        reject("Unable to load the snippet " + snippetId);
-                    }
-                }
-            });
-
-            request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
-            request.send();
-        });
+    /**
+     * Recreate the content of the ADT from a url json
+     * @param url defines the url to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @returns a promise that will resolve on success
+     */
+     public static async ParseFromFileAsync(url: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+        const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from URL");
+        const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(url);
+        adt.parseSerializedObject(serialized, scaleToSize);
+        return adt;
     }
 
     /**
@@ -1188,9 +1204,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @returns a promise that will resolve on success
      */
-    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void> {
+    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this);
+    }
+
+    private static _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
         if (url === "") {
-            return Promise.resolve();
+            return Promise.reject("No URL provided");
         }
 
         return new Promise((resolve, reject) => {
@@ -1198,11 +1218,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        const gui = request.responseText;
+                        const gui = snippet ? JSON.parse(JSON.parse(request.responseText).jsonPayload).gui : request.responseText;
                         const serializationObject = JSON.parse(gui);
-                        this.parseContent(serializationObject, scaleToSize);
-
-                        resolve();
+                        resolve(serializationObject);
                     } else {
                         reject("Unable to load");
                     }
