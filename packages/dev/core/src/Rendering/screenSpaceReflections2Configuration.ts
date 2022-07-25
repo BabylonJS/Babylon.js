@@ -5,7 +5,7 @@ import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
  * Contains all parameters needed for the prepass to perform
  * screen space reflections
  */
-export class ScreenSpaceReflectionsConfiguration implements PrePassEffectConfiguration {
+export class ScreenSpaceReflections2Configuration implements PrePassEffectConfiguration {
     /**
      * Is ssr enabled
      */
@@ -14,10 +14,15 @@ export class ScreenSpaceReflectionsConfiguration implements PrePassEffectConfigu
     /**
      * Name of the configuration
      */
-    public name = "screenSpaceReflections";
+    public name = "screenSpaceReflections2";
 
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [Constants.PREPASS_NORMAL_TEXTURE_TYPE, Constants.PREPASS_POSITION_TEXTURE_TYPE, Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [
+        Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+        Constants.PREPASS_POSITION_TEXTURE_TYPE,
+        Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+        Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+    ];
 }
