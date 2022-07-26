@@ -798,10 +798,6 @@ export class InputManager {
                     }
                 }
 
-                if (!this._pointerCaptures[evt.pointerId] && evt.buttons > 0) {
-                    return;
-                }
-
                 this._pointerCaptures[evt.pointerId] = false;
                 if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                     return;
