@@ -169,6 +169,15 @@ export class MaterialPluginBase {
     }
 
     /**
+     * Sets the defines for the next rendering. Called before MaterialHelper.PrepareDefinesForAttributes is called.
+     * @param defines the list of "defines" to update.
+     * @param scene defines the scene to the material belongs to.
+     * @param mesh the mesh being rendered
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public prepareDefinesBeforeAttributes(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
+
+    /**
      * Sets the defines for the next rendering
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
@@ -233,6 +242,15 @@ export class MaterialPluginBase {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getSamplers(samplers: string[]): void {}
+
+    /**
+     * Gets the attributes used by the plugin.
+     * @param attributes list that the attribute names should be added to.
+     * @param scene the scene that the material belongs to.
+     * @param mesh the mesh being rendered.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public getAttributes(attributes: string[], scene: Scene, mesh: AbstractMesh): void {}
 
     /**
      * Gets the uniform buffers names added by the plugin.

@@ -465,7 +465,7 @@ export class ImageProcessingConfiguration {
      * @param defines the list of defines to complete
      * @param forPostProcess Define if we are currently in post process mode or not
      */
-    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
+    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
             defines.VIGNETTE = false;
             defines.TONEMAPPING = false;

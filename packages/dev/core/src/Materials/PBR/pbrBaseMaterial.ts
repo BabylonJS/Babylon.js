@@ -1035,7 +1035,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1196,6 +1196,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -1449,9 +1450,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.fallbackRank = fallbackRank;
         this._eventInfo.defines = defines;
         this._eventInfo.uniforms = uniforms;
+        this._eventInfo.attributes = attribs;
         this._eventInfo.samplers = samplers;
         this._eventInfo.uniformBuffersNames = uniformBuffers;
         this._eventInfo.customCode = undefined;
+        this._eventInfo.mesh = mesh;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
@@ -1526,7 +1529,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             if (scene.texturesEnabled) {
-                if (scene.getEngine().getCaps().textureLOD) {
+                if (engine.getCaps().textureLOD) {
                     defines.LODBASEDMICROSFURACE = true;
                 }
 
@@ -1629,7 +1632,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || this.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || this.realTimeFiltering || engine.getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             } else {
                                 defines.USESPHERICALINVERTEX = true;
@@ -1731,7 +1734,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.MICROSURFACEMAP = false;
                 }
 
-                if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
+                if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                     MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                     if (this._useParallax && this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -1744,6 +1747,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                    defines.PARALLAX = false;
+                    defines.PARALLAXOCCLUSION = false;
+                    defines.PARALLAOBJECTSPACE_NORMALMAP = false;
                 }
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
@@ -1782,7 +1788,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 defines.TWOSIDEDLIGHTING = false;
             }
 
-            defines.SPECULARAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
+            defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
         if (defines._areTexturesDirty || defines._areMiscDirty) {
@@ -1818,16 +1824,19 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             defines.DEBUGMODE = this._debugMode;
         }
 
-        // External config
-        this._eventInfo.defines = defines;
-        this._eventInfo.mesh = mesh;
-        this._callbackPluginEventPrepareDefines(this._eventInfo);
-
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
     }
 
     /**

@@ -21,7 +21,7 @@ interface ISliderLineComponentProps {
     margin?: boolean;
     icon?: string;
     iconLabel?: string;
-    lockObject?: LockObject;
+    lockObject: LockObject;
     unit?: React.ReactNode;
 }
 

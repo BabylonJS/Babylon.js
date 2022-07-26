@@ -169,29 +169,77 @@ export class Camera extends Node {
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
+    private _orthoLeft: Nullable<number> = null;
+
+    public set orthoLeft(value: Nullable<number>) {
+        this._orthoLeft = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoLeft = value;
+        }
+    }
+
     @serialize()
-    public orthoLeft: Nullable<number> = null;
+    public get orthoLeft(): Nullable<number> {
+        return this._orthoLeft;
+    }
 
     /**
      * Define the current limit on the right side for an orthographic camera
      * In scene unit
      */
+    private _orthoRight: Nullable<number> = null;
+
+    public set orthoRight(value: Nullable<number>) {
+        this._orthoRight = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoRight = value;
+        }
+    }
+
     @serialize()
-    public orthoRight: Nullable<number> = null;
+    public get orthoRight(): Nullable<number> {
+        return this._orthoRight;
+    }
 
     /**
      * Define the current limit on the bottom side for an orthographic camera
      * In scene unit
      */
+    private _orthoBottom: Nullable<number> = null;
+
+    public set orthoBottom(value: Nullable<number>) {
+        this._orthoBottom = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoBottom = value;
+        }
+    }
+
     @serialize()
-    public orthoBottom: Nullable<number> = null;
+    public get orthoBottom(): Nullable<number> {
+        return this._orthoBottom;
+    }
 
     /**
      * Define the current limit on the top side for an orthographic camera
      * In scene unit
      */
+    private _orthoTop: Nullable<number> = null;
+
+    public set orthoTop(value: Nullable<number>) {
+        this._orthoTop = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoTop = value;
+        }
+    }
+
     @serialize()
-    public orthoTop: Nullable<number> = null;
+    public get orthoTop(): Nullable<number> {
+        return this._orthoTop;
+    }
 
     /**
      * Field Of View is set in Radians. (default is 0.8)
@@ -233,8 +281,20 @@ export class Camera extends Node {
     /**
      * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
+    private _mode = Camera.PERSPECTIVE_CAMERA;
+    set mode(mode: number) {
+        this._mode = mode;
+
+        // Pass the mode down to the rig cameras
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.mode = mode;
+        }
+    }
+
     @serialize()
-    public mode = Camera.PERSPECTIVE_CAMERA;
+    get mode(): number {
+        return this._mode;
+    }
 
     /**
      * Define whether the camera is intermediate.
@@ -1265,7 +1325,7 @@ export class Camera extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         if (this.inputs) {
@@ -1378,6 +1438,11 @@ export class Camera extends Node {
         // Parent
         if (parsedCamera.parentId !== undefined) {
             camera._waitingParentId = parsedCamera.parentId;
+        }
+
+        // Parent instance index
+        if (parsedCamera.parentInstanceIndex !== undefined) {
+            camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
         }
 
         //If camera has an input manager, let it parse inputs settings

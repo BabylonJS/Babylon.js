@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-editor",
-    "version": "5.10.0",
+    "version": "5.16.0",
     "main": "babylon.nodeEditor.js",
     "types": "babylon.nodeEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.10.0"
+        "babylonjs": "^5.16.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -27,12 +27,12 @@
         "react-contextmenu": "RaananW/react-contextmenu",
         "react-dom": "^17.0.2",
         "rimraf": "^3.0.2",
-        "sass-loader": "^12.4.0",
-        "source-map-loader": "^3.0.0",
+        "sass-loader": "^13.0.0",
+        "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "typescript": "^4.4.4",
-        "webpack": "^5.59.1",
-        "webpack-cli": "^4.9.1",
+        "webpack": "^5.73.0",
+        "webpack-cli": "^4.10.0",
         "webpack-merge": "^5.8.0"
     },
     "keywords": [

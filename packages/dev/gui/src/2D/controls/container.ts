@@ -255,6 +255,8 @@ export class Container extends Control {
      * @hidden
      */
     public _reOrderControl(control: Control): void {
+        const linkedMesh = control.linkedMesh;
+
         this.removeControl(control);
 
         let wasAdded = false;
@@ -271,6 +273,10 @@ export class Container extends Control {
         }
 
         control.parent = this;
+
+        if (linkedMesh) {
+            control.linkWithMesh(linkedMesh);
+        }
 
         this._markAsDirty();
     }

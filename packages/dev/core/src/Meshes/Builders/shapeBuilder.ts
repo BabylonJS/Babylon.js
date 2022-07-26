@@ -21,6 +21,8 @@ import { Path3D } from "../../Maths/math.path";
  * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
  * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
+ * * The optional parameter `firstNormal` (Vector3) defines the direction of the first normal of the supplied path. Consider using this for any path that is straight, and particular for paths in the xy plane.
+ * * The optional `adjustFrame` (boolean, default false) will cause the internally generated Path3D tangents, normals, and binormals to be adjusted so that a) they are always well-defined, and b) they do not reverse from one path point to the next. This prevents the extruded shape from being flipped and/or rotated with resulting mesh self-intersections. This is primarily useful for straight paths that can reverse direction.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
@@ -36,6 +38,8 @@ import { Path3D } from "../../Maths/math.path";
  * @param options.backUVs
  * @param options.instance
  * @param options.invertUV
+ * @param options.firstNormal
+ * @param options.adjustFrame
  * @param scene defines the hosting scene
  * @returns the extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
@@ -57,6 +61,8 @@ export function ExtrudeShape(
         backUVs?: Vector4;
         instance?: Mesh;
         invertUV?: boolean;
+        firstNormal?: Vector3;
+        adjustFrame?: boolean;
     },
     scene: Nullable<Scene> = null
 ): Mesh {
@@ -90,7 +96,9 @@ export function ExtrudeShape(
         instance,
         invertUV,
         options.frontUVs || null,
-        options.backUVs || null
+        options.backUVs || null,
+        options.firstNormal || null,
+        options.adjustFrame ? true : false
     );
 }
 
@@ -114,6 +122,8 @@ export function ExtrudeShape(
  * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
  * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+ * * The optional parameter `firstNormal` (Vector3) defines the direction of the first normal of the supplied path. It should be supplied when the path is in the xy plane, and particularly if these sections are straight, because the underlying Path3D object will pick a normal in the xy plane that causes the extrusion to be collapsed into the plane. This should be used for any path that is straight.
+ * * The optional `adjustFrame` (boolean, default false) will cause the internally generated Path3D tangents, normals, and binormals to be adjusted so that a) they are always well-defined, and b) they do not reverse from one path point to the next. This prevents the extruded shape from being flipped and/or rotated with resulting mesh self-intersections. This is primarily useful for straight paths that can reverse direction.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape
@@ -131,6 +141,8 @@ export function ExtrudeShape(
  * @param options.backUVs
  * @param options.instance
  * @param options.invertUV
+ * @param options.firstNormal
+ * @param options.adjustFrame
  * @param scene defines the hosting scene
  * @returns the custom extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
@@ -155,6 +167,8 @@ export function ExtrudeShapeCustom(
         backUVs?: Vector4;
         instance?: Mesh;
         invertUV?: boolean;
+        firstNormal?: Vector3;
+        adjustFrame?: boolean;
     },
     scene: Nullable<Scene> = null
 ): Mesh {
@@ -174,6 +188,8 @@ export function ExtrudeShapeCustom(
     const ribbonClosePath = options.closeShape || options.ribbonClosePath || false;
     const cap = options.cap === 0 ? 0 : options.cap || Mesh.NO_CAP;
     const updatable = options.updatable;
+    const firstNormal = options.firstNormal || null;
+    const adjustFrame = options.adjustFrame || false;
     const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     const instance = options.instance;
     const invertUV = options.invertUV || false;
@@ -195,7 +211,9 @@ export function ExtrudeShapeCustom(
         instance || null,
         invertUV,
         options.frontUVs || null,
-        options.backUVs || null
+        options.backUVs || null,
+        firstNormal,
+        adjustFrame
     );
 }
 
@@ -217,7 +235,9 @@ function _ExtrudeShapeGeneric(
     instance: Nullable<Mesh>,
     invertUV: boolean,
     frontUVs: Nullable<Vector4>,
-    backUVs: Nullable<Vector4>
+    backUVs: Nullable<Vector4>,
+    firstNormal: Nullable<Vector3>,
+    adjustFrame: boolean
 ): Mesh {
     // extrusion geometry
     const extrusionPathArray = (
@@ -230,13 +250,41 @@ function _ExtrudeShapeGeneric(
         scaleFunction: Nullable<{ (i: number, distance: number): number }>,
         rotateFunction: Nullable<{ (i: number, distance: number): number }>,
         cap: number,
-        custom: boolean
+        custom: boolean,
+        adjustFrame: boolean
     ) => {
         const tangents = path3D.getTangents();
         const normals = path3D.getNormals();
         const binormals = path3D.getBinormals();
         const distances = path3D.getDistances();
-
+        if (adjustFrame) {
+            /* fix tangents,normals, binormals */
+            for (let i = 0; i < tangents.length; i++) {
+                if (tangents[i].x == 0 && tangents[i].y == 0 && tangents[i].z == 0) {
+                    tangents[i].copyFrom(tangents[i - 1]);
+                }
+                if (normals[i].x == 0 && normals[i].y == 0 && normals[i].z == 0) {
+                    normals[i].copyFrom(normals[i - 1]);
+                }
+                if (binormals[i].x == 0 && binormals[i].y == 0 && binormals[i].z == 0) {
+                    binormals[i].copyFrom(binormals[i - 1]);
+                }
+                if (i > 0) {
+                    let v = tangents[i - 1];
+                    if (Vector3.Dot(v, tangents[i]) < 0) {
+                        tangents[i].scaleInPlace(-1);
+                    }
+                    v = normals[i - 1];
+                    if (Vector3.Dot(v, normals[i]) < 0) {
+                        normals[i].scaleInPlace(-1);
+                    }
+                    v = binormals[i - 1];
+                    if (Vector3.Dot(v, binormals[i]) < 0) {
+                        binormals[i].scaleInPlace(-1);
+                    }
+                }
+            }
+        }
         let angle = 0;
         const returnScale = () => {
             return scale !== null ? scale : 1;
@@ -253,10 +301,10 @@ function _ExtrudeShapeGeneric(
             const shapePath = new Array<Vector3>();
             const angleStep = rotate(i, distances[i]);
             const scaleRatio = scl(i, distances[i]);
+            Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
             for (let p = 0; p < shape.length; p++) {
-                Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
                 const planed = tangents[i].scale(shape[p].z).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y));
-                const rotated = shapePath[p] ? shapePath[p] : Vector3.Zero();
+                const rotated = Vector3.Zero();
                 Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
                 rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
                 shapePath[p] = rotated;
@@ -306,17 +354,17 @@ function _ExtrudeShapeGeneric(
     if (instance) {
         // instance update
         const storage = instance._creationDataStorage!;
-        path3D = storage.path3D.update(curve);
-        pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom);
+        path3D = firstNormal ? storage.path3D.update(curve, firstNormal) : storage.path3D.update(curve);
+        pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom, adjustFrame);
         instance = CreateRibbon("", { pathArray, closeArray: false, closePath: false, offset: 0, updatable: false, sideOrientation: 0, instance }, scene || undefined);
 
         return instance;
     }
     // extruded shape creation
-    path3D = <any>new Path3D(curve);
+    path3D = firstNormal ? new Path3D(curve, firstNormal) : new Path3D(curve);
     const newShapePaths = new Array<Array<Vector3>>();
     cap = cap < 0 || cap > 3 ? 0 : cap;
-    pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
+    pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom, adjustFrame);
     const extrudedGeneric = CreateRibbon(
         name,
         {

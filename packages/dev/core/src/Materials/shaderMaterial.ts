@@ -129,7 +129,6 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview: boolean = false;
-    private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -610,7 +609,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             } else {
                 const effect = this._drawWrapper.effect;
-                if (effect && effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
+                if (effect && effect._wasPreviouslyReady && effect._wasPreviouslyUsingInstances === useInstances) {
                     return true;
                 }
             }
@@ -879,7 +878,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        this._effectUsesInstances = !!useInstances;
+        effect!._wasPreviouslyUsingInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
@@ -1145,7 +1144,7 @@ export class ShaderMaterial extends PushMaterial {
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
 
             if (bvaManager && bvaManager.isEnabled) {
-                mesh.bakedVertexAnimationManager?.bind(effect, this._effectUsesInstances);
+                mesh.bakedVertexAnimationManager?.bind(effect, !!effect._wasPreviouslyUsingInstances);
             }
         }
 
@@ -1731,7 +1730,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1754,6 +1753,16 @@ export class ShaderMaterial extends PushMaterial {
             request.send();
         });
     }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
 }
 
 RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);

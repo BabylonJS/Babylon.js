@@ -534,11 +534,6 @@ export class BoundingBoxGizmo extends Gizmo {
                 this._updateDummy();
             });
         }
-        // If the attachedMesh property is not set, then the attachedNode constructor was used, which
-        // the BoundingBoxGizmo doesn't support
-        if (!this.attachedMesh) {
-            Logger.Warn("Using the attachedNode attribute in BoundingBoxGizmo is not supported. Please use attachedMesh instead.");
-        }
     }
 
     private _selectNode(selectedMesh: Nullable<Mesh>) {
@@ -548,6 +543,12 @@ export class BoundingBoxGizmo extends Gizmo {
             .forEach((m) => {
                 m.isVisible = !selectedMesh || m == selectedMesh;
             });
+    }
+    /**
+     * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
+     */
+    public getScaleBoxes() {
+        return this._scaleBoxesParent.getChildMeshes();
     }
 
     /**

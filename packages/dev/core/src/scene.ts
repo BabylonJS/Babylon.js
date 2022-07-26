@@ -439,6 +439,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
+     * This is triggered for each "sub" camera in a Camera Rig unlike onAfterCameraRenderObservable
      */
     public onAfterRenderCameraObservable = new Observable<Camera>();
 
@@ -496,6 +497,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * An event triggered after rendering a camera
+     * This is triggered for the full rig Camera only unlike onAfterRenderCameraObservable
      */
     public onAfterCameraRenderObservable = new Observable<Camera>();
 
@@ -1865,6 +1867,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 continue;
             }
 
+            // Do not stop at the first encountered "unready" object as we want to ensure
+            // all materials are starting off their compilation in parallel.
             if (!mesh.isReady(true)) {
                 isReady = false;
                 continue;
@@ -2029,18 +2033,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param data
-     * @hidden
+     * This function can help adding any object to the list of data awaited to be ready in order to check for a complete scene loading.
+     * @param data defines the object to wait for
      */
-    public _addPendingData(data: any): void {
+    public addPendingData(data: any): void {
         this._pendingData.push(data);
     }
 
     /**
-     * @param data
-     * @hidden
+     * Remove a pending data from the loading list which has previously been added with addPendingData.
+     * @param data defines the object to remove from the pending list
      */
-    public _removePendingData(data: any): void {
+    public removePendingData(data: any): void {
         const wasLoading = this.isLoading;
         const index = this._pendingData.indexOf(data);
 
@@ -3982,7 +3986,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (rtt.onClearObservable.hasObservers()) {
                 rtt.onClearObservable.notifyObservers(this._engine);
             } else if (!rtt.skipInitialClear) {
-                this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                if (this.autoClear) {
+                    this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                }
                 rtt._cleared = true;
             }
         } else {
@@ -4457,6 +4463,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Multi-cameras?
+        // save current active camera, following calls will change it, discarding user settings
+        const activeCamera = this._activeCamera;
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
@@ -4468,6 +4476,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
         }
+        this._activeCamera = activeCamera;
 
         // Intersection checks
         this._checkIntersections();

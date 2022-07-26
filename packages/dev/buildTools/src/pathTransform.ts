@@ -1,5 +1,6 @@
 import * as ts from "typescript";
-import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, BuildType, declarationsOnlyPackages, PublicPackageVariable } from "./packageMapping";
+import type { BuildType, PublicPackageVariable } from "./packageMapping";
+import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping";
 
 const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 

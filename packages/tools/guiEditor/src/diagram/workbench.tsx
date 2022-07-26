@@ -22,11 +22,12 @@ import { Tools } from "../tools";
 import type { Observable, Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
-import { CoordinateHelper, DimensionProperties } from "./coordinateHelper";
+import type { DimensionProperties } from "./coordinateHelper";
+import { CoordinateHelper } from "./coordinateHelper";
 import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
-import { StackPanel } from "gui/2D/controls/stackPanel";
+import type { StackPanel } from "gui/2D/controls/stackPanel";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -283,8 +284,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
-                    newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
+                    newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
+                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }

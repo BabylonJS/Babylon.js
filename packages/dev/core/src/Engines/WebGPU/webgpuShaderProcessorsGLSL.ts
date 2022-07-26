@@ -39,7 +39,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
-        const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor__;\nfloat textureOutputHeight__;\n};\n`;
+        const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor_;\nfloat textureOutputHeight_;\n};\n`;
 
         if (isFragment) {
             return ubDeclaration + "##INJECTCODE##\n" + code;
@@ -235,13 +235,13 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         if (isFragment) {
             const hasFragCoord = code.indexOf("gl_FragCoord") >= 0;
             const fragCoordCode = `
-                glFragCoord__ = gl_FragCoord;
-                if (yFactor__ == 1.) {
-                    glFragCoord__.y = textureOutputHeight__ - glFragCoord__.y;
+                glFragCoord_ = gl_FragCoord;
+                if (yFactor_ == 1.) {
+                    glFragCoord_.y = textureOutputHeight_ - glFragCoord_.y;
                 }
             `;
 
-            const injectCode = hasFragCoord ? "vec4 glFragCoord__;\n" : "";
+            const injectCode = hasFragCoord ? "vec4 glFragCoord_;\n" : "";
 
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
@@ -249,9 +249,9 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
             code = code.replace(/gl_FragColor/g, "glFragColor");
             code = code.replace(/gl_FragData/g, "glFragData");
-            code = code.replace(/gl_FragCoord/g, "glFragCoord__");
+            code = code.replace(/gl_FragCoord/g, "glFragCoord_");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
-            code = code.replace(/dFdy/g, "(-yFactor__)*dFdy"); // will also handle dFdyCoarse and dFdyFine
+            code = code.replace(/dFdy/g, "(-yFactor_)*dFdy"); // will also handle dFdyCoarse and dFdyFine
             code = code.replace("##INJECTCODE##", injectCode);
 
             if (hasFragCoord) {
@@ -270,7 +270,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         if (!isFragment) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
-            code += "gl_Position.y *= yFactor__;\n";
+            code += "gl_Position.y *= yFactor_;\n";
             if (!engine.isNDCHalfZRange) {
                 code += "gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;\n";
             }
