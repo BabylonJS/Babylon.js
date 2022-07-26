@@ -804,7 +804,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         animationGroup.play();
     }
 
-    private _performEnterExitAnimation(speed: number) {
+    private _performEnterExitAnimation(speedRatio: number) {
         const frameRate = 60;
         const animationGroup = new AnimationGroup("Enter Exit Animation Group");
 
@@ -865,7 +865,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         }
 
         animationGroup.normalize(0, 45);
-        animationGroup.speedRatio = speed;
+        animationGroup.speedRatio = speedRatio;
 
         animationGroup.play();
     }
