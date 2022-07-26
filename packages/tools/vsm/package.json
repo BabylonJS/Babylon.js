@@ -1,5 +1,5 @@
 {
-    "name": "@tools/vsm",
+    "name": "@tools/visual-state-manager",
     "private": true,
     "version": "1.0.0",
     "files": [
