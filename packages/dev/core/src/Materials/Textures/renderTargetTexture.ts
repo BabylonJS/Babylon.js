@@ -826,10 +826,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         // Set custom projection.
         // Needs to be before binding to prevent changing the aspect ratio.
         const camera: Nullable<Camera> = this.activeCamera ?? scene.activeCamera;
+        const sceneCamera = scene.activeCamera;
 
         if (camera) {
             if (camera !== scene.activeCamera) {
                 scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
+                scene.activeCamera = camera;
             }
             engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
         }
@@ -907,7 +909,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         engine.currentRenderPassId = currentRenderPassId;
 
-        if (scene.activeCamera) {
+        if (sceneCamera) {
+            scene.activeCamera = sceneCamera;
             // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
             if (scene.getEngine().scenes.length > 1 || (this.activeCamera && this.activeCamera !== scene.activeCamera)) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
