@@ -14,6 +14,7 @@ import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { DomManagement } from "core/Misc/domManagement";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
+import { Grid } from "../../2D/controls/grid";
 import { Image } from "../../2D/controls/image";
 import { Mesh } from "core/Meshes/mesh";
 import { MRDLBackglowMaterial } from "../materials/mrdl/mrdlBackglowMaterial";
@@ -490,17 +491,16 @@ export class TouchHolographicV3Button extends TouchButton3D {
             }
 
             if (this._subtext) {
-                text.paddingBottomInPixels = 22.5;
-
-                const textContainer = new StackPanel();
-                textContainer.isVertical = true;
+                const textContainer = new Grid();
+                textContainer.addColumnDefinition(1);
+                textContainer.addRowDefinition(0.5);
+                textContainer.addRowDefinition(0.5);
                 textContainer.widthInPixels = totalPanelWidthInPixels;
-                textContainer.heightInPixels = totalPanelWidthInPixels;
+                textContainer.heightInPixels = 45;
     
                 const subtext = new TextBlock(`${this.name}_subtext`);
                 subtext.text = this._subtext;
                 subtext.color = "#EEEEEEAB";
-                subtext.paddingTopInPixels = 22.5;
                 subtext.fontSize = this.textSizeInPixels * 0.75;
                 subtext.fontWeight = "600";
     
@@ -509,8 +509,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
                     subtext.paddingLeftInPixels = padding;
                 }
     
-                textContainer.addControl(subtext);
-                textContainer.addControl(text);
+                textContainer.addControl(text, 0);
+                textContainer.addControl(subtext, 1);
                 panel.addControl(textContainer);
             } else {
                 panel.addControl(text);
