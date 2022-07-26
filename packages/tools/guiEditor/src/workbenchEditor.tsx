@@ -197,6 +197,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     };
     switchExpandedState(): void {
         this.setState({ toolbarExpand: !this.state.toolbarExpand });
+        if (!this.state.toolbarExpand) {
+            this._leftWidth = this._leftWidth - 50;
+        } else {
+            this._leftWidth = this._leftWidth + 50;
+        }
     }
 
     render() {
