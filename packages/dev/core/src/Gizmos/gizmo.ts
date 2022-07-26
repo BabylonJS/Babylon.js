@@ -46,9 +46,9 @@ export class Gizmo implements IDisposable {
      * The root mesh of the gizmo
      */
     public _rootMesh: Mesh;
-    private _attachedMesh: Nullable<AbstractMesh> = null;
-    private _attachedNode: Nullable<Node> = null;
-    private _customRotationQuaternion: Nullable<Quaternion> = null;
+    protected _attachedMesh: Nullable<AbstractMesh> = null;
+    protected _attachedNode: Nullable<Node> = null;
+    protected _customRotationQuaternion: Nullable<Quaternion> = null;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
@@ -154,7 +154,7 @@ export class Gizmo implements IDisposable {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _attachedNodeChanged(value: Nullable<Node>) {}
 
-    private _beforeRenderObserver: Nullable<Observer<Scene>>;
+    protected _beforeRenderObserver: Nullable<Observer<Scene>>;
     private _tempQuaternion = new Quaternion(0, 0, 0, 1);
     private _tempVector = new Vector3();
     private _tempVector2 = new Vector3();
