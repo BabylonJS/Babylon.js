@@ -478,7 +478,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.guiSize = this.props.globalState.guiTexture.getSize();
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
-            this.props.globalState.customLoad.action(this.props.globalState.guiTexture.snippetId).catch(() => {
+            this.props.globalState.customLoad.action(snippetId).catch(() => {
                 alert("Unable to load your GUI");
             });
         }
