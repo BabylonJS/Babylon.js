@@ -890,7 +890,7 @@ export class NativeEngine extends Engine {
             drawBuffersExtension: false,
             depthTextureExtension: false,
             vertexArrayObject: true,
-            instancedArrays: false,
+            instancedArrays: true,
             supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
@@ -1088,7 +1088,13 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+    protected _recordVertexArrayObject(
+        vertexArray: any,
+        vertexBuffers: { [key: string]: VertexBuffer },
+        indexBuffer: Nullable<NativeDataBuffer>,
+        effect: Effect,
+        overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
+    ): void {
         if (indexBuffer) {
             this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
@@ -1098,7 +1104,15 @@ export class NativeEngine extends Engine {
             const location = effect.getAttributeLocation(index);
             if (location >= 0) {
                 const kind = attributes[index];
-                const vertexBuffer = vertexBuffers[kind];
+                let vertexBuffer: Nullable<VertexBuffer> = null;
+
+                if (overrideVertexBuffers) {
+                    vertexBuffer = overrideVertexBuffers[kind];
+                }
+                if (!vertexBuffer) {
+                    vertexBuffer = vertexBuffers[kind];
+                }
+
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
                     if (buffer && buffer.nativeVertexBuffer) {
@@ -1128,9 +1142,14 @@ export class NativeEngine extends Engine {
         this.bindVertexArrayObject(this._boundBuffersVertexArray);
     }
 
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+    public recordVertexArrayObject(
+        vertexBuffers: { [key: string]: VertexBuffer },
+        indexBuffer: Nullable<NativeDataBuffer>,
+        effect: Effect,
+        overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
+    ): WebGLVertexArrayObject {
         const vertexArray = this._engine.createVertexArray();
-        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
+        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect, overrideVertexBuffers);
         return vertexArray;
     }
 
