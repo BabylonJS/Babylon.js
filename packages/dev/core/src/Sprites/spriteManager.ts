@@ -728,7 +728,7 @@ export class SpriteManager implements ISpriteManager {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
         }
@@ -755,4 +755,14 @@ export class SpriteManager implements ISpriteManager {
             request.send();
         });
     }
+
+    /**
+     * Creates a sprite manager from a snippet saved by the sprite editor
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static CreateFromSnippetAsync = SpriteManager.ParseFromSnippetAsync;
 }

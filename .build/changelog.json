@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.15.0",
+    "fromTag": "5.15.1",
     "changelog": {
         "5.15.1": [
             {
@@ -38,6 +38,274 @@
                 },
                 "files": [
                     "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": []
+            }
+        ],
+        "5.16.0": [
+            {
+                "pr": "12768",
+                "title": "Native readPixels implementation",
+                "description": "This change provides a native implementation for reading a texture to obtain an rbga8 buffer. It does not currently support cube maps.\r\n\r\nSee the corresponding Babylon Native change here: https://github.com/BabylonJS/BabylonNative/pull/1104",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12771",
+                "title": "perf: Improve `MaterialHelper` tree-shaking with `LightConstants`",
+                "description": "`MaterialHelper` don't need the whole `Light` class (only the `Light` TypeScript type).\r\n\r\nRelated to https://github.com/BabylonJS/Babylon.js/issues/10388",
+                "author": {
+                    "name": "yvele",
+                    "url": "https://github.com/yvele"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12769",
+                "title": "Skip some WebAPI calls when setting up VideoTexture in the context of Babylon Native",
+                "description": "This change prevents `VideoTexture` from calling `window.URL.createObjectURL` during initialization when running in the context of Babylon Native. Somehow this WebAPI is defined in regular Babylon Native (there is no native polyfill, so is JSC/V8 providing this?), though it is unnecessary (the `src` property is unused in Babylon Native's `VideoTexture` implementation), and in React Native `window.URL.createObjectURL` is polyfilled partially and dies on this call. Avoiding this call makes `VideoTexture` work in Babylon React Native. The extra direct check for `video.isNative` in the BJS code is not great, but other code in this file already does it, so following the existing pattern.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12766",
+                "title": "Use only the mesh's enabled state, not its parent's, when cloning.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/cloned-objects-dont-seem-to-have-the-same-enabled-state-as-the-original-object/32311\r\n\r\nExample playground: https://playground.babylonjs.com/#48QWI6",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12764",
+                "title": "Always clone skinned meshes for AssetContainer.instantiateModelsToScene",
+                "description": "See https://forum.babylonjs.com/t/programmatically-setting-separate-bone-transform-node-transforms-for-instances/31910",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12765",
+                "title": "InputManager: Added mouse buttons 4 and 5 to InputManager mouse handling",
+                "description": "A user in the forums brought an issue to our attention where the mouse 4 and 5 buttons (Browser Back and Browser Forward) weren't triggering `scene.onPointerObservable`.  This had worked previously in 4.2.  Upon further investigation, it was found that the code used in the InputManager to route the input calls had omitted these buttons.  This PR will add them back into the InputManager.\r\n\r\nForum Post: https://forum.babylonjs.com/t/scene-onpointerobservable-doesnt-catch-mouse4-and-mouse5-events-in-babylonjs-5/32225",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12755",
+                "title": "toolbar can expand now",
+                "description": "No previous functionality for expanding toolbar on smaller screens (scroll only) ",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/imgs/toolbarCollapseIcon.svg",
+                    "packages/tools/guiEditor/src/imgs/toolbarExpandIcon.svg",
+                    "packages/tools/guiEditor/src/main.scss",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12762",
+                "title": "ArcRotateCamera: Modify rotation logic to use invertRotation flag",
+                "description": "The `invertRotation` flag is primarily used with the FreeCamera and any Cameras that inherit from it.  Since the ArcRotateCamera uses different rotation logic, it never actually makes use of the `invertRotation` flag or its numerical counterpart, the `invertRotationSpeed` property.  This PR allow the user to use this flag with the ArcRotateCamera and specify the inverted rotational speed.  The discrepancy was initially brought up in the forum thread: https://forum.babylonjs.com/t/inverting-arcrotatecamera-controls-for-photodome/32147/6.\r\n\r\n",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12754",
+                "title": "fixed scene tree not sticking",
+                "description": "When clicking arrow button in scene tree, children were not appearing unless the mouse was moved ",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/sceneExplorer/treeItemSelectableComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12760",
+                "title": "Expose pendingData APIs publicly",
+                "description": "Open pendingData management to the public\r\n\r\nhttps://forum.babylonjs.com/t/scene-external-readiness-checking/32179",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Particles/particleHelper.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12761",
+                "title": "DeviceInputSystem: Made mousewheel passive option set to false when supported",
+                "description": "Originally, in two PRs (https://github.com/BabylonJS/Babylon.js/pull/12696 and https://github.com/BabylonJS/Babylon.js/pull/12703) there was a violation warning that came up because the mouse wheel was not being treated as a passive event.  My original fixes addressed the original logic, which was incorrectly assigning the passive property, and makes the default value true.  This also includes removal of the preventDefault code from some of our cameras.\r\n\r\nThis current PR will accomplish two things.  One, it will revert the changes from 12703.  Second, it will set the default state of the passive property to false.  This should address an issue found in the forums where the original behavior would successfully allow for preventDefault but the newest one wouldn't.\r\n\r\nForum link: https://forum.babylonjs.com/t/camera-zoom-scrolling-the-page-introduced-in-5-13-1/32223/6",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/webDeviceInputSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12759",
+                "title": "Fix 3D slider observables and visibility",
+                "description": "- https://forum.babylonjs.com/t/gui3d-slider3d-observables-are-not-triggered/32265\r\n- https://forum.babylonjs.com/t/gui3d-slider3d-isvisible-boolean-not-working/32264",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/controls/control3D.ts",
+                    "packages/dev/gui/src/3D/controls/slider3D.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12758",
+                "title": "Serialize getters instead of private vars",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12756",
+                "title": "WebGPU: Comply with variable naming restrictions",
+                "description": "Fix errors starting in Canary Version 105.0.5183.0.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12753",
+                "title": "Fix camera cloning of ortho params",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/5-14-to-5-15-camera-clone-does-not-clone-camera-mode/32192/3",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12750",
+                "title": "Add engine option for using exact sRGB conversions in the shader.",
+                "description": "This provides an option to use the more expensive but accurate conversion for transforming colors in the shader to and from linear and sRGB color spaces. The conversion constants and formulas are described in the Wikipedia article for sRGB: https://en.wikipedia.org/wiki/SRGB\r\n\r\nI opted to make this option a property passed into the engine, as it feels somewhat similar functionally to the engine option for high precision floats i.e., it affects many things (in this case, many shaders). IMO it would be odd to use the approximation in one shader and the exact formula in another. I think most of the time, you'd either want it always or never.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12751",
+                "title": "Remove loading of GLTF files as the current architecture doesn't support them",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/nme-cant-upload-custom-gltf-for-preview/32172/2",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx"
                 ],
                 "tags": []
             }

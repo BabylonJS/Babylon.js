@@ -60,8 +60,8 @@ declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper
  * @hidden
  */
 export interface ISceneLike {
-    _addPendingData(data: any): void;
-    _removePendingData(data: any): void;
+    addPendingData(data: any): void;
+    removePendingData(data: any): void;
     offlineProvider: IOfflineProvider;
 }
 
@@ -165,6 +165,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+    /**
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
+     * Otherwise, the default is to use a cheaper approximation.
+     */
+    useExactSrgbConversions?: boolean;
 }
 
 /**
@@ -196,14 +201,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.15.1";
+        return "babylonjs@5.16.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.15.1";
+        return "5.16.0";
     }
 
     /**
@@ -698,6 +703,14 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
+    protected _useExactSrgbConversions = false;
+    /**
+     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
+     */
+    public get useExactSrgbConversions(): boolean {
+        return this._useExactSrgbConversions;
+    }
+
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
      */
@@ -813,6 +826,10 @@ export class ThinEngine {
 
             if (options.xrCompatible === undefined) {
                 options.xrCompatible = true;
+            }
+
+            if (options.useExactSrgbConversions !== undefined) {
+                this._useExactSrgbConversions = options.useExactSrgbConversions;
             }
 
             this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
@@ -1887,6 +1904,22 @@ export class ThinEngine {
     }
 
     /**
+     * Gets a boolean indicating if depth testing is enabled
+     * @returns the current state
+     */
+    public getDepthBuffer(): boolean {
+        return this._depthCullingState.depthTest;
+    }
+
+    /**
+     * Enable or disable depth buffering
+     * @param enable defines the state to set
+     */
+    public setDepthBuffer(enable: boolean): void {
+        this._depthCullingState.depthTest = enable;
+    }
+
+    /**
      * Set the z offset Factor to apply to current rendering
      * @param value defines the offset to apply
      */
@@ -2709,6 +2742,11 @@ export class ThinEngine {
             } else {
                 delete defines["USE_REVERSE_DEPTHBUFFER"];
             }
+            if (this.useExactSrgbConversions) {
+                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+            } else {
+                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+            }
             return;
         } else {
             let s = "";
@@ -2720,6 +2758,12 @@ export class ThinEngine {
                     s += "\n";
                 }
                 s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            if (this.useExactSrgbConversions) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_EXACT_SRGB_CONVERSIONS";
             }
             return s;
         }
@@ -3882,7 +3926,7 @@ export class ThinEngine {
         }
 
         if (scene) {
-            scene._addPendingData(texture);
+            scene.addPendingData(texture);
         }
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -3906,7 +3950,7 @@ export class ThinEngine {
 
         const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             if (url === originalUrl) {
@@ -4674,7 +4718,7 @@ export class ThinEngine {
 
         // this.resetTextureCache();
         if (scene) {
-            scene._removePendingData(texture);
+            scene.removePendingData(texture);
         }
 
         texture.onLoadedObservable.notifyObservers(texture);
@@ -4711,7 +4755,7 @@ export class ThinEngine {
         if (!texture._hardwareTexture) {
             //  this.resetTextureCache();
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             return;

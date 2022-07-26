@@ -7,6 +7,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
@@ -56,10 +57,9 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-     * This param is no longer used because wheel events should be treated as passive.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p) => {
             // sanity check - this should be a PointerWheel event.
             if (p.type !== PointerEventTypes.POINTERWHEEL) {
@@ -104,6 +104,12 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
                     this.camera.heightOffset -= delta;
                 } else if (this.axisControlRotation) {
                     this.camera.rotationOffset -= delta;
+                }
+            }
+
+            if (event.preventDefault) {
+                if (!noPreventDefault) {
+                    event.preventDefault();
                 }
             }
         };

@@ -815,22 +815,6 @@ export class Engine extends ThinEngine {
     /** States */
 
     /**
-     * Gets a boolean indicating if depth testing is enabled
-     * @returns the current state
-     */
-    public getDepthBuffer(): boolean {
-        return this._depthCullingState.depthTest;
-    }
-
-    /**
-     * Enable or disable depth buffering
-     * @param enable defines the state to set
-     */
-    public setDepthBuffer(enable: boolean): void {
-        this._depthCullingState.depthTest = enable;
-    }
-
-    /**
      * Gets a boolean indicating if depth writing is enabled
      * @returns the current depth writing state
      */

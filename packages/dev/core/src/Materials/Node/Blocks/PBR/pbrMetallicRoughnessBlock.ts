@@ -699,8 +699,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
 
         const scene = mesh.getScene();
+        const engine = scene.getEngine();
 
-        if (scene.getEngine()._features.needTypeSuffixInShaderConstants) {
+        if (engine._features.needTypeSuffixInShaderConstants) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
         } else {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);

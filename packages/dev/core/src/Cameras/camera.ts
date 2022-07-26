@@ -179,6 +179,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoLeft(): Nullable<number> {
         return this._orthoLeft;
     }
@@ -197,6 +198,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoRight(): Nullable<number> {
         return this._orthoRight;
     }
@@ -215,6 +217,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoBottom(): Nullable<number> {
         return this._orthoBottom;
     }
@@ -233,6 +236,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     public get orthoTop(): Nullable<number> {
         return this._orthoTop;
     }
@@ -287,6 +291,7 @@ export class Camera extends Node {
         }
     }
 
+    @serialize()
     get mode(): number {
         return this._mode;
     }
