@@ -44,15 +44,15 @@ export class PositionGizmo extends Gizmo {
     public zPlaneGizmo: PlaneDragGizmo;
 
     /**
-     * private variables
+     * protected variables
      */
-    private _meshAttached: Nullable<AbstractMesh> = null;
-    private _nodeAttached: Nullable<Node> = null;
-    private _snapDistance: number;
-    private _observables: Observer<PointerInfo>[] = [];
+    protected _meshAttached: Nullable<AbstractMesh> = null;
+    protected _nodeAttached: Nullable<Node> = null;
+    protected _snapDistance: number;
+    protected _observables: Observer<PointerInfo>[] = [];
 
     /** Node Caching for quick lookup */
-    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
+    protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -62,7 +62,7 @@ export class PositionGizmo extends Gizmo {
     /**
      * If set to true, planar drag is enabled
      */
-    private _planarGizmoEnabled = false;
+    protected _planarGizmoEnabled = false;
 
     public get attachedMesh() {
         return this._meshAttached;
