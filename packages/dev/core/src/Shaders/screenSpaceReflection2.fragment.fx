@@ -93,16 +93,12 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
     // Calculate the start and end point of the reflection ray in screen space.
     vec4 startSS = projection * startVS; // Project to screen space.
     startSS.xyz /= startSS.w; // Perform the perspective divide.
-    #ifndef WEBGPU
     startSS.xy = startSS.xy * 0.5 + vec2(0.5); // Convert from clip space to texture space.
-    #endif
     startSS.xy *= texSize; // Convert the UV coordinates to fragment/pixel coordinates.
 
     vec4 endSS = projection * endVS;
     endSS.xyz /= endSS.w;
-    #ifndef WEBGPU
     endSS.xy = endSS.xy * 0.5 + vec2(0.5);
-    #endif
     endSS.xy *= texSize;
 
     vec2 currFrag = startSS.xy; // (currFrag / texSize) equivalent to vUV at this point
