@@ -114,7 +114,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     private _text: string;
     private _subtext: string;
     private _imageUrl: string;
-    
+
     // Materials
     private _shareMaterials = true;
     private _frontMaterial: MRDLFrontplateMaterial;
@@ -497,18 +497,18 @@ export class TouchHolographicV3Button extends TouchButton3D {
                 textContainer.addRowDefinition(0.5);
                 textContainer.widthInPixels = totalPanelWidthInPixels;
                 textContainer.heightInPixels = 45;
-    
+
                 const subtext = new TextBlock(`${this.name}_subtext`);
                 subtext.text = this._subtext;
                 subtext.color = "#EEEEEEAB";
                 subtext.fontSize = this.textSizeInPixels * 0.75;
                 subtext.fontWeight = "600";
-    
+
                 if (this._imageUrl) {
                     subtext.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
                     subtext.paddingLeftInPixels = padding;
                 }
-    
+
                 textContainer.addControl(text, 0);
                 textContainer.addControl(subtext, 1);
                 panel.addControl(textContainer);
