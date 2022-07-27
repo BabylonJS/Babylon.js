@@ -583,13 +583,13 @@ export class TouchHolographicV3Button extends TouchButton3D {
                 backPlateModel.scaling.x = this.width;
                 backPlateModel.scaling.y = this.height;
                 backPlateModel.parent = backPlateMesh;
-
-                if (this._backMaterial) {
-                    backPlateModel.material = this._backMaterial;
-                }
-
-                this._backPlate = backPlateModel;
             }
+
+            if (this._backMaterial) {
+                backPlateModel.material = this._backMaterial;
+            }
+
+            this._backPlate = backPlateModel;
         });
 
         return backPlateMesh;
