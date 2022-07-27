@@ -6,6 +6,8 @@ interface ICommandButtonComponentProps {
     icon: string;
     iconLabel?: string;
     isActive: boolean;
+    copyDeleteDisabled?: boolean
+    pasteDisabled?: boolean
     onClick: () => void;
     altStyle?: boolean;
     disabled?: boolean;
@@ -17,9 +19,11 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
     }
 
     public render() {
+       // console.log(this.props.copyPasteDeleteDisabled)
         let divClassName = this.props.altStyle ? `command-button-alt${this.props.disabled ? "-disabled" : ""}${this.props.isActive ? "-" : ""}` : `command-button`;
 
         let iconClassName = `command-button-icon `;
+        
 
         if (this.props.isActive) {
             divClassName += " active";
@@ -29,6 +33,16 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
             divClassName += " disabled";
         }
 
+        else if(this.props.copyDeleteDisabled){
+            divClassName += " copyAndDeleteDisabled" 
+        }
+        else if(this.props.pasteDisabled){
+            divClassName += " pasteDisabled" 
+        }
+        // else if(this.props.copyPasteDeleteDisabled){
+        //     iconClassSubName = "disable"
+        //     console.log("here")
+        // }
         return (
             <div className={divClassName} onClick={this.props.onClick} title={`${this.props.tooltip} ${this.props.shortcut ? " (" + this.props.shortcut + ")" : ""}`}>
                 <div className={iconClassName}>
