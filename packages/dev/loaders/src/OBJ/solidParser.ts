@@ -215,11 +215,11 @@ export class SolidParser {
             }
         }
         // Reset arrays for the next new meshes
-        this._wrappedPositionForBabylon = [];
-        this._wrappedNormalsForBabylon = [];
-        this._wrappedUvsForBabylon = [];
-        this._wrappedColorsForBabylon = [];
-        this._tuplePosNorm = [];
+        this._wrappedPositionForBabylon.length = 0;
+        this._wrappedNormalsForBabylon.length = 0;
+        this._wrappedUvsForBabylon.length = 0;
+        this._wrappedColorsForBabylon.length = 0;
+        this._tuplePosNorm.length = 0;
         this._curPositionInIndices = 0;
     }
 
@@ -277,7 +277,7 @@ export class SolidParser {
             );
         }
         //Reset variable for the next line
-        this._triangles = [];
+        this._triangles.length = 0;
     }
 
     /**
@@ -310,7 +310,7 @@ export class SolidParser {
         }
 
         //Reset variable for the next line
-        this._triangles = [];
+        this._triangles.length = 0;
     }
 
     /**
@@ -344,7 +344,7 @@ export class SolidParser {
             );
         }
         //Reset variable for the next line
-        this._triangles = [];
+        this._triangles.length = 0;
     }
 
     /**
@@ -375,7 +375,7 @@ export class SolidParser {
             );
         }
         //Reset variable for the next line
-        this._triangles = [];
+        this._triangles.length = 0;
     }
 
     /*
@@ -410,7 +410,7 @@ export class SolidParser {
             );
         }
         //Reset variable for the next line
-        this._triangles = [];
+        this._triangles.length = 0;
     }
 
     private _addPreviousObjMesh() {
@@ -437,11 +437,11 @@ export class SolidParser {
             }
 
             //Reset the array for the next mesh
-            this._indicesForBabylon = [];
-            this._unwrappedPositionsForBabylon = [];
-            this._unwrappedColorsForBabylon = [];
-            this._unwrappedNormalsForBabylon = [];
-            this._unwrappedUVForBabylon = [];
+            this._indicesForBabylon.length = 0;
+            this._unwrappedPositionsForBabylon.length = 0;
+            this._unwrappedColorsForBabylon.length = 0;
+            this._unwrappedNormalsForBabylon.length = 0;
+            this._unwrappedUVForBabylon.length = 0;
         }
     }
 

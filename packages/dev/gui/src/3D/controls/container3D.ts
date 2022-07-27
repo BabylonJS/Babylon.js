@@ -138,7 +138,7 @@ export class Container3D extends Control3D {
             control.dispose();
         }
 
-        this._children = [];
+        this._children.length = 0;
 
         super.dispose();
     }

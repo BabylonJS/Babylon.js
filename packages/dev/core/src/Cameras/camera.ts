@@ -1083,10 +1083,10 @@ export class Camera extends Node {
         if (this._rigPostProcess) {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
-            this._postProcesses = [];
+            this._postProcesses.length = 0;
         } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._rigPostProcess = null;
-            this._postProcesses = [];
+            this._postProcesses.length = 0;
         } else {
             let i = this._postProcesses.length;
             while (--i >= 0) {
@@ -1102,7 +1102,7 @@ export class Camera extends Node {
         while (--i >= 0) {
             this.customRenderTargets[i].dispose();
         }
-        this.customRenderTargets = [];
+        this.customRenderTargets.length = 0;
 
         // Active Meshes
         this._activeMeshes.dispose();
