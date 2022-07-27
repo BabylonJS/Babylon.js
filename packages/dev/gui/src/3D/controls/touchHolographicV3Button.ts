@@ -126,6 +126,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
     // Events
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _pointerClickObserver: Nullable<Observer<Vector3WithInfo>>;
+    private _pointerEnterObserver: Nullable<Observer<Control3D>>;
+    private _pointerOutObserver: Nullable<Observer<Control3D>>;
 
     // Shared variables for meshes
     private _frontPlateDepth = 0.2;
@@ -397,6 +399,14 @@ export class TouchHolographicV3Button extends TouchButton3D {
             if (this._frontPlate && this._backGlow && !this.isActiveNearInteraction) {
                 this._performClickAnimation();
             }
+        });
+
+        this._pointerEnterObserver = this.onPointerEnterObservable.add(() => {
+            this.pointerEnterAnimation();
+        });
+
+        this._pointerOutObserver = this.onPointerOutObservable.add(() => {
+            this.pointerOutAnimation();
         });
     }
 
@@ -989,6 +999,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
         this._disposeTooltip();
         this.onPointerClickObservable.remove(this._pointerClickObserver);
+        this.onPointerEnterObservable.remove(this._pointerEnterObserver);
+        this.onPointerOutObservable.remove(this._pointerOutObserver);
 
         if (!this.shareMaterials) {
             this._backMaterial.dispose();
