@@ -2037,7 +2037,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             other._intersectionsInProgress.splice(pos, 1);
         }
 
-        this._intersectionsInProgress = [];
+        this._intersectionsInProgress.length = 0;
 
         // Lights
         const lights = this.getScene().lights;
