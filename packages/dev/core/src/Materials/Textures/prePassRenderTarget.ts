@@ -107,7 +107,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * @hidden
      */
     public _resetPostProcessChain() {
-        this._beforeCompositionPostProcesses = [];
+        this._beforeCompositionPostProcesses.length = 0;
     }
 
     /**

@@ -1621,9 +1621,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this.fxaaPostProcess = null;
         this.screenSpaceReflectionPostProcess = null;
 
-        this.luminanceDownSamplePostProcesses = [];
-        this.blurHPostProcesses = [];
-        this.blurVPostProcesses = [];
+        this.luminanceDownSamplePostProcesses.length = 0;
+        this.blurHPostProcesses.length = 0;
+        this.blurVPostProcesses.length = 0;
     }
 
     /**

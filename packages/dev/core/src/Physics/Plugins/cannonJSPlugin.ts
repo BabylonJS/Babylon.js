@@ -82,7 +82,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                     this.world.remove(physicsBody);
                 }
             });
-            this._physicsBodysToRemoveAfterStep = [];
+            this._physicsBodysToRemoveAfterStep.length = 0;
         }
     }
 

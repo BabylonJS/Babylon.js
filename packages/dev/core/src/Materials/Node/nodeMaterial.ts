@@ -1481,7 +1481,7 @@ export class NodeMaterial extends PushMaterial {
             block.dispose();
         }
 
-        this.attachedBlocks = [];
+        this.attachedBlocks.length = 0;
         (this._sharedData as any) = null;
         (this._vertexCompilationState as any) = null;
         (this._fragmentCompilationState as any) = null;
@@ -1532,9 +1532,9 @@ export class NodeMaterial extends PushMaterial {
      * Clear the current material
      */
     public clear() {
-        this._vertexOutputNodes = [];
-        this._fragmentOutputNodes = [];
-        this.attachedBlocks = [];
+        this._vertexOutputNodes.length = 0;
+        this._fragmentOutputNodes.length = 0;
+        this.attachedBlocks.length = 0;
     }
 
     /**

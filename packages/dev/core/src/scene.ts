@@ -1321,7 +1321,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (const component of this._transientComponents) {
                 component.register();
             }
-            this._transientComponents = [];
+            this._transientComponents.length = 0;
         }
     }
 
@@ -4502,7 +4502,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             }
 
-            this._toBeDisposed = [];
+            this._toBeDisposed.length = 0;
         }
 
         if (this.dumpNextRenderTargets) {
@@ -4548,9 +4548,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.afterRender = null;
         this.metadata = null;
 
-        this.skeletons = [];
-        this.morphTargetManagers = [];
-        this._transientComponents = [];
+        this.skeletons.length = 0;
+        this.morphTargetManagers.length = 0;
+        this._transientComponents.length = 0;
         this._isReadyForMeshStage.clear();
         this._beforeEvaluateActiveMeshStage.clear();
         this._evaluateSubMeshStage.clear();
@@ -4596,14 +4596,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._materialsRenderTargets.dispose();
         this._registeredForLateAnimationBindings.dispose();
         this._meshesForIntersections.dispose();
-        this._toBeDisposed = [];
+        this._toBeDisposed.length = 0;
 
         // Abort active requests
         const activeRequests = this._activeRequests.slice();
         for (const request of activeRequests) {
             request.abort();
         }
-        this._activeRequests = [];
+        this._activeRequests.length = 0;
 
         // Events
         this.onDisposeObservable.notifyObservers(this);
