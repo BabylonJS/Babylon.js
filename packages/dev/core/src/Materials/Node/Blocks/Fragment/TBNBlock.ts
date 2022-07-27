@@ -97,14 +97,14 @@ export class TBNBlock extends NodeMaterialBlock {
     /**
      * Gets the row1 of the output matrix
      */
-     public get row1(): NodeMaterialConnectionPoint {
+    public get row1(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
      * Gets the row2 of the output matrix
      */
-     public get row2(): NodeMaterialConnectionPoint {
+    public get row2(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
@@ -186,14 +186,19 @@ export class TBNBlock extends NodeMaterialBlock {
                 mat3 ${TBN.associatedVariableName} = mat3(${world.associatedVariableName}) * mat3(tbnTangent, tbnBitangent, tbnNormal);
             `;
 
-            if (row0.hasEndpoints) {                
-                state.compilationString += this._declareOutput(row0, state) + ` = vec3(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\r\n`;
+            if (row0.hasEndpoints) {
+                state.compilationString +=
+                    this._declareOutput(row0, state) +
+                    ` = vec3(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\r\n`;
             }
-            if (row1.hasEndpoints) {                
-                state.compilationString += this._declareOutput(row1, state) + ` = vec3(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\r\n`;
+            if (row1.hasEndpoints) {
+                state.compilationString +=
+                    this._declareOutput(row1, state) + ` = vec3(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\r\n`;
             }
-            if (row2.hasEndpoints) {                
-                state.compilationString += this._declareOutput(row2, state) + ` = vec3(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\r\n`;
+            if (row2.hasEndpoints) {
+                state.compilationString +=
+                    this._declareOutput(row2, state) +
+                    ` = vec3(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\r\n`;
             }
 
             state.sharedData.blocksWithDefines.push(this);
