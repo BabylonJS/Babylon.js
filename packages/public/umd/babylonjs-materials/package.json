@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-materials",
-    "version": "5.16.0",
+    "version": "5.17.0",
     "main": "babylonjs.materials.js",
     "types": "babylonjs.materials.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.16.0"
+        "babylonjs": "^5.17.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
