@@ -28,10 +28,17 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
+//ammu
+//import { createGlobalState } from 'react-hooks-global-state';
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
 }
+export interface IWorkbenchComponentState {
+    pasteDisabled: boolean;
+}
+//export const pasteDisabled = React.createContext(true);
+//export let [pasteDisabled] = React.useState(true);
 
 export enum ConstraintDirection {
     NONE = 0,
@@ -44,7 +51,7 @@ const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
 
-export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps, IWorkbenchComponentState> {
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
@@ -87,9 +94,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _zoomFactor = 1;
     private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
+    private _pasteDisabled = true;
 
     public get guiSize() {
         return this._guiSize;
+    }
+    public get PasteDisabled(): boolean {
+        return this._pasteDisabled;
     }
     // sets the size of the GUI and makes all necessary adjustments
     public set guiSize(value: ISize) {
@@ -138,6 +149,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     constructor(props: IWorkbenchComponentProps) {
         super(props);
         const { globalState } = props;
+        this.state = {
+            pasteDisabled: true,
+        };
         this._rootContainer = React.createRef();
 
         globalState.onSelectionChangedObservable.add(() => this.updateNodeOutlines());
@@ -259,6 +273,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     public copyToClipboard(copyFn: (content: string) => void) {
+        //this.setState({ pasteDisabled: false });
+        this._pasteDisabled = false;
+        console.log(this._pasteDisabled);
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
             const obj = {};

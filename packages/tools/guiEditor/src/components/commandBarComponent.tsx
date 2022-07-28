@@ -21,13 +21,14 @@ import betaFlag from "../imgs/betaFlag.svg";
 import copyIcon from "../imgs/buttonBar_copyIcon.svg";
 import pasteIcon from "../imgs/buttonBar_pasteIcon.svg";
 import deleteIcon from "../imgs/buttonBar_deleteIcon.svg";
+import copyIconDisabled from "../imgs/buttonBar_copyIcon_disabled.svg";
+import pasteIconDisabled from "../imgs/buttonBar_pasteIcon_disabled.svg";
+import deleteIconDisabled from "../imgs/buttonBar_deleteIcon_disabled.svg";
 
 import "../scss/commandBar.scss";
 
-
 interface ICommandBarComponentProps {
     globalState: GlobalState;
-    ev?: ClipboardEvent;
 }
 
 const _sizeValues = [
@@ -91,7 +92,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public render() {
+        const isPasteDisabled = this.props.globalState.workbench && this.props.globalState.selectedControls.length > 0 ? this.props.globalState.workbench.PasteDisabled : true;
         const size = this.props.globalState.workbench ? { ...this.props.globalState.workbench.guiSize } : { width: 0, height: 0 };
+        const copyyIcon = this.props.globalState.selectedControls.length === 0 ? copyIconDisabled : copyIcon;
+        const deleteeIcon = this.props.globalState.selectedControls.length === 0 ? deleteIconDisabled : deleteIcon;
+        const pasteeIcon = isPasteDisabled ? pasteIconDisabled : pasteIcon;
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
@@ -150,11 +155,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={pointerIcon}
                             shortcut="S"
                             isActive={this.props.globalState.tool === GUIEditorTool.SELECT}
-                            // copyPasteDeleteDisabled={{
-                            //     copyDisabled: false,
-                            //     pasteDisabled: false,
-                            //     deleteDisabled: false,
-                            // }}
                             onClick={() => {
                                 this.props.globalState.tool = GUIEditorTool.SELECT;
                             }}
@@ -164,11 +164,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={handIcon}
                             shortcut="P"
                             isActive={this.props.globalState.tool === GUIEditorTool.PAN}
-                            // copyPasteDeleteDisabled={{
-                            //     copyDisabled: false,
-                            //     pasteDisabled: false,
-                            //     deleteDisabled: false,
-                            // }}
                             onClick={() => {
                                 this.props.globalState.tool = GUIEditorTool.PAN;
                             }}
@@ -178,11 +173,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             shortcut="Z"
                             icon={zoomIcon}
                             isActive={this.props.globalState.tool === GUIEditorTool.ZOOM}
-                            // copyPasteDeleteDisabled={{
-                            //     copyDisabled: false,
-                            //     pasteDisabled: false,
-                            //     deleteDisabled: false,
-                            // }}
                             onClick={() => {
                                 this.props.globalState.tool = GUIEditorTool.ZOOM;
                             }}
@@ -192,34 +182,30 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         <CommandButtonComponent
                             tooltip="Copy Selcted"
                             shortcut="Ctrl + C"
-                            icon={copyIcon}
+                            icon={copyyIcon}
                             isActive={false}
-                            //pasteDisabled = {false}
-                            copyDeleteDisabled={
-                                this.props.globalState.selectedControls.length === 0
-                            } //disabled when nothing is selected
+                            copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
                                 this.props.globalState.onCopyObservable.notifyObservers((content) => this.props.globalState.hostWindow.navigator.clipboard.writeText(content));
+                                this.forceUpdate();
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Paste"
                             shortcut="Ctrl + V"
-                            icon={pasteIcon}
+                            icon={pasteeIcon}
                             isActive={false}
-                           // pasteDisabled = {this.props.globalState.}
+                            pasteDisabled={isPasteDisabled}
                             onClick={async () => {
                                 this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Delete"
-                            shortcut="D"
-                            icon={deleteIcon}
+                            shortcut="Delete"
+                            icon={deleteeIcon}
                             isActive={false}
-                            copyDeleteDisabled={
-                                this.props.globalState.selectedControls.length === 0
-                            }  //disabled when nothing is selected
+                            copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
                                 this.props.globalState.selectedControls.forEach((guiNode) => {
                                     if (guiNode != this.props.globalState.guiTexture.getChildren()[0]) {
@@ -238,7 +224,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             shortcut="F"
                             icon={canvasFitIcon}
                             isActive={false}
-                            //isDisabled={false}
                             onClick={() => {
                                 this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                             }}
@@ -248,7 +233,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             shortcut="G"
                             icon={guidesIcon}
                             isActive={this.props.globalState.outlines}
-                            //isDisabled={false}
                             onClick={() => (this.props.globalState.outlines = !this.props.globalState.outlines)}
                         />
                     </div>
