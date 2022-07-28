@@ -81,14 +81,9 @@
             width: 100%;
             display: grid;
             color: white;
-           // fill: pink;
             align-content: center;
             justify-content: center;
         }
-
-        // &:hover {
-        //     background-color: var(--selectionGrey);
-        // }
 
         .active {
             transform-origin: center;
