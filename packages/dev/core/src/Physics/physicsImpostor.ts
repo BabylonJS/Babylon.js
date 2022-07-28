@@ -554,7 +554,7 @@ export class PhysicsImpostor {
 
     /**
      * Force a regeneration of this or the parent's impostor's body.
-     * Use under cautious - This will remove all joints already implemented.
+     * Use with caution - This will remove all previously-instantiated joints.
      */
     public forceUpdate() {
         this._init();
@@ -671,7 +671,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Specifically change the body's mass option. Won't recreate the physics body object
+     * Specifically change the body's mass. Won't recreate the physics body object
      * @param mass The mass of the physics imposter
      */
     public setMass(mass: number) {
@@ -724,7 +724,6 @@ export class PhysicsImpostor {
      * Provide a function the will have two variables - the world object and the physics body object
      * @param func The function to execute with the physics plugin native code
      */
-
     public executeNativeFunction(func: (world: any, physicsBody: any) => void) {
         if (this._physicsEngine) {
             func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
@@ -789,7 +788,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Unregisters the physics imposter on contact
+     * Unregisters the physics imposter's collision callback
      * @param collideAgainst The physics object to collide against
      * @param func Callback to execute on collision
      */

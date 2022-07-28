@@ -23,10 +23,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _fixedTimeStep: number = 1 / 60;
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;
-    private _physicsBodysToRemoveAfterStep = new Array<any>();
+    private _physicsBodiesToRemoveAfterStep = new Array<any>();
     private _firstFrame = true;
     private _tmpQuaternion: Quaternion = new Quaternion();
-    //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public BJSCANNON: any;
 
@@ -74,15 +73,15 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     private _removeMarkedPhysicsBodiesFromWorld(): void {
-        if (this._physicsBodysToRemoveAfterStep.length > 0) {
-            this._physicsBodysToRemoveAfterStep.forEach((physicsBody) => {
+        if (this._physicsBodiesToRemoveAfterStep.length > 0) {
+            this._physicsBodiesToRemoveAfterStep.forEach((physicsBody) => {
                 if (typeof this.world.removeBody === "function") {
                     this.world.removeBody(physicsBody);
                 } else {
                     this.world.remove(physicsBody);
                 }
             });
-            this._physicsBodysToRemoveAfterStep.length = 0;
+            this._physicsBodiesToRemoveAfterStep.length = 0;
         }
     }
 
@@ -104,7 +103,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         // When calling forceUpdate generatePhysicsBody is called again, ensure that the updated body does not instantly collide with removed body
         this._removeMarkedPhysicsBodiesFromWorld();
 
-        //parent-child relationship. Does this impostor has a parent impostor?
+        //parent-child relationship. Does this impostor have a parent impostor?
         if (impostor.parent) {
             if (impostor.physicsBody) {
                 this.removePhysicsBody(impostor);
@@ -122,7 +121,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 return;
             }
 
-            //unregister events, if body is being changed
+            //unregister events if body is being changed
             const oldBody = impostor.physicsBody;
             if (oldBody) {
                 this.removePhysicsBody(impostor);
@@ -219,8 +218,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         this.world.removeEventListener("postStep", impostor.afterStep);
 
         // Only remove the physics body after the physics step to avoid disrupting cannon's internal state
-        if (this._physicsBodysToRemoveAfterStep.indexOf(impostor.physicsBody) === -1) {
-            this._physicsBodysToRemoveAfterStep.push(impostor.physicsBody);
+        if (this._physicsBodiesToRemoveAfterStep.indexOf(impostor.physicsBody) === -1) {
+            this._physicsBodiesToRemoveAfterStep.push(impostor.physicsBody);
         }
     }
 
@@ -321,12 +320,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         const object = impostor.object;
 
         let returnValue;
-        const extendSize = impostor.getObjectExtendSize();
+        const impostorExtents = impostor.getObjectExtendSize();
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor: {
-                const radiusX = extendSize.x;
-                const radiusY = extendSize.y;
-                const radiusZ = extendSize.z;
+                const radiusX = impostorExtents.x;
+                const radiusY = impostorExtents.y;
+                const radiusZ = impostorExtents.z;
 
                 returnValue = new this.BJSCANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
 
@@ -338,9 +337,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (!nativeParams) {
                     nativeParams = {};
                 }
-                const radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(extendSize.x) / 2;
-                const radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(extendSize.x) / 2;
-                const height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(extendSize.y);
+                const radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(impostorExtents.x) / 2;
+                const radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(impostorExtents.x) / 2;
+                const height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(impostorExtents.y);
                 const numSegments = nativeParams.numSegments !== undefined ? nativeParams.numSegments : 16;
                 returnValue = new this.BJSCANNON.Cylinder(radiusTop, radiusBottom, height, numSegments);
 
@@ -352,7 +351,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 break;
             }
             case PhysicsImpostor.BoxImpostor: {
-                const box = extendSize.scale(0.5);
+                const box = impostorExtents.scale(0.5);
                 returnValue = new this.BJSCANNON.Box(new this.BJSCANNON.Vec3(this._checkWithEpsilon(box.x), this._checkWithEpsilon(box.y), this._checkWithEpsilon(box.z)));
                 break;
             }
@@ -380,14 +379,14 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
                 const transform = object.computeWorldMatrix(true);
                 // convert rawVerts to object space
-                const temp = new Array<number>();
+                const transformedVertices = new Array<number>();
                 let index: number;
                 for (index = 0; index < rawVerts.length; index += 3) {
-                    Vector3.TransformCoordinates(Vector3.FromArray(rawVerts, index), transform).toArray(temp, index);
+                    Vector3.TransformCoordinates(Vector3.FromArray(rawVerts, index), transform).toArray(transformedVertices, index);
                 }
 
                 Logger.Warn("MeshImpostor only collides against spheres.");
-                returnValue = new this.BJSCANNON.Trimesh(temp, <number[]>rawFaces);
+                returnValue = new this.BJSCANNON.Trimesh(transformedVertices, <number[]>rawFaces);
                 //now set back the transformation!
                 object.position.copyFrom(oldPosition);
                 oldRotation && object.rotation && object.rotation.copyFrom(oldRotation);
@@ -426,12 +425,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         let pos = <FloatArray>object.getVerticesData(VertexBuffer.PositionKind);
         const transform = object.computeWorldMatrix(true);
         // convert rawVerts to object space
-        const temp = new Array<number>();
+        const transformedVertices = new Array<number>();
         let index: number;
         for (index = 0; index < pos.length; index += 3) {
-            Vector3.TransformCoordinates(Vector3.FromArray(pos, index), transform).toArray(temp, index);
+            Vector3.TransformCoordinates(Vector3.FromArray(pos, index), transform).toArray(transformedVertices, index);
         }
-        pos = temp;
+        pos = transformedVertices;
         const matrix = new Array<Array<any>>();
 
         //For now pointDepth will not be used and will be automatically calculated.
@@ -497,12 +496,12 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         const object = impostor.object;
         //make sure it is updated...
         object.computeWorldMatrix && object.computeWorldMatrix(true);
-        // The delta between the mesh position and the mesh bounding box center
         if (!object.getBoundingInfo()) {
             return;
         }
         const center = impostor.getObjectCenter();
         //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
+        // The delta between the mesh position and the mesh bounding box center
         this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
         this._tmpDeltaPosition.divideInPlace(impostor.object.scaling);
         this._tmpPosition.copyFrom(center);
@@ -658,9 +657,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 
-    public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number) {
-        joint.physicsJoint.motorEquation.maxForce = upperLimit;
-        joint.physicsJoint.motorEquation.minForce = lowerLimit === void 0 ? -upperLimit : lowerLimit;
+    public setLimit(joint: IMotorEnabledJoint, minForce: number, maxForce?: number) {
+        joint.physicsJoint.motorEquation.maxForce = maxForce;
+        joint.physicsJoint.motorEquation.minForce = minForce === void 0 ? -minForce : minForce;
     }
 
     public syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor) {
