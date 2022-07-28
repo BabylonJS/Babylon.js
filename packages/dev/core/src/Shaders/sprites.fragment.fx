@@ -18,7 +18,7 @@ void main(void) {
 
 	vec4 color = texture2D(diffuseSampler, vUV);
 
-	if (alphaTest) 
+	if (float(alphaTest) != 0.)
 	{
 		if (color.a < 0.95)
 			discard;
