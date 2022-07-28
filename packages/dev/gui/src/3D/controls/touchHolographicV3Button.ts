@@ -128,6 +128,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     private _pointerClickObserver: Nullable<Observer<Vector3WithInfo>>;
     private _pointerEnterObserver: Nullable<Observer<Control3D>>;
     private _pointerOutObserver: Nullable<Observer<Control3D>>;
+    private _toggleObserver: Nullable<Observer<boolean>>;
 
     // Shared variables for meshes
     private _frontPlateDepth = 0.2;
@@ -135,7 +136,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     private _backGlowOffset = 0.1;
     private _flatPlaneDepth = 0.001;
     private _innerQuadRadius = this.radius - 0.04;
-    private _innerQuadColor: Color4;
+    private _innerQuadColor = new Color4(0, 0, 0, 0);
     private _innerQuadToggledColor = new Color4(0.5197843, 0.6485234, 0.9607843, 0.6);
     private _innerQuadHoverColor = new Color4(1, 1, 1, 0.05);
     private _innerQuadToggledHoverColor = new Color4(0.5197843, 0.6485234, 0.9607843, 1);
@@ -364,7 +365,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         this._shareMaterials = shareMaterials;
 
         this.pointerEnterAnimation = () => {
-            if (this._frontPlate && this._textPlate) {
+            if (this._frontPlate && this._textPlate && !this.isToggleButton) {
                 this._performEnterExitAnimation(1);
             }
 
@@ -378,7 +379,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         };
 
         this.pointerOutAnimation = () => {
-            if (this._frontPlate && this._textPlate) {
+            if (this._frontPlate && this._textPlate && !this.isToggleButton) {
                 this._performEnterExitAnimation(-0.8);
             }
 
@@ -399,6 +400,10 @@ export class TouchHolographicV3Button extends TouchButton3D {
             if (this._frontPlate && this._backGlow && !this.isActiveNearInteraction) {
                 this._performClickAnimation();
             }
+
+            if (this.isToggleButton && this._innerQuadMaterial) {
+                this._onToggle(this.isToggled);
+            }
         });
 
         this._pointerEnterObserver = this.onPointerEnterObservable.add(() => {
@@ -407,6 +412,14 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
         this._pointerOutObserver = this.onPointerOutObservable.add(() => {
             this.pointerOutAnimation();
+        });
+
+        this._toggleObserver = this.onToggleObservable.add((isToggled) => {
+            if (isToggled) {
+                this._innerQuadMaterial.color = this._innerQuadToggledColor;
+            } else {
+                this._innerQuadMaterial.color = this._innerQuadColor;
+            }
         });
     }
 
@@ -906,7 +919,6 @@ export class TouchHolographicV3Button extends TouchButton3D {
         this._innerQuadMaterial.radius = this._innerQuadRadius;
 
         if (this.isToggleButton) {
-            this._innerQuadColor = new Color4(0, 0, 0, 0);
             this._innerQuadMaterial.color = this._innerQuadColor;
         }
     }
@@ -917,14 +929,6 @@ export class TouchHolographicV3Button extends TouchButton3D {
     }
 
     protected _onToggle(newState: boolean) {
-        if (this._innerQuadMaterial) {
-            if (newState) {
-                this._innerQuadMaterial.color = this._innerQuadToggledColor;
-            } else {
-                this._innerQuadMaterial.color = this._innerQuadColor;
-            }
-        }
-
         super._onToggle(newState);
     }
 
@@ -1001,6 +1005,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         this.onPointerClickObservable.remove(this._pointerClickObserver);
         this.onPointerEnterObservable.remove(this._pointerEnterObserver);
         this.onPointerOutObservable.remove(this._pointerOutObserver);
+        this.onToggleObservable.remove(this._toggleObserver);
 
         if (!this.shareMaterials) {
             this._backMaterial.dispose();
