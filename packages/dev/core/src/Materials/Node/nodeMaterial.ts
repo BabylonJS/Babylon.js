@@ -1735,7 +1735,7 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will fulfil when the material is fully loaded
      */
     public async loadAsync(url: string, rootUrl: string = "") {
-        return NodeMaterial.ParseFromFileAsync(url, rootUrl, this.getScene());
+        return NodeMaterial.ParseFromFileAsync("", url, this.getScene(), rootUrl, true, this);
     }
 
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
@@ -2036,10 +2036,18 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL for nested url in the node material
      * @param skipBuild defines whether to build the node material
+     * @param targetMaterial defines a material to use instead of creating a new one
      * @returns a promise that will resolve to the new node material
      */
-    public static async ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl: string = "", skipBuild: boolean = false): Promise<NodeMaterial> {
-        const material = new NodeMaterial(name, scene);
+    public static async ParseFromFileAsync(
+        name: string,
+        url: string,
+        scene: Scene,
+        rootUrl: string = "",
+        skipBuild: boolean = false,
+        targetMaterial?: NodeMaterial
+    ): Promise<NodeMaterial> {
+        const material = targetMaterial ?? new NodeMaterial(name, scene);
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data as string);
