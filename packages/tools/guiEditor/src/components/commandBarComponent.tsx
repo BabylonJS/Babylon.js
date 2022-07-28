@@ -194,6 +194,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             shortcut="Ctrl + C"
                             icon={copyIcon}
                             isActive={false}
+                            //pasteDisabled = {false}
                             copyDeleteDisabled={
                                 this.props.globalState.selectedControls.length === 0
                             } //disabled when nothing is selected
@@ -207,11 +208,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={pasteIcon}
                             isActive={false}
                            // pasteDisabled = {this.props.globalState.}
-                            // copyPasteDeleteDisabled={{
-                            //     copyDisabled: this.props.globalState.selectedControls.length === 0,
-                            //     pasteDisabled: false,
-                            //     deleteDisabled: this.props.globalState.selectedControls.length === 0,
-                            // }} //disabled when nothing is on the clipboard
                             onClick={async () => {
                                 this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
                             }}
