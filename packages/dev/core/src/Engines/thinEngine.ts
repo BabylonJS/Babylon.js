@@ -201,14 +201,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.16.0";
+        return "babylonjs@5.17.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.16.0";
+        return "5.17.0";
     }
 
     /**
@@ -3575,7 +3575,7 @@ export class ThinEngine {
      * This can help preventing texture load conflict due to name collision.
      */
     public clearInternalTexturesCache() {
-        this._internalTexturesCache = [];
+        this._internalTexturesCache.length = 0;
     }
 
     /**
@@ -5288,7 +5288,7 @@ export class ThinEngine {
 
         // Unbind
         this.unbindAllAttributes();
-        this._boundUniforms = [];
+        this._boundUniforms = {};
 
         // Events
         if (IsWindowObjectExist()) {
@@ -5304,7 +5304,7 @@ export class ThinEngine {
 
         this._workingCanvas = null;
         this._workingContext = null;
-        this._currentBufferPointers = [];
+        this._currentBufferPointers.length = 0;
         this._renderingCanvas = null;
         this._currentProgram = null;
         this._boundRenderFunction = null;

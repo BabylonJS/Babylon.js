@@ -155,7 +155,6 @@ export class Geometry implements IGetSetVerticesData {
             this.setAllVerticesData(vertexData, updatable);
         } else {
             this._totalVertices = 0;
-            this._indices = [];
         }
 
         if (this._engine.getCaps().vertexArrayObject) {
@@ -923,7 +922,7 @@ export class Geometry implements IGetSetVerticesData {
         for (index = 0; index < numOfMeshes; index++) {
             this.releaseForMesh(meshes[index]);
         }
-        this._meshes = [];
+        this._meshes.length = 0;
 
         this._disposeVertexArrayObjects();
 

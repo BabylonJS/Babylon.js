@@ -687,7 +687,7 @@ export class Skeleton implements IAnimatable {
      * Releases all resources associated with the current skeleton
      */
     public dispose() {
-        this._meshesWithPoseMatrix = [];
+        this._meshesWithPoseMatrix.length = 0;
 
         // Animations
         this.getScene().stopAnimation(this);

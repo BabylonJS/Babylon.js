@@ -511,62 +511,62 @@ export class AssetContainer extends AbstractScene {
         this.cameras.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.cameras = [];
+        this.cameras.length = 0;
 
         this.lights.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.lights = [];
+        this.lights.length = 0;
 
         this.meshes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.meshes = [];
+        this.meshes.length = 0;
 
         this.skeletons.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.skeletons = [];
+        this.skeletons.length = 0;
 
         this.animationGroups.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.animationGroups = [];
+        this.animationGroups.length = 0;
 
         this.multiMaterials.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.multiMaterials = [];
+        this.multiMaterials.length = 0;
 
         this.materials.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.materials = [];
+        this.materials.length = 0;
 
         this.geometries.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.geometries = [];
+        this.geometries.length = 0;
 
         this.transformNodes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.transformNodes = [];
+        this.transformNodes.length = 0;
 
         this.actionManagers.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.actionManagers = [];
+        this.actionManagers.length = 0;
 
         this.textures.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.textures = [];
+        this.textures.length = 0;
 
         this.reflectionProbes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.reflectionProbes = [];
+        this.reflectionProbes.length = 0;
 
         if (this.environmentTexture) {
             this.environmentTexture.dispose();
