@@ -1735,7 +1735,12 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will fulfil when the material is fully loaded
      */
     public async loadAsync(url: string, rootUrl: string = "") {
-        return NodeMaterial.ParseFromFileAsync(url, rootUrl, this.getScene());
+        return this.getScene()
+            ._loadFileAsync(url)
+            .then((data) => {
+                const serializationObject = JSON.parse(data as string);
+                this.parseSerializedObject(serializationObject, rootUrl);
+            });
     }
 
     private _gatherBlocks(rootNode: NodeMaterialBlock, list: NodeMaterialBlock[]) {
