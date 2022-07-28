@@ -85,6 +85,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
+        props.globalState.onSelectionChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     public render() {
