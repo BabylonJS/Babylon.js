@@ -151,7 +151,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 i.object.computeWorldMatrix(true);
 
                 const rot = globalQuaternion.toEulerAngles();
-                const impostorExtents = i.getObjectExtendSize();
+                const impostorExtents = i.getObjectExtents();
 
                 // eslint-disable-next-line no-loss-of-precision
                 const radToDeg = 57.295779513082320876;

@@ -608,10 +608,10 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the object extend size
-     * @returns the object extend size
+     * Gets the object extents
+     * @returns the object extents
      */
-    public getObjectExtendSize(): Vector3 {
+    public getObjectExtents(): Vector3 {
         if (this.object.getBoundingInfo) {
             const q = this.object.rotationQuaternion;
             const scaling = this.object.scaling.clone();

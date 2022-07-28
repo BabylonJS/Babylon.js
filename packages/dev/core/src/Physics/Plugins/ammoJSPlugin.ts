@@ -946,7 +946,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         const object = impostor.object;
 
         let returnValue: any;
-        const impostorExtents = impostor.getObjectExtendSize();
+        const impostorExtents = impostor.getObjectExtents();
 
         if (!ignoreChildren) {
             const meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
@@ -1527,7 +1527,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @returns the radius
      */
     public getRadius(impostor: PhysicsImpostor): number {
-        const extents = impostor.getObjectExtendSize();
+        const extents = impostor.getObjectExtents();
         return extents.x / 2;
     }
 
@@ -1537,7 +1537,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param result the resulting box size
      */
     public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
-        const extents = impostor.getObjectExtendSize();
+        const extents = impostor.getObjectExtents();
         result.x = extents.x;
         result.y = extents.y;
         result.z = extents.z;

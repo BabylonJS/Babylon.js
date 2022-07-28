@@ -320,7 +320,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         const object = impostor.object;
 
         let returnValue;
-        const impostorExtents = impostor.getObjectExtendSize();
+        const impostorExtents = impostor.getObjectExtents();
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor: {
                 const radiusX = impostorExtents.x;
