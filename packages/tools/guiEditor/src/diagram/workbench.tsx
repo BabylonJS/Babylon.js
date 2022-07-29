@@ -62,12 +62,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
     private _offset: number = 0;
+    private _currLeft: number = 0;
+    private _currTop: number = 0;
    // private _pasteCalled = 0;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
     public get offset(){
         return this._offset;
+    }
+    public get currTop(){
+        return this._currTop;
+    }
+    public get currLeft(){
+        return this._currLeft;
+    }
+    public set currTop(val : number){
+        this._currTop = val;
+    }
+    public set currLeft(val : number){
+        this._currLeft = val;
     }
     private _panAndZoomContainer: Container;
     public get panAndZoomContainer() {
@@ -270,6 +284,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             const obj = {};
             control.serialize(obj);
             controlList.push(obj);
+            this._currLeft = control.leftInPixels;
+            this._currTop = control.topInPixels;
         }
         
             copyFn(
@@ -290,26 +306,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._offset += 10;
         try {
             const parsed = JSON.parse(clipboardContents);
-            // if(){
-            //     this._offset = 0;
-            // }
-            // else{
-            //     this._offset += 10;
-            // }
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
                     newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
                 }
-                //newSelection[0].AddleftInPixels = 10;
                 console.log(this._offset)
-                newSelection[0].leftInPixels = this._offset;
-                newSelection[0].topInPixels = this._offset;
-                // console.log(newSelection[0].)
-                //  const param = newSelection[0].getClassName;
-                //  this.copyToClipboard(param)
-                // this.props.globalState.selectedControls[0].leftInPixels =  this.props.globalState.selectedControls[0].leftInPixels - 10;
-                // this.props.globalState.selectedControls[0].topInPixels =  this.props.globalState.selectedControls[0].topInPixels - 10;
+                
+                this._currLeft += 10
+                this._currTop += 10
+                newSelection[0].leftInPixels = this._currLeft;
+                newSelection[0].topInPixels = this._currTop;
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }
@@ -371,11 +378,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.onDisposeObservable.clear();
 
         //is this the right place to add this?
-        if(this._offset != 0){
-            this._offset += 10;
-            guiControl.leftInPixels = this._offset;
-            guiControl.topInPixels = this._offset;
-        }
+        // if(this._offset != 0){
+        //     console.log(this.offset)
+        //     this._offset += 10;
+        //     guiControl.leftInPixels = this._offset;
+        //     guiControl.topInPixels = this._offset;
+        // }
         
 
         guiControl.onPointerUpObservable.add(() => {
@@ -533,6 +541,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     appendBlock(guiElement: Control) {
+        if(this._offset != 0){
+            //console.log(this.offset)
+            //this._offset += 10; 
+            guiElement.leftInPixels = this._currLeft;
+            guiElement.topInPixels = this._currTop;
+        }
         if (this.props.globalState.liveGuiTexture) {
             this.props.globalState.liveGuiTexture.addControl(guiElement);
         }
