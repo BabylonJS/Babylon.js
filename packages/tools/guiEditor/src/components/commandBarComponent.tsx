@@ -18,12 +18,12 @@ import guidesIcon from "../imgs/guidesIcon.svg";
 import logoIcon from "../imgs/babylonLogo.svg";
 import canvasFitIcon from "../imgs/canvasFitIcon.svg";
 import betaFlag from "../imgs/betaFlag.svg";
-import copyIcon from "../imgs/buttonBar_copyIcon.svg";
-import pasteIcon from "../imgs/buttonBar_pasteIcon.svg";
-import deleteIcon from "../imgs/buttonBar_deleteIcon.svg";
-import copyIconDisabled from "../imgs/buttonBar_copyIcon_disabled.svg";
-import pasteIconDisabled from "../imgs/buttonBar_pasteIcon_disabled.svg";
-import deleteIconDisabled from "../imgs/buttonBar_deleteIcon_disabled.svg";
+import copyIcon from "../imgs/buttonbar_copyIcon.svg";
+import pasteIcon from "../imgs/buttonbar_pasteIcon.svg";
+import deleteIcon from "../imgs/buttonbar_deleteIcon.svg";
+import copyIconDisabled from "../imgs/buttonbar_copyIcon_disabled.svg";
+import pasteIconDisabled from "../imgs/buttonbar_pasteIcon_disabled.svg";
+import deleteIconDisabled from "../imgs/buttonbar_deleteIcon_disabled.svg";
 
 import "../scss/commandBar.scss";
 
