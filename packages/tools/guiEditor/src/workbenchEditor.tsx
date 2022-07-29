@@ -35,6 +35,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _popUpWindow: Window;
     private _draggedItem: Nullable<string>;
     private _rootRef: React.RefObject<HTMLDivElement>;
+    private _onCreateClicked = 0;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -260,10 +261,10 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         console.log("hi")
         let currLeft = this.props.globalState.workbench.currLeft;
         let currTop = this.props.globalState.workbench.currTop;
-       // if(currLeft != 0 || currTop != 0 ){
+        if(this._onCreateClicked > 1){
             currLeft += 10;
             currTop += 10;
-       // }
+        }
         
         this.props.globalState.workbench.currLeft = currLeft;
         this.props.globalState.workbench.currTop = currTop;
@@ -295,6 +296,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                         }}
                                         onClick={() => {
                                             console.log("here");
+                                            this._onCreateClicked += 1;
                                             this.onCreate(type.className);
                                         }}
                                         title={type.className}
