@@ -63,6 +63,13 @@ const createProject = (type: string) => {
             },
             extensionsToTreatAsEsm: [".ts"],
         };
+    } else if (type === "selenium") {
+        return {
+            ...returnValue,
+            preset: "ts-jest/presets/default-esm",
+            testEnvironment: "node",
+            extensionsToTreatAsEsm: [".ts"],
+        };
     } else {
         return {};
     }
@@ -70,7 +77,7 @@ const createProject = (type: string) => {
 
 // Sync object
 const config: Config.InitialOptions = {
-    projects: [createProject("unit"), createProject("visualization"), createProject("integration"), createProject("performance")],
+    projects: [createProject("unit"), createProject("visualization"), createProject("integration"), createProject("performance"), createProject("selenium")],
     reporters: ["default", "jest-screenshot/reporter", "jest-junit"],
 };
 export default config;
