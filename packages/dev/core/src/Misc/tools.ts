@@ -24,9 +24,8 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-
-declare type Camera = import("../Cameras/camera").Camera;
-declare type Engine = import("../Engines/engine").Engine;
+import type { Engine } from "../Engines/engine";
+import type { Camera } from "../Cameras/camera";
 
 interface IColor4Like {
     r: float;
@@ -799,7 +798,7 @@ export class Tools {
             }
             Tools.Download(blob, fileName);
         } else {
-            if (blob) {
+            if (blob && typeof URL !== "undefined") {
                 const url = URL.createObjectURL(blob);
 
                 const newWindow = window.open("");
@@ -857,6 +856,10 @@ export class Tools {
     public static Download(blob: Blob, fileName: string): void {
         if (navigator && (navigator as any).msSaveBlob) {
             (navigator as any).msSaveBlob(blob, fileName);
+            return;
+        }
+
+        if (typeof URL === "undefined") {
             return;
         }
 
@@ -1031,15 +1034,15 @@ export class Tools {
     public static GetAbsoluteUrl: (url: string) => string =
         typeof document === "object"
             ? (url) => {
-                  const a = document.createElement("a");
-                  a.href = url;
-                  return a.href;
-              }
+                const a = document.createElement("a");
+                a.href = url;
+                return a.href;
+            }
             : typeof URL === "function" && typeof location === "object"
-            ? (url) => new URL(url, location.origin).href
-            : () => {
-                  throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context.");
-              };
+                ? (url) => new URL(url, location.origin).href
+                : () => {
+                    throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context.");
+                };
 
     // Logs
     /**
@@ -1166,10 +1169,10 @@ export class Tools {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
+    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
+    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._Performance) {

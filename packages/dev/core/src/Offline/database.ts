@@ -288,8 +288,7 @@ export class Database implements IOfflineProvider {
 
             transaction.oncomplete = () => {
                 let blobTextureURL: string;
-                if (texture) {
-                    const URL = window.URL || window.webkitURL;
+                if (texture && typeof URL === "function") {
                     blobTextureURL = URL.createObjectURL(texture.data);
                     image.onerror = () => {
                         Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
@@ -324,8 +323,7 @@ export class Database implements IOfflineProvider {
             const generateBlobUrl = () => {
                 let blobTextureURL;
 
-                if (blob) {
-                    const URL = window.URL || window.webkitURL;
+                if (blob && typeof URL === "function") {
                     try {
                         blobTextureURL = URL.createObjectURL(blob);
                     } catch (ex) {

@@ -170,6 +170,9 @@ const _CreateWorkerAsync = () => {
             } else {
                 Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL)
                     .then((wasmBinary) => {
+                        if(typeof URL !== "function") {
+                            return reject("Basis transcoder requires an environment with a URL constructor");
+                        }
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
                         _Worker = new Worker(workerBlobUrl);
 
