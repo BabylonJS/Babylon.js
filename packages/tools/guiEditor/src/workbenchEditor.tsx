@@ -257,7 +257,20 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onCreate(value: string): Control {
+        console.log("hi")
+        let currLeft = this.props.globalState.workbench.currLeft;
+        let currTop = this.props.globalState.workbench.currTop;
+       // if(currLeft != 0 || currTop != 0 ){
+            currLeft += 10;
+            currTop += 10;
+       // }
+        
+        this.props.globalState.workbench.currLeft = currLeft;
+        this.props.globalState.workbench.currTop = currTop;
+        console.log(this.props.globalState.workbench.currLeft);
         const guiElement = GUINodeTools.CreateControlFromString(value);
+        guiElement.leftInPixels = this.props.globalState.workbench.currLeft;
+        guiElement.topInPixels = this.props.globalState.workbench.currTop;
         const newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.setSelection([newGuiNode]);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
@@ -281,6 +294,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                             this._draggedItem = type.className;
                                         }}
                                         onClick={() => {
+                                            console.log("here");
                                             this.onCreate(type.className);
                                         }}
                                         title={type.className}
