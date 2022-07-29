@@ -92,7 +92,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public get guiSize() {
         return this._guiSize;
     }
-    public get PasteDisabled(): boolean {
+    public get pasteDisabled(): boolean {
         return this._pasteDisabled;
     }
     // sets the size of the GUI and makes all necessary adjustments
