@@ -1,3 +1,5 @@
+This package renders accessibility tree (html twins of the scene objects) for 3D content in DOM, thus the 3D content is compatible with screen readers and keyboard navigation.
+
 ## What is Screen Reader?
 
 [Screen reader](https://en.wikipedia.org/wiki/Screen_reader) is an assistive technology for blind or low vision people to interact with digital content. For users with blindness or low vision, they can't rely 100% on visual interface. Depending on the degree of visual disabilities, some of they don't even use a monitor display or mouse when they use computers. So, for this kind of user, they use screen reader, a software, to read what are displayed visually on the screen, through speech, or through braille output. They use keyboard to tell the screen reader what to read and interact with the computer. Here's an example video of how a user uses screen reader: [Screen Reader Demo - YouTube](https://www.youtube.com/watch?v=q_ATY9gimOM&ab_channel=SLCCUniversalAccess).

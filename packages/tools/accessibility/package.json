@@ -1,7 +1,7 @@
 {
-    "name": "@tools/accessibility",
-    "description": "Render accessibility tree for 3D content in DOM, thus the 3D content is compatible with screen readers and tab selection",
-    "private": false,
+    "name": "@tools/html-twin-renderer",
+    "description": "Render accessibility tree (html twins of the scene objects) for 3D content in DOM, thus the 3D content is compatible with screen readers and tab selection",
+    "private": true,
     "version": "1.0.0",
     "types": "dist/index",
     "main": "dist/index",
@@ -29,7 +29,6 @@
         "@types/react-dom": "^17.0.10",
         "node-sass": "^7.0.1",
         "react": "^17.0.2",
-        "react-contextmenu": "RaananW/react-contextmenu",
         "react-dom": "^17.0.2",
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4"
