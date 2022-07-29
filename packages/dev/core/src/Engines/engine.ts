@@ -396,6 +396,11 @@ export class Engine extends ThinEngine {
     public disableManifestCheck = false;
 
     /**
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
+     */
+    public disableContextMenu: boolean = true;
+
+    /**
      * Gets the list of created scenes
      */
     public scenes = new Array<Scene>();
@@ -532,6 +537,7 @@ export class Engine extends ThinEngine {
     private _onCanvasPointerOut: (event: PointerEvent) => void;
     private _onCanvasBlur: () => void;
     private _onCanvasFocus: () => void;
+    private _onCanvasContextMenu: (evt: Event) => void;
 
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
@@ -671,8 +677,15 @@ export class Engine extends ThinEngine {
             this.onCanvasBlurObservable.notifyObservers(this);
         };
 
+        this._onCanvasContextMenu = (evt: Event) => {
+            if (this.disableContextMenu) {
+                evt.preventDefault();
+            }
+        };
+
         canvas.addEventListener("focus", this._onCanvasFocus);
         canvas.addEventListener("blur", this._onCanvasBlur);
+        canvas.addEventListener("contextmenu", this._onCanvasContextMenu);
 
         this._onBlur = () => {
             if (this.disablePerformanceMonitorInBackground) {
@@ -800,22 +813,6 @@ export class Engine extends ThinEngine {
     }
 
     /** States */
-
-    /**
-     * Gets a boolean indicating if depth testing is enabled
-     * @returns the current state
-     */
-    public getDepthBuffer(): boolean {
-        return this._depthCullingState.depthTest;
-    }
-
-    /**
-     * Enable or disable depth buffering
-     * @param enable defines the state to set
-     */
-    public setDepthBuffer(enable: boolean): void {
-        this._depthCullingState.depthTest = enable;
-    }
 
     /**
      * Gets a boolean indicating if depth writing is enabled
@@ -1933,6 +1930,7 @@ export class Engine extends ThinEngine {
                 this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
                 this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
                 this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
+                this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
             }
 
             if (IsDocumentAvailable()) {

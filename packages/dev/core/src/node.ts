@@ -184,6 +184,8 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _waitingParentId: Nullable<string> = null;
     /** @hidden */
+    public _waitingParentInstanceIndex: Nullable<string> = null;
+    /** @hidden */
     public _scene: Scene;
     /** @hidden */
     public _cache: any = {};
@@ -252,6 +254,14 @@ export class Node implements IBehaviorAware<Node> {
 
     public get parent(): Nullable<Node> {
         return this._parentNode;
+    }
+
+    /**
+     * @param serializationObject
+     * @hidden
+     */
+    public _serializeAsParent(serializationObject: any): void {
+        serializationObject.parentId = this.uniqueId;
     }
 
     /** @hidden */
@@ -911,7 +921,7 @@ export class Node implements IBehaviorAware<Node> {
             behavior.detach();
         }
 
-        this._behaviors = [];
+        this._behaviors.length = 0;
 
         this.metadata = null;
     }

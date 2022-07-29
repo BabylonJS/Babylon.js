@@ -625,8 +625,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
-            // Enabled
-            this.setEnabled(source.isEnabled());
+            // Enabled. We shouldn't need to check the source's ancestors, as this mesh
+            // will have the same ones.
+            this.setEnabled(source.isEnabled(false));
 
             // Parent
             this.parent = source.parent;
@@ -718,13 +719,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean },
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const instance =
-            this.getTotalVertices() > 0 && (!options || !options.doNotInstantiate)
-                ? this.createInstance("instance of " + (this.name || this.id))
-                : this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
+            this.getTotalVertices() === 0 || (options && options.doNotInstantiate && (options.doNotInstantiate === true || options.doNotInstantiate(this)))
+                ? this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true)
+                : this.createInstance("instance of " + (this.name || this.id));
 
         instance.parent = newParent || this.parent;
         instance.position = this.position.clone();
@@ -2546,7 +2547,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _queueLoad(scene: Scene): Mesh {
-        scene._addPendingData(this);
+        scene.addPendingData(this);
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
 
@@ -2565,7 +2566,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 });
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-                scene._removePendingData(this);
+                scene.removePendingData(this);
             },
             () => {},
             scene.offlineProvider,
@@ -3572,7 +3573,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         // Geometry
@@ -3657,7 +3658,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             };
 
             if (instance.parent) {
-                serializationInstance.parentId = instance.parent.uniqueId;
+                instance.parent._serializeAsParent(serializationInstance);
             }
 
             if (instance.rotationQuaternion) {
@@ -3930,6 +3931,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh._waitingParentId = parsedMesh.parentId;
         }
 
+        if (parsedMesh.parentInstanceIndex !== undefined) {
+            mesh._waitingParentInstanceIndex = parsedMesh.parentInstanceIndex;
+        }
+
         // Actions
         if (parsedMesh.actions !== undefined) {
             mesh._waitingData.actions = parsedMesh.actions;
@@ -4090,6 +4095,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (parsedInstance.parentId !== undefined) {
                     instance._waitingParentId = parsedInstance.parentId;
+                }
+
+                if (parsedInstance.parentInstanceIndex !== undefined) {
+                    instance._waitingParentInstanceIndex = parsedInstance.parentInstanceIndex;
                 }
 
                 if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {

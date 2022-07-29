@@ -219,7 +219,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
+     * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (1.0, 1.0, 1.0)).
      */
     public get scaling(): Vector3 {
         return this._scaling;
@@ -409,13 +409,13 @@ export class TransformNode extends Node {
      * Instantiate (when possible) or clone that node with its hierarchy
      * @param newParent defines the new parent to use for the instance (or clone)
      * @param options defines options to configure how copy is done
-     * @param options.doNotInstantiate
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
      * @returns an instance (or a clone) of the current node with its hierarchy
      */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean },
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
@@ -1364,17 +1364,12 @@ export class TransformNode extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
         serializationObject.isEnabled = this.isEnabled();
-
-        // Parent
-        if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
-        }
 
         return serializationObject;
     }
@@ -1401,6 +1396,10 @@ export class TransformNode extends Node {
         // Parent
         if (parsedTransformNode.parentId !== undefined) {
             transformNode._waitingParentId = parsedTransformNode.parentId;
+        }
+
+        if (parsedTransformNode.parentInstanceIndex !== undefined) {
+            transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
         }
 
         return transformNode;

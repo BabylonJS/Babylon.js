@@ -55,8 +55,8 @@ uniform sampler2D diffuseSampler;
 
 void main() {
     #ifdef ALPHATEST
-	if (texture2D(diffuseSampler, vUV).a < 0.4)
-		discard;
+    if (texture2D(diffuseSampler, vUV).a < 0.4)
+        discard;
     #endif
 
     vec3 normalOutput;
@@ -125,44 +125,44 @@ void main() {
             #endif
 
             reflectivity.a -= roughness;
-                
-            vec3 color = vec3(1.0);    
-            #ifdef ALBEDOTEXTURE 
-                color = texture2D(albedoSampler, vAlbedoUV).rgb; 
+
+            vec3 color = vec3(1.0);
+            #ifdef ALBEDOTEXTURE
+                color = texture2D(albedoSampler, vAlbedoUV).rgb;
                 #ifdef GAMMAALBEDO
                     color = toLinearSpace(color);
-                #endif    
+                #endif
             #endif
-            #ifdef ALBEDOCOLOR 
+            #ifdef ALBEDOCOLOR
                 color *= albedoColor.xyz;
-            //#else // albedo color suposed to be white   
+            //#else // albedo color suposed to be white
             #endif
         
             reflectivity.rgb = mix(vec3(0.04), color, metal);
         #else
-            // SpecularGlossiness Model 
+            // SpecularGlossiness Model
             #ifdef SPECULARGLOSSINESSTEXTURE
-                reflectivity = texture2D(reflectivitySampler, vReflectivityUV); 
+                reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
                 #ifdef GAMMAREFLECTIVITYTEXTURE
                     reflectivity.rgb = toLinearSpace(reflectivity.rgb);
-                #endif  
+                #endif
                 #ifdef GLOSSINESSS
-                    reflectivity.a *= glossiness; 
+                    reflectivity.a *= glossiness;
                 #endif
             #else 
-                #ifdef REFLECTIVITYTEXTURE 
+                #ifdef REFLECTIVITYTEXTURE
                     reflectivity.rbg = texture2D(reflectivitySampler, vReflectivityUV).rbg;
                     #ifdef GAMMAREFLECTIVITYTEXTURE
                         reflectivity.rgb = toLinearSpace(reflectivity.rgb);
-                    #endif  
-                #else    
+                    #endif
+                #else
                     #ifdef REFLECTIVITYCOLOR
                         reflectivity.rgb = reflectivityColor.xyz;
                         reflectivity.a = 1.0;
-                    // #else 
+                    // #else
                         // We never reach this case since even if the reflectivity color is not defined
                         // by the user, there is a default reflectivity/specular color set to (1.0, 1.0, 1.0)
-                    #endif          
+                    #endif
                 #endif 
                 #ifdef GLOSSINESSS
                     reflectivity.a = glossiness; 
@@ -170,7 +170,7 @@ void main() {
                     reflectivity.a = 1.0; // glossiness default value in Standard / SpecularGlossiness mode = 1.0
                 #endif
             #endif
-        #endif   
+        #endif
         reflectivity.rgb = toGammaSpace(reflectivity.rgb); // translate to gammaSpace to be sync with prePass reflectivity
         gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
     #endif

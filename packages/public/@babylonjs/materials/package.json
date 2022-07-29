@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/materials",
-    "version": "5.11.0",
+    "version": "5.17.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -22,7 +22,7 @@
         "tslib": "^2.4.0"
     },
     "devDependencies": {
-        "@babylonjs/core": "^5.11.0",
+        "@babylonjs/core": "^5.17.1",
         "@dev/build-tools": "^1.0.0",
         "@lts/materials": "^1.0.0",
         "rimraf": "^3.0.2",
@@ -51,4 +51,3 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
-

@@ -29,7 +29,6 @@ declare type Material = import("core/Materials/material").Material;
 declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
 declare type PBRBaseMaterial = import("core/Materials/PBR/pbrBaseMaterial").PBRBaseMaterial;
 declare type PBRMaterial = import("core/Materials/PBR/pbrMaterial").PBRMaterial;
-declare type PBRMetallicRoughnessMaterial = import("core/Materials/PBR/pbrMetallicRoughnessMaterial").PBRMetallicRoughnessMaterial;
 
 /**
  * Interface for storing specular glossiness factors

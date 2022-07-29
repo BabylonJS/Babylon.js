@@ -6,9 +6,9 @@ import type { Camera } from "../../Cameras/camera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Base class for mouse wheel input..
@@ -57,7 +57,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
         this._wheel = (pointer) => {

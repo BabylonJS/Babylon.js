@@ -282,7 +282,7 @@ ThinEngine.prototype._partialLoadImg = function (
         (<any>loadedImages)._internalCount++;
 
         if (scene) {
-            scene._removePendingData(tokenPendingData);
+            scene.removePendingData(tokenPendingData);
         }
 
         if ((<any>loadedImages)._internalCount === 6 && onfinish) {
@@ -292,7 +292,7 @@ ThinEngine.prototype._partialLoadImg = function (
 
     const onerror = (message?: string, exception?: any) => {
         if (scene) {
-            scene._removePendingData(tokenPendingData);
+            scene.removePendingData(tokenPendingData);
         }
 
         if (onErrorCallBack) {
@@ -302,7 +302,7 @@ ThinEngine.prototype._partialLoadImg = function (
 
     LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
     if (scene) {
-        scene._addPendingData(tokenPendingData);
+        scene.addPendingData(tokenPendingData);
     }
 };
 
