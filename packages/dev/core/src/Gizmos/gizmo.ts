@@ -38,10 +38,53 @@ export interface GizmoAxisCache {
     /** DragBehavior */
     dragBehavior: PointerDragBehavior;
 }
+
+/**
+ * Interface for basic gizmo
+ */
+export interface IGizmo extends IDisposable {
+    /** True when the mouse pointer is hovered a gizmo mesh */
+    readonly isHovered: boolean;
+    /** The root mesh of the gizmo */
+    _rootMesh: Mesh;
+    /** Ratio for the scale of the gizmo */
+    scaleRatio: number;
+    /**
+     * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+     * * When set, interactions will be enabled
+     */
+    attachedMesh: Nullable<AbstractMesh>;
+    /**
+     * Node that the gizmo will be attached to. (eg. on a drag gizmo the mesh, bone or NodeTransform that will be dragged)
+     * * When set, interactions will be enabled
+     */
+    attachedNode: Nullable<Node>;
+    /**
+     * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+     */
+    updateGizmoRotationToMatchAttachedMesh: boolean;
+    /** The utility layer the gizmo will be added to */
+    gizmoLayer: UtilityLayerRenderer;
+    /**
+     * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
+     */
+    updateGizmoPositionToMatchAttachedMesh: boolean;
+    /**
+     * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+     */
+    updateScale: boolean;
+    /**
+     * posture that the gizmo will be display
+     * When set null, default value will be used (Quaternion(0, 0, 0, 1))
+     */
+    customRotationQuaternion: Nullable<Quaternion>;
+    /** Disposes and replaces the current meshes in the gizmo with the specified mesh */
+    setCustomMesh(mesh: Mesh): void;
+}
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
  */
-export class Gizmo implements IDisposable {
+export class Gizmo implements IGizmo {
     /**
      * The root mesh of the gizmo
      */
