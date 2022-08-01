@@ -117,7 +117,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         });
     }
 
-    private _generateTrigger(triggerData: { type: string; index: number; parameters?: { subject?: number; [key: string]: any } }) {
+    private _generateTrigger(triggerData: { type: string; index: number; parameters?: { subject?: number;[key: string]: any } }) {
         // optional subject for some triggers
         const subject = this._getSubjectForData(triggerData.parameters?.subject);
         // TODO handle the other triggers
@@ -138,7 +138,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
         return null;
     }
 
-    private _generateAction(actionData: { type: string; parameters?: { subject?: number; [key: string]: any }; next?: number; parallel?: number }) {
+    private _generateAction(actionData: { type: string; parameters?: { subject?: number;[key: string]: any }; next?: number; parallel?: number }) {
         const subject = this._getSubjectForData(actionData.parameters?.subject);
         const options: IActionOptions = {
             playCount: actionData.parameters?.playCount,
@@ -153,6 +153,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                 return new NullAction({
                     ...options,
                     separateParallelExecution: false,
+                    repeatUntilStopped: false,
                 });
             case "spin":
                 return new SpinAction({
@@ -166,14 +167,14 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                     ...options,
                 });
-                case "move":
-                    return new TranslateAction({
-                        subject,
-                        translation: Vector3.FromArray(actionData.parameters?.direction),
-                        duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
-                        ...options,
-                        repeatUntilStopped: false,
-                    });
+            case "move":
+                return new TranslateAction({
+                    subject,
+                    translation: Vector3.FromArray(actionData.parameters?.direction),
+                    duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
+                    ...options,
+                    repeatUntilStopped: false,
+                });
             case "raiseEvent":
                 return new RaiseEventAction({
                     eventName: actionData.parameters?.event,
@@ -254,27 +255,27 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                 }
                 return actionData.type === "hide"
                     ? new HideAction({
-                          subject,
-                          hideAnimation: animation,
-                          duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
-                          applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
-                          ...options,
-                          repeatUntilStopped: false,
-                      })
+                        subject,
+                        hideAnimation: animation,
+                        duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
+                        applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
+                        ...options,
+                        repeatUntilStopped: false,
+                    })
                     : new ShowAction({
-                          subject,
-                          animation,
-                          duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
-                          applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
-                          ...options,
-                          repeatUntilStopped: false,
-                      });
+                        subject,
+                        animation,
+                        duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
+                        applyAnimationToChildren: actionData.parameters?.showHideEffect === 1 ? true : false,
+                        ...options,
+                        repeatUntilStopped: false,
+                    });
             }
         }
         return null;
     }
 
-    private _processAction(actionData: { type: string; parameters?: { subject?: number }; next?: number; parallel?: number; _babylonAction?: any }) {
+    private _processAction(actionData: { type: string; parameters?: { subject?: number; children?: number[]; child?: number }; next?: number; parallel?: number; _babylonAction?: any }) {
         if (!actionData._babylonAction) {
             const actionForData = this._generateAction(actionData);
             actionData._babylonAction = actionForData;
@@ -289,6 +290,20 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
                     const parallelAction = this._processAction(ArrayItem.Get(`actions/${actionData.parallel}`, this._actions /* as IAction[]*/, actionData.parallel));
                     if (parallelAction) {
                         actionForData.parallelActions.push(parallelAction);
+                    }
+                }
+                // NOT ACCORDING TO SPECS! child is wrong
+                if (actionData.parameters?.child) {
+                    const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.parameters.child}`, this._actions /* as IAction[]*/, actionData.parameters.child));
+                    if (nextAction) {
+                        actionForData.nextActions.push(nextAction);
+                    }
+                }
+                // According to specs, children is correct
+                if (actionData.parameters?.children && actionData.parameters.children.length > 0) {
+                    const nextAction = this._processAction(ArrayItem.Get(`actions/${actionData.parameters.children[0]}`, this._actions /* as IAction[]*/, actionData.parameters.children[0]));
+                    if (nextAction) {
+                        actionForData.nextActions.push(nextAction);
                     }
                 }
             }
