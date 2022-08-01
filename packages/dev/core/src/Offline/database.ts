@@ -26,7 +26,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
+    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : (typeof indexedDB !== "undefined" ? indexedDB : undefined));
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static _IsUASupportingBlobStorage = true;
@@ -362,7 +362,7 @@ export class Database implements IOfflineProvider {
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }
-                                } catch (ex) {}
+                                } catch (ex) { }
                                 generateBlobUrl();
                             };
 
@@ -375,7 +375,7 @@ export class Database implements IOfflineProvider {
                             try {
                                 // Put the blob into the dabase
                                 const addRequest = transaction.objectStore("textures").put(newTexture);
-                                addRequest.onsuccess = () => {};
+                                addRequest.onsuccess = () => { };
                                 addRequest.onerror = () => {
                                     generateBlobUrl();
                                 };
@@ -481,7 +481,7 @@ export class Database implements IOfflineProvider {
                         if (error && error.name === "QuotaExceededError") {
                             this._hasReachedQuota = true;
                         }
-                    } catch (ex) {}
+                    } catch (ex) { }
                     callback(-1);
                 };
 
@@ -493,7 +493,7 @@ export class Database implements IOfflineProvider {
 
                 // Put the scene into the database
                 const addRequest = transaction.objectStore("versions").put(newVersion);
-                addRequest.onsuccess = () => {};
+                addRequest.onsuccess = () => { };
                 addRequest.onerror = () => {
                     Logger.Error("Error in DB add version request in BABYLON.Database.");
                 };
@@ -625,7 +625,7 @@ export class Database implements IOfflineProvider {
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }
-                                } catch (ex) {}
+                                } catch (ex) { }
                                 callback(fileData);
                             };
 
@@ -643,7 +643,7 @@ export class Database implements IOfflineProvider {
                             try {
                                 // Put the scene into the database
                                 const addRequest = transaction.objectStore(targetStore).put(newFile);
-                                addRequest.onsuccess = () => {};
+                                addRequest.onsuccess = () => { };
                                 addRequest.onerror = () => {
                                     Logger.Error("Error in DB add file request in BABYLON.Database.");
                                 };
