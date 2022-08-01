@@ -26,7 +26,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
+    private _idbFactory = <IDBFactory>(typeof indexedDB !== "undefined" ? indexedDB : undefined);
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static _IsUASupportingBlobStorage = true;
