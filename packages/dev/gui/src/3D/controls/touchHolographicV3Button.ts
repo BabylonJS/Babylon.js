@@ -1,5 +1,6 @@
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Control3D } from "./control3D";
+import type { Mesh } from "core/Meshes/mesh";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
@@ -16,7 +17,6 @@ import { DomManagement } from "core/Misc/domManagement";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
 import { Grid } from "../../2D/controls/grid";
 import { Image } from "../../2D/controls/image";
-import { Mesh } from "core/Meshes/mesh";
 import { MRDLBackglowMaterial } from "../materials/mrdl/mrdlBackglowMaterial";
 import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
 import { MRDLFrontplateMaterial } from "../materials/mrdl/mrdlFrontplateMaterial";
@@ -108,6 +108,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     private _backGlow: AbstractMesh;
     private _innerQuad: AbstractMesh;
     private _collisionPlate: AbstractMesh;
+    private _frontPlateCollisionMesh: AbstractMesh;
     private _isBackplateVisible = true;
 
     // Content
@@ -202,24 +203,24 @@ export class TouchHolographicV3Button extends TouchButton3D {
             const rightHandedScene = this._backPlate._scene.useRightHandedSystem;
             // Create tooltip with mesh and text
             this._tooltipMesh = CreatePlane("", { size: 1 }, this._backPlate._scene);
-            const tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
-            const mat = new StandardMaterial("", this._backPlate._scene);
-            mat.diffuseColor = Color3.FromHexString("#212121");
-            tooltipBackground.material = mat;
-            tooltipBackground.isPickable = false;
-            this._tooltipMesh.addChild(tooltipBackground);
-            tooltipBackground.position = Vector3.Forward(rightHandedScene).scale(0.05);
-            this._tooltipMesh.scaling.y = 1 / 3;
-            this._tooltipMesh.position = Vector3.Up().scale(0.7).add(Vector3.Forward(rightHandedScene).scale(-0.15));
+            this._tooltipMesh.position = Vector3.Down().scale(0.7).add(Vector3.Forward(rightHandedScene).scale(-0.15));
             this._tooltipMesh.isPickable = false;
-            this._tooltipMesh.parent = this._backPlate;
+            this._tooltipMesh.parent = this._frontPlateCollisionMesh;
 
             // Create text texture for the tooltip
             this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh);
+            const tooltipBackground = new Rectangle();
+            tooltipBackground.height = 0.25;
+            tooltipBackground.width = 0.8;
+            tooltipBackground.cornerRadius = 25;
+            tooltipBackground.color = "#ffffff";
+            tooltipBackground.thickness = 20;
+            tooltipBackground.background = "#060668";
+            this._tooltipTexture.addControl(tooltipBackground);
+
             this._tooltipTextBlock = new TextBlock();
-            this._tooltipTextBlock.scaleY = 3;
             this._tooltipTextBlock.color = "white";
-            this._tooltipTextBlock.fontSize = 130;
+            this._tooltipTextBlock.fontSize = 100;
             this._tooltipTexture.addControl(this._tooltipTextBlock);
 
             // Add hover action to tooltip
@@ -428,18 +429,21 @@ export class TouchHolographicV3Button extends TouchButton3D {
     }
 
     private _rebuildContent(): void {
-        const aspectRatio = this.width / this.height;
         let content: Control;
 
-        if (aspectRatio <= 1) {
+        if (this._getAspectRatio() <= 1) {
             // align text and image vertically
             content = this._alignContentVertically();
         } else {
             // align text and image horizontally
-            content = this._alignContentHorizontally(aspectRatio);
+            content = this._alignContentHorizontally();
         }
 
         this.content = content;
+    }
+
+    private _getAspectRatio() {
+        return this.width / this.height;
     }
 
     private _alignContentVertically() {
@@ -470,7 +474,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         return panel;
     }
 
-    private _alignContentHorizontally(aspectRatio: number) {
+    private _alignContentHorizontally() {
         let totalPanelWidthInPixels = 240;
         const padding = 15;
 
@@ -483,7 +487,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
         const panel = new StackPanel();
         panel.isVertical = false;
-        panel.scaleY = aspectRatio;
+        panel.scaleY = this._getAspectRatio();
 
         if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
@@ -552,7 +556,8 @@ export class TouchHolographicV3Button extends TouchButton3D {
         const collisionMesh = this._createFrontPlate(scene);
         const innerQuadMesh = this._createInnerQuad(scene);
         const backGlowMesh = this._createBackGlow(scene);
-
+        
+        this._frontPlateCollisionMesh = collisionMesh;
         this._textPlate = <Mesh>super._createNode(scene);
         this._textPlate.name = `${this.name}_textPlate`;
         this._textPlate.isPickable = false;
