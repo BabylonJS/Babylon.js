@@ -1,6 +1,40 @@
 {
-    "fromTag": "5.16.0",
+    "fromTag": "5.17.0",
     "changelog": {
+        "5.17.1": [
+            {
+                "pr": "12805",
+                "title": "Fix crash when loading node material with loadasync",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12804",
+                "title": "Allow creation of baseTexture from internalTexture",
+                "description": "https://forum.babylonjs.com/t/cubetexture-from-canvas/32412/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            }
+        ],
         "5.17.0": [
             {
                 "pr": "12803",
