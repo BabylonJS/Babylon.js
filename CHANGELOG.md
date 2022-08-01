@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.17.1
+
+### Core
+
+- Fix crash when loading node material with loadasync - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#12805](https://github.com/BabylonJS/Babylon.js/pull/12805))
+- Allow creation of baseTexture from internalTexture - by [sebavan](https://github.com/sebavan) ([#12804](https://github.com/BabylonJS/Babylon.js/pull/12804))
+
 ## 5.17.0
 
 ### Core
