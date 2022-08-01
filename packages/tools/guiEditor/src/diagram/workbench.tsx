@@ -87,9 +87,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _zoomFactor = 1;
     private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
+    private _pasteDisabled = true;
 
     public get guiSize() {
         return this._guiSize;
+    }
+    public get pasteDisabled(): boolean {
+        return this._pasteDisabled;
     }
     // sets the size of the GUI and makes all necessary adjustments
     public set guiSize(value: ISize) {
@@ -259,6 +263,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     public copyToClipboard(copyFn: (content: string) => void) {
+        this._pasteDisabled = false;
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
             const obj = {};
