@@ -35,7 +35,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _popUpWindow: Window;
     private _draggedItem: Nullable<string>;
     private _rootRef: React.RefObject<HTMLDivElement>;
-    private _onCreateClicked = 0;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -258,20 +257,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onCreate(value: string): Control {
-        console.log("hi")
-        let currLeft = this.props.globalState.workbench.currLeft;
-        let currTop = this.props.globalState.workbench.currTop;
-        if(this._onCreateClicked > 1){
-            currLeft += 10;
-            currTop += 10;
-        }
-        
-        this.props.globalState.workbench.currLeft = currLeft;
-        this.props.globalState.workbench.currTop = currTop;
-        console.log(this.props.globalState.workbench.currLeft);
         const guiElement = GUINodeTools.CreateControlFromString(value);
-        guiElement.leftInPixels = this.props.globalState.workbench.currLeft;
-        guiElement.topInPixels = this.props.globalState.workbench.currTop;
+        const currLeft = this.props.globalState.workbench.trueRootContainer.children.length * 10;
+        const currTop = this.props.globalState.workbench.trueRootContainer.children.length * 10;
+        guiElement.leftInPixels = currLeft;
+        guiElement.topInPixels = currTop;
         const newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.setSelection([newGuiNode]);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
@@ -295,8 +285,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                             this._draggedItem = type.className;
                                         }}
                                         onClick={() => {
-                                            console.log("here");
-                                            this._onCreateClicked += 1;
                                             this.onCreate(type.className);
                                         }}
                                         title={type.className}

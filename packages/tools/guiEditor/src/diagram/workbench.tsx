@@ -61,26 +61,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
-    private _offset: number = 0;
     private _currLeft: number = 0;
     private _currTop: number = 0;
-   // private _pasteCalled = 0;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
-    public get offset(){
-        return this._offset;
-    }
-    public get currTop(){
+    public get currTop() {
         return this._currTop;
     }
-    public get currLeft(){
+    public get currLeft() {
         return this._currLeft;
     }
-    public set currTop(val : number){
+    public set currTop(val: number) {
         this._currTop = val;
     }
-    public set currLeft(val : number){
+    public set currLeft(val: number) {
         this._currLeft = val;
     }
     private _panAndZoomContainer: Container;
@@ -278,7 +273,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     public copyToClipboard(copyFn: (content: string) => void) {
-        //this._offset = 0;
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
             const obj = {};
@@ -287,14 +281,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._currLeft = control.leftInPixels;
             this._currTop = control.topInPixels;
         }
-        
-            copyFn(
-                JSON.stringify({
-                    GUIClipboard: true,
-                    controls: controlList,
-                })
-            );
-        
+
+        copyFn(
+            JSON.stringify({
+                GUIClipboard: true,
+                controls: controlList,
+            })
+        );
     }
 
     public cutToClipboard(copyFn: (content: string) => void) {
@@ -303,7 +296,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public pasteFromClipboard(clipboardContents: string) {
-        this._offset += 10;
+        //not using trueRootContainer *10 because this is for if we move a control and want to paste in a new location
+        this._currLeft += 10;
+        this._currTop += 10;
         try {
             const parsed = JSON.parse(clipboardContents);
             if (parsed.GUIClipboard) {
@@ -311,10 +306,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (const control of parsed.controls) {
                     newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
                 }
-                console.log(this._offset)
-                
-                this._currLeft += 10
-                this._currTop += 10
+
                 newSelection[0].leftInPixels = this._currLeft;
                 newSelection[0].topInPixels = this._currTop;
                 this.props.globalState.setSelection(newSelection);
@@ -376,15 +368,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         guiControl.onPointerOutObservable.clear();
         const onDisposeStored = guiControl.onDisposeObservable.observers.slice();
         guiControl.onDisposeObservable.clear();
-
-        //is this the right place to add this?
-        // if(this._offset != 0){
-        //     console.log(this.offset)
-        //     this._offset += 10;
-        //     guiControl.leftInPixels = this._offset;
-        //     guiControl.topInPixels = this._offset;
-        // }
-        
 
         guiControl.onPointerUpObservable.add(() => {
             this.clicked = false;
@@ -541,12 +524,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     appendBlock(guiElement: Control) {
-        if(this._offset != 0){
-            //console.log(this.offset)
-            //this._offset += 10; 
-            guiElement.leftInPixels = this._currLeft;
-            guiElement.topInPixels = this._currTop;
-        }
         if (this.props.globalState.liveGuiTexture) {
             this.props.globalState.liveGuiTexture.addControl(guiElement);
         }
