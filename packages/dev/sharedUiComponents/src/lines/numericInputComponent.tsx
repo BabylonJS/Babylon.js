@@ -43,17 +43,15 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         return false;
     }
 
-    updateValue(evt: any) {
-        const value = evt.target.value;
-
-        if (/[^0-9.-]/g.test(value)) {
+    updateValue(valueString: string) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
-        const valueAsNumber = parseFloat(value);
+        const valueAsNumber = parseFloat(valueString);
 
         this._localChange = true;
-        this.setState({ value: value });
+        this.setState({ value: valueString });
 
         if (isNaN(valueAsNumber)) {
             return;
@@ -78,36 +76,33 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this.props.onChange(valueAsNumber);
     }
 
-    onKeyDown(evt: any) {
-        this.handleStepModifier(evt);
+    incrementValue(amount: number) {
+        let currentValue = parseFloat(this.state.value);
+        if (isNaN(currentValue)) {
+            currentValue = 0;
+        }
+        this.updateValue((currentValue + amount).toFixed(this.props.precision !== undefined ? this.props.precision : 3));
     }
 
-    private handleStepModifier(evt: any) {
-        if (!evt.shiftKey) {
-            return;
-        }
-
-        const value = evt.target.value;
-        if (/[^0-9.-]/g.test(value)) {
-            return;
-        }
-        let valueAsNumber = parseFloat(value);
-        const step = this.props.step || 0;
-        const handleModifier = (sign: number) => {
-            valueAsNumber -= step * sign; // Undo the step change that the browser did
-            if (evt.ctrlKey || evt.metaKey) {
-                valueAsNumber += step * 100 * sign;
-            } else {
-                valueAsNumber += step * 10 * sign;
+    onKeyDown(evt: React.KeyboardEvent<HTMLInputElement>) {
+        const step = this.props.step || 1;
+        const handleArrowKey = (sign: number) => {
+            if (evt.shiftKey) {
+                sign *= 10;
+                if (evt.ctrlKey || evt.metaKey) {
+                    sign *= 10;
+                }
             }
+
+            this.incrementValue(sign * step);
+            evt.preventDefault();
         };
 
         if (evt.key === "ArrowUp") {
-            handleModifier(1);
+            handleArrowKey(1);
         } else if (evt.key === "ArrowDown") {
-            handleModifier(-1);
+            handleArrowKey(-1);
         }
-        evt.target.value = valueAsNumber;
     }
 
     render() {
@@ -124,7 +119,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                     step={this.props.step}
                     className="numeric-input"
                     value={this.state.value}
-                    onChange={(evt) => this.updateValue(evt)}
+                    onChange={(evt) => this.updateValue(evt.target.value)}
                     onKeyDown={(evt) => this.onKeyDown(evt)}
                     onFocus={() => {
                         if (this.props.lockObject) {
