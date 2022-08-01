@@ -155,9 +155,6 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     incrementValue(amount: number) {
-        if (this.props.step) {
-            amount *= parseFloat(this.props.step);
-        }
         let currentValue = parseFloat(this.state.value);
         if (isNaN(currentValue)) {
             currentValue = 0;
@@ -165,40 +162,24 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this.updateValue((currentValue + amount).toFixed(2));
     }
 
-    onKeyDown(event: any) {
-        if (this.props.arrows) {
-            if (event.key === "ArrowUp") {
-                this.incrementValue(1);
-                event.preventDefault();
-            }
-            if (event.key === "ArrowDown") {
-                this.incrementValue(-1);
-                event.preventDefault();
-            }
-        } else {
+    onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+        const step = parseFloat(this.props.step || this.props.isInteger ? "1" : "0.01");
+        const handleArrowKey = (sign: number) => {
             if (event.shiftKey) {
-                const value = event.target.value;
-                if (/[^0-9.-]/g.test(value)) {
-                    return;
+                sign *= 10;
+                if (event.ctrlKey || event.metaKey) {
+                    sign *= 10;
                 }
-                let valueAsNumber = parseFloat(value);
-                const step = parseFloat(this.props.step || this.props.isInteger ? "1" : "0.01");
-                const handleModifier = (sign: number) => {
-                    valueAsNumber -= step * sign; // Undo the step change that the browser did
-                    if (event.ctrlKey || event.metaKey) {
-                        valueAsNumber += step * 100 * sign;
-                    } else {
-                        valueAsNumber += step * 10 * sign;
-                    }
-                };
-
-                if (event.key === "ArrowUp") {
-                    handleModifier(1);
-                } else if (event.key === "ArrowDown") {
-                    handleModifier(-1);
-                }
-                event.target.value = valueAsNumber;
             }
+
+            this.incrementValue(sign * step);
+            event.preventDefault();
+        };
+
+        if (event.key === "ArrowUp") {
+            handleArrowKey(1);
+        } else if (event.key === "ArrowDown") {
+            handleArrowKey(-1);
         }
         if (event.key === "Enter" && this.props.onEnter) {
             this.props.onEnter(this._store);
