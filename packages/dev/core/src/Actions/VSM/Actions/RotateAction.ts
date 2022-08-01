@@ -25,14 +25,17 @@ export class RotateAction extends BaseAction<IRotateActionOptions> {
         return new Promise((resolve) => {
             const frameRate = 100;
             const rotateAnimation = new Animation("rotate", "rotationQuaternion", frameRate, Animation.ANIMATIONTYPE_QUATERNION, Animation.ANIMATIONLOOPMODE_CONSTANT);
+            const fromQuat = this._options.subject.rotationQuaternion?.clone() ?? new Quaternion();
+            const toQuat = fromQuat.multiply(this._options.rotationQuaternion.clone() ?? new Quaternion());
+            console.log(fromQuat, toQuat);
             rotateAnimation.setKeys([
                 {
                     frame: 0,
-                    value: this._options.subject.rotationQuaternion?.clone() ?? new Quaternion(),
+                    value: fromQuat,
                 },
                 {
                     frame: frameRate,
-                    value: this._options.rotationQuaternion.clone() ?? new Quaternion(),
+                    value: toQuat,
                 },
             ]);
             this._animatable = this._options.subject

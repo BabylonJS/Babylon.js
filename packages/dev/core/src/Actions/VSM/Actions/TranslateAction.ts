@@ -23,14 +23,16 @@ export class TranslateAction extends BaseAction<ITranslateActionOptions> {
         return new Promise((resolve) => {
             const frameRate = 100;
             const rotateAnimation = new Animation("translate", "position", frameRate, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+            const fromPos = this._options.subject.position?.clone() ?? new Vector3();
+            const toPos = fromPos.add(this._options.translation.clone() ?? new Vector3());
             rotateAnimation.setKeys([
                 {
                     frame: 0,
-                    value: this._options.subject.position.clone() ?? new Vector3(),
+                    value: fromPos,
                 },
                 {
                     frame: frameRate,
-                    value: this._options.translation.clone() ?? new Vector3(),
+                    value: toPos,
                 },
             ]);
             this._animatable = this._options.subject
