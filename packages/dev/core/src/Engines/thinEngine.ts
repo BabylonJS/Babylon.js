@@ -1399,6 +1399,7 @@ export class ThinEngine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
+            supportSpriteInstancing: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
