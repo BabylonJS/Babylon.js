@@ -2,12 +2,17 @@ import { Engine } from "../engine";
 import type { Camera } from "../../Cameras/camera";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Class used to define an additional view for the engine
  * @see https://doc.babylonjs.com/divingDeeper/scene/multiCanvas
  */
 export class EngineView {
+    /**
+     * A randomly generated unique id
+     */
+    readonly id: string;
     /** Defines the canvas where to render the view */
     target: HTMLCanvasElement;
     /** Defines an optional camera used to render the view (will use active camera else) */
@@ -37,6 +42,15 @@ declare module "../../Engines/engine" {
         _onEngineViewChanged?: () => void;
 
         /**
+         * Will be triggered before the view renders
+         */
+        readonly onBeforeViewRenderObservable: Observable<EngineView>;
+        /**
+         * Will be triggered after the view rendered
+         */
+        readonly onAfterViewRenderObservable: Observable<EngineView>;
+
+        /**
          * Gets the current engine view
          * @see https://doc.babylonjs.com/how_to/multi_canvases
          */
@@ -62,6 +76,21 @@ declare module "../../Engines/engine" {
         unRegisterView(canvas: HTMLCanvasElement): Engine;
     }
 }
+
+const _onBeforeViewRenderObservable = new Observable<EngineView>();
+const _onAfterViewRenderObservable = new Observable<EngineView>();
+
+Object.defineProperty(Engine.prototype, "onBeforeViewRenderObservable", {
+    get: function (this: Engine) {
+        return _onBeforeViewRenderObservable;
+    }
+});
+
+Object.defineProperty(Engine.prototype, "onAfterViewRenderObservable", {
+    get: function (this: Engine) {
+        return _onAfterViewRenderObservable;
+    }
+});
 
 Object.defineProperty(Engine.prototype, "inputElement", {
     get: function (this: Engine) {
@@ -96,7 +125,7 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
         canvas.height = masterCanvas.height;
     }
 
-    const newView = { target: canvas, camera, clearBeforeCopy, enabled: true };
+    const newView = { target: canvas, camera, clearBeforeCopy, enabled: true, id: (Math.random() * 100000).toFixed() };
     this.views.push(newView);
 
     if (camera) {
@@ -147,6 +176,7 @@ Engine.prototype._renderViews = function () {
         if (!context) {
             continue;
         }
+        _onBeforeViewRenderObservable.notifyObservers(view);
         const camera = view.camera;
         let previewCamera: Nullable<Camera> = null;
         let scene: Nullable<Scene> = null;
@@ -197,6 +227,7 @@ Engine.prototype._renderViews = function () {
         if (previewCamera && scene) {
             scene.activeCamera = previewCamera;
         }
+        _onAfterViewRenderObservable.notifyObservers(view);
     }
 
     this.activeView = null;
