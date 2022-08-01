@@ -344,7 +344,7 @@
             */
             "type": "node",
             "request": "launch",
-            "name": "Run selenium tests - WebGL1 (Dev)",
+            "name": "Run selenium tests (Dev)",
             "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "selenium"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
