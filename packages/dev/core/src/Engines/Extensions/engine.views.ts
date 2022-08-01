@@ -83,13 +83,13 @@ const _onAfterViewRenderObservable = new Observable<EngineView>();
 Object.defineProperty(Engine.prototype, "onBeforeViewRenderObservable", {
     get: function (this: Engine) {
         return _onBeforeViewRenderObservable;
-    }
+    },
 });
 
 Object.defineProperty(Engine.prototype, "onAfterViewRenderObservable", {
     get: function (this: Engine) {
         return _onAfterViewRenderObservable;
-    }
+    },
 });
 
 Object.defineProperty(Engine.prototype, "inputElement", {
