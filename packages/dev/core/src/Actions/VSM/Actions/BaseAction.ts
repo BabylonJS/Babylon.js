@@ -54,6 +54,8 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
             this.parallelActions.forEach((action) => {
                 action.execute();
             });
+            // only run parallel once!
+            this.parallelActions.length = 0;
         });
         this.waitForDoneAsync = new Promise((resolve) => {
             this.onActionDoneObservable.add(() => {
@@ -91,6 +93,7 @@ export abstract class BaseAction<T extends IActionOptions> implements IDisposabl
             Tools.Warn("Action is already running");
             return;
         }
+        // console.log("Action started", this);
         this._isRunning = true;
         this.onActionExecutionStartedObservable.notifyObservers(this);
         const executeFunction = async () => {

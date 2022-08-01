@@ -226,7 +226,7 @@ export class GLEFLoader implements ILoader {
         }
 
         if (node._babylonTransformNode) {
-            throw new Error(`${context}: Invalid recursive node hierarchy`);
+            return node._babylonTransformNode;
         }
 
         const promises = new Array<Promise<any>>();
@@ -258,8 +258,9 @@ export class GLEFLoader implements ILoader {
                             asset.gltf = ((plugin as GLTFFileLoader)._loader as GLTFLoader).gltf;
                         });
                     });
+                    const urlToLoad = url.startsWith("http") ? url : this._rootUrl + url;
                     promises.push(
-                        SceneLoader.ImportMeshAsync(asset.nodes || "", this._rootUrl + url, filename, this._scene).then((result) => {
+                        SceneLoader.ImportMeshAsync(asset.nodes || "", urlToLoad, filename, this._scene).then((result) => {
                             result.meshes[0].parent = babylonTransformNode;
                         })
                     );
