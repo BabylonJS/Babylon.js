@@ -21,11 +21,11 @@ describe("safari", () => {
         const el = await driver.findElement(By.id("babylon-canvas"));
 
         // With allowMouse = true, touch controls should move camera forward if isMouseEvent is true
-        await driver.actions({ bridge: true }).move({ origin: el }).press().move({ x: 0, y: -200, origin: el }).release().perform();
+        await driver.actions().move({ origin: el }).press().move({ x: 0, y: -200, origin: el }).release().perform();
         await driver.sleep(1000);
 
         // Set allowMouse = false (handled in PG) and verify that camera uses mouse controls
-        await driver.actions({ bridge: true }).move({ origin: el }).press().move({ x: 0, y: 200, origin: el }).release().perform();
+        await driver.actions().move({ origin: el }).press().move({ x: 0, y: 200, origin: el }).release().perform();
         await driver.sleep(1000);
 
         // Check status after actions
@@ -84,7 +84,7 @@ describe("safari", () => {
         const el = await driver.findElement(By.id("babylon-canvas"));
 
         // With allowMouse = true, touch controls should move camera forward if isMouseEvent is true
-        await driver.actions({ bridge: true }).move({ origin: el }).press().move({ x: 200, y: 0, origin: el }).release().perform();
+        await driver.actions().move({ origin: el }).press().move({ x: 200, y: 0, origin: el }).release().perform();
         await driver.sleep(1000);
 
         // Check status after actions
@@ -99,9 +99,9 @@ describe("safari", () => {
         const el = await driver.findElement(By.id("babylon-canvas"));
 
         // With allowMouse = true, touch controls should move camera forward if isMouseEvent is true
-        await driver.actions({ bridge: true }).move({ origin: el }).click().keyDown(Key.META).sendKeys("c").keyUp(Key.META).perform();
+        await driver.actions().move({ origin: el }).click().keyDown(Key.META).sendKeys("c").keyUp(Key.META).perform();
         await driver.sleep(1000);
-        await driver.actions({ bridge: true }).move({ origin: el }).click().sendKeys(Key.META).perform();
+        await driver.actions().move({ origin: el }).click().sendKeys(Key.META).perform();
 
         // Check status after actions
         const testStatus = await CheckTestSuccessStatus(driver);
