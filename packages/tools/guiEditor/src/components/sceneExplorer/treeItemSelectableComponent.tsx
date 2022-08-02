@@ -168,14 +168,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
         let children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         let hasChildren = children.length > 0;
-        <hr
-            style={{
-                background: "lime",
-                color: "lime",
-                borderColor: "lime",
-                height: "3px",
-            }}
-        />;
 
         if (this.props.filter) {
             const lowerCaseFilter = this.props.filter.toLowerCase();
