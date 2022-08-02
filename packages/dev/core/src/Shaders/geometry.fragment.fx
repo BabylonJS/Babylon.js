@@ -147,9 +147,6 @@ void main() {
                 #ifdef GAMMAREFLECTIVITYTEXTURE
                     reflectivity.rgb = toLinearSpace(reflectivity.rgb);
                 #endif  
-                // #ifdef GLOSSINESSS
-                //     reflectivity.a *= glossiness; 
-                // #endif
             #else 
                 #ifdef REFLECTIVITYTEXTURE  // standard
                     reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
