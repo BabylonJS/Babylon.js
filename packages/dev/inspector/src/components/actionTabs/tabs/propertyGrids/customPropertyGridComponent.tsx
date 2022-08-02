@@ -44,7 +44,6 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Slider:
                 return (
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}

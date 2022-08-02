@@ -162,7 +162,7 @@ export const LoadImage = (
     let usingObjectURL = false;
 
     if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
-        if (typeof Blob !== "undefined" && typeof URL !== "undefined") {
+        if (typeof Blob !== "undefined") {
             url = URL.createObjectURL(new Blob([input], { type: mimeType }));
             usingObjectURL = true;
         } else {
@@ -259,7 +259,7 @@ export const LoadImage = (
     } else {
         if (url.indexOf("file:") !== -1) {
             const textureName = decodeURIComponent(url.substring(5).toLowerCase());
-            if (FilesInputStore.FilesToLoad[textureName] && typeof URL !== "undefined") {
+            if (FilesInputStore.FilesToLoad[textureName]) {
                 try {
                     let blobURL;
                     try {

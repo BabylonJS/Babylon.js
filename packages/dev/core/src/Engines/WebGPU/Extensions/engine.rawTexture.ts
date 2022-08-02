@@ -183,13 +183,13 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     invertY: boolean = false
 ): InternalTexture {
     const texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode, null);
-    scene?.addPendingData(texture);
+    scene?._addPendingData(texture);
     texture.url = url;
 
     this._internalTexturesCache.push(texture);
 
     const onerror = (request?: IWebRequest, exception?: any) => {
-        scene?.removePendingData(texture);
+        scene?._removePendingData(texture);
         if (onError && request) {
             onError(request.status + " " + request.statusText, exception);
         }
@@ -231,7 +231,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
         }
 
         texture.isReady = true;
-        scene?.removePendingData(texture);
+        scene?._removePendingData(texture);
 
         if (onLoad) {
             onLoad();

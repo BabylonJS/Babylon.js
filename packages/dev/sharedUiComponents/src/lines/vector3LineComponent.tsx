@@ -153,7 +153,6 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 {this.state.isExpanded && this.props.useEuler && !this.props.noSlider && (
                     <div className="secondLine">
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             margin={true}
                             label="x"
                             minimum={0}
@@ -163,7 +162,6 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                             onChange={(value) => this.updateStateX(Tools.ToRadians(value))}
                         />
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             margin={true}
                             label="y"
                             minimum={0}
@@ -173,7 +171,6 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                             onChange={(value) => this.updateStateY(Tools.ToRadians(value))}
                         />
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             margin={true}
                             label="z"
                             minimum={0}

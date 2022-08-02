@@ -747,7 +747,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * Initializes the controllers and their meshes
      */
     public initControllers() {
-        this.controllers.length = 0;
+        this.controllers = [];
 
         const manager = this.getScene().gamepadManager;
         this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {

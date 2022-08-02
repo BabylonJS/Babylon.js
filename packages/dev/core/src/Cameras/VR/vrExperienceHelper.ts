@@ -2390,7 +2390,7 @@ export class VRExperienceHelper {
             this.xr.dispose();
         }
 
-        this._floorMeshesCollection.length = 0;
+        this._floorMeshesCollection = [];
 
         document.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChangeBind);

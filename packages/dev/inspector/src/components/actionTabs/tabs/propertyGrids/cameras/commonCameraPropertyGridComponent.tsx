@@ -73,7 +73,6 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Inertia"
                         target={camera}
                         propertyName="inertia"
@@ -100,7 +99,6 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                     />
                     {camera.mode === Camera.PERSPECTIVE_CAMERA && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Field of view"
                             target={camera}
                             useEuler={this.props.globalState.onlyUseEulers}

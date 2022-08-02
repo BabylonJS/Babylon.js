@@ -166,7 +166,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             this._bufferComputeShader[i].dispose();
         }
 
-        this._bufferComputeShader.length = 0;
+        this._bufferComputeShader = [];
 
         this._simParamsComputeShader?.dispose();
         (<any>this._simParamsComputeShader) = null;
@@ -175,7 +175,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     }
 
     public releaseVertexBuffers(): void {
-        this._renderVertexBuffers.length = 0;
+        this._renderVertexBuffers = [];
     }
 }
 

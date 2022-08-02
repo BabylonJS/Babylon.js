@@ -12,7 +12,7 @@ interface IFloatLineComponentProps {
     label: string;
     target: any;
     propertyName: string;
-    lockObject: LockObject;
+    lockObject?: LockObject;
     onChange?: (newValue: number) => void;
     isInteger?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -248,7 +248,6 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                 )}
                 {this.props.useEuler && (
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label={this.props.label}
                         minimum={0}
                         maximum={360}

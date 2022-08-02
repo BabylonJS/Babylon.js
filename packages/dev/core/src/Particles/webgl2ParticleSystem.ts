@@ -218,12 +218,12 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         for (let index = 0; index < this._updateVAO.length; index++) {
             this._engine.releaseVertexArrayObject(this._updateVAO[index]);
         }
-        this._updateVAO.length = 0;
+        this._updateVAO = [];
 
         for (let index = 0; index < this._renderVAO.length; index++) {
             this._engine.releaseVertexArrayObject(this._renderVAO[index]);
         }
-        this._renderVAO.length = 0;
+        this._renderVAO = [];
     }
 
     private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {

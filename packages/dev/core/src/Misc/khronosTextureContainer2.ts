@@ -71,7 +71,7 @@ export class KhronosTextureContainer2 {
             return;
         }
 
-        if (numWorkers && typeof Worker === "function" && typeof URL !== "undefined") {
+        if (numWorkers && typeof Worker === "function") {
             KhronosTextureContainer2._WorkerPoolPromise = new Promise((resolve) => {
                 const workerContent = `(${workerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));

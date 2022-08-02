@@ -18,16 +18,12 @@ import { ControlTypes } from "./controlTypes";
 import "./main.scss";
 import "./scss/header.scss";
 
-import toolbarExpandIcon from "./imgs/toolbarExpandIcon.svg";
-import toolbarCollapseIcon from "./imgs/toolbarCollapseIcon.svg";
-
 interface IGraphEditorProps {
     globalState: GlobalState;
 }
 
 interface IGraphEditorState {
     showPreviewPopUp: boolean;
-    toolbarExpand: boolean;
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
@@ -49,9 +45,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     constructor(props: IGraphEditorProps) {
         super(props);
         this._rootRef = React.createRef();
+
         this.state = {
             showPreviewPopUp: false,
-            toolbarExpand: true,
         };
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
@@ -195,17 +191,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             }
         }
     };
-    switchExpandedState(): void {
-        this.setState({ toolbarExpand: !this.state.toolbarExpand });
-        if (!this.state.toolbarExpand) {
-            this._leftWidth = this._leftWidth - 50;
-        } else {
-            this._leftWidth = this._leftWidth + 50;
-        }
-    }
 
     render() {
-        const classForElement = this.state.toolbarExpand ? "left-panel" : "left-panel expand";
         return (
             <Portal globalState={this.props.globalState}>
                 <div id="ge-header">
@@ -227,7 +214,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     onPointerUp={(evt) => this.onPointerUp(evt)}
                 >
                     {/* Node creation menu */}
-                    <div className={classForElement}>
+
+                    <div className="left-panel">
                         <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                         {this.createToolbar()}
                         <div id="leftGrab" onPointerDown={(evt) => this.onPointerDown(evt)} onPointerMove={(evt) => this.resizeColumns(evt)}></div>
@@ -276,63 +264,39 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.forceUpdate();
         return newGuiNode;
     }
-    createBlackLine() {
-        const icon = this.state.toolbarExpand ? <img src={toolbarExpandIcon} className="icon" /> : <img src={toolbarCollapseIcon} className="icon" />;
-        return (
-            <div className="blackLine">
-                <div className="arrow" onClick={() => this.switchExpandedState()}>
-                    {icon}
-                </div>
-            </div>
-        );
-    }
-    createToolbarHelper(ct: { className: string; icon: string }[]) {
-        return ct.map((type) => {
-            return (
-                <div
-                    className={"toolbar-label"}
-                    key={type.className}
-                    onDragStart={() => {
-                        this._draggedItem = type.className;
-                    }}
-                    onClick={() => {
-                        this.onCreate(type.className);
-                    }}
-                    title={type.className}
-                >
-                    {type.icon && (
-                        <div className="toolbar-icon" draggable={true}>
-                            <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
-                        </div>
-                    )}
-                </div>
-            );
-        });
-    }
+
     createToolbar() {
-        if (this.state.toolbarExpand) {
-            return (
-                <>
-                    <div className="toolbarGrab">
-                        {this.createBlackLine()}
-                        {<div className={"toolbar-content-sub1"}>{this.createToolbarHelper(ControlTypes)}</div>}
-                    </div>
-                </>
-            );
-        } else {
-            return (
-                <>
-                    <div className="toolbarGrab expanded">
-                        {this.createBlackLine()}
-                        {
-                            <div className={"toolbar-content-sub1"}>
-                                {this.createToolbarHelper(ControlTypes.slice(0, Math.ceil(ControlTypes.length / 2)))}
-                                {this.createToolbarHelper(ControlTypes.slice(Math.ceil(ControlTypes.length / 2)))}
-                            </div>
-                        }
-                    </div>
-                </>
-            );
-        }
+        return (
+            <>
+                <div id="toolbarGrab">
+                    {<div className="blackLine"></div>}
+                    {
+                        <div className={"toolbar-content sub1"}>
+                            {ControlTypes.map((type) => {
+                                return (
+                                    <div
+                                        className={"toolbar-label"}
+                                        key={type.className}
+                                        onDragStart={() => {
+                                            this._draggedItem = type.className;
+                                        }}
+                                        onClick={() => {
+                                            this.onCreate(type.className);
+                                        }}
+                                        title={type.className}
+                                    >
+                                        {type.icon && (
+                                            <div className="toolbar-icon" draggable={true}>
+                                                <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    }
+                </div>
+            </>
+        );
     }
 }

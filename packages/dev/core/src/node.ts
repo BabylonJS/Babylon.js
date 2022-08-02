@@ -905,7 +905,7 @@ export class Node implements IBehaviorAware<Node> {
             behavior.detach();
         }
 
-        this._behaviors.length = 0;
+        this._behaviors = [];
 
         this.metadata = null;
     }

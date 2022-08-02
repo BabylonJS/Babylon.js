@@ -32,7 +32,6 @@ export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGr
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <SliderLineComponent
-                    lockObject={this.props.lockObject}
                     label="Radius range"
                     target={emitter}
                     propertyName="radiusRange"
@@ -42,7 +41,6 @@ export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGr
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <SliderLineComponent
-                    lockObject={this.props.lockObject}
                     label="Direction randomizer"
                     target={emitter}
                     propertyName="directionRandomizer"

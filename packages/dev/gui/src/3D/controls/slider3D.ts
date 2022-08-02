@@ -173,17 +173,6 @@ export class Slider3D extends Control3D {
         return this._sliderBackplateMaterial;
     }
 
-    /** Sets a boolean indicating if the control is visible */
-    public set isVisible(value: boolean) {
-        if (this._isVisible === value) {
-            return;
-        }
-
-        this._isVisible = value;
-
-        this.node?.setEnabled(value);
-    }
-
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const sliderBackplate = CreateBox(
@@ -241,11 +230,6 @@ export class Slider3D extends Control3D {
                 }
                 this._sliderThumb = sliderThumbModel;
             }
-
-            this._injectGUI3DReservedDataStore(sliderBackplate).control = this;
-            sliderBackplate.getChildMeshes().forEach((mesh) => {
-                this._injectGUI3DReservedDataStore(mesh).control = this;
-            });
         });
 
         this._affectMaterial(sliderBackplate);

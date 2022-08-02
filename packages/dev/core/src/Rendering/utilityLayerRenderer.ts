@@ -323,7 +323,7 @@ export class UtilityLayerRenderer implements IDisposable {
         // Render directly on top of existing scene without clearing
         this.utilityLayerScene.autoClear = false;
 
-        this._afterRenderObserver = this.originalScene.onAfterRenderCameraObservable.add((camera) => {
+        this._afterRenderObserver = this.originalScene.onAfterCameraRenderObservable.add((camera) => {
             // Only render when the render camera finishes rendering
             if (this.shouldRender && camera == this.getRenderCamera()) {
                 this.render();

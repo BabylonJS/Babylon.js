@@ -946,7 +946,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         const object = impostor.object;
 
         let returnValue: any;
-        const impostorExtents = impostor.getObjectExtents();
+        const extendSize = impostor.getObjectExtendSize();
 
         if (!ignoreChildren) {
             const meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
@@ -1004,47 +1004,47 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
                 // Is there a better way to compare floats number? With an epsilon or with a Math function
-                if (Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) && Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)) {
-                    returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x / 2);
+                if (Scalar.WithinEpsilon(extendSize.x, extendSize.y, 0.0001) && Scalar.WithinEpsilon(extendSize.x, extendSize.z, 0.0001)) {
+                    returnValue = new this.bjsAMMO.btSphereShape(extendSize.x / 2);
                 } else {
                     // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape
                     const positions = [new this.bjsAMMO.btVector3(0, 0, 0)];
                     const radii = [1];
                     returnValue = new this.bjsAMMO.btMultiSphereShape(positions, radii, 1);
-                    returnValue.setLocalScaling(new this.bjsAMMO.btVector3(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2));
+                    returnValue.setLocalScaling(new this.bjsAMMO.btVector3(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2));
                 }
                 break;
             case PhysicsImpostor.CapsuleImpostor:
                 {
                     // https://pybullet.org/Bullet/BulletFull/classbtCapsuleShape.html#details
                     // Height is just the height between the center of each 'sphere' of the capsule caps
-                    const capRadius = impostorExtents.x / 2;
-                    returnValue = new this.bjsAMMO.btCapsuleShape(capRadius, impostorExtents.y - capRadius * 2);
+                    const capRadius = extendSize.x / 2;
+                    returnValue = new this.bjsAMMO.btCapsuleShape(capRadius, extendSize.y - capRadius * 2);
                 }
                 break;
             case PhysicsImpostor.CylinderImpostor:
-                this._tmpAmmoVectorA.setValue(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2);
+                this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);
                 returnValue = new this.bjsAMMO.btCylinderShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.PlaneImpostor:
             case PhysicsImpostor.BoxImpostor:
-                this._tmpAmmoVectorA.setValue(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2);
+                this._tmpAmmoVectorA.setValue(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2);
                 returnValue = new this.bjsAMMO.btBoxShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.MeshImpostor: {
                 if (impostor.getParam("mass") == 0) {
-                    // Only create btBvhTriangleMeshShape if the impostor is static
+                    // Only create btBvhTriangleMeshShape impostor is static
                     // See https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=7283
                     if (this.onCreateCustomMeshImpostor) {
                         returnValue = this.onCreateCustomMeshImpostor(impostor);
                     } else {
-                        const triMesh = new this.bjsAMMO.btTriangleMesh();
-                        impostor._pluginData.toDispose.push(triMesh);
-                        const triangleCount = this._addMeshVerts(triMesh, object, object);
-                        if (triangleCount == 0) {
+                        const tetraMesh = new this.bjsAMMO.btTriangleMesh();
+                        impostor._pluginData.toDispose.push(tetraMesh);
+                        const triangeCount = this._addMeshVerts(tetraMesh, object, object);
+                        if (triangeCount == 0) {
                             returnValue = new this.bjsAMMO.btCompoundShape();
                         } else {
-                            returnValue = new this.bjsAMMO.btBvhTriangleMeshShape(triMesh);
+                            returnValue = new this.bjsAMMO.btBvhTriangleMeshShape(tetraMesh);
                         }
                     }
                     break;
@@ -1056,21 +1056,21 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (this.onCreateCustomConvexHullImpostor) {
                     returnValue = this.onCreateCustomConvexHullImpostor(impostor);
                 } else {
-                    const convexHull = new this.bjsAMMO.btConvexHullShape();
-                    const triangleCount = this._addHullVerts(convexHull, object, object);
-                    if (triangleCount == 0) {
+                    const convexMesh = new this.bjsAMMO.btConvexHullShape();
+                    const triangeCount = this._addHullVerts(convexMesh, object, object);
+                    if (triangeCount == 0) {
                         // Cleanup Unused Convex Hull Shape
-                        impostor._pluginData.toDispose.push(convexHull);
+                        impostor._pluginData.toDispose.push(convexMesh);
                         returnValue = new this.bjsAMMO.btCompoundShape();
                     } else {
-                        returnValue = convexHull;
+                        returnValue = convexMesh;
                     }
                 }
                 break;
             }
             case PhysicsImpostor.NoImpostor:
                 // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
-                returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x / 2);
+                returnValue = new this.bjsAMMO.btSphereShape(extendSize.x / 2);
                 break;
             case PhysicsImpostor.CustomImpostor:
                 // Only usable when the plugin's onCreateCustomShape is set
@@ -1527,8 +1527,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @returns the radius
      */
     public getRadius(impostor: PhysicsImpostor): number {
-        const extents = impostor.getObjectExtents();
-        return extents.x / 2;
+        const exntend = impostor.getObjectExtendSize();
+        return exntend.x / 2;
     }
 
     /**
@@ -1537,10 +1537,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param result the resulting box size
      */
     public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
-        const extents = impostor.getObjectExtents();
-        result.x = extents.x;
-        result.y = extents.y;
-        result.z = extents.z;
+        const exntend = impostor.getObjectExtendSize();
+        result.x = exntend.x;
+        result.y = exntend.y;
+        result.z = exntend.z;
     }
 
     /**
@@ -1554,7 +1554,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this.bjsAMMO.destroy(this._dispatcher);
         this.bjsAMMO.destroy(this._collisionConfiguration);
 
-        // Dispose of temp variables
+        // Dispose of tmp variables
         this.bjsAMMO.destroy(this._tmpAmmoVectorA);
         this.bjsAMMO.destroy(this._tmpAmmoVectorB);
         this.bjsAMMO.destroy(this._tmpAmmoVectorC);
@@ -1567,8 +1567,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
     /**
      * Does a raycast in the physics world
-     * @param from where should the ray start?
-     * @param to where should the ray end?
+     * @param from when should the ray start?
+     * @param to when should the ray end?
      * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {

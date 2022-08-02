@@ -60,7 +60,6 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 </div>
                 <div className="step-value">
                     <FloatLineComponent
-                        lockObject={this.props.stateManager.lockObject}
                         smallUI={true}
                         label=""
                         target={step}

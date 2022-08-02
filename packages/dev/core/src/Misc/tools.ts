@@ -24,8 +24,9 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import type { Engine } from "../Engines/engine";
-import type { Camera } from "../Cameras/camera";
+
+declare type Camera = import("../Cameras/camera").Camera;
+declare type Engine = import("../Engines/engine").Engine;
 
 interface IColor4Like {
     r: float;
@@ -798,7 +799,7 @@ export class Tools {
             }
             Tools.Download(blob, fileName);
         } else {
-            if (blob && typeof URL !== "undefined") {
+            if (blob) {
                 const url = URL.createObjectURL(blob);
 
                 const newWindow = window.open("");
@@ -856,10 +857,6 @@ export class Tools {
     public static Download(blob: Blob, fileName: string): void {
         if (navigator && (navigator as any).msSaveBlob) {
             (navigator as any).msSaveBlob(blob, fileName);
-            return;
-        }
-
-        if (typeof URL === "undefined") {
             return;
         }
 

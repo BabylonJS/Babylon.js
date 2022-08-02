@@ -36,7 +36,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                 />
                 <LineContainerComponent title="OPTIONS" selection={this.props.globalState}>
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Edge blur"
                         minimum={0}
                         maximum={5}
@@ -46,7 +45,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Edge distortion"
                         minimum={0}
                         maximum={5}
@@ -56,7 +54,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Grain amount"
                         minimum={0}
                         maximum={1}
@@ -66,7 +63,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Chromatic aberration"
                         minimum={0}
                         maximum={5}
@@ -76,7 +72,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Darken out of focus"
                         minimum={0}
                         maximum={5}
@@ -94,7 +89,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                 </LineContainerComponent>
                 <LineContainerComponent title="DEPTH OF FIELD" selection={this.props.globalState}>
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Aperture"
                         minimum={0}
                         maximum={10}
@@ -104,7 +98,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Distortion"
                         minimum={0}
                         maximum={1000}
@@ -120,7 +113,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Highlight gain"
                         minimum={0}
                         maximum={5}
@@ -130,7 +122,6 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Highlight threshold"
                         minimum={0}
                         maximum={5}

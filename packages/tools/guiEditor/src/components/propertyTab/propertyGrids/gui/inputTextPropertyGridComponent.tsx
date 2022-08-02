@@ -81,7 +81,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={alphaIcon} label="Highlight Opacity" />
-                    <SliderLineComponent lockObject={lockObject} label="" minimum={0} maximum={1} step={0.01} target={proxy} propertyName="highligherOpacity" />
+                    <SliderLineComponent label="" minimum={0} maximum={1} step={0.01} target={proxy} propertyName="highligherOpacity" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label="Background Color when Focused" />

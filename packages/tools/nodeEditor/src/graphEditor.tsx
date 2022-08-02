@@ -307,11 +307,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
-    onWheel = (evt: WheelEvent) => {
-        if (this.props.globalState.pointerOverCanvas) {
-            return evt.preventDefault();
-        }
-
+    onWheel(this: any, evt: WheelEvent) {
         if (evt.ctrlKey) {
             return evt.preventDefault();
         }
@@ -320,12 +316,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return;
         }
 
-        const targetElem = evt.currentTarget as HTMLElement;
-        const scrollLeftMax = targetElem.scrollWidth - targetElem.offsetWidth;
-        if (targetElem.scrollLeft + evt.deltaX < 0 || targetElem.scrollLeft + evt.deltaX > scrollLeftMax) {
+        const scrollLeftMax = this.scrollWidth - this.offsetWidth;
+        if (this.scrollLeft + evt.deltaX < 0 || this.scrollLeft + evt.deltaX > scrollLeftMax) {
             return evt.preventDefault();
         }
-    };
+    }
 
     resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
         if (!this._moveInProgress) {

@@ -33,7 +33,6 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
                     <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
                     {renderPipelineAsAny.samples !== undefined && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Samples"
                             minimum={1}
                             maximum={8}

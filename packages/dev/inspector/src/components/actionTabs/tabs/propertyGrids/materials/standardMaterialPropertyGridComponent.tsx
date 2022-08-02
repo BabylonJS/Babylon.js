@@ -160,7 +160,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Specular power"
                         target={material}
                         propertyName="specularPower"
@@ -193,7 +192,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                 <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>
                     {material.diffuseTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Diffuse level"
                             target={material.diffuseTexture}
                             propertyName="level"
@@ -205,7 +203,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.specularTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Specular level"
                             target={material.specularTexture}
                             propertyName="level"
@@ -217,7 +214,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.reflectionTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Reflection level"
                             target={material.reflectionTexture}
                             propertyName="level"
@@ -229,7 +225,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.refractionTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Refraction level"
                             target={material.refractionTexture}
                             propertyName="level"
@@ -241,7 +236,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.emissiveTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Emissive level"
                             target={material.emissiveTexture}
                             propertyName="level"
@@ -253,7 +247,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.bumpTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Bump level"
                             target={material.bumpTexture}
                             propertyName="level"
@@ -265,7 +258,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.opacityTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Opacity level"
                             target={material.opacityTexture}
                             propertyName="level"
@@ -277,7 +269,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.ambientTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Ambient level"
                             target={material.ambientTexture}
                             propertyName="level"
@@ -289,7 +280,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     )}
                     {material.lightmapTexture && (
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Lightmap level"
                             target={material.lightmapTexture}
                             propertyName="level"
@@ -302,7 +292,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     {material.detailMap.isEnabled && (
                         <>
                             <SliderLineComponent
-                                lockObject={this.props.lockObject}
                                 label="Detailmap diffuse"
                                 target={material.detailMap}
                                 propertyName="diffuseBlendLevel"
@@ -312,7 +301,6 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
-                                lockObject={this.props.lockObject}
                                 label="Detailmap bump"
                                 target={material.detailMap}
                                 propertyName="bumpLevel"

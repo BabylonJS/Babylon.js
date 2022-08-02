@@ -26,7 +26,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(typeof indexedDB !== "undefined" ? indexedDB : undefined);
+    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static _IsUASupportingBlobStorage = true;
@@ -288,7 +288,8 @@ export class Database implements IOfflineProvider {
 
             transaction.oncomplete = () => {
                 let blobTextureURL: string;
-                if (texture && typeof URL === "function") {
+                if (texture) {
+                    const URL = window.URL || window.webkitURL;
                     blobTextureURL = URL.createObjectURL(texture.data);
                     image.onerror = () => {
                         Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
@@ -323,7 +324,8 @@ export class Database implements IOfflineProvider {
             const generateBlobUrl = () => {
                 let blobTextureURL;
 
-                if (blob && typeof URL === "function") {
+                if (blob) {
+                    const URL = window.URL || window.webkitURL;
                     try {
                         blobTextureURL = URL.createObjectURL(blob);
                     } catch (ex) {

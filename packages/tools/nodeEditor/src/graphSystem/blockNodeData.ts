@@ -63,11 +63,6 @@ export class BlockNodeData implements INodeData {
     }
 
     public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
-        if (this.data.getClassName() === "ElbowBlock") {
-            iconDiv.classList.remove("visible");
-            return;
-        }
-
         if (this.data.target === NodeMaterialBlockTargets.Fragment) {
             iconDiv.classList.add("visible");
             iconDiv.title = "In the fragment shader";

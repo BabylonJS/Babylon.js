@@ -66,9 +66,6 @@ export interface EngineFeatures {
     /**  Indicates that the engine supports render passes */
     supportRenderPasses: boolean;
 
-    /**  Indicates that the engine supports sprite instancing */
-    supportSpriteInstancing: boolean;
-
     /** @hidden */
     _collectUbosUpdatedInFrame: boolean;
 }

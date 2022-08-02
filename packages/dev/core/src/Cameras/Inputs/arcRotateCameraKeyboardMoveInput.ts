@@ -103,7 +103,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
         this._engine = this._scene.getEngine();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
-            this._keys.length = 0;
+            this._keys = [];
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
@@ -172,7 +172,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
             this._onCanvasBlurObserver = null;
         }
 
-        this._keys.length = 0;
+        this._keys = [];
     }
 
     /**

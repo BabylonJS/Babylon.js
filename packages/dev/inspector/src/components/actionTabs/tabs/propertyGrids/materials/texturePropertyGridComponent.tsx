@@ -366,7 +366,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {texture instanceof Texture && <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />}
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="UV set"
                         target={texture}
                         propertyName="coordinatesIndex"
@@ -385,7 +384,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         onSelect={(value) => (texture.coordinatesMode = value as number)}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Level"
                         target={texture}
                         propertyName="level"
@@ -414,7 +412,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Render scale"
                             minimum={0.1}
                             maximum={5}
@@ -533,7 +530,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {texture.isCube && (
                         <div>
                             <SliderLineComponent
-                                lockObject={this.props.lockObject}
                                 label="Rotation Y"
                                 useEuler={this.props.globalState.onlyUseEulers}
                                 minimum={0}

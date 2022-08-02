@@ -172,15 +172,7 @@ async function generateChangelog(nextVersion) {
 function generateMarkdown(finalChangelog) {
     let markdown = "# Changelog\n";
     // Sort versions
-    const versions = Object.keys(finalChangelog).sort((a,b) => {
-        const sepA = a.split(".");
-        const sepB = b.split(".");
-        for(let i = 0; i < sepA.length; i++) {
-            if(sepA[i] !== sepB[i]) {
-                return sepA[i] - sepB[i];
-            }
-        }
-    }).reverse();
+    const versions = Object.keys(finalChangelog).sort().reverse();
     // per package
     const versionChangelog = {};
     versions.forEach((version) => {

@@ -233,7 +233,6 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         if (!scene.reservedDataStore.gizmoManager) {
             scene.reservedDataStore.gizmoManager = new GizmoManager(scene);
-            scene.reservedDataStore.gizmoManager.utilityLayer.setRenderCamera(scene.activeCamera);
         }
 
         const manager: GizmoManager = scene.reservedDataStore.gizmoManager;

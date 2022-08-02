@@ -7,6 +7,7 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { TextInputLineComponent } from "./textInputLineComponent";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 
 import copyIcon from "./copy.svg";
@@ -200,6 +201,17 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             }}
                         />
                     </div>
+                    {this.props.lockObject && (
+                        <TextInputLineComponent
+                            lockObject={this.props.lockObject}
+                            label=""
+                            value={this.state.color.toHexString()}
+                            onChange={(newValue) => {
+                                this.setColorFromString(newValue);
+                            }}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                    )}
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt="Copy" />
                     </div>

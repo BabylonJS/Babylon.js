@@ -166,7 +166,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                 element && element.removeEventListener("blur", this._onLostFocus);
                 this._onLostFocus = null;
             }
-            this._pointerPressed.length = 0;
+            this._pointerPressed = [];
             this._offsetX = null;
             this._offsetY = null;
         }

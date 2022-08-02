@@ -160,13 +160,7 @@ export class Control {
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
     @serialize()
     public isHitTestVisible = true;
-    /** Gets or sets a boolean indicating if the control can block pointer events. False by default except on the following controls:
-     * * Button controls (Button, RadioButton, ToggleButton)
-     * * Checkbox
-     * * ColorPicker
-     * * InputText
-     * * Slider
-     */
+    /** Gets or sets a boolean indicating if the control can block pointer events */
     @serialize()
     public isPointerBlocker = false;
     /** Gets or sets a boolean indicating if the control can be focusable */
@@ -2117,7 +2111,7 @@ export class Control {
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: Nullable<PointerInfoBase>): void {
         const canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
-        if (canNotify && this.parent != null && !this.isPointerBlocker) {
+        if (canNotify && this.parent != null) {
             this.parent._onPointerMove(target, coordinates, pointerId, pi);
         }
     }
@@ -2143,7 +2137,7 @@ export class Control {
 
         const canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
 
-        if (canNotify && this.parent != null && !this.isPointerBlocker) {
+        if (canNotify && this.parent != null) {
             this.parent._onPointerEnter(target, pi);
         }
 
@@ -2168,7 +2162,7 @@ export class Control {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
 
-        if (canNotify && this.parent != null && !this.isPointerBlocker) {
+        if (canNotify && this.parent != null) {
             this.parent._onPointerOut(target, pi, force);
         }
     }
@@ -2196,7 +2190,7 @@ export class Control {
 
         const canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null && !this.isPointerBlocker) {
+        if (canNotify && this.parent != null) {
             this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
         }
 
@@ -2226,7 +2220,7 @@ export class Control {
         }
         const canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null && !this.isPointerBlocker) {
+        if (canNotify && this.parent != null) {
             this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
         }
     }

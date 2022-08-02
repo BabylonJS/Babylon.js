@@ -173,7 +173,6 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                 {this.state.isExpanded && this.props.useEuler && (
                     <div className="secondLine">
                         <FloatLineComponent
-                            lockObject={this.props.lockObject}
                             label="x"
                             target={eulerDegrees}
                             propertyName="x"
@@ -182,7 +181,6 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                             }}
                         />
                         <FloatLineComponent
-                            lockObject={this.props.lockObject}
                             label="y"
                             target={eulerDegrees}
                             propertyName="y"
@@ -191,7 +189,6 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                             }}
                         />
                         <FloatLineComponent
-                            lockObject={this.props.lockObject}
                             label="z"
                             target={eulerDegrees}
                             propertyName="z"

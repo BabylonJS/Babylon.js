@@ -23,7 +23,6 @@ export interface IPortData {
     endpoints: Nullable<IPortData[]>;
 
     updateDisplayName: (newName: string) => void;
-    canConnectTo: (port: IPortData) => boolean;
     connectTo: (port: IPortData) => void;
     disconnectFrom: (port: IPortData) => void;
     checkCompatibilityState(port: IPortData): number;

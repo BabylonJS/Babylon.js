@@ -6,12 +6,10 @@ import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IConeEmitterGridComponentProps {
     globalState: GlobalState;
     emitter: ConeParticleEmitter;
-    lockObject: LockObject;
     onSelectionChangedObservable?: Observable<any>;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -26,7 +24,6 @@ export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridCo
         return (
             <>
                 <SliderLineComponent
-                    lockObject={this.props.lockObject}
                     label="Radius range"
                     target={emitter}
                     propertyName="radiusRange"
@@ -36,7 +33,6 @@ export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridCo
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <SliderLineComponent
-                    lockObject={this.props.lockObject}
                     label="Height range"
                     target={emitter}
                     propertyName="heightRange"
@@ -52,7 +48,6 @@ export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridCo
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <SliderLineComponent
-                    lockObject={this.props.lockObject}
                     label="Direction randomizer"
                     target={emitter}
                     propertyName="directionRandomizer"

@@ -838,7 +838,6 @@ export class WebGPUEngine extends Engine {
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
-            supportSpriteInstancing: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -2088,7 +2087,7 @@ export class WebGPUEngine extends Engine {
                 }
 
                 if (scene) {
-                    scene.removePendingData(texture);
+                    scene._removePendingData(texture);
                 }
 
                 texture.isReady = true;

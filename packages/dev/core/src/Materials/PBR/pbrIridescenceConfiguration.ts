@@ -142,7 +142,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialIridescenceDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.IRIDESCENCE = true;
             defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE =

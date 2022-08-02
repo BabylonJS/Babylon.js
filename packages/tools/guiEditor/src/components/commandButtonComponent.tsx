@@ -6,8 +6,6 @@ interface ICommandButtonComponentProps {
     icon: string;
     iconLabel?: string;
     isActive: boolean;
-    copyDeleteDisabled?: boolean;
-    pasteDisabled?: boolean;
     onClick: () => void;
     altStyle?: boolean;
     disabled?: boolean;
@@ -29,11 +27,8 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
         }
         if (this.props.disabled) {
             divClassName += " disabled";
-        } else if (this.props.copyDeleteDisabled) {
-            divClassName += " copyAndDeleteDisabled";
-        } else if (this.props.pasteDisabled) {
-            divClassName += " pasteDisabled";
         }
+
         return (
             <div className={divClassName} onClick={this.props.onClick} title={`${this.props.tooltip} ${this.props.shortcut ? " (" + this.props.shortcut + ")" : ""}`}>
                 <div className={iconClassName}>

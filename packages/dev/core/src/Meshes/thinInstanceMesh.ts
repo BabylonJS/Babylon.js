@@ -2,7 +2,6 @@ import type { Nullable, DeepImmutableObject } from "../types";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
-import { Logger } from "../Misc/logger";
 
 declare module "./mesh" {
     export interface Mesh {
@@ -112,11 +111,6 @@ declare module "./mesh" {
 }
 
 Mesh.prototype.thinInstanceAdd = function (matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean = true): number {
-    if (!this.getScene().getEngine().getCaps().instancedArrays) {
-        Logger.Error("Thin Instances are not supported on this device as Instanced Array extension not supported");
-        return -1;
-    }
-
     this._thinInstanceUpdateBufferSize("matrix", Array.isArray(matrix) ? matrix.length : 1);
 
     const index = this._thinInstanceDataStorage.instancesCount;

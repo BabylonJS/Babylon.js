@@ -118,7 +118,6 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
                 </LineContainerComponent>
                 <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Glossiness"
                         target={material}
                         propertyName="glossiness"

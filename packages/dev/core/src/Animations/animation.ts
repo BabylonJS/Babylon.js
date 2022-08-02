@@ -1506,7 +1506,7 @@ export class Animation {
      * @param snippetId defines the snippet to load
      * @returns a promise that will resolve to the new animation or a new array of animations
      */
-    public static ParseFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
+    public static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1542,14 +1542,6 @@ export class Animation {
             request.send();
         });
     }
-
-    /**
-     * Creates an animation or an array of animations from a snippet saved by the Inspector
-     * @deprecated Please use ParseFromSnippetAsync instead
-     * @param snippetId defines the snippet to load
-     * @returns a promise that will resolve to the new animation or a new array of animations
-     */
-    public static CreateFromSnippetAsync = Animation.ParseFromSnippetAsync;
 }
 
 RegisterClass("BABYLON.Animation", Animation);

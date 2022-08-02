@@ -12,7 +12,6 @@ export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTab
     render() {
         return (
             <FloatLineComponent
-                lockObject={this.props.globalState.lockObject}
                 label="Value"
                 target={this.props.inputBlock}
                 propertyName="value"

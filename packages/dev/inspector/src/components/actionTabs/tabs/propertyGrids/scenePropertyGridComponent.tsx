@@ -199,7 +199,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     )}
                     <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={2}
                         step={0.01}
@@ -218,7 +217,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                 <AnimationGridComponent globalState={this.props.globalState} animatable={scene} scene={scene} lockObject={this.props.lockObject} />
                 <LineContainerComponent title="MATERIAL IMAGE PROCESSING" selection={this.props.globalState}>
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={4}
                         step={0.1}
@@ -228,7 +226,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={4}
                         step={0.1}
@@ -258,7 +255,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={4}
                         step={0.1}
@@ -268,7 +264,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={1}
                         step={0.1}
@@ -278,7 +273,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={Math.PI}
                         step={0.1}
@@ -288,7 +282,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={1}
                         step={0.1}
@@ -298,7 +291,6 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         minimum={0}
                         maximum={1}
                         step={0.1}

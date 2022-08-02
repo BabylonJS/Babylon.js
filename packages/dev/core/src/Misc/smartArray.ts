@@ -83,6 +83,7 @@ export class SmartArray<T> implements ISmartArrayLike<T> {
 
         if (this.data) {
             this.data.length = 0;
+            this.data = [];
         }
     }
 

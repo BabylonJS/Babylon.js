@@ -9,7 +9,6 @@ import type { TextBlock } from "./textBlock";
 import type { InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { InputTextArea } from "./inputTextArea";
 
 /**
  * Class used to store key control properties
@@ -170,12 +169,12 @@ export class VirtualKeyboard extends StackPanel {
         }
     }
 
-    private _currentlyConnectedInputText: Nullable<InputText | InputTextArea> = null;
+    private _currentlyConnectedInputText: Nullable<InputText> = null;
     private _connectedInputTexts: ConnectedInputText[] = [];
     private _onKeyPressObserver: Nullable<Observer<string>> = null;
 
     /** Gets the input text control currently attached to the keyboard */
-    public get connectedInputText(): Nullable<InputText | InputTextArea> {
+    public get connectedInputText(): Nullable<InputText> {
         return this._currentlyConnectedInputText;
     }
 
@@ -207,25 +206,13 @@ export class VirtualKeyboard extends StackPanel {
                         this.applyShiftState(this.shiftState);
                         return;
                     case "\u2190":
-                        if (this._currentlyConnectedInputText instanceof InputTextArea) {
-                            this._currentlyConnectedInputText.alternativeProcessKey("Backspace");
-                        } else {
-                            this._currentlyConnectedInputText.processKey(8);
-                        }
+                        this._currentlyConnectedInputText.processKey(8);
                         return;
                     case "\u21B5":
-                        if (this._currentlyConnectedInputText instanceof InputTextArea) {
-                            this._currentlyConnectedInputText.alternativeProcessKey("Enter");
-                        } else {
-                            this._currentlyConnectedInputText.processKey(13);
-                        }
+                        this._currentlyConnectedInputText.processKey(13);
                         return;
                 }
-                if (this._currentlyConnectedInputText instanceof InputTextArea) {
-                    this._currentlyConnectedInputText.alternativeProcessKey("", this.shiftState ? key.toUpperCase() : key);
-                } else {
-                    this._currentlyConnectedInputText.processKey(-1, this.shiftState ? key.toUpperCase() : key);
-                }
+                this._currentlyConnectedInputText.processKey(-1, this.shiftState ? key.toUpperCase() : key);
 
                 if (this.shiftState === 1) {
                     this.shiftState = 0;
@@ -279,7 +266,7 @@ export class VirtualKeyboard extends StackPanel {
             this._connectedInputTexts.forEach((connectedInputText: ConnectedInputText) => {
                 this._removeConnectedInputObservables(connectedInputText);
             });
-            this._connectedInputTexts.length = 0;
+            this._connectedInputTexts = [];
         }
 
         if (this._connectedInputTexts.length === 0) {

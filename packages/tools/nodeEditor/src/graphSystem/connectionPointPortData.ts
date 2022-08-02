@@ -117,10 +117,6 @@ export class ConnectionPointPortData implements IPortData {
         this._connectedPort = port;
     }
 
-    public canConnectTo(port: IPortData): boolean {
-        return this.data.canConnectTo(port.data);
-    }
-
     public disconnectFrom(port: IPortData) {
         this.data.disconnectFrom(port.data);
         port.connectedPort = null;

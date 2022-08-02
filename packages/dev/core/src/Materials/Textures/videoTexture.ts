@@ -422,9 +422,7 @@ export class VideoTexture extends Texture {
         video.setAttribute("playsinline", "");
         video.muted = true;
 
-        if (video.isNative) {
-            // No additional configuration needed for native
-        } else if (video.mozSrcObject !== undefined) {
+        if (video.mozSrcObject !== undefined) {
             // hack for Firefox < 19
             video.mozSrcObject = stream;
         } else {

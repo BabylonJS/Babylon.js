@@ -1306,8 +1306,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Remove all active particles
      */
     public reset(): void {
-        this._stockParticles.length = 0;
-        this._particles.length = 0;
+        this._stockParticles = [];
+        this._particles = [];
     }
 
     /**

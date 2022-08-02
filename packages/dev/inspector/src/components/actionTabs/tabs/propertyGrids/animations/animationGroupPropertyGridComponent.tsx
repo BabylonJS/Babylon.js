@@ -155,7 +155,6 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                 <LineContainerComponent title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Speed ratio"
                         minimum={0}
                         maximum={10}
@@ -165,7 +164,6 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         ref={this._timelineRef}
                         label="Current frame"
                         minimum={animationGroup.from}

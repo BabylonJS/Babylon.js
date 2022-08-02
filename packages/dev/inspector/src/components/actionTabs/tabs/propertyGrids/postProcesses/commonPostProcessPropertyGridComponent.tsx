@@ -65,7 +65,6 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Samples"
                         target={postProcess}
                         propertyName="samples"

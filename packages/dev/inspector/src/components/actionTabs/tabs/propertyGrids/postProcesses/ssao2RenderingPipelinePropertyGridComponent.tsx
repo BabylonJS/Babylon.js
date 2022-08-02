@@ -37,7 +37,6 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                 />
                 <LineContainerComponent title="SSAO" selection={this.props.globalState}>
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Strength"
                         minimum={0}
                         maximum={2}
@@ -47,7 +46,6 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Base"
                         minimum={0}
                         maximum={1}
@@ -57,7 +55,6 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Max Z"
                         minimum={0}
                         maximum={camera.maxZ}
@@ -67,7 +64,6 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Min Z aspect"
                         minimum={0}
                         maximum={0.5}
@@ -77,7 +73,6 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Radius"
                         minimum={0}
                         maximum={10}

@@ -572,13 +572,12 @@ export class GeometryBufferRenderer {
         }
 
         // Get correct effect
-        const engine = this._scene.getEngine();
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
             drawWrapper.setEffect(
-                engine.createEffect(
+                this._scene.getEngine().createEffect(
                     "geometry",
                     {
                         attributes: attribs,
@@ -612,7 +611,7 @@ export class GeometryBufferRenderer {
                         uniformBuffersNames: ["Scene"],
                         indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
                     },
-                    engine
+                    this._scene.getEngine()
                 ),
                 join
             );

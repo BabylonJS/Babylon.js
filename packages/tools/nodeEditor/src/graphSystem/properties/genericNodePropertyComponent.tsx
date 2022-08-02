@@ -145,18 +145,11 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(
-                            <FloatLineComponent
-                                lockObject={this.props.stateManager.lockObject}
-                                label={displayName}
-                                propertyName={propertyName}
-                                target={block}
-                                onChange={() => this.forceRebuild(options.notifiers)}
-                            />
+                            <FloatLineComponent label={displayName} propertyName={propertyName} target={block} onChange={() => this.forceRebuild(options.notifiers)} />
                         );
                     } else {
                         components.push(
                             <SliderLineComponent
-                                lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
                                 target={block}
                                 propertyName={propertyName}
@@ -172,7 +165,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.Int: {
                     components.push(
                         <FloatLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             digits={0}
                             step={"1"}
                             isInteger={true}

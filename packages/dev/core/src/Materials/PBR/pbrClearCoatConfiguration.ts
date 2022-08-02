@@ -220,7 +220,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefinesBeforeAttributes(defines: MaterialClearCoatDefines, scene: Scene): void {
+    public prepareDefines(defines: MaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;

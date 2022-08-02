@@ -858,7 +858,7 @@ Scene.prototype.stopAllAnimations = function (): void {
         for (let i = 0; i < this._activeAnimatables.length; i++) {
             this._activeAnimatables[i].stop();
         }
-        this._activeAnimatables.length = 0;
+        this._activeAnimatables = [];
     }
 
     for (const group of this.animationGroups) {

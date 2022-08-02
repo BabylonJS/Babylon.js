@@ -164,7 +164,6 @@ export class SolidParticleSystem implements IDisposable {
      * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
      * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
      * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the bounding sphere radius by in order to reduce it for instance.
-     * * computeBoundingBox (optional boolean, default false): if the bounding box of the entire SPS will be computed (for occlusion detection, for example). If it is false, the bounding box will be the bounding box of the first particle.
      * @param options.updatable
      * @param options.isPickable
      * @param options.enableDepthSort
@@ -174,7 +173,6 @@ export class SolidParticleSystem implements IDisposable {
      * @param options.expandable
      * @param options.useModelMaterial
      * @param options.enableMultiMaterial
-     * @param options.computeBoundingBox
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
     constructor(
@@ -190,7 +188,6 @@ export class SolidParticleSystem implements IDisposable {
             expandable?: boolean;
             useModelMaterial?: boolean;
             enableMultiMaterial?: boolean;
-            computeBoundingBox?: boolean;
         }
     ) {
         this.name = name;
@@ -205,7 +202,6 @@ export class SolidParticleSystem implements IDisposable {
         this._particlesIntersect = options ? <boolean>options.particleIntersection : false;
         this._bSphereOnly = options ? <boolean>options.boundingSphereOnly : false;
         this._bSphereRadiusFactor = options && options.bSphereRadiusFactor ? options.bSphereRadiusFactor : 1.0;
-        this._computeBoundingBox = options?.computeBoundingBox ? options.computeBoundingBox : false;
         if (options && options.updatable !== undefined) {
             this._updatable = options.updatable;
         } else {

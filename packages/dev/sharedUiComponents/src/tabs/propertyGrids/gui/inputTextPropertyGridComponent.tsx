@@ -57,7 +57,6 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Highligher opacity"
                         minimum={0}
                         maximum={1}

@@ -970,7 +970,7 @@
         },
         {
             "title": "MeshSimplification",
-            "playgroundId": "#1ED15P#40",
+            "playgroundId": "#1ED15P#35",
             "referenceImage": "meshSimplification.png"
         },
         {
@@ -989,12 +989,12 @@
         },
         {
             "title": "Edges",
-            "playgroundId": "#TYAHX#244",
+            "playgroundId": "#TYAHX#114",
             "referenceImage": "edges.png"
         },
         {
             "title": "Outline",
-            "playgroundId": "#10WJ5S#14",
+            "playgroundId": "#10WJ5S#6",
             "referenceImage": "outline.png"
         },
         {

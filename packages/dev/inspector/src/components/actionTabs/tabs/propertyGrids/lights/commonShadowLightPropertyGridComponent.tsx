@@ -178,7 +178,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 />
                                 <SliderLineComponent
-                                    lockObject={this.props.lockObject}
                                     label="Lambda"
                                     minimum={0}
                                     maximum={1.0}
@@ -188,7 +187,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 />
                                 <SliderLineComponent
-                                    lockObject={this.props.lockObject}
                                     label="Cascade blend"
                                     minimum={0}
                                     maximum={1.0}
@@ -210,7 +208,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 />
                                 <SliderLineComponent
-                                    lockObject={this.props.lockObject}
                                     label="Shadow MaxZ"
                                     minimum={near}
                                     maximum={far}
@@ -238,7 +235,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                         <SliderLineComponent
-                            lockObject={this.props.lockObject}
                             label="Darkness"
                             target={generator}
                             minimum={0}
@@ -277,7 +273,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                         )}
                         {filter === ShadowGenerator.FILTER_PCSS && (
                             <SliderLineComponent
-                                lockObject={this.props.lockObject}
                                 label="Penumbra ratio"
                                 minimum={0}
                                 maximum={0.5}
@@ -300,7 +295,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                             (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
                             !generator.useKernelBlur && (
                                 <SliderLineComponent
-                                    lockObject={this.props.lockObject}
                                     label="Blur box offset"
                                     target={generator}
                                     propertyName="blurBoxOffset"
@@ -314,7 +308,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                             (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
                             generator.useKernelBlur && (
                                 <SliderLineComponent
-                                    lockObject={this.props.lockObject}
                                     label="Blur kernel"
                                     target={generator}
                                     propertyName="blurKernel"
@@ -337,7 +330,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                         {generator instanceof ShadowGenerator &&
                             (filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) && (
                                 <SliderLineComponent
-                                    lockObject={this.props.lockObject}
                                     label="Blur scale"
                                     target={generator}
                                     propertyName="blurScale"
@@ -349,7 +341,6 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
                             )}
                         {csmGenerator && filter === ShadowGenerator.FILTER_PCSS && (
                             <SliderLineComponent
-                                lockObject={this.props.lockObject}
                                 label="Penumbra darkness"
                                 minimum={0}
                                 maximum={1.0}

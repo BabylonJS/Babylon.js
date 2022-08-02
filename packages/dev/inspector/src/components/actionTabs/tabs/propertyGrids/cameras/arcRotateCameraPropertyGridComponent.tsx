@@ -45,7 +45,6 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Alpha"
                         useEuler={this.props.globalState.onlyUseEulers}
                         target={camera}
@@ -56,7 +55,6 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
-                        lockObject={this.props.lockObject}
                         label="Beta"
                         useEuler={this.props.globalState.onlyUseEulers}
                         target={camera}

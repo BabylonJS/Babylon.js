@@ -60,8 +60,8 @@ declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper
  * @hidden
  */
 export interface ISceneLike {
-    addPendingData(data: any): void;
-    removePendingData(data: any): void;
+    _addPendingData(data: any): void;
+    _removePendingData(data: any): void;
     offlineProvider: IOfflineProvider;
 }
 
@@ -165,11 +165,6 @@ export interface EngineOptions extends WebGLContextAttributes {
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
-    /**
-     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
-     * Otherwise, the default is to use a cheaper approximation.
-     */
-    useExactSrgbConversions?: boolean;
 }
 
 /**
@@ -201,14 +196,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.17.1";
+        return "babylonjs@5.14.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.17.1";
+        return "5.14.1";
     }
 
     /**
@@ -549,12 +544,8 @@ export class ThinEngine {
 
     private _activeRequests = new Array<IFileRequest>();
 
-    /**
-     * If set to true zooming in and out in the browser will rescale the hardware-scaling correctly.
-     */
-    public adaptToDeviceRatio: boolean = false;
     /** @hidden */
-    private _lastDevicePixelRatio: number = 1.0;
+    private _adaptToDeviceRatio: boolean = false;
 
     /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
@@ -703,14 +694,6 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
-    protected _useExactSrgbConversions = false;
-    /**
-     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
-     */
-    public get useExactSrgbConversions(): boolean {
-        return this._useExactSrgbConversions;
-    }
-
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
      */
@@ -768,7 +751,7 @@ export class ThinEngine {
         this._creationOptions = options;
 
         // Save this off for use in resize().
-        this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
+        this._adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
@@ -826,10 +809,6 @@ export class ThinEngine {
 
             if (options.xrCompatible === undefined) {
                 options.xrCompatible = true;
-            }
-
-            if (options.useExactSrgbConversions !== undefined) {
-                this._useExactSrgbConversions = options.useExactSrgbConversions;
             }
 
             this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
@@ -983,7 +962,6 @@ export class ThinEngine {
 
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
-        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
         this._isStencilEnable = options.stencil ? true : false;
@@ -1399,7 +1377,6 @@ export class ThinEngine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
-            supportSpriteInstancing: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1752,11 +1729,10 @@ export class ThinEngine {
         let height: number;
 
         // Requery hardware scaling level to handle zoomed-in resizing.
-        if (this.adaptToDeviceRatio) {
+        if (this._adaptToDeviceRatio) {
             const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-            const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
-            this._lastDevicePixelRatio = devicePixelRatio;
-            this._hardwareScalingLevel *= changeRatio;
+            const limitDeviceRatio = this._creationOptions.limitDeviceRatio || devicePixelRatio;
+            this._hardwareScalingLevel = this._adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
         }
 
         if (IsWindowObjectExist()) {
@@ -1902,22 +1878,6 @@ export class ThinEngine {
         }
 
         this._stencilStateComposer.stencilMaterial = stencil;
-    }
-
-    /**
-     * Gets a boolean indicating if depth testing is enabled
-     * @returns the current state
-     */
-    public getDepthBuffer(): boolean {
-        return this._depthCullingState.depthTest;
-    }
-
-    /**
-     * Enable or disable depth buffering
-     * @param enable defines the state to set
-     */
-    public setDepthBuffer(enable: boolean): void {
-        this._depthCullingState.depthTest = enable;
     }
 
     /**
@@ -2743,11 +2703,6 @@ export class ThinEngine {
             } else {
                 delete defines["USE_REVERSE_DEPTHBUFFER"];
             }
-            if (this.useExactSrgbConversions) {
-                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
-            } else {
-                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
-            }
             return;
         } else {
             let s = "";
@@ -2759,12 +2714,6 @@ export class ThinEngine {
                     s += "\n";
                 }
                 s += "#define USE_REVERSE_DEPTHBUFFER";
-            }
-            if (this.useExactSrgbConversions) {
-                if (s) {
-                    s += "\n";
-                }
-                s += "#define USE_EXACT_SRGB_CONVERSIONS";
             }
             return s;
         }
@@ -3576,7 +3525,7 @@ export class ThinEngine {
      * This can help preventing texture load conflict due to name collision.
      */
     public clearInternalTexturesCache() {
-        this._internalTexturesCache.length = 0;
+        this._internalTexturesCache = [];
     }
 
     /**
@@ -3927,7 +3876,7 @@ export class ThinEngine {
         }
 
         if (scene) {
-            scene.addPendingData(texture);
+            scene._addPendingData(texture);
         }
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -3951,7 +3900,7 @@ export class ThinEngine {
 
         const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
-                scene.removePendingData(texture);
+                scene._removePendingData(texture);
             }
 
             if (url === originalUrl) {
@@ -4719,7 +4668,7 @@ export class ThinEngine {
 
         // this.resetTextureCache();
         if (scene) {
-            scene.removePendingData(texture);
+            scene._removePendingData(texture);
         }
 
         texture.onLoadedObservable.notifyObservers(texture);
@@ -4756,7 +4705,7 @@ export class ThinEngine {
         if (!texture._hardwareTexture) {
             //  this.resetTextureCache();
             if (scene) {
-                scene.removePendingData(texture);
+                scene._removePendingData(texture);
             }
 
             return;
@@ -5289,7 +5238,7 @@ export class ThinEngine {
 
         // Unbind
         this.unbindAllAttributes();
-        this._boundUniforms = {};
+        this._boundUniforms = [];
 
         // Events
         if (IsWindowObjectExist()) {
@@ -5305,7 +5254,7 @@ export class ThinEngine {
 
         this._workingCanvas = null;
         this._workingContext = null;
-        this._currentBufferPointers.length = 0;
+        this._currentBufferPointers = [];
         this._renderingCanvas = null;
         this._currentProgram = null;
         this._boundRenderFunction = null;

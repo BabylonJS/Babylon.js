@@ -187,7 +187,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Offset U"
                             target={texture}
                             propertyName="uOffset"
@@ -198,7 +197,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Offset V"
                             target={texture}
                             propertyName="vOffset"
@@ -209,7 +207,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Scale U"
                             target={texture}
                             propertyName="uScale"
@@ -220,7 +217,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <FloatLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Scale V"
                             target={texture}
                             propertyName="vScale"
@@ -231,7 +227,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <SliderLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Rotation U"
                             target={texture}
                             propertyName="uAng"
@@ -246,7 +241,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <SliderLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Rotation V"
                             target={texture}
                             propertyName="vAng"
@@ -261,7 +255,6 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && (
                         <SliderLineComponent
-                            lockObject={this.props.stateManager.lockObject}
                             label="Rotation W"
                             target={texture}
                             propertyName="wAng"
