@@ -158,6 +158,7 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
             case "spin":
                 return new SpinAction({
                     subject,
+                    duration: actionData.parameters?.duration !== undefined ? actionData.parameters?.duration * 1000 : undefined,
                     ...options,
                 });
             case "rotate":
