@@ -1,0 +1,407 @@
+{
+    "assets": [
+        {
+            "uri": "assets/Satellite/Satellite.glb"
+        },
+        {
+            "uri": "assets/Earth/Earth.glb"
+        },
+        {
+            "uri": "https://assets.babylonjs.com/meshes/TrailMeshSpell/greenEnergyBall.glb"
+        },
+        {
+            "uri": "https://assets.babylonjs.com/meshes/TrailMeshSpell/pinkEnergyBall.glb"
+        },
+        {
+            "uri": "https://assets.babylonjs.com/meshes/TrailMeshSpell/yellowEnergyBall.glb"
+        },
+        {
+            "uri": "https://assets.babylonjs.com/meshes/ufo.glb"
+        }
+    ],
+    "experience": {
+        "version": "2.0"
+    },
+    "extensionsUsed": [
+        "KHR_interactivity"
+    ],
+    "extensions": {
+        "KHR_interactivity": {
+            "actions": [
+                {
+                    "parameters": {
+                        "subject": 1,
+                        "showHideEffect": 0
+                    },
+                    "type": "hide",
+                    "next": 2
+                },
+                {
+                    "parameters": {
+                        "subject": 0,
+                        "showHideEffect": 0
+                    },
+                    "type": "hide",
+                    "parallel": 10
+                },
+                {
+                    "parameters": {
+                        "subject": 1,
+                        "duration": 24
+                    },
+                    "type": "spin"
+                },
+                {
+                    "parameters": {
+                        "subject": 5,
+                        "target": 1
+                    },
+                    "type": "aim"
+                },
+                {
+                    "parameters": {
+                        "duration": 1,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            0,
+                            -2.5,
+                            0
+                        ]
+                    },
+                    "type": "move",
+                    "parallel": 3,
+                    "next": 5
+                },
+                {
+                    "parameters": {
+                        "duration": 1,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            2,
+                            0,
+                            0
+                        ]
+                    },
+                    "type": "move",
+                    "next": 6
+                },
+                {
+                    "parameters": {
+                        "duration": 2,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            -4,
+                            0,
+                            0
+                        ]
+                    },
+                    "type": "move",
+                    "next": 7
+                },
+                {
+                    "parameters": {
+                        "duration": 2,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            4,
+                            0,
+                            0
+                        ]
+                    },
+                    "type": "move",
+                    "next": 8
+                },
+                {
+                    "parameters": {
+                        "duration": 2,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            -2,
+                            0,
+                            0
+                        ]
+                    },
+                    "type": "move"
+                },
+                {
+                    "parameters": {
+                        "duration": 1,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            0,
+                            2,
+                            0
+                        ]
+                    },
+                    "type": "move"
+                },
+                {
+                    "parameters": {
+                        "subject": 3,
+                        "showHideEffect": 0
+                    },
+                    "type": "hide",
+                    "parallel": 11
+                },
+                {
+                    "parameters": {
+                        "subject": 4,
+                        "showHideEffect": 0
+                    },
+                    "type": "hide"
+                },
+                {
+                    "parameters": {
+                        "subject": 1,
+                        "showHideEffect": 1,
+                        "duration": 1
+                    },
+                    "type": "show",
+                    "next": 2
+                },
+                {
+                    "parameters": {
+                        "subject": 3,
+                        "showHideEffect": 2,
+                        "duration": 1
+                    },
+                    "type": "show"
+                },
+                {
+                    "parameters": {
+                        "subject": 4,
+                        "showHideEffect": 2,
+                        "duration": 1
+                    },
+                    "type": "show"
+                },
+                {
+                    "parameters": {
+                        "subject": 1,
+                        "showHideEffect": 2,
+                        "duration": 1.5
+                    },
+                    "type": "hide",
+                    "next": 16
+                },
+                {
+                    "parameters": {
+                        "subject": 2,
+                        "showHideEffect": 2,
+                        "duration": 0.5
+                    },
+                    "type": "hide",
+                    "next": 17
+                },
+                {
+                    "parameters": {
+                        "subject": 3,
+                        "showHideEffect": 2,
+                        "duration": 0.5
+                    },
+                    "type": "hide",
+                    "next": 18
+                },
+                {
+                    "parameters": {
+                        "subject": 4,
+                        "showHideEffect": 2,
+                        "duration": 0.5
+                    },
+                    "type": "hide",
+                    "next": 19
+                },
+                {
+                    "parameters": {
+                        "duration": 1,
+                        "space": "object",
+                        "subject": 5,
+                        "direction": [
+                            0,
+                            -3,
+                            0
+                        ]
+                    },
+                    "type": "move"
+                }
+            ],
+            "behaviors": [
+                {
+                    "action": 0,
+                    "trigger": 0
+                },
+                {
+                    "action": 1,
+                    "trigger": 0
+                },
+                {
+                    "action": 12,
+                    "trigger": 2
+                },
+                {
+                    "action": 13,
+                    "trigger": 2
+                },
+                {
+                    "action": 4,
+                    "trigger": 3
+                },
+                {
+                    "action": 14,
+                    "trigger": 3
+                },
+                {
+                    "action": 9,
+                    "trigger": 4
+                },
+                {
+                    "action": 15,
+                    "trigger": 4
+                }
+            ],
+            "references": [
+                {
+                    "index": 0,
+                    "type": "node"
+                },
+                {
+                    "index": 1,
+                    "type": "node"
+                },
+                {
+                    "index": 2,
+                    "type": "node"
+                },
+                {
+                    "index": 3,
+                    "type": "node"
+                },
+                {
+                    "index": 4,
+                    "type": "node"
+                },
+                {
+                    "index": 5,
+                    "type": "node"
+                }
+            ],
+            "triggers": [
+                {
+                    "type": "sceneStart"
+                },
+                {
+                    "type": "event",
+                    "parameters": {
+                        "event": "rotationEnded"
+                    }
+                },
+                {
+                    "type": "tap",
+                    "parameters": {
+                        "subject": 2
+                    }
+                },
+                {
+                    "type": "tap",
+                    "parameters": {
+                        "subject": 3
+                    }
+                },
+                {
+                    "type": "tap",
+                    "parameters": {
+                        "subject": 4
+                    }
+                }
+            ]
+        }
+    },
+    "nodes": [
+        {
+            "asset": 0,
+            "name": "Satellite",
+            "scale": [
+                0.3,
+                0.3,
+                0.3
+            ],
+            "translation": [
+                0,
+                2,
+                0
+            ]
+        },
+        {
+            "asset": 1,
+            "name": "Earth",
+            "translation": [
+                0,
+                -1,
+                0
+            ]
+        },
+        {
+            "asset": 2,
+            "name": "greenEnergyBall",
+            "scale": [
+                0.01,
+                0.01,
+                0.01
+            ],
+            "translation": [
+                1,
+                2,
+                0
+            ]
+        },
+        {
+            "asset": 3,
+            "name": "pingEnergyBall",
+            "scale": [
+                0.01,
+                0.01,
+                0.01
+            ],
+            "translation": [
+                0,
+                2,
+                0
+            ]
+        },
+        {
+            "asset": 4,
+            "name": "yellowEnergyBall",
+            "scale": [
+                0.01,
+                0.01,
+                0.01
+            ],
+            "translation": [
+                -1,
+                2,
+                0
+            ]
+        },
+        {
+            "asset": 5,
+            "name": "alien",
+            "scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "translation": [
+                0,
+                4,
+                0
+            ]
+        }
+    ]
+}
+
