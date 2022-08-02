@@ -40,4 +40,3 @@ export const CheckTestSuccessStatus = async (driver: ThenableWebDriver): Promise
             return globalThis.testSuccessful;
         `)) as boolean;
 };
-
