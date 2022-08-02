@@ -22,7 +22,6 @@ uniform float falloffExponent;
 uniform float roughnessFactor;
 uniform float distanceFade;
 uniform float maxReflectivityForSSRReflections;
-#include<helperFunctions>
 #endif // SSR_SUPPORTED
 
 uniform mat4 view;
@@ -155,7 +154,7 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
         // perspective-correct interpolation to find 
         rayDepth = (startVS.z * endVS.z) / mix(endVS.z, startVS.z, currSearch);
 
-        offset = 2.0 * abs(offset - rayDepth);
+        offset = abs(offset - rayDepth);
         maxTol = thickness + offset;
        
         // difference between the perspective-correct interpolation and the current depth of the scene
@@ -238,24 +237,22 @@ ReflectionInfo getReflectionInfo2DRayMarching(vec3 dirVS, vec3 hitCoordVS, vec2 
         if (dot(normalize(dirVS), normalInUV) > 0.0){
             info.visibility = 0.0; // hit backface of a mesh
         } else {
+            vec2 nextPixelOffset = increment * resolution;
             vec2 dCoordScreen = smoothstep(vec2(0.2), vec2(0.6), abs(vec2(0.5, 0.5) - uv)); // HermiteInterpolation
             info.visibility = texture2D(textureSampler, uv).a // alpha value of the reflected scene position 
-                * abs(dot(normalize(hitCoordVS), normalInUV)) // to avoid artifacts due to missing information when reflected face is almost perpendicular to the camera view direction
         
                 // reduce back face limit artifacts (false positive intersections)
-                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag + increment * resolution)/texSize).xyz)), 0.0, 1.0)
-                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag - increment * resolution)/texSize).xyz)), 0.0, 1.0)
-                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag + increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
-                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag - increment.yx * resolution)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag + nextPixelOffset)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag - nextPixelOffset)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag + nextPixelOffset.yx)/texSize).xyz)), 0.0, 1.0)
+                * clamp(dot(normalInUV, normalize( texture2D(normalSampler, (currFrag - nextPixelOffset.yx)/texSize).xyz)), 0.0, 1.0)
                 
                 * (1.0 - max (dot(-normalize(hitCoordVS), normalize(dirVS)), 0.0)) // to fade out the reflection as the reflected direction point to the camera's position (hit behind the camera)
                 * (1.0 - currSearch) // the reflection should be sharper when near from the starting point
                 * (1.0 - clamp (abs(hitCoordVS.z / distanceFade), 0.0, 1.0)) // to fade out the reflection near the distanceFade
-                * (1.0 - clamp (deltaDepth/maxTol, 0.0, 1.0)) // since the hit point is not always precisely found, we fade out the reflected color if we aren't precise enough 
+                * (1.0 - clamp (deltaDepth/thickness, 0.0, 1.0)) // since the hit point is not always precisely found, we fade out the reflected color if we aren't precise enough 
                 * clamp(1.0 - (dCoordScreen.x + dCoordScreen.y), 0.0, 1.0); // to fade out the reflection near the edge of the screen
         }
-
-        info.visibility = clamp(info.visibility * 2.0, 0.0, 1.0); // to compensate for previous lines to have strong enough reflections
 
         #if defined(BACKUP_TEXTURE)
             info.visibilityBackup = 1.0 - info.visibility; // complementary reflectivityColor
@@ -274,8 +271,8 @@ void main(void)
     // *************** Get data from samplers ***************
 
     vec4 original = texture2D(textureSampler, vUV);
-    vec4 spec = toLinearSpace(texture2D(reflectivitySampler, vUV));
-
+    vec4 spec = (texture2D(reflectivitySampler, vUV));
+    
     if (dot(spec.xyz, vec3(1.0)) <= 0.0){ // TODO ? 0.04 * 3.0
         gl_FragColor = original; // no reflectivity, no need to compute reflection
         return;

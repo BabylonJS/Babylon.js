@@ -141,17 +141,18 @@ void main() {
             reflectivity.rgb = mix(vec3(0.04), color, metal);
         #else
             // SpecularGlossiness Model 
+            reflectivity.a = 1.0; // glossiness default value in Standard / SpecularGlossiness mode = 1.0
             #ifdef SPECULARGLOSSINESSTEXTURE
                 reflectivity = texture2D(reflectivitySampler, vReflectivityUV); 
                 #ifdef GAMMAREFLECTIVITYTEXTURE
                     reflectivity.rgb = toLinearSpace(reflectivity.rgb);
                 #endif  
-                #ifdef GLOSSINESSS
-                    reflectivity.a *= glossiness; 
-                #endif
+                // #ifdef GLOSSINESSS
+                //     reflectivity.a *= glossiness; 
+                // #endif
             #else 
-                #ifdef REFLECTIVITYTEXTURE 
-                    reflectivity.rbg = texture2D(reflectivitySampler, vReflectivityUV).rbg;
+                #ifdef REFLECTIVITYTEXTURE  // standard
+                    reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
                     #ifdef GAMMAREFLECTIVITYTEXTURE
                         reflectivity.rgb = toLinearSpace(reflectivity.rgb);
                     #endif  
@@ -164,14 +165,11 @@ void main() {
                         // by the user, there is a default reflectivity/specular color set to (1.0, 1.0, 1.0)
                     #endif          
                 #endif 
-                #ifdef GLOSSINESSS
-                    reflectivity.a = glossiness; 
-                #else
-                    reflectivity.a = 1.0; // glossiness default value in Standard / SpecularGlossiness mode = 1.0
-                #endif
+            #endif
+            #ifdef GLOSSINESSS
+                reflectivity.a *= glossiness; 
             #endif
         #endif   
-        reflectivity.rgb = toGammaSpace(reflectivity.rgb); // translate to gammaSpace to be sync with prePass reflectivity
         gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
     #endif
 }

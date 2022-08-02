@@ -20,6 +20,8 @@ uniform float reflectionSpecularFalloffExponent;
 // Varyings
 varying vec2 vUV;
 
+#include<helperFunctions>
+
 #ifdef SSR_SUPPORTED
 
 // Structs
@@ -136,7 +138,7 @@ void main()
         // Intensity
         vec4 albedoFull = texture2D(textureSampler, vUV);
         vec3 albedo = albedoFull.rgb;
-        float spec = texture2D(reflectivitySampler, vUV).r;
+        float spec = toGammaSpace(texture2D(reflectivitySampler, vUV).rgb).r;
         if (spec == 0.0) {
             gl_FragColor = albedoFull;
             return;
