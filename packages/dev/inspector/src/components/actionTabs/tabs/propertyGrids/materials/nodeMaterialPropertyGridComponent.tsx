@@ -97,6 +97,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                         )}
                         {!block.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 key={block.name}
                                 label={block.name}
                                 target={block}

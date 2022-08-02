@@ -515,6 +515,7 @@ export class MeshPropertyGridComponent extends React.Component<
                 <LineContainerComponent title="DISPLAY" closed={true} selection={this.props.globalState}>
                     {!mesh.isAnInstance && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Visibility"
                             target={mesh}
                             propertyName="visibility"
@@ -565,6 +566,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         />
                     )}
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Rendering group ID"
                         decimalCount={0}
                         target={mesh}
@@ -588,6 +590,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         {morphTargets.map((mt, i) => {
                             return (
                                 <SliderLineComponent
+                                    lockObject={this.props.lockObject}
                                     key={i}
                                     label={mt.name}
                                     target={mt}
@@ -658,6 +661,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Retry count"
                         minimum={-1}
                         maximum={10}
@@ -690,6 +694,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Edge width"
                         minimum={0}
                         maximum={10}
@@ -765,6 +770,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     )}
                     {!mesh.isAnInstance && this.state.displayBoneWeights && mesh.skeleton && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Target Bone"
                             decimalCount={0}
                             target={mesh.reservedDataStore}

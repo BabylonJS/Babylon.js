@@ -1730,7 +1730,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1753,6 +1753,16 @@ export class ShaderMaterial extends PushMaterial {
             request.send();
         });
     }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
 }
 
 RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);

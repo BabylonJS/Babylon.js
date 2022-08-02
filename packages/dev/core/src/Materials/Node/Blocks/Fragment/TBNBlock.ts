@@ -33,6 +33,10 @@ export class TBNBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Output, TBNBlock, "TBNBlock")
         );
+
+        this.registerOutput("row0", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("row1", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("row2", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -81,6 +85,27 @@ export class TBNBlock extends NodeMaterialBlock {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public get TBN(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Gets the row0 of the output matrix
+     */
+    public get row0(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the row1 of the output matrix
+     */
+    public get row1(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
+     * Gets the row2 of the output matrix
+     */
+    public get row2(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
     }
 
     public get target() {
@@ -147,6 +172,9 @@ export class TBNBlock extends NodeMaterialBlock {
         const tangent = this.tangent;
         const world = this.world;
         const TBN = this.TBN;
+        const row0 = this.row0;
+        const row1 = this.row1;
+        const row2 = this.row2;
 
         // Fragment
         if (state.target === NodeMaterialBlockTargets.Fragment) {
@@ -157,6 +185,21 @@ export class TBNBlock extends NodeMaterialBlock {
                 vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${tangent.associatedVariableName}.w;
                 mat3 ${TBN.associatedVariableName} = mat3(${world.associatedVariableName}) * mat3(tbnTangent, tbnBitangent, tbnNormal);
             `;
+
+            if (row0.hasEndpoints) {
+                state.compilationString +=
+                    this._declareOutput(row0, state) +
+                    ` = vec3(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\r\n`;
+            }
+            if (row1.hasEndpoints) {
+                state.compilationString +=
+                    this._declareOutput(row1, state) + ` = vec3(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\r\n`;
+            }
+            if (row2.hasEndpoints) {
+                state.compilationString +=
+                    this._declareOutput(row2, state) +
+                    ` = vec3(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\r\n`;
+            }
 
             state.sharedData.blocksWithDefines.push(this);
         }

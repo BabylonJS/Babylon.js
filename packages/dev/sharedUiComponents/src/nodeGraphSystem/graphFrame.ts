@@ -1470,7 +1470,7 @@ export class GraphFrame {
 
     public export() {
         const state = this._ownerCanvas.stateManager;
-        const json = state.exportData(state.data);
+        const json = state.exportData(state.data, this);
         StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 

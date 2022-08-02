@@ -186,6 +186,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                     <div className="secondLine">
                         <SliderLineComponent
                             label="Angle"
+                            lockObject={this.props.lockObject}
                             minimum={0}
                             maximum={2 * Math.PI}
                             useEuler={true}

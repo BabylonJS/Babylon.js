@@ -87,9 +87,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _zoomFactor = 1;
     private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
+    private _pasteDisabled = true;
 
     public get guiSize() {
         return this._guiSize;
+    }
+    public get pasteDisabled(): boolean {
+        return this._pasteDisabled;
     }
     // sets the size of the GUI and makes all necessary adjustments
     public set guiSize(value: ISize) {
@@ -259,6 +263,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     };
 
     public copyToClipboard(copyFn: (content: string) => void) {
+        this._pasteDisabled = false;
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
             const obj = {};
@@ -284,8 +289,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
-                    newSelection.push(this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture)));
+                    newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
+                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }
@@ -477,7 +483,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.guiSize = this.props.globalState.guiTexture.getSize();
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
-            this.props.globalState.customLoad.action(this.props.globalState.guiTexture.snippetId).catch(() => {
+            this.props.globalState.customLoad.action(snippetId).catch(() => {
                 alert("Unable to load your GUI");
             });
         }

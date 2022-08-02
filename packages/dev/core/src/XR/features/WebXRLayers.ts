@@ -223,7 +223,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         const engine = this._xrSessionManager.scene.getEngine();
         this._glContext = engine._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
-        this._existingLayers = [];
+        this._existingLayers.length = 0;
 
         const projectionLayerInit = { ...defaultXRProjectionLayerInit };
         const projectionLayerMultiview = this._options.preferMultiviewOnInit && engine.getCaps().multiview;

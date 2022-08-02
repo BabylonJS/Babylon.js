@@ -116,10 +116,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         )}
                         {!block.isBoolean && cantDisplaySlider && (
-                            <FloatLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" onChange={() => this.processInputBlockUpdate(block)} />
+                            <FloatLineComponent
+                                lockObject={this.props.lockObject}
+                                key={block.uniqueId}
+                                label={block.name}
+                                target={block}
+                                propertyName="value"
+                                onChange={() => this.processInputBlockUpdate(block)}
+                            />
                         )}
                         {!block.isBoolean && !cantDisplaySlider && (
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 key={block.uniqueId}
                                 label={block.name}
                                 target={block}
@@ -504,6 +512,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Grid size"
                             minimum={0}
                             maximum={100}

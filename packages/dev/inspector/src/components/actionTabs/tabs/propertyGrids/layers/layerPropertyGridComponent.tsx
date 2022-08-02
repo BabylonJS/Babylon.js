@@ -40,6 +40,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Intensity"
                         target={layer}
                         propertyName="intensity"
@@ -50,6 +51,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Blur Kernel Size"
                         target={layer}
                         propertyName="blurKernelSize"
