@@ -27,7 +27,7 @@ export class AimAction extends BaseAction<IAimActionOptions> {
                 contextObservable: this._options.subject.getScene().onBeforeRenderObservable,
                 timeout: this._options.duration ?? 1000,
                 onTick: () => {
-                    this._options.subject.lookAt(this._options.target.position);
+                    this._options.subject.lookAt(this._options.target.position, 0, -Math.PI / 2);
                 },
                 onEnded: () => {
                     resolve();
