@@ -148,6 +148,9 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const marginStyle = {
             paddingLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
         };
+        const lineMarginStyle = {
+            marginLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
+        };
         let entity = this.props.entity;
 
         if (!entity.reservedDataStore) {
@@ -156,6 +159,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                 setExpandedState: (expanded: boolean) => (entity.reservedDataStore.isExpanded = expanded),
             };
         }
+
         const isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
 
         entity.reservedDataStore.isExpanded = isExpanded;
@@ -164,6 +168,14 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
         let children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         let hasChildren = children.length > 0;
+        <hr
+            style={{
+                background: "lime",
+                color: "lime",
+                borderColor: "lime",
+                height: "3px",
+            }}
+        />;
 
         if (this.props.filter) {
             const lowerCaseFilter = this.props.filter.toLowerCase();
@@ -192,11 +204,13 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.ABOVE && entity.parent ? " seAbove" : "";
         className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.BELOW && entity.parent ? " seBelow" : "";
 
+        const styleName = className === "itemContainer seAbove" || className === "itemContainer seBelow" ? lineMarginStyle : marginStyle;
+
         return (
             <div>
                 <div
                     className={className}
-                    style={marginStyle}
+                    style={styleName}
                     onPointerUp={() => {
                         this.onSelect();
                     }}
