@@ -226,14 +226,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             framesToUpdate += 5;
         });
         globalState.onNewSceneObservable.add((scene) => {
-            scene && scene.onBeforeRenderObservable.add(() => {
-                if (framesToUpdate > 0) {
-                    framesToUpdate--;
-                    globalState.onGizmoUpdateRequireObservable.notifyObservers();
-                    this._engine.resize();
-                    globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
-                }
-            });
+            scene &&
+                scene.onBeforeRenderObservable.add(() => {
+                    if (framesToUpdate > 0) {
+                        framesToUpdate--;
+                        globalState.onGizmoUpdateRequireObservable.notifyObservers();
+                        this._engine.resize();
+                        globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+                    }
+                });
         });
 
         globalState.onCopyObservable.add((copyFn) => this.copyToClipboard(copyFn));
