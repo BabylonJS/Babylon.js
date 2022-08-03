@@ -1,8 +1,8 @@
 import { BaseTrigger } from "./BaseTrigger";
-import { TransformNode } from "../../../Meshes/transformNode";
-import { Scene } from "../../../scene";
+import type { TransformNode } from "../../../Meshes/transformNode";
+import type { Scene } from "../../../scene";
 import { Vector3, TmpVectors } from "../../../Maths/math.vector";
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 
 export interface IProximityTriggerOptions {
     subject: TransformNode; // Could be node?

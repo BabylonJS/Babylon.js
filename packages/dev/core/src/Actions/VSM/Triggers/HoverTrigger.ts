@@ -1,6 +1,6 @@
 import { BaseTrigger } from "./BaseTrigger";
-import { Scene } from "../../../scene";
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { Scene } from "../../../scene";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 
 // Hover trigger is basically OnPointerOver trigger (and OnPointerOut trigger)
 

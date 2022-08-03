@@ -1,7 +1,7 @@
 import { BaseTrigger } from "./BaseTrigger";
-import { Scene } from "../../../scene";
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
-import { Camera } from "../../../Cameras/camera";
+import type { Scene } from "../../../scene";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { Camera } from "../../../Cameras/camera";
 
 export interface IInFrustumTriggerOptions {
     subject: AbstractMesh; // Could be node?
