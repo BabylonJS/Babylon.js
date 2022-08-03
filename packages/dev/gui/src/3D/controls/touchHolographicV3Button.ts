@@ -556,7 +556,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         const collisionMesh = this._createFrontPlate(scene);
         const innerQuadMesh = this._createInnerQuad(scene);
         const backGlowMesh = this._createBackGlow(scene);
-        
+
         this._frontPlateCollisionMesh = collisionMesh;
         this._textPlate = <Mesh>super._createNode(scene);
         this._textPlate.name = `${this.name}_textPlate`;
