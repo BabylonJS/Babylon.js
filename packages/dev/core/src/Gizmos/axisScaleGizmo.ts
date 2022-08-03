@@ -26,7 +26,7 @@ export class AxisScaleGizmo extends Gizmo {
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -49,17 +49,17 @@ export class AxisScaleGizmo extends Gizmo {
      */
     public dragScale = 1;
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<ScaleGizmo> = null;
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<ScaleGizmo> = null;
 
-    private _gizmoMesh: Mesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _dragging: boolean = false;
-    private _tmpVector = new Vector3();
-    private _tmpMatrix = new Matrix();
-    private _tmpMatrix2 = new Matrix();
+    protected _gizmoMesh: Mesh;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _dragging: boolean = false;
+    protected _tmpVector = new Vector3();
+    protected _tmpMatrix = new Matrix();
+    protected _tmpMatrix2 = new Matrix();
 
     /**
      * Creates an AxisScaleGizmo
@@ -226,7 +226,7 @@ export class AxisScaleGizmo extends Gizmo {
      * @param thickness
      * @param isCollider
      */
-    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
+    protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
         const arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
         const arrowTail = CreateCylinder(
             "cylinder",
