@@ -127,6 +127,8 @@ interface WebGLRenderingContext {
     clearBufferiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferuiv(buffer: number, drawbuffer: number, values: ArrayBufferView, srcOffset: number | null): void;
     clearBufferfi(buffer: number, drawbuffer: number, depth: number, stencil: number): void;
+
+    vertexAttribIPointer(index: number, size: number, type: number, stride: number, offset: number): void;
 }
 
 interface ImageBitmap {
