@@ -1,9 +1,11 @@
-import { AssetContainer } from "core/assetContainer";
-import { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
-import { DataReader } from "core/Misc/dataReader";
+import type { AssetContainer } from "core/assetContainer";
+import type { ISceneLoaderPluginExtensions, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync} from "core/Loading/sceneLoader";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import type { DataReader } from "core/Misc/dataReader";
 import { StringTools } from "core/Misc/stringTools";
 import { GLEFLoader } from "./2.0/glEFLoader";
-import { AbstractFileLoader, ILoader, ILoaderData } from "./abstractFileLoader";
+import type { ILoader, ILoaderData } from "./abstractFileLoader";
+import { AbstractFileLoader } from "./abstractFileLoader";
 
 export class GLEFFileLoader extends AbstractFileLoader {
     private static _MagicBase64Encoded = "magic!";
@@ -11,6 +13,7 @@ export class GLEFFileLoader extends AbstractFileLoader {
     public extensions: ISceneLoaderPluginExtensions = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ".glef": { isBinary: false },
+        ".glxf": { isBinary: false },
     };
     protected _loadAssetContainer(_container: AssetContainer): void {
         // no-op in glef
@@ -47,5 +50,3 @@ export class GLEFFileLoader extends AbstractFileLoader {
 if (SceneLoader) {
     SceneLoader.RegisterPlugin(new GLEFFileLoader());
 }
-
-console.log("gleffileloadeR");

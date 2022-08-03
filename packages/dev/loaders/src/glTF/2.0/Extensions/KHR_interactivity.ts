@@ -326,3 +326,4 @@ export class KHR_Interactivity implements IGLEFLoaderExtension {
 }
 
 RegisterExtension("glef", NAME, (loader) => new KHR_Interactivity(loader as GLEFLoader));
+RegisterExtension("glxf", NAME, (loader) => new KHR_Interactivity(loader as GLEFLoader));
