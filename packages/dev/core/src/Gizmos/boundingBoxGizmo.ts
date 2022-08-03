@@ -25,13 +25,13 @@ import type { IPointerEvent } from "../Events/deviceInputEvents";
  * Bounding box gizmo
  */
 export class BoundingBoxGizmo extends Gizmo {
-    private _lineBoundingBox: AbstractMesh;
-    private _rotateSpheresParent: AbstractMesh;
-    private _scaleBoxesParent: AbstractMesh;
-    private _boundingDimensions = new Vector3(1, 1, 1);
-    private _renderObserver: Nullable<Observer<Scene>> = null;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
-    private _scaleDragSpeed = 0.2;
+    protected _lineBoundingBox: AbstractMesh;
+    protected _rotateSpheresParent: AbstractMesh;
+    protected _scaleBoxesParent: AbstractMesh;
+    protected _boundingDimensions = new Vector3(1, 1, 1);
+    protected _renderObserver: Nullable<Observer<Scene>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _scaleDragSpeed = 0.2;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -94,7 +94,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Scale factor used for masking some axis
      */
-    private _axisFactor = new Vector3(1, 1, 1);
+    protected _axisFactor = new Vector3(1, 1, 1);
 
     /**
      * Sets the axis factor
@@ -150,16 +150,16 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Mesh used as a pivot to rotate the attached node
      */
-    private _anchorMesh: AbstractMesh;
+    protected _anchorMesh: AbstractMesh;
 
-    private _existingMeshScale = new Vector3();
+    protected _existingMeshScale = new Vector3();
 
     // Dragging
-    private _dragMesh: Nullable<Mesh> = null;
-    private _pointerDragBehavior = new PointerDragBehavior();
+    protected _dragMesh: Nullable<Mesh> = null;
+    protected _pointerDragBehavior = new PointerDragBehavior();
 
-    private _coloredMaterial: StandardMaterial;
-    private _hoverColoredMaterial: StandardMaterial;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverColoredMaterial: StandardMaterial;
 
     /**
      * Sets the color of the bounding box gizmo
@@ -536,7 +536,7 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _selectNode(selectedMesh: Nullable<Mesh>) {
+    protected _selectNode(selectedMesh: Nullable<Mesh>) {
         this._rotateSpheresParent
             .getChildMeshes()
             .concat(this._scaleBoxesParent.getChildMeshes())
@@ -614,7 +614,7 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _updateRotationSpheres() {
+    protected _updateRotationSpheres() {
         const rotateSpheres = this._rotateSpheresParent.getChildMeshes();
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 2; j++) {
@@ -659,7 +659,7 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _updateScaleBoxes() {
+    protected _updateScaleBoxes() {
         const scaleBoxes = this._scaleBoxesParent.getChildMeshes();
         let index = 0;
         for (let i = 0; i < 3; i++) {
@@ -724,7 +724,7 @@ export class BoundingBoxGizmo extends Gizmo {
         });
     }
 
-    private _updateDummy() {
+    protected _updateDummy() {
         if (this._dragMesh) {
             this._dragMesh.position.copyFrom(this._lineBoundingBox.getAbsolutePosition());
             this._dragMesh.scaling.copyFrom(this._lineBoundingBox.scaling);
