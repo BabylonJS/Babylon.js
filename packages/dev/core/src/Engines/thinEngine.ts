@@ -700,7 +700,7 @@ export class ThinEngine {
     }
 
     public set snapshotRenderingMode(mode: number) {
-        this._snapshotRenderingMode = mode;
+        // Noop on webgl, as snapshot rendering is only for WebGPU
     }
 
     protected _useExactSrgbConversions = false;
