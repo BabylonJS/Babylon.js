@@ -27,7 +27,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         super(props);
         let a11yTreeItems = this._updateAccessibilityTreeItems();
         this.state = {
-            a11yTreeItems: a11yTreeItems
+            a11yTreeItems: a11yTreeItems,
         };
     }
 
@@ -41,37 +41,43 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             this.setState({
                 a11yTreeItems: a11yTreeItems,
             });
-        }
+        };
 
         let addGUIObservers = (control: Control) => {
             // observe isVisible changed
-            if(!this._observersMap.has(control.onIsVisibleChangedObservable)) {
+            if (!this._observersMap.has(control.onIsVisibleChangedObservable)) {
                 this._observersMap.set(control.onIsVisibleChangedObservable, control.onIsVisibleChangedObservable.add(updateA11yTree));
             }
 
-            if(!this._observersMap.has(control.onAccessibilityTagChangedObservable)) {
+            if (!this._observersMap.has(control.onAccessibilityTagChangedObservable)) {
                 this._observersMap.set(control.onAccessibilityTagChangedObservable, control.onAccessibilityTagChangedObservable.add(updateA11yTree));
             }
 
-            if(control instanceof Container) {
+            if (control instanceof Container) {
                 let container = control as Container;
 
                 // observe add control and deal with new controls
-                if(!this._observersMap.has(container.onControlAddedObservable)) {
-                    this._observersMap.set(container.onControlAddedObservable, container.onControlAddedObservable.add((newControl) => {
-                        if (newControl) {
-                            // deal with the new added control
-                            addGUIObservers(newControl);
-                        }
-                        updateA11yTree();
-                    }));
+                if (!this._observersMap.has(container.onControlAddedObservable)) {
+                    this._observersMap.set(
+                        container.onControlAddedObservable,
+                        container.onControlAddedObservable.add((newControl) => {
+                            if (newControl) {
+                                // deal with the new added control
+                                addGUIObservers(newControl);
+                            }
+                            updateA11yTree();
+                        })
+                    );
                 }
 
                 // observe remove control
-                if(!this._observersMap.has(container.onControlRemovedObservable)) {
-                    this._observersMap.set(container.onControlRemovedObservable, container.onControlRemovedObservable.add((removedControl => {
-                        updateA11yTree();
-                    })))
+                if (!this._observersMap.has(container.onControlRemovedObservable)) {
+                    this._observersMap.set(
+                        container.onControlRemovedObservable,
+                        container.onControlRemovedObservable.add((removedControl) => {
+                            updateA11yTree();
+                        })
+                    );
                 }
 
                 // deal with children
@@ -82,16 +88,16 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         };
 
         let addNodeObservers = (node: Node) => {
-            if(!this._observersMap.has(node.onEnabledStateChangedObservable)) {
+            if (!this._observersMap.has(node.onEnabledStateChangedObservable)) {
                 this._observersMap.set(node.onEnabledStateChangedObservable, node.onEnabledStateChangedObservable.add(updateA11yTree));
             }
 
-            if(!this._observersMap.has(node.onAccessibilityTagChangedObservable)) {
+            if (!this._observersMap.has(node.onAccessibilityTagChangedObservable)) {
                 this._observersMap.set(node.onAccessibilityTagChangedObservable, node.onAccessibilityTagChangedObservable.add(updateA11yTree));
             }
 
             // If the node has GUI, add observer to the controls
-            if(this._isGUI(node)) {
+            if (this._isGUI(node)) {
                 let curMesh = node as AbstractMesh;
                 let adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
                 let guiRoot = adt.getChildren();
@@ -100,23 +106,29 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         };
 
         // observe add node and deal with new nodes
-        if(!this._observersMap.has(scene.onNewMeshAddedObservable)) {
-            this._observersMap.set(scene.onNewMeshAddedObservable, scene.onNewMeshAddedObservable.add((newNode) => {
-                updateA11yTree();
-                addNodeObservers(newNode);
-            }));
+        if (!this._observersMap.has(scene.onNewMeshAddedObservable)) {
+            this._observersMap.set(
+                scene.onNewMeshAddedObservable,
+                scene.onNewMeshAddedObservable.add((newNode) => {
+                    updateA11yTree();
+                    addNodeObservers(newNode);
+                })
+            );
         }
-        if(!this._observersMap.has(scene.onNewTransformNodeAddedObservable)) {
-            this._observersMap.set(scene.onNewTransformNodeAddedObservable, scene.onNewTransformNodeAddedObservable.add((newNode) => {
-                updateA11yTree();
-                addNodeObservers(newNode);
-            }));
+        if (!this._observersMap.has(scene.onNewTransformNodeAddedObservable)) {
+            this._observersMap.set(
+                scene.onNewTransformNodeAddedObservable,
+                scene.onNewTransformNodeAddedObservable.add((newNode) => {
+                    updateA11yTree();
+                    addNodeObservers(newNode);
+                })
+            );
         }
         // observe remove node
-        if(!this._observersMap.has(scene.onMeshRemovedObservable)) {
+        if (!this._observersMap.has(scene.onMeshRemovedObservable)) {
             this._observersMap.set(scene.onMeshRemovedObservable, scene.onMeshRemovedObservable.add(updateA11yTree));
         }
-        if(!this._observersMap.has(scene.onTransformNodeRemovedObservable)) {
+        if (!this._observersMap.has(scene.onTransformNodeRemovedObservable)) {
             this._observersMap.set(scene.onTransformNodeRemovedObservable, scene.onTransformNodeRemovedObservable.add(updateA11yTree));
         }
 
@@ -124,7 +136,6 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         scene.getNodes().forEach((node) => {
             addNodeObservers(node);
         });
-
     }
 
     componentWillUnmount() {
@@ -154,7 +165,8 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
     private _updateAccessibilityTreeItems(): AccessibilityItem[] {
         // Nodes
         const rootNodes = this.props.scene.rootNodes.slice(0);
-        for (const mesh of this.props.scene.meshes) { // Adding nodes that are parented to a bone
+        for (const mesh of this.props.scene.meshes) {
+            // Adding nodes that are parented to a bone
             if (mesh.parent && mesh.parent.getClassName() === "Bone") {
                 rootNodes.push(mesh);
             }
@@ -174,20 +186,19 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         let queue: Node[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
-            if(!curNode.isEnabled()) {
+            if (!curNode.isEnabled()) {
                 continue;
             }
 
-            if (this._isGUI(curNode)) { // if node texture is GUI, add that as a a11y GUI item (renders differently)
+            if (this._isGUI(curNode)) {
+                // if node texture is GUI, add that as a a11y GUI item (renders differently)
                 let curMesh = curNode as AbstractMesh;
                 let adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
                 let guiRoot = adt.getChildren();
                 result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromGUI(guiRoot)));
-            }
-            else if (curNode.accessibilityTag) {
+            } else if (curNode.accessibilityTag) {
                 result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromNodes(curNode.getChildren())));
-            }
-            else {
+            } else {
                 queue.push(...curNode.getChildren());
             }
         }
@@ -203,14 +214,13 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         let queue: Control[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
-            if(!curNode.isVisible) {
+            if (!curNode.isVisible) {
                 continue;
             }
             if (curNode instanceof Container && curNode.children.length !== 0 && !(curNode instanceof Button)) {
                 const curContainer = curNode as Container;
                 result.push(new AccessibilityGUIItem(curContainer, this._getAccessibilityTreeItemsFromGUI(curContainer.children)));
-            }
-            else {
+            } else {
                 result.push(new AccessibilityGUIItem(curNode, []));
             }
         }

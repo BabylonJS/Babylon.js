@@ -31,14 +31,11 @@ export class AccessibilityGUIItem extends AccessibilityItem {
         let description = "";
         if (this.entity.accessibilityTag?.description) {
             description = this.entity.accessibilityTag.description;
-        }
-        else if (this.entity instanceof TextBlock) {
+        } else if (this.entity instanceof TextBlock) {
             description = (this.entity as TextBlock).text;
-        }
-        else if (this.entity instanceof Button) {
+        } else if (this.entity instanceof Button) {
             description = (this.entity as Button).textBlock?.text ?? "";
-        }
-        else if (this.entity instanceof Image) {
+        } else if (this.entity instanceof Image) {
             description = (this.entity as Image).alt ?? "";
         }
         return description;
@@ -56,12 +53,10 @@ export class AccessibilityGUIItem extends AccessibilityItem {
         let eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
         if (eventHandler?.onclick || eventHandler?.oncontextmenu) {
             this._isActionable = true;
-        }
-        else {
+        } else {
             if (this.entity instanceof Button) {
                 this._isActionable = true;
-            }
-            else {
+            } else {
                 this._isActionable = false;
             }
         }
@@ -81,8 +76,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
 
         if (this.entity instanceof Button) {
             this._isFocusable = true;
-        }
-        else {
+        } else {
             this._isFocusable = false;
         }
         return this._isFocusable;

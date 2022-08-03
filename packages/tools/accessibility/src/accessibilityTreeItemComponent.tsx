@@ -16,34 +16,44 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
 
         if (item.children.length === 0) {
             return this._renderLeafNode(item);
-        }
-        else {
+        } else {
             return this._renderParentNode(item, this.props.level);
         }
     }
 
     private _renderLeafNode(a11yItem: AccessibilityItem): JSX.Element {
-        if(a11yItem.isActionable) {
+        if (a11yItem.isActionable) {
             return (
                 <button
-                    onClick={() => {a11yItem.click();}}
-                    onContextMenu={() => {a11yItem.rightClick();}}
+                    onClick={() => {
+                        a11yItem.click();
+                    }}
+                    onContextMenu={() => {
+                        a11yItem.rightClick();
+                    }}
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
-                    onFocus={() => {a11yItem.focus();}}
-                    onBlur={() => {a11yItem.blur();}}
+                    onFocus={() => {
+                        a11yItem.focus();
+                    }}
+                    onBlur={() => {
+                        a11yItem.blur();
+                    }}
                     role={a11yItem.entity.accessibilityTag?.role}
                     {...a11yItem.entity.accessibilityTag?.aria}
                 >
                     {a11yItem.description}
                 </button>
             );
-        }
-        else {
+        } else {
             return (
                 <div
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
-                    onFocus={() => {a11yItem.focus();}}
-                    onBlur={() => {a11yItem.blur();}}
+                    onFocus={() => {
+                        a11yItem.focus();
+                    }}
+                    onBlur={() => {
+                        a11yItem.blur();
+                    }}
                     role={a11yItem.entity.accessibilityTag?.role}
                     {...a11yItem.entity.accessibilityTag?.aria}
                 >
@@ -56,30 +66,36 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
     private _renderParentNode(a11yItem: AccessibilityItem, level: number): JSX.Element {
         return (
             <div>
-                {!!a11yItem.description &&
-                <div role={a11yItem.entity.accessibilityTag?.role ?? 'heading'}
-                    aria-level={level}
-                    tabIndex={a11yItem.isFocusable ? 0 : -1}
-                    onFocus={() => {a11yItem.focus();}}
-                    onBlur={() => {a11yItem.blur();}}
-                    {...a11yItem.entity.accessibilityTag?.aria}
-                >
-                    {a11yItem.description}
-                </div>}
+                {!!a11yItem.description && (
+                    <div
+                        role={a11yItem.entity.accessibilityTag?.role ?? "heading"}
+                        aria-level={level}
+                        tabIndex={a11yItem.isFocusable ? 0 : -1}
+                        onFocus={() => {
+                            a11yItem.focus();
+                        }}
+                        onBlur={() => {
+                            a11yItem.blur();
+                        }}
+                        {...a11yItem.entity.accessibilityTag?.aria}
+                    >
+                        {a11yItem.description}
+                    </div>
+                )}
                 {this._renderChildren(a11yItem.children, Math.min(level + 1, 6))}
             </div>
         );
     }
 
     private _renderChildren(children: AccessibilityItem[], level: number): JSX.Element[] {
-        return (
-            children.map((child) => {
-                return <AccessibilityTreeItemComponent
+        return children.map((child) => {
+            return (
+                <AccessibilityTreeItemComponent
                     a11yItem={child}
                     level={level}
                     key={child.entity.uniqueId !== undefined && child.entity.uniqueId !== null ? child.entity.uniqueId : child.entity.name}
-                    />
-            })
-        );
+                />
+            );
+        });
     }
 }

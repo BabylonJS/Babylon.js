@@ -27,7 +27,7 @@ export class AccessibilityItem {
      * Returns the description in accessibilityTag, if defined (returns "" by default).
      */
     public get description(): string {
-        return this.entity.accessibilityTag?.description ?? "";;
+        return this.entity.accessibilityTag?.description ?? "";
     }
 
     /**
@@ -50,29 +50,25 @@ export class AccessibilityItem {
      * Callback when the HTML element is focused. Show visual indication on BabylonJS entity.
      * Implemented by child classes
      */
-    public focus(): void {
-    }
+    public focus(): void {}
 
     /**
      * Callback when the HTML element is blured. Dismiss visual indication on BabylonJS entity.
      * Implemented by child classes
      */
-    public blur(): void {
-    }
+    public blur(): void {}
 
     /**
      * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
      * Implemented by child classes
      */
-    public click(): void {
-    }
+    public click(): void {}
 
     /**
      * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
      * Implemented by child classes
      */
-    public rightClick(): void {
-    }
+    public rightClick(): void {}
 
     // TODO: maybe remove this
     public toString(): string {

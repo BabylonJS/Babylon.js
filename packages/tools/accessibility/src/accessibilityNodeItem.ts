@@ -35,8 +35,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
         let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         if (eventHandler?.onclick || eventHandler?.oncontextmenu) {
             this._isActionable = true;
-        }
-        else {
+        } else {
             this._isActionable = (this.entity as Node)._getActionManagerForTrigger()?.hasPickTriggers!!;
         }
 
@@ -131,7 +130,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
     }
 
     private _getTriggerActions(node: Node, trigger: number): IAction[] {
-        const triggerActions = node._getActionManagerForTrigger(trigger)?.actions.filter(action => action.trigger == trigger);
-        return triggerActions?? [];
+        const triggerActions = node._getActionManagerForTrigger(trigger)?.actions.filter((action) => action.trigger == trigger);
+        return triggerActions ?? [];
     }
 }
