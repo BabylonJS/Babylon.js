@@ -55,6 +55,17 @@ export interface INativeEngine {
     getTextureHeight(texture: WebGLTexture): number;
     copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
+    readTexture(
+        texture: WebGLTexture,
+        mipLevel: number,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        buffer: Nullable<ArrayBuffer>,
+        bufferOffset: number,
+        bufferLength: number
+    ): Promise<ArrayBuffer>;
 
     createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
@@ -86,6 +97,9 @@ interface INativeEngineConstructor {
     new (): INativeEngine;
 
     readonly PROTOCOL_VERSION: number;
+
+    readonly CAPS_LIMITS_MAX_TEXTURE_SIZE: number;
+    readonly CAPS_LIMITS_MAX_TEXTURE_LAYERS: number;
 
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;

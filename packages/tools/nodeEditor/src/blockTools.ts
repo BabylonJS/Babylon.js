@@ -42,6 +42,7 @@ import { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightIn
 import { MaxBlock } from "core/Materials/Node/Blocks/maxBlock";
 import { MinBlock } from "core/Materials/Node/Blocks/minBlock";
 import { PerturbNormalBlock } from "core/Materials/Node/Blocks/Fragment/perturbNormalBlock";
+import { TBNBlock } from "core/Materials/Node/Blocks/Fragment/TBNBlock";
 import { LengthBlock } from "core/Materials/Node/Blocks/lengthBlock";
 import { DistanceBlock } from "core/Materials/Node/Blocks/distanceBlock";
 import { FrontFacingBlock } from "core/Materials/Node/Blocks/Fragment/frontFacingBlock";
@@ -210,6 +211,8 @@ export class BlockTools {
                 return new NegateBlock("Negate");
             case "PerturbNormalBlock":
                 return new PerturbNormalBlock("Perturb normal");
+            case "TBNBlock":
+                return new TBNBlock("TBN");
             case "RandomNumberBlock":
                 return new RandomNumberBlock("Random number");
             case "ReplaceColorBlock":
@@ -393,6 +396,11 @@ export class BlockTools {
             case "ColorBlock": {
                 const meshColor = new InputBlock("color");
                 meshColor.setAsAttribute("color");
+                return meshColor;
+            }
+            case "InstanceColorBlock": {
+                const meshColor = new InputBlock("Instance Color");
+                meshColor.setAsAttribute("instanceColor");
                 return meshColor;
             }
             case "NormalBlock": {

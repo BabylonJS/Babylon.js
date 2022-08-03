@@ -26,7 +26,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
+    private _idbFactory = <IDBFactory>(typeof indexedDB !== "undefined" ? indexedDB : undefined);
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static _IsUASupportingBlobStorage = true;
@@ -288,8 +288,7 @@ export class Database implements IOfflineProvider {
 
             transaction.oncomplete = () => {
                 let blobTextureURL: string;
-                if (texture) {
-                    const URL = window.URL || window.webkitURL;
+                if (texture && typeof URL === "function") {
                     blobTextureURL = URL.createObjectURL(texture.data);
                     image.onerror = () => {
                         Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
@@ -324,8 +323,7 @@ export class Database implements IOfflineProvider {
             const generateBlobUrl = () => {
                 let blobTextureURL;
 
-                if (blob) {
-                    const URL = window.URL || window.webkitURL;
+                if (blob && typeof URL === "function") {
                     try {
                         blobTextureURL = URL.createObjectURL(blob);
                     } catch (ex) {
@@ -670,7 +668,7 @@ export class Database implements IOfflineProvider {
                 "error",
                 () => {
                     Logger.Error("error on XHR request.");
-                    callback();
+                    errorCallback && errorCallback();
                 },
                 false
             );
@@ -678,7 +676,7 @@ export class Database implements IOfflineProvider {
             xhr.send();
         } else {
             Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
-            callback();
+            errorCallback && errorCallback();
         }
     }
 

@@ -3,6 +3,8 @@ const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
+
+// The luminance weights used below are for a linear encoded color, not a gamma-corrected color.
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
 const float Epsilon = 0.0000001;
@@ -43,37 +45,105 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
+// The linear and gamma space conversions below are used to transform linear colors to and from the sRGB colorspace.
+// The conversions are described in more detail here: https://en.wikipedia.org/wiki/SRGB#Transformation
+
+#if USE_EXACT_SRGB_CONVERSIONS
+vec3 toLinearSpaceExact(vec3 color)
+{
+    vec3 nearZeroSection = 0.0773993808 * color;
+    vec3 remainingSection = pow(0.947867299 * (color + vec3(0.055)), vec3(2.4));
+    #if defined(WEBGL2) || defined(WEBGPU)
+        return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.04045)));
+    #else
+        return
+            vec3(
+                color.r <= 0.04045 ? nearZeroSection.r : remainingSection.r,
+                color.g <= 0.04045 ? nearZeroSection.g : remainingSection.g,
+                color.b <= 0.04045 ? nearZeroSection.b : remainingSection.b);
+    #endif
+}
+
+vec3 toGammaSpaceExact(vec3 color)
+{
+    vec3 nearZeroSection = 12.92 * color;
+    vec3 remainingSection = 1.055 * pow(color, vec3(0.41666)) - vec3(0.055);
+    #if defined(WEBGL2) || defined(WEBGPU)
+        return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3(0.0031308)));
+    #else
+        return
+            vec3(
+                color.r <= 0.0031308 ? nearZeroSection.r : remainingSection.r,
+                color.g <= 0.0031308 ? nearZeroSection.g : remainingSection.g,
+                color.b <= 0.0031308 ? nearZeroSection.b : remainingSection.b);
+    #endif
+}
+#endif
+
 float toLinearSpace(float color)
 {
-    return pow(color, LinearEncodePowerApprox);
+    #if USE_EXACT_SRGB_CONVERSIONS
+        float nearZeroSection = 0.0773993808 * color;
+        float remainingSection = pow(0.947867299 * (color + 0.055), 2.4);
+        return color <= 0.04045 ? nearZeroSection : remainingSection;
+    #else
+        return pow(color, LinearEncodePowerApprox);
+    #endif
 }
 
 vec3 toLinearSpace(vec3 color)
 {
-    return pow(color, vec3(LinearEncodePowerApprox));
+    #if USE_EXACT_SRGB_CONVERSIONS
+        return toLinearSpaceExact(color);
+    #else
+        return pow(color, vec3(LinearEncodePowerApprox));
+    #endif
 }
 
 vec4 toLinearSpace(vec4 color)
 {
-    return vec4(pow(color.rgb, vec3(LinearEncodePowerApprox)), color.a);
-}
-
-vec3 toGammaSpace(vec3 color)
-{
-    return pow(color, vec3(GammaEncodePowerApprox));
-}
-
-vec4 toGammaSpace(vec4 color)
-{
-    return vec4(pow(color.rgb, vec3(GammaEncodePowerApprox)), color.a);
+    #if USE_EXACT_SRGB_CONVERSIONS
+        return vec4(toLinearSpaceExact(color.rgb), color.a);
+    #else
+        return vec4(pow(color.rgb, vec3(LinearEncodePowerApprox)), color.a);
+    #endif
 }
 
 float toGammaSpace(float color)
 {
-    return pow(color, GammaEncodePowerApprox);
+    #if USE_EXACT_SRGB_CONVERSIONS
+        float nearZeroSection = 12.92 * color;
+        float remainingSection = 1.055 * pow(color, 0.41666) - 0.055;
+        return color <= 0.0031308 ? nearZeroSection : remainingSection;
+    #else
+        return pow(color, GammaEncodePowerApprox);
+    #endif
+}
+
+vec3 toGammaSpace(vec3 color)
+{
+    #if USE_EXACT_SRGB_CONVERSIONS
+        return toGammaSpaceExact(color);
+    #else
+        return pow(color, vec3(GammaEncodePowerApprox));
+    #endif
+}
+
+vec4 toGammaSpace(vec4 color)
+{
+    #if USE_EXACT_SRGB_CONVERSIONS
+        return vec4(toGammaSpaceExact(color.rgb), color.a);
+    #else
+        return vec4(pow(color.rgb, vec3(GammaEncodePowerApprox)), color.a);
+    #endif
 }
 
 float square(float value)
+{
+    return value * value;
+}
+
+vec3 square(vec3 value)
 {
     return value * value;
 }
@@ -83,6 +153,7 @@ float pow5(float value) {
     return sq * sq * value;
 }
 
+// Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 float getLuminance(vec3 color)
 {
     return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);
@@ -109,7 +180,7 @@ vec4 toRGBD(vec3 color) {
     D            = clamp(floor(D) / 255.0, 0., 1.);
     // vec3 rgb = color.rgb * (D * (255.0 / rgbdMaxRange));
     vec3 rgb = color.rgb * D;
-    
+
     // Helps with png quantization.
     rgb = toGammaSpace(rgb);
 

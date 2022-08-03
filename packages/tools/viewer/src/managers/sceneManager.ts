@@ -52,6 +52,8 @@ import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Scene } from "core/scene";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { Constants } from "core/Engines/constants";
+import "core/Audio/audioSceneComponent";
+import "core/Helpers/sceneHelpers";
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -1346,7 +1348,7 @@ export class SceneManager {
                 .sort()
                 .forEach((name, idx) => {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const configuration = globalLightsConfiguration[name];
+                    // const configuration = globalLightsConfiguration[name];
                     const light = this.scene.getLightByName(name);
                     // sanity check
                     if (!light) {

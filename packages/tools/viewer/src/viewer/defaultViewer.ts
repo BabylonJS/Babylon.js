@@ -20,6 +20,8 @@ import type { ISceneConfiguration } from "../configuration/interfaces/sceneConfi
 import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import type { Nullable } from "core/types";
 
+import "core/Lights/Shadows/shadowGeneratorSceneComponent";
+
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
  * It uses the templating system to render a new canvas and controls.
@@ -49,9 +51,6 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             this.sceneManager.onLightsConfiguredObservable.add(() => {
                 this._configureLights();
             });
-        });
-
-        this.onInitDoneObservable.add(() => {
             this.sceneManager.setDefaultMaterial = function (sceneConfig: ISceneConfiguration) {
                 const conf = sceneConfig.defaultMaterial;
                 if (!conf) {

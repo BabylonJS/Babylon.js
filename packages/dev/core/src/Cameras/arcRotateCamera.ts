@@ -50,6 +50,13 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public radius: number;
 
+    /**
+     * Defines an override value to use as the parameter to setTarget.
+     * This allows the parameter to be specified when animating the target (e.g. using FramingBehavior).
+     */
+    @serialize()
+    public overrideCloneAlphaBetaRadius: Nullable<boolean>;
+
     @serializeAsVector3("target")
     protected _target: Vector3;
     @serializeAsMeshReference("targetHost")
@@ -886,15 +893,6 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     */
-    public detachControl(ignored: any): void;
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         this.inputs.detachElement();
 
@@ -913,6 +911,7 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
+            const directionModifier = this.invertRotation ? -1 : 1;
             let inertialAlphaOffset = this.inertialAlphaOffset;
             if (this.beta <= 0) {
                 inertialAlphaOffset *= -1;
@@ -923,9 +922,9 @@ export class ArcRotateCamera extends TargetCamera {
             if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) {
                 inertialAlphaOffset *= -1;
             }
-            this.alpha += inertialAlphaOffset;
+            this.alpha += inertialAlphaOffset * directionModifier;
 
-            this.beta += this.inertialBetaOffset;
+            this.beta += this.inertialBetaOffset * directionModifier;
 
             this.radius -= this.inertialRadiusOffset;
             this.inertialAlphaOffset *= this.inertia;
@@ -1084,6 +1083,8 @@ export class ArcRotateCamera extends TargetCamera {
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      */
     public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
+        cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
+
         if ((<any>target).getBoundingInfo) {
             if (toBoundingCenter) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
@@ -1270,6 +1271,13 @@ export class ArcRotateCamera extends TargetCamera {
         rigCam.isRigCamera = true;
         rigCam.rigParent = this;
         rigCam.upVector = this.upVector;
+
+        rigCam.mode = this.mode;
+        rigCam.orthoLeft = this.orthoLeft;
+        rigCam.orthoRight = this.orthoRight;
+        rigCam.orthoBottom = this.orthoBottom;
+        rigCam.orthoTop = this.orthoTop;
+
         return rigCam;
     }
 

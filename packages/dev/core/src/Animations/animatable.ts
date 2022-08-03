@@ -22,7 +22,7 @@ export class Animatable {
     private _speedRatio = 1;
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
-    private _frameToSyncFromJump: Nullable<number> = 0;
+    private _frameToSyncFromJump: Nullable<number> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -858,7 +858,7 @@ Scene.prototype.stopAllAnimations = function (): void {
         for (let i = 0; i < this._activeAnimatables.length; i++) {
             this._activeAnimatables[i].stop();
         }
-        this._activeAnimatables = [];
+        this._activeAnimatables.length = 0;
     }
 
     for (const group of this.animationGroups) {

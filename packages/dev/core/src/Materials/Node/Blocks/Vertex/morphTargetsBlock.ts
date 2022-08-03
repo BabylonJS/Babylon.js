@@ -30,11 +30,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.tangent.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("uvOutput", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
@@ -229,9 +230,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             if (hasTangents) {
                 injectionCode += `#ifdef MORPHTARGETS_TANGENT\r\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${tangentOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${tangent.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(${index}, vertexID) - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
                 } else {
                     injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                }
+
+                if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\r\n`;
+                } else {
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\r\n`;
                 }
                 injectionCode += `#endif\r\n`;
             }
@@ -302,7 +309,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef TANGENT\r\n`;
         state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec3(0., 0., 0.);\r\n`;
+        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec4(0., 0., 0., 0.);\r\n`;
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef UV1\r\n`;
         state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;

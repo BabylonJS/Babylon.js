@@ -25,6 +25,7 @@ import { MaterialFlags } from "../../../materialFlags";
 import { AnisotropyBlock } from "./anisotropyBlock";
 import { ReflectionBlock } from "./reflectionBlock";
 import { ClearCoatBlock } from "./clearCoatBlock";
+import { IridescenceBlock } from "./iridescenceBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
 import type { RefractionBlock } from "./refractionBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
@@ -121,6 +122,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             true,
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock")
+        );
+        this.registerInput(
+            "iridescence",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("iridescence", this, NodeMaterialConnectionPointDirection.Input, IridescenceBlock, "IridescenceBlock")
         );
 
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -520,6 +528,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the iridescence object parameters
+     */
+    public get iridescence(): NodeMaterialConnectionPoint {
+        return this._inputs[17];
+    }
+
+    /**
      * Gets the ambient output component
      */
     public get ambientClr(): NodeMaterialConnectionPoint {
@@ -684,8 +699,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
 
         const scene = mesh.getScene();
+        const engine = scene.getEngine();
 
-        if (scene.getEngine()._features.needTypeSuffixInShaderConstants) {
+        if (engine._features.needTypeSuffixInShaderConstants) {
             defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
         } else {
             defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
@@ -1179,6 +1195,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
             ],
+        });
+
+        // _____________________________ Iridescence _______________________________
+        const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
+        state.compilationString += IridescenceBlock.GetCode(iridescenceBlock);
+
+        state._emitFunctionFromInclude("pbrBlockIridescence", comments, {
+            replaceStrings: [],
         });
 
         // _____________________________ Clear Coat ____________________________

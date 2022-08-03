@@ -169,29 +169,77 @@ export class Camera extends Node {
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
+    private _orthoLeft: Nullable<number> = null;
+
+    public set orthoLeft(value: Nullable<number>) {
+        this._orthoLeft = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoLeft = value;
+        }
+    }
+
     @serialize()
-    public orthoLeft: Nullable<number> = null;
+    public get orthoLeft(): Nullable<number> {
+        return this._orthoLeft;
+    }
 
     /**
      * Define the current limit on the right side for an orthographic camera
      * In scene unit
      */
+    private _orthoRight: Nullable<number> = null;
+
+    public set orthoRight(value: Nullable<number>) {
+        this._orthoRight = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoRight = value;
+        }
+    }
+
     @serialize()
-    public orthoRight: Nullable<number> = null;
+    public get orthoRight(): Nullable<number> {
+        return this._orthoRight;
+    }
 
     /**
      * Define the current limit on the bottom side for an orthographic camera
      * In scene unit
      */
+    private _orthoBottom: Nullable<number> = null;
+
+    public set orthoBottom(value: Nullable<number>) {
+        this._orthoBottom = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoBottom = value;
+        }
+    }
+
     @serialize()
-    public orthoBottom: Nullable<number> = null;
+    public get orthoBottom(): Nullable<number> {
+        return this._orthoBottom;
+    }
 
     /**
      * Define the current limit on the top side for an orthographic camera
      * In scene unit
      */
+    private _orthoTop: Nullable<number> = null;
+
+    public set orthoTop(value: Nullable<number>) {
+        this._orthoTop = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoTop = value;
+        }
+    }
+
     @serialize()
-    public orthoTop: Nullable<number> = null;
+    public get orthoTop(): Nullable<number> {
+        return this._orthoTop;
+    }
 
     /**
      * Field Of View is set in Radians. (default is 0.8)
@@ -233,8 +281,20 @@ export class Camera extends Node {
     /**
      * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
+    private _mode = Camera.PERSPECTIVE_CAMERA;
+    set mode(mode: number) {
+        this._mode = mode;
+
+        // Pass the mode down to the rig cameras
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.mode = mode;
+        }
+    }
+
     @serialize()
-    public mode = Camera.PERSPECTIVE_CAMERA;
+    get mode(): number {
+        return this._mode;
+    }
 
     /**
      * Define whether the camera is intermediate.
@@ -589,11 +649,11 @@ export class Camera extends Node {
     public attachControl(ignored: any, noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * This function is here because typescript removes the typing of the last function.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
+     * @param _noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
+    public attachControl(_ignored?: any, _noPreventDefault?: boolean): void {}
 
     /**
      * Detach the current controls from the specified dom element.
@@ -603,13 +663,13 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored: any): void;
+    public detachControl(ignored?: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility.
+     * This function is here because typescript removes the typing of the last function.
+     * @param _ignored defines an ignored parameter kept for backward compatibility.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public detachControl(ignored?: any): void {}
+    public detachControl(_ignored?: any): void {}
 
     /**
      * Update the camera state according to the different inputs gathered during the frame.
@@ -1023,10 +1083,10 @@ export class Camera extends Node {
         if (this._rigPostProcess) {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
-            this._postProcesses = [];
+            this._postProcesses.length = 0;
         } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._rigPostProcess = null;
-            this._postProcesses = [];
+            this._postProcesses.length = 0;
         } else {
             let i = this._postProcesses.length;
             while (--i >= 0) {
@@ -1042,7 +1102,7 @@ export class Camera extends Node {
         while (--i >= 0) {
             this.customRenderTargets[i].dispose();
         }
-        this.customRenderTargets = [];
+        this.customRenderTargets.length = 0;
 
         // Active Meshes
         this._activeMeshes.dispose();
@@ -1265,7 +1325,7 @@ export class Camera extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         if (this.inputs) {
@@ -1283,14 +1343,16 @@ export class Camera extends Node {
     /**
      * Clones the current camera.
      * @param name The cloned camera name
+     * @param newParent The cloned camera's new parent (none by default)
      * @returns the cloned camera
      */
-    public clone(name: string): Camera {
+    public clone(name: string, newParent: Nullable<Node> = null): Camera {
         const camera = SerializationHelper.Clone(
             Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide),
             this
         );
         camera.name = name;
+        camera.parent = newParent;
 
         this.onClonedObservable.notifyObservers(camera);
 
@@ -1376,6 +1438,11 @@ export class Camera extends Node {
         // Parent
         if (parsedCamera.parentId !== undefined) {
             camera._waitingParentId = parsedCamera.parentId;
+        }
+
+        // Parent instance index
+        if (parsedCamera.parentInstanceIndex !== undefined) {
+            camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
         }
 
         //If camera has an input manager, let it parse inputs settings

@@ -17,7 +17,7 @@ import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Mesh } from "core/Meshes/mesh";
 import { FilesInput } from "core/Misc/filesInput";
 import type { Scene } from "core/scene";
-import { SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
+import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
 // TODO - does it still work if loading the modules from the correct files?
@@ -39,6 +39,7 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import GIF from "gif.js.optimized";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
+import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 
 const envExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
@@ -84,8 +85,8 @@ export class ToolsTabComponent extends PaneComponent {
     }
 
     componentDidMount() {
-        if (!(BABYLON as any).GLTF2Export) {
-            Tools.LoadScript("https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", () => {});
+        if (!GLTF2Export) {
+            Tools.Warn("GLTF2Export is not available. Make sure to load the serializers library");
             return;
         }
     }
@@ -216,7 +217,7 @@ export class ToolsTabComponent extends PaneComponent {
                         currentGroup.play(true);
                     }
                 };
-                (BABYLON as any).SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
+                SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
         const filesInputAnimation = new FilesInput(
@@ -363,6 +364,7 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent
+                            lockObject={this._lockObject}
                             label="Precision"
                             target={this._screenShotSize}
                             propertyName="precision"
@@ -379,6 +381,7 @@ export class ToolsTabComponent extends PaneComponent {
                         {this._useWidthHeight && (
                             <div className="secondLine">
                                 <NumericInputComponent
+                                    lockObject={this._lockObject}
                                     label="Width"
                                     precision={0}
                                     step={1}
@@ -386,6 +389,7 @@ export class ToolsTabComponent extends PaneComponent {
                                     onChange={(value) => (this._screenShotSize.width = value)}
                                 />
                                 <NumericInputComponent
+                                    lockObject={this._lockObject}
                                     label="Height"
                                     precision={0}
                                     step={1}
@@ -401,8 +405,8 @@ export class ToolsTabComponent extends PaneComponent {
                     {!this._crunchingGIF && <ButtonLineComponent label={this._gifRecorder ? "Stop" : "Record"} onClick={() => this.recordGIF()} />}
                     {!this._crunchingGIF && !this._gifRecorder && (
                         <>
-                            <FloatLineComponent label="Resolution" isInteger={true} target={this._gifOptions} propertyName="width" />
-                            <FloatLineComponent label="Frequency (ms)" isInteger={true} target={this._gifOptions} propertyName="frequency" />
+                            <FloatLineComponent lockObject={this._lockObject} label="Resolution" isInteger={true} target={this._gifOptions} propertyName="width" />
+                            <FloatLineComponent lockObject={this._lockObject} label="Frequency (ms)" isInteger={true} target={this._gifOptions} propertyName="frequency" />
                         </>
                     )}
                 </LineContainerComponent>
@@ -447,7 +451,15 @@ export class ToolsTabComponent extends PaneComponent {
                                 }}
                             />
                             {this._envOptions.imageTypeIndex > 0 && (
-                                <FloatLineComponent label="Quality" isInteger={false} min={0} max={1} target={this._envOptions} propertyName="imageQuality" />
+                                <FloatLineComponent
+                                    lockObject={this._lockObject}
+                                    label="Quality"
+                                    isInteger={false}
+                                    min={0}
+                                    max={1}
+                                    target={this._envOptions}
+                                    propertyName="imageQuality"
+                                />
                             )}
                         </>
                     )}
@@ -480,7 +492,7 @@ export class ToolsTabComponent extends PaneComponent {
                         </>
                     )}
                 </LineContainerComponent>
-                {(BABYLON as any).GLTFFileLoader && <GLTFComponent scene={scene} globalState={this.props.globalState!} />}
+                {GLTFFileLoader && <GLTFComponent lockObject={this._lockObject} scene={scene} globalState={this.props.globalState!} />}
                 <LineContainerComponent title="REFLECTOR" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />

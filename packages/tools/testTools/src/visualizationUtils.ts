@@ -37,6 +37,9 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         wasmZSTDDecoder: baseUrl + "/zstddec.wasm",
     };
 
+    BABYLON.BasisToolsOptions.JSModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.js";
+    BABYLON.BasisToolsOptions.WasmModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.wasm";
+
     window.forceUseReverseDepthBuffer = useReverseDepthBuffer === 1 || useReverseDepthBuffer === "true";
     window.forceUseNonCompatibilityMode = useNonCompatibilityMode === 1 || useNonCompatibilityMode === "true";
 
@@ -135,7 +138,7 @@ export const evaluatePrepareScene = async (
             const snippet = await data.json();
             let code = JSON.parse(snippet.jsonPayload).code.toString();
             code = code
-                .replace(/\/textures\//g, globalConfig.pgRoot + "/textures/")
+                .replace(/"\/textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/"textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/\/scenes\//g, globalConfig.pgRoot + "/scenes/")
                 .replace(/"scenes\//g, '"' + globalConfig.pgRoot + "/scenes/")

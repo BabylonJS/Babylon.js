@@ -4,7 +4,7 @@ import type { WebGPUEngine } from "../webgpuEngine";
 import type { Effect } from "../../Materials/effect";
 import type { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */
@@ -394,6 +394,15 @@ export class WebGPUPipelineContext implements IPipelineContext {
      */
     public setVector4(uniformName: string, vector4: IVector4Like): void {
         this.setFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
+    }
+
+    /**
+     * Sets a Quaternion on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param quaternion Value to be set.
+     */
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
+        this.setFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w);
     }
 
     /**

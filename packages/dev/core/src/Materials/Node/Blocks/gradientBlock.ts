@@ -171,7 +171,7 @@ export class GradientBlock extends NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        this.colorSteps = [];
+        this.colorSteps.length = 0;
 
         for (const step of serializationObject.colorSteps) {
             this.colorSteps.push(new GradientBlockColorStep(step.step, new Color3(step.color.r, step.color.g, step.color.b)));

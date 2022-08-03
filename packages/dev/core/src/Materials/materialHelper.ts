@@ -7,7 +7,8 @@ import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import { Light } from "../Lights/light";
+import type { Light } from "../Lights/light";
+import { LightConstants } from "../Lights/lightConstants";
 import { Constants } from "../Engines/constants";
 import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
@@ -298,7 +299,7 @@ export class MaterialHelper {
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
 
-        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
+        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
             defines["INSTANCESCOLOR"] = true;
         }
 
@@ -478,13 +479,13 @@ export class MaterialHelper {
         defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
 
         switch (light.falloffType) {
-            case Light.FALLOFF_GLTF:
+            case LightConstants.FALLOFF_GLTF:
                 defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
                 break;
-            case Light.FALLOFF_PHYSICAL:
+            case LightConstants.FALLOFF_PHYSICAL:
                 defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
                 break;
-            case Light.FALLOFF_STANDARD:
+            case LightConstants.FALLOFF_STANDARD:
                 defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
                 break;
         }
@@ -524,10 +525,10 @@ export class MaterialHelper {
             }
         }
 
-        if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
+        if (light.lightmapMode != LightConstants.LIGHTMAP_DEFAULT) {
             state.lightmapMode = true;
             defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-            defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY;
+            defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapMode == LightConstants.LIGHTMAP_SHADOWSONLY;
         } else {
             defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
             defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
@@ -863,6 +864,10 @@ export class MaterialHelper {
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
             this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
+        }
+
+        if (defines.INSTANCESCOLOR) {
+            attribs.push(VertexBuffer.ColorInstanceKind);
         }
     }
 

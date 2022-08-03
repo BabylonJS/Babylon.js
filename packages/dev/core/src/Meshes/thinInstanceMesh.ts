@@ -2,6 +2,7 @@ import type { Nullable, DeepImmutableObject } from "../types";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
+import { Logger } from "../Misc/logger";
 
 declare module "./mesh" {
     export interface Mesh {
@@ -111,6 +112,11 @@ declare module "./mesh" {
 }
 
 Mesh.prototype.thinInstanceAdd = function (matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean = true): number {
+    if (!this.getScene().getEngine().getCaps().instancedArrays) {
+        Logger.Error("Thin Instances are not supported on this device as Instanced Array extension not supported");
+        return -1;
+    }
+
     this._thinInstanceUpdateBufferSize("matrix", Array.isArray(matrix) ? matrix.length : 1);
 
     const index = this._thinInstanceDataStorage.instancesCount;
@@ -131,6 +137,11 @@ Mesh.prototype.thinInstanceAddSelf = function (refresh: boolean = true): number 
 };
 
 Mesh.prototype.thinInstanceRegisterAttribute = function (kind: string, stride: number): void {
+    // preserve backward compatibility
+    if (kind === VertexBuffer.ColorKind) {
+        kind = VertexBuffer.ColorInstanceKind;
+    }
+
     this.removeVerticesData(kind);
 
     this._thinInstanceInitializeUserStorage();
@@ -168,6 +179,11 @@ Mesh.prototype.thinInstanceSetMatrixAt = function (index: number, matrix: DeepIm
 };
 
 Mesh.prototype.thinInstanceSetAttributeAt = function (kind: string, index: number, value: Array<number>, refresh: boolean = true): boolean {
+    // preserve backward compatibility
+    if (kind === VertexBuffer.ColorKind) {
+        kind = VertexBuffer.ColorInstanceKind;
+    }
+
     if (!this._userThinInstanceBuffersStorage || !this._userThinInstanceBuffersStorage.data[kind] || index >= this._thinInstanceDataStorage.instancesCount) {
         return false;
     }
@@ -188,7 +204,8 @@ Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
         return this._thinInstanceDataStorage.instancesCount;
     },
     set: function (this: Mesh, value: number) {
-        const numMaxInstances = (this._thinInstanceDataStorage.matrixData?.length ?? 0) / 16;
+        const matrixData = this._thinInstanceDataStorage.matrixData ?? this.source?._thinInstanceDataStorage.matrixData;
+        const numMaxInstances = matrixData ? matrixData.length / 16 : 0;
 
         if (value <= numMaxInstances) {
             this._thinInstanceDataStorage.instancesCount = value;
@@ -199,6 +216,11 @@ Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
 });
 
 Mesh.prototype._thinInstanceCreateMatrixBuffer = function (kind: string, buffer: Float32Array, staticBuffer: boolean = false): Buffer {
+    // preserve backward compatibility
+    if (kind === VertexBuffer.ColorKind) {
+        kind = VertexBuffer.ColorInstanceKind;
+    }
+
     const matrixBuffer = new Buffer(this.getEngine(), buffer, !staticBuffer, 16, false, true);
 
     for (let i = 0; i < 4; i++) {
@@ -272,8 +294,15 @@ Mesh.prototype.thinInstanceBufferUpdated = function (kind: string): void {
         this._thinInstanceDataStorage.matrixBuffer?.updateDirectly(this._thinInstanceDataStorage.matrixData!, 0, this._thinInstanceDataStorage.instancesCount);
     } else if (kind === "previousMatrix") {
         this._thinInstanceDataStorage.previousMatrixBuffer?.updateDirectly(this._thinInstanceDataStorage.previousMatrixData!, 0, this._thinInstanceDataStorage.instancesCount);
-    } else if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
-        this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0);
+    } else {
+        // preserve backward compatibility
+        if (kind === VertexBuffer.ColorKind) {
+            kind = VertexBuffer.ColorInstanceKind;
+        }
+
+        if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
+            this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0);
+        }
     }
 };
 
@@ -282,8 +311,15 @@ Mesh.prototype.thinInstancePartialBufferUpdate = function (kind: string, data: F
         if (this._thinInstanceDataStorage.matrixBuffer) {
             this._thinInstanceDataStorage.matrixBuffer.updateDirectly(data, offset);
         }
-    } else if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
-        this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, offset);
+    } else {
+        // preserve backward compatibility
+        if (kind === VertexBuffer.ColorKind) {
+            kind = VertexBuffer.ColorInstanceKind;
+        }
+
+        if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
+            this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, offset);
+        }
     }
 };
 
@@ -344,6 +380,11 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInf
 };
 
 Mesh.prototype._thinInstanceUpdateBufferSize = function (kind: string, numInstances: number = 1) {
+    // preserve backward compatibility
+    if (kind === VertexBuffer.ColorKind) {
+        kind = VertexBuffer.ColorInstanceKind;
+    }
+
     const kindIsMatrix = kind === "matrix";
 
     if (!kindIsMatrix && (!this._userThinInstanceBuffersStorage || !this._userThinInstanceBuffersStorage.strides[kind])) {

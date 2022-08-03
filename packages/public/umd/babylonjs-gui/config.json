@@ -2,6 +2,7 @@
     "declarationLibs": ["@lts/gui"],
     "devPackageName": "gui",
     "filename": "babylon.gui.module.d.ts",
-    "outputDirectory": "./"
-
+    "outputDirectory": "./",
+    "namedExportPathsToExclude": "3D/materials/fluent/fluentMaterial",
+    "addToDocumentation": true
 }

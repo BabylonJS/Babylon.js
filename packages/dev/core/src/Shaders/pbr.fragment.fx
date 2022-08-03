@@ -64,6 +64,7 @@ precision highp float;
 #include<pbrBlockReflection>
 #include<pbrBlockSheen>
 #include<pbrBlockClearcoat>
+#include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
 
 // _____________________________ MAIN FUNCTION ____________________________
@@ -370,14 +371,51 @@ void main(void) {
         #endif
     #endif
 
-    // _____________________________ Clear Coat ____________________________
-    clearcoatOutParams clearcoatOut;
-
+    // _____________ Shared Iridescence and Clear Coat data _________________
     #ifdef CLEARCOAT
         #ifdef CLEARCOAT_TEXTURE
             vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
         #endif
+    #endif
 
+    // _____________________________ Iridescence ____________________________
+    #ifdef IRIDESCENCE
+        iridescenceOutParams iridescenceOut;
+
+        #ifdef IRIDESCENCE_TEXTURE
+            vec2 iridescenceMapData = texture2D(iridescenceSampler, vIridescenceUV + uvOffset).rg * vIridescenceInfos.y;
+        #endif
+        #ifdef IRIDESCENCE_THICKNESS_TEXTURE
+            vec2 iridescenceThicknessMapData = texture2D(iridescenceThicknessSampler, vIridescenceThicknessUV + uvOffset).rg * vIridescenceInfos.w;
+        #endif
+
+        iridescenceBlock(
+            vIridescenceParams,
+            NdotV,
+            specularEnvironmentR0,
+            #ifdef IRIDESCENCE_TEXTURE
+                iridescenceMapData,
+            #endif
+            #ifdef IRIDESCENCE_THICKNESS_TEXTURE
+                iridescenceThicknessMapData,
+            #endif
+            #ifdef CLEARCOAT
+                NdotVUnclamped,
+                #ifdef CLEARCOAT_TEXTURE
+                    clearCoatMapData,
+                #endif
+            #endif
+            iridescenceOut
+        );
+
+        float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
+        specularEnvironmentR0 = iridescenceOut.specularEnvironmentR0;
+    #endif
+
+    // _____________________________ Clear Coat ____________________________
+    clearcoatOutParams clearcoatOut;
+
+    #ifdef CLEARCOAT
         #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
             vec4 clearCoatMapRoughnessData = texture2D(clearCoatRoughnessSampler, vClearCoatRoughnessUV + uvOffset) * vClearCoatInfos.w;
         #endif
@@ -634,11 +672,7 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
-        #if defined(REFLECTIVITY)
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(baseReflectivity.rgb, baseReflectivity.a * writeGeometryInfo);
-        #else
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo);
-        #endif
+        gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toGammaSpace(specularEnvironmentR0), microSurface) * writeGeometryInfo;
     #endif
 #endif
 

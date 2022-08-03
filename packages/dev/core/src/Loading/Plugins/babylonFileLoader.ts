@@ -30,7 +30,6 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
-import { EndsWith } from "../../Misc/stringTools";
 
 /** @hidden */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -49,7 +48,7 @@ export class BabylonFileLoaderConfiguration {
 }
 
 let tempIndexContainer: { [key: string]: Node } = {};
-const tempMaterialIndexContainer: { [key: string]: Material } = {};
+let tempMaterialIndexContainer: { [key: string]: Material } = {};
 
 const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -59,7 +58,7 @@ const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, p
     for (let index = 0, cache = parsedData.materials.length; index < cache; index++) {
         const parsedMaterial = parsedData.materials[index];
         if (predicate(parsedMaterial)) {
-            return Material.Parse(parsedMaterial, scene, rootUrl);
+            return { parsedMaterial, material: Material.Parse(parsedMaterial, scene, rootUrl) };
         }
     }
     return null;
@@ -124,12 +123,21 @@ const loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const findParent = (parentId: any, scene: Scene) => {
+const findParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     if (typeof parentId !== "number") {
-        return scene.getLastEntryById(parentId);
+        const parentEntry = scene.getLastEntryById(parentId);
+        if (parentEntry && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
+            const instance = (parentEntry as Mesh).instances[parseInt(parentInstanceIndex)];
+            return instance;
+        }
+        return parentEntry;
     }
 
     const parent = tempIndexContainer[parentId];
+    if (parent && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
+        const instance = (parent as Mesh).instances[parseInt(parentInstanceIndex)];
+        return instance;
+    }
 
     return parent;
 };
@@ -170,15 +178,24 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                     scene,
                     hdrSize,
                     true,
-                    !isPBR
+                    !isPBR,
+                    undefined,
+                    parsedData.environmentTexturePrefilterOnLoad
                 );
                 if (parsedData.environmentTextureRotationY) {
                     hdrTexture.rotationY = parsedData.environmentTextureRotationY;
                 }
                 scene.environmentTexture = hdrTexture;
             } else {
-                if (EndsWith(parsedData.environmentTexture, ".env")) {
-                    const compressedTexture = new CubeTexture((parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture, scene);
+                if (typeof parsedData.environmentTexture === "object") {
+                    const environmentTexture = CubeTexture.Parse(parsedData.environmentTexture, scene, rootUrl);
+                    scene.environmentTexture = environmentTexture;
+                } else if ((parsedData.environmentTexture as string).endsWith(".env")) {
+                    const compressedTexture = new CubeTexture(
+                        (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
+                        scene,
+                        parsedData.environmentTextureForcedExtension
+                    );
                     if (parsedData.environmentTextureRotationY) {
                         compressedTexture.rotationY = parsedData.environmentTextureRotationY;
                     }
@@ -186,7 +203,8 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 } else {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(
                         (parsedData.environmentTexture.match(/https?:\/\//g) ? "" : rootUrl) + parsedData.environmentTexture,
-                        scene
+                        scene,
+                        parsedData.environmentTextureForcedExtension
                     );
                     if (parsedData.environmentTextureRotationY) {
                         cubeTexture.rotationY = parsedData.environmentTextureRotationY;
@@ -413,16 +431,18 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
-                camera.parent = findParent(camera._waitingParentId, scene);
+                camera.parent = findParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
                 camera._waitingParentId = null;
+                camera._waitingParentInstanceIndex = null;
             }
         }
 
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             const light = scene.lights[index];
             if (light && light._waitingParentId !== null) {
-                light.parent = findParent(light._waitingParentId, scene);
+                light.parent = findParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
                 light._waitingParentId = null;
+                light._waitingParentInstanceIndex = null;
             }
         }
 
@@ -430,15 +450,17 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             const transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId !== null) {
-                transformNode.parent = findParent(transformNode._waitingParentId, scene);
+                transformNode.parent = findParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
                 transformNode._waitingParentId = null;
+                transformNode._waitingParentInstanceIndex = null;
             }
         }
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
-                mesh.parent = findParent(mesh._waitingParentId, scene);
+                mesh.parent = findParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
                 mesh._waitingParentId = null;
+                mesh._waitingParentInstanceIndex = null;
             }
             if (mesh._waitingData.lods) {
                 loadDetailLevels(scene, mesh);
@@ -545,6 +567,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         }
     } finally {
         tempIndexContainer = {};
+        tempMaterialIndexContainer = {};
 
         if (!addToScene) {
             container.removeAllFromScene();
@@ -657,8 +680,9 @@ SceneLoader.RegisterPlugin({
                                 const loadSubMaterial = (subMatId: string, predicate: (parsedMaterial: any) => boolean) => {
                                     materialArray.push(subMatId);
                                     const mat = parseMaterialByPredicate(predicate, parsedData, scene, rootUrl);
-                                    if (mat) {
-                                        log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    if (mat && mat.material) {
+                                        tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                        log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                     }
                                 };
                                 for (let multimatIndex = 0, multimatCache = parsedData.multiMaterials.length; multimatIndex < multimatCache; multimatIndex++) {
@@ -694,15 +718,16 @@ SceneLoader.RegisterPlugin({
                                 materialArray.push(parsedMesh.materialUniqueId || parsedMesh.materialId);
                                 const mat = parseMaterialByPredicate(
                                     (parsedMaterial) =>
-                                        (parsedMesh.MaterialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
+                                        (parsedMesh.materialUniqueId && parsedMaterial.uniqueId === parsedMesh.materialUniqueId) || parsedMaterial.id === parsedMesh.materialId,
                                     parsedData,
                                     scene,
                                     rootUrl
                                 );
-                                if (!mat) {
+                                if (!mat || !mat.material) {
                                     Logger.Warn("Material not found for mesh " + parsedMesh.id);
                                 } else {
-                                    log += "\n\tMaterial " + mat.toString(fullDetails);
+                                    tempMaterialIndexContainer[mat.parsedMaterial.uniqueId || mat.parsedMaterial.id] = mat.material;
+                                    log += "\n\tMaterial " + mat.material.toString(fullDetails);
                                 }
                             }
                         }
@@ -764,7 +789,13 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
                     const transformNode = scene.transformNodes[index];
                     if (transformNode._waitingParentId !== null) {
-                        transformNode.parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        const parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        let parentNode = parent;
+                        if (transformNode._waitingParentInstanceIndex) {
+                            parentNode = (parent as Mesh).instances[parseInt(transformNode._waitingParentInstanceIndex)];
+                            transformNode._waitingParentInstanceIndex = null;
+                        }
+                        transformNode.parent = parentNode;
                         transformNode._waitingParentId = null;
                     }
                 }
@@ -772,7 +803,13 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
-                        currentMesh.parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        const parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        let parentNode = parent;
+                        if (currentMesh._waitingParentInstanceIndex) {
+                            parentNode = (parent as Mesh).instances[parseInt(currentMesh._waitingParentInstanceIndex)];
+                            currentMesh._waitingParentInstanceIndex = null;
+                        }
+                        currentMesh.parent = parentNode;
                         if (currentMesh.parent?.getClassName() === "TransformNode") {
                             const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent as TransformNode);
                             if (loadedTransformNodeIndex > -1) {

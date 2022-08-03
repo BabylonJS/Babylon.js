@@ -152,7 +152,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
         this._engine = this._scene.getEngine();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
-            this._keys = [];
+            this._keys.length = 0;
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
@@ -212,11 +212,6 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void;
-
-    /**
-     * Detach the current controls from the specified dom element.
-     */
     public detachControl(): void {
         if (this._scene) {
             if (this._onKeyboardObserver) {
@@ -229,7 +224,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
             this._onCanvasBlurObserver = null;
         }
 
-        this._keys = [];
+        this._keys.length = 0;
     }
 
     /**

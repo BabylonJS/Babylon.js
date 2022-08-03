@@ -29,6 +29,7 @@ import { Color4, Color3 } from "../Maths/math.color";
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Shaders/glowBlurPostProcess.fragment";
+import "../Layers/effectLayerSceneComponent";
 
 declare module "../abstractScene" {
     export interface AbstractScene {

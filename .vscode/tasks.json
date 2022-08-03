@@ -5,18 +5,30 @@
     "tasks": [
         {
             "label": "Watch all for CDN (Dev)",
+            "dependsOn": ["Build (Dev)"],
             "type": "shell",
-            "command": "npx build-tools -c dw -wd -wa",
+            "command": "npx build-tools -c dw -wd -wa -sc",
             "isBackground": true,
             "runOptions": {
                 "instanceLimit": 1
             },
-            "presentation": {
-                "group": "watch"
-            },
-            "problemMatcher": [
-                "$tsc-watch"
-            ]
+            "problemMatcher": {
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": "(error|warning|info)",
+                    "file": 1,
+                    "location": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Babylon.js build tools",
+                    "endsPattern": "watching for asset changes..."
+                }
+            }
+            // "problemMatcher": ["$tsc-watch"]
         },
         {
             "label": "Watch all (Dev)",
@@ -29,9 +41,7 @@
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": [
-                "$tsc-watch"
-            ]
+            "problemMatcher": ["$tsc-watch"]
         },
         {
             "label": "Build (Dev)",
@@ -44,9 +54,7 @@
             "presentation": {
                 "group": "build"
             },
-            "problemMatcher": [
-                "$tsc"
-            ]
+            "problemMatcher": ["$tsc"]
         },
         {
             "label": "Build (LTS)",
@@ -59,15 +67,11 @@
             "presentation": {
                 "group": "build"
             },
-            "problemMatcher": [
-                "$tsc"
-            ]
+            "problemMatcher": ["$tsc"]
         },
         {
             "label": "Run visualization tests (Dev)",
-            "dependsOn": [
-                "CDN Serve (Dev)"
-            ],
+            "dependsOn": ["CDN Serve (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -79,12 +83,7 @@
                     "HEADLESS": "false"
                 }
             },
-            "args": [
-                "run",
-                "test",
-                "-w",
-                "@tools/visualization-tests"
-            ],
+            "args": ["run", "test:visualization"],
             "presentation": {
                 "group": "test"
             },
@@ -92,9 +91,7 @@
         },
         {
             "label": "Run visualization tests headless (Dev)",
-            "dependsOn": [
-                "CDN Serve (Dev)"
-            ],
+            "dependsOn": ["CDN Serve (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -103,21 +100,14 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "test",
-                "-w",
-                "@tools/visualization-tests"
-            ],
+            "args": ["run", "test:visualization"],
             "presentation": {
                 "group": "test"
             }
         },
         {
             "label": "Run Dev host (Dev)",
-            "dependsOn": [
-                "Build (Dev)"
-            ],
+            "dependsOn": ["Build (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -126,26 +116,16 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/dev-host"
-            ],
+            "args": ["run", "serve", "-w", "@tools/dev-host"],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Run and Watch Dev host (Dev)",
-            "dependsOn": [
-                "Watch all (Dev)"
-            ],
+            "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -154,26 +134,16 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/dev-host"
-            ],
+            "args": ["run", "serve", "-w", "@tools/dev-host"],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "CDN Serve and watch (Dev)",
-            "dependsOn": [
-                "Watch all for CDN (Dev)"
-            ],
+            "dependsOn": ["Watch all for CDN (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -182,26 +152,16 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/babylon-server"
-            ],
+            "args": ["run", "serve", "-w", "@tools/babylon-server"],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "CDN Serve (Dev)",
-            "dependsOn": [
-                "Build (Dev)"
-            ],
+            "dependsOn": ["Build (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -210,26 +170,16 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/babylon-server"
-            ],
+            "args": ["run", "serve", "-w", "@tools/babylon-server"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "CDN Serve Prod (Dev)",
-            "dependsOn": [
-                "Build (Dev)"
-            ],
+            "dependsOn": ["Build (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -238,26 +188,16 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve:prod",
-                "-w",
-                "@tools/babylon-server"
-            ],
+            "args": ["run", "serve:prod", "-w", "@tools/babylon-server"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "CDN Serve (LTS)",
-            "dependsOn": [
-                "Build (LTS)"
-            ],
+            "dependsOn": ["Build (LTS)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -266,20 +206,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve:lts",
-                "-w",
-                "@tools/babylon-server"
-            ],
+            "args": ["run", "serve:lts", "-w", "@tools/babylon-server"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Playground Serve for core (Dev)",
@@ -292,20 +224,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/playground"
-            ],
+            "args": ["run", "serve", "-w", "@tools/playground"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Playground Serve (Dev)",
@@ -318,20 +242,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/playground"
-            ],
+            "args": ["run", "serve", "-w", "@tools/playground"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Playground Serve (LTS)",
@@ -344,20 +260,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/playground"
-            ],
+            "args": ["run", "serve", "-w", "@tools/playground"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Sandbox Serve for core (Dev)",
@@ -370,20 +278,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/sandbox"
-            ],
+            "args": ["run", "serve", "-w", "@tools/sandbox"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Sandbox Serve (Dev)",
@@ -396,20 +296,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/sandbox"
-            ],
+            "args": ["run", "serve", "-w", "@tools/sandbox"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "GUI Editor Serve for core (Dev)",
@@ -422,20 +314,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/gui-editor"
-            ],
+            "args": ["run", "serve", "-w", "@tools/gui-editor"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "GUI Editor Serve (Dev)",
@@ -448,20 +332,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/gui-editor"
-            ],
+            "args": ["run", "serve", "-w", "@tools/gui-editor"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Node Editor Serve for core (Dev)",
@@ -474,20 +350,12 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/node-editor"
-            ],
+            "args": ["run", "serve", "-w", "@tools/node-editor"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Node Editor Serve (Dev)",
@@ -500,20 +368,48 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": [
-                "run",
-                "serve",
-                "-w",
-                "@tools/node-editor"
-            ],
+            "args": ["run", "serve", "-w", "@tools/node-editor"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
             },
-            "problemMatcher": [
-                "$ts-webpack-watch",
-                "$tslint-webpack-watch"
-            ]
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "VSM Serve for core (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/vsm"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "VSM Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/vsm"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
             "label": "Terminate All Tasks",

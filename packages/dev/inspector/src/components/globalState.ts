@@ -15,6 +15,8 @@ import { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
+// eslint-disable-next-line import/no-internal-modules
+import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -29,7 +31,7 @@ export class GlobalState {
     public validationResults: Nullable<IGLTFValidationResults> = null;
     public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();
 
-    public onExtensionLoadedObservable: Observable<import("loaders/glTF/index").IGLTFLoaderExtension>;
+    public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
 
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {
         MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
@@ -41,6 +43,7 @@ export class GlobalState {
         KHR_mesh_quantization: { enabled: true },
         KHR_materials_pbrSpecularGlossiness: { enabled: true },
         KHR_materials_clearcoat: { enabled: true },
+        KHR_materials_iridescence: { enabled: true },
         KHR_materials_emissive_strength: { enabled: true },
         KHR_materials_ior: { enabled: true },
         KHR_materials_sheen: { enabled: true },
@@ -75,7 +78,7 @@ export class GlobalState {
         useSRGBBuffers: true,
     };
 
-    public glTFLoaderExtensions: { [key: string]: import("loaders/glTF/index").IGLTFLoaderExtension } = {};
+    public glTFLoaderExtensions: { [key: string]: IGLTFLoaderExtension } = {};
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitles: Array<string> = [];
@@ -123,7 +126,7 @@ export class GlobalState {
         });
     }
 
-    public prepareGLTFPlugin(loader: import("loaders/glTF/index").GLTFFileLoader) {
+    public prepareGLTFPlugin(loader: GLTFFileLoader) {
         this.glTFLoaderExtensions = {};
         const loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {

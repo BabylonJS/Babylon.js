@@ -85,6 +85,21 @@ uniform float pointSize;
     #endif
 #endif
 
+// Iridescence
+#ifdef IRIDESCENCE
+    #if defined(IRIDESCENCE_TEXTURE) || defined(IRIDESCENCE_THICKNESS_TEXTURE)
+        uniform vec4 vIridescenceInfos;
+    #endif
+
+    #ifdef IRIDESCENCE_TEXTURE
+        uniform mat4 iridescenceMatrix;
+    #endif
+
+    #ifdef IRIDESCENCE_THICKNESS_TEXTURE
+        uniform mat4 iridescenceThicknessMatrix;
+    #endif
+#endif
+
 // Anisotropy
 #ifdef ANISOTROPIC
     #ifdef ANISOTROPIC_TEXTURE

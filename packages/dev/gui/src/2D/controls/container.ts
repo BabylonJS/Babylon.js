@@ -142,6 +142,7 @@ export class Container extends Control {
 
     public _flagDescendantsAsMatrixDirty(): void {
         for (const child of this.children) {
+            child._isClipped = false;
             child._markMatrixAsDirty();
         }
     }
@@ -254,6 +255,8 @@ export class Container extends Control {
      * @hidden
      */
     public _reOrderControl(control: Control): void {
+        const linkedMesh = control.linkedMesh;
+
         this.removeControl(control);
 
         let wasAdded = false;
@@ -270,6 +273,10 @@ export class Container extends Control {
         }
 
         control.parent = this;
+
+        if (linkedMesh) {
+            control.linkWithMesh(linkedMesh);
+        }
 
         this._markAsDirty();
     }
@@ -411,11 +418,13 @@ export class Container extends Control {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     if (child._layout(this._measureForChildren, context)) {
-                        if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
-                        }
-                        if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
+                        if (child.isVisible && !child.notRenderable) {
+                            if (this.adaptWidthToChildren && child._width.isPixel) {
+                                computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
+                            }
+                            if (this.adaptHeightToChildren && child._height.isPixel) {
+                                computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
+                            }
                         }
                     }
                 }
@@ -425,6 +434,7 @@ export class Container extends Control {
                     if (this.width !== computedWidth + "px") {
                         this.parent?._markAsDirty();
                         this.width = computedWidth + "px";
+                        this._width.ignoreAdaptiveScaling = true;
                         this._rebuildLayout = true;
                     }
                 }
@@ -433,6 +443,7 @@ export class Container extends Control {
                     if (this.height !== computedHeight + "px") {
                         this.parent?._markAsDirty();
                         this.height = computedHeight + "px";
+                        this._height.ignoreAdaptiveScaling = true;
                         this._rebuildLayout = true;
                     }
                 }

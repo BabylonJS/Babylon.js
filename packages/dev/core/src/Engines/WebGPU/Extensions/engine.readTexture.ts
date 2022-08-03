@@ -11,7 +11,9 @@ WebGPUEngine.prototype._readTexturePixels = function (
     level = 0,
     buffer: Nullable<ArrayBufferView> = null,
     flushRenderer = true,
-    noDataConversion = false
+    noDataConversion = false,
+    x = 0,
+    y = 0
 ): Promise<ArrayBufferView> {
     const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
@@ -19,7 +21,7 @@ WebGPUEngine.prototype._readTexturePixels = function (
         this.flushFramebuffer();
     }
 
-    return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, 0, 0, width, height, gpuTextureWrapper.format, faceIndex, level, buffer, noDataConversion);
+    return this._textureHelper.readPixels(gpuTextureWrapper.underlyingResource!, x, y, width, height, gpuTextureWrapper.format, faceIndex, level, buffer, noDataConversion);
 };
 
 WebGPUEngine.prototype._readTexturePixelsSync = function (): ArrayBufferView {

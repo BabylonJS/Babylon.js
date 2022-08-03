@@ -24,6 +24,10 @@ export interface IMultiRenderTargetOptions {
      */
     samplingModes?: number[];
     /**
+     * Define if sRGB format should be used for each of the draw buffers we want to create
+     */
+    useSRGBBuffers?: boolean[];
+    /**
      * Define if a depth buffer is required
      */
     generateDepthBuffer?: boolean;
@@ -149,7 +153,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         const types: number[] = [];
         const samplingModes: number[] = [];
-        this._initTypes(count, types, samplingModes, options);
+        const useSRGBBuffers: boolean[] = [];
+        this._initTypes(count, types, samplingModes, useSRGBBuffers, options);
 
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
@@ -164,6 +169,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             depthTextureFormat: depthTextureFormat,
             types: types,
             textureCount: count,
+            useSRGBBuffers: useSRGBBuffers,
         };
 
         this._count = count;
@@ -175,7 +181,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
     }
 
-    private _initTypes(count: number, types: number[], samplingModes: number[], options?: IMultiRenderTargetOptions) {
+    private _initTypes(count: number, types: number[], samplingModes: number[], useSRGBBuffers: boolean[], options?: IMultiRenderTargetOptions) {
         for (let i = 0; i < count; i++) {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
@@ -187,6 +193,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
                 samplingModes.push(options.samplingModes[i]);
             } else {
                 samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
+            }
+
+            if (options && options.useSRGBBuffers && options.useSRGBBuffers[i] !== undefined) {
+                useSRGBBuffers.push(options.useSRGBBuffers[i]);
+            } else {
+                useSRGBBuffers.push(false);
             }
         }
     }
@@ -277,6 +289,9 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._multiRenderTargetOptions.samplingModes) {
             this._multiRenderTargetOptions.samplingModes[index] = texture.samplingMode;
         }
+        if (this._multiRenderTargetOptions.useSRGBBuffers) {
+            this._multiRenderTargetOptions.useSRGBBuffers[index] = texture._useSRGBBuffer;
+        }
     }
 
     /**
@@ -318,10 +333,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         const types: number[] = [];
         const samplingModes: number[] = [];
+        const useSRGBBuffers: boolean[] = [];
 
-        this._initTypes(count, types, samplingModes, options);
+        this._initTypes(count, types, samplingModes, useSRGBBuffers, options);
         this._multiRenderTargetOptions.types = types;
         this._multiRenderTargetOptions.samplingModes = samplingModes;
+        this._multiRenderTargetOptions.useSRGBBuffers = useSRGBBuffers;
         this._rebuild(true, textureNames);
     }
 

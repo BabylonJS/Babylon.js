@@ -1,6 +1,7 @@
 const exec = require("child_process").exec;
 const path = require("path");
 const fs = require("fs");
+const generateChangelog = require("./generateChangelog");
 
 const branchName = process.argv[2];
 const dryRun = process.argv[3];
@@ -39,8 +40,9 @@ const updateEngineVersion = async (version) => {
     if (!array) {
         throw new Error("Could not find babylonjs version in thinEngine.ts");
     }
-    const regexp = new RegExp(array[1], "g");
-    const newThinEngineData = thinEngineData.replace(regexp, version);
+
+    const regexp = new RegExp(array[1] + "\"", "g");
+    const newThinEngineData = thinEngineData.replace(regexp, version + "\"");
     fs.writeFileSync(thinEngineFile, newThinEngineData);
 };
 
@@ -55,22 +57,15 @@ async function runTagsUpdate() {
     await runCommand("npm install");
     const version = getNewVersion();
     await updateEngineVersion(version);
-    await runCommand("git add .");
-    await runCommand(`git commit -m "Version update ${version}"`);
+    await generateChangelog(version);
     if (dryRun) {
+        console.log("skipping", `git commit -m "Version update ${version}"`);
         console.log("skipping", `git tag -a ${version} -m ${version}`);
     } else {
+        await runCommand("git add .");
+        await runCommand(`git commit -m "Version update ${version}"`);
         await runCommand(`git tag -a ${version} -m ${version}`);
     }
-    // this is done in the CI (or should be done manually if executed locally).
-    // await runCommand(`git fetch origin`);
-    // await runCommand(`git pull origin ${branchName ? branchName : ""}`);
-    // if (!dryRun) {
-    //     await runCommand(`git push origin ${branchName} --tags`);
-    // } else {
-    //     console.log("skipping", `git push origin ${branchName} --tags`);
-    //     await runCommand(`git status`);
-    // }
 }
 if (!branchName) {
     console.log("Please provide a branch name");

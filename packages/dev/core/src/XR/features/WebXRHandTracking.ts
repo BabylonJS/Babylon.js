@@ -118,7 +118,7 @@ export interface IWebXRHandTrackingOptions {
 /**
  * Parts of the hands divided to writs and finger names
  */
-export const enum HandPart {
+export enum HandPart {
     /**
      * HandPart - Wrist
      */
@@ -149,7 +149,7 @@ export const enum HandPart {
  * Joints of the hand as defined by the WebXR specification.
  * https://immersive-web.github.io/webxr-hand-input/#skeleton-joints-section
  */
-export const enum XRHandJoint {
+export enum XRHandJoint {
     /** Wrist */
     WRIST = "wrist",
 
@@ -624,7 +624,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
                 // single change for left handed systems
                 if (!handsDefined && !scene.useRightHandedSystem) {
-                    handGLB.transformNodes[0].rotate(Axis.Y, Math.PI);
+                    handGLB.meshes[1].rotate(Axis.Y, Math.PI);
                 }
             });
 

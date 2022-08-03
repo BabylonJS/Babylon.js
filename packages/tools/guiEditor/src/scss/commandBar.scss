@@ -20,6 +20,11 @@
     .commands-right {
         float: right;
         display: flex;
+        .beta-flag {
+            height: 30px;
+            position: relative;
+            left: -15px;
+        }
     }
 
     &.background-ts {
@@ -80,10 +85,6 @@
             justify-content: center;
         }
 
-        &:hover {
-            background-color: var(--selectionGrey);
-        }
-
         .active {
             transform-origin: center;
             background-color: var(--selectionGrey);
@@ -95,7 +96,17 @@
             }
         }
     }
-
+    .command-button:hover {
+        background-color: var(--selectionGrey);
+    }
+    .copyAndDeleteDisabled {
+        pointer-events: none;
+        color: black;
+    }
+    .pasteDisabled {
+        pointer-events: none;
+        color: black;
+    }
     .command-dropdown-root {
         position: relative;
         text-transform: uppercase;

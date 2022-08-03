@@ -12,7 +12,6 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from "./transformNode";
 import type { Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer";
-import { Tools } from "../Misc/tools";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -60,7 +59,7 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
-        this.animations = Tools.Slice(source.animations);
+        this.animations = source.animations.slice();
         for (const range of source.getAnimationRanges()) {
             if (range != null) {
                 this.createAnimationRange(range.name, range.from, range.to);
@@ -332,6 +331,8 @@ export class InstancedMesh extends AbstractMesh {
      * @hidden
      */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
+        super._activate(renderId, intermediateRendering);
+
         if (!this._sourceMesh.subMeshes) {
             Logger.Warn("Instances should only be created for meshes with geometry.");
         }
@@ -498,6 +499,7 @@ export class InstancedMesh extends AbstractMesh {
                 "behaviors",
                 "worldMatrixFromCache",
                 "hasThinInstances",
+                "hasBoundingInfo",
             ],
             []
         );
@@ -538,6 +540,17 @@ export class InstancedMesh extends AbstractMesh {
         // Remove from mesh
         this._sourceMesh.removeInstance(this);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    /**
+     * @param serializationObject
+     * @hidden
+     */
+    public _serializeAsParent(serializationObject: any) {
+        super._serializeAsParent(serializationObject);
+
+        serializationObject.parentId = this._sourceMesh.uniqueId;
+        serializationObject.parentInstanceIndex = this._indexInSourceMeshInstanceArray;
     }
 }
 
@@ -582,8 +595,6 @@ declare module "./abstractMesh" {
     }
 }
 
-Mesh.prototype.edgesShareWithInstances = false;
-
 Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number): void {
     // Remove existing one
     this._userInstancedBuffersStorage?.vertexBuffers[kind]?.dispose();
@@ -596,13 +607,15 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
             instance.instancedBuffers = {};
         }
 
-        this._userInstancedBuffersStorage = {
-            data: {},
-            vertexBuffers: {},
-            strides: {},
-            sizes: {},
-            vertexArrayObjects: this.getEngine().getCaps().vertexArrayObject ? {} : undefined,
-        };
+        if (!this._userInstancedBuffersStorage) {
+            this._userInstancedBuffersStorage = {
+                data: {},
+                vertexBuffers: {},
+                strides: {},
+                sizes: {},
+                vertexArrayObjects: this.getEngine().getCaps().vertexArrayObject ? {} : undefined,
+            };
+        }
     }
 
     // Creates an empty property for this kind
@@ -618,6 +631,8 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     }
 
     this._invalidateInstanceVertexArrayObject();
+
+    this._markSubMeshesAsAttributesDirty();
 };
 
 Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedMesh[], renderSelf: boolean) {

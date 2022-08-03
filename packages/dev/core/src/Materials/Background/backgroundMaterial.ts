@@ -680,7 +680,7 @@ export class BackgroundMaterial extends PushMaterial {
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -739,7 +739,6 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
                     defines.REFLECTIONBLUR = this._reflectionBlur > 0;
-                    defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
                     defines.REFLECTIONBGR = this.switchToBGR;
@@ -749,6 +748,7 @@ export class BackgroundMaterial extends PushMaterial {
                     }
 
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 
                     switch (reflectionTexture.coordinatesMode) {
                         case Texture.EXPLICIT_MODE:
@@ -967,6 +967,7 @@ export class BackgroundMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
         return true;
     }
@@ -1250,7 +1251,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns The JSON representation.
      */
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.BackgroundMaterial";
         return serializationObject;
     }

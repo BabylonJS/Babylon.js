@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/post-processes",
-    "version": "5.0.0-rc.12",
+    "version": "5.17.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -15,18 +15,21 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
         "compile": "tsc -b tsconfig.build.json",
-        "postcompile": "build-tools -c add-js-to-es6 --path ./dist/**/*.js",
+        "postcompile": "build-tools -c add-js-to-es6",
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.0.0-rc.12",
-        "tslib": "^2.3.1"
+        "tslib": "^2.4.0"
     },
     "devDependencies": {
+        "@babylonjs/core": "^5.17.1",
         "@dev/build-tools": "^1.0.0",
         "@lts/post-processes": "^1.0.0",
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^5.0.0"
     },
     "keywords": [
         "3D",

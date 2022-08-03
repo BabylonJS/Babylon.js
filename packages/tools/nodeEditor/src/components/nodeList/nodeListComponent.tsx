@@ -19,7 +19,7 @@ interface INodeListComponentProps {
 }
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
-    private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     private static _Tooltips: { [key: string]: string } = {
         BonesBlock: "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
@@ -65,6 +65,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         WorldMatrixBlock: "A matrix to remap points in 3D local space to 3D world space",
         WorldViewProjectionMatrixBlock: "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
         ColorBlock: "Outputs the RGBA color of each vertex in the mesh",
+        InstanceColorBlock: "Outputs the RGBA color of each instance",
         InstancesBlock: "Provides the world matrix for each instance to apply this material to all instances",
         MatrixIndicesBlock: "A Vector4 representing the vertex to bone skinning assignments",
         MatrixWeightsBlock: "A Vector4 representing the vertex to bone skinning weights",
@@ -75,6 +76,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         WorldNormal: "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
         WorldTangent: "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
         PerturbNormalBlock: "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
+        TBNBlock: "Creates a TBN matrix from normal, tangent, and bitangent vectors",
         NormalBlend: "Outputs the result of blending two normal maps together using a per-channel screen",
         WorldPosition: "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
         DiscardBlock: "A final node that will not output a pixel below the cutoff value",
@@ -211,7 +213,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 try {
                     localStorage.setItem(frameName, JSON.stringify(frameData));
                 } catch (error) {
-                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
                     return;
                 }
 
@@ -255,7 +257,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 try {
                     localStorage.setItem(blockName, JSON.stringify(blockData));
                 } catch (error) {
-                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
                     return;
                 }
 
@@ -387,7 +389,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "PositionBlock",
                 "UVBlock",
                 "ColorBlock",
+                "InstanceColorBlock",
                 "NormalBlock",
+                "TBNBlock",
                 "PerturbNormalBlock",
                 "NormalBlendBlock",
                 "TangentBlock",
@@ -543,9 +547,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                             <input
                                 type="text"
                                 placeholder="Filter"
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
                                 onBlur={() => {
-                                    this.props.globalState.blockKeyboardEvents = false;
+                                    this.props.globalState.lockObject.lock = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)}
                             />

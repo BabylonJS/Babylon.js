@@ -15,6 +15,7 @@ import { Node } from "../node";
 import type { IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
+import { Constants } from "../Engines/constants";
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
@@ -54,7 +55,7 @@ export class Animation {
     public uniqueId: number;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Snippet ID if the animation was created from the snippet server */
     public snippetId: string;
@@ -1505,7 +1506,7 @@ export class Animation {
      * @param snippetId defines the snippet to load
      * @returns a promise that will resolve to the new animation or a new array of animations
      */
-    public static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
+    public static ParseFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1541,6 +1542,14 @@ export class Animation {
             request.send();
         });
     }
+
+    /**
+     * Creates an animation or an array of animations from a snippet saved by the Inspector
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load
+     * @returns a promise that will resolve to the new animation or a new array of animations
+     */
+    public static CreateFromSnippetAsync = Animation.ParseFromSnippetAsync;
 }
 
 RegisterClass("BABYLON.Animation", Animation);

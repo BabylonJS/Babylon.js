@@ -30,7 +30,7 @@ interface ISpriteManagerPropertyGridComponentProps {
 }
 
 export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
-    private _snippetUrl = "https://snippet.babylonjs.com";
+    private _snippetUrl = Constants.SnippetUrl;
 
     constructor(props: ISpriteManagerPropertyGridComponentProps) {
         super(props);
@@ -91,7 +91,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         spriteManager.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        SpriteManager.CreateFromSnippetAsync(snippedId, scene)
+        SpriteManager.ParseFromSnippetAsync(snippedId, scene)
             .then((newManager) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
             })
@@ -123,8 +123,8 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(`SpriteManager.CreateFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `SpriteManager.CreateFromSnippetAsync("${spriteManager.snippetId}`,
+                            regex: new RegExp(`SpriteManager.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `SpriteManager.ParseFromSnippetAsync("${spriteManager.snippetId}`,
                         });
                     }
 
@@ -203,6 +203,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Rendering group ID"
                         decimalCount={0}
                         target={spriteManager}
@@ -223,6 +224,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                 </LineContainerComponent>
                 <LineContainerComponent title="CELLS" selection={this.props.globalState}>
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell width"
                         isInteger={true}
                         target={spriteManager}
@@ -231,6 +233,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell height"
                         isInteger={true}
                         target={spriteManager}

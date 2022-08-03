@@ -54,11 +54,12 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         noDirectUpdate={true}
                         target={this.props.host}
                         propertyName=""
-                        onSelect={(value: number) => {
-                            if (value === 0) {
+                        onSelect={(value) => {
+                            const valueAsNumber = value as number;
+                            if (valueAsNumber === 0) {
                                 extension.reset(this.props.host);
                             } else {
-                                extension.selectVariant(this.props.host, variants[value - 1]);
+                                extension.selectVariant(this.props.host, variants[valueAsNumber - 1]);
                             }
                             this.forceUpdate();
                         }}

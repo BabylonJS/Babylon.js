@@ -1,5 +1,7 @@
 # Babylon.js
 
+* We recommend using the [Core ES6-supported version](https://www.npmjs.com/package/@babylonjs/core);
+
 Getting started? Play directly with the Babylon.js API using our [playground](https://playground.babylonjs.com/). It also contains a lot of samples to learn how to use it.
 
 [![npm version](https://badge.fury.io/js/babylonjs.svg)](https://badge.fury.io/js/babylonjs)
@@ -16,15 +18,10 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 - <https://cdn.babylonjs.com/babylon.js>
 - <https://cdn.babylonjs.com/babylon.max.js>
 
-Additional references can be found on <https://cdn.babylonjs.com/xxx> where `xxx` is the folder structure you can find in the /dist folder like <https://cdn.babylonjs.com/gui/babylon.gui.min.js>
-
 For the preview release, use the following URLs:
 
 - <https://preview.babylonjs.com/babylon.js>
 - <https://preview.babylonjs.com/babylon.max.js>
-
-Additional references can be found on <https://preview.babylonjs.com/xxx> where xxx is the folder structure you can find in the /dist/preview release folder like <https://preview.babylonjs.com/gui/babylon.gui.min.js>
-
 ## npm
 
 BabylonJS and its modules are published on npm with full typing support. To install, use:
@@ -60,7 +57,7 @@ To add a module, install the respective package. A list of extra packages and th
 
 ## Usage
 
-See [Getting Started](https://doc.babylonjs.com/#getting-started):
+See [Getting Started](https://doc.babylonjs.com/start):
 
 ```javascript
 // Get the canvas DOM element
@@ -100,17 +97,13 @@ window.addEventListener('resize', function(){
 });
 ```
 
-## Preview release
-
-Preview version of **4.1** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
-If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
-
 ## Documentation
 
 - [Documentation](https://doc.babylonjs.com)
-- [Examples](https://doc.babylonjs.com/examples)
+- [Examples](https://playground.babylonjs.com)
 
 ## Contributing
+
 Please see the [Contributing Guidelines](./contributing.md).
 
 ## Useful links
@@ -127,8 +120,5 @@ Please see the [Contributing Guidelines](./contributing.md).
 
 ## Features
 
-To get a complete list of supported features, please visit our [website](https://www.babylonjs.com/#specifications).
+To get a complete list of supported features, please visit [Babylon.js website](https://www.babylonjs.com/).
 
-## Build
-
-Babylon.js is automatically built using [Gulp](https://gulpjs.com/). Further instructions can be found in [the documentation](https://doc.babylonjs.com/how_to/how_to_start#the-build) or in the readme at [/Tools/Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp).

@@ -1,11 +1,14 @@
 import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
 import type { GlobalState } from "../globalState";
+import { GUIEditorTool } from "../globalState";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
 import pointerIcon from "../imgs/pointerIcon.svg";
@@ -15,9 +18,14 @@ import guidesIcon from "../imgs/guidesIcon.svg";
 import logoIcon from "../imgs/babylonLogo.svg";
 import canvasFitIcon from "../imgs/canvasFitIcon.svg";
 import betaFlag from "../imgs/betaFlag.svg";
+import copyIcon from "../imgs/buttonbar_copyIcon.svg";
+import pasteIcon from "../imgs/buttonbar_pasteIcon.svg";
+import deleteIcon from "../imgs/buttonBar_deleteIcon.svg";
+import copyIconDisabled from "../imgs/buttonbar_copyIcon_disabled.svg";
+import pasteIconDisabled from "../imgs/buttonbar_pasteIcon_disabled.svg";
+import deleteIconDisabled from "../imgs/buttonBar_deleteIcon_disabled.svg";
 
 import "../scss/commandBar.scss";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface ICommandBarComponentProps {
     globalState: GlobalState;
@@ -57,31 +65,16 @@ const _sizeOptions = [
 const MAX_TEXTURE_SIZE = 16384; //2^14
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
-    private _panning: boolean = false;
-    private _zooming: boolean = false;
-    private _selecting: boolean = true;
     private _sizeOption: number = 0;
+    private _stopUpdating: boolean = false;
+    private _lockObject: LockObject;
+
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
-        props.globalState.onPanObservable.add(() => {
-            this._panning = !this._panning;
-            this._zooming = false;
-            this._selecting = false;
-            this.forceUpdate();
-        });
+        this._lockObject = new LockObject();
 
-        props.globalState.onSelectionButtonObservable.add(() => {
-            this._selecting = !this._selecting;
-            this._panning = false;
-            this._zooming = false;
-            this.forceUpdate();
-        });
-
-        props.globalState.onZoomObservable.add(() => {
-            this._zooming = !this._zooming;
-            this._panning = false;
-            this._selecting = false;
+        props.globalState.onToolChangeObservable.add(() => {
             this.forceUpdate();
         });
 
@@ -92,10 +85,17 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         props.globalState.onResizeObservable.add(() => {
             this.forceUpdate();
         });
+        props.globalState.onSelectionChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     public render() {
+        const isPasteDisabled = this.props.globalState.workbench && this.props.globalState.selectedControls.length > 0 ? this.props.globalState.workbench.pasteDisabled : true;
         const size = this.props.globalState.workbench ? { ...this.props.globalState.workbench.guiSize } : { width: 0, height: 0 };
+        const copyyIcon = this.props.globalState.selectedControls.length === 0 ? copyIconDisabled : copyIcon;
+        const deleteeIcon = this.props.globalState.selectedControls.length === 0 ? deleteIconDisabled : deleteIcon;
+        const pasteeIcon = isPasteDisabled ? pasteIconDisabled : pasteIcon;
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
@@ -136,33 +136,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     },
                                 },
                                 {
-                                    label: "Copy Selected",
-                                    onClick: () => {
-                                        this.props.globalState.onCopyObservable.notifyObservers((content) =>
-                                            this.props.globalState.hostWindow.navigator.clipboard.writeText(content)
-                                        );
-                                    },
-                                },
-                                {
-                                    label: "Paste",
-                                    onClick: async () => {
-                                        this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
-                                    },
-                                },
-                                {
-                                    label: "Delete Selected",
-                                    onClick: () => {
-                                        this.props.globalState.selectedControls.forEach((guiNode) => {
-                                            if (guiNode !== this.props.globalState.guiTexture.getChildren()[0]) {
-                                                this.props.globalState.guiTexture.removeControl(guiNode);
-                                                this.props.globalState.liveGuiTexture?.removeControl(guiNode);
-                                                guiNode.dispose();
-                                            }
-                                        });
-                                        this.props.globalState.setSelection([]);
-                                    },
-                                },
-                                {
                                     label: "Help",
                                     onClick: () => {
                                         window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
@@ -171,7 +144,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Give feedback",
                                     onClick: () => {
-                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
+                                        window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-beta/28943", "_blank");
                                     },
                                 },
                             ]}
@@ -180,27 +153,67 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             tooltip="Select"
                             icon={pointerIcon}
                             shortcut="S"
-                            isActive={this._selecting}
+                            isActive={this.props.globalState.tool === GUIEditorTool.SELECT}
                             onClick={() => {
-                                if (!this._selecting) this.props.globalState.onSelectionButtonObservable.notifyObservers();
+                                this.props.globalState.tool = GUIEditorTool.SELECT;
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Pan"
                             icon={handIcon}
                             shortcut="P"
-                            isActive={this._panning}
+                            isActive={this.props.globalState.tool === GUIEditorTool.PAN}
                             onClick={() => {
-                                if (!this._panning) this.props.globalState.onPanObservable.notifyObservers();
+                                this.props.globalState.tool = GUIEditorTool.PAN;
                             }}
                         />
                         <CommandButtonComponent
                             tooltip="Zoom"
                             shortcut="Z"
                             icon={zoomIcon}
-                            isActive={this._zooming}
+                            isActive={this.props.globalState.tool === GUIEditorTool.ZOOM}
                             onClick={() => {
-                                if (!this._zooming) this.props.globalState.onZoomObservable.notifyObservers();
+                                this.props.globalState.tool = GUIEditorTool.ZOOM;
+                            }}
+                        />
+                    </div>
+                    <div className="divider">
+                        <CommandButtonComponent
+                            tooltip="Copy Selcted"
+                            shortcut="Ctrl + C"
+                            icon={copyyIcon}
+                            isActive={false}
+                            copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
+                            onClick={() => {
+                                this.props.globalState.onCopyObservable.notifyObservers((content) => this.props.globalState.hostWindow.navigator.clipboard.writeText(content));
+                                this.forceUpdate();
+                            }}
+                        />
+                        <CommandButtonComponent
+                            tooltip="Paste"
+                            shortcut="Ctrl + V"
+                            icon={pasteeIcon}
+                            isActive={false}
+                            pasteDisabled={isPasteDisabled}
+                            onClick={async () => {
+                                this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
+                            }}
+                        />
+                        <CommandButtonComponent
+                            tooltip="Delete"
+                            shortcut="Delete"
+                            icon={deleteeIcon}
+                            isActive={false}
+                            copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
+                            onClick={() => {
+                                this.props.globalState.selectedControls.forEach((guiNode) => {
+                                    if (guiNode != this.props.globalState.guiTexture.getChildren()[0]) {
+                                        this.props.globalState.guiTexture.removeControl(guiNode);
+                                        this.props.globalState.liveGuiTexture?.removeControl(guiNode);
+                                        guiNode.dispose();
+                                    }
+                                });
+                                this.props.globalState.setSelection([]);
                             }}
                         />
                     </div>
@@ -211,7 +224,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={canvasFitIcon}
                             isActive={false}
                             onClick={() => {
-                                this.props.globalState.onFitToWindowObservable.notifyObservers();
+                                this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
                             }}
                         />
                         <CommandButtonComponent
@@ -223,7 +236,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         />
                     </div>
                     <div className="divider padded">
-                        <ColorLineComponent label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
+                        <ColorLineComponent lockObject={this._lockObject} label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
                     </div>
                     <div className="divider padded">
                         <CheckBoxLineComponent
@@ -240,6 +253,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 }
                                 this.forceUpdate();
                             }}
+                            large
                         />
                         {DataStorage.ReadBoolean("Responsive", true) && (
                             <OptionsLineComponent
@@ -262,24 +276,44 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         {!DataStorage.ReadBoolean("Responsive", true) && (
                             <>
                                 <FloatLineComponent
+                                    lockObject={this._lockObject}
                                     label="W"
                                     target={size}
                                     propertyName="width"
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                        }
+                                    }}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
                                     }}
                                     arrows={true}
                                     isInteger={true}
                                 />
                                 <FloatLineComponent
+                                    lockObject={this._lockObject}
                                     label="H"
                                     target={size}
                                     propertyName="height"
                                     min={1}
                                     max={MAX_TEXTURE_SIZE}
                                     onChange={(newValue) => {
+                                        if (!this._stopUpdating) {
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                        }
+                                    }}
+                                    onDragStart={() => {
+                                        this._stopUpdating = true;
+                                    }}
+                                    onDragStop={(newValue) => {
+                                        this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
                                     }}
                                     arrows={true}

@@ -439,6 +439,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * An event triggered after rendering the scene for an active camera (When scene.render is called this will be called after each camera)
+     * This is triggered for each "sub" camera in a Camera Rig unlike onAfterCameraRenderObservable
      */
     public onAfterRenderCameraObservable = new Observable<Camera>();
 
@@ -496,6 +497,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * An event triggered after rendering a camera
+     * This is triggered for the full rig Camera only unlike onAfterRenderCameraObservable
      */
     public onAfterCameraRenderObservable = new Observable<Camera>();
 
@@ -696,6 +698,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a predicate used to select candidate meshes for a pointer up event
      */
     public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer move event
      */
@@ -705,6 +708,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
      */
     public skipPointerMovePicking = false;
+
+    /**
+     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer down event occurs.
+     */
+    public skipPointerDownPicking = false;
+
+    /**
+     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer up event occurs.  Off by default.
+     */
+    public skipPointerUpPicking = false;
 
     /** Callback called when a pointer move is detected */
     public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
@@ -1151,7 +1164,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the list of meshes imported to the scene through SceneLoader
      */
-    public importedMeshesFiles = new Array<String>();
+    public importedMeshesFiles = new Array<string>();
 
     // Probes
     /**
@@ -1308,7 +1321,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (const component of this._transientComponents) {
                 component.register();
             }
-            this._transientComponents = [];
+            this._transientComponents.length = 0;
         }
     }
 
@@ -1834,9 +1847,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
+        let isReady = true;
+
         // Pending data
         if (this._pendingData.length > 0) {
-            return false;
+            isReady = false;
         }
 
         // Meshes
@@ -1845,19 +1860,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._materialsRenderTargets.reset();
         }
 
-        let isReady = true;
-
         for (index = 0; index < this.meshes.length; index++) {
             const mesh = this.meshes[index];
-
-            if (!mesh.isEnabled()) {
-                continue;
-            }
 
             if (!mesh.subMeshes || mesh.subMeshes.length === 0) {
                 continue;
             }
 
+            // Do not stop at the first encountered "unready" object as we want to ensure
+            // all materials are starting off their compilation in parallel.
             if (!mesh.isReady(true)) {
                 isReady = false;
                 continue;
@@ -2022,18 +2033,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param data
-     * @hidden
+     * This function can help adding any object to the list of data awaited to be ready in order to check for a complete scene loading.
+     * @param data defines the object to wait for
      */
-    public _addPendingData(data: any): void {
+    public addPendingData(data: any): void {
         this._pendingData.push(data);
     }
 
     /**
-     * @param data
-     * @hidden
+     * Remove a pending data from the loading list which has previously been added with addPendingData.
+     * @param data defines the object to remove from the pending list
      */
-    public _removePendingData(data: any): void {
+    public removePendingData(data: any): void {
         const wasLoading = this.isLoading;
         const index = this._pendingData.indexOf(data);
 
@@ -2073,9 +2084,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        this._executeWhenReadyTimeoutId = setTimeout(() => {
-            this._checkIsReady(checkRenderTargets);
-        }, 150);
+        this._checkIsReady(checkRenderTargets);
     }
 
     /**
@@ -2303,6 +2312,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this._blockEntityCollection) {
             return;
         }
+
+        if (newTransformNode.getScene() === this && newTransformNode._indexInSceneTransformNodesArray !== -1) {
+            // Already there?
+            return;
+        }
+
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
 
@@ -2525,6 +2540,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Removes the given action manager from this scene.
+     * @deprecated
      * @param toRemove The action manager to remove
      * @returns The index of the removed action manager
      */
@@ -2669,6 +2685,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
+        if (newMaterial.getScene() === this && newMaterial._indexInSceneMaterialArray !== -1) {
+            // Already there??
+            return;
+        }
+
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
         this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
@@ -2703,6 +2724,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Adds the given action manager to this scene
+     * @deprecated
      * @param newActionManager The action manager to add
      */
     public addActionManager(newActionManager: AbstractActionManager): void {
@@ -3677,6 +3699,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _activeMeshesFrozen = false;
+    public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
@@ -3685,9 +3708,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param onSuccess optional success callback
      * @param onError optional error callback
      * @param freezeMeshes defines if meshes should be frozen (true by default)
+     * @param keepFrustumCulling defines if you want to keep running the frustum clipping (false by default)
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void, freezeMeshes = true): Scene {
+    public freezeActiveMeshes(
+        skipEvaluateActiveMeshes = false,
+        onSuccess?: () => void,
+        onError?: (message: string) => void,
+        freezeMeshes = true,
+        keepFrustumCulling = false
+    ): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 onError && onError("No active camera found");
@@ -3700,6 +3730,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
+            this._activeMeshesFrozenButKeepClipping = keepFrustumCulling;
             this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
             if (freezeMeshes) {
@@ -3809,7 +3840,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.lengthSquared() === 0) {
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
                 continue;
             }
 
@@ -3903,7 +3934,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        if (mesh !== undefined && mesh !== null && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0) {
+        if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
             for (let i = 0; i < len; i++) {
@@ -3955,7 +3986,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (rtt.onClearObservable.hasObservers()) {
                 rtt.onClearObservable.notifyObservers(this._engine);
             } else if (!rtt.skipInitialClear) {
-                this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                if (this.autoClear) {
+                    this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                }
                 rtt._cleared = true;
             }
         } else {
@@ -4430,6 +4463,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Multi-cameras?
+        // save current active camera, following calls will change it, discarding user settings
+        const activeCamera = this._activeCamera;
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
@@ -4441,6 +4476,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
         }
+        this._activeCamera = activeCamera;
 
         // Intersection checks
         this._checkIntersections();
@@ -4466,7 +4502,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             }
 
-            this._toBeDisposed = [];
+            this._toBeDisposed.length = 0;
         }
 
         if (this.dumpNextRenderTargets) {
@@ -4512,9 +4548,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.afterRender = null;
         this.metadata = null;
 
-        this.skeletons = [];
-        this.morphTargetManagers = [];
-        this._transientComponents = [];
+        this.skeletons.length = 0;
+        this.morphTargetManagers.length = 0;
+        this._transientComponents.length = 0;
         this._isReadyForMeshStage.clear();
         this._beforeEvaluateActiveMeshStage.clear();
         this._evaluateSubMeshStage.clear();
@@ -4560,14 +4596,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._materialsRenderTargets.dispose();
         this._registeredForLateAnimationBindings.dispose();
         this._meshesForIntersections.dispose();
-        this._toBeDisposed = [];
+        this._toBeDisposed.length = 0;
 
         // Abort active requests
         const activeRequests = this._activeRequests.slice();
         for (const request of activeRequests) {
             request.abort();
         }
-        this._activeRequests = [];
+        this._activeRequests.length = 0;
 
         // Events
         this.onDisposeObservable.notifyObservers(this);
@@ -4634,58 +4670,36 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Release animation groups
-        while (this.animationGroups.length) {
-            this.animationGroups[0].dispose();
-        }
+        this._disposeList(this.animationGroups);
 
         // Release lights
-        while (this.lights.length) {
-            this.lights[0].dispose();
-        }
+        this._disposeList(this.lights);
 
         // Release meshes
-        while (this.meshes.length) {
-            this.meshes[0].dispose(true);
-        }
-        while (this.transformNodes.length) {
-            this.transformNodes[0].dispose(true);
-        }
+        this._disposeList(this.meshes, (item) => item.dispose(true));
+        this._disposeList(this.transformNodes, (item) => item.dispose(true));
 
         // Release cameras
-        while (this.cameras.length) {
-            this.cameras[0].dispose();
-        }
+        this._disposeList(this.cameras);
 
         // Release materials
         if (this._defaultMaterial) {
             this._defaultMaterial.dispose();
         }
-        while (this.multiMaterials.length) {
-            this.multiMaterials[0].dispose();
-        }
-        while (this.materials.length) {
-            this.materials[0].dispose();
-        }
+        this._disposeList(this.multiMaterials);
+        this._disposeList(this.materials);
 
         // Release particles
-        while (this.particleSystems.length) {
-            this.particleSystems[0].dispose();
-        }
+        this._disposeList(this.particleSystems);
 
         // Release postProcesses
-        while (this.postProcesses.length) {
-            this.postProcesses[0].dispose();
-        }
+        this._disposeList(this.postProcesses);
 
         // Release textures
-        while (this.textures.length) {
-            this.textures[0].dispose();
-        }
+        this._disposeList(this.textures);
 
         // Release morph targets
-        while (this.morphTargetManagers.length) {
-            this.morphTargetManagers[0].dispose();
-        }
+        this._disposeList(this.morphTargetManagers);
 
         // Release UBO
         this._sceneUbo.dispose();
@@ -4698,9 +4712,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.postProcessManager.dispose();
 
         // Components
-        for (const component of this._components) {
-            component.dispose();
-        }
+        this._disposeList(this._components);
 
         // Remove from engine
         let index = this._engine.scenes.indexOf(this);
@@ -4725,6 +4737,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._engine.wipeCaches(true);
         this._isDisposed = true;
+    }
+
+    private _disposeList<T extends IDisposable>(items: T[], callback?: (item: T) => void): void {
+        const itemsCopy = items.slice(0);
+        callback = callback ?? ((item) => item.dispose());
+        for (const item of itemsCopy) {
+            callback(item);
+        }
+        items.length = 0;
     }
 
     /**

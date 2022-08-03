@@ -88,14 +88,14 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoTexture: BaseTexture;
+    public albedoTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTexture: BaseTexture;
+    public ambientTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
@@ -118,7 +118,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public opacityTexture: BaseTexture;
+    public opacityTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the reflection values in a texture.
@@ -132,21 +132,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: BaseTexture;
+    public emissiveTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Specular texture in other nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectivityTexture: BaseTexture;
+    public reflectivityTexture: Nullable<BaseTexture>;
 
     /**
      * Used to switch from specular/glossiness to metallic/roughness workflow.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicTexture: BaseTexture;
+    public metallicTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the metallic scalar of the metallic/roughness workflow.
@@ -223,21 +223,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public microSurfaceTexture: BaseTexture;
+    public microSurfaceTexture: Nullable<BaseTexture>;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: BaseTexture;
+    public bumpTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
-    public lightmapTexture: BaseTexture;
+    public lightmapTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the refracted light information in a texture.
@@ -792,6 +792,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
         serializationObject.subSurface = this.subSurface.serialize();
+        serializationObject.iridescence = this.iridescence.serialize();
 
         return serializationObject;
     }
@@ -823,6 +824,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         }
         if (source.subSurface) {
             material.subSurface.parse(source.subSurface, scene, rootUrl);
+        }
+        if (source.iridescence) {
+            material.iridescence.parse(source.iridescence, scene, rootUrl);
         }
         return material;
     }

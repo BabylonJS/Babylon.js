@@ -1,7 +1,7 @@
 import type { INative } from "../../Engines/Native/nativeInterfaces";
 import type { IUIEvent } from "../../Events/deviceInputEvents";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType, NativePointerInput, PointerInput } from "./deviceEnums";
+import { DeviceType } from "./deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
 declare const _native: INative;
@@ -17,14 +17,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
     ) {
         this._nativeInput = _native.DeviceInputSystem
             ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
-                  const idx =
-                      inputIndex === NativePointerInput.Horizontal ||
-                      inputIndex === NativePointerInput.Vertical ||
-                      inputIndex === NativePointerInput.DeltaHorizontal ||
-                      inputIndex === NativePointerInput.DeltaVertical
-                          ? PointerInput.Move
-                          : inputIndex;
-                  const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, idx, currentState, this);
+                  const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
 
                   onInputChanged(deviceType, deviceSlot, evt);
               })

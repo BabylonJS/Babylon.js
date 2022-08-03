@@ -18,6 +18,7 @@ import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -43,6 +44,15 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true);
+        this.worldNormal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput(
+            "TBN",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
+        );
 
         this.registerOutput(
             "clearcoat",
@@ -68,6 +78,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         state._excludeVariableName("vClearCoatTintParams");
         state._excludeVariableName("vClearCoatRefractionParams");
         state._excludeVariableName("vClearCoatTangentSpaceParams");
+        state._excludeVariableName("vGeometricNormaClearCoatW");
     }
 
     /**
@@ -142,6 +153,21 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the world normal input component
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[9];
+    }
+
+    /**
+     * Gets the TBN input component
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get TBN(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the clear coat object output component
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
@@ -206,7 +232,14 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
-        if (worldTangent.isConnected) {
+        const TBN = this.TBN;
+        if (TBN.isConnected) {
+            state.compilationString += `
+            #ifdef TBNBLOCK
+            mat3 vTBN = ${TBN.associatedVariableName};
+            #endif
+            `;
+        } else if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\r\n`;
             code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
             code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
@@ -255,6 +288,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
             state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
+
+            const normalShading = ccBlock.worldNormal;
+            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
+        } else {
+            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\r\n`;
         }
 
         if (generateTBNSpace && ccBlock) {
@@ -270,7 +308,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
             clearcoatBlock(
                 ${worldPosVarName}.xyz,
-                geometricNormalW,
+                vGeometricNormaClearCoatW,
                 viewDirectionW,
                 vClearCoatParams,
                 specularEnvironmentR0,

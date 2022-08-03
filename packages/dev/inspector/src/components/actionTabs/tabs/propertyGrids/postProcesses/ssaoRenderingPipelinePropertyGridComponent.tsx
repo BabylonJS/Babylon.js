@@ -35,6 +35,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
                 />
                 <LineContainerComponent title="SSAO" selection={this.props.globalState}>
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Strength"
                         minimum={0}
                         maximum={2}
@@ -44,6 +45,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Base"
                         minimum={0}
                         maximum={1}
@@ -53,6 +55,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Radius"
                         minimum={0.0001}
                         maximum={0.001}
@@ -63,6 +66,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
                         decimalCount={4}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Area"
                         minimum={0.0001}
                         maximum={0.01}
@@ -73,6 +77,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
                         decimalCount={4}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Falloff"
                         minimum={0}
                         maximum={0.00001}

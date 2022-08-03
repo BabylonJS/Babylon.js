@@ -101,20 +101,29 @@ export class AssetContainer extends AbstractScene {
      * @param nameFunction defines an optional function used to get new names for clones
      * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
      * @param options defines an optional list of options to control how to instantiate / clone models
-     * @param options.doNotInstantiate
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
+     * @param options.predicate defines a predicate used to filter whih mesh to instantiate/clone
      * @returns a list of rootNodes, skeletons and animation groups that were duplicated
      */
-    public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false, options?: { doNotInstantiate: boolean }): InstantiatedEntries {
+    public instantiateModelsToScene(
+        nameFunction?: (sourceName: string) => string,
+        cloneMaterials = false,
+        options?: { doNotInstantiate?: boolean | ((node: TransformNode) => boolean); predicate?: (entity: any) => boolean }
+    ): InstantiatedEntries {
         const convertionMap: { [key: number]: number } = {};
         const storeMap: { [key: number]: any } = {};
         const result = new InstantiatedEntries();
         const alreadySwappedSkeletons: Skeleton[] = [];
         const alreadySwappedMaterials: Material[] = [];
 
-        if (!options) {
-            options = {
-                doNotInstantiate: true,
-            };
+        const localOptions = {
+            doNotInstantiate: true,
+            ...options,
+        };
+
+        if (!localOptions.doNotInstantiate) {
+            // Always clone skinned meshes.
+            localOptions.doNotInstantiate = (node) => !!(node as AbstractMesh).skeleton;
         }
 
         const onClone = (source: TransformNode, clone: TransformNode) => {
@@ -144,8 +153,12 @@ export class AssetContainer extends AbstractScene {
         };
 
         this.transformNodes.forEach((o) => {
+            if (localOptions.predicate && !localOptions.predicate(o)) {
+                return;
+            }
+
             if (!o.parent) {
-                const newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
                     onClone(source, clone);
                 });
 
@@ -156,8 +169,12 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.meshes.forEach((o) => {
+            if (localOptions.predicate && !localOptions.predicate(o)) {
+                return;
+            }
+
             if (!o.parent) {
-                const newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
                     onClone(source, clone);
 
                     if ((clone as any).material) {
@@ -215,6 +232,10 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.skeletons.forEach((s) => {
+            if (localOptions.predicate && !localOptions.predicate(s)) {
+                return;
+            }
+
             const clone = s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
 
             for (const m of this.meshes) {
@@ -244,6 +265,10 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.animationGroups.forEach((o) => {
+            if (localOptions.predicate && !localOptions.predicate(o)) {
+                return;
+            }
+
             const clone = o.clone(nameFunction ? nameFunction(o.name) : "Clone of " + o.name, (oldTarget) => {
                 const newTarget = storeMap[convertionMap[oldTarget.uniqueId]];
 
@@ -266,48 +291,7 @@ export class AssetContainer extends AbstractScene {
 
         this._wasAddedToScene = true;
 
-        this.cameras.forEach((o) => {
-            this.scene.addCamera(o);
-        });
-        this.lights.forEach((o) => {
-            this.scene.addLight(o);
-        });
-        this.meshes.forEach((o) => {
-            this.scene.addMesh(o);
-        });
-        this.skeletons.forEach((o) => {
-            this.scene.addSkeleton(o);
-        });
-        this.animations.forEach((o) => {
-            this.scene.addAnimation(o);
-        });
-        this.animationGroups.forEach((o) => {
-            this.scene.addAnimationGroup(o);
-        });
-        this.multiMaterials.forEach((o) => {
-            this.scene.addMultiMaterial(o);
-        });
-        this.materials.forEach((o) => {
-            this.scene.addMaterial(o);
-        });
-        this.morphTargetManagers.forEach((o) => {
-            this.scene.addMorphTargetManager(o);
-        });
-        this.geometries.forEach((o) => {
-            this.scene.addGeometry(o);
-        });
-        this.transformNodes.forEach((o) => {
-            this.scene.addTransformNode(o);
-        });
-        this.actionManagers.forEach((o) => {
-            this.scene.addActionManager(o);
-        });
-        this.textures.forEach((o) => {
-            this.scene.addTexture(o);
-        });
-        this.reflectionProbes.forEach((o) => {
-            this.scene.addReflectionProbe(o);
-        });
+        this.addToScene(null);
 
         if (this.environmentTexture) {
             this.scene.environmentTexture = this.environmentTexture;
@@ -322,53 +306,103 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
+     * Adds assets from the container to the scene.
+     * @param predicate defines a predicate used to select which entity will be added (can be null)
+     */
+    public addToScene(predicate: Nullable<(entity: any) => boolean> = null) {
+        this.cameras.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addCamera(o);
+        });
+        this.lights.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addLight(o);
+        });
+        this.meshes.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addMesh(o);
+        });
+        this.skeletons.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addSkeleton(o);
+        });
+        this.animations.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addAnimation(o);
+        });
+        this.animationGroups.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addAnimationGroup(o);
+        });
+        this.multiMaterials.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addMultiMaterial(o);
+        });
+        this.materials.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addMaterial(o);
+        });
+        this.morphTargetManagers.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addMorphTargetManager(o);
+        });
+        this.geometries.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addGeometry(o);
+        });
+        this.transformNodes.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addTransformNode(o);
+        });
+        this.actionManagers.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addActionManager(o);
+        });
+        this.textures.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addTexture(o);
+        });
+        this.reflectionProbes.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.addReflectionProbe(o);
+        });
+    }
+
+    /**
      * Removes all the assets in the container from the scene
      */
     public removeAllFromScene() {
         this._wasAddedToScene = false;
 
-        this.cameras.forEach((o) => {
-            this.scene.removeCamera(o);
-        });
-        this.lights.forEach((o) => {
-            this.scene.removeLight(o);
-        });
-        this.meshes.forEach((o) => {
-            this.scene.removeMesh(o);
-        });
-        this.skeletons.forEach((o) => {
-            this.scene.removeSkeleton(o);
-        });
-        this.animations.forEach((o) => {
-            this.scene.removeAnimation(o);
-        });
-        this.animationGroups.forEach((o) => {
-            this.scene.removeAnimationGroup(o);
-        });
-        this.multiMaterials.forEach((o) => {
-            this.scene.removeMultiMaterial(o);
-        });
-        this.materials.forEach((o) => {
-            this.scene.removeMaterial(o);
-        });
-        this.morphTargetManagers.forEach((o) => {
-            this.scene.removeMorphTargetManager(o);
-        });
-        this.geometries.forEach((o) => {
-            this.scene.removeGeometry(o);
-        });
-        this.transformNodes.forEach((o) => {
-            this.scene.removeTransformNode(o);
-        });
-        this.actionManagers.forEach((o) => {
-            this.scene.removeActionManager(o);
-        });
-        this.textures.forEach((o) => {
-            this.scene.removeTexture(o);
-        });
-        this.reflectionProbes.forEach((o) => {
-            this.scene.removeReflectionProbe(o);
-        });
+        this.removeFromScene(null);
 
         if (this.environmentTexture === this.scene.environmentTexture) {
             this.scene.environmentTexture = null;
@@ -380,68 +414,159 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
+     * Removes assets in the container from the scene
+     * @param predicate defines a predicate used to select which entity will be added (can be null)
+     */
+    public removeFromScene(predicate: Nullable<(entity: any) => boolean> = null) {
+        this.cameras.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeCamera(o);
+        });
+        this.lights.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeLight(o);
+        });
+        this.meshes.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeMesh(o);
+        });
+        this.skeletons.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeSkeleton(o);
+        });
+        this.animations.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeAnimation(o);
+        });
+        this.animationGroups.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeAnimationGroup(o);
+        });
+        this.multiMaterials.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeMultiMaterial(o);
+        });
+        this.materials.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeMaterial(o);
+        });
+        this.morphTargetManagers.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeMorphTargetManager(o);
+        });
+        this.geometries.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeGeometry(o);
+        });
+        this.transformNodes.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeTransformNode(o);
+        });
+        this.actionManagers.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeActionManager(o);
+        });
+        this.textures.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeTexture(o);
+        });
+        this.reflectionProbes.forEach((o) => {
+            if (predicate && !predicate(o)) {
+                return;
+            }
+            this.scene.removeReflectionProbe(o);
+        });
+    }
+
+    /**
      * Disposes all the assets in the container
      */
     public dispose() {
         this.cameras.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.cameras = [];
+        this.cameras.length = 0;
 
         this.lights.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.lights = [];
+        this.lights.length = 0;
 
         this.meshes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.meshes = [];
+        this.meshes.length = 0;
 
         this.skeletons.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.skeletons = [];
+        this.skeletons.length = 0;
 
         this.animationGroups.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.animationGroups = [];
+        this.animationGroups.length = 0;
 
         this.multiMaterials.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.multiMaterials = [];
+        this.multiMaterials.length = 0;
 
         this.materials.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.materials = [];
+        this.materials.length = 0;
 
         this.geometries.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.geometries = [];
+        this.geometries.length = 0;
 
         this.transformNodes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.transformNodes = [];
+        this.transformNodes.length = 0;
 
         this.actionManagers.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.actionManagers = [];
+        this.actionManagers.length = 0;
 
         this.textures.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.textures = [];
+        this.textures.length = 0;
 
         this.reflectionProbes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.reflectionProbes = [];
+        this.reflectionProbes.length = 0;
 
         if (this.environmentTexture) {
             this.environmentTexture.dispose();

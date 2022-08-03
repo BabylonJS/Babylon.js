@@ -1095,8 +1095,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         const engine = this._engine;
-        this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
-        this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
+        const vertexSize = this._vertexBufferSize * (this._useInstancing ? 1 : 4);
+        this._vertexData = new Float32Array(this._capacity * vertexSize);
+        this._vertexBuffer = new Buffer(engine, this._vertexData, true, vertexSize);
 
         let dataOffset = 0;
         const positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
@@ -1305,8 +1306,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Remove all active particles
      */
     public reset(): void {
-        this._stockParticles = [];
-        this._particles = [];
+        this._stockParticles.length = 0;
+        this._particles.length = 0;
     }
 
     /**

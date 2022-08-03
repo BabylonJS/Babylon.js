@@ -4,7 +4,7 @@
     ],
     "files.exclude": {
         "**/node_modules": true,
-        "**/dist": true,
+        "**/dist": false,
         "**/@babylonjs/**/*.{js|ts|map}": true,
         "**/.rollup.cache": true,
         "**/packages/dev/**/Shaders/**/*.ts": true,
@@ -13,4 +13,5 @@
         "**/*.vertex.ts": true,
         "**/*.compute.ts": true,
     },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
 }

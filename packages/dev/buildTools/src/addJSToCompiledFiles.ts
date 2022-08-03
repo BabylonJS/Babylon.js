@@ -1,7 +1,7 @@
 import * as fs from "fs";
-import { checkArgs } from "./utils";
 import * as glob from "glob";
 import * as path from "path";
+import { checkArgs } from "./utils";
 
 function processSource(sourceCode: string, forceMJS: boolean) {
     const extension = forceMJS ? ".mjs" : ".js";
@@ -28,10 +28,10 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
 }
 
 export const addJsExtensionsToCompiledFilesCommand = () => {
-    let pathForFiles = checkArgs("--path", false, true);
+    let pathForFiles = checkArgs(["--path-of-sources", "-pos"], false, true);
     const forceMJS = !!checkArgs("--mjs", true);
     if (!pathForFiles) {
-        pathForFiles = "./**/*.js";
+        pathForFiles = "./dist/**/*.js";
         console.log("No path specified, using default: " + pathForFiles);
     }
     if (typeof pathForFiles === "string") {

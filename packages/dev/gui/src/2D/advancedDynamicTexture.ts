@@ -19,7 +19,7 @@ import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
-import { IFocusableControl } from "./controls/focusableControl";
+import type { IFocusableControl } from "./controls/focusableControl";
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from "core/Engines/constants";
@@ -38,7 +38,7 @@ declare type StandardMaterial = import("core/Materials/standardMaterial").Standa
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
     /** Define the Uurl to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
@@ -50,7 +50,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
-    private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
+    private _prePointerObserver: Nullable<Observer<PointerInfoPre>>;
     private _sceneRenderObserver: Nullable<Observer<Scene>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
@@ -549,8 +549,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._resizeObserver) {
             scene.getEngine().onResizeObservable.remove(this._resizeObserver);
         }
-        if (this._pointerMoveObserver) {
-            scene.onPrePointerObservable.remove(this._pointerMoveObserver);
+        if (this._prePointerObserver) {
+            scene.onPrePointerObservable.remove(this._prePointerObserver);
         }
         if (this._sceneRenderObserver) {
             scene.onBeforeRenderObservable.remove(this._sceneRenderObserver);
@@ -771,6 +771,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
+            if (this._capturingControl[pointerId].isPointerBlocker) {
+                this._shouldBlockPointer = true;
+            }
             this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
@@ -863,8 +866,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
-            if (this._shouldBlockPointer) {
-                pi.skipOnPointerObservable = this._shouldBlockPointer;
+            if (this._shouldBlockPointer || this._capturingControl[pointerId]) {
+                pi.skipOnPointerObservable = true;
             }
         } else {
             this._doPicking(x, y, null, PointerEventTypes.POINTERMOVE, this._defaultMousePointerId, 0);
@@ -882,10 +885,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const tempViewport = new Viewport(0, 0, 0, 0);
 
-        this._pointerMoveObserver = scene.onPrePointerObservable.add((pi) => {
-            if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
-                return;
-            }
+        this._prePointerObserver = scene.onPrePointerObservable.add((pi) => {
             if (
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
@@ -895,8 +895,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
 
-            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as IPointerEvent).pointerId) {
-                this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            if (pi.type === PointerEventTypes.POINTERMOVE) {
+                // Avoid pointerMove events firing while the pointer is captured by the scene
+                if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
+                    return;
+                }
+                if ((pi.event as IPointerEvent).pointerId) {
+                    this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+                }
             }
 
             this._translateToPicking(scene, tempViewport, pi);
@@ -1091,7 +1097,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
             delete this._lastControlOver[pointerEvent.pointerId];
             if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
-                this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
+                this._lastControlDown[pointerEvent.pointerId]._forcePointerUp(pointerEvent.pointerId);
                 delete this._lastControlDown[pointerEvent.pointerId];
             }
         });
@@ -1128,7 +1134,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
      */
-    public parseContent(serializedObject: any, scaleToSize?: boolean) {
+    public parseSerializedObject(serializedObject: any, scaleToSize?: boolean) {
         this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
         if (scaleToSize) {
             const width = serializedObject.width;
@@ -1143,37 +1149,53 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+     * Recreate the content of the ADT from a JSON object
+     * @param serializedObject define the JSON serialized object to restore from
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @deprecated Please use parseSerializedObject instead
+     */
+    public parseContent = this.parseSerializedObject;
+
+    /**
+     * Recreate the content of the ADT from a snippet saved by the GUI editor
+     * @param snippetId defines the snippet to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @returns a promise that will resolve on success
+     */
+    public static async ParseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+        const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from snippet");
+        if (snippetId === "_BLANK") {
+            return adt;
+        }
+
+        const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"), true);
+        adt.parseSerializedObject(serialized, scaleToSize);
+        return adt;
+    }
+
+    /**
      * Recreate the content of the ADT from a snippet saved by the GUI editor
      * @param snippetId defines the snippet to load
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @returns a promise that will resolve on success
      */
-    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<void> {
-        if (snippetId === "_BLANK") {
-            return Promise.resolve();
-        }
+    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this);
+    }
 
-        return new Promise((resolve, reject) => {
-            const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const serializationObject = JSON.parse(snippet.gui);
-
-                        this.parseContent(serializationObject, scaleToSize);
-                        this.snippetId = snippetId;
-
-                        resolve();
-                    } else {
-                        reject("Unable to load the snippet " + snippetId);
-                    }
-                }
-            });
-
-            request.open("GET", AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
-            request.send();
-        });
+    /**
+     * Recreate the content of the ADT from a url json
+     * @param url defines the url to load
+     * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @returns a promise that will resolve on success
+     */
+    public static async ParseFromFileAsync(url: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+        const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from URL");
+        const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(url);
+        adt.parseSerializedObject(serialized, scaleToSize);
+        return adt;
     }
 
     /**
@@ -1182,9 +1204,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @returns a promise that will resolve on success
      */
-    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<void> {
+    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this);
+    }
+
+    private static _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
         if (url === "") {
-            return Promise.resolve();
+            return Promise.reject("No URL provided");
         }
 
         return new Promise((resolve, reject) => {
@@ -1192,11 +1218,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        const gui = request.responseText;
+                        const gui = snippet ? JSON.parse(JSON.parse(request.responseText).jsonPayload).gui : request.responseText;
                         const serializationObject = JSON.parse(gui);
-                        this.parseContent(serializationObject, scaleToSize);
-
-                        resolve();
+                        resolve(serializationObject);
                     } else {
                         reject("Unable to load");
                     }
@@ -1354,5 +1378,3 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.markAsDirty();
     }
 }
-
-export { IFocusableControl };

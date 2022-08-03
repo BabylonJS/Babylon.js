@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
@@ -21,6 +21,7 @@ import { PerfCounter } from "../Misc/perfCounter";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
@@ -298,7 +299,7 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap.
      */
-    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = new Image();
             image.onload = () => {
@@ -393,6 +394,11 @@ export class Engine extends ThinEngine {
      * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
      **/
     public disableManifestCheck = false;
+
+    /**
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
+     */
+    public disableContextMenu: boolean = true;
 
     /**
      * Gets the list of created scenes
@@ -531,6 +537,7 @@ export class Engine extends ThinEngine {
     private _onCanvasPointerOut: (event: PointerEvent) => void;
     private _onCanvasBlur: () => void;
     private _onCanvasFocus: () => void;
+    private _onCanvasContextMenu: (evt: Event) => void;
 
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
@@ -670,8 +677,15 @@ export class Engine extends ThinEngine {
             this.onCanvasBlurObservable.notifyObservers(this);
         };
 
+        this._onCanvasContextMenu = (evt: Event) => {
+            if (this.disableContextMenu) {
+                evt.preventDefault();
+            }
+        };
+
         canvas.addEventListener("focus", this._onCanvasFocus);
         canvas.addEventListener("blur", this._onCanvasBlur);
+        canvas.addEventListener("contextmenu", this._onCanvasContextMenu);
 
         this._onBlur = () => {
             if (this.disablePerformanceMonitorInBackground) {
@@ -799,22 +813,6 @@ export class Engine extends ThinEngine {
     }
 
     /** States */
-
-    /**
-     * Gets a boolean indicating if depth testing is enabled
-     * @returns the current state
-     */
-    public getDepthBuffer(): boolean {
-        return this._depthCullingState.depthTest;
-    }
-
-    /**
-     * Enable or disable depth buffering
-     * @param enable defines the state to set
-     */
-    public setDepthBuffer(enable: boolean): void {
-        this._depthCullingState.depthTest = enable;
-    }
 
     /**
      * Gets a boolean indicating if depth writing is enabled
@@ -1081,7 +1079,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Executes a scissor clear (ie. a clear on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1095,7 +1093,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1714,6 +1712,19 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
      * @param texture
      * @param image
      * @param faceIndex
@@ -1919,6 +1930,7 @@ export class Engine extends ThinEngine {
                 this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
                 this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
                 this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
+                this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
             }
 
             if (IsDocumentAvailable()) {
@@ -1959,6 +1971,7 @@ export class Engine extends ThinEngine {
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
         (this._renderingCanvas.style as any).msTouchAction = "none";
+        (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
     }
 
     // Loading screen
@@ -2047,6 +2060,7 @@ export class Engine extends ThinEngine {
             element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
             element.requestPointerLock();
+            element.focus();
         }
     }
 

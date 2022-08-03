@@ -10,7 +10,6 @@ import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { ThinEngine } from "../../Engines/thinEngine";
 
 import "../../Engines/Extensions/engine.cubeTexture";
-import { StartsWith } from "../../Misc/stringTools";
 import { Observable } from "../../Misc/observable";
 
 /**
@@ -92,8 +91,9 @@ export class CubeTexture extends BaseTexture {
 
     private _noMipmap: boolean;
 
+    /** @hidden */
     @serialize("files")
-    private _files: Nullable<string[]> = null;
+    public _files: Nullable<string[]> = null;
 
     @serialize("forcedExtension")
     protected _forcedExtension: Nullable<string> = null;
@@ -242,10 +242,14 @@ export class CubeTexture extends BaseTexture {
         delayLoad = false,
         files: Nullable<string[]> = null
     ): void {
-        if (!this.name || StartsWith(this.name, "data:")) {
+        if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
         }
         this.url = url;
+
+        if (forcedExtension) {
+            this._forcedExtension = forcedExtension;
+        }
 
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
@@ -335,7 +339,7 @@ export class CubeTexture extends BaseTexture {
     private _loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         const scene = this.getScene();
         const oldTexture = this._texture;
-        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer, this.isCube);
 
         const onLoadProcessing = () => {
             this.onLoadObservable.notifyObservers(this);

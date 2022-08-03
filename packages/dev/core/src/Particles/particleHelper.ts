@@ -11,6 +11,7 @@ import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
 import { ParticleSystem } from "./particleSystem";
 import { WebRequest } from "../Misc/webRequest";
+import { Constants } from "../Engines/constants";
 /**
  * This class is made for on one-liner static method to help creating particle system set.
  */
@@ -21,7 +22,7 @@ export class ParticleHelper {
     public static BaseAssetsUrl = ParticleSystemSet.BaseAssetsUrl;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /**
      * Create a default particle system that you can tweak
@@ -41,7 +42,7 @@ export class ParticleHelper {
         }
 
         system.emitter = emitter;
-        system.particleTexture = new Texture("https://www.babylonjs.com/assets/Flare.png", system.getScene());
+        system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", system.getScene());
         system.createConeEmitter(0.1, Math.PI / 4);
 
         // Particle color
@@ -80,18 +81,18 @@ export class ParticleHelper {
 
         const token = {};
 
-        scene!._addPendingData(token);
+        scene!.addPendingData(token);
 
         return new Promise((resolve, reject) => {
             if (gpu && !GPUParticleSystem.IsSupported) {
-                scene!._removePendingData(token);
+                scene!.removePendingData(token);
                 return reject("Particle system with GPU is not supported.");
             }
 
             Tools.LoadFile(
                 `${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`,
                 (data) => {
-                    scene!._removePendingData(token);
+                    scene!.removePendingData(token);
                     const newData = JSON.parse(data.toString());
                     return resolve(ParticleSystemSet.Parse(newData, scene!, gpu, capacity));
                 },
@@ -99,7 +100,7 @@ export class ParticleHelper {
                 undefined,
                 undefined,
                 () => {
-                    scene!._removePendingData(token);
+                    scene!.removePendingData(token);
                     return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
                 }
             );
@@ -172,7 +173,7 @@ export class ParticleHelper {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
             const system = this.CreateDefault(null);
             system.start();
@@ -206,4 +207,16 @@ export class ParticleHelper {
             request.send();
         });
     }
+
+    /**
+     * Creates a particle system from a snippet saved by the particle system editor
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
+     * @param scene defines the hosting scene
+     * @param gpu If the system will use gpu
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @returns a promise that will resolve to the new particle system
+     */
+    public static CreateFromSnippetAsync = ParticleHelper.ParseFromSnippetAsync;
 }

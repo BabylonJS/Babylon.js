@@ -97,9 +97,7 @@ export class Color3 {
      * @returns the new array
      */
     public asArray(): number[] {
-        const result = new Array<number>();
-        this.toArray(result, 0);
-        return result;
+        return [this.r, this.g, this.b];
     }
 
     /**
@@ -153,12 +151,24 @@ export class Color3 {
     }
 
     /**
-     * Multiplies in place each rgb value by scale
-     * @param scale defines the scaling factor
-     * @returns the updated Color3
+     * Creates a new Color3 with the current Color3 values multiplied by scale
+     * @param scale defines the scaling factor to apply
+     * @returns a new Color3 object
      */
     public scale(scale: number): Color3 {
         return new Color3(this.r * scale, this.g * scale, this.b * scale);
+    }
+
+    /**
+     * Multiplies the Color3 values by the float "scale"
+     * @param scale defines the scaling factor to apply
+     * @returns the current updated Color3
+     */
+    public scaleInPlace(scale: number): Color3 {
+        this.r *= scale;
+        this.g *= scale;
+        this.b *= scale;
+        return this;
     }
 
     /**
@@ -402,7 +412,7 @@ export class Color3 {
     private static _BlackReadOnly = Color3.Black() as DeepImmutable<Color3>;
 
     /**
-     * Convert Hue, saturation and value to a Color3 (RGB)
+     * Converts Hue, saturation and value to a Color3 (RGB)
      * @param hue defines the hue
      * @param saturation defines the saturation
      * @param value defines the value
@@ -438,6 +448,19 @@ export class Color3 {
 
         const m = value - chroma;
         result.set(r + m, g + m, b + m);
+    }
+
+    /**
+     * Converts Hue, saturation and value to a new Color3 (RGB)
+     * @param hue defines the hue
+     * @param saturation defines the saturation
+     * @param value defines the value
+     * @returns a new Color3 object
+     */
+    public static FromHSV(hue: number, saturation: number, value: number): Color3 {
+        const result = new Color3(0, 0, 0);
+        Color3.HSVtoRGBToRef(hue, saturation, value, result);
+        return result;
     }
 
     /**
@@ -723,9 +746,7 @@ export class Color4 {
      * @returns the new array
      */
     public asArray(): number[] {
-        const result = new Array<number>();
-        this.toArray(result, 0);
-        return result;
+        return [this.r, this.g, this.b, this.a];
     }
 
     /**
@@ -734,7 +755,7 @@ export class Color4 {
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Color4 object
      */
-    public toArray(array: number[], index: number = 0): Color4 {
+    public toArray(array: FloatArray, index: number = 0): Color4 {
         array[index] = this.r;
         array[index + 1] = this.g;
         array[index + 2] = this.b;
@@ -801,6 +822,19 @@ export class Color4 {
      */
     public scale(scale: number): Color4 {
         return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
+    }
+
+    /**
+     * Multiplies the Color4 values by the float "scale"
+     * @param scale defines the scaling factor to apply
+     * @returns the current updated Color4
+     */
+    public scaleInPlace(scale: number): Color4 {
+        this.r *= scale;
+        this.g *= scale;
+        this.b *= scale;
+        this.a *= scale;
+        return this;
     }
 
     /**
@@ -1013,7 +1047,16 @@ export class Color4 {
     // Statics
 
     /**
-     * Creates a new Color4 from the string containing valid hexadecimal values
+     * Creates a new Color4 from the string containing valid hexadecimal values.
+     *
+     * A valid hex string is either in the format #RRGGBB or #RRGGBBAA.
+     *
+     * When a hex string without alpha is passed, the resulting Color4 has
+     * its alpha value set to 1.0.
+     *
+     * An invalid string results in a Color with all its channels set to 0.0,
+     * i.e. "transparent black".
+     *
      * @param hex defines a string containing valid hexadecimal values
      * @returns a new Color4 object
      */

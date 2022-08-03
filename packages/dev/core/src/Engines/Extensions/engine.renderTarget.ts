@@ -65,12 +65,14 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateDepthBuffer = !!options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = !!options.generateStencilBuffer;
+        fullOptions.noColorTarget = !!options.noColorTarget;
     } else {
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
+        fullOptions.noColorTarget = false;
     }
 
-    const texture = this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
+    const texture = fullOptions.noColorTarget ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
@@ -83,7 +85,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
 
     // No need to rebind on every frame
-    if (!texture.is2DArray) {
+    if (texture && !texture.is2DArray) {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
     }
 
@@ -130,32 +132,86 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalTexture,
         size,
         internalOptions.generateStencil,
-
         internalOptions.comparisonFunction === 0 ? false : internalOptions.bilinearFiltering,
         internalOptions.comparisonFunction
     );
 
-    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
+    if (internalOptions.depthTextureFormat !== undefined) {
+        if (
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH16 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH24 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH32_FLOAT &&
+            internalOptions.depthTextureFormat !== Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8
+        ) {
+            Logger.Error("Depth texture format is not supported.");
+            return internalTexture;
+        }
+        internalTexture.format = internalOptions.depthTextureFormat;
+    } else {
+        internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24;
+    }
+
+    const hasStencil =
+        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+        internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
 
     rtWrapper._depthStencilTexture = internalTexture;
-    rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
+    rtWrapper._depthStencilTextureWithStencil = hasStencil;
 
-    const type = internalOptions.generateStencil ? gl.UNSIGNED_INT_24_8 : gl.UNSIGNED_INT;
-    const internalFormat = internalOptions.generateStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
-    let sizedFormat = internalFormat;
+    let type = gl.UNSIGNED_INT;
+    if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
+        type = gl.UNSIGNED_SHORT;
+    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+        type = gl.UNSIGNED_INT_24_8;
+    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+        type = gl.FLOAT;
+    } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+        type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+    }
+
+    const format = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+    let internalFormat = format;
     if (this.webGLVersion > 1) {
-        sizedFormat = internalOptions.generateStencil ? gl.DEPTH24_STENCIL8 : gl.DEPTH_COMPONENT24;
+        if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
+            internalFormat = gl.DEPTH_COMPONENT16;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24) {
+            internalFormat = gl.DEPTH_COMPONENT24;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+            internalFormat = gl.DEPTH24_STENCIL8;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+            internalFormat = gl.DEPTH_COMPONENT32F;
+        } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+            internalFormat = gl.DEPTH32F_STENCIL8;
+        }
     }
 
     if (internalTexture.is2DArray) {
-        gl.texImage3D(target, 0, sizedFormat, internalTexture.width, internalTexture.height, layers, 0, internalFormat, type, null);
+        gl.texImage3D(target, 0, internalFormat, internalTexture.width, internalTexture.height, layers, 0, format, type, null);
     } else {
-        gl.texImage2D(target, 0, sizedFormat, internalTexture.width, internalTexture.height, 0, internalFormat, type, null);
+        gl.texImage2D(target, 0, internalFormat, internalTexture.width, internalTexture.height, 0, format, type, null);
     }
 
     this._bindTextureDirectly(target, null);
 
     this._internalTexturesCache.push(internalTexture);
+
+    // Dispose previous depth/stencil render buffers and clear the corresponding attachment.
+    // Next time this framebuffer is bound, the new depth/stencil texture will be attached.
+    const glRtWrapper = <WebGLRenderTargetWrapper>(rtWrapper as any);
+    if (glRtWrapper._depthStencilBuffer) {
+        const currentFrameBuffer = this._currentFramebuffer;
+        this._bindUnboundFramebuffer(glRtWrapper._framebuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
+        this._bindUnboundFramebuffer(currentFrameBuffer);
+
+        gl.deleteRenderbuffer(glRtWrapper._depthStencilBuffer);
+        glRtWrapper._depthStencilBuffer = null;
+    }
 
     return internalTexture;
 };

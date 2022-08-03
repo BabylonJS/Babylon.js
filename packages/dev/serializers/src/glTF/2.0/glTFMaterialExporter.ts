@@ -29,7 +29,6 @@ declare type Material = import("core/Materials/material").Material;
 declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
 declare type PBRBaseMaterial = import("core/Materials/PBR/pbrBaseMaterial").PBRBaseMaterial;
 declare type PBRMaterial = import("core/Materials/PBR/pbrMaterial").PBRMaterial;
-declare type PBRMetallicRoughnessMaterial = import("core/Materials/PBR/pbrMetallicRoughnessMaterial").PBRMetallicRoughnessMaterial;
 
 /**
  * Interface for storing specular glossiness factors
@@ -313,7 +312,7 @@ export class _GLTFMaterialExporter {
         const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
         if (babylonStandardMaterial.backFaceCulling != null && !babylonStandardMaterial.backFaceCulling) {
             if (!babylonStandardMaterial.twoSidedLighting) {
-                Tools.Warn(babylonStandardMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
+                Tools.Warn(babylonStandardMaterial.name + ": Back-face culling disabled and two-sided lighting disabled is not supported in glTF.");
             }
             glTFMaterial.doubleSided = true;
         }
@@ -409,102 +408,6 @@ export class _GLTFMaterialExporter {
                 return extensionWork.then(() => glTFMaterial);
             });
         });
-    }
-
-    /**
-     * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
-     * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness Material
-     * @param mimeType mime type to use for the textures
-     * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
-     */
-    public _convertPBRMetallicRoughnessMaterialAsync(
-        babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial,
-        mimeType: ImageMimeType,
-        hasTextureCoords: boolean
-    ): Promise<IMaterial> {
-        const materialMap = this._exporter._materialMap;
-        const materials = this._exporter._materials;
-        const promises: Promise<void>[] = [];
-        const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
-
-        if (babylonPBRMetalRoughMaterial.baseColor) {
-            glTFPbrMetallicRoughness.baseColorFactor = [
-                babylonPBRMetalRoughMaterial.baseColor.r,
-                babylonPBRMetalRoughMaterial.baseColor.g,
-                babylonPBRMetalRoughMaterial.baseColor.b,
-                babylonPBRMetalRoughMaterial.alpha,
-            ];
-        }
-
-        if (babylonPBRMetalRoughMaterial.metallic != null && babylonPBRMetalRoughMaterial.metallic !== 1) {
-            glTFPbrMetallicRoughness.metallicFactor = babylonPBRMetalRoughMaterial.metallic;
-        }
-        if (babylonPBRMetalRoughMaterial.roughness != null && babylonPBRMetalRoughMaterial.roughness !== 1) {
-            glTFPbrMetallicRoughness.roughnessFactor = babylonPBRMetalRoughMaterial.roughness;
-        }
-
-        const glTFMaterial: IMaterial = {
-            name: babylonPBRMetalRoughMaterial.name,
-        };
-        if (babylonPBRMetalRoughMaterial.doubleSided) {
-            glTFMaterial.doubleSided = babylonPBRMetalRoughMaterial.doubleSided;
-        }
-        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMetalRoughMaterial);
-        if (hasTextureCoords) {
-            if (babylonPBRMetalRoughMaterial.baseTexture != null) {
-                promises.push(
-                    this._exportTextureAsync(babylonPBRMetalRoughMaterial.baseTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                        }
-                    })
-                );
-            }
-            if (babylonPBRMetalRoughMaterial.normalTexture) {
-                promises.push(
-                    this._exportTextureAsync(babylonPBRMetalRoughMaterial.normalTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFMaterial.normalTexture = glTFTexture;
-                            if (babylonPBRMetalRoughMaterial.normalTexture.level !== 1) {
-                                glTFMaterial.normalTexture.scale = babylonPBRMetalRoughMaterial.normalTexture.level;
-                            }
-                        }
-                    })
-                );
-            }
-            if (babylonPBRMetalRoughMaterial.occlusionTexture) {
-                promises.push(
-                    this._exportTextureAsync(babylonPBRMetalRoughMaterial.occlusionTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFMaterial.occlusionTexture = glTFTexture;
-                            if (babylonPBRMetalRoughMaterial.occlusionStrength != null) {
-                                glTFMaterial.occlusionTexture.strength = babylonPBRMetalRoughMaterial.occlusionStrength;
-                            }
-                        }
-                    })
-                );
-            }
-            if (babylonPBRMetalRoughMaterial.emissiveTexture) {
-                promises.push(
-                    this._exportTextureAsync(babylonPBRMetalRoughMaterial.emissiveTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFMaterial.emissiveTexture = glTFTexture;
-                        }
-                    })
-                );
-            }
-        }
-
-        if (_GLTFMaterialExporter._FuzzyEquals(babylonPBRMetalRoughMaterial.emissiveColor, Color3.Black(), _GLTFMaterialExporter._Epsilon)) {
-            glTFMaterial.emissiveFactor = babylonPBRMetalRoughMaterial.emissiveColor.asArray();
-        }
-
-        glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-
-        materials.push(glTFMaterial);
-        materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length - 1;
-
-        return this._finishMaterial(promises, glTFMaterial, babylonPBRMetalRoughMaterial, mimeType);
     }
 
     /**
@@ -1110,7 +1013,7 @@ export class _GLTFMaterialExporter {
 
             if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
                 if (!babylonPBRMaterial._twoSidedLighting) {
-                    Tools.Warn(babylonPBRMaterial.name + ": Back-face culling enabled and two-sided lighting disabled is not supported in glTF.");
+                    Tools.Warn(babylonPBRMaterial.name + ": Back-face culling disabled and two-sided lighting disabled is not supported in glTF.");
                 }
                 glTFMaterial.doubleSided = true;
             }

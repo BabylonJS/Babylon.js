@@ -18,19 +18,19 @@ import { registerCustomOptimizer } from "./optimizer/custom/index";
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
-import * as BABYLON from "babylonjs";
+// eslint-disable-next-line import/no-internal-modules
+import * as BABYLON from "core/index";
 
 // load needed modules.
-import "babylonjs-loaders";
+// eslint-disable-next-line import/no-internal-modules
+import "loaders/index";
 import "pepjs";
 
 import { initListeners, InitTags } from "./initializer";
 
-// promise polyfill, if needed!
-BABYLON.PromisePolyfill.Apply();
 initListeners();
 
-//deprectaed, here for backwards compatibility
+//deprecated, here for backwards compatibility
 const disableInit: boolean = viewerGlobals.disableInit;
 
 /**
@@ -68,8 +68,8 @@ export {
     AbstractViewerNavbarButton,
     registerCustomOptimizer,
 };
-// eslint-disable-next-line no-duplicate-imports
-export { GLTF2 } from "babylonjs-loaders";
+// eslint-disable-next-line import/no-internal-modules
+export { GLTF2 } from "loaders/glTF/index";
 // export publicliy all configuration interfaces
 // eslint-disable-next-line import/no-internal-modules
 export * from "./configuration/index";

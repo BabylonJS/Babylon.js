@@ -325,4 +325,20 @@ export class MaterialFlags {
         this._TranslucencyIntensityTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _IridescenceTextureEnabled = true;
+    /**
+     * Are translucency intensity textures enabled in the application.
+     */
+    public static get IridescenceTextureEnabled(): boolean {
+        return this._IridescenceTextureEnabled;
+    }
+    public static set IridescenceTextureEnabled(value: boolean) {
+        if (this._IridescenceTextureEnabled === value) {
+            return;
+        }
+
+        this._IridescenceTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }

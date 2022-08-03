@@ -120,8 +120,8 @@ class _InternalMeshDataInfo {
     public _onBetweenPassObservable: Nullable<Observable<SubMesh>>;
 
     public _areNormalsFrozen: boolean = false; // Will be used by ribbons mainly
-    public _sourcePositions: Float32Array; // Will be used to save original positions when using software skinning
-    public _sourceNormals: Float32Array; // Will be used to save original normals when using software skinning
+    public _sourcePositions: Nullable<Float32Array>; // Will be used to save original positions when using software skinning
+    public _sourceNormals: Nullable<Float32Array>; // Will be used to save original normals when using software skinning
 
     // Will be used to save a source mesh reference, If any
     public _source: Nullable<Mesh> = null;
@@ -275,10 +275,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (value && this._internalMeshDataInfo._sourcePositions) {
             // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
-            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions, true);
             if (this._internalMeshDataInfo._sourceNormals) {
-                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals, true);
             }
+
+            this._internalMeshDataInfo._sourcePositions = null;
+            this._internalMeshDataInfo._sourceNormals = null;
         }
 
         this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
@@ -622,8 +625,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
-            // Enabled
-            this.setEnabled(source.isEnabled());
+            // Enabled. We shouldn't need to check the source's ancestors, as this mesh
+            // will have the same ones.
+            this.setEnabled(source.isEnabled(false));
 
             // Parent
             this.parent = source.parent;
@@ -715,13 +719,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean },
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const instance =
-            this.getTotalVertices() > 0 && (!options || !options.doNotInstantiate)
-                ? this.createInstance("instance of " + (this.name || this.id))
-                : this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
+            this.getTotalVertices() === 0 || (options && options.doNotInstantiate && (options.doNotInstantiate === true || options.doNotInstantiate(this)))
+                ? this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true)
+                : this.createInstance("instance of " + (this.name || this.id));
 
         instance.parent = newParent || this.parent;
         instance.position = this.position.clone();
@@ -2543,7 +2547,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _queueLoad(scene: Scene): Mesh {
-        scene._addPendingData(this);
+        scene.addPendingData(this);
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
 
@@ -2562,7 +2566,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 });
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-                scene._removePendingData(this);
+                scene.removePendingData(this);
             },
             () => {},
             scene.offlineProvider,
@@ -3134,7 +3138,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Updating vertex buffers
         for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
             kind = kinds[kindIndex];
-            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
+            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable(), vbs[kind].getStrideSize());
         }
 
         // Updating submeshes
@@ -3185,20 +3189,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Warning : the mesh is really modified even if not set originally as updatable. A new VertexBuffer is created under the hood each call.
      * @param numberPerEdge the number of new vertices to add to each edge of a facet, optional default 1
      */
-    public increaseVertices(numberPerEdge: number): void {
+    public increaseVertices(numberPerEdge: number = 1): void {
         const vertex_data = VertexData.ExtractFromMesh(this);
-        const uvs = vertex_data.uvs && !Array.isArray(vertex_data.uvs) && Array.from ? Array.from(vertex_data.uvs) : vertex_data.uvs;
         const currentIndices = vertex_data.indices && !Array.isArray(vertex_data.indices) && Array.from ? Array.from(vertex_data.indices) : vertex_data.indices;
         const positions = vertex_data.positions && !Array.isArray(vertex_data.positions) && Array.from ? Array.from(vertex_data.positions) : vertex_data.positions;
+        const uvs = vertex_data.uvs && !Array.isArray(vertex_data.uvs) && Array.from ? Array.from(vertex_data.uvs) : vertex_data.uvs;
         const normals = vertex_data.normals && !Array.isArray(vertex_data.normals) && Array.from ? Array.from(vertex_data.normals) : vertex_data.normals;
 
-        if (!currentIndices || !positions || !normals || !uvs) {
-            Logger.Warn("VertexData contains null entries");
+        if (!currentIndices || !positions) {
+            Logger.Warn("Couldn't increase number of vertices : VertexData must contain at least indices and positions");
         } else {
             vertex_data.indices = currentIndices;
             vertex_data.positions = positions;
-            vertex_data.normals = normals;
-            vertex_data.uvs = uvs;
+            if (uvs) {
+                vertex_data.uvs = uvs;
+            }
+            if (normals) {
+                vertex_data.normals = normals;
+            }
 
             const segments: number = numberPerEdge + 1; //segments per current facet edge, become sides of new facets
             const tempIndices: Array<Array<number>> = new Array();
@@ -3215,7 +3223,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const side: Array<Array<Array<number>>> = new Array();
             let len: number;
             let positionPtr: number = positions.length;
-            let uvPtr: number = uvs.length;
+            let uvPtr: number;
+            if (uvs) {
+                uvPtr = uvs.length;
+            }
+            let normalsPtr: number;
+            if (normals) {
+                normalsPtr = normals.length;
+            }
 
             for (let i = 0; i < currentIndices.length; i += 3) {
                 vertexIndex[0] = currentIndices[i];
@@ -3240,22 +3255,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         deltaPosition.x = (positions[3 * b] - positions[3 * a]) / segments;
                         deltaPosition.y = (positions[3 * b + 1] - positions[3 * a + 1]) / segments;
                         deltaPosition.z = (positions[3 * b + 2] - positions[3 * a + 2]) / segments;
-                        deltaNormal.x = (normals[3 * b] - normals[3 * a]) / segments;
-                        deltaNormal.y = (normals[3 * b + 1] - normals[3 * a + 1]) / segments;
-                        deltaNormal.z = (normals[3 * b + 2] - normals[3 * a + 2]) / segments;
-                        deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
-                        deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
+                        if (normals) {
+                            deltaNormal.x = (normals[3 * b] - normals[3 * a]) / segments;
+                            deltaNormal.y = (normals[3 * b + 1] - normals[3 * a + 1]) / segments;
+                            deltaNormal.z = (normals[3 * b + 2] - normals[3 * a + 2]) / segments;
+                        }
+                        if (uvs) {
+                            deltaUV.x = (uvs[2 * b] - uvs[2 * a]) / segments;
+                            deltaUV.y = (uvs[2 * b + 1] - uvs[2 * a + 1]) / segments;
+                        }
                         side[a][b].push(a);
                         for (let k = 1; k < segments; k++) {
                             side[a][b].push(positions.length / 3);
-                            positions[positionPtr] = positions[3 * a] + k * deltaPosition.x;
-                            normals[positionPtr++] = normals[3 * a] + k * deltaNormal.x;
-                            positions[positionPtr] = positions[3 * a + 1] + k * deltaPosition.y;
-                            normals[positionPtr++] = normals[3 * a + 1] + k * deltaNormal.y;
-                            positions[positionPtr] = positions[3 * a + 2] + k * deltaPosition.z;
-                            normals[positionPtr++] = normals[3 * a + 2] + k * deltaNormal.z;
-                            uvs[uvPtr++] = uvs[2 * a] + k * deltaUV.x;
-                            uvs[uvPtr++] = uvs[2 * a + 1] + k * deltaUV.y;
+                            positions[positionPtr++] = positions[3 * a] + k * deltaPosition.x;
+                            positions[positionPtr++] = positions[3 * a + 1] + k * deltaPosition.y;
+                            positions[positionPtr++] = positions[3 * a + 2] + k * deltaPosition.z;
+                            if (normals) {
+                                normals[normalsPtr!++] = normals[3 * a] + k * deltaNormal.x;
+                                normals[normalsPtr!++] = normals[3 * a + 1] + k * deltaNormal.y;
+                                normals[normalsPtr!++] = normals[3 * a + 2] + k * deltaNormal.z;
+                            }
+                            if (uvs) {
+                                uvs[uvPtr!++] = uvs[2 * a] + k * deltaUV.x;
+                                uvs[uvPtr!++] = uvs[2 * a + 1] + k * deltaUV.y;
+                            }
                         }
                         side[a][b].push(b);
                         side[b][a] = new Array();
@@ -3275,21 +3298,29 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     deltaPosition.x = (positions[3 * tempIndices[k][k]] - positions[3 * tempIndices[k][0]]) / k;
                     deltaPosition.y = (positions[3 * tempIndices[k][k] + 1] - positions[3 * tempIndices[k][0] + 1]) / k;
                     deltaPosition.z = (positions[3 * tempIndices[k][k] + 2] - positions[3 * tempIndices[k][0] + 2]) / k;
-                    deltaNormal.x = (normals[3 * tempIndices[k][k]] - normals[3 * tempIndices[k][0]]) / k;
-                    deltaNormal.y = (normals[3 * tempIndices[k][k] + 1] - normals[3 * tempIndices[k][0] + 1]) / k;
-                    deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
-                    deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
-                    deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
+                    if (normals) {
+                        deltaNormal.x = (normals[3 * tempIndices[k][k]] - normals[3 * tempIndices[k][0]]) / k;
+                        deltaNormal.y = (normals[3 * tempIndices[k][k] + 1] - normals[3 * tempIndices[k][0] + 1]) / k;
+                        deltaNormal.z = (normals[3 * tempIndices[k][k] + 2] - normals[3 * tempIndices[k][0] + 2]) / k;
+                    }
+                    if (uvs) {
+                        deltaUV.x = (uvs[2 * tempIndices[k][k]] - uvs[2 * tempIndices[k][0]]) / k;
+                        deltaUV.y = (uvs[2 * tempIndices[k][k] + 1] - uvs[2 * tempIndices[k][0] + 1]) / k;
+                    }
                     for (let j = 1; j < k; j++) {
                         tempIndices[k][j] = positions.length / 3;
-                        positions[positionPtr] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
-                        normals[positionPtr++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
-                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 1] + j * deltaPosition.y;
-                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 1] + j * deltaNormal.y;
-                        positions[positionPtr] = positions[3 * tempIndices[k][0] + 2] + j * deltaPosition.z;
-                        normals[positionPtr++] = normals[3 * tempIndices[k][0] + 2] + j * deltaNormal.z;
-                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0]] + j * deltaUV.x;
-                        uvs[uvPtr++] = uvs[2 * tempIndices[k][0] + 1] + j * deltaUV.y;
+                        positions[positionPtr++] = positions[3 * tempIndices[k][0]] + j * deltaPosition.x;
+                        positions[positionPtr++] = positions[3 * tempIndices[k][0] + 1] + j * deltaPosition.y;
+                        positions[positionPtr++] = positions[3 * tempIndices[k][0] + 2] + j * deltaPosition.z;
+                        if (normals) {
+                            normals[normalsPtr!++] = normals[3 * tempIndices[k][0]] + j * deltaNormal.x;
+                            normals[normalsPtr!++] = normals[3 * tempIndices[k][0] + 1] + j * deltaNormal.y;
+                            normals[normalsPtr!++] = normals[3 * tempIndices[k][0] + 2] + j * deltaNormal.z;
+                        }
+                        if (uvs) {
+                            uvs[uvPtr!++] = uvs[2 * tempIndices[k][0]] + j * deltaUV.x;
+                            uvs[uvPtr!++] = uvs[2 * tempIndices[k][0] + 1] + j * deltaUV.y;
+                        }
                     }
                 }
                 tempIndices[segments] = side[currentIndices[i + 1]][currentIndices[i + 2]];
@@ -3542,7 +3573,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         // Geometry
@@ -3627,7 +3658,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             };
 
             if (instance.parent) {
-                serializationInstance.parentId = instance.parent.uniqueId;
+                instance.parent._serializeAsParent(serializationInstance);
             }
 
             if (instance.rotationQuaternion) {
@@ -3664,7 +3695,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
             serializationObject.thinInstances = {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
-                matrixData: Tools.SliceToArray(this._thinInstanceDataStorage.matrixData),
+                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
                 matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
                 enablePicking: this.thinInstanceEnablePicking,
             };
@@ -3677,7 +3708,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 };
 
                 for (const kind in this._userThinInstanceBuffersStorage.data) {
-                    userThinInstance.data[kind] = Tools.SliceToArray(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
                     userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
                     userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
                 }
@@ -3900,6 +3931,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh._waitingParentId = parsedMesh.parentId;
         }
 
+        if (parsedMesh.parentInstanceIndex !== undefined) {
+            mesh._waitingParentInstanceIndex = parsedMesh.parentInstanceIndex;
+        }
+
         // Actions
         if (parsedMesh.actions !== undefined) {
             mesh._waitingData.actions = parsedMesh.actions;
@@ -4062,6 +4097,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     instance._waitingParentId = parsedInstance.parentId;
                 }
 
+                if (parsedInstance.parentInstanceIndex !== undefined) {
+                    instance._waitingParentInstanceIndex = parsedInstance.parentInstanceIndex;
+                }
+
                 if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {
                     instance.setEnabled(parsedInstance.isEnabled);
                 }
@@ -4161,7 +4200,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Prepare internal position array for software CPU skinning
      * @returns original positions used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh
      */
-    public setPositionsForCPUSkinning(): Float32Array {
+    public setPositionsForCPUSkinning(): Nullable<Float32Array> {
         const internalDataInfo = this._internalMeshDataInfo;
         if (!internalDataInfo._sourcePositions) {
             const source = this.getVerticesData(VertexBuffer.PositionKind);
@@ -4182,7 +4221,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Prepare internal normal array for software CPU skinning
      * @returns original normals used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh.
      */
-    public setNormalsForCPUSkinning(): Float32Array {
+    public setNormalsForCPUSkinning(): Nullable<Float32Array> {
         const internalDataInfo = this._internalMeshDataInfo;
 
         if (!internalDataInfo._sourceNormals) {
@@ -4304,9 +4343,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             Vector3.TransformCoordinatesFromFloatsToRef(
-                internalDataInfo._sourcePositions[index],
-                internalDataInfo._sourcePositions[index + 1],
-                internalDataInfo._sourcePositions[index + 2],
+                internalDataInfo._sourcePositions![index],
+                internalDataInfo._sourcePositions![index + 1],
+                internalDataInfo._sourcePositions![index + 2],
                 finalMatrix,
                 tempVector3
             );
@@ -4314,9 +4353,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (hasNormals) {
                 Vector3.TransformNormalFromFloatsToRef(
-                    internalDataInfo._sourceNormals[index],
-                    internalDataInfo._sourceNormals[index + 1],
-                    internalDataInfo._sourceNormals[index + 2],
+                    internalDataInfo._sourceNormals![index],
+                    internalDataInfo._sourceNormals![index + 1],
+                    internalDataInfo._sourceNormals![index + 2],
                     finalMatrix,
                     tempVector3
                 );
@@ -4463,10 +4502,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
+        const currentOverrideMaterialSideOrientation = meshes[0].overrideMaterialSideOrientation;
+
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
             if (mesh.isAnInstance) {
                 Logger.Warn("Cannot merge instance meshes.");
+                return null;
+            }
+
+            if (currentOverrideMaterialSideOrientation !== mesh.overrideMaterialSideOrientation) {
+                Logger.Warn("Cannot merge meshes with different overrideMaterialSideOrientation values.");
                 return null;
             }
 

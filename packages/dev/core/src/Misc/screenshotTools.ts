@@ -63,21 +63,44 @@ export function CreateScreenshot(
     const offsetX = Math.max(0, width - newWidth) / 2;
     const offsetY = Math.max(0, height - newHeight) / 2;
 
-    engine.onEndFrameObservable.addOnce(() => {
-        const renderingCanvas = engine.getRenderingCanvas();
-        if (renderContext && renderingCanvas) {
-            renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
-        }
-
-        if (forceDownload) {
-            Tools.EncodeScreenshotCanvasData(undefined, mimeType);
-            if (successCallback) {
-                successCallback("");
+    const scene = camera.getScene();
+    if (scene.activeCamera !== camera) {
+        CreateScreenshotUsingRenderTarget(
+            engine,
+            camera,
+            size,
+            (data) => {
+                if (forceDownload) {
+                    const blob = new Blob([data]);
+                    Tools.DownloadBlob(blob);
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                } else if (successCallback) {
+                    successCallback(data);
+                }
+            },
+            mimeType,
+            1,
+            engine.getCreationOptions().antialias
+        );
+    } else {
+        engine.onEndFrameObservable.addOnce(() => {
+            const renderingCanvas = engine.getRenderingCanvas();
+            if (renderContext && renderingCanvas) {
+                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
-        } else {
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
-        }
-    });
+
+            if (forceDownload) {
+                Tools.EncodeScreenshotCanvasData(undefined, mimeType);
+                if (successCallback) {
+                    successCallback("");
+                }
+            } else {
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
+            }
+        });
+    }
 }
 
 /**
@@ -181,6 +204,9 @@ export function CreateScreenshotUsingRenderTarget(
         return;
     }
 
+    const originalSize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
+    engine.setSize(width, height); // we need this call to trigger onResizeObservable with the screenshot width/height on all the subsystems that are observing this event and that needs to (re)create some resources with the right dimensions
+
     const scene = camera.getScene();
     let previousCamera: Nullable<Camera> = null;
     const previousCameras = scene.activeCameras;
@@ -215,14 +241,14 @@ export function CreateScreenshotUsingRenderTarget(
     texture.samples = samples;
     texture.renderSprites = renderSprites;
 
-    engine.onEndFrameObservable.addOnce(() => {
-        texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-            Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
-            texture.dispose();
-        });
-    });
-
     const renderToTexture = () => {
+        engine.onEndFrameObservable.addOnce(() => {
+            texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                texture.dispose();
+            });
+        });
+
         // render the RTT
         scene.incrementRenderId();
         scene.resetCachedMaterial();
@@ -236,6 +262,7 @@ export function CreateScreenshotUsingRenderTarget(
             scene.activeCamera = previousCamera;
         }
         scene.activeCameras = previousCameras;
+        engine.setSize(originalSize.width, originalSize.height);
         camera.getProjectionMatrix(true); // Force cache refresh;
         scene.render();
     };

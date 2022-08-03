@@ -245,9 +245,7 @@ class Playground {
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index]
-                    .replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot)
-                    .replace(".d.ts", ".module.d.ts");
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot);
             }
         }
 
@@ -264,6 +262,15 @@ class Playground {
         // Check for Unity Toolkit
         if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) {
             declarations.push("https://playground.babylonjs.com/libs/babylon.manager.d.ts");
+        }
+
+        const timestamp = typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__ ? (globalThis as any).__babylonSnapshotTimestamp__ : 0;
+        if (timestamp) {
+            for (let index = 0; index < declarations.length; index++) {
+                if (declarations[index].indexOf("preview.babylonjs.com") !== -1) {
+                    declarations[index] = declarations[index] + "?t=" + timestamp;
+                }
+            }
         }
 
         let libContent = "";
@@ -445,6 +452,7 @@ class Playground {
             typescript.javascriptDefaults.setCompilerOptions({
                 noLib: false,
                 allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                allowJs: true,
             });
 
             typescript.javascriptDefaults.addExtraLib(libContent, "babylon.d.ts");
@@ -602,7 +610,7 @@ class Playground {
     // So we need to be super fast.
     private async _hookMonacoCompletionProvider() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
-        // tslint:disable-next-line:no-this-assignment
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const owner = this;
 
         languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function (model: any, position: any, context: any, token: any) {

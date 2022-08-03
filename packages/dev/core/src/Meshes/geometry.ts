@@ -155,7 +155,6 @@ export class Geometry implements IGetSetVerticesData {
             this.setAllVerticesData(vertexData, updatable);
         } else {
             this._totalVertices = 0;
-            this._indices = [];
         }
 
         if (this._engine.getCaps().vertexArrayObject) {
@@ -308,7 +307,7 @@ export class Geometry implements IGetSetVerticesData {
             for (let index = 0; index < numOfMeshes; index++) {
                 const mesh = meshes[index];
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
-                mesh._createGlobalSubMesh(false);
+                mesh._createGlobalSubMesh(mesh.isUnIndexed);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();
             }
@@ -606,7 +605,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            return Tools.Slice(orig);
+            return orig.slice();
         }
     }
 
@@ -732,7 +731,7 @@ export class Geometry implements IGetSetVerticesData {
                 }
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
-                mesh._createGlobalSubMesh(false);
+                mesh._createGlobalSubMesh(mesh.isUnIndexed);
 
                 //bounding info was just created again, world matrix should be applied again.
                 mesh._updateBoundingInfo();
@@ -792,7 +791,7 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        scene._addPendingData(this);
+        scene.addPendingData(this);
         scene._loadFile(
             this.delayLoadingFile,
             (data) => {
@@ -805,7 +804,7 @@ export class Geometry implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
-                scene._removePendingData(this);
+                scene.removePendingData(this);
 
                 const meshes = this._meshes;
                 const numOfMeshes = meshes.length;
@@ -923,7 +922,7 @@ export class Geometry implements IGetSetVerticesData {
         for (index = 0; index < numOfMeshes; index++) {
             this.releaseForMesh(meshes[index]);
         }
-        this._meshes = [];
+        this._meshes.length = 0;
 
         this._disposeVertexArrayObjects();
 

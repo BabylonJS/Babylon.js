@@ -5,9 +5,11 @@ export * from "./container";
 export * from "./control";
 export * from "./ellipse";
 export * from "./focusableButton";
+export * from "./focusableControl";
 export * from "./grid";
 export * from "./image";
 export * from "./inputText";
+export * from "./inputTextArea";
 export * from "./inputPassword";
 export * from "./line";
 export * from "./multiLine";
@@ -26,5 +28,4 @@ export * from "./sliders/slider";
 export * from "./sliders/imageBasedSlider";
 export * from "./sliders/scrollBar";
 export * from "./sliders/imageScrollBar";
-
 export * from "./statics";

@@ -168,9 +168,11 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
     const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    const defaultUseSRGBBuffer = false;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
+    let useSRGBBuffers = new Array<boolean>();
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
 
@@ -187,11 +189,16 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         if (options.samplingModes) {
             samplingModes = options.samplingModes;
         }
+        if (options.useSRGBBuffers) {
+            useSRGBBuffers = options.useSRGBBuffers;
+        }
         if (
             this.webGLVersion > 1 &&
             (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
                 options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24 ||
-                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT ||
+                options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8)
         ) {
             depthTextureFormat = options.depthTextureFormat;
         }
@@ -207,7 +214,12 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const textures: InternalTexture[] = [];
     const attachments: number[] = [];
 
-    const useStencilTexture = this.webGLVersion > 1 && generateDepthTexture && options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
+    const useStencilTexture =
+        this.webGLVersion > 1 &&
+        generateDepthTexture &&
+        (options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+            options.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8);
     const depthStencilBuffer = this._setupFramebufferDepthAttachments(!useStencilTexture && generateStencilBuffer, !generateDepthTexture && generateDepthBuffer, width, height);
 
     rtWrapper._framebuffer = framebuffer;
@@ -219,6 +231,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     for (let i = 0; i < textureCount; i++) {
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
+        let useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -234,6 +247,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
+        useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+
         const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
         const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
@@ -248,7 +263,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
+        const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, Constants.TEXTUREFORMAT_RGBA, useSRGBBuffer);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
         gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
 
@@ -268,6 +284,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.type = type;
+        texture._useSRGBBuffer = useSRGBBuffer;
 
         this._internalTexturesCache.push(texture);
     }
@@ -288,12 +305,18 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
                 depthTextureType = Constants.TEXTURETYPE_FLOAT;
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
+            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+                depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+                glDepthTextureInternalFormat = gl.DEPTH32F_STENCIL8;
+                glDepthTextureFormat = gl.DEPTH_STENCIL;
+                glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
-            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+            } else if (depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 || depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8) {
                 depthTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
                 glDepthTextureType = gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;

@@ -33,6 +33,8 @@ module.exports = (env) => {
                     return callback(null, "BABYLON.GUI");
                 } else if (/^serializers\//.test(request)) {
                     return callback(null, "BABYLON");
+                } else if (/^gui-editor\//.test(request)) {
+                    return callback(null, "BABYLON.GUIEditor");
                 }
 
                 // Continue without externalizing the import
@@ -50,7 +52,7 @@ module.exports = (env) => {
                 watch: false,
             },
             // hot: true,
-            port: process.env.TOOLS_PORT ?? 1338,
+            port: process.env.TOOLS_PORT || 1338,
             server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
             hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
             liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,

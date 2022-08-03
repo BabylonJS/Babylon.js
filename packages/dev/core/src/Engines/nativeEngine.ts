@@ -19,7 +19,7 @@ import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from 
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike, IQuaternionLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
 import type { ISceneLike } from "./thinEngine";
@@ -37,6 +37,7 @@ import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
 import type { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 declare const _native: INative;
 
@@ -603,6 +604,19 @@ class NativePipelineContext implements IPipelineContext {
     }
 
     /**
+     * Sets a Quaternion on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param quaternion Value to be set.
+     */
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
+        if (this._cacheFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
      * Sets a float4 on a uniform variable.
      * @param uniformName Name of the variable.
      * @param x First float in float4.
@@ -802,7 +816,7 @@ class CommandBufferEncoder {
 /** @hidden */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 5;
+    private static readonly PROTOCOL_VERSION = 6;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -848,7 +862,7 @@ export class NativeEngine extends Engine {
             maxTexturesImageUnits: 16,
             maxVertexTextureImageUnits: 16,
             maxCombinedTexturesImageUnits: 32,
-            maxTextureSize: 512,
+            maxTextureSize: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_SIZE,
             maxCubemapTextureSize: 512,
             maxRenderTextureSize: 512,
             maxVertexAttribs: 16,
@@ -876,7 +890,7 @@ export class NativeEngine extends Engine {
             drawBuffersExtension: false,
             depthTextureExtension: false,
             vertexArrayObject: true,
-            instancedArrays: false,
+            instancedArrays: true,
             supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
@@ -887,6 +901,7 @@ export class NativeEngine extends Engine {
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
+            texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
         };
 
         this._features = {
@@ -912,6 +927,7 @@ export class NativeEngine extends Engine {
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
+            supportSpriteInstancing: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -1073,7 +1089,13 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+    protected _recordVertexArrayObject(
+        vertexArray: any,
+        vertexBuffers: { [key: string]: VertexBuffer },
+        indexBuffer: Nullable<NativeDataBuffer>,
+        effect: Effect,
+        overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
+    ): void {
         if (indexBuffer) {
             this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
@@ -1083,10 +1105,18 @@ export class NativeEngine extends Engine {
             const location = effect.getAttributeLocation(index);
             if (location >= 0) {
                 const kind = attributes[index];
-                const vertexBuffer = vertexBuffers[kind];
+                let vertexBuffer: Nullable<VertexBuffer> = null;
+
+                if (overrideVertexBuffers) {
+                    vertexBuffer = overrideVertexBuffers[kind];
+                }
+                if (!vertexBuffer) {
+                    vertexBuffer = vertexBuffers[kind];
+                }
+
                 if (vertexBuffer) {
                     const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
-                    if (buffer) {
+                    if (buffer && buffer.nativeVertexBuffer) {
                         this._engine.recordVertexBuffer(
                             vertexArray,
                             buffer.nativeVertexBuffer!,
@@ -1113,9 +1143,14 @@ export class NativeEngine extends Engine {
         this.bindVertexArrayObject(this._boundBuffersVertexArray);
     }
 
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+    public recordVertexArrayObject(
+        vertexBuffers: { [key: string]: VertexBuffer },
+        indexBuffer: Nullable<NativeDataBuffer>,
+        effect: Effect,
+        overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
+    ): WebGLVertexArrayObject {
         const vertexArray = this._engine.createVertexArray();
-        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
+        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect, overrideVertexBuffers);
         return vertexArray;
     }
 
@@ -2091,7 +2126,9 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        creationFlags: number = 0,
+        useSRGBBuffer: boolean = false
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Raw);
 
@@ -2105,8 +2142,9 @@ export class NativeEngine extends Engine {
         texture.height = texture.baseHeight;
         texture._compression = compression;
         texture.type = type;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
-        this.updateRawTexture(texture, data, format, invertY, compression, type);
+        this.updateRawTexture(texture, data, format, invertY, compression, type, texture._useSRGBBuffer);
 
         if (texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
@@ -2164,7 +2202,8 @@ export class NativeEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        useSRGBBuffer: boolean = false
     ): void {
         if (!texture) {
             return;
@@ -2206,8 +2245,8 @@ export class NativeEngine extends Engine {
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
-     * @param creationFlags
-     * @param useSRGBBuffer
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(
@@ -2216,7 +2255,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
@@ -2252,7 +2291,7 @@ export class NativeEngine extends Engine {
         }
 
         if (scene) {
-            scene._addPendingData(texture);
+            scene.addPendingData(texture);
         }
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -2276,7 +2315,7 @@ export class NativeEngine extends Engine {
 
         const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             if (url === originalUrl) {
@@ -2305,7 +2344,7 @@ export class NativeEngine extends Engine {
             const onload = (data: ArrayBufferView) => {
                 if (!texture._hardwareTexture) {
                     if (scene) {
-                        scene._removePendingData(texture);
+                        scene.removePendingData(texture);
                     }
 
                     return;
@@ -2330,7 +2369,7 @@ export class NativeEngine extends Engine {
                         this._setTextureSampling(underlyingResource, filter);
 
                         if (scene) {
-                            scene._removePendingData(texture);
+                            scene.removePendingData(texture);
                         }
 
                         texture.onLoadedObservable.notifyObservers(texture);
@@ -2373,6 +2412,28 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    /**
+     * Wraps an external native texture in a Babylon texture.
+     * @param texture defines the external texture
+     * @returns the babylon internal texture
+     */
+    wrapNativeTexture(texture: any): InternalTexture {
+        // Currently native is using the WebGL wrapper
+        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+        internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.isReady = true;
+        return internalTexture;
+    }
+
+    /**
+     * Wraps an external web gl texture in a Babylon texture.
+     * @returns the babylon internal texture
+     */
+    wrapWebGLTexture(): InternalTexture {
+        throw new Error("wrapWebGLTexture is not supported, use wrapNativeTexture instead.");
+    }
+
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
@@ -2404,20 +2465,19 @@ export class NativeEngine extends Engine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = this.createCanvasImage();
             image.onload = () => {
-                const imageBitmap = this._engine.createImageBitmap(image);
-                if (imageBitmap) {
+                try {
+                    const imageBitmap = this._engine.createImageBitmap(image);
                     resolve(imageBitmap);
-                    return;
-                } else {
-                    reject(`Error loading image ${image.src}`);
+                } catch (error) {
+                    reject(`Error loading image ${image.src} with exception: ${error}`);
                 }
             };
-            image.onerror = () => {
-                reject(`Error loading image ${image.src}`);
+            image.onerror = (error) => {
+                reject(`Error loading image ${image.src} with exception: ${error}`);
             };
 
             image.src = imageSource;
@@ -2910,6 +2970,32 @@ export class NativeEngine extends Engine {
     }
 
     /**
+     * Update a portion of an internal texture
+     * @param texture defines the texture to update
+     * @param imageData defines the data to store into the texture
+     * @param xOffset defines the x coordinates of the update rectangle
+     * @param yOffset defines the y coordinates of the update rectangle
+     * @param width defines the width of the update rectangle
+     * @param height defines the height of the update rectangle
+     * @param faceIndex defines the face index if texture is a cube (0 by default)
+     * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
+     */
+    public updateTextureData(
+        texture: InternalTexture,
+        imageData: ArrayBufferView,
+        xOffset: number,
+        yOffset: number,
+        width: number,
+        height: number,
+        faceIndex: number = 0,
+        lod: number = 0,
+        generateMipMaps = false
+    ): void {
+        throw new Error("updateTextureData not implemented.");
+    }
+
+    /**
      * @param texture
      * @param internalFormat
      * @param width
@@ -3151,5 +3237,42 @@ export class NativeEngine extends Engine {
         // TODO
         const result = { ascent: 0, height: 0, descent: 0 };
         return result;
+    }
+
+    public _readTexturePixels(
+        texture: InternalTexture,
+        width: number,
+        height: number,
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean,
+        x?: number,
+        y?: number
+    ): Promise<ArrayBufferView> {
+        if (faceIndex !== undefined && faceIndex !== -1) {
+            throw new Error(`Reading cubemap faces is not supported, but faceIndex is ${faceIndex}.`);
+        }
+
+        return this._engine
+            .readTexture(
+                texture._hardwareTexture?.underlyingResource,
+                level ?? 0,
+                x ?? 0,
+                y ?? 0,
+                width,
+                height,
+                buffer?.buffer ?? null,
+                buffer?.byteOffset ?? 0,
+                buffer?.byteLength ?? 0
+            )
+            .then((rawBuffer) => {
+                if (!buffer) {
+                    buffer = new Uint8Array(rawBuffer);
+                }
+
+                return buffer;
+            });
     }
 }

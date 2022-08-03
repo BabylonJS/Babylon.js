@@ -60,8 +60,8 @@ declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper
  * @hidden
  */
 export interface ISceneLike {
-    _addPendingData(data: any): void;
-    _removePendingData(data: any): void;
+    addPendingData(data: any): void;
+    removePendingData(data: any): void;
     offlineProvider: IOfflineProvider;
 }
 
@@ -129,7 +129,6 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
-
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -166,6 +165,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+    /**
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
+     * Otherwise, the default is to use a cheaper approximation.
+     */
+    useExactSrgbConversions?: boolean;
 }
 
 /**
@@ -182,6 +186,11 @@ export class ThinEngine {
         { key: "Chrome/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        // desktop osx safari 15.4
+        { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
+        // mobile browsers using safari 15.4 on ios
+        { key: ".*(15.4).*AppleWebKit.*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
     ];
 
     /** @hidden */
@@ -192,14 +201,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-rc.12";
+        return "babylonjs@5.17.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-rc.12";
+        return "5.17.1";
     }
 
     /**
@@ -536,11 +545,16 @@ export class ThinEngine {
 
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
+    private _maxMSAASamplesOverride: Nullable<number> = null;
 
     private _activeRequests = new Array<IFileRequest>();
 
+    /**
+     * If set to true zooming in and out in the browser will rescale the hardware-scaling correctly.
+     */
+    public adaptToDeviceRatio: boolean = false;
     /** @hidden */
-    private _adaptToDeviceRatio: boolean = false;
+    private _lastDevicePixelRatio: number = 1.0;
 
     /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
@@ -689,6 +703,14 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
+    protected _useExactSrgbConversions = false;
+    /**
+     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
+     */
+    public get useExactSrgbConversions(): boolean {
+        return this._useExactSrgbConversions;
+    }
+
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
      */
@@ -746,7 +768,7 @@ export class ThinEngine {
         this._creationOptions = options;
 
         // Save this off for use in resize().
-        this._adaptToDeviceRatio = adaptToDeviceRatio ?? false;
+        this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
@@ -806,6 +828,10 @@ export class ThinEngine {
                 options.xrCompatible = true;
             }
 
+            if (options.useExactSrgbConversions !== undefined) {
+                this._useExactSrgbConversions = options.useExactSrgbConversions;
+            }
+
             this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
 
             // Exceptions
@@ -856,6 +882,12 @@ export class ThinEngine {
                                     break;
                                 case "vao":
                                     this.disableVertexArrayObjects = true;
+                                    break;
+                                case "antialias":
+                                    options.antialias = false;
+                                    break;
+                                case "maxMSAASamples":
+                                    this._maxMSAASamplesOverride = 1;
                                     break;
                             }
                         }
@@ -951,6 +983,7 @@ export class ThinEngine {
 
         const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
         this._isStencilEnable = options.stencil ? true : false;
@@ -1154,6 +1187,7 @@ export class ThinEngine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: this._webGLVersion > 1,
             textureMaxLevel: this._webGLVersion > 1,
+            texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? 256 : 128,
         };
 
         // Infos
@@ -1211,8 +1245,13 @@ export class ThinEngine {
             this._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = this._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
         }
         if (this._caps.s3tc_srgb) {
+            this._gl.COMPRESSED_SRGB_S3TC_DXT1_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_S3TC_DXT1_EXT;
             this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
             this._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = this._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+        }
+        if (this._caps.etc2) {
+            this._gl.COMPRESSED_SRGB8_ETC2 = this._caps.etc2.COMPRESSED_SRGB8_ETC2;
+            this._gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = this._caps.etc2.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
         }
 
         // Checks if some of the format renders first to allow the use of webgl inspector.
@@ -1225,7 +1264,7 @@ export class ThinEngine {
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
-            this._caps.maxMSAASamples = this._gl.getParameter(this._gl.MAX_SAMPLES);
+            this._caps.maxMSAASamples = this._maxMSAASamplesOverride !== null ? this._maxMSAASamplesOverride : this._gl.getParameter(this._gl.MAX_SAMPLES);
         } else {
             const drawBuffersExtension = this._gl.getExtension("WEBGL_draw_buffers");
 
@@ -1360,6 +1399,7 @@ export class ThinEngine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
+            supportSpriteInstancing: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1712,10 +1752,11 @@ export class ThinEngine {
         let height: number;
 
         // Requery hardware scaling level to handle zoomed-in resizing.
-        if (this._adaptToDeviceRatio) {
+        if (this.adaptToDeviceRatio) {
             const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-            const limitDeviceRatio = this._creationOptions.limitDeviceRatio || devicePixelRatio;
-            this._hardwareScalingLevel = this._adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+            const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
+            this._lastDevicePixelRatio = devicePixelRatio;
+            this._hardwareScalingLevel *= changeRatio;
         }
 
         if (IsWindowObjectExist()) {
@@ -1861,6 +1902,22 @@ export class ThinEngine {
         }
 
         this._stencilStateComposer.stencilMaterial = stencil;
+    }
+
+    /**
+     * Gets a boolean indicating if depth testing is enabled
+     * @returns the current state
+     */
+    public getDepthBuffer(): boolean {
+        return this._depthCullingState.depthTest;
+    }
+
+    /**
+     * Enable or disable depth buffering
+     * @param enable defines the state to set
+     */
+    public setDepthBuffer(enable: boolean): void {
+        this._depthCullingState.depthTest = enable;
     }
 
     /**
@@ -2686,6 +2743,11 @@ export class ThinEngine {
             } else {
                 delete defines["USE_REVERSE_DEPTHBUFFER"];
             }
+            if (this.useExactSrgbConversions) {
+                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+            } else {
+                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+            }
             return;
         } else {
             let s = "";
@@ -2697,6 +2759,12 @@ export class ThinEngine {
                     s += "\n";
                 }
                 s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            if (this.useExactSrgbConversions) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_EXACT_SRGB_CONVERSIONS";
             }
             return s;
         }
@@ -2778,16 +2846,17 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
-        // eslint-disable-next-line no-empty
-        while (gl.getError() != gl.NO_ERROR) {}
-
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
         if (!shader) {
+            let error = gl.NO_ERROR;
+            let tempError = gl.NO_ERROR;
+            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
+                error = tempError;
+            }
+
             throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${gl.getError()}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${
-                    this._contextWasLost
-                }`
+                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
             );
         }
 
@@ -3507,7 +3576,7 @@ export class ThinEngine {
      * This can help preventing texture load conflict due to name collision.
      */
     public clearInternalTexturesCache() {
-        this._internalTexturesCache = [];
+        this._internalTexturesCache.length = 0;
     }
 
     /**
@@ -3696,12 +3765,16 @@ export class ThinEngine {
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
+            fullOptions.useSRGBBuffer = false;
         }
+
+        fullOptions.useSRGBBuffer = fullOptions.useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
 
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -3717,12 +3790,13 @@ export class ThinEngine {
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
+        texture._useSRGBBuffer = !!fullOptions.useSRGBBuffer;
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
         const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
         const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
-        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format);
+        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format, fullOptions.useSRGBBuffer);
         const internalFormat = this._getInternalFormat(fullOptions.format);
         const type = this._getWebGLTextureType(fullOptions.type);
 
@@ -3781,7 +3855,7 @@ export class ThinEngine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         prepareTexture: (
             texture: InternalTexture,
@@ -3853,7 +3927,7 @@ export class ThinEngine {
         }
 
         if (scene) {
-            scene._addPendingData(texture);
+            scene.addPendingData(texture);
         }
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -3877,7 +3951,7 @@ export class ThinEngine {
 
         const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             if (url === originalUrl) {
@@ -4054,7 +4128,7 @@ export class ThinEngine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
@@ -4183,6 +4257,8 @@ export class ThinEngine {
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -4194,7 +4270,9 @@ export class ThinEngine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        creationFlags = 0,
+        useSRGBBuffer: boolean = false
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
@@ -4421,12 +4499,15 @@ export class ThinEngine {
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        if (comparisonFunction === 0) {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-        } else {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
+        if (this.webGLVersion > 1) {
+            if (comparisonFunction === 0) {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            } else {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
         }
     }
 
@@ -4458,6 +4539,22 @@ export class ThinEngine {
 
         if (texture._useSRGBBuffer) {
             switch (internalFormat) {
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+                    // Note, if using ETC1 and sRGB is requested, this will use ETC2 if available.
+                    if (this._caps.etc2) {
+                        internalFormat = gl.COMPRESSED_SRGB8_ETC2;
+                    } else {
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+                    if (this._caps.etc2) {
+                        internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+                    } else {
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
                     internalFormat = gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
                     break;
@@ -4465,6 +4562,14 @@ export class ThinEngine {
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
                     break;
                 case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+                    if (this._caps.s3tc_srgb) {
+                        internalFormat = gl.COMPRESSED_SRGB_S3TC_DXT1_EXT;
+                    } else {
+                        // S3TC sRGB extension not supported
+                        texture._useSRGBBuffer = false;
+                    }
+                    break;
+                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {
                         internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
                     } else {
@@ -4541,6 +4646,7 @@ export class ThinEngine {
      * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
+     * @param generateMipMaps defines whether to generate mipmaps or not
      */
     public updateTextureData(
         texture: InternalTexture,
@@ -4550,7 +4656,8 @@ export class ThinEngine {
         width: number,
         height: number,
         faceIndex: number = 0,
-        lod: number = 0
+        lod: number = 0,
+        generateMipMaps = false
     ): void {
         const gl = this._gl;
 
@@ -4564,7 +4671,15 @@ export class ThinEngine {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
+        this._bindTextureDirectly(target, texture, true);
+
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
+
+        if (generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
+
+        this._bindTextureDirectly(target, null);
     }
 
     /**
@@ -4604,7 +4719,7 @@ export class ThinEngine {
 
         // this.resetTextureCache();
         if (scene) {
-            scene._removePendingData(texture);
+            scene.removePendingData(texture);
         }
 
         texture.onLoadedObservable.notifyObservers(texture);
@@ -4641,7 +4756,7 @@ export class ThinEngine {
         if (!texture._hardwareTexture) {
             //  this.resetTextureCache();
             if (scene) {
-                scene._removePendingData(texture);
+                scene.removePendingData(texture);
             }
 
             return;
@@ -5174,7 +5289,7 @@ export class ThinEngine {
 
         // Unbind
         this.unbindAllAttributes();
-        this._boundUniforms = [];
+        this._boundUniforms = {};
 
         // Events
         if (IsWindowObjectExist()) {
@@ -5190,7 +5305,7 @@ export class ThinEngine {
 
         this._workingCanvas = null;
         this._workingContext = null;
-        this._currentBufferPointers = [];
+        this._currentBufferPointers.length = 0;
         this._renderingCanvas = null;
         this._currentProgram = null;
         this._boundRenderFunction = null;
@@ -5845,6 +5960,6 @@ export class ThinEngine {
             return this._renderingCanvas.ownerDocument;
         }
 
-        return document;
+        return IsDocumentAvailable() ? document : null;
     }
 }

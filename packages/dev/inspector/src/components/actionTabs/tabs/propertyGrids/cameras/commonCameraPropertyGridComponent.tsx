@@ -14,6 +14,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
+import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -63,6 +64,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         propertyName="minZ"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <ParentPropertyGridComponent globalState={this.props.globalState} node={camera} lockObject={this.props.lockObject} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Far plane"
@@ -71,6 +73,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Inertia"
                         target={camera}
                         propertyName="inertia"
@@ -93,10 +96,11 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         target={camera}
                         propertyName="mode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onSelect={(value) => this.setState({ mode: value })}
+                        onSelect={(value) => this.setState({ mode: value as number })}
                     />
                     {camera.mode === Camera.PERSPECTIVE_CAMERA && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Field of view"
                             target={camera}
                             useEuler={this.props.globalState.onlyUseEulers}

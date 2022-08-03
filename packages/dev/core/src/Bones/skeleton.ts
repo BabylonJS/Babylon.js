@@ -51,7 +51,7 @@ export class Skeleton implements IAnimatable {
 
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
-    private _lastAbsoluteTransformsUpdateId = -1;
+    private _absoluteTransformIsDirty = true;
 
     private _canUseTextureForBones = false;
     private _uniqueId = 0;
@@ -452,6 +452,7 @@ export class Skeleton implements IAnimatable {
     /** @hidden */
     public _markAsDirty(): void {
         this._isDirty = true;
+        this._absoluteTransformIsDirty = true;
     }
 
     /**
@@ -686,7 +687,7 @@ export class Skeleton implements IAnimatable {
      * Releases all resources associated with the current skeleton
      */
     public dispose() {
-        this._meshesWithPoseMatrix = [];
+        this._meshesWithPoseMatrix.length = 0;
 
         // Animations
         this.getScene().stopAnimation(this);
@@ -835,11 +836,9 @@ export class Skeleton implements IAnimatable {
      * @param forceUpdate defines if computation must be done even if cache is up to date
      */
     public computeAbsoluteTransforms(forceUpdate = false): void {
-        const renderId = this._scene.getRenderId();
-
-        if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate) {
+        if (this._absoluteTransformIsDirty || forceUpdate) {
             this.bones[0].computeAbsoluteTransforms();
-            this._lastAbsoluteTransformsUpdateId = renderId;
+            this._absoluteTransformIsDirty = false;
         }
     }
 
@@ -878,6 +877,8 @@ export class Skeleton implements IAnimatable {
         visited[index] = true;
 
         const bone = this.bones[index];
+        if (!bone) return;
+
         if (bone._index === undefined) {
             bone._index = index;
         }

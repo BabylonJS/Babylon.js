@@ -8,6 +8,8 @@ import type { Container } from "./container";
 import type { TextBlock } from "./textBlock";
 import type { InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
+import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { InputTextArea } from "./inputTextArea";
 
 /**
  * Class used to store key control properties
@@ -168,12 +170,12 @@ export class VirtualKeyboard extends StackPanel {
         }
     }
 
-    private _currentlyConnectedInputText: Nullable<InputText> = null;
+    private _currentlyConnectedInputText: Nullable<InputText | InputTextArea> = null;
     private _connectedInputTexts: ConnectedInputText[] = [];
     private _onKeyPressObserver: Nullable<Observer<string>> = null;
 
     /** Gets the input text control currently attached to the keyboard */
-    public get connectedInputText(): Nullable<InputText> {
+    public get connectedInputText(): Nullable<InputText | InputTextArea> {
         return this._currentlyConnectedInputText;
     }
 
@@ -205,13 +207,25 @@ export class VirtualKeyboard extends StackPanel {
                         this.applyShiftState(this.shiftState);
                         return;
                     case "\u2190":
-                        this._currentlyConnectedInputText.processKey(8);
+                        if (this._currentlyConnectedInputText instanceof InputTextArea) {
+                            this._currentlyConnectedInputText.alternativeProcessKey("Backspace");
+                        } else {
+                            this._currentlyConnectedInputText.processKey(8);
+                        }
                         return;
                     case "\u21B5":
-                        this._currentlyConnectedInputText.processKey(13);
+                        if (this._currentlyConnectedInputText instanceof InputTextArea) {
+                            this._currentlyConnectedInputText.alternativeProcessKey("Enter");
+                        } else {
+                            this._currentlyConnectedInputText.processKey(13);
+                        }
                         return;
                 }
-                this._currentlyConnectedInputText.processKey(-1, this.shiftState ? key.toUpperCase() : key);
+                if (this._currentlyConnectedInputText instanceof InputTextArea) {
+                    this._currentlyConnectedInputText.alternativeProcessKey("", this.shiftState ? key.toUpperCase() : key);
+                } else {
+                    this._currentlyConnectedInputText.processKey(-1, this.shiftState ? key.toUpperCase() : key);
+                }
 
                 if (this.shiftState === 1) {
                     this.shiftState = 0;
@@ -265,7 +279,7 @@ export class VirtualKeyboard extends StackPanel {
             this._connectedInputTexts.forEach((connectedInputText: ConnectedInputText) => {
                 this._removeConnectedInputObservables(connectedInputText);
             });
-            this._connectedInputTexts = [];
+            this._connectedInputTexts.length = 0;
         }
 
         if (this._connectedInputTexts.length === 0) {
@@ -308,6 +322,27 @@ export class VirtualKeyboard extends StackPanel {
         returnValue.addKeysRow([" "], [{ width: "200px" }]);
 
         return returnValue;
+    }
+
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+        for (const row of this.children) {
+            if (row.getClassName() === "StackPanel") {
+                const stackPanel = row as StackPanel;
+                for (const key of stackPanel.children) {
+                    if (key.getClassName() === "Button" && key.name) {
+                        key.onPointerUpObservable.add(() => {
+                            this.onKeyPressObservable.notifyObservers(key.name as string);
+                        });
+                    }
+                }
+            }
+        }
     }
 }
 

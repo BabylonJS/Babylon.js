@@ -3,7 +3,7 @@
  */
 export class MaterialDefines {
     /** @hidden */
-    protected _keys: string[];
+    protected _keys: string[] = [];
     private _isDirty = true;
     /** @hidden */
     public _renderId: number;
@@ -160,7 +160,7 @@ export class MaterialDefines {
      * Rebuilds the material defines
      */
     public rebuild() {
-        this._keys = [];
+        this._keys.length = 0;
 
         for (const key of Object.keys(this)) {
             if (key[0] === "_") {
@@ -172,7 +172,9 @@ export class MaterialDefines {
 
         if (this._externalProperties) {
             for (const name in this._externalProperties) {
-                this._keys.push(name);
+                if (this._keys.indexOf(name) === -1) {
+                    this._keys.push(name);
+                }
             }
         }
     }
