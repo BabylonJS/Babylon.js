@@ -12,8 +12,6 @@ export interface IAimActionOptions extends IActionOptions {
     direction?: Vector3;
     space?: Space;
     duration?: number;
-    amount?: number;
-    transitionTime?: number;
     // easing - TODO
     // pingPong - what's a good way of implementing that?
 }
@@ -22,7 +20,6 @@ export class AimAction extends BaseAction<IAimActionOptions> {
     private _timer: AdvancedTimer<Scene>;
     protected async _execute(): Promise<void> {
         return new Promise((resolve) => {
-            // TODO if transitionTime is set (i.e. not 0 or undefined), we need to animate the rotation
             this._timer = new AdvancedTimer<Scene>({
                 contextObservable: this._options.subject.getScene().onBeforeRenderObservable,
                 timeout: this._options.duration ?? 1000,

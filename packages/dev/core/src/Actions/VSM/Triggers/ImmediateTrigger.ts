@@ -1,5 +1,5 @@
 import { BaseTrigger } from "./BaseTrigger";
-import { Scene } from "../../../scene";
+import type { Scene } from "../../../scene";
 
 export interface IImmediateTriggerOptions {
     runOnNextFrame?: boolean;

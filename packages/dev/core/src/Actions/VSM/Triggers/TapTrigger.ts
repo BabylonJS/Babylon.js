@@ -1,8 +1,9 @@
-import { Nullable } from "../../../types";
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { Nullable } from "../../../types";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { BaseTrigger } from "./BaseTrigger";
-import { Observer } from "../../../Misc/observable";
-import { PointerEventTypes, PointerInfo } from "../../../Events/pointerEvents";
+import type { Observer } from "../../../Misc/observable";
+import type { PointerInfo } from "../../../Events/pointerEvents";
+import { PointerEventTypes } from "../../../Events/pointerEvents";
 
 export interface ITapTriggerOptions {
     subject: AbstractMesh; // Could be node?
