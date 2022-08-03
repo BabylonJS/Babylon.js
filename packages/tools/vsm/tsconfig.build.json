@@ -1,0 +1,27 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "composite": true
+    },
+
+    "references": [
+        {
+            "path": "../../dev/core/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/gui/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/sharedUiComponents/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+    ]
+}
