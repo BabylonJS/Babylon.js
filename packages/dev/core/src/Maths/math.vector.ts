@@ -1135,7 +1135,7 @@ export class Vector3 {
      * @param origin defines the origin of the projection ray
      * @returns the projected vector3
      */
-     public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
+    public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
         const result = Vector3.Zero();
 
         this.projectOnPlaneToRef(plane, origin, result);
