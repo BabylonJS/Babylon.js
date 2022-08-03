@@ -1130,7 +1130,7 @@ export class Vector3 {
     }
 
     /**
-     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * Projects the current point Vector3 to a plane along a ray starting from a specified origin and passing through the current point Vector3.
      * @param plane defines the plane to project to
      * @param origin defines the origin of the projection ray
      * @returns the projected vector3
@@ -1144,48 +1144,34 @@ export class Vector3 {
     }
 
     /**
-     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * Projects the current point Vector3 to a plane along a ray starting from a specified origin and passing through the current point Vector3.
      * @param plane defines the plane to project to
      * @param origin defines the origin of the projection ray
      * @param result defines the Vector3 where to store the result
      */
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
-        // Use the normal scaled to the plane offset as the origin for the formula
-        const planeOrigin = MathTmp.Vector3[0];
-        plane.normal.scaleToRef(-plane.d, planeOrigin);
+        const n = plane.normal;
+        const d = plane.d;
 
-        // Since the normal in Babylon should point toward the viewer, invert it for the dot product
-        const inverseNormal = MathTmp.Vector3[1];
-        plane.normal.negateToRef(inverseNormal);
+        const V = MathTmp.Vector3[0];
 
-        // This vector is the direction
-        const { x, y, z } = this;
+        // ray direction
+        this.subtractToRef(origin, V);
 
-        // Calculate how close the direction is to the normal of the plane
-        const dotProduct = Vector3.Dot(inverseNormal, this);
+        V.normalize();
 
-        /*
-         * Early out in case the direction will never hit the plane.
-         *
-         * Epsilon is used to avoid issues with rays very near to parallel with the
-         * plane, and squared because as of writing the value is not sufficiently
-         * small for this use case.
-         */
-        if (dotProduct <= Epsilon * Epsilon) {
-            // No good option for setting the result vector here, so just take the origin of the ray
-            result.copyFrom(origin);
-            return;
+        const denom = Vector3.Dot(V, n);
+
+        //When the ray is close to parallel to the plane return infinity vector
+        if (Math.abs(denom) < Math.pow(10, -10)) {
+            origin.addToRef(new Vector3(Infinity, Infinity, Infinity), result);
+        } else {
+            const t = -(Vector3.Dot(origin, n) + d) / denom;
+
+            // P = P0 + t*V
+            const scaledV = V.scaleInPlace(t);
+            origin.addToRef(scaledV, result);
         }
-
-        // Calculate the offset
-        const relativeOrigin = MathTmp.Vector3[2];
-        planeOrigin.subtractToRef(origin, relativeOrigin);
-
-        // Calculate the length along the direction vector to the hit point
-        const hitDistance = Vector3.Dot(relativeOrigin, inverseNormal) / dotProduct;
-
-        // Apply the hit point by adding the direction scaled by the distance to the origin
-        result.set(origin.x + x * hitDistance, origin.y + y * hitDistance, origin.z + z * hitDistance);
     }
 
     /**
