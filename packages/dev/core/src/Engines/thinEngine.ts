@@ -2239,7 +2239,11 @@ export class ThinEngine {
 
         if (changed || this._vaoRecordInProgress) {
             this.bindArrayBuffer(buffer);
-            this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            if (type === this._gl.UNSIGNED_INT || type === this._gl.INT) {
+                this._gl.vertexAttribIPointer(indx, size, type, stride, offset);
+            } else {
+                this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            }
         }
     }
 
