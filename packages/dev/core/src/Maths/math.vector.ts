@@ -1149,7 +1149,7 @@ export class Vector3 {
      * @param origin defines the origin of the projection ray
      * @param result defines the Vector3 where to store the result
      */
-     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
+    public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
         const n = plane.normal;
         const d = plane.d;
 
@@ -1165,8 +1165,7 @@ export class Vector3 {
         //When the ray is close to parallel to the plane return infinity vector
         if (Math.abs(denom) < Math.pow(10, -10)) {
             origin.addToRef(new Vector3(Infinity, Infinity, Infinity), result);
-        }
-        else {
+        } else {
             const t = -(Vector3.Dot(origin, n) + d) / denom;
 
             // P = P0 + t*V
