@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-viewer",
-    "version": "5.13.3",
+    "version": "5.17.1",
     "main": "babylon.viewer.js",
     "types": "babylon.viewer.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs-gltf2interface": "^5.13.3"
+        "babylonjs-gltf2interface": "^5.17.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

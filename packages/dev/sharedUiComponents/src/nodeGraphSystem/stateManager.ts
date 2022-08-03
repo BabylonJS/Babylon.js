@@ -29,7 +29,7 @@ export class StateManager {
     onGridSizeChanged = new Observable<void>();
     onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean }>();
 
-    exportData: (data: any) => string;
+    exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
     applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement) => void;
 

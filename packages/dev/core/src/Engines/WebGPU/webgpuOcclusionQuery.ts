@@ -112,6 +112,6 @@ export class WebGPUOcclusionQuery {
 
     public dispose(): void {
         this._querySet?.dispose();
-        this._availableIndices = [];
+        this._availableIndices.length = 0;
     }
 }

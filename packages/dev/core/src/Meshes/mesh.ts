@@ -625,8 +625,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
-            // Enabled
-            this.setEnabled(source.isEnabled());
+            // Enabled. We shouldn't need to check the source's ancestors, as this mesh
+            // will have the same ones.
+            this.setEnabled(source.isEnabled(false));
 
             // Parent
             this.parent = source.parent;
@@ -718,13 +719,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean },
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const instance =
-            this.getTotalVertices() > 0 && (!options || !options.doNotInstantiate)
-                ? this.createInstance("instance of " + (this.name || this.id))
-                : this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
+            this.getTotalVertices() === 0 || (options && options.doNotInstantiate && (options.doNotInstantiate === true || options.doNotInstantiate(this)))
+                ? this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true)
+                : this.createInstance("instance of " + (this.name || this.id));
 
         instance.parent = newParent || this.parent;
         instance.position = this.position.clone();
@@ -2546,7 +2547,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     private _queueLoad(scene: Scene): Mesh {
-        scene._addPendingData(this);
+        scene.addPendingData(this);
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
 
@@ -2565,7 +2566,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 });
 
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-                scene._removePendingData(this);
+                scene.removePendingData(this);
             },
             () => {},
             scene.offlineProvider,

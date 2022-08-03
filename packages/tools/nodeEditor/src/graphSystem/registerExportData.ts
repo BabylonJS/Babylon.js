@@ -3,9 +3,9 @@ import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateMan
 import { SerializationTools } from "../serializationTools";
 
 export const RegisterExportData = (stateManager: StateManager) => {
-    stateManager.exportData = (data) => {
+    stateManager.exportData = (data, frame) => {
         const nodeMaterial = (data as GlobalState).nodeMaterial;
-        return SerializationTools.Serialize(nodeMaterial, stateManager.data as GlobalState, this);
+        return SerializationTools.Serialize(nodeMaterial, stateManager.data as GlobalState, frame);
     };
 
     stateManager.getEditorDataMap = () => {

@@ -1,9 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { FloatLineComponent } from "../../sharedComponents/floatLineComponent";
-import { SliderLineComponent } from "../../sharedComponents/sliderLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Materials/Node/nodeMaterialDecorator";
 import { PropertyTypeForEdition } from "core/Materials/Node/nodeMaterialDecorator";
@@ -15,6 +12,9 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import type { GlobalState } from "../../globalState";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -146,7 +146,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     if (cantDisplaySlider) {
                         components.push(
                             <FloatLineComponent
-                                globalState={this.props.stateManager.data as GlobalState}
+                                lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
                                 propertyName={propertyName}
                                 target={block}
@@ -156,9 +156,9 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     } else {
                         components.push(
                             <SliderLineComponent
+                                lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
                                 target={block}
-                                globalState={this.props.stateManager.data as GlobalState}
                                 propertyName={propertyName}
                                 step={Math.abs((options.max as number) - (options.min as number)) / 100.0}
                                 minimum={Math.min(options.min as number, options.max as number)}
@@ -172,10 +172,10 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.Int: {
                     components.push(
                         <FloatLineComponent
+                            lockObject={this.props.stateManager.lockObject}
                             digits={0}
                             step={"1"}
                             isInteger={true}
-                            globalState={this.props.stateManager.data as GlobalState}
                             label={displayName}
                             propertyName={propertyName}
                             target={block}
@@ -185,7 +185,15 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     break;
                 }
                 case PropertyTypeForEdition.Vector2: {
-                    components.push(<Vector2LineComponent label={displayName} propertyName={propertyName} target={block} onChange={() => this.forceRebuild(options.notifiers)} />);
+                    components.push(
+                        <Vector2LineComponent
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            onChange={() => this.forceRebuild(options.notifiers)}
+                        />
+                    );
                     break;
                 }
                 case PropertyTypeForEdition.List: {

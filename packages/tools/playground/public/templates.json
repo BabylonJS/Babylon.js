@@ -12,12 +12,12 @@
     {
         "label": "Load CPU Particle System from Snippet Server",
         "documentation": "https://doc.babylonjs.com/babylon101/particles#snippet-server",
-        "insertText": "BABYLON.ParticleHelper.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, false).then(system => {\n\n});"
+        "insertText": "BABYLON.ParticleHelper.ParseFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, false).then(system => {\n\n});"
     },
     {
         "label": "Load GPU Particle System from Snippet Server",
         "documentation": "https://doc.babylonjs.com/babylon101/particles#snippet-server",
-        "insertText": "BABYLON.ParticleHelper.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, true).then(system => {\n\n});"
+        "insertText": "BABYLON.ParticleHelper.ParseFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, true).then(system => {\n\n});"
     },
     {
         "label": "Create a cylinder",

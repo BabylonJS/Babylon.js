@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/loaders",
-    "version": "5.13.3",
+    "version": "5.17.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -22,10 +22,10 @@
         "tslib": "^2.4.0"
     },
     "devDependencies": {
-        "@babylonjs/core": "^5.13.3",
+        "@babylonjs/core": "^5.17.1",
         "@dev/build-tools": "^1.0.0",
         "@lts/loaders": "^1.0.0",
-        "babylonjs-gltf2interface": "^5.13.3",
+        "babylonjs-gltf2interface": "^5.17.1",
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4"
     },

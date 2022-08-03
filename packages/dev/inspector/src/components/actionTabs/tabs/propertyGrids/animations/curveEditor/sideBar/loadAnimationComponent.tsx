@@ -64,7 +64,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
         const context = this.props.context;
         const snippetId = this._textInput.current!.value;
 
-        Animation.CreateFromSnippetAsync(snippetId)
+        Animation.ParseFromSnippetAsync(snippetId)
             .then((animations) => {
                 context.snippetId = snippetId;
 

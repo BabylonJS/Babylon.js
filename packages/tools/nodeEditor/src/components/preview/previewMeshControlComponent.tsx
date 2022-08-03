@@ -125,7 +125,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         }
 
         const options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
-        const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
+        const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".glb, .babylon, .obj";
 
         return (
             <div id="preview-mesh-bar">

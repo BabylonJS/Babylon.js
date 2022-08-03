@@ -798,10 +798,6 @@ export class InputManager {
                     }
                 }
 
-                if (!this._pointerCaptures[evt.pointerId] && evt.buttons > 0) {
-                    return;
-                }
-
                 this._pointerCaptures[evt.pointerId] = false;
                 if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                     return;
@@ -877,7 +873,13 @@ export class InputManager {
         this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    if (eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick) {
+                    if (
+                        eventData.inputIndex === PointerInput.LeftClick ||
+                        eventData.inputIndex === PointerInput.MiddleClick ||
+                        eventData.inputIndex === PointerInput.RightClick ||
+                        eventData.inputIndex === PointerInput.BrowserBack ||
+                        eventData.inputIndex === PointerInput.BrowserForward
+                    ) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
                         } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {

@@ -59,6 +59,14 @@ export class BasisTranscodeConfiguration {
          * etc2 compression format
          */
         etc2?: boolean;
+        /**
+         * astc compression format
+         */
+        astc?: boolean;
+        /**
+         * bc7 compression format
+         */
+        bc7?: boolean;
     };
     /**
      * If mipmap levels should be loaded for transcoded images (Default: true)
@@ -76,13 +84,26 @@ export class BasisTranscodeConfiguration {
  */
 enum BASIS_FORMATS {
     cTFETC1 = 0,
-    cTFBC1 = 1,
-    cTFBC4 = 2,
-    cTFPVRTC1_4_OPAQUE_ONLY = 3,
-    cTFBC7_M6_OPAQUE_ONLY = 4,
-    cTFETC2 = 5,
-    cTFBC3 = 6,
-    cTFBC5 = 7,
+    cTFETC2 = 1,
+    cTFBC1 = 2,
+    cTFBC3 = 3,
+    cTFBC4 = 4,
+    cTFBC5 = 5,
+    cTFBC7 = 6,
+    cTFPVRTC1_4_RGB = 8,
+    cTFPVRTC1_4_RGBA = 9,
+    cTFASTC_4x4 = 10,
+    cTFATC_RGB = 11,
+    cTFATC_RGBA_INTERPOLATED_ALPHA = 12,
+    cTFRGBA32 = 13,
+    cTFRGB565 = 14,
+    cTFBGR565 = 15,
+    cTFRGBA4444 = 16,
+    cTFFXT1_RGB = 17,
+    cTFPVRTC2_4_RGB = 18,
+    cTFPVRTC2_4_RGBA = 19,
+    cTFETC2_EAC_R11 = 20,
+    cTFETC2_EAC_RG11 = 21,
 }
 
 /**
@@ -93,11 +114,11 @@ export const BasisToolsOptions = {
     /**
      * URL to use when loading the basis transcoder
      */
-    JSModuleURL: "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.js",
+    JSModuleURL: "https://cdn.babylonjs.com/basisTranscoder/1/basis_transcoder.js",
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    WasmModuleURL: "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.wasm",
+    WasmModuleURL: "https://cdn.babylonjs.com/basisTranscoder/1/basis_transcoder.wasm",
 };
 
 /**
@@ -118,6 +139,15 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
             break;
         case BASIS_FORMATS.cTFBC4:
             format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
+            break;
+        case BASIS_FORMATS.cTFASTC_4x4:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
+            break;
+        case BASIS_FORMATS.cTFETC2:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC;
+            break;
+        case BASIS_FORMATS.cTFBC7:
+            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM;
             break;
     }
 
@@ -140,6 +170,9 @@ const _CreateWorkerAsync = () => {
             } else {
                 Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL)
                     .then((wasmBinary) => {
+                        if (typeof URL !== "function") {
+                            return reject("Basis transcoder requires an environment with a URL constructor");
+                        }
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
                         _Worker = new Worker(workerBlobUrl);
 
@@ -310,46 +343,59 @@ export const BasisTools = {
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
-declare let Module: any;
+declare let BASIS: any;
 function workerFunc(): void {
     const _BASIS_FORMAT = {
         cTFETC1: 0,
-        cTFBC1: 1,
-        cTFBC4: 2,
-        cTFPVRTC1_4_OPAQUE_ONLY: 3,
-        cTFBC7_M6_OPAQUE_ONLY: 4,
-        cTFETC2: 5,
-        cTFBC3: 6,
-        cTFBC5: 7,
+        cTFETC2: 1,
+        cTFBC1: 2,
+        cTFBC3: 3,
+        cTFBC4: 4,
+        cTFBC5: 5,
+        cTFBC7: 6,
+        cTFPVRTC1_4_RGB: 8,
+        cTFPVRTC1_4_RGBA: 9,
+        cTFASTC_4x4: 10,
+        cTFATC_RGB: 11,
+        cTFATC_RGBA_INTERPOLATED_ALPHA: 12,
+        cTFRGBA32: 13,
+        cTFRGB565: 14,
+        cTFBGR565: 15,
+        cTFRGBA4444: 16,
+        cTFFXT1_RGB: 17,
+        cTFPVRTC2_4_RGB: 18,
+        cTFPVRTC2_4_RGBA: 19,
+        cTFETC2_EAC_R11: 20,
+        cTFETC2_EAC_RG11: 21,
     };
-    let transcoderModulePromise: Nullable<Promise<any>> = null;
+    let transcoderModulePromise: Nullable<PromiseLike<any>> = null;
     onmessage = (event) => {
         if (event.data.action === "init") {
             // Load the transcoder if it hasn't been yet
             if (!transcoderModulePromise) {
-                // Override wasm binary
-                Module = { wasmBinary: event.data.wasmBinary };
                 // make sure we loaded the script correctly
                 try {
                     importScripts(event.data.url);
                 } catch (e) {
                     postMessage({ action: "error", error: e });
                 }
-                transcoderModulePromise = new Promise<void>((res) => {
-                    Module.onRuntimeInitialized = () => {
-                        Module.initializeBasis();
-                        res();
-                    };
+                transcoderModulePromise = BASIS({
+                    // Override wasm binary
+                    wasmBinary: event.data.wasmBinary,
                 });
             }
-            transcoderModulePromise.then(() => {
-                postMessage({ action: "init" });
-            });
+            if (transcoderModulePromise !== null) {
+                transcoderModulePromise.then((m) => {
+                    BASIS = m;
+                    m.initializeBasis();
+                    postMessage({ action: "init" });
+                });
+            }
         } else if (event.data.action === "transcode") {
             // Transcode the basis image and return the resulting pixels
             const config: BasisTranscodeConfiguration = event.data.config;
             const imgData = event.data.imageData;
-            const loadedFile = new Module.BasisFile(imgData);
+            const loadedFile = new BASIS.BasisFile(imgData);
             const fileInfo = GetFileInfo(loadedFile);
             let format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
 
@@ -413,16 +459,20 @@ function workerFunc(): void {
     function GetSupportedTranscodeFormat(config: BasisTranscodeConfiguration, fileInfo: BasisFileInfo): Nullable<number> {
         let format = null;
         if (config.supportedCompressionFormats) {
-            if (config.supportedCompressionFormats.etc1) {
-                format = _BASIS_FORMAT.cTFETC1;
+            if (config.supportedCompressionFormats.astc) {
+                format = _BASIS_FORMAT.cTFASTC_4x4;
+            } else if (config.supportedCompressionFormats.bc7) {
+                format = _BASIS_FORMAT.cTFBC7;
             } else if (config.supportedCompressionFormats.s3tc) {
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
             } else if (config.supportedCompressionFormats.pvrtc) {
-                // TODO uncomment this after pvrtc bug is fixed is basis transcoder
-                // See discussion here: https://github.com/mrdoob/three.js/issues/16524#issuecomment-498929924
-                // format = _BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
+                format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFPVRTC1_4_RGBA : _BASIS_FORMAT.cTFPVRTC1_4_RGB;
             } else if (config.supportedCompressionFormats.etc2) {
                 format = _BASIS_FORMAT.cTFETC2;
+            } else if (config.supportedCompressionFormats.etc1) {
+                format = _BASIS_FORMAT.cTFETC1;
+            } else {
+                format = _BASIS_FORMAT.cTFRGB565;
             }
         }
         return format;

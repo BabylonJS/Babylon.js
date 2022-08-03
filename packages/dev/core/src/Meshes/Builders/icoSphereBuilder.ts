@@ -275,8 +275,8 @@ export function CreateIcoSphereVertexData(options: {
                 icoVertices[3 * vertices_unalias_id[v_id] + 1],
                 icoVertices[3 * vertices_unalias_id[v_id] + 2]
             );
-            // Normalize to get normal, then scale to radius
-            face_vertex_pos[v012].normalize().scaleInPlace(radius);
+            // Normalize to get normal
+            face_vertex_pos[v012].normalize();
 
             // uv Coordinates from vertex ID
             face_vertex_uv[v012].copyFromFloats(
