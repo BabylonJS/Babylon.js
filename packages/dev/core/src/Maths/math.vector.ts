@@ -1164,7 +1164,7 @@ export class Vector3 {
 
         //When the ray is close to parallel to the plane return infinity vector
         if (Math.abs(denom) < Math.pow(10, -10)) {
-            origin.addToRef(new Vector3(Infinity, Infinity, Infinity), result);
+            result.setAll(Infinity);
         } else {
             const t = -(Vector3.Dot(origin, n) + d) / denom;
 
