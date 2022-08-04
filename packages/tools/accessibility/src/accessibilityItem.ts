@@ -1,5 +1,5 @@
-import { Node } from "core/node";
-import { Control } from "gui/2D/controls/control";
+import type { Node } from "core/node";
+import type { Control } from "gui/2D/controls/control";
 
 export type AccessibilityEntity = Node | Control;
 

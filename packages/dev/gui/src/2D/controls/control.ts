@@ -21,7 +21,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
-import { IAccessibilityTag } from "core/IAccessibilityTag";
+import type { IAccessibilityTag } from "core/IAccessibilityTag";
 
 /**
  * Root class used for all 2D controls

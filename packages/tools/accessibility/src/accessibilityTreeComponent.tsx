@@ -1,17 +1,17 @@
 import * as React from "react";
 import { AccessibilityTreeItemComponent } from "./accessibilityTreeItemComponent";
-import { AccessibilityItem } from "./accessibilityItem";
+import type { AccessibilityItem } from "./accessibilityItem";
 import { AccessibilityGUIItem } from "./accessibilityGUIItem";
 import { AccessibilityNodeItem } from "./accessibilityNodeItem";
-import { Scene } from "core/scene";
-import { Observable, Observer } from "core/Misc/observable";
-import { Nullable } from "core/types";
+import type { Scene } from "core/scene";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import { Container } from "gui/2D/controls/container";
-import { Control } from "gui/2D/controls/control";
-import { Node } from "core/node";
+import type { Control } from "gui/2D/controls/control";
+import type { Node } from "core/node";
 
 interface IAccessibilityTreeComponentProps {
     scene: Scene;
@@ -25,7 +25,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
 
     constructor(props: IAccessibilityTreeComponentProps) {
         super(props);
-        let a11yTreeItems = this._updateAccessibilityTreeItems();
+        const a11yTreeItems = this._updateAccessibilityTreeItems();
         this.state = {
             a11yTreeItems: a11yTreeItems,
         };
@@ -36,14 +36,14 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         const scene = this.props.scene;
 
         // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
-        let updateA11yTree: () => void = () => {
-            let a11yTreeItems = this._updateAccessibilityTreeItems();
+        const updateA11yTree: () => void = () => {
+            const a11yTreeItems = this._updateAccessibilityTreeItems();
             this.setState({
                 a11yTreeItems: a11yTreeItems,
             });
         };
 
-        let addGUIObservers = (control: Control) => {
+        const addGUIObservers = (control: Control) => {
             // observe isVisible changed
             if (!this._observersMap.has(control.onIsVisibleChangedObservable)) {
                 this._observersMap.set(control.onIsVisibleChangedObservable, control.onIsVisibleChangedObservable.add(updateA11yTree));
@@ -54,7 +54,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             }
 
             if (control instanceof Container) {
-                let container = control as Container;
+                const container = control as Container;
 
                 // observe add control and deal with new controls
                 if (!this._observersMap.has(container.onControlAddedObservable)) {
@@ -87,7 +87,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             }
         };
 
-        let addNodeObservers = (node: Node) => {
+        const addNodeObservers = (node: Node) => {
             if (!this._observersMap.has(node.onEnabledStateChangedObservable)) {
                 this._observersMap.set(node.onEnabledStateChangedObservable, node.onEnabledStateChangedObservable.add(updateA11yTree));
             }
@@ -98,9 +98,9 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
 
             // If the node has GUI, add observer to the controls
             if (this._isGUI(node)) {
-                let curMesh = node as AbstractMesh;
-                let adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
-                let guiRoot = adt.getChildren();
+                const curMesh = node as AbstractMesh;
+                const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
+                const guiRoot = adt.getChildren();
                 guiRoot.forEach((control) => addGUIObservers(control));
             }
         };
@@ -182,8 +182,8 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             return [];
         }
 
-        let result: AccessibilityItem[] = [];
-        let queue: Node[] = [...rootItems];
+        const result: AccessibilityItem[] = [];
+        const queue: Node[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
             if (!curNode.isEnabled()) {
@@ -192,9 +192,9 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
 
             if (this._isGUI(curNode)) {
                 // if node texture is GUI, add that as a a11y GUI item (renders differently)
-                let curMesh = curNode as AbstractMesh;
-                let adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
-                let guiRoot = adt.getChildren();
+                const curMesh = curNode as AbstractMesh;
+                const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
+                const guiRoot = adt.getChildren();
                 result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromGUI(guiRoot)));
             } else if (curNode.accessibilityTag) {
                 result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromNodes(curNode.getChildren())));
@@ -210,8 +210,8 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         if (!rootItems || rootItems.length === 0) {
             return [];
         }
-        let result: AccessibilityGUIItem[] = [];
-        let queue: Control[] = [...rootItems];
+        const result: AccessibilityGUIItem[] = [];
+        const queue: Control[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
             if (!curNode.isVisible) {
@@ -231,8 +231,8 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
     private _isGUI(node: Node) {
         let isGUI = false;
         if (node instanceof AbstractMesh) {
-            let curMesh = node as AbstractMesh;
-            let textures = curMesh.material?.getActiveTextures();
+            const curMesh = node as AbstractMesh;
+            const textures = curMesh.material?.getActiveTextures();
             if (textures && textures[0] instanceof AdvancedDynamicTexture) {
                 isGUI = true;
             }

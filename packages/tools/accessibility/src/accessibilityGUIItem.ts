@@ -1,6 +1,6 @@
 import { Vector2 } from "core/Maths/math";
 import { Button } from "gui/2D/controls/button";
-import { Control } from "gui/2D/controls/control";
+import type { Control } from "gui/2D/controls/control";
 import { Image } from "gui/2D/controls/image";
 import { TextBlock } from "gui/2D/controls/textBlock";
 import { Vector2WithInfo } from "gui/2D/math2D";
@@ -50,7 +50,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
         }
 
         // If defined onclick, override default.
-        let eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
         if (eventHandler?.onclick || eventHandler?.oncontextmenu) {
             this._isActionable = true;
         } else {
@@ -87,7 +87,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
      */
     public override focus(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
         if (eventHandler?.onfocus) {
             eventHandler.onfocus();
             return;
@@ -103,7 +103,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
      */
     public override blur(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
         if (eventHandler?.onblur) {
             eventHandler.onblur();
             return;
@@ -118,7 +118,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
      */
     public override click(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
         if (eventHandler?.onclick) {
             eventHandler.onclick();
             return;
@@ -132,7 +132,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
      * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
      */
     public override rightClick(): void {
-        let eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
         if (eventHandler?.oncontextmenu) {
             eventHandler.oncontextmenu();
             return;

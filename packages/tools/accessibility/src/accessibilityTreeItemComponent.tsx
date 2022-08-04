@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AccessibilityItem } from "./accessibilityItem";
+import type { AccessibilityItem } from "./accessibilityItem";
 
 interface IAccessibilityTreeItemComponentProps {
     a11yItem: AccessibilityItem;

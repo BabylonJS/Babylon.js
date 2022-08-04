@@ -1,8 +1,8 @@
-import { IAction } from "core/Actions/action";
+import type { IAction } from "core/Actions/action";
 import { Constants } from "core/Engines/constants";
 import { Color4 } from "core/Maths/math.color";
 import { Mesh } from "core/Meshes/mesh";
-import { Node } from "core/node";
+import type { Node } from "core/node";
 import { AccessibilityItem } from "./accessibilityItem";
 
 /**
@@ -32,7 +32,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
         }
 
         // If defined onclick, override default.
-        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         if (eventHandler?.onclick || eventHandler?.oncontextmenu) {
             this._isActionable = true;
         } else {
@@ -58,7 +58,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      */
     public override focus(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         if (eventHandler?.onfocus) {
             eventHandler.onfocus();
             return;
@@ -77,7 +77,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      */
     public override blur(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         if (eventHandler?.onblur) {
             eventHandler.onblur();
             return;
@@ -94,13 +94,13 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      */
     public override click(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         if (eventHandler?.onclick) {
             eventHandler.onclick();
             return;
         }
 
-        let actions: IAction[] = [];
+        const actions: IAction[] = [];
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnLeftPickTrigger));
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
 
@@ -114,13 +114,13 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      */
     public override rightClick(): void {
         // If defined eventHandler, override default.
-        let eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         if (eventHandler?.oncontextmenu) {
             eventHandler.oncontextmenu();
             return;
         }
 
-        let actions: IAction[] = [];
+        const actions: IAction[] = [];
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnRightPickTrigger));
         actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
 
