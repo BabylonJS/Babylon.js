@@ -3,7 +3,7 @@ import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import type { IInspectable } from "core/Misc/iInspectable";
+import type { IInspectable } from "../Misc/iInspectable";
 
 // declare INSPECTOR namespace for compilation issue
 declare let INSPECTOR: any;
