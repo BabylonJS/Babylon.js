@@ -41,7 +41,7 @@ export interface IExplorerExtensibilityGroup {
 /**
  * Defines a new node that will be displayed as top level node in the explorer
  */
- export interface IExplorerAdditionalChild {
+export interface IExplorerAdditionalChild {
     /**
      * Gets the name of the additional node
      */
@@ -49,8 +49,8 @@ export interface IExplorerExtensibilityGroup {
     /**
      * Function used to return the class name of the child node
      */
-     getClassName(): string;
-     /**
+    getClassName(): string;
+    /**
      * List of inspectable custom properties (used by the Inspector)
      * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
      */
@@ -68,7 +68,7 @@ export interface IExplorerAdditionalNode {
     /**
      * Function used to return the list of child entries
      */
-    getContent(): IExplorerAdditionalChild[]
+    getContent(): IExplorerAdditionalChild[];
 }
 
 /**

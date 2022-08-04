@@ -17,12 +17,17 @@ interface IEmptyPropertyGridComponentProps {
 export class EmptyPropertyGridComponent extends React.Component<IEmptyPropertyGridComponentProps> {
     constructor(props: IEmptyPropertyGridComponentProps) {
         super(props);
-    }   
+    }
 
     render() {
         return (
             <div className="pane">
-                <CustomPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} target={this.props.item} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CustomPropertyGridComponent
+                    globalState={this.props.globalState}
+                    lockObject={this.props.lockObject}
+                    target={this.props.item}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }
