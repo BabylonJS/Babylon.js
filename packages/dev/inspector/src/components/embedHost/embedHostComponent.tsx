@@ -5,7 +5,7 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import type { Scene } from "core/scene";
 import type { GlobalState } from "../../components/globalState";
-import type { IExplorerExtensibilityGroup, DebugLayerTab } from "core/Debug/debugLayer";
+import type { IExplorerExtensibilityGroup, DebugLayerTab, IExplorerAdditionalNode } from "core/Debug/debugLayer";
 
 const Split = require("split.js").default;
 
@@ -20,6 +20,7 @@ interface IEmbedHostComponentProps {
     onClose: () => void;
     onPopup: () => void;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
+    additionalNodes?: IExplorerAdditionalNode[];
     initialTab?: DebugLayerTab;
 }
 
@@ -59,6 +60,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                         <SceneExplorerComponent
                             scene={this.props.scene}
                             extensibilityGroups={this.props.extensibilityGroups}
+                            additionalNodes={this.props.additionalNodes}
                             popupMode={true}
                             globalState={this.props.globalState}
                             noHeader={true}
@@ -78,6 +80,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <SceneExplorerComponent
                         scene={this.props.scene}
                         extensibilityGroups={this.props.extensibilityGroups}
+                        additionalNodes={this.props.additionalNodes}
                         globalState={this.props.globalState}
                         popupMode={true}
                         noHeader={true}
