@@ -252,6 +252,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
+        const fontFamilyOptions = [
+            { label: "Arial", value: 0 },
+            { label: "Calibri", value: 1 },
+            { label: "Times New Roman", value: 2 },
+            { label: "Broadway", value: 3 },
+            { label: "meep", value: 4 },
+        ];
+
         let horizontalDisabled = false,
             verticalDisabled = false,
             widthUnitsLocked = false,
@@ -563,7 +571,33 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" />
+                            {/* { {<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" /> } } */}
+                            <OptionsLineComponent
+                                label=""
+                                target={proxy}
+                                propertyName="fontFamily"
+                                options={fontFamilyOptions}
+                                onSelect={(newValue) => {
+                                    proxy.fontFamily = ["Arial", "Calibri", "Times New Roman", "Broadway", "meep"][newValue as number];
+                                }}
+                                extractValue={() => {
+                                    switch (proxy.fontFamily) {
+                                        case "Arial":
+                                            return 0
+                                        case "Calibri":
+                                            return 1;
+                                        case "Times New Roman":
+                                            return 2;
+                                        case "Broadway":
+                                            return 3;
+                                        case "meep":
+                                            return 4;
+                                        default:
+                                            return -1;
+                                    }
+                                }}
+                            
+                            />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
