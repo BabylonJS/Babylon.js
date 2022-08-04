@@ -73,12 +73,12 @@ export class RotationGizmo extends Gizmo {
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
-    private _meshAttached: Nullable<AbstractMesh>;
-    private _nodeAttached: Nullable<Node>;
-    private _observables: Observer<PointerInfo>[] = [];
+    protected _meshAttached: Nullable<AbstractMesh>;
+    protected _nodeAttached: Nullable<Node>;
+    protected _observables: Observer<PointerInfo>[] = [];
 
     /** Node Caching for quick lookup */
-    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
+    protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     public get attachedMesh() {
         return this._meshAttached;

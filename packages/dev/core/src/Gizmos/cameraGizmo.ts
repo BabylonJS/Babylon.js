@@ -20,10 +20,10 @@ import { Observable } from "../Misc/observable";
  * Gizmo that enables viewing a camera
  */
 export class CameraGizmo extends Gizmo {
-    private _cameraMesh: Mesh;
-    private _cameraLinesMesh: Mesh;
-    private _material: StandardMaterial;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _cameraMesh: Mesh;
+    protected _cameraLinesMesh: Mesh;
+    protected _material: StandardMaterial;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
     /**
      * Event that fires each time the gizmo is clicked
@@ -52,7 +52,7 @@ export class CameraGizmo extends Gizmo {
             }
         }, PointerEventTypes.POINTERDOWN);
     }
-    private _camera: Nullable<Camera> = null;
+    protected _camera: Nullable<Camera> = null;
 
     /** Gets or sets a boolean indicating if frustum lines must be rendered (true by default)) */
     public get displayFrustum() {
