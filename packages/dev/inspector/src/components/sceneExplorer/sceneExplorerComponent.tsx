@@ -2,7 +2,7 @@ import * as React from "react";
 
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IExplorerAdditionalNode, IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import type { Scene } from "core/scene";
 import { EngineStore } from "core/Engines/engineStore";
 
@@ -59,6 +59,7 @@ interface ISceneExplorerComponentProps {
     noExpand?: boolean;
     noClose?: boolean;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
+    additionalNodes?: IExplorerAdditionalNode[];
     globalState: GlobalState;
     popupMode?: boolean;
     onPopup?: () => void;
@@ -572,6 +573,21 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         filter={this.state.filter}
                     />
                 )}
+                {this.props.additionalNodes &&
+                    this.props.additionalNodes.map((additionalNode) => {
+                        return (
+                            <TreeItemComponent
+                                key={additionalNode.name}
+                                globalState={this.props.globalState}
+                                extensibilityGroups={this.props.extensibilityGroups}
+                                selectedEntity={this.state.selectedEntity}
+                                items={additionalNode.getContent()}
+                                label={additionalNode.name}
+                                offset={1}
+                                filter={this.state.filter}
+                            />
+                        );
+                    })}
             </div>
         );
     }
