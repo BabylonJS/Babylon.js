@@ -66,6 +66,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public _frameIsMoving = false;
     public _isLoading = false;
+    public _targetLinkCandidate: Nullable<NodeLink> = null;
 
     private _copiedNodes: GraphNode[] = [];
     private _copiedFrames: GraphFrame[] = [];
@@ -308,9 +309,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         );
     }
 
-    automaticRewire(inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[]) {
+    automaticRewire(inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[], firstOnly = false) {
+        let oneConnectionFound = false;
         if (outputs.length && inputs.length) {
             inputs.forEach((input) => {
+                if (oneConnectionFound) {
+                    return;
+                }
                 if (!input) {
                     return;
                 }
@@ -320,6 +325,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     const nodeOutput = this.findNodeFromData(output.ownerData);
                     this.connectNodes(nodeInput, input, nodeOutput, output);
                     outputs.shift();
+                    if (firstOnly) {
+                        oneConnectionFound = true;
+                        return;
+                    }
                 }
             });
         }

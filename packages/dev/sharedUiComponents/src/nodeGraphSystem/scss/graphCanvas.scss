@@ -432,6 +432,11 @@
                     stroke-dasharray: 10, 2;
                 }
 
+                &.target-candidate {
+                    filter: brightness(1.5);
+                    stroke-width: 6px;
+                }                
+
                 &.hidden {
                     display: none;
                 }
@@ -571,6 +576,8 @@
                     justify-self: end;
                     align-self: center;
                     margin-right: 5px;
+                    user-select: none;
+                    pointer-events: none;
 
                     &.visible {
                         display: grid;
