@@ -573,20 +573,21 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         filter={this.state.filter}
                     />
                 )}
-                {this.props.additionalNodes &&  this.props.additionalNodes.map((additionalNode) => {
-                    return (
-                        <TreeItemComponent
-                            key={additionalNode.name}
-                            globalState={this.props.globalState}
-                            extensibilityGroups={this.props.extensibilityGroups}
-                            selectedEntity={this.state.selectedEntity}
-                            items={additionalNode.getContent()}
-                            label={additionalNode.name}
-                            offset={1}
-                            filter={this.state.filter}
-                    />
-                    );
-                })}
+                {this.props.additionalNodes &&
+                    this.props.additionalNodes.map((additionalNode) => {
+                        return (
+                            <TreeItemComponent
+                                key={additionalNode.name}
+                                globalState={this.props.globalState}
+                                extensibilityGroups={this.props.extensibilityGroups}
+                                selectedEntity={this.state.selectedEntity}
+                                items={additionalNode.getContent()}
+                                label={additionalNode.name}
+                                offset={1}
+                                filter={this.state.filter}
+                            />
+                        );
+                    })}
             </div>
         );
     }

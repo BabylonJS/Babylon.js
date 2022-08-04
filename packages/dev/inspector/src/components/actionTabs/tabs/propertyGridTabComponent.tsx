@@ -669,7 +669,14 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
             }
 
-            return <EmptyPropertyGridComponent item={entity} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} globalState={this.props.globalState} />;
+            return (
+                <EmptyPropertyGridComponent
+                    item={entity}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    globalState={this.props.globalState}
+                />
+            );
         }
 
         return null;
