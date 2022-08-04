@@ -385,7 +385,7 @@ export class GraphNode {
             return;
         }
 
-        // Connect the ports        
+        // Connect the ports
         const inputs: Nullable<IPortData>[] = [];
         const outputs: Nullable<IPortData>[] = [];
         const availableNodeInputs: Nullable<IPortData>[] = [];
@@ -398,26 +398,18 @@ export class GraphNode {
         this._ownerCanvas._targetLinkCandidate = null;
 
         // Get the ports
-        availableNodeInputs.push(
-            ...this.content.inputs.filter((i) => !i.isConnected)
-        );
+        availableNodeInputs.push(...this.content.inputs.filter((i) => !i.isConnected));
 
-        availableNodeOutputs.push(
-            ...this.content.outputs
-        );
+        availableNodeOutputs.push(...this.content.outputs);
 
-        inputs.push(
-            ...leftNode.content.outputs
-        );
+        inputs.push(...leftNode.content.outputs);
 
-        outputs.push(
-            ...rightNode.content.inputs.filter((i) => !i.isConnected)
-        );
+        outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
 
         // Reconnect
         this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
         this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
-        
+
         this._stateManager.onRebuildRequiredObservable.notifyObservers(false);
     }
 
@@ -443,11 +435,10 @@ export class GraphNode {
 
         evt.stopPropagation();
 
-        if (this._inputPorts.filter(p => !p.portData.isConnected).length === 0 || 
-            this._outputPorts.length === 0) {
-                return;
+        if (this._inputPorts.filter((p) => !p.portData.isConnected).length === 0 || this._outputPorts.length === 0) {
+            return;
         }
-        
+
         // Check wires that could be underneath
         const rect = this._visual.getBoundingClientRect();
         for (const link of this._ownerCanvas.links) {
@@ -460,7 +451,7 @@ export class GraphNode {
             if (link.isTargetCandidate) {
                 if (this._ownerCanvas._targetLinkCandidate !== link) {
                     if (this._ownerCanvas._targetLinkCandidate) {
-                        this._ownerCanvas._targetLinkCandidate .isTargetCandidate = false;
+                        this._ownerCanvas._targetLinkCandidate.isTargetCandidate = false;
                     }
                     this._ownerCanvas._targetLinkCandidate = link;
                 }
