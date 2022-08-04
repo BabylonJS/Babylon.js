@@ -43,15 +43,15 @@ export class GizmoManager implements IDisposable {
     /** Fires an event when the manager is attached to a node */
     public onAttachedToNodeObservable = new Observable<Nullable<Node>>();
 
-    private _gizmosEnabled = { positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false };
-    private _pointerObservers: Observer<PointerInfo>[] = [];
-    private _attachedMesh: Nullable<AbstractMesh> = null;
-    private _attachedNode: Nullable<Node> = null;
-    private _boundingBoxColor = Color3.FromHexString("#0984e3");
-    private _defaultUtilityLayer: UtilityLayerRenderer;
-    private _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
-    private _thickness: number = 1;
-    private _scaleRatio: number = 1;
+    protected _gizmosEnabled = { positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false };
+    protected _pointerObservers: Observer<PointerInfo>[] = [];
+    protected _attachedMesh: Nullable<AbstractMesh> = null;
+    protected _attachedNode: Nullable<Node> = null;
+    protected _boundingBoxColor = Color3.FromHexString("#0984e3");
+    protected _defaultUtilityLayer: UtilityLayerRenderer;
+    protected _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
+    protected _thickness: number = 1;
+    protected _scaleRatio: number = 1;
 
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();

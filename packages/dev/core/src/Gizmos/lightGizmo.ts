@@ -25,12 +25,12 @@ import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
  * Gizmo that enables viewing a light
  */
 export class LightGizmo extends Gizmo {
-    private _lightMesh: Mesh;
-    private _material: StandardMaterial;
-    private _cachedPosition = new Vector3();
-    private _cachedForward = new Vector3(0, 0, 1);
-    private _attachedMeshParent: TransformNode;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _lightMesh: Mesh;
+    protected _material: StandardMaterial;
+    protected _cachedPosition = new Vector3();
+    protected _cachedForward = new Vector3(0, 0, 1);
+    protected _attachedMeshParent: TransformNode;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
     /**
      * Event that fires each time the gizmo is clicked
@@ -62,7 +62,7 @@ export class LightGizmo extends Gizmo {
             }
         }, PointerEventTypes.POINTERDOWN);
     }
-    private _light: Nullable<Light> = null;
+    protected _light: Nullable<Light> = null;
 
     /**
      * Override attachedNode because lightgizmo only support attached mesh

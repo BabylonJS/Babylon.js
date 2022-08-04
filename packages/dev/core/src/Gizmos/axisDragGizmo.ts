@@ -23,7 +23,7 @@ export class AxisDragGizmo extends Gizmo {
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -34,14 +34,14 @@ export class AxisDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<PositionGizmo> = null;
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<PositionGizmo> = null;
 
-    private _gizmoMesh: Mesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _dragging: boolean = false;
+    protected _gizmoMesh: Mesh;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _dragging: boolean = false;
 
     /**
      * @param scene
