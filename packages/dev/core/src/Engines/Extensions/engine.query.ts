@@ -136,7 +136,11 @@ declare module "../../Engines/engine" {
 }
 
 Engine.prototype.createQuery = function (): OcclusionQuery {
-    return this._gl.createQuery();
+    const query = this._gl.createQuery();
+    if (!query) {
+        throw new Error("Unable to create Occlusion Query");
+    }
+    return query;
 };
 
 Engine.prototype.deleteQuery = function (query: OcclusionQuery): Engine {
