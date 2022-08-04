@@ -344,8 +344,8 @@
             */
             "type": "node",
             "request": "launch",
-            "name": "Run selenium tests (Dev)",
-            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "selenium"],
+            "name": "Run interactions tests (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "interactions"],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
