@@ -99,7 +99,7 @@ export class GroundMesh extends Mesh {
         Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, invMat, tmpVect); // transform x,z in the mesh local space
         x = tmpVect.x;
         z = tmpVect.z;
-        if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
+        if (x < this._minX || x >= this._maxX || z <= this._minZ || z > this._maxZ) {
             return this.position.y;
         }
         if (!this._heightQuads || this._heightQuads.length == 0) {
