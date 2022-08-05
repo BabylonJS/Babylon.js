@@ -926,26 +926,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     addControls(scene: Scene) {
         scene.onKeyboardObservable.add((k: KeyboardInfo) => {
             switch (k.event.key) {
-                case "s": //select
-                case "S":
-                    this.props.globalState.tool = GUIEditorTool.SELECT;
-                    break;
-                case "p": //pan
-                case "P":
-                    this.props.globalState.tool = GUIEditorTool.PAN;
-                    break;
-                case "z": //zoom
-                case "Z":
-                    this.props.globalState.tool = GUIEditorTool.ZOOM;
-                    break;
-                case "g": //outlines
-                case "G":
-                    this.props.globalState.outlines = !this.props.globalState.outlines;
-                    break;
-                case "f": //fit to window
-                case "F":
-                    this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
-                    break;
                 case "ArrowUp": // move up
                     this.moveControls(false, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
                     break;
