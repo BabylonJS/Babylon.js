@@ -380,6 +380,37 @@ export class GraphNode {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._visual.releasePointerCapture(evt.pointerId);
+
+        if (!this._ownerCanvas._targetLinkCandidate) {
+            return;
+        }
+
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+        const availableNodeOutputs: Nullable<IPortData>[] = [];
+        const leftNode = this._ownerCanvas._targetLinkCandidate.nodeA;
+        const rightNode = this._ownerCanvas._targetLinkCandidate.nodeB!;
+
+        // Delete previous
+        this._ownerCanvas._targetLinkCandidate.dispose();
+        this._ownerCanvas._targetLinkCandidate = null;
+
+        // Get the ports
+        availableNodeInputs.push(...this.content.inputs.filter((i) => !i.isConnected));
+
+        availableNodeOutputs.push(...this.content.outputs);
+
+        inputs.push(...leftNode.content.outputs);
+
+        outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
+
+        // Reconnect
+        this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
+        this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
+
+        this._stateManager.onRebuildRequiredObservable.notifyObservers(false);
     }
 
     private _onMove(evt: PointerEvent) {
@@ -387,6 +418,7 @@ export class GraphNode {
             return;
         }
 
+        // Move
         const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
@@ -402,6 +434,29 @@ export class GraphNode {
         this._mouseStartPointY = evt.clientY;
 
         evt.stopPropagation();
+
+        if (this._inputPorts.filter((p) => !p.portData.isConnected).length === 0 || this._outputPorts.length === 0) {
+            return;
+        }
+
+        // Check wires that could be underneath
+        const rect = this._visual.getBoundingClientRect();
+        for (const link of this._ownerCanvas.links) {
+            if (link.portA.node === this || link.portB!.node === this) {
+                link.isTargetCandidate = false;
+                continue;
+            }
+            link.isTargetCandidate = link.intersectsWith(rect);
+
+            if (link.isTargetCandidate) {
+                if (this._ownerCanvas._targetLinkCandidate !== link) {
+                    if (this._ownerCanvas._targetLinkCandidate) {
+                        this._ownerCanvas._targetLinkCandidate.isTargetCandidate = false;
+                    }
+                    this._ownerCanvas._targetLinkCandidate = link;
+                }
+            }
+        }
     }
 
     public renderProperties(): Nullable<JSX.Element> {
