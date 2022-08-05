@@ -893,9 +893,14 @@ export class PhysicsImpostor {
         }
         // take the position set and make it the absolute position of this object.
         this.object.setAbsolutePosition(this.object.position);
-        this._deltaRotation && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+        if (this._deltaRotation) {
+            this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+            this._deltaPosition.applyRotationQuaternionToRef(this._deltaRotation, PhysicsImpostor._TmpVecs[0]);
+            this.object.translate(PhysicsImpostor._TmpVecs[0], 1);
+        } else {
+            this.object.translate(this._deltaPosition, 1);
+        }
         this.object.computeWorldMatrix(true);
-        this.object.translate(this._deltaPosition, 1);
     };
 
     /**
