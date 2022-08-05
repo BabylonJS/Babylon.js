@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "./globalState";
+import { GUIEditorTool } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -44,7 +45,46 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
+        document.addEventListener("keydown", this.addToolControls);
+        document.addEventListener("keyup", this.removePressToolControls);
     }
+
+    componentWillUnmount() {
+        document.removeEventListener("keydown", this.addToolControls);
+        document.removeEventListener("keyup", this.removePressToolControls);
+    }
+
+    addToolControls = (evt: KeyboardEvent) => {
+        switch (evt.key) {
+            case "s": //select
+            case "S":
+                this.props.globalState.tool = GUIEditorTool.SELECT;
+                break;
+            case "p": //pan
+            case "P":
+            case " ":
+                this.props.globalState.tool = GUIEditorTool.PAN;
+                break;
+            case "z": //zoom
+            case "Z":
+                this.props.globalState.tool = GUIEditorTool.ZOOM;
+                break;
+            case "g": //outlines
+            case "G":
+                this.props.globalState.outlines = !this.props.globalState.outlines;
+                break;
+            case "f": //fit to window
+            case "F":
+                this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
+                break;
+        }
+    };
+
+    removePressToolControls = (evt: KeyboardEvent) => {
+        if (evt.key === " ") {
+            this.props.globalState.restorePreviousTool();
+        }
+    };
 
     constructor(props: IGraphEditorProps) {
         super(props);
