@@ -14,10 +14,11 @@
         max-width: 400px;
         border-radius: 10px;
         background: white;
+        padding: 10px;
 
         display: grid;
         grid-template-columns: 100%;
-        grid-template-rows: calc(100% - 50px) 50px;
+        grid-template-rows: 1fr 50px;
 
         .dialog-message {
             grid-row: 1;

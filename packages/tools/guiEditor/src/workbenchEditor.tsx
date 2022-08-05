@@ -6,7 +6,8 @@ import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+// import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { MessageDialogComponent } from "shared-ui-components/components/MessageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GizmoWrapper } from "./diagram/gizmoWrapper";
@@ -20,6 +21,7 @@ import "./scss/header.scss";
 
 import toolbarExpandIcon from "./imgs/toolbarExpandIcon.svg";
 import toolbarCollapseIcon from "./imgs/toolbarCollapseIcon.svg";
+import type { Observer } from "core/Misc/observable";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -28,6 +30,7 @@ interface IGraphEditorProps {
 interface IGraphEditorState {
     showPreviewPopUp: boolean;
     toolbarExpand: boolean;
+    message: string;
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
@@ -39,6 +42,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _popUpWindow: Window;
     private _draggedItem: Nullable<string>;
     private _rootRef: React.RefObject<HTMLDivElement>;
+    private _onErrorMessageObserver: Nullable<Observer<string>>;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -52,6 +56,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.state = {
             showPreviewPopUp: false,
             toolbarExpand: true,
+            message: "",
         };
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
@@ -60,6 +65,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 this.props.globalState.draggedControl = this.onCreate(this._draggedItem);
             }
             this._draggedItem = null;
+        });
+        this._onErrorMessageObserver = this.props.globalState.onErrorMessageDialogRequiredObservable.add((message) => {
+            this.setState({ message });
         });
     }
 
@@ -261,7 +269,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>
-                <MessageDialogComponent globalState={this.props.globalState} />
+                <MessageDialogComponent message={this.state.message} isError={true} />
                 <div className="blocker">GUI Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
