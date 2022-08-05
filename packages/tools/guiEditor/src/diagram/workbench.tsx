@@ -29,6 +29,8 @@ import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
 
+
+
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
 }
@@ -45,6 +47,11 @@ const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+    // private _startX: number
+    // private _endX: number
+    // private _startY: number
+    // private _endY: number
+    private _mouseDown: boolean
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
@@ -61,6 +68,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
+   // private _dragged: boolean;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
@@ -961,7 +969,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }, KeyboardEventTypes.KEYDOWN);
 
-        scene.onBeforeRenderObservable.add(() => {
+        scene.onBeforeRenderObservable.add(() => {    
             if (this._panAndZoomContainer.scaleX !== this._zoomFactor) {
                 this._panAndZoomContainer.scaleX = this._zoomFactor;
                 this._panAndZoomContainer.scaleY = this._zoomFactor;
@@ -1028,6 +1036,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.zooming(1 + delta / 1000);
     }
 
+    zoomDrag(event: React.MouseEvent){
+        //do we want this?
+        //this.props.globalState.tool = GUIEditorTool.ZOOM;
+        let delta = 0;
+        if (event.movementY < 0) {
+            delta = -event.movementY;
+        } 
+        if (event.movementY > 0) {
+            delta = -event.movementY;
+        } 
+        this.zooming(1 + delta / 1000);
+    }
     //Zoom to pointer position. Zoom amount determined by delta
     zooming(delta: number) {
         this._zoomFactor *= delta;
@@ -1047,16 +1067,40 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     render() {
+        
         let cursor = "default";
         if (this.props.globalState.tool === GUIEditorTool.PAN) {
             cursor = "grab";
         } else if (this.props.globalState.tool === GUIEditorTool.ZOOM) {
             cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
         }
+        //const draggedControl = 
+        console.log(this.props.globalState.draggedControl);
         return (
             <canvas
                 id="workbench-canvas"
+                
+                onPointerDownCapture={() => { 
+                    //console.log(draggedControl)
+                    if(this.props.globalState.tool ){
+                        //do we want this? 
+                        //this.props.globalState.tool = GUIEditorTool.ZOOM;
+                        this._mouseDown = true;
+                    }
+                    else{
+                        this._mouseDown = false;
+                    }      
+                 }}  
+                 onPointerUpCapture={() => { 
+                    
+                    this._mouseDown = false;
+                 }}  
+                
                 onPointerMove={(evt) => {
+                    if(this._mouseDown){
+                        this.zoomDrag(evt)
+                     }
+                   
                     if (this.props.globalState.guiTexture) {
                         this.onMove(evt);
                     }
@@ -1071,6 +1115,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
                 style={{ cursor }}
+                
             ></canvas>
         );
     }
