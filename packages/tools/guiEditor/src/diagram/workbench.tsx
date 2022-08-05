@@ -51,6 +51,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // private _endX: number
     // private _startY: number
     // private _endY: number
+    // private _mouseX: number;
+    // private _mouseY: number;
     private _mouseDown: boolean
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
@@ -1030,10 +1032,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let delta = 0;
         if (event.deltaY) {
             delta = -event.deltaY;
+            console.log("scroll")
         } else if (event.detail) {
             delta = -event.detail;
         }
-        this.zooming(1 + delta / 1000);
+        // const posX = event.pageX;
+        // const posY = event.pageY;
+        this.zooming(1 + delta / 1000, event);
     }
 
     zoomDrag(event: React.MouseEvent){
@@ -1046,10 +1051,28 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (event.movementY > 0) {
             delta = -event.movementY;
         } 
+        // const posX = event.clientX;
+        // const posY = event.clientY;
         this.zooming(1 + delta / 1000);
     }
+   
     //Zoom to pointer position. Zoom amount determined by delta
-    zooming(delta: number) {
+    zooming(delta: number, event?: React.WheelEvent) {
+        console.log("here")
+        // this._mouseX = posX;
+        // this._mouseY = posY;
+        if(event != undefined){
+            //console.log(this._panningOffset)
+            // this._panningOffset.x = posX;
+            // this._panningOffset.y = posY;
+            //this._panningOffset = new Vector2(-posX, posY);
+            const posX = event.pageX;
+            const posY = event.pageY;
+            // console.log(event.)
+            // console.log(event.screenY)
+            this._panningOffset.set(-posX  + this._guiSize.width , posY - this._guiSize.width)
+        }
+       
         this._zoomFactor *= delta;
     }
 
@@ -1082,7 +1105,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 
                 onPointerDownCapture={() => { 
                     //console.log(draggedControl)
-                    if(this.props.globalState.tool ){
+                    if(this.props.globalState.selectedControls.length === 0){
                         //do we want this? 
                         //this.props.globalState.tool = GUIEditorTool.ZOOM;
                         this._mouseDown = true;
