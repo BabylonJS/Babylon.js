@@ -58,6 +58,7 @@ export class GlobalState {
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     private _tool: GUIEditorTool = GUIEditorTool.SELECT;
+    private _prevTool: GUIEditorTool = this._tool;
     onToolChangeObservable = new Observable<void>();
     public get tool(): GUIEditorTool {
         if (this._tool === GUIEditorTool.ZOOM) {
@@ -70,8 +71,16 @@ export class GlobalState {
     }
     public set tool(newTool: GUIEditorTool) {
         if (this._tool === newTool) return;
+        this._prevTool = this._tool;
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
+    }
+
+    public restorePreviousTool() {
+        if (this._tool !== this._prevTool) {
+            this._tool = this._prevTool;
+            this.onToolChangeObservable.notifyObservers();
+        }
     }
     onFitControlsToWindowObservable = new Observable<void>();
     onReframeWindowObservable = new Observable<void>();
