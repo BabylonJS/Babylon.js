@@ -11,7 +11,7 @@ import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Gizmo, IGizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
@@ -22,9 +22,79 @@ import { Epsilon } from "../Maths/math.constants";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
+ * Interface for bounding box gizmo
+ */
+export interface IBoundingBoxGizmo extends IGizmo {
+    /**
+     * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes.
+     */
+    ignoreChildren: boolean;
+    /**
+     * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored.
+     */
+    includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
+    /** The size of the rotation spheres attached to the bounding box */
+    rotationSphereSize: number;
+    /** The size of the scale boxes attached to the bounding box */
+    scaleBoxSize: number;
+    /**
+     * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size
+     * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
+     */
+    fixedDragMeshScreenSize: boolean;
+    /**
+     * If set, the rotation spheres and scale boxes will increase in size based on the size of the bounding box
+     * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
+     */
+    fixedDragMeshBoundsSize: boolean;
+    /**
+     * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true
+     */
+    fixedDragMeshScreenSizeDistanceFactor: number;
+    /** Fired when a rotation sphere or scale box is dragged */
+    onDragStartObservable: Observable<{}>;
+    /** Fired when a scale box is dragged */
+    onScaleBoxDragObservable: Observable<{}>;
+    /** Fired when a scale box drag is ended */
+    onScaleBoxDragEndObservable: Observable<{}>;
+    /** Fired when a rotation sphere is dragged */
+    onRotationSphereDragObservable: Observable<{}>;
+    /** Fired when a rotation sphere drag is ended */
+    onRotationSphereDragEndObservable: Observable<{}>;
+    /** Relative bounding box pivot used when scaling the attached node. */
+    scalePivot: Nullable<Vector3>;
+    /** Scale factor vector used for masking some axis */
+    axisFactor: Vector3;
+    /** Scale factor scalar affecting all axes' drag speed */
+    scaleDragSpeed: number;
+    /**
+     * Sets the color of the bounding box gizmo
+     * @param color the color to set
+     */
+    setColor(color: Color3): void;
+    /** Returns an array containing all boxes used for scaling (in increasing x, y and z orders) */
+    getScaleBoxes(): AbstractMesh[];
+    /** Updates the bounding box information for the Gizmo */
+    updateBoundingBox(): void;
+    /**
+     * Enables rotation on the specified axis and disables rotation on the others
+     * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
+     */
+    setEnabledRotationAxis(axis: string): void;
+    /**
+     * Enables/disables scaling
+     * @param enable if scaling should be enabled
+     * @param homogeneousScaling defines if scaling should only be homogeneous
+     */
+    setEnabledScaling(enable: boolean, homogeneousScaling?: boolean): void;
+    /** Enables a pointer drag behavior on the bounding box of the gizmo */
+    enableDragBehavior(): void;
+}
+
+/**
  * Bounding box gizmo
  */
-export class BoundingBoxGizmo extends Gizmo {
+export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _lineBoundingBox: AbstractMesh;
     protected _rotateSpheresParent: AbstractMesh;
     protected _scaleBoxesParent: AbstractMesh;

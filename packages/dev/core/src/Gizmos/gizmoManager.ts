@@ -10,12 +10,12 @@ import type { Mesh } from "../Meshes/mesh";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Color3 } from "../Maths/math.color";
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
-import { RotationGizmo } from "./rotationGizmo";
-import { PositionGizmo } from "./positionGizmo";
-import { ScaleGizmo } from "./scaleGizmo";
-import { BoundingBoxGizmo } from "./boundingBoxGizmo";
+import { IRotationGizmo, RotationGizmo } from "./rotationGizmo";
+import { IPositionGizmo, PositionGizmo } from "./positionGizmo";
+import { IScaleGizmo, ScaleGizmo } from "./scaleGizmo";
+import { BoundingBoxGizmo, IBoundingBoxGizmo } from "./boundingBoxGizmo";
 
 /**
  * Helps setup gizmo's in the scene to rotate/scale/position nodes
@@ -25,10 +25,10 @@ export class GizmoManager implements IDisposable {
      * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
      */
     public gizmos: {
-        positionGizmo: Nullable<PositionGizmo>;
-        rotationGizmo: Nullable<RotationGizmo>;
-        scaleGizmo: Nullable<ScaleGizmo>;
-        boundingBoxGizmo: Nullable<BoundingBoxGizmo>;
+        positionGizmo: Nullable<IPositionGizmo>;
+        rotationGizmo: Nullable<IRotationGizmo>;
+        scaleGizmo: Nullable<IScaleGizmo>;
+        boundingBoxGizmo: Nullable<IBoundingBoxGizmo>;
     };
 
     /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
@@ -92,7 +92,7 @@ export class GizmoManager implements IDisposable {
     public get isHovered() {
         let hovered = false;
         for (const key in this.gizmos) {
-            const gizmo = <Nullable<Gizmo>>(<any>this.gizmos)[key];
+            const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
             if (gizmo && gizmo.isHovered) {
                 hovered = true;
                 break;
@@ -206,7 +206,7 @@ export class GizmoManager implements IDisposable {
         this._attachedMesh = mesh;
         this._attachedNode = null;
         for (const key in this.gizmos) {
-            const gizmo = <Nullable<Gizmo>>(<any>this.gizmos)[key];
+            const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
             if (gizmo && (<any>this._gizmosEnabled)[key]) {
                 gizmo.attachedMesh = mesh;
             }
@@ -231,7 +231,7 @@ export class GizmoManager implements IDisposable {
         this._attachedMesh = null;
         this._attachedNode = node;
         for (const key in this.gizmos) {
-            const gizmo = <Nullable<Gizmo>>(<any>this.gizmos)[key];
+            const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
             if (gizmo && (<any>this._gizmosEnabled)[key]) {
                 gizmo.attachedNode = node;
             }
@@ -356,7 +356,7 @@ export class GizmoManager implements IDisposable {
             this._scene.onPointerObservable.remove(observer);
         });
         for (const key in this.gizmos) {
-            const gizmo = <Nullable<Gizmo>>(<any>this.gizmos)[key];
+            const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
             if (gizmo) {
                 gizmo.dispose();
             }
