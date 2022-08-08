@@ -154,7 +154,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
     }
 
-    incrementValue(amount: number) {
+    incrementValue(amount: number, processStep: boolean = true) {
+        if (processStep && this.props.step) {
+            amount *= parseFloat(this.props.step);
+        }
+
         let currentValue = parseFloat(this.state.value);
         if (isNaN(currentValue)) {
             currentValue = 0;
@@ -172,7 +176,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                 }
             }
 
-            this.incrementValue(sign * step);
+            this.incrementValue(sign * step, false);
             event.preventDefault();
         };
 
