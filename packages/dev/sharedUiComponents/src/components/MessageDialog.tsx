@@ -3,12 +3,12 @@ import * as React from "react";
 import { ClassNames } from "./classNames";
 import styles from "./MessageDialog.modules.scss";
 
-interface IMessageDialogComponentProps {
+export interface MessageDialogProps {
     message: string;
     isError: boolean;
 }
 
-export const MessageDialogComponent: React.FC<IMessageDialogComponentProps> = (props) => {
+export const MessageDialog: React.FC<MessageDialogProps> = (props) => {
     const [message, setMessage] = useState(props.message);
     const [isError, setIsError] = useState(props.isError);
 

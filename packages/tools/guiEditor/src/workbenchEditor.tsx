@@ -7,7 +7,7 @@ import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { MessageDialogComponent } from "shared-ui-components/components/MessageDialog";
+import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GizmoWrapper } from "./diagram/gizmoWrapper";
@@ -311,7 +311,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>
-                <MessageDialogComponent message={this.state.message} isError={true} />
+                <MessageDialog message={this.state.message} isError={true} />
                 <div className="blocker">GUI Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
