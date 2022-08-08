@@ -56,6 +56,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     componentWillUnmount() {
         document.removeEventListener("keydown", this.addToolControls);
         document.removeEventListener("keyup", this.removePressToolControls);
+        if (this._onErrorMessageObserver) {
+            this.props.globalState.onErrorMessageDialogRequiredObservable.remove(this._onErrorMessageObserver);
+        }
     }
 
     addToolControls = (evt: KeyboardEvent) => {
