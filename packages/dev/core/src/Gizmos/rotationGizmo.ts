@@ -6,14 +6,38 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
-import { PlaneRotationGizmo } from "./planeRotationGizmo";
+import { IPlaneRotationGizmo, PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { Node } from "../node";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { GizmoManager } from "./gizmoManager";
+
+/**
+ * Interface for rotation gizmo
+ */
+export interface IRotationGizmo extends IGizmo {
+    /** Internal gizmo used for interactions on the x axis */
+    xGizmo: IPlaneRotationGizmo;
+    /** Internal gizmo used for interactions on the y axis */
+    yGizmo: IPlaneRotationGizmo;
+    /** Internal gizmo used for interactions on the z axis */
+    zGizmo: IPlaneRotationGizmo;
+    /** Fires an event when any of it's sub gizmos are dragged */
+    onDragStartObservable: Observable<unknown>;
+    /** Fires an event when any of it's sub gizmos are released from dragging */
+    onDragEndObservable: Observable<unknown>;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
+     * @param mesh Axis gizmo mesh
+     * @param cache Gizmo axis definition used for reactive gizmo UI
+     */
+    addToAxisCache(mesh: Mesh, cache: GizmoAxisCache): void;
+}
 
 /**
  * Options for each individual plane rotation gizmo contained within RotationGizmo
@@ -54,19 +78,19 @@ export interface RotationGizmoOptions {
 /**
  * Gizmo that enables rotating a mesh along 3 axis
  */
-export class RotationGizmo extends Gizmo {
+export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * Internal gizmo used for interactions on the x axis
      */
-    public xGizmo: PlaneRotationGizmo;
+    public xGizmo: IPlaneRotationGizmo;
     /**
      * Internal gizmo used for interactions on the y axis
      */
-    public yGizmo: PlaneRotationGizmo;
+    public yGizmo: IPlaneRotationGizmo;
     /**
      * Internal gizmo used for interactions on the z axis
      */
-    public zGizmo: PlaneRotationGizmo;
+    public zGizmo: IPlaneRotationGizmo;
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
