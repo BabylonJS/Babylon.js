@@ -254,10 +254,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         const fontFamilyOptions = [
             { label: "Arial", value: 0 },
-            { label: "Calibri", value: 1 },
-            { label: "Times New Roman", value: 2 },
-            { label: "Broadway", value: 3 },
-            { label: "meep", value: 4 },
+            { label: "Verdana", value: 1 },
+            { label: "Helvetica", value: 2 },
+            { label: "Trebuchet MS", value: 3 },
+            { label: "Times New Roman", value: 4 },
+            { label: "Georgia", value: 5 },
+            { label: "Garamond", value: 6 },
+            { label: "Courier New", value: 7 },
+            { label: "Brush Script MT", value: 8 },
         ];
 
         let horizontalDisabled = false,
@@ -578,20 +582,30 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 propertyName="fontFamily"
                                 options={fontFamilyOptions}
                                 onSelect={(newValue) => {
-                                    proxy.fontFamily = ["Arial", "Calibri", "Times New Roman", "Broadway", "meep"][newValue as number];
+                                    proxy.fontFamily = ["Arial", "Verdana", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"][newValue as number];
                                 }}
                                 extractValue={() => {
                                     switch (proxy.fontFamily) {
                                         case "Arial":
                                             return 0
-                                        case "Calibri":
+                                        case "Verdana":
                                             return 1;
-                                        case "Times New Roman":
+                                        case "Helvetica":
                                             return 2;
-                                        case "Broadway":
+                                        case "Tahoma":
                                             return 3;
-                                        case "meep":
+                                        case "Trebuchet MS":
                                             return 4;
+                                        case "Times New Roman":
+                                            return 5;
+                                        case "Georgia":
+                                            return 6;
+                                        case "Garamond":
+                                            return 7;
+                                        case "Courier New":
+                                            return 8;
+                                        case "Brush Script MT":
+                                            return 9;
                                         default:
                                             return -1;
                                     }
