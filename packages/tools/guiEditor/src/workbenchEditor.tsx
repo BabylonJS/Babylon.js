@@ -26,6 +26,8 @@ interface IGraphEditorState {
     showPreviewPopUp: boolean;
 }
 
+const PASTE_OFFSET = 10; //number of pixels a pasted control is offsetted from the copied control
+
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
     private _moveInProgress: boolean;
 
@@ -258,8 +260,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     onCreate(value: string): Control {
         const guiElement = GUINodeTools.CreateControlFromString(value);
-        const currLeft = this.props.globalState.workbench.trueRootContainer.children.length * 10;
-        const currTop = this.props.globalState.workbench.trueRootContainer.children.length * 10;
+        const currLeft = this.props.globalState.workbench.trueRootContainer.children.length * PASTE_OFFSET;
+        const currTop = this.props.globalState.workbench.trueRootContainer.children.length * PASTE_OFFSET;
         guiElement.leftInPixels = currLeft;
         guiElement.topInPixels = currTop;
         const newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
