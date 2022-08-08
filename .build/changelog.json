@@ -1,6 +1,333 @@
 {
-    "fromTag": "5.16.0",
+    "fromTag": "5.17.1",
     "changelog": {
+        "5.17.1": [
+            {
+                "pr": "12805",
+                "title": "Fix crash when loading node material with loadasync",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12804",
+                "title": "Allow creation of baseTexture from internalTexture",
+                "description": "https://forum.babylonjs.com/t/cubetexture-from-canvas/32412/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            }
+        ],
+        "5.18.0": [
+            {
+                "pr": "12796",
+                "title": "Change private members in gizmo to protected",
+                "description": "close https://github.com/BabylonJS/Babylon.js/issues/12795\r\n\r\nI changed most of member from private to protected, even for those with public setters and getters, as setters and getters can be overwritten.\r\n\r\nExcept for\r\n\r\n1. caching variables like `_tmpQuaternion`\r\n1. static method of mesh creation\r\n\r\nOne thing I'm not sure about is the shader code in`planeRotationGizmo.ts`. If I change from `private` to `protected`, eslint complains about naming convention, but I wonder whether it is worth to rename.\r\n\r\n```ts\r\nprivate static _RotationGizmoFragmentShader\r\n```\r\n\r\nI'll leave this as a draft for discussion for now, and meanwhile continue to test the extendability on this PR.\r\n ",
+                "author": {
+                    "name": "braineo",
+                    "url": "https://github.com/braineo"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/lightGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12831",
+                "title": "Reinstate original version of projectOnPlaneToRef with small amendment",
+                "description": "Ref https://forum.babylonjs.com/t/project-3d-point-on-plane/9862/18?u=johnk\r\n\r\nsuperseeds https://github.com/BabylonJS/Babylon.js/pull/12827",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12830",
+                "title": "Add support for Integer attributes",
+                "description": "superseeds https://github.com/BabylonJS/Babylon.js/pull/12823",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12828",
+                "title": "Make sure artboard is resized correctly when resizing the canvas",
+                "description": "There seems to be a race condition between the HTML page and the babylon scene/engine.\nI will create an issue to follow up on this and find a proper fix, but for now, it is enough to run the rezise callback 5 times every time it is needed.\n\nFor future reference, there seems to be an issue with the `top` on the Rect created in ArtBoardComponent",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12825",
+                "title": "differentiating where control is dropped",
+                "description": "WHen dropping a control in a scene tree hierachy, border line is now aligned with the layer of the hierarchy in which user is dropping the control",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/sceneExplorer/treeItemSelectableComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12763",
+                "title": "VSM skeleton",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "packages/tools/vsm/README.md",
+                    "packages/tools/vsm/package.json",
+                    "packages/tools/vsm/public/index.html",
+                    "packages/tools/vsm/public/index.js",
+                    "packages/tools/vsm/src/index.ts",
+                    "packages/tools/vsm/src/legacy/legacy.ts",
+                    "packages/tools/vsm/src/vsm.ts",
+                    "packages/tools/vsm/src/workbench.tsx",
+                    "packages/tools/vsm/tsconfig.build.json",
+                    "packages/tools/vsm/tsconfig.json",
+                    "packages/tools/vsm/webpack.config.js",
+                    "tsconfig.build.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12767",
+                "title": "KHR animation pointer",
+                "description": "This is the first version of the `KHR_animation_pointer` for the GLTF loader.\r\nThe basic idea behind the code is to turn every kind of animation into a pointer, in order to keep only one code path for all. This has been tested with success with all the samples provided as part of the Khronos proposal.\r\nEven if functional, the code is still not very clean and many ehancement must be done in order to reach a certain level of quality. However, calendar issue drive us to put this onto PR rapidely.\r\n[AnimateAllTheThings.zip](https://github.com/BabylonJS/Babylon.js/files/9144599/AnimateAllTheThings.zip)\r\nThis can be tested with the file above, which encompass all the cases supported by the `KHR_animation_pointer`.\r\nThe main changes are located into 3 files.\r\n`GLTFLoader` has been simplified by moving all the animation related code to the `KHR_animation_pointer.ts` where the extension lies. `KHR_animation_pointer.map.ts` contains the pointer tree mapping and miscellaneous function to serve the pointer parsing and logic.\r\nAll the other change are to support indirection between GLTF entities and Babylon ones. This is subject to discussion, because not very \"clean\".\r\nMay close #12544 \r\n",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.map.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderInterfaces.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12822",
+                "title": "Change \"TO\" to \"To\" in two places in buildSystem.md",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "buildSystem.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12807",
+                "title": "Moved copy, paste, delete to toolbar",
+                "description": "Copy, paste, and delete functionalities were previously in the hamburger menu. They have now been moved to the toolbar and appear as icons",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandButtonComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx",
+                    "packages/tools/guiEditor/src/imgs/buttonBar_deleteIcon.svg",
+                    "packages/tools/guiEditor/src/imgs/buttonBar_deleteIcon_disabled.svg",
+                    "packages/tools/guiEditor/src/imgs/buttonbar_copyIcon.svg",
+                    "packages/tools/guiEditor/src/imgs/buttonbar_copyIcon_disabled.svg",
+                    "packages/tools/guiEditor/src/imgs/buttonbar_pasteIcon.svg",
+                    "packages/tools/guiEditor/src/imgs/buttonbar_pasteIcon_disabled.svg",
+                    "packages/tools/guiEditor/src/scss/commandBar.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12819",
+                "title": "Fix babylon native sprites",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineFeatures.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native"
+                ]
+            },
+            {
+                "pr": "12818",
+                "title": "Fxi heightmap impostor with Cannon",
+                "description": "fixes #12578 \r\nWorld transform was not updated properly and adding/removing delta was happening with different world matrix values leading to a translation each frame.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/physicsImpostor.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "12814",
+                "title": "fix missing indexedDB reference in nodejs",
+                "description": "There is also no need for browser prefixes anymore.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Offline/database.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12816",
+                "title": "Small changes to EngineView",
+                "description": "added before and after view observables, added id for view",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.views.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12809",
+                "title": "Physics typos",
+                "description": "Fix some minor typos and comments in physics plugins.",
+                "author": {
+                    "name": "eoineoineoin",
+                    "url": "https://github.com/eoineoineoin"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/Physics/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/physicsImpostor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12808",
+                "title": "fix native sprites",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/sprites.fragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12810",
+                "title": "Defensive URL detection",
+                "description": "Make sure the environment running babylon has the URL object before using it.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Offline/database.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12806",
+                "title": "Use Custom NME Material for shadow map shaders",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/lightInformationBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": []
+            }
+        ],
         "5.17.0": [
             {
                 "pr": "12803",

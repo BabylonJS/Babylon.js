@@ -510,8 +510,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
      * @param sceneOrEngine Define the scene or engine the texture belongs to
+     * @param internalTexture Define the internal texture associated with the texture
      */
-    constructor(sceneOrEngine?: Nullable<Scene | ThinEngine>) {
+    constructor(sceneOrEngine?: Nullable<Scene | ThinEngine>, internalTexture: Nullable<InternalTexture> = null) {
         super(null);
 
         if (sceneOrEngine) {
@@ -529,6 +530,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._scene.addTexture(this);
             this._engine = this._scene.getEngine();
         }
+
+        this._texture = internalTexture;
 
         this._uid = null;
     }

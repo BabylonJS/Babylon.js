@@ -201,14 +201,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.17.0";
+        return "babylonjs@5.18.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.17.0";
+        return "5.18.0";
     }
 
     /**
@@ -368,7 +368,7 @@ export class ThinEngine {
     // Private Members
 
     /** @hidden */
-    public _gl: WebGLRenderingContext;
+    public _gl: WebGL2RenderingContext;
     /** @hidden */
     public _webGLVersion = 1.0;
     protected _renderingCanvas: Nullable<HTMLCanvasElement>;
@@ -945,7 +945,7 @@ export class ThinEngine {
                     throw new Error("The provided canvas is null or undefined.");
                 }
                 try {
-                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                    this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 } catch (e) {
                     throw new Error("WebGL not supported");
                 }
@@ -955,10 +955,10 @@ export class ThinEngine {
                 throw new Error("WebGL not supported");
             }
         } else {
-            this._gl = <WebGLRenderingContext>canvasOrContext;
+            this._gl = <WebGL2RenderingContext>canvasOrContext;
             this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
 
-            if (this._gl.renderbufferStorageMultisample) {
+            if ((this._gl as any).renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
                 this._shaderPlatformName = "WEBGL2";
             } else {
@@ -1226,7 +1226,7 @@ export class ThinEngine {
             if (this._webGLVersion === 1) {
                 this._gl.getQuery = (<any>this._caps.timerQuery).getQueryEXT.bind(this._caps.timerQuery);
             }
-            this._caps.canUseTimestampForTimerQuery = this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) > 0;
+            this._caps.canUseTimestampForTimerQuery = (this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) ?? 0) > 0;
         }
 
         this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension
@@ -1399,6 +1399,7 @@ export class ThinEngine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
+            supportSpriteInstancing: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -2238,7 +2239,11 @@ export class ThinEngine {
 
         if (changed || this._vaoRecordInProgress) {
             this.bindArrayBuffer(buffer);
-            this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            if (type === this._gl.UNSIGNED_INT || type === this._gl.INT) {
+                this._gl.vertexAttribIPointer(indx, size, type, stride, offset);
+            } else {
+                this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
+            }
         }
     }
 
@@ -2326,6 +2331,10 @@ export class ThinEngine {
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): WebGLVertexArrayObject {
         const vao = this._gl.createVertexArray();
+
+        if (!vao) {
+            throw new Error("Unable to create VAO");
+        }
 
         this._vaoRecordInProgress = true;
 

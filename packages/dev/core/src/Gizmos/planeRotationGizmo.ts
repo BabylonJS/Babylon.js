@@ -27,7 +27,7 @@ export class PlaneRotationGizmo extends Gizmo {
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
     /**
      * Rotation distance in radians that the gizmo will snap to (Default: 0)
@@ -50,17 +50,17 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public angle: number = 0;
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<RotationGizmo> = null;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _gizmoMesh: Mesh;
-    private _rotationDisplayPlane: Mesh;
-    private _dragging: boolean = false;
-    private _angles = new Vector3();
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<RotationGizmo> = null;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _gizmoMesh: Mesh;
+    protected _rotationDisplayPlane: Mesh;
+    protected _dragging: boolean = false;
+    protected _angles = new Vector3();
 
-    private static _RotationGizmoVertexShader = `
+    protected static _RotationGizmoVertexShader = `
         precision highp float;
         attribute vec3 position;
         attribute vec2 uv;
@@ -72,7 +72,7 @@ export class PlaneRotationGizmo extends Gizmo {
             vUV = uv;
         }`;
 
-    private static _RotationGizmoFragmentShader = `
+    protected static _RotationGizmoFragmentShader = `
         precision highp float;
         varying vec2 vUV;
         varying vec3 vPosition;
@@ -101,7 +101,7 @@ export class PlaneRotationGizmo extends Gizmo {
             gl_FragColor = vec4(1.,1.,0., min(intensity * 0.25, 0.8)) * opacity;
         }`;
 
-    private _rotationShaderMaterial: ShaderMaterial;
+    protected _rotationShaderMaterial: ShaderMaterial;
 
     /**
      * Creates a PlaneRotationGizmo
@@ -339,7 +339,7 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param thickness
      * @param tessellation
      */
-    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
+    protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
         const collider = CreateTorus(
             "ignore",
             {

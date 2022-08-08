@@ -21,6 +21,8 @@ const _ExtractAsInt = (value: number) => {
  * Class representing a vector containing 2 coordinates
  */
 export class Vector2 {
+    private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
+
     /**
      * Creates a new Vector2 from the given x and y coordinates
      * @param x defines the first coordinate
@@ -453,6 +455,13 @@ export class Vector2 {
     }
 
     /**
+     * Gets a zero Vector2 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector2> {
+        return Vector2._ZeroReadOnly;
+    }
+
+    /**
      * Gets a new Vector2 set from the given index element of the given array
      * @param array defines the data source
      * @param offset defines the offset in the data source
@@ -792,6 +801,7 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
     private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
     private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
@@ -1130,7 +1140,7 @@ export class Vector3 {
     }
 
     /**
-     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * Projects the current point Vector3 to a plane along a ray starting from a specified origin and passing through the current point Vector3.
      * @param plane defines the plane to project to
      * @param origin defines the origin of the projection ray
      * @returns the projected vector3
@@ -1144,48 +1154,34 @@ export class Vector3 {
     }
 
     /**
-     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * Projects the current point Vector3 to a plane along a ray starting from a specified origin and passing through the current point Vector3.
      * @param plane defines the plane to project to
      * @param origin defines the origin of the projection ray
      * @param result defines the Vector3 where to store the result
      */
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
-        // Use the normal scaled to the plane offset as the origin for the formula
-        const planeOrigin = MathTmp.Vector3[0];
-        plane.normal.scaleToRef(-plane.d, planeOrigin);
+        const n = plane.normal;
+        const d = plane.d;
 
-        // Since the normal in Babylon should point toward the viewer, invert it for the dot product
-        const inverseNormal = MathTmp.Vector3[1];
-        plane.normal.negateToRef(inverseNormal);
+        const V = MathTmp.Vector3[0];
 
-        // This vector is the direction
-        const { x, y, z } = this;
+        // ray direction
+        this.subtractToRef(origin, V);
 
-        // Calculate how close the direction is to the normal of the plane
-        const dotProduct = Vector3.Dot(inverseNormal, this);
+        V.normalize();
 
-        /*
-         * Early out in case the direction will never hit the plane.
-         *
-         * Epsilon is used to avoid issues with rays very near to parallel with the
-         * plane, and squared because as of writing the value is not sufficiently
-         * small for this use case.
-         */
-        if (dotProduct <= Epsilon * Epsilon) {
-            // No good option for setting the result vector here, so just take the origin of the ray
-            result.copyFrom(origin);
-            return;
+        const denom = Vector3.Dot(V, n);
+
+        //When the ray is close to parallel to the plane return infinity vector
+        if (Math.abs(denom) < Math.pow(10, -10)) {
+            result.setAll(Infinity);
+        } else {
+            const t = -(Vector3.Dot(origin, n) + d) / denom;
+
+            // P = P0 + t*V
+            const scaledV = V.scaleInPlace(t);
+            origin.addToRef(scaledV, result);
         }
-
-        // Calculate the offset
-        const relativeOrigin = MathTmp.Vector3[2];
-        planeOrigin.subtractToRef(origin, relativeOrigin);
-
-        // Calculate the length along the direction vector to the hit point
-        const hitDistance = Vector3.Dot(relativeOrigin, inverseNormal) / dotProduct;
-
-        // Apply the hit point by adding the direction scaled by the distance to the origin
-        result.set(origin.x + x * hitDistance, origin.y + y * hitDistance, origin.z + z * hitDistance);
     }
 
     /**
@@ -1789,10 +1785,17 @@ export class Vector3 {
     }
 
     /**
-     * Gets a up Vector3 that must not be updated
+     * Gets an up Vector3 that must not be updated
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a down Vector3 that must not be updated
+     */
+    public static get DownReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._DownReadOnly;
     }
 
     /**
@@ -2627,6 +2630,8 @@ export class Vector3 {
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
 export class Vector4 {
+    private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
+
     /**
      * Creates a Vector4 object from the given floats.
      * @param x x value of the vector
@@ -3227,6 +3232,12 @@ export class Vector4 {
      */
     public static One(): Vector4 {
         return new Vector4(1.0, 1.0, 1.0, 1.0);
+    }
+    /**
+     * Gets a zero Vector4 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector4> {
+        return Vector4._ZeroReadOnly;
     }
     /**
      * Returns a new normalized Vector4 from the given one.

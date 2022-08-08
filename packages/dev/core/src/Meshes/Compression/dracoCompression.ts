@@ -310,7 +310,7 @@ export class DracoCompression implements IDisposable {
                       wasmBinaryPromise: Promise.resolve(undefined),
                   };
 
-        if (numWorkers && typeof Worker === "function") {
+        if (numWorkers && typeof Worker === "function" && typeof URL === "function") {
             this._workerPoolPromise = decoderInfo.wasmBinaryPromise.then((decoderWasmBinary) => {
                 const workerContent = `${decodeMesh}(${worker})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
