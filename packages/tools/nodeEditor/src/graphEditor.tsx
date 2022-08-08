@@ -11,7 +11,6 @@ import type { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/
 import { CustomBlock } from "core/Materials/Node/Blocks/customBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { Nullable } from "core/types";
-// import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { MessageDialogComponent } from "shared-ui-components/components/MessageDialog";
 import { BlockTools } from "./blockTools";
 import { PreviewManager } from "./components/preview/previewManager";
@@ -683,7 +682,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>
-                {/* <MessageDialogComponent globalState={this.props.globalState} /> */}
                 <MessageDialogComponent message={this.state.message} isError={this.state.isError} />
                 <div className="blocker">Node Material Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>

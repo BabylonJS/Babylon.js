@@ -7,7 +7,6 @@ import { LogComponent } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
-// import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { MessageDialogComponent } from "shared-ui-components/components/MessageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
