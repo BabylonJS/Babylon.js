@@ -3125,9 +3125,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.geometries[index] = lastGeometry;
                 if (this._geometriesByUniqueId) {
                     this._geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                    this._geometriesByUniqueId[geometry.uniqueId] = undefined;
                 }
             }
+        }
+
+        if (this._geometriesByUniqueId) {
+            this._geometriesByUniqueId[geometry.uniqueId] = undefined;
         }
 
         this.geometries.pop();
