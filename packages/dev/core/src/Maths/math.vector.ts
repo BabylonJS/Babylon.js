@@ -21,6 +21,8 @@ const _ExtractAsInt = (value: number) => {
  * Class representing a vector containing 2 coordinates
  */
 export class Vector2 {
+    private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
+
     /**
      * Creates a new Vector2 from the given x and y coordinates
      * @param x defines the first coordinate
@@ -453,6 +455,13 @@ export class Vector2 {
     }
 
     /**
+     * Gets a zero Vector2 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector2> {
+        return Vector2._ZeroReadOnly;
+    }
+
+    /**
      * Gets a new Vector2 set from the given index element of the given array
      * @param array defines the data source
      * @param offset defines the offset in the data source
@@ -792,6 +801,7 @@ export class Vector2 {
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
+    private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
     private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
     private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
@@ -1775,10 +1785,17 @@ export class Vector3 {
     }
 
     /**
-     * Gets a up Vector3 that must not be updated
+     * Gets an up Vector3 that must not be updated
      */
     public static get UpReadOnly(): DeepImmutable<Vector3> {
         return Vector3._UpReadOnly;
+    }
+
+    /**
+     * Gets a down Vector3 that must not be updated
+     */
+    public static get DownReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._DownReadOnly;
     }
 
     /**
@@ -2613,6 +2630,8 @@ export class Vector3 {
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
 export class Vector4 {
+    private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
+
     /**
      * Creates a Vector4 object from the given floats.
      * @param x x value of the vector
@@ -3213,6 +3232,12 @@ export class Vector4 {
      */
     public static One(): Vector4 {
         return new Vector4(1.0, 1.0, 1.0, 1.0);
+    }
+    /**
+     * Gets a zero Vector4 that must not be updated
+     */
+    public static get ZeroReadOnly(): DeepImmutable<Vector4> {
+        return Vector4._ZeroReadOnly;
     }
     /**
      * Returns a new normalized Vector4 from the given one.
