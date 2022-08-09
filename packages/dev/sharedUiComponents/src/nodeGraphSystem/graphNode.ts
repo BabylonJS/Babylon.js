@@ -414,6 +414,7 @@ export class GraphNode {
     }
 
     private _onMove(evt: PointerEvent) {
+        this._ownerCanvas._targetLinkCandidate = null;
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
@@ -435,7 +436,7 @@ export class GraphNode {
 
         evt.stopPropagation();
 
-        if (this._inputPorts.filter((p) => !p.portData.isConnected).length === 0 || this._outputPorts.length === 0) {
+        if (this._inputPorts.some((p) => p.portData.isConnected) || this._outputPorts.some((o) => o.portData.hasEndpoints)) {
             return;
         }
 
