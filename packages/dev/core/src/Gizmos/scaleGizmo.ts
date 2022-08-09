@@ -34,7 +34,7 @@ export interface IScaleGizmo extends IGizmo {
     onDragEndObservable: Observable<unknown>;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
-    /** Sensitivity factor for dragging (Default: 1) */
+    /** Sensitivity factor for dragging */
     sensitivity: number;
     /**
      * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
