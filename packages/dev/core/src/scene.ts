@@ -1541,7 +1541,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     cpuSpeedThresholds: [0.5],
                 }
             );
-            this._computePressureObserver.observe();
+            this._computePressureObserver.observe("cpu");
         }
     }
 
@@ -4658,7 +4658,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onActiveCameraChanged.clear();
         this.onComputePressureChanged.clear();
 
-        this._computePressureObserver?.unobserve();
+        this._computePressureObserver?.unobserve("cpu");
         this._computePressureObserver = undefined;
 
         this.detachControl();
