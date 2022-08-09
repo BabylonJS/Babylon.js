@@ -4,7 +4,6 @@ import type { GraphCanvasComponent } from "./graphCanvas";
 import * as React from "react";
 import { NodePort } from "./nodePort";
 import type { GraphFrame } from "./graphFrame";
-import triangle from "../imgs/triangle.svg";
 import type { NodeLink } from "./nodeLink";
 import type { StateManager } from "./stateManager";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
@@ -17,7 +16,8 @@ import type { IPortData } from "./interfaces/portData";
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
-    private _warning: HTMLDivElement;
+    private _headerIcon: HTMLDivElement;
+    private _headerIconImg: HTMLImageElement;
     private _header: HTMLDivElement;
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
@@ -240,7 +240,7 @@ export class GraphNode {
         for (const port of this._inputPorts) {
             const attachedPoint = port.portData;
 
-            if (attachedPoint === portData) {
+            if (attachedPoint === portData || (attachedPoint.ownerData === portData.ownerData && attachedPoint.internalName === portData.internalName)) {
                 return port;
             }
         }
@@ -248,7 +248,7 @@ export class GraphNode {
         for (const port of this._outputPorts) {
             const attachedPoint = port.portData;
 
-            if (attachedPoint === portData) {
+            if (attachedPoint === portData || (attachedPoint.ownerData === portData.ownerData && attachedPoint.internalName === portData.internalName)) {
                 return port;
             }
         }
@@ -337,13 +337,7 @@ export class GraphNode {
         this._comments.innerHTML = this.content.comments || "";
         this._comments.title = this.content.comments || "";
 
-        const warningMessage = this.content.getWarningMessage();
-        if (warningMessage) {
-            this._warning.classList.add("visible");
-            this._warning.title = warningMessage;
-        } else {
-            this._warning.classList.remove("visible");
-        }
+        this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
     }
 
     private _onDown(evt: PointerEvent) {
@@ -386,13 +380,46 @@ export class GraphNode {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._visual.releasePointerCapture(evt.pointerId);
+
+        if (!this._ownerCanvas._targetLinkCandidate) {
+            return;
+        }
+
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+        const availableNodeOutputs: Nullable<IPortData>[] = [];
+        const leftNode = this._ownerCanvas._targetLinkCandidate.nodeA;
+        const rightNode = this._ownerCanvas._targetLinkCandidate.nodeB!;
+
+        // Delete previous
+        this._ownerCanvas._targetLinkCandidate.dispose();
+        this._ownerCanvas._targetLinkCandidate = null;
+
+        // Get the ports
+        availableNodeInputs.push(...this.content.inputs.filter((i) => !i.isConnected));
+
+        availableNodeOutputs.push(...this.content.outputs);
+
+        inputs.push(...leftNode.content.outputs);
+
+        outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
+
+        // Reconnect
+        this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
+        this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
+
+        this._stateManager.onRebuildRequiredObservable.notifyObservers(false);
     }
 
     private _onMove(evt: PointerEvent) {
+        this._ownerCanvas._targetLinkCandidate = null;
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
 
+        // Move
         const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
@@ -408,6 +435,29 @@ export class GraphNode {
         this._mouseStartPointY = evt.clientY;
 
         evt.stopPropagation();
+
+        if (this._inputPorts.some((p) => p.portData.isConnected) || this._outputPorts.some((o) => o.portData.hasEndpoints)) {
+            return;
+        }
+
+        // Check wires that could be underneath
+        const rect = this._visual.getBoundingClientRect();
+        for (const link of this._ownerCanvas.links) {
+            if (link.portA.node === this || link.portB!.node === this) {
+                link.isTargetCandidate = false;
+                continue;
+            }
+            link.isTargetCandidate = link.intersectsWith(rect);
+
+            if (link.isTargetCandidate) {
+                if (this._ownerCanvas._targetLinkCandidate !== link) {
+                    if (this._ownerCanvas._targetLinkCandidate) {
+                        this._ownerCanvas._targetLinkCandidate.isTargetCandidate = false;
+                    }
+                    this._ownerCanvas._targetLinkCandidate = link;
+                }
+            }
+        }
     }
 
     public renderProperties(): Nullable<JSX.Element> {
@@ -449,12 +499,11 @@ export class GraphNode {
         this._header.classList.add("header");
         this._headerContainer.appendChild(this._header);
 
-        this._warning = root.ownerDocument!.createElement("div");
-        this._warning.classList.add("warning");
-        const img = root.ownerDocument!.createElement("img");
-        img.src = triangle;
-        this._warning.appendChild(img);
-        this._visual.appendChild(this._warning);
+        this._headerIcon = root.ownerDocument!.createElement("div");
+        this._headerIcon.classList.add("headerIcon");
+        this._headerIconImg = root.ownerDocument!.createElement("img");
+        this._headerIcon.appendChild(this._headerIconImg);
+        this._visual.appendChild(this._headerIcon);
 
         const selectionBorder = root.ownerDocument!.createElement("div");
         selectionBorder.classList.add("selection-border");

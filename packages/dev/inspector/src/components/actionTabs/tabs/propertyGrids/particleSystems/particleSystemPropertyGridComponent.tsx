@@ -63,6 +63,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             case "BoxParticleEmitter":
                 return (
                     <BoxEmitterGridComponent
+                        lockObject={this.props.lockObject}
                         globalState={this.props.globalState}
                         emitter={system.particleEmitterType as BoxParticleEmitter}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -71,6 +72,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             case "ConeParticleEmitter":
                 return (
                     <ConeEmitterGridComponent
+                        lockObject={this.props.lockObject}
                         globalState={this.props.globalState}
                         emitter={system.particleEmitterType as ConeParticleEmitter}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -230,7 +232,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         system.dispose();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-        ParticleHelper.CreateFromSnippetAsync(snippedId, scene, isGpu)
+        ParticleHelper.ParseFromSnippetAsync(snippedId, scene, isGpu)
             .then((newSystem) => {
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             })
@@ -262,8 +264,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(`ParticleHelper.CreateFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `ParticleHelper.CreateFromSnippetAsync("${system.snippetId}`,
+                            regex: new RegExp(`ParticleHelper.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `ParticleHelper.ParseFromSnippetAsync("${system.snippetId}`,
                         });
                     }
 
@@ -353,8 +355,20 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="blendMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Vector3LineComponent label="World offset" target={system} propertyName="worldOffset" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Gravity" target={system} propertyName="gravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="World offset"
+                        target={system}
+                        propertyName="worldOffset"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Gravity"
+                        target={system}
+                        propertyName="gravity"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <CheckBoxLineComponent
                         label="Is billboard"
                         target={system}
@@ -369,6 +383,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Update speed"
                         target={system}
                         propertyName="updateSpeed"
@@ -448,7 +463,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         />
                     )}
                     {system.emitter && (system.emitter as Vector3).x !== undefined && (
-                        <Vector3LineComponent label="Position" target={system} propertyName="emitter" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Vector3LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Position"
+                            target={system}
+                            propertyName="emitter"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
                     )}
                     <OptionsLineComponent
                         label="Type"
@@ -708,9 +729,27 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <LineContainerComponent title="COLORS" closed={true} selection={this.props.globalState}>
                     {(!system.getColorGradients() || system.getColorGradients()?.length === 0) && (
                         <>
-                            <Color4LineComponent label="Color 1" target={system} propertyName="color1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Color4LineComponent label="Color 2" target={system} propertyName="color2" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <Color4LineComponent label="Color dead" target={system} propertyName="colorDead" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Color4LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color 1"
+                                target={system}
+                                propertyName="color1"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color4LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color 2"
+                                target={system}
+                                propertyName="color2"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color4LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color dead"
+                                target={system}
+                                propertyName="colorDead"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </>
                     )}
                     <ValueGradientGridComponent
@@ -829,6 +868,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="First sprite index"
                         isInteger={true}
                         target={system}
@@ -836,6 +876,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Last sprite index"
                         isInteger={true}
                         target={system}
@@ -855,6 +896,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell width"
                         isInteger={true}
                         target={system}
@@ -862,6 +904,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell height"
                         isInteger={true}
                         target={system}
@@ -869,6 +912,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell change speed"
                         target={system}
                         propertyName="spriteCellChangeSpeed"

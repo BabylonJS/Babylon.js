@@ -52,6 +52,7 @@ export class GlobalState {
     directionalLight1: boolean;
     controlCamera: boolean;
     _mode: NodeMaterialModes;
+    pointerOverCanvas: boolean = false;
 
     /** Gets the mode */
     public get mode(): NodeMaterialModes {

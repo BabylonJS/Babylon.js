@@ -247,6 +247,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 {this.renderTextures(this._onDebugSelectionChangeObservable)}
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Albedo"
                         target={material}
                         propertyName="albedoColor"
@@ -254,6 +255,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         isLinear={true}
                     />
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Reflectivity"
                         target={material}
                         propertyName="reflectivityColor"
@@ -261,6 +263,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         isLinear={true}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Micro-surface"
                         target={material}
                         propertyName="microSurface"
@@ -270,6 +273,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Emissive"
                         target={material}
                         propertyName="emissiveColor"
@@ -277,6 +281,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         isLinear={true}
                     />
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Ambient"
                         target={material}
                         propertyName="ambientColor"
@@ -292,6 +297,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 </LineContainerComponent>
                 <LineContainerComponent title="METALLIC WORKFLOW" selection={this.props.globalState}>
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Metallic"
                         target={material}
                         propertyName="metallic"
@@ -301,6 +307,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Roughness"
                         target={material}
                         propertyName="roughness"
@@ -310,6 +317,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Index of Refraction"
                         target={material}
                         propertyName="indexOfRefraction"
@@ -319,6 +327,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="F0 Factor"
                         target={material}
                         propertyName="metallicF0Factor"
@@ -328,6 +337,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Reflectance Color"
                         target={material}
                         propertyName="metallicReflectanceColor"
@@ -370,6 +380,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {material.clearCoat.isEnabled && (
                         <div className="fragment">
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 target={material.clearCoat}
                                 propertyName="intensity"
@@ -379,6 +390,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Roughness"
                                 target={material.clearCoat}
                                 propertyName="roughness"
@@ -388,6 +400,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="IOR"
                                 target={material.clearCoat}
                                 propertyName="indexOfRefraction"
@@ -431,6 +444,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             />
                             {material.clearCoat.bumpTexture && (
                                 <SliderLineComponent
+                                    lockObject={this.props.lockObject}
                                     label="Bump strength"
                                     target={material.clearCoat.bumpTexture}
                                     propertyName="level"
@@ -454,6 +468,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             />
                             {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
                                 <Color3LineComponent
+                                    lockObject={this.props.lockObject}
                                     label="Tint Color"
                                     target={material.clearCoat}
                                     propertyName="tintColor"
@@ -463,6 +478,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             )}
                             {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
                                 <SliderLineComponent
+                                    lockObject={this.props.lockObject}
                                     label="At Distance"
                                     target={material.clearCoat}
                                     propertyName="tintColorAtDistance"
@@ -474,6 +490,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             )}
                             {material.clearCoat.isEnabled && material.clearCoat.isTintEnabled && (
                                 <SliderLineComponent
+                                    lockObject={this.props.lockObject}
                                     label="Tint Thickness"
                                     target={material.clearCoat}
                                     propertyName="tintThickness"
@@ -508,6 +525,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {material.iridescence.isEnabled && (
                         <div className="fragment">
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 target={material.iridescence}
                                 propertyName="intensity"
@@ -517,6 +535,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="IOR"
                                 target={material.iridescence}
                                 propertyName="indexOfRefraction"
@@ -526,6 +545,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Min Thickness"
                                 target={material.iridescence}
                                 propertyName="minimumThickness"
@@ -535,6 +555,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Max Thickness"
                                 target={material.iridescence}
                                 propertyName="maximumThickness"
@@ -575,6 +596,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {material.anisotropy.isEnabled && (
                         <div className="fragment">
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 target={material.anisotropy}
                                 propertyName="intensity"
@@ -584,6 +606,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Vector2LineComponent
+                                lockObject={this.props.lockObject}
                                 label="Direction"
                                 target={material.anisotropy}
                                 propertyName="direction"
@@ -618,6 +641,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 target={material.sheen}
                                 propertyName="intensity"
@@ -627,6 +651,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Color3LineComponent
+                                lockObject={this.props.lockObject}
                                 label="Color"
                                 target={material.sheen}
                                 propertyName="color"
@@ -654,6 +679,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <CheckBoxLineComponent label="Use roughness" target={material.sheen} propertyName="_useRoughness" />
                             {(material.sheen as any)._useRoughness && (
                                 <SliderLineComponent
+                                    lockObject={this.props.lockObject}
                                     label="Roughness"
                                     target={material.sheen}
                                     propertyName="roughness"
@@ -689,6 +715,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Min Thickness"
                         target={material.subSurface}
                         propertyName="minimumThickness"
@@ -698,6 +725,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Max Thickness"
                         target={material.subSurface}
                         propertyName="maximumThickness"
@@ -728,6 +756,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Tint Color"
                         target={material.subSurface}
                         propertyName="tintColor"
@@ -745,6 +774,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {(material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer && material.getScene().subSurfaceConfiguration && (
                         <div className="fragment">
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Meters per unit"
                                 target={material.getScene().subSurfaceConfiguration!}
                                 propertyName="metersPerUnit"
@@ -765,6 +795,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {material.subSurface.isRefractionEnabled && (
                         <div className="fragment">
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 target={material.subSurface}
                                 propertyName="refractionIntensity"
@@ -792,6 +823,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Volume Index of Refraction"
                                 target={material.subSurface}
                                 propertyName="volumeIndexOfRefraction"
@@ -801,6 +833,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Tint at Distance"
                                 target={material.subSurface}
                                 propertyName="tintColorAtDistance"
@@ -834,6 +867,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {material.subSurface.isTranslucencyEnabled && (
                         <div className="fragment">
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Intensity"
                                 target={material.subSurface}
                                 propertyName="translucencyIntensity"
@@ -843,6 +877,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Color3LineComponent
+                                lockObject={this.props.lockObject}
                                 label="Diffusion Distance"
                                 target={material.subSurface}
                                 propertyName="diffusionDistance"
@@ -860,6 +895,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 </LineContainerComponent>
                 <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Environment"
                         target={material}
                         propertyName="environmentIntensity"
@@ -869,6 +905,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Specular"
                         target={material}
                         propertyName="specularIntensity"
@@ -878,6 +915,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Emissive"
                         target={material}
                         propertyName="emissiveIntensity"
@@ -887,6 +925,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Direct"
                         target={material}
                         propertyName="directIntensity"
@@ -897,6 +936,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     />
                     {material.bumpTexture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Bump strength"
                             target={material.bumpTexture}
                             propertyName="level"
@@ -908,6 +948,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.ambientTexture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Ambient strength"
                             target={material}
                             propertyName="ambientTextureStrength"
@@ -919,6 +960,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.reflectionTexture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Reflection strength"
                             target={material.reflectionTexture}
                             propertyName="level"
@@ -930,6 +972,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.clearCoat.texture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Clear coat"
                             target={material.clearCoat.texture}
                             propertyName="level"
@@ -941,6 +984,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.clearCoat.bumpTexture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Clear coat bump"
                             target={material.clearCoat.bumpTexture}
                             propertyName="level"
@@ -952,6 +996,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.clearCoat.tintTexture && false /* level is not used for the clear coat tint texture */ && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Clear coat tint"
                             target={material.clearCoat.tintTexture}
                             propertyName="level"
@@ -963,6 +1008,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.anisotropy.texture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Anisotropic"
                             target={material.anisotropy.texture}
                             propertyName="level"
@@ -974,6 +1020,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.sheen.texture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Sheen"
                             target={material.sheen.texture}
                             propertyName="level"
@@ -985,6 +1032,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.subSurface.thicknessTexture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Thickness"
                             target={material.subSurface.thicknessTexture}
                             propertyName="level"
@@ -996,6 +1044,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
                     {material.subSurface.refractionTexture && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Refraction"
                             target={material.subSurface.refractionTexture}
                             propertyName="level"
@@ -1008,6 +1057,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {material.detailMap.isEnabled && (
                         <>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Detailmap diffuse"
                                 target={material.detailMap}
                                 propertyName="diffuseBlendLevel"
@@ -1017,6 +1067,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Detailmap bump"
                                 target={material.detailMap}
                                 propertyName="bumpLevel"
@@ -1026,6 +1077,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Detailmap roughness"
                                 target={material.detailMap}
                                 propertyName="roughnessBlendLevel"
@@ -1135,6 +1187,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
                     <OptionsLineComponent label="Debug mode" options={debugMode} target={material} propertyName="debugMode" />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Split position"
                         target={material}
                         propertyName="debugLimit"
@@ -1144,6 +1197,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Output factor"
                         target={material}
                         propertyName="debugFactor"

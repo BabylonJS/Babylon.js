@@ -17,13 +17,15 @@ declare type TouchButton3D = import("./touchButton3D").TouchButton3D;
  * Class used as base class for controls
  */
 export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
-    /** @hidden */
-    public _host: GUI3DManager;
     private _node: Nullable<TransformNode>;
     private _downCount = 0;
     private _enterCount = -1;
     private _downPointerIds: { [id: number]: number } = {}; // Store number of pointer downs per ID, from near and far interactions
-    private _isVisible = true;
+
+    protected _isVisible = true;
+
+    /** @hidden */
+    public _host: GUI3DManager;
     /** @hidden */
     public _isScaledByManager = false;
 

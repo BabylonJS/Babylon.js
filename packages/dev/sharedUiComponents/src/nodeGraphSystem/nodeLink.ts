@@ -18,8 +18,27 @@ export class NodeLink {
     private _selectionPath: SVGPathElement;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _isVisible = true;
+    private _isTargetCandidate = false;
 
     public onDisposedObservable = new Observable<NodeLink>();
+
+    public get isTargetCandidate() {
+        return this._isTargetCandidate;
+    }
+
+    public set isTargetCandidate(value: boolean) {
+        if (this._isTargetCandidate === value) {
+            return;
+        }
+
+        this._isTargetCandidate = value;
+
+        if (value) {
+            this._path.classList.add("target-candidate");
+        } else {
+            this._path.classList.remove("target-candidate");
+        }
+    }
 
     public get isVisible() {
         return this._isVisible;
@@ -53,6 +72,12 @@ export class NodeLink {
 
     public get nodeB() {
         return this._nodeB;
+    }
+
+    public intersectsWith(rect: DOMRect) {
+        const locatRect = this._path.getBoundingClientRect();
+
+        return rect.left < locatRect.right && rect.right > locatRect.left && rect.top < locatRect.bottom && rect.bottom > locatRect.top;
     }
 
     public update(endX = 0, endY = 0, straight = false) {
@@ -135,7 +160,7 @@ export class NodeLink {
             const nodeB = this._nodeB!;
             const pointB = this._portB!.portData;
 
-            if (stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
+            if (!stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
                 return;
             }
 
@@ -147,8 +172,8 @@ export class NodeLink {
                 this.dispose();
 
                 // Connect to Elbow block
-                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newElbowBlock.input);
-                this._graphCanvas.connectNodes(newNode, newElbowBlock.output, nodeB, pointB);
+                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newNode.getPortDataForPortDataContent(newElbowBlock.input)!);
+                this._graphCanvas.connectNodes(newNode, newNode.getPortDataForPortDataContent(newElbowBlock.output)!, nodeB, pointB);
 
                 stateManager.onRebuildRequiredObservable.notifyObservers(true);
             });

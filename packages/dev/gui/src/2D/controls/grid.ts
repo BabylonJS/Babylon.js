@@ -504,12 +504,12 @@ export class Grid extends Container {
         for (let index = 0; index < this._columnDefinitions.length; index++) {
             this._columnDefinitions[index].onChangedObservable.remove(this._columnDefinitionObservers[index]);
         }
-        this._rowDefinitionObservers = [];
-        this._rowDefinitions = [];
-        this._columnDefinitionObservers = [];
-        this._columnDefinitions = [];
+        this._rowDefinitionObservers.length = 0;
+        this._rowDefinitions.length = 0;
+        this._columnDefinitionObservers.length = 0;
+        this._columnDefinitions.length = 0;
         this._cells = {};
-        this._childControls = [];
+        this._childControls.length = 0;
     }
 
     /**

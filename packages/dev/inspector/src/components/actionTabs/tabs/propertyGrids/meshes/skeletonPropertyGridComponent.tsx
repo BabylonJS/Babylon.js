@@ -159,6 +159,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             displayOptions = (
                 <LineContainerComponent title="DISPLAY OPTIONS" selection={this.props.globalState}>
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="sphereBaseSize"
                         target={this._skeletonViewerDisplayOptions}
                         propertyName="sphereBaseSize"
@@ -168,6 +169,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         }}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="sphereScaleUnit"
                         target={this._skeletonViewerDisplayOptions}
                         propertyName="sphereScaleUnit"
@@ -177,6 +179,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         }}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="sphereFactor"
                         target={this._skeletonViewerDisplayOptions}
                         propertyName="sphereFactor"
@@ -186,6 +189,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         }}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="midStep"
                         target={this._skeletonViewerDisplayOptions}
                         propertyName="midStep"
@@ -195,6 +199,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         }}
                     />
                     <FloatLineComponent
+                        lockObject={this.props.lockObject}
                         label="midStepFactor"
                         target={this._skeletonViewerDisplayOptions}
                         propertyName="midStepFactor"

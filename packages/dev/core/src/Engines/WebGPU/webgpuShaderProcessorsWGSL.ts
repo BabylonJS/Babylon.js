@@ -110,7 +110,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     public preProcessShaderCode(code: string): string {
         return (
-            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor__: f32,\ntextureOutputHeight__: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
+            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor_: f32,\ntextureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
             RemoveComments(code)
         );
     }
@@ -240,8 +240,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         const fragCoordCode =
             fragmentCode.indexOf("gl_FragCoord") >= 0
                 ? `
-            if (internals.yFactor__ == 1.) {
-                gl_FragCoord.y = internals.textureOutputHeight__ - gl_FragCoord.y;
+            if (internals.yFactor_ == 1.) {
+                gl_FragCoord.y = internals.textureOutputHeight_ - gl_FragCoord.y;
             }
         `
                 : "";
@@ -291,7 +291,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexStartingCode += `  ${name} = input.${name};\n`;
         }
 
-        let vertexEndingCode = `  output.position = ${builtInName_position};\n  output.position.y = output.position.y * internals.yFactor__;\n`;
+        let vertexEndingCode = `  output.position = ${builtInName_position};\n  output.position.y = output.position.y * internals.yFactor_;\n`;
 
         for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
             const name = this._varyingNamesWGSL[i];
@@ -305,7 +305,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
         fragmentCode = this._processStridedUniformArrays(fragmentCode);
-        fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor__)*dpdy"); // will also handle dpdyCoarse and dpdyFine
+        fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor_)*dpdy"); // will also handle dpdyCoarse and dpdyFine
 
         const fragmentBuiltinDecl = `var<private> ${builtInName_position_frag} : vec4<f32>;\nvar<private> ${builtInName_front_facing} : bool;\nvar<private> ${builtInName_FragColor} : vec4<f32>;\nvar<private> ${builtInName_frag_depth} : f32;\n`;
 
