@@ -312,6 +312,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                 newSelection[0].leftInPixels = this._currLeft;
                 newSelection[0].topInPixels = this._currTop;
+                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }
