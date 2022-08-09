@@ -37,7 +37,11 @@ export class ComputePressureObserverWrapper {
      * Method that must be called to stop observing changes and triggering callbacks (cleanup function).
      */
     unobserve(): void {
-        this._observer?.unobserve && this._observer?.unobserve();
+        try {
+            this._observer?.unobserve && this._observer?.unobserve();
+        } catch {
+            // Ignore error
+        }
     }
 }
 
