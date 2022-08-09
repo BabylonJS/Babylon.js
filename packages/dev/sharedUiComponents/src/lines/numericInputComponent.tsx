@@ -43,17 +43,15 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         return false;
     }
 
-    updateValue(evt: any) {
-        const value = evt.target.value;
-
-        if (/[^0-9.-]/g.test(value)) {
+    updateValue(valueString: string) {
+        if (/[^0-9.-]/g.test(valueString)) {
             return;
         }
 
-        const valueAsNumber = parseFloat(value);
+        const valueAsNumber = parseFloat(valueString);
 
         this._localChange = true;
-        this.setState({ value: value });
+        this.setState({ value: valueString });
 
         if (isNaN(valueAsNumber)) {
             return;
@@ -78,6 +76,35 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this.props.onChange(valueAsNumber);
     }
 
+    incrementValue(amount: number) {
+        let currentValue = parseFloat(this.state.value);
+        if (isNaN(currentValue)) {
+            currentValue = 0;
+        }
+        this.updateValue((currentValue + amount).toFixed(this.props.precision !== undefined ? this.props.precision : 3));
+    }
+
+    onKeyDown(evt: React.KeyboardEvent<HTMLInputElement>) {
+        const step = this.props.step || 1;
+        const handleArrowKey = (sign: number) => {
+            if (evt.shiftKey) {
+                sign *= 10;
+                if (evt.ctrlKey || evt.metaKey) {
+                    sign *= 10;
+                }
+            }
+
+            this.incrementValue(sign * step);
+            evt.preventDefault();
+        };
+
+        if (evt.key === "ArrowUp") {
+            handleArrowKey(1);
+        } else if (evt.key === "ArrowDown") {
+            handleArrowKey(-1);
+        }
+    }
+
     render() {
         return (
             <div className="numeric">
@@ -92,7 +119,8 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                     step={this.props.step}
                     className="numeric-input"
                     value={this.state.value}
-                    onChange={(evt) => this.updateValue(evt)}
+                    onChange={(evt) => this.updateValue(evt.target.value)}
+                    onKeyDown={(evt) => this.onKeyDown(evt)}
                     onFocus={() => {
                         if (this.props.lockObject) {
                             this.props.lockObject.lock = true;

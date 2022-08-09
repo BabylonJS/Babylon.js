@@ -154,10 +154,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
     }
 
-    incrementValue(amount: number) {
-        if (this.props.step) {
+    incrementValue(amount: number, processStep: boolean = true) {
+        if (processStep && this.props.step) {
             amount *= parseFloat(this.props.step);
         }
+
         let currentValue = parseFloat(this.state.value);
         if (isNaN(currentValue)) {
             currentValue = 0;
@@ -165,16 +166,24 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this.updateValue((currentValue + amount).toFixed(2));
     }
 
-    onKeyDown(event: React.KeyboardEvent) {
-        if (this.props.arrows) {
-            if (event.key === "ArrowUp") {
-                this.incrementValue(1);
-                event.preventDefault();
+    onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+        const step = parseFloat(this.props.step || this.props.isInteger ? "1" : "0.01");
+        const handleArrowKey = (sign: number) => {
+            if (event.shiftKey) {
+                sign *= 10;
+                if (event.ctrlKey || event.metaKey) {
+                    sign *= 10;
+                }
             }
-            if (event.key === "ArrowDown") {
-                this.incrementValue(-1);
-                event.preventDefault();
-            }
+
+            this.incrementValue(sign * step, false);
+            event.preventDefault();
+        };
+
+        if (event.key === "ArrowUp") {
+            handleArrowKey(1);
+        } else if (event.key === "ArrowDown") {
+            handleArrowKey(-1);
         }
         if (event.key === "Enter" && this.props.onEnter) {
             this.props.onEnter(this._store);
