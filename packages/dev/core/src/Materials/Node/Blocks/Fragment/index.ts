@@ -9,3 +9,4 @@ export * from "./screenSizeBlock";
 export * from "./screenSpaceBlock";
 export * from "./twirlBlock";
 export * from "./TBNBlock";
+export * from "./heightToNormalBlock";
