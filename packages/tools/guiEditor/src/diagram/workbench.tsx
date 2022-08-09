@@ -31,6 +31,8 @@ import type { StackPanel } from "gui/2D/controls/stackPanel";
 
 
 
+
+
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
 }
@@ -98,6 +100,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
     private _pasteDisabled = true;
+    //private _arc: ArcRotateCamera;
 
     public get guiSize() {
         return this._guiSize;
@@ -865,6 +868,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.synchronizeLiveGUI();
 
         new ArcRotateCamera("Camera", 0, 0, 0, Vector3.Zero(), this._scene);
+        
+        
+        
+       // arc.zoomToMouseLocation = true
+
         // This attaches the mouse controls
         this.addControls(this._scene);
 
@@ -1032,13 +1040,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         let delta = 0;
         if (event.deltaY) {
             delta = -event.deltaY;
-            console.log("scroll")
         } else if (event.detail) {
             delta = -event.detail;
         }
         // const posX = event.pageX;
         // const posY = event.pageY;
-        this.zooming(1 + delta / 1000, event);
+        
+        
+        this.zooming(1 + delta / 1000);
+        
     }
 
     zoomDrag(event: React.MouseEvent){
@@ -1057,22 +1067,64 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
    
     //Zoom to pointer position. Zoom amount determined by delta
-    zooming(delta: number, event?: React.WheelEvent) {
-        console.log("here")
+    zooming(delta: number) {
+       // console.log(this._panAndZoomContainer.widthInPixels * this._zoomFactor)
+        // const zoomVector = new Vector2(this._zoomFactor, this._zoomFactor);
+        // //screenPos.divideInPlace(zoomVector).add(this._panningOffset);
+        // let division: number;
+      //  const space = CoordinateHelper.MousePointerToRTTSpace()
+       
+       // this._panningOffset = new Vector2(-space.x, space.y)
+        // if(enter){
+        //     division = this._zoomFactor *= delta
+        //     this._panningOffset = new Vector2(-space.x / (division), space.y / (division))
+        // }else{
+        //     this._panningOffset = new Vector2(-space.x, space.y)
+        // }
+        // enter = false;
+        //console.log("here")
         // this._mouseX = posX;
         // this._mouseY = posY;
-        if(event != undefined){
+        //if(event != undefined){
             //console.log(this._panningOffset)
             // this._panningOffset.x = posX;
             // this._panningOffset.y = posY;
             //this._panningOffset = new Vector2(-posX, posY);
-            const posX = event.pageX;
-            const posY = event.pageY;
-            // console.log(event.)
+            //const posX = event.pageX;
+           // const posY = event.pageY;
+            // console.log(posX)
+            // console.log(posY)
             // console.log(event.screenY)
-            this._panningOffset.set(-posX  + this._guiSize.width , posY - this._guiSize.width)
-        }
-       
+            //this._panningOffset.set(posX - 727, posY - 549)
+            //console.log(this._panningOffset.asArray())
+            // const control = this.props.globalState.selectedControls[0]
+            // const panOff = this._panningOffset
+            // control.onPointerMoveObservable.add(function(coordinates) {
+            //     const relative = control.getLocalCoordinates(coordinates);
+            //     console.log(relative.x)
+            //     console.log(relative.y)
+            //     panOff.set(-relative.x, relative.y)
+            // });
+           // this._panningOffset.set(relative)
+            //console.log(this.props.globalState.selectedControls[0].getLocalCoordinates(this._panningOffset))
+            // console.log("------")
+            // console.log(this._engine.getRenderHeight())
+            // console.log((window.innerWidth ) - this._guiSize.width)
+            // console.log(posX)
+           // console.log(this._zoomFactor)
+            // console.log((window.innerWidth) / 2)
+            
+            // console.log(space.x)
+            // console.log(space.y)
+            //this._panningOffset.set(-space.x, space.y)
+            
+            
+          
+            //this._guiSize.height
+            
+        //}
+        const space = CoordinateHelper.MousePointerToRTTSpace()                                                         
+        this._panningOffset = new Vector2(-space.x, space.y)
         this._zoomFactor *= delta;
     }
 
