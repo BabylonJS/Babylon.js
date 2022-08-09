@@ -45,7 +45,7 @@ const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    private _pasteOffset: number;
+    private _pasteOffset = 10;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
