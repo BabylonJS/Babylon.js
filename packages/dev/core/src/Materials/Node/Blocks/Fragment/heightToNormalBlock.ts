@@ -30,21 +30,21 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
      */
     public getClassName() {
         return "HeightToNormalBlock";
-    }    
-    
+    }
+
     /**
-    * Gets the input component
-    */
+     * Gets the input component
+     */
     public get input(): NodeMaterialConnectionPoint {
-       return this._inputs[0];
-    }   
+        return this._inputs[0];
+    }
 
     /**
      * Gets the position component
      */
-     public get position(): NodeMaterialConnectionPoint {
+    public get position(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the normal component
@@ -85,10 +85,12 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
             inToNormal.y *= -1.0;
             vec3 result = normalize((d * normal) - inToNormal);
             return TBN * result;
-        }`;        
+        }`;
 
         state._emitFunction("heightToNormal", heightToNormal, "// heightToNormal");
-        state.compilationString += this._declareOutput(output, state) + ` = heightToNormal(${this.input.associatedVariableName}, ${this.position.associatedVariableName}, ${this.tangent.associatedVariableName}.xyz, ${this.normal.associatedVariableName});\r\n`;
+        state.compilationString +=
+            this._declareOutput(output, state) +
+            ` = heightToNormal(${this.input.associatedVariableName}, ${this.position.associatedVariableName}, ${this.tangent.associatedVariableName}.xyz, ${this.normal.associatedVariableName});\r\n`;
 
         return this;
     }
