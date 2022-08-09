@@ -43,9 +43,9 @@ const ARROW_KEY_MOVEMENT_SMALL = 1; // px
 const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
-const PASTE_OFFSET = 10; //number of pixels a pasted control is offsetted from the copied control
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+    private _pasteOffset: number;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
@@ -66,6 +66,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _currTop: number = 0;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
+    }
+    public get pasteOffset() {
+        return this._pasteOffset;
     }
     public get currTop() {
         return this._currTop;
@@ -297,8 +300,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public pasteFromClipboard(clipboardContents: string) {
-        this._currLeft += PASTE_OFFSET;
-        this._currTop += PASTE_OFFSET;
+        this._currLeft += this._pasteOffset;
+        this._currTop += this._pasteOffset;
         try {
             const parsed = JSON.parse(clipboardContents);
             if (parsed.GUIClipboard) {
