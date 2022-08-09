@@ -39,8 +39,7 @@ export interface IAxisScaleGizmo extends IGizmo {
     dragScale: number;
     /** If the gizmo is enabled */
     isEnabled: boolean;
-};
-
+}
 
 /**
  * Single axis scale gizmo
