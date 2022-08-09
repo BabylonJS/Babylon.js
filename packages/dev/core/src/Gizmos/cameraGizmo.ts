@@ -2,6 +2,7 @@ import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
+import type { IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -17,9 +18,23 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 
 /**
+ * Interface for camera gizmo
+ */
+export interface ICameraGizmo extends IGizmo {
+    /** Event that fires each time the gizmo is clicked */
+    onClickedObservable: Observable<Camera>;
+    /** A boolean indicating if frustum lines must be rendered */
+    displayFrustum: boolean;
+    /** The camera that the gizmo is attached to */
+    camera: Nullable<Camera>;
+    /** The material used to render the camera gizmo */
+    readonly material: StandardMaterial;
+}
+
+/**
  * Gizmo that enables viewing a camera
  */
-export class CameraGizmo extends Gizmo {
+export class CameraGizmo extends Gizmo implements ICameraGizmo {
     protected _cameraMesh: Mesh;
     protected _cameraLinesMesh: Mesh;
     protected _material: StandardMaterial;
