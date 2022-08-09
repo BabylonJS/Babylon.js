@@ -87,6 +87,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
             return TBN * result;
         }`;
 
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunction("heightToNormal", heightToNormal, "// heightToNormal");
         state.compilationString +=
             this._declareOutput(output, state) +
