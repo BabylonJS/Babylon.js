@@ -86,7 +86,7 @@ export const getRules = (
         rules.push(
             {
                 sideEffects: options.sideEffects,
-                test: /\.s[ac]ss$/i,
+                test: /(?<!modules)\.s[ac]ss$/i,
                 use: [
                     "style-loader",
                     {
@@ -94,6 +94,26 @@ export const getRules = (
                         options: {
                             sourceMap: true,
                             modules: "global",
+                        },
+                    },
+                    {
+                        loader: "sass-loader",
+                        options: {
+                            sourceMap: true,
+                        },
+                    },
+                ],
+            },
+            {
+                sideEffects: options.sideEffects,
+                test: /\.modules\.s[ac]ss$/i,
+                use: [
+                    "style-loader",
+                    {
+                        loader: "css-loader",
+                        options: {
+                            sourceMap: true,
+                            modules: true,
                         },
                     },
                     {

@@ -7,7 +7,6 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
-import { TextInputLineComponent } from "./textInputLineComponent";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 
 import copyIcon from "./copy.svg";
@@ -22,8 +21,8 @@ export interface IColorLineComponentProps {
     isLinear?: boolean;
     icon?: string;
     iconLabel?: string;
-    lockObject?: LockObject;
     disableAlpha?: boolean;
+    lockObject: LockObject;
 }
 
 interface IColorLineComponentState {
@@ -193,6 +192,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                     </div>
                     <div className="color3">
                         <ColorPickerLineComponent
+                            lockObject={this.props.lockObject}
                             linearHint={this.props.isLinear}
                             value={this.props.disableAlpha ? this._toColor3(this.state.color) : this.state.color}
                             onColorChanged={(colorString) => {
@@ -200,17 +200,6 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             }}
                         />
                     </div>
-                    {this.props.lockObject && (
-                        <TextInputLineComponent
-                            lockObject={this.props.lockObject}
-                            label=""
-                            value={this.state.color.toHexString()}
-                            onChange={(newValue) => {
-                                this.setColorFromString(newValue);
-                            }}
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        />
-                    )}
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt="Copy" />
                     </div>
@@ -220,10 +209,12 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
-                        {this.props.disableAlpha || <NumericInputComponent label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />}
+                        <NumericInputComponent lockObject={this.props.lockObject} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent lockObject={this.props.lockObject} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        {this.props.disableAlpha || (
+                            <NumericInputComponent lockObject={this.props.lockObject} label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
+                        )}
                     </div>
                 )}
             </div>

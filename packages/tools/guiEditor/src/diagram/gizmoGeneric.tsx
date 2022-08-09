@@ -101,14 +101,38 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
 
     /**
      * Update the gizmo's positions
-     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
      */
     updateGizmo() {
         const node = this.props.control;
         // Calculating the offsets for each scale point.
         const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
         const localBounds = CoordinateHelper.ComputeLocalBounds(node);
-        this.state.scalePoints.forEach((scalePoint) => {
+
+        const totalPadding = {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+        };
+        let current = node.parent;
+        while (current !== null && current !== undefined) {
+            totalPadding.left += current.paddingLeftInPixels;
+            totalPadding.right += current.paddingRightInPixels;
+            totalPadding.top += current.paddingTopInPixels;
+            totalPadding.bottom += current.paddingBottomInPixels;
+
+            current = current.parent;
+        }
+
+        const horizontalAdjustment = (totalPadding.left - totalPadding.right) * 0.5;
+        localBounds.left += horizontalAdjustment;
+        localBounds.right += horizontalAdjustment;
+
+        const verticalAdjustment = (totalPadding.top - totalPadding.bottom) * 0.5;
+        localBounds.top += verticalAdjustment;
+        localBounds.bottom += verticalAdjustment;
+
+        const updatedPoints = this.state.scalePoints.map((scalePoint) => {
             const nodeSpace = new Vector2();
             switch (scalePoint.horizontalPosition) {
                 case ScalePointPosition.Left:
@@ -157,10 +181,11 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             scalePoint.position.x = canvas.x;
             scalePoint.position.y = canvas.y;
             scalePoint.rotation = CoordinateHelper.GetRotation(node) * (180 / Math.PI);
+            return scalePoint;
         });
         this.setState({
             canvasBounds,
-            scalePoints: [...this.state.scalePoints],
+            scalePoints: [...updatedPoints],
         });
     }
 

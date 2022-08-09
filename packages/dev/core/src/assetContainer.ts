@@ -108,7 +108,7 @@ export class AssetContainer extends AbstractScene {
     public instantiateModelsToScene(
         nameFunction?: (sourceName: string) => string,
         cloneMaterials = false,
-        options?: { doNotInstantiate: boolean; predicate?: (entity: any) => boolean }
+        options?: { doNotInstantiate?: boolean | ((node: TransformNode) => boolean); predicate?: (entity: any) => boolean }
     ): InstantiatedEntries {
         const convertionMap: { [key: number]: number } = {};
         const storeMap: { [key: number]: any } = {};
@@ -116,10 +116,14 @@ export class AssetContainer extends AbstractScene {
         const alreadySwappedSkeletons: Skeleton[] = [];
         const alreadySwappedMaterials: Material[] = [];
 
-        if (!options) {
-            options = {
-                doNotInstantiate: true,
-            };
+        const localOptions = {
+            doNotInstantiate: true,
+            ...options,
+        };
+
+        if (!localOptions.doNotInstantiate) {
+            // Always clone skinned meshes.
+            localOptions.doNotInstantiate = (node) => !!(node as AbstractMesh).skeleton;
         }
 
         const onClone = (source: TransformNode, clone: TransformNode) => {
@@ -149,12 +153,12 @@ export class AssetContainer extends AbstractScene {
         };
 
         this.transformNodes.forEach((o) => {
-            if (options && options.predicate && !options.predicate(o)) {
+            if (localOptions.predicate && !localOptions.predicate(o)) {
                 return;
             }
 
             if (!o.parent) {
-                const newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
                     onClone(source, clone);
                 });
 
@@ -165,12 +169,12 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.meshes.forEach((o) => {
-            if (options && options.predicate && !options.predicate(o)) {
+            if (localOptions.predicate && !localOptions.predicate(o)) {
                 return;
             }
 
             if (!o.parent) {
-                const newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
                     onClone(source, clone);
 
                     if ((clone as any).material) {
@@ -228,7 +232,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.skeletons.forEach((s) => {
-            if (options && options.predicate && !options.predicate(s)) {
+            if (localOptions.predicate && !localOptions.predicate(s)) {
                 return;
             }
 
@@ -261,7 +265,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.animationGroups.forEach((o) => {
-            if (options && options.predicate && !options.predicate(o)) {
+            if (localOptions.predicate && !localOptions.predicate(o)) {
                 return;
             }
 
@@ -507,62 +511,62 @@ export class AssetContainer extends AbstractScene {
         this.cameras.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.cameras = [];
+        this.cameras.length = 0;
 
         this.lights.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.lights = [];
+        this.lights.length = 0;
 
         this.meshes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.meshes = [];
+        this.meshes.length = 0;
 
         this.skeletons.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.skeletons = [];
+        this.skeletons.length = 0;
 
         this.animationGroups.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.animationGroups = [];
+        this.animationGroups.length = 0;
 
         this.multiMaterials.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.multiMaterials = [];
+        this.multiMaterials.length = 0;
 
         this.materials.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.materials = [];
+        this.materials.length = 0;
 
         this.geometries.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.geometries = [];
+        this.geometries.length = 0;
 
         this.transformNodes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.transformNodes = [];
+        this.transformNodes.length = 0;
 
         this.actionManagers.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.actionManagers = [];
+        this.actionManagers.length = 0;
 
         this.textures.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.textures = [];
+        this.textures.length = 0;
 
         this.reflectionProbes.slice(0).forEach((o) => {
             o.dispose();
         });
-        this.reflectionProbes = [];
+        this.reflectionProbes.length = 0;
 
         if (this.environmentTexture) {
             this.environmentTexture.dispose();

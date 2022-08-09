@@ -228,6 +228,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 />
                                 {this._isPlaying && (
                                     <SliderLineComponent
+                                        lockObject={this.props.lockObject}
                                         ref={this._timelineRef}
                                         label="Current frame"
                                         minimum={this._animationControl.from}
@@ -263,6 +264,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                                 />
                                                 <SliderLineComponent
+                                                    lockObject={this.props.lockObject}
                                                     label="Blending speed"
                                                     target={animatableAsAny.animationPropertiesOverride}
                                                     propertyName="blendingSpeed"

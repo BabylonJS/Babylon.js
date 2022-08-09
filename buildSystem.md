@@ -45,7 +45,7 @@ It is recommended to run `npm run build:dev` before starting to work to make sur
 
 ### TL;dr guide (or - I want to start already!)
 
-Using VSCode? Install the recommended extensions and start `Run and Watch Dev Host` to compile and get started with the esm dev host. TO use the classic UMD-based development (and have the BABYLON namespace available), run `Run and Watch Babylon Server`.
+Using VSCode? Install the recommended extensions and start `Run and Watch Dev Host` to compile and get started with the esm dev host. To use the classic UMD-based development (and have the BABYLON namespace available), run `Run and Watch Babylon Server`.
 
 To build the dev sources, shaders, and assets, run `npm run build:dev`.
 
@@ -779,7 +779,7 @@ To build each and every package available in the repository, run `npm run build 
 
 It will run the build in sequence (because of the predefined dependencies), but will skip building a package if it hasn't changed since the last build call. So calling `npx nx run build babylonjs` will build dev, lts, and public, but those 3 will be ready when building babylonjs-gui and will not build again.
 
-This should be used only when you want to build the public packages in the repository, and will mainly be used by the CI. However, nx is available to you and is a very powerful tool. In the future we might integrate it more in the repository. TO read more about nx: <https://nx.dev/getting-started/intro>
+This should be used only when you want to build the public packages in the repository, and will mainly be used by the CI. However, nx is available to you and is a very powerful tool. In the future we might integrate it more in the repository. To read more about nx: <https://nx.dev/getting-started/intro>
 
 ## Testing
 

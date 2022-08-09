@@ -102,7 +102,7 @@ export class SpriteRenderer {
         this._epsilon = epsilon;
 
         this._engine = engine;
-        this._useInstancing = engine.getCaps().instancedArrays;
+        this._useInstancing = engine.getCaps().instancedArrays && engine._features.supportSpriteInstancing;
         this._useVAO = engine.getCaps().vertexArrayObject && !engine.disableVertexArrayObjects;
         this._scene = scene;
         this._drawWrapperBase = new DrawWrapper(engine);

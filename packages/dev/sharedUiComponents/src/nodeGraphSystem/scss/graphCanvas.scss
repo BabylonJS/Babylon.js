@@ -423,12 +423,18 @@
             overflow: visible;
             pointer-events: none;
             z-index: 2;
+            filter: drop-shadow(7px 6px 2px rgba(0, 0, 0, 0.2));
 
             .link {
                 stroke-width: 4px;
                 &.selected {
                     stroke: white !important;
                     stroke-dasharray: 10, 2;
+                }
+
+                &.target-candidate {
+                    filter: brightness(1.5);
+                    stroke-width: 6px;
                 }
 
                 &.hidden {
@@ -476,6 +482,7 @@
                 grid-template-rows: 30px auto;
                 grid-template-columns: 100%;
                 color: white;
+                box-shadow: 7px 6px 2px rgba(0, 0, 0, 0.2);
 
                 &.elbow-block {
                     width: 40px;
@@ -561,7 +568,7 @@
                     }
                 }
 
-                .warning {
+                .headerIcon {
                     grid-row: 1;
                     grid-column: 1;
                     display: none;
@@ -569,6 +576,8 @@
                     justify-self: end;
                     align-self: center;
                     margin-right: 5px;
+                    user-select: none;
+                    pointer-events: none;
 
                     &.visible {
                         display: grid;
@@ -583,7 +592,7 @@
                     text-align: center;
                     margin-top: -1px;
                     margin-left: -1px;
-                    margin-right: -1px;
+                    margin-right: 20px;
                     white-space: nowrap;
                     text-overflow: ellipsis;
                     overflow: hidden;

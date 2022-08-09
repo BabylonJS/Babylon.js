@@ -160,7 +160,13 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <ButtonLineComponent label="Dispose" onClick={() => this.disposeSprite()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Position" target={sprite} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Position"
+                        target={sprite}
+                        propertyName="position"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <CheckBoxLineComponent label="Pickable" target={sprite} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent
                         label="Use alpha for picking"
@@ -168,8 +174,15 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                         propertyName="useAlphaForPicking"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Color4LineComponent label="Color" target={sprite} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color4LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Color"
+                        target={sprite}
+                        propertyName="color"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         useEuler={this.props.globalState.onlyUseEulers}
                         label="Angle"
                         target={sprite}
@@ -193,6 +206,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                         }}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Cell index"
                         decimalCount={0}
                         target={sprite}

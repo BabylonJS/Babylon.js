@@ -56,7 +56,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                 <div>
                     <LineContainerComponent title="GENERAL">
                         <TextInputLineComponent label="Name" propertyName="name" lockObject={this.props.globalState.lockObject} target={this.props.frame} />
-                        <Color3LineComponent label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
+                        <Color3LineComponent lockObject={this.props.globalState.lockObject} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
                         <TextInputLineComponent lockObject={this.props.globalState.lockObject} label="Comments" propertyName="comments" target={this.props.frame} />
                         {!this.props.frame.isCollapsed && (
                             <ButtonLineComponent
@@ -81,7 +81,11 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                             }}
                         />
                     </LineContainerComponent>
-                    <InputsPropertyTabComponent globalState={this.props.globalState} inputs={configurableInputBlocks}></InputsPropertyTabComponent>
+                    <InputsPropertyTabComponent
+                        lockObject={this.props.globalState.lockObject}
+                        globalState={this.props.globalState}
+                        inputs={configurableInputBlocks}
+                    ></InputsPropertyTabComponent>
                 </div>
             </div>
         );

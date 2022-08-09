@@ -15,15 +15,19 @@ const globalObject = typeof global !== "undefined" ? global : typeof window !== 
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
     const BABYLONGLOBAL = (<any>globalObject).BABYLON;
-    BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
+    if (!BABYLONGLOBAL.Debug) {
+        BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
 
-    const keys = [];
-    for (const key in DebugImport) {
-        BABYLONGLOBAL.Debug[key] = (<any>DebugImport)[key];
-        keys.push(key);
+        for (const key in DebugImport) {
+            if (!BABYLONGLOBAL.Debug[key]) {
+                BABYLONGLOBAL.Debug[key] = (<any>DebugImport)[key];
+            }
+        }
     }
     for (const key in BABYLON) {
-        BABYLONGLOBAL[key] = (<any>BABYLON)[key];
+        if (!BABYLONGLOBAL[key]) {
+            BABYLONGLOBAL[key] = (<any>BABYLON)[key];
+        }
     }
 }
 

@@ -48,7 +48,7 @@
     left: 0;
 }
 
-#toolbarGrab {
+.toolbarGrab {
     background: #333333;
     grid-row: 1 / span 3;
     grid-column: 2;
@@ -56,8 +56,13 @@
     overflow-y: auto;
 
     .blackLine {
-        height: 5px;
+        height: 16px;
         background: black;
+        position: relative;
+    }
+    .arrow {
+        color: white;
+        position: absolute;
     }
     .toolbar-label {
         color: white;
@@ -86,6 +91,11 @@
         width: 40px;
         height: 40px;
     }
+    &.expanded {
+        .toolbar-content-sub1 {
+            column-count: 2;
+        }
+    }
 }
 
 .diagram-container {
@@ -113,6 +123,9 @@
     grid-template-columns: 1fr 50px;
     position: relative;
     overflow: hidden;
+    &.expand {
+        grid-template-columns: 1fr 100px;
+    }
 }
 
 .right-panel {

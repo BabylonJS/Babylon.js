@@ -15,6 +15,9 @@ import { _GLTFUtilities } from "./glTFUtilities";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 
+import { Camera } from "core/Cameras/camera";
+import { Light } from "core/Lights/light";
+
 /**
  * @hidden
  * Interface to store animation data.
@@ -77,11 +80,21 @@ enum _TangentType {
      */
     OUTTANGENT,
 }
+
 /**
  * @hidden
  * Utility class for generating glTF animation data from BabylonJS.
  */
 export class _GLTFAnimation {
+    /**
+     * Determine if a node is transformable - ie has properties it should be part of animation of transformation.
+     * @param babylonNode the node to test
+     * @returns true if can be animated, false otherwise. False if the parameter is null or undefined.
+     */
+    private static _IsTransformable(babylonNode: Node): boolean {
+        return babylonNode && (babylonNode instanceof TransformNode || babylonNode instanceof Camera || babylonNode instanceof Light);
+    }
+
     /**
      * @ignore
      *
@@ -94,62 +107,25 @@ export class _GLTFAnimation {
      * @returns nullable IAnimationData
      */
     public static _CreateNodeAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean,
         animationSampleRate: number
     ): Nullable<_IAnimationData> {
-        const inputs: number[] = [];
-        const outputs: number[][] = [];
-        const keyFrames = animation.getKeys();
-        const minMaxKeyFrames = _GLTFAnimation._CalculateMinMaxKeyFrames(keyFrames);
-        const interpolationOrBake = _GLTFAnimation._DeduceInterpolation(keyFrames, animationChannelTargetPath, useQuaternion);
-        const frameDelta = minMaxKeyFrames.max - minMaxKeyFrames.min;
+        if (this._IsTransformable(babylonTransformNode)) {
+            const inputs: number[] = [];
+            const outputs: number[][] = [];
+            const keyFrames = animation.getKeys();
+            const minMaxKeyFrames = _GLTFAnimation._CalculateMinMaxKeyFrames(keyFrames);
+            const interpolationOrBake = _GLTFAnimation._DeduceInterpolation(keyFrames, animationChannelTargetPath, useQuaternion);
+            const frameDelta = minMaxKeyFrames.max - minMaxKeyFrames.min;
 
-        const interpolation = interpolationOrBake.interpolationType;
-        const shouldBakeAnimation = interpolationOrBake.shouldBakeAnimation;
+            const interpolation = interpolationOrBake.interpolationType;
+            const shouldBakeAnimation = interpolationOrBake.shouldBakeAnimation;
 
-        if (shouldBakeAnimation) {
-            _GLTFAnimation._CreateBakedAnimation(
-                babylonTransformNode,
-                animation,
-                animationChannelTargetPath,
-                minMaxKeyFrames.min,
-                minMaxKeyFrames.max,
-                animation.framePerSecond,
-                animationSampleRate,
-                inputs,
-                outputs,
-                minMaxKeyFrames,
-                convertToRightHandedSystem,
-                useQuaternion
-            );
-        } else {
-            if (interpolation === AnimationSamplerInterpolation.LINEAR || interpolation === AnimationSamplerInterpolation.STEP) {
-                _GLTFAnimation._CreateLinearOrStepAnimation(
-                    babylonTransformNode,
-                    animation,
-                    animationChannelTargetPath,
-                    frameDelta,
-                    inputs,
-                    outputs,
-                    convertToRightHandedSystem,
-                    useQuaternion
-                );
-            } else if (interpolation === AnimationSamplerInterpolation.CUBICSPLINE) {
-                _GLTFAnimation._CreateCubicSplineAnimation(
-                    babylonTransformNode,
-                    animation,
-                    animationChannelTargetPath,
-                    frameDelta,
-                    inputs,
-                    outputs,
-                    convertToRightHandedSystem,
-                    useQuaternion
-                );
-            } else {
+            if (shouldBakeAnimation) {
                 _GLTFAnimation._CreateBakedAnimation(
                     babylonTransformNode,
                     animation,
@@ -164,19 +140,58 @@ export class _GLTFAnimation {
                     convertToRightHandedSystem,
                     useQuaternion
                 );
+            } else {
+                if (interpolation === AnimationSamplerInterpolation.LINEAR || interpolation === AnimationSamplerInterpolation.STEP) {
+                    _GLTFAnimation._CreateLinearOrStepAnimation(
+                        babylonTransformNode,
+                        animation,
+                        animationChannelTargetPath,
+                        frameDelta,
+                        inputs,
+                        outputs,
+                        convertToRightHandedSystem,
+                        useQuaternion
+                    );
+                } else if (interpolation === AnimationSamplerInterpolation.CUBICSPLINE) {
+                    _GLTFAnimation._CreateCubicSplineAnimation(
+                        babylonTransformNode,
+                        animation,
+                        animationChannelTargetPath,
+                        frameDelta,
+                        inputs,
+                        outputs,
+                        convertToRightHandedSystem,
+                        useQuaternion
+                    );
+                } else {
+                    _GLTFAnimation._CreateBakedAnimation(
+                        babylonTransformNode,
+                        animation,
+                        animationChannelTargetPath,
+                        minMaxKeyFrames.min,
+                        minMaxKeyFrames.max,
+                        animation.framePerSecond,
+                        animationSampleRate,
+                        inputs,
+                        outputs,
+                        minMaxKeyFrames,
+                        convertToRightHandedSystem,
+                        useQuaternion
+                    );
+                }
             }
-        }
 
-        if (inputs.length && outputs.length) {
-            const result: _IAnimationData = {
-                inputs: inputs,
-                outputs: outputs,
-                samplerInterpolation: interpolation,
-                inputsMin: shouldBakeAnimation ? minMaxKeyFrames.min : Tools.FloatRound(minMaxKeyFrames.min / animation.framePerSecond),
-                inputsMax: shouldBakeAnimation ? minMaxKeyFrames.max : Tools.FloatRound(minMaxKeyFrames.max / animation.framePerSecond),
-            };
+            if (inputs.length && outputs.length) {
+                const result: _IAnimationData = {
+                    inputs: inputs,
+                    outputs: outputs,
+                    samplerInterpolation: interpolation,
+                    inputsMin: shouldBakeAnimation ? minMaxKeyFrames.min : Tools.FloatRound(minMaxKeyFrames.min / animation.framePerSecond),
+                    inputsMax: shouldBakeAnimation ? minMaxKeyFrames.max : Tools.FloatRound(minMaxKeyFrames.max / animation.framePerSecond),
+                };
 
-            return result;
+                return result;
+            }
         }
 
         return null;
@@ -251,7 +266,7 @@ export class _GLTFAnimation {
         animationSampleRate: number
     ) {
         let glTFAnimation: IAnimation;
-        if (babylonNode instanceof TransformNode) {
+        if (_GLTFAnimation._IsTransformable(babylonNode)) {
             if (babylonNode.animations) {
                 for (const animation of babylonNode.animations) {
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
@@ -414,26 +429,28 @@ export class _GLTFAnimation {
                     const targetAnimation = animationGroup.targetedAnimations[i];
                     const target = targetAnimation.target;
                     const animation = targetAnimation.animation;
-                    if (target instanceof TransformNode || (target.length === 1 && target[0] instanceof TransformNode)) {
+                    if (this._IsTransformable(target) || (target.length === 1 && this._IsTransformable(target[0]))) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            const babylonTransformNode = target instanceof TransformNode ? (target as TransformNode) : (target[0] as TransformNode);
-                            const convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
-                            _GLTFAnimation._AddAnimation(
-                                `${animation.name}`,
-                                glTFAnimation,
-                                babylonTransformNode,
-                                animation,
-                                animationInfo.dataAccessorType,
-                                animationInfo.animationChannelTargetPath,
-                                nodeMap,
-                                binaryWriter,
-                                bufferViews,
-                                accessors,
-                                convertToRightHandedSystem,
-                                animationInfo.useQuaternion,
-                                animationSampleRate
-                            );
+                            const babylonTransformNode = this._IsTransformable(target) ? target : this._IsTransformable(target[0]) ? target[0] : null;
+                            if (babylonTransformNode) {
+                                const convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
+                                _GLTFAnimation._AddAnimation(
+                                    `${animation.name}`,
+                                    glTFAnimation,
+                                    babylonTransformNode,
+                                    animation,
+                                    animationInfo.dataAccessorType,
+                                    animationInfo.animationChannelTargetPath,
+                                    nodeMap,
+                                    binaryWriter,
+                                    bufferViews,
+                                    accessors,
+                                    convertToRightHandedSystem,
+                                    animationInfo.useQuaternion,
+                                    animationSampleRate
+                                );
+                            }
                         }
                     } else if (target instanceof MorphTarget || (target.length === 1 && target[0] instanceof MorphTarget)) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
@@ -463,6 +480,8 @@ export class _GLTFAnimation {
                                 }
                             }
                         }
+                    } else {
+                        // this is the place for the KHR_animation_pointer.
                     }
                 }
                 morphAnimationMeshes.forEach((mesh) => {
@@ -541,7 +560,7 @@ export class _GLTFAnimation {
     private static _AddAnimation(
         name: string,
         glTFAnimation: IAnimation,
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         dataAccessorType: AccessorType,
         animationChannelTargetPath: AnimationChannelTargetPath,
@@ -669,7 +688,7 @@ export class _GLTFAnimation {
      * @param useQuaternion specifies if quaternions should be used
      */
     private static _CreateBakedAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         minFrame: number,
@@ -757,7 +776,7 @@ export class _GLTFAnimation {
 
     private static _ConvertFactorToVector3OrQuaternion(
         factor: number,
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationType: number,
         animationChannelTargetPath: AnimationChannelTargetPath,
@@ -806,7 +825,7 @@ export class _GLTFAnimation {
     }
 
     private static _SetInterpolatedValue(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         value: Nullable<number | Vector3 | Quaternion>,
         time: number,
         animation: Animation,
@@ -820,18 +839,25 @@ export class _GLTFAnimation {
         const animationType = animation.dataType;
         let cacheValue: Vector3 | Quaternion | number;
         inputs.push(time);
-        if (typeof value === "number" && babylonTransformNode instanceof TransformNode) {
-            value = this._ConvertFactorToVector3OrQuaternion(
-                value as number,
-                babylonTransformNode,
-                animation,
-                animationType,
-                animationChannelTargetPath,
-                convertToRightHandedSystem,
-                useQuaternion
-            );
-        }
+
         if (value) {
+            if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+                outputs.push([value as number]);
+                return;
+            }
+
+            if (typeof value === "number") {
+                value = this._ConvertFactorToVector3OrQuaternion(
+                    value as number,
+                    babylonTransformNode,
+                    animation,
+                    animationType,
+                    animationChannelTargetPath,
+                    convertToRightHandedSystem,
+                    useQuaternion
+                );
+            }
+
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 if (useQuaternion) {
                     quaternionCache = value as Quaternion;
@@ -847,8 +873,6 @@ export class _GLTFAnimation {
                     }
                 }
                 outputs.push(quaternionCache.asArray());
-            } else if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
-                outputs.push([value as number]);
             } else {
                 // scaling and position animation
                 cacheValue = value as Vector3;
@@ -877,7 +901,7 @@ export class _GLTFAnimation {
      * @param useQuaternion Specifies if quaternions are used in the animation
      */
     private static _CreateLinearOrStepAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         frameDelta: number,
@@ -904,7 +928,7 @@ export class _GLTFAnimation {
      * @param useQuaternion Specifies if quaternions are used in the animation
      */
     private static _CreateCubicSplineAnimation(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
         frameDelta: number,
@@ -943,7 +967,7 @@ export class _GLTFAnimation {
     }
 
     private static _GetBasePositionRotationOrScale(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         animationChannelTargetPath: AnimationChannelTargetPath,
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
@@ -951,29 +975,29 @@ export class _GLTFAnimation {
         let basePositionRotationOrScale: number[];
         if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
             if (useQuaternion) {
-                if (babylonTransformNode.rotationQuaternion) {
-                    basePositionRotationOrScale = babylonTransformNode.rotationQuaternion.asArray();
-                    if (convertToRightHandedSystem) {
-                        _GLTFUtilities._GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
-                        if (!babylonTransformNode.parent) {
-                            basePositionRotationOrScale = Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(basePositionRotationOrScale)).asArray();
-                        }
+                const q = (babylonTransformNode as TransformNode).rotationQuaternion;
+                basePositionRotationOrScale = (q ?? Quaternion.Identity()).asArray();
+                if (convertToRightHandedSystem) {
+                    _GLTFUtilities._GetRightHandedQuaternionArrayFromRef(basePositionRotationOrScale);
+                    if (!babylonTransformNode.parent) {
+                        basePositionRotationOrScale = Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(basePositionRotationOrScale)).asArray();
                     }
-                } else {
-                    basePositionRotationOrScale = Quaternion.Identity().asArray();
                 }
             } else {
-                basePositionRotationOrScale = babylonTransformNode.rotation.asArray();
+                const r: Vector3 = (babylonTransformNode as TransformNode).rotation;
+                basePositionRotationOrScale = (r ?? Vector3.Zero()).asArray();
                 _GLTFUtilities._GetRightHandedNormalArray3FromRef(basePositionRotationOrScale);
             }
         } else if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
-            basePositionRotationOrScale = babylonTransformNode.position.asArray();
+            const p: Vector3 = (babylonTransformNode as TransformNode).position;
+            basePositionRotationOrScale = (p ?? Vector3.Zero()).asArray();
             if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedPositionArray3FromRef(basePositionRotationOrScale);
             }
         } else {
             // scale
-            basePositionRotationOrScale = babylonTransformNode.scaling.asArray();
+            const s: Vector3 = (babylonTransformNode as TransformNode).scaling;
+            basePositionRotationOrScale = (s ?? Vector3.One()).asArray();
         }
         return basePositionRotationOrScale;
     }
@@ -993,7 +1017,7 @@ export class _GLTFAnimation {
         animation: Animation,
         outputs: number[][],
         animationChannelTargetPath: AnimationChannelTargetPath,
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
     ) {
@@ -1151,7 +1175,7 @@ export class _GLTFAnimation {
      * @param convertToRightHandedSystem Specifies if the values should be converted to right-handed
      */
     private static _AddSplineTangent(
-        babylonTransformNode: TransformNode,
+        babylonTransformNode: Node,
         tangentType: _TangentType,
         outputs: number[][],
         animationChannelTargetPath: AnimationChannelTargetPath,
