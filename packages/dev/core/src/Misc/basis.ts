@@ -242,7 +242,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
     for (let i = 0; i < transcodeResult.fileInfo.images.length; i++) {
         const rootImage = transcodeResult.fileInfo.images[i].levels[0];
         texture._invertVScale = texture.invertY;
-        if (transcodeResult.format === -1) {
+        if (transcodeResult.format === -1 || transcodeResult.format === BASIS_FORMATS.cTFRGB565) {
             // No compatable compressed format found, fallback to RGB
             texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
             texture.format = Constants.TEXTUREFORMAT_RGB;
@@ -258,7 +258,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 source.width = (rootImage.width + 3) & ~3;
                 source.height = (rootImage.height + 3) & ~3;
                 engine._bindTextureDirectly(engine._gl.TEXTURE_2D, source, true);
-                engine._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                engine._uploadDataToTextureDirectly(source, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
 
                 // Resize to power of two
                 engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
@@ -272,24 +272,20 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 // Upload directly
                 texture.width = (rootImage.width + 3) & ~3;
                 texture.height = (rootImage.height + 3) & ~3;
-                engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                texture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;
+                engine._uploadDataToTextureDirectly(texture, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
             }
         } else {
             texture.width = rootImage.width;
             texture.height = rootImage.height;
             texture.generateMipMaps = transcodeResult.fileInfo.images[i].levels.length > 1;
 
+            const format = BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine);
+            texture.format = format;
+
             // Upload all mip levels in the file
             transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                engine._uploadCompressedDataToTextureDirectly(
-                    texture,
-                    BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine),
-                    level.width,
-                    level.height,
-                    level.transcodedPixels,
-                    i,
-                    index
-                );
+                engine._uploadCompressedDataToTextureDirectly(texture, format, level.width, level.height, level.transcodedPixels, i, index);
             });
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
