@@ -63,7 +63,7 @@ export class GlobalState {
     public get tool(): GUIEditorTool {
         if (this._tool === GUIEditorTool.ZOOM) {
             return GUIEditorTool.ZOOM;
-        } else if (this._tool === GUIEditorTool.PAN || this.keys.isKeyDown("space")) {
+        } else if (this._tool === GUIEditorTool.PAN) {
             return GUIEditorTool.PAN;
         } else {
             return GUIEditorTool.SELECT;
