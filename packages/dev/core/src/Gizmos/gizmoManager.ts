@@ -12,10 +12,14 @@ import { Color3 } from "../Maths/math.color";
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
-import { IRotationGizmo, RotationGizmo } from "./rotationGizmo";
-import { IPositionGizmo, PositionGizmo } from "./positionGizmo";
-import { IScaleGizmo, ScaleGizmo } from "./scaleGizmo";
-import { BoundingBoxGizmo, IBoundingBoxGizmo } from "./boundingBoxGizmo";
+import type { IRotationGizmo } from "./rotationGizmo";
+import { RotationGizmo } from "./rotationGizmo";
+import type { IPositionGizmo } from "./positionGizmo";
+import { PositionGizmo } from "./positionGizmo";
+import type { IScaleGizmo } from "./scaleGizmo";
+import { ScaleGizmo } from "./scaleGizmo";
+import type { IBoundingBoxGizmo } from "./boundingBoxGizmo";
+import { BoundingBoxGizmo } from "./boundingBoxGizmo";
 
 /**
  * Helps setup gizmo's in the scene to rotate/scale/position nodes
