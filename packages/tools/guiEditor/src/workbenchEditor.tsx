@@ -55,6 +55,11 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     addToolControls = (evt: KeyboardEvent) => {
+        // If the event target is a text input, we're currently focused on it, and the user
+        // just wants to type normal text
+        if (evt.target && evt.target instanceof HTMLInputElement && evt.target.type === "text") {
+            return;
+        }
         switch (evt.key) {
             case "s": //select
             case "S":
