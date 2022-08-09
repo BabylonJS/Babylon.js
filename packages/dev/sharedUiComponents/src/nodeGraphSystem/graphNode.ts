@@ -436,7 +436,7 @@ export class GraphNode {
 
         evt.stopPropagation();
 
-        if (this._inputPorts.some(p => p.portData.isConnected) || this._outputPorts.some(o => o.portData.hasEndpoints)) {
+        if (this._inputPorts.some((p) => p.portData.isConnected) || this._outputPorts.some((o) => o.portData.hasEndpoints)) {
             return;
         }
 
