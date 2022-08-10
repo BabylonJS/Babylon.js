@@ -794,7 +794,10 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
                     const transformNode = scene.transformNodes[index];
                     if (transformNode._waitingParentId !== null) {
-                        const parent = parsedIdToNodeMap.get(parseInt(transformNode._waitingParentId)) || null;
+                        let parent = parsedIdToNodeMap.get(parseInt(transformNode._waitingParentId)) || null;
+                        if (parent === null) {
+                            parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        }
                         let parentNode = parent;
                         if (transformNode._waitingParentInstanceIndex) {
                             parentNode = (parent as Mesh).instances[parseInt(transformNode._waitingParentInstanceIndex)];
@@ -808,7 +811,10 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
-                        const parent = parsedIdToNodeMap.get(parseInt(currentMesh._waitingParentId)) || null;
+                        let parent = parsedIdToNodeMap.get(parseInt(currentMesh._waitingParentId)) || null;
+                        if (parent === null) {
+                            parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        }
                         let parentNode = parent;
                         if (currentMesh._waitingParentInstanceIndex) {
                             parentNode = (parent as Mesh).instances[parseInt(currentMesh._waitingParentInstanceIndex)];
