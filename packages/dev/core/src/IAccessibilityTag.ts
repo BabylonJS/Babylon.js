@@ -12,7 +12,7 @@ export interface IAccessibilityTag {
      * Customize the event of the accessible object.
      * This will be applied on the generated HTML twin node.
      */
-    eventHandler?: { [key in EventHandler]: Function };
+    eventHandler?: { [key in keyof HTMLElementEventMap]: (e?: Event) => void };
 
     /**
      * ARIA roles and attributes to customize accessibility support.
@@ -23,7 +23,6 @@ export interface IAccessibilityTag {
     aria?: { [key in AcceptedARIA]: any };
 }
 
-type EventHandler = "onclick" | "onmousedown" | "oncontextmenu" | "onfocus" | "onblur";
 
 // Based on https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
 type AcceptedRole =

@@ -33,7 +33,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
 
         // If defined onclick, override default.
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.onclick || eventHandler?.oncontextmenu) {
+        if (eventHandler?.click || eventHandler?.contextmenu) {
             this._isActionable = true;
         } else {
             this._isActionable = (this.entity as Node)._getActionManagerForTrigger()?.hasPickTriggers!!;
@@ -59,8 +59,8 @@ export class AccessibilityNodeItem extends AccessibilityItem {
     public override focus(): void {
         // If defined eventHandler, override default.
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.onfocus) {
-            eventHandler.onfocus();
+        if (eventHandler?.focus) {
+            eventHandler.focus();
             return;
         }
 
@@ -78,8 +78,8 @@ export class AccessibilityNodeItem extends AccessibilityItem {
     public override blur(): void {
         // If defined eventHandler, override default.
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.onblur) {
-            eventHandler.onblur();
+        if (eventHandler?.blur) {
+            eventHandler.blur();
             return;
         }
 
@@ -95,8 +95,8 @@ export class AccessibilityNodeItem extends AccessibilityItem {
     public override click(): void {
         // If defined eventHandler, override default.
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.onclick) {
-            eventHandler.onclick();
+        if (eventHandler?.click) {
+            eventHandler.click();
             return;
         }
 
@@ -115,8 +115,8 @@ export class AccessibilityNodeItem extends AccessibilityItem {
     public override rightClick(): void {
         // If defined eventHandler, override default.
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.oncontextmenu) {
-            eventHandler.oncontextmenu();
+        if (eventHandler?.contextmenu) {
+            eventHandler.contextmenu();
             return;
         }
 
