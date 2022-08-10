@@ -175,6 +175,16 @@ export interface IMouseEvent extends IUIEvent {
     msMovementY?: any;
 
     /**
+     * Delta of movement on X axis (used with Babylon's internal system, works like movementX)
+     */
+    babylonMovementX?: any;
+
+    /**
+     * Delta of movement on Y axis (used with Babylon's internal system, works like movementY)
+     */
+    babylonMovementY?: any;
+
+    /**
      * Current coordinate of X within container
      */
     offsetX: number;
@@ -263,6 +273,11 @@ export interface IWheelEvent extends IMouseEvent {
      * Vertical scroll delta
      */
     deltaY: number;
+
+    /**
+     * Vertical scroll delta (used with Babylon's internal system, works like deltaY)
+     */
+    babylonDeltaY: number;
 
     /**
      * Z-Axis scroll delta
