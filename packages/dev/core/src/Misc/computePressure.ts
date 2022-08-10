@@ -25,6 +25,7 @@ export class ComputePressureObserverWrapper {
 
     /**
      * Method that must be called to begin observing changes, and triggering callbacks.
+     * @param source defines the source to observe
      */
     observe(source: IComputePressureSource): void {
         this._observer?.observe &&
@@ -35,6 +36,7 @@ export class ComputePressureObserverWrapper {
 
     /**
      * Method that must be called to stop observing changes and triggering callbacks (cleanup function).
+     * @param source defines the source to unobserve
      */
     unobserve(source: IComputePressureSource): void {
         try {
