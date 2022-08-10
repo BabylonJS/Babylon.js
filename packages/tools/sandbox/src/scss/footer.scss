@@ -93,6 +93,43 @@
             left: 0px;
             z-index: 100;
             width: calc(2 * var(--footer-height));
+            max-height: 25vh;
+            overflow-y: scroll;
+            color: white;
+            font-size: var(--font-size);
+
+            input[type="text"] {
+                width: 100%;
+                height: 40px;
+                box-sizing: border-box;
+                padding: 4px 0px;
+                border: unset;
+                font-family: inherit;
+                font-size: inherit;
+                background-color: var(--button-hover-background);
+                text-align: center;
+                color: inherit;
+                outline: none;
+
+                &:focus {
+                    border: solid 1px white;
+                }
+
+                ::placeholder {
+                    color: inherit;
+                    opacity: 1; /* Firefox */
+                }
+
+                :-ms-input-placeholder {
+                    /* Internet Explorer 10-11 */
+                    color: inherit;
+                }
+
+                ::-ms-input-placeholder {
+                    /* Microsoft Edge */
+                    color: inherit;
+                }
+            }
 
             &.long-mode {
                 width: 200px;
@@ -103,9 +140,7 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                font-size: var(--font-size);
                 width: 100%;
-                color: white;
                 cursor: pointer;
                 height: 40px;
                 box-sizing: border-box;
