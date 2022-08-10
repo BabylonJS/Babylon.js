@@ -315,8 +315,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     onCreate(value: string): Control {
         const guiElement = GUINodeTools.CreateControlFromString(value);
-        const currLeft = this.props.globalState.workbench.trueRootContainer.children.length * this.props.globalState.workbench.pasteOffset;
-        const currTop = this.props.globalState.workbench.trueRootContainer.children.length * this.props.globalState.workbench.pasteOffset;
+        const currLeft = this.props.globalState.workbench.trueRootContainer.children.length * this.props.globalState.workbench.controlOffset;
+        const currTop = this.props.globalState.workbench.trueRootContainer.children.length * this.props.globalState.workbench.controlOffset;
         guiElement.leftInPixels = currLeft;
         guiElement.topInPixels = currTop;
         const newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
