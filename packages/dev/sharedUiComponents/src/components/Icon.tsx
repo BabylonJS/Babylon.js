@@ -1,5 +1,5 @@
 import { ClassNames } from "./classNames";
-import styles from "./Icon.scss";
+import styles from "./Icon.modules.scss";
 
 export type IconProps = {
     color?: "dark" | "light";

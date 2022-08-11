@@ -6,8 +6,9 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
+import type { IAxisScaleGizmo } from "./axisScaleGizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { Mesh } from "../Meshes/mesh";
@@ -15,41 +16,70 @@ import type { Node } from "../node";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { GizmoManager } from "./gizmoManager";
+
+/**
+ * Interface for scale gizmo
+ */
+export interface IScaleGizmo extends IGizmo {
+    /** Internal gizmo used for interactions on the x axis */
+    xGizmo: IAxisScaleGizmo;
+    /** Internal gizmo used for interactions on the y axis */
+    yGizmo: IAxisScaleGizmo;
+    /** Internal gizmo used for interactions on the z axis */
+    zGizmo: IAxisScaleGizmo;
+    /** Internal gizmo used to scale all axis equally*/
+    uniformScaleGizmo: IAxisScaleGizmo;
+    /** Fires an event when any of it's sub gizmos are dragged */
+    onDragStartObservable: Observable<unknown>;
+    /** Fires an event when any of it's sub gizmos are released from dragging */
+    onDragEndObservable: Observable<unknown>;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /** Sensitivity factor for dragging */
+    sensitivity: number;
+    /**
+     * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
+     * @param mesh Axis gizmo mesh
+     * @param cache Gizmo axis definition used for reactive gizmo UI
+     */
+    addToAxisCache(mesh: Mesh, cache: GizmoAxisCache): void;
+}
+
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */
-export class ScaleGizmo extends Gizmo {
+export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /**
      * Internal gizmo used for interactions on the x axis
      */
-    public xGizmo: AxisScaleGizmo;
+    public xGizmo: IAxisScaleGizmo;
     /**
      * Internal gizmo used for interactions on the y axis
      */
-    public yGizmo: AxisScaleGizmo;
+    public yGizmo: IAxisScaleGizmo;
     /**
      * Internal gizmo used for interactions on the z axis
      */
-    public zGizmo: AxisScaleGizmo;
+    public zGizmo: IAxisScaleGizmo;
 
     /**
      * Internal gizmo used to scale all axis equally
      */
-    public uniformScaleGizmo: AxisScaleGizmo;
+    public uniformScaleGizmo: IAxisScaleGizmo;
 
-    private _meshAttached: Nullable<AbstractMesh> = null;
-    private _nodeAttached: Nullable<Node> = null;
-    private _snapDistance: number;
-    private _uniformScalingMesh: Mesh;
-    private _octahedron: Mesh;
-    private _sensitivity: number = 1;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _observables: Observer<PointerInfo>[] = [];
+    protected _meshAttached: Nullable<AbstractMesh> = null;
+    protected _nodeAttached: Nullable<Node> = null;
+    protected _snapDistance: number;
+    protected _uniformScalingMesh: Mesh;
+    protected _octahedron: Mesh;
+    protected _sensitivity: number = 1;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _observables: Observer<PointerInfo>[] = [];
 
     /** Node Caching for quick lookup */
-    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
+    protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -132,7 +162,7 @@ export class ScaleGizmo extends Gizmo {
     }
 
     /** Create Geometry for Gizmo */
-    private _createUniformScaleMesh(): AxisScaleGizmo {
+    protected _createUniformScaleMesh(): AxisScaleGizmo {
         this._coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         this._coloredMaterial.diffuseColor = Color3.Gray();
 

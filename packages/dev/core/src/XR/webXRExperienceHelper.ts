@@ -147,7 +147,7 @@ export class WebXRExperienceHelper implements IDisposable {
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this._scene.autoClear;
             this._nonVRCamera = this._scene.activeCamera;
-            this._attachedToElement = !!this._nonVRCamera?.inputs.attachedToElement;
+            this._attachedToElement = !!this._nonVRCamera?.inputs?.attachedToElement;
             this._nonVRCamera?.detachControl();
 
             this._scene.activeCamera = this.camera;

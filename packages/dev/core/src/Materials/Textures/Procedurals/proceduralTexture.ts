@@ -614,6 +614,7 @@ export class ProceduralTexture extends Texture {
 
         engine._debugPushGroup?.(`procedural texture generation for ${this.name}`, 1);
 
+        const viewPort = engine.currentViewport;
         if (this.isCube) {
             for (let face = 0; face < 6; face++) {
                 engine.bindFramebuffer(this._rtWrapper, face, undefined, undefined, true);
@@ -646,8 +647,11 @@ export class ProceduralTexture extends Texture {
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
 
-        // Unbind
+        // Unbind and restore viewport
         engine.unBindFramebuffer(this._rtWrapper, this.isCube);
+        if (viewPort) {
+            engine.setViewport(viewPort);
+        }
 
         // Mipmaps
         if (this.isCube) {

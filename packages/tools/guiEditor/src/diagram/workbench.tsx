@@ -102,7 +102,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._visibleRegionContainer.heightInPixels = this._guiSize.height;
         this.props.globalState.onResizeObservable.notifyObservers(this._guiSize);
         this.props.globalState.onReframeWindowObservable.notifyObservers();
-        this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
     public applyEditorTransformation() {
@@ -220,11 +220,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Hotkey shortcuts
         globalState.hostDocument!.addEventListener("keydown", this.keyEvent, false);
         globalState.hostDocument!.defaultView!.addEventListener("blur", this.blurEvent, false);
-
+        let framesToUpdate = 1;
         globalState.onWindowResizeObservable.add(() => {
-            globalState.onGizmoUpdateRequireObservable.notifyObservers();
-            globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
-            this._engine.resize();
+            // update the size for the next 5 frames
+            framesToUpdate += 5;
+        });
+        globalState.onNewSceneObservable.add((scene) => {
+            scene &&
+                scene.onBeforeRenderObservable.add(() => {
+                    if (framesToUpdate > 0) {
+                        framesToUpdate--;
+                        globalState.onGizmoUpdateRequireObservable.notifyObservers();
+                        this._engine.resize();
+                        globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+                    }
+                });
         });
 
         globalState.onCopyObservable.add((copyFn) => this.copyToClipboard(copyFn));
@@ -854,8 +864,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Watch for browser/canvas resize events
         this.props.globalState.hostWindow.addEventListener("resize", () => {
             this.props.globalState.onWindowResizeObservable.notifyObservers();
+            this._scene.onBeforeRenderObservable.addOnce(() => {
+                this.props.globalState.onWindowResizeObservable.notifyObservers();
+            });
         });
-        this._engine.resize();
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
 
         this.props.globalState.guiTexture.onBeginRenderObservable.add(() => {
             this.applyEditorTransformation();
@@ -863,7 +876,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.props.globalState.onPropertyChangedObservable.add((ev) => {
             (ev.object as Control).markAsDirty(false);
-            this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onWindowResizeObservable.notifyObservers();
         });
 
         // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
@@ -913,26 +926,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     addControls(scene: Scene) {
         scene.onKeyboardObservable.add((k: KeyboardInfo) => {
             switch (k.event.key) {
-                case "s": //select
-                case "S":
-                    this.props.globalState.tool = GUIEditorTool.SELECT;
-                    break;
-                case "p": //pan
-                case "P":
-                    this.props.globalState.tool = GUIEditorTool.PAN;
-                    break;
-                case "z": //zoom
-                case "Z":
-                    this.props.globalState.tool = GUIEditorTool.ZOOM;
-                    break;
-                case "g": //outlines
-                case "G":
-                    this.props.globalState.outlines = !this.props.globalState.outlines;
-                    break;
-                case "f": //fit to window
-                case "F":
-                    this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
-                    break;
                 case "ArrowUp": // move up
                     this.moveControls(false, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
                     break;
@@ -971,8 +964,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const panningDelta = this.getScaledPointerPosition().subtract(this._initialPanningOffset).multiplyByFloats(1, -1);
         this._panningOffset = this._panningOffset.add(panningDelta);
         this._initialPanningOffset = this.getScaledPointerPosition();
-        this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
-        this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+        this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
     // Move the selected controls. Can be either on horizontal (leftInPixels) or

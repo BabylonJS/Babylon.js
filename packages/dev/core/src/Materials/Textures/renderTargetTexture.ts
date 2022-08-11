@@ -78,6 +78,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
 
     private _hookArray(array: AbstractMesh[]): void {
+        if ((array as any).hasBeenHooked) return;
+
         const oldPush = array.push;
         array.push = (...items: AbstractMesh[]) => {
             const wasEmpty = array.length === 0;
@@ -106,6 +108,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             return deleted;
         };
+
+        (array as any).hasBeenHooked = true;
     }
 
     /**
