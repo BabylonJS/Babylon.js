@@ -391,7 +391,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        if (!evt.ctrlKey || this.props.stateManager.lockObject.lock) {
+        if ((!evt.ctrlKey && !evt.metaKey) || this.props.stateManager.lockObject.lock) {
             return;
         }
 
