@@ -342,7 +342,7 @@ export class GraphNode {
 
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
-        if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
+        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG") {
             return;
         }
 

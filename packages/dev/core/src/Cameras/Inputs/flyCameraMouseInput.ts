@@ -148,8 +148,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        // TODO: BROWSER FIX
-        const srcElement = <HTMLElement>(e.srcElement || e.target);
+        const srcElement = <HTMLElement>(e.target);
 
         // Mouse down.
         if (p.type === PointerEventTypes.POINTERDOWN) {

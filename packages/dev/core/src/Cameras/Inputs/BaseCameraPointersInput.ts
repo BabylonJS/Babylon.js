@@ -76,8 +76,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 return;
             }
 
-            // TODO: BROWSER FIX
-            const srcElement = <HTMLElement>(evt.srcElement || evt.target);
+            const srcElement = <HTMLElement>(evt.target);
 
             this._altKey = evt.altKey;
             this._ctrlKey = evt.ctrlKey;
