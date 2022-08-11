@@ -70,29 +70,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 this._wheelDeltaY -= (this.wheelPrecisionY * event.babylonDeltaY) / this._normalize;
                 this._wheelDeltaZ += (this.wheelPrecisionZ * event.deltaZ) / this._normalize;
 
-            /*const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
-
-            if (event.deltaY !== undefined) {
-                // Most recent browsers versions have delta properties.
-                // Firefox >= v17  (Has WebGL >= v4)
-                // Chrome >=  v31  (Has WebGL >= v8)
-                // Edge >=    v12  (Has WebGl >= v12)
-                // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent
-                this._wheelDeltaX += (this.wheelPrecisionX * platformScale * event.deltaX) / this._normalize;
-                this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * event.deltaY) / this._normalize;
-                this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * event.deltaZ) / this._normalize;
-            } else if ((<any>event).wheelDeltaY !== undefined) {
-                // Unsure whether these catch anything more. Documentation
-                // online is contradictory.
-                this._wheelDeltaX += (this.wheelPrecisionX * platformScale * (<any>event).wheelDeltaX) / this._normalize;
-                this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * (<any>event).wheelDeltaY) / this._normalize;
-                this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * (<any>event).wheelDeltaZ) / this._normalize;
-            } else if ((<any>event).wheelDelta) {
-                // IE >= v9   (Has WebGL >= v11)
-                // Maybe others?
-                this._wheelDeltaY -= (this.wheelPrecisionY * (<any>event).wheelDelta) / this._normalize;
-            }*/
-
             if (event.preventDefault) {
                 if (!noPreventDefault) {
                     event.preventDefault();
@@ -166,15 +143,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      * Should be zero-ed when read.
      */
     protected _wheelDeltaZ: number = 0;
-
-    /**
-     * Firefox uses a different scheme to report scroll distances to other
-     * browsers. Rather than use complicated methods to calculate the exact
-     * multiple we need to apply, let's just cheat and use a constant.
-     * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
-     * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
-     */
-    //private readonly _ffMultiplier = 12;
 
     /**
      * Different event attributes for wheel data fall into a few set ranges.
