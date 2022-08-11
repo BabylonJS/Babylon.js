@@ -1393,6 +1393,8 @@ export class TransformNode extends Node {
 
         transformNode.setEnabled(parsedTransformNode.isEnabled);
 
+        transformNode._waitingParsedUniqueId = parsedTransformNode.uniqueId;
+
         // Parent
         if (parsedTransformNode.parentId !== undefined) {
             transformNode._waitingParentId = parsedTransformNode.parentId;
