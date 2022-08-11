@@ -918,8 +918,7 @@
         {
             "title": "Instanced Bones",
             "playgroundId": "#2YLJ1L#2",
-            "referenceImage": "instancedBones.png",
-            "renderCount": 50
+            "referenceImage": "instancedBones.png"
         },
         {
             "title": "Thin Instances",
