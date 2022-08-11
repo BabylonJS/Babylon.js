@@ -85,6 +85,7 @@ import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlo
 import { CloudBlock } from "core/Materials/Node/Blocks/cloudBlock";
 import { VoronoiNoiseBlock } from "core/Materials/Node/Blocks/voronoiNoiseBlock";
 import { ScreenSpaceBlock } from "core/Materials/Node/Blocks/Fragment/screenSpaceBlock";
+import { HeightToNormalBlock } from "core/Materials/Node/Blocks/Fragment/heightToNormalBlock";
 import { TwirlBlock } from "core/Materials/Node/Blocks/Fragment/twirlBlock";
 import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { ClipPlanesBlock } from "core/Materials/Node/Blocks/Dual/clipPlanesBlock";
@@ -92,6 +93,8 @@ import { ClipPlanesBlock } from "core/Materials/Node/Blocks/Dual/clipPlanesBlock
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "HeightToNormalBlock":
+                return new HeightToNormalBlock("HeightToNormal");
             case "ElbowBlock":
                 return new ElbowBlock("");
             case "TwirlBlock":
