@@ -1,12 +1,12 @@
-import type { Engine } from "../../Engines/engine";
-import type { IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
-import { EventConstants } from "../../Events/deviceInputEvents";
-import { DomManagement } from "../../Misc/domManagement";
-import type { Observer } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
-import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType, PointerInput } from "./deviceEnums";
+import type { Engine } from "../Engines/engine";
+import type { IPointerEvent, IUIEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import { EventConstants } from "../Events/deviceInputEvents";
+import { DomManagement } from "../Misc/domManagement";
+import type { Observer } from "../Misc/observable";
+import { Tools } from "../Misc/tools";
+import type { Nullable } from "../types";
+import { DeviceEventFactory } from "./eventFactory";
+import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

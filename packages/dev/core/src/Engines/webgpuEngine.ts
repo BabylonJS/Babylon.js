@@ -838,6 +838,7 @@ export class WebGPUEngine extends Engine {
             needShaderCodeInlining: true,
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
+            supportSpriteInstancing: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

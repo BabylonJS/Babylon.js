@@ -11,7 +11,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
@@ -19,14 +19,37 @@ import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
 
 /**
+ * Interface for axis scale gizmo
+ */
+export interface IAxisScaleGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** If the scaling operation should be done on all axis */
+    uniformScaling: boolean;
+    /** Custom sensitivity value for the drag strength */
+    sensitivity: number;
+    /** The magnitude of the drag strength (scaling factor) */
+    dragScale: number;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+}
+
+/**
  * Single axis scale gizmo
  */
-export class AxisScaleGizmo extends Gizmo {
+export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -49,17 +72,17 @@ export class AxisScaleGizmo extends Gizmo {
      */
     public dragScale = 1;
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<ScaleGizmo> = null;
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<ScaleGizmo> = null;
 
-    private _gizmoMesh: Mesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _dragging: boolean = false;
-    private _tmpVector = new Vector3();
-    private _tmpMatrix = new Matrix();
-    private _tmpMatrix2 = new Matrix();
+    protected _gizmoMesh: Mesh;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _dragging: boolean = false;
+    protected _tmpVector = new Vector3();
+    protected _tmpMatrix = new Matrix();
+    protected _tmpMatrix2 = new Matrix();
 
     /**
      * Creates an AxisScaleGizmo
@@ -226,7 +249,7 @@ export class AxisScaleGizmo extends Gizmo {
      * @param thickness
      * @param isCollider
      */
-    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
+    protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
         const arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
         const arrowTail = CreateCylinder(
             "cylinder",

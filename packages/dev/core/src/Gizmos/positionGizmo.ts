@@ -7,52 +7,90 @@ import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Node } from "../node";
 import type { Mesh } from "../Meshes/mesh";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
+import type { IAxisDragGizmo } from "./axisDragGizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
+import type { IPlaneDragGizmo } from "./planeDragGizmo";
 import { PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { GizmoManager } from "./gizmoManager";
+
+/**
+ * Interface for position gizmo
+ */
+export interface IPositionGizmo extends IGizmo {
+    /** Internal gizmo used for interactions on the x axis */
+    xGizmo: IAxisDragGizmo;
+    /** Internal gizmo used for interactions on the y axis */
+    yGizmo: IAxisDragGizmo;
+    /** Internal gizmo used for interactions on the z axis */
+    zGizmo: IAxisDragGizmo;
+    /** Internal gizmo used for interactions on the yz plane */
+    xPlaneGizmo: IPlaneDragGizmo;
+    /** Internal gizmo used for interactions on the xz plane */
+    yPlaneGizmo: IPlaneDragGizmo;
+    /** Internal gizmo used for interactions on the xy plane */
+    zPlaneGizmo: IPlaneDragGizmo;
+    /** Fires an event when any of it's sub gizmos are dragged */
+    onDragStartObservable: Observable<unknown>;
+    /** Fires an event when any of it's sub gizmos are released from dragging */
+    onDragEndObservable: Observable<unknown>;
+    /**
+     * If the planar drag gizmo is enabled
+     * setting this will enable/disable XY, XZ and YZ planes regardless of individual gizmo settings.
+     */
+    planarGizmoEnabled: boolean;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
+     * @param mesh Axis gizmo mesh
+     * @param cache Gizmo axis definition used for reactive gizmo UI
+     */
+    addToAxisCache(mesh: Mesh, cache: GizmoAxisCache): void;
+}
+
 /**
  * Gizmo that enables dragging a mesh along 3 axis
  */
-export class PositionGizmo extends Gizmo {
+export class PositionGizmo extends Gizmo implements IPositionGizmo {
     /**
      * Internal gizmo used for interactions on the x axis
      */
-    public xGizmo: AxisDragGizmo;
+    public xGizmo: IAxisDragGizmo;
     /**
      * Internal gizmo used for interactions on the y axis
      */
-    public yGizmo: AxisDragGizmo;
+    public yGizmo: IAxisDragGizmo;
     /**
      * Internal gizmo used for interactions on the z axis
      */
-    public zGizmo: AxisDragGizmo;
+    public zGizmo: IAxisDragGizmo;
     /**
      * Internal gizmo used for interactions on the yz plane
      */
-    public xPlaneGizmo: PlaneDragGizmo;
+    public xPlaneGizmo: IPlaneDragGizmo;
     /**
      * Internal gizmo used for interactions on the xz plane
      */
-    public yPlaneGizmo: PlaneDragGizmo;
+    public yPlaneGizmo: IPlaneDragGizmo;
     /**
      * Internal gizmo used for interactions on the xy plane
      */
-    public zPlaneGizmo: PlaneDragGizmo;
+    public zPlaneGizmo: IPlaneDragGizmo;
 
     /**
-     * private variables
+     * protected variables
      */
-    private _meshAttached: Nullable<AbstractMesh> = null;
-    private _nodeAttached: Nullable<Node> = null;
-    private _snapDistance: number;
-    private _observables: Observer<PointerInfo>[] = [];
+    protected _meshAttached: Nullable<AbstractMesh> = null;
+    protected _nodeAttached: Nullable<Node> = null;
+    protected _snapDistance: number;
+    protected _observables: Observer<PointerInfo>[] = [];
 
     /** Node Caching for quick lookup */
-    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
+    protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -62,7 +100,7 @@ export class PositionGizmo extends Gizmo {
     /**
      * If set to true, planar drag is enabled
      */
-    private _planarGizmoEnabled = false;
+    protected _planarGizmoEnabled = false;
 
     public get attachedMesh() {
         return this._meshAttached;

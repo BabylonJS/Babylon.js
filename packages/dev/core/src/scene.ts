@@ -1541,7 +1541,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     cpuSpeedThresholds: [0.5],
                 }
             );
-            this._computePressureObserver.observe();
+            this._computePressureObserver.observe("cpu");
         }
     }
 
@@ -3125,9 +3125,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.geometries[index] = lastGeometry;
                 if (this._geometriesByUniqueId) {
                     this._geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                    this._geometriesByUniqueId[geometry.uniqueId] = undefined;
                 }
             }
+        }
+
+        if (this._geometriesByUniqueId) {
+            this._geometriesByUniqueId[geometry.uniqueId] = undefined;
         }
 
         this.geometries.pop();
@@ -4655,7 +4658,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onActiveCameraChanged.clear();
         this.onComputePressureChanged.clear();
 
-        this._computePressureObserver?.unobserve();
+        this._computePressureObserver?.unobserve("cpu");
         this._computePressureObserver = undefined;
 
         this.detachControl();

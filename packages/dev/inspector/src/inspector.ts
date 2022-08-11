@@ -255,6 +255,7 @@ export class Inspector {
                 globalState: this._GlobalState,
                 scene: scene,
                 extensibilityGroups: options.explorerExtensibility,
+                additionalNodes: options.additionalNodes,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,
                 popupMode: options.popup,
