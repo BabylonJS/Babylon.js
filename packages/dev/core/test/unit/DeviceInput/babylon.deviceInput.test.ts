@@ -1,6 +1,6 @@
 import { DeviceSource, DeviceSourceManager, DeviceType, PointerInput } from "core/DeviceInput";
-import { DeviceEventFactory } from "core/DeviceInput/Helpers/eventFactory";
-import type { IDeviceInputSystem } from "core/DeviceInput/InputDevices/inputInterfaces";
+import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
+import type { IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
 import { InternalDeviceSourceManager } from "core/DeviceInput/InputDevices/internalDeviceSourceManager";
 import { WebDeviceInputSystem } from "core/DeviceInput/InputDevices/webDeviceInputSystem";
 import type { Engine } from "core/Engines/engine";
