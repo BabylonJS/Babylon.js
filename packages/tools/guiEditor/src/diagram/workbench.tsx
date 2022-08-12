@@ -319,7 +319,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (const control of parsed.controls) {
                     newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
-                if (newSelection[0].parent?.typeName != "SackPanel") {
+                if (newSelection[0].parent?.typeName != "StackPanel") {
                     this._currLeft += CONTROL_OFFSET;
                     this._currTop += CONTROL_OFFSET;
                 }
