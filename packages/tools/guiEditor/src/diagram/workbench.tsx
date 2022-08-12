@@ -816,8 +816,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    public createGUICanvas() {
+    public createGUICanvas(fromPG?: boolean) {
         // Get the canvas element from the DOM.
+
         const canvas = this._rootContainer.current as HTMLCanvasElement;
         // Associate a Babylon Engine to it.
         this._engine = new Engine(canvas);
@@ -829,7 +830,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        this._guiSize = this._defaultGUISize;
+        if (fromPG) {
+            this.props.globalState.fromPG = true;
+            this._guiSize.width = Number(window.localStorage.getItem("width"));
+            this._guiSize.height = Number(window.localStorage.getItem("height"));
+        }
 
         this._panAndZoomContainer = new Container("panAndZoom");
         this._panAndZoomContainer.clipContent = false;
