@@ -67,9 +67,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
-    public get controlOffset() {
-        return CONTROL_OFFSET;
-    }
     public get currTop() {
         return this._currTop;
     }
