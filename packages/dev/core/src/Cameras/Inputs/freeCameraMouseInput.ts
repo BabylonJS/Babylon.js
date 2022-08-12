@@ -89,7 +89,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     return;
                 }
 
-                const srcElement = <HTMLElement>(evt.target);
+                const srcElement = <HTMLElement>evt.target;
 
                 if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                     try {

@@ -148,7 +148,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        const srcElement = <HTMLElement>(e.target);
+        const srcElement = <HTMLElement>e.target;
 
         // Mouse down.
         if (p.type === PointerEventTypes.POINTERDOWN) {

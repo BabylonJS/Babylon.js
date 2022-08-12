@@ -77,7 +77,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             const event = <IWheelEvent>p.event;
             let delta = 0;
 
-            const wheelDelta = - event.babylonDeltaY;
+            const wheelDelta = -event.babylonDeltaY;
 
             if (this.customComputeDeltaFromMouseWheel) {
                 delta = this.customComputeDeltaFromMouseWheel(wheelDelta, this, event);

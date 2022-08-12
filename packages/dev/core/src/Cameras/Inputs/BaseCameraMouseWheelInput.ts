@@ -66,9 +66,9 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
 
             const event = <IWheelEvent>pointer.event;
 
-            this._wheelDeltaX += (this.wheelPrecisionX *  event.deltaX) / this._normalize;
-                this._wheelDeltaY -= (this.wheelPrecisionY * event.babylonDeltaY) / this._normalize;
-                this._wheelDeltaZ += (this.wheelPrecisionZ * event.deltaZ) / this._normalize;
+            this._wheelDeltaX += (this.wheelPrecisionX * event.deltaX) / this._normalize;
+            this._wheelDeltaY -= (this.wheelPrecisionY * event.babylonDeltaY) / this._normalize;
+            this._wheelDeltaZ += (this.wheelPrecisionZ * event.deltaZ) / this._normalize;
 
             if (event.preventDefault) {
                 if (!noPreventDefault) {

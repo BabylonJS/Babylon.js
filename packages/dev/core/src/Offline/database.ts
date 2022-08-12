@@ -357,7 +357,7 @@ export class Database implements IOfflineProvider {
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    const srcElement = <any>(event.target);
+                                    const srcElement = <any>event.target;
                                     const error = srcElement.error;
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;

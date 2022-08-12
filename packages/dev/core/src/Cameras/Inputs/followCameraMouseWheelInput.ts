@@ -67,7 +67,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
             }
             const event = <IWheelEvent>p.event;
             let delta = 0;
-            
+
             const wheelDelta = Math.max(-1, Math.min(1, event.babylonDeltaY));
             if (this.wheelDeltaPercentage) {
                 console.assert(
