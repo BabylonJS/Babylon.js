@@ -312,14 +312,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     public pasteFromClipboard(clipboardContents: string) {
-        this._currLeft += CONTROL_OFFSET;
-        this._currTop += CONTROL_OFFSET;
         try {
             const parsed = JSON.parse(clipboardContents);
             if (parsed.GUIClipboard) {
                 const newSelection = [];
                 for (const control of parsed.controls) {
                     newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
+                }
+                if (newSelection[0].parent?.typeName != "SackPanel") {
+                    this._currLeft += CONTROL_OFFSET;
+                    this._currTop += CONTROL_OFFSET;
                 }
 
                 newSelection[0].leftInPixels = this._currLeft;
