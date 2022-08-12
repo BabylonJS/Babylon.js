@@ -49,6 +49,7 @@ export class GlobalState {
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
     public keys: KeyboardManager;
+    private _fromPG: boolean;
     /** DO NOT USE: in the process of removing */
     public blockKeyboardEvents = false;
     onOutlineChangedObservable = new Observable<void>();
@@ -157,6 +158,12 @@ export class GlobalState {
 
     public get backgroundColor() {
         return this._backgroundColor;
+    }
+    public get fromPG() {
+        return this._fromPG;
+    }
+    public set fromPG(value: boolean) {
+        this._fromPG = value;
     }
 
     public set backgroundColor(value: Color3) {

@@ -88,6 +88,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
+        props.globalState.onWindowResizeObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     public render() {
@@ -96,6 +99,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         const copyyIcon = this.props.globalState.selectedControls.length === 0 ? copyIconDisabled : copyIcon;
         const deleteeIcon = this.props.globalState.selectedControls.length === 0 ? deleteIconDisabled : deleteIcon;
         const pasteeIcon = isPasteDisabled ? pasteIconDisabled : pasteIcon;
+
+        const responsiveSelected = this.props.globalState.fromPG ? window.localStorage.getItem("responsive") === "true" : DataStorage.ReadBoolean("Responsive", true);
+        const responsiveUI = this.props.globalState.fromPG ? window.localStorage.getItem("responsiveUI") === "true" : DataStorage.ReadBoolean("Responsive", true);
+        const unresponsiveUI = this.props.globalState.fromPG ? window.localStorage.getItem("responsiveUI") === "false" : !DataStorage.ReadBoolean("Responsive", true);
+
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
@@ -242,20 +250,24 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         <CheckBoxLineComponent
                             label="Responsive:"
                             iconLabel="Responsive GUIs will resize the UI layout and reflow controls to accommodate different device screen sizes"
-                            isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
+                            isSelected={() => responsiveSelected}
                             onSelect={(value: boolean) => {
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                                 DataStorage.WriteBoolean("Responsive", value);
+                                window.localStorage.setItem("responsive", String(value));
+                                window.localStorage.setItem("responsiveUI", String(value));
                                 this._sizeOption = _sizeOptions.length;
                                 if (value) {
                                     this._sizeOption = 0;
                                     this.props.globalState.workbench.guiSize = _sizeValues[this._sizeOption];
+                                    window.localStorage.setItem("width", String(this.props.globalState.workbench.guiSize.width));
+                                    window.localStorage.setItem("height", String(this.props.globalState.workbench.guiSize.height));
                                 }
                                 this.forceUpdate();
                             }}
                             large
                         />
-                        {DataStorage.ReadBoolean("Responsive", true) && (
+                        {responsiveUI && (
                             <OptionsLineComponent
                                 label=""
                                 iconLabel="Size"
@@ -268,12 +280,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     if (this._sizeOption !== _sizeOptions.length) {
                                         const newSize = _sizeValues[this._sizeOption];
                                         this.props.globalState.workbench.guiSize = newSize;
+                                        window.localStorage.setItem("width", String(this.props.globalState.workbench.guiSize.width));
+                                        window.localStorage.setItem("height", String(this.props.globalState.workbench.guiSize.height));
                                     }
                                     this.forceUpdate();
                                 }}
                             />
                         )}
-                        {!DataStorage.ReadBoolean("Responsive", true) && (
+                        {unresponsiveUI && (
                             <>
                                 <FloatLineComponent
                                     lockObject={this._lockObject}
@@ -285,6 +299,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onChange={(newValue) => {
                                         if (!this._stopUpdating) {
                                             this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                            window.localStorage.setItem("width", String(newValue));
                                         }
                                     }}
                                     onDragStart={() => {
@@ -293,6 +308,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onDragStop={(newValue) => {
                                         this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                        window.localStorage.setItem("width", String(newValue));
                                     }}
                                     arrows={true}
                                     isInteger={true}
@@ -307,6 +323,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onChange={(newValue) => {
                                         if (!this._stopUpdating) {
                                             this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                            window.localStorage.setItem("height", String(newValue));
                                         }
                                     }}
                                     onDragStart={() => {
@@ -315,6 +332,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onDragStop={(newValue) => {
                                         this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                        window.localStorage.setItem("height", String(newValue));
                                     }}
                                     arrows={true}
                                     isInteger={true}

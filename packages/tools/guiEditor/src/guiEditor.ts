@@ -26,8 +26,9 @@ export class GUIEditor {
     /**
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
+     * @param fromPG defines whether editor is being opened from the Playground
      */
-    public static async Show(options: IGUIEditorOptions) {
+    public static async Show(options: IGUIEditorOptions, fromPG?: boolean) {
         let hostElement = options.hostElement;
 
         // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
@@ -68,7 +69,7 @@ export class GUIEditor {
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas();
+            globalState.workbench.createGUICanvas(fromPG);
             if (options.currentSnippetToken) {
                 try {
                     await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
