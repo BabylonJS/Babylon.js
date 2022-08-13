@@ -39,7 +39,7 @@ export enum InspectableType {
      */
     Tab = 8,
     /**
-     * File button.
+     * File button
      */
     FileButton = 9,
 }
