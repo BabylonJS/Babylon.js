@@ -106,5 +106,5 @@ export interface IInspectable {
      * Gets the extensions to accept when using "FileButton" mode.
      * The value should be a comma separated string with the list of extensions to accept e.g., ".jpg, .png, .tga, .dds, .env".
      */
-    accept?: string
+    accept?: string;
 }
