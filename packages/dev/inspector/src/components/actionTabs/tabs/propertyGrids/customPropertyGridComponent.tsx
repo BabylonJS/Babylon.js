@@ -15,6 +15,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;
@@ -131,6 +132,20 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 );
             case InspectableType.Tab:
                 return <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "} />;
+            case InspectableType.FileButton:
+                return (
+                    <FileButtonLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        onClick={
+                            inspectable.callback ||
+                            function () {
+                                console.warn("no call back function added");
+                            }
+                        }
+                        accept={inspectable.accept || "*"}
+                    />
+                );
         }
 
         return null;
