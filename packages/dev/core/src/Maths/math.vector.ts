@@ -1655,6 +1655,8 @@ export class Vector3 {
 
     /**
      * Slerp between two vectors. See also `SmoothToRef`
+     * Slerp is a spherical linear interpolation
+     * giving a slow in and out effect
      * @param vector0 Start vector
      * @param vector1 End vector
      * @param slerp amount (will be clamped between 0 and 1)
