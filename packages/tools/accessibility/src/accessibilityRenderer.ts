@@ -13,7 +13,7 @@ export class HTMLTwinRenderer {
         scene.getEngine().getRenderingCanvas()?.after(accessibilityHost);
 
         const accessibilityTree = React.createElement(AccessibilityTreeComponent, {
-            scene: scene,
+            scene,
         });
         ReactDOM.render(accessibilityTree, accessibilityHost);
     }

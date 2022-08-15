@@ -90,39 +90,36 @@ export class AccessibilityNodeItem extends AccessibilityItem {
     }
 
     /**
-     * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
+     * Callback when an event (e.g. click/right click) happens on the HTML element.
+     * Implemented by child classes
+     * @param eventType - Which event is triggered. E.g. "click", "contextmenu"
      */
-    public override click(): void {
-        // If defined eventHandler, override default.
+    public override triggerEvent(eventType: string): void {
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.click) {
-            eventHandler.click();
-            return;
-        }
-
         const actions: IAction[] = [];
-        actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnLeftPickTrigger));
-        actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
 
-        actions.forEach((action) => {
-            action._executeCurrent();
-        });
-    }
+        switch(eventType) {
+            case "click":
+                if (eventHandler?.click) {
+                    eventHandler.click();
+                    return;
+                }
+                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnLeftPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
+                break;
 
-    /**
-     * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
-     */
-    public override rightClick(): void {
-        // If defined eventHandler, override default.
-        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
-        if (eventHandler?.contextmenu) {
-            eventHandler.contextmenu();
-            return;
+            case "contextmenu":
+                if (eventHandler?.contextmenu) {
+                    eventHandler.contextmenu();
+                    return;
+                }
+                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnRightPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
+                break;
+
+            default:
+                break;
         }
-
-        const actions: IAction[] = [];
-        actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnRightPickTrigger));
-        actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
 
         actions.forEach((action) => {
             action._executeCurrent();

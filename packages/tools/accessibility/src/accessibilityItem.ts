@@ -59,21 +59,11 @@ export class AccessibilityItem {
     public blur(): void {}
 
     /**
-     * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
+     * Callback when an event (e.g. click/right click) happens on the HTML element.
      * Implemented by child classes
+     * @param _eventType - Which event is triggered. E.g. "click", "contextmenu"
      */
-    public click(): void {}
-
-    /**
-     * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
-     * Implemented by child classes
-     */
-    public rightClick(): void {}
-
-    // TODO: maybe remove this
-    public toString(): string {
-        return `{${this.entity.name}, [${this.children.map((child) => `${child.toString()}`).join(", ")}]}`;
-    }
+    public triggerEvent(_eventType: string): void {}
 
     protected _isActionable: boolean;
     protected _isFocusable: boolean;

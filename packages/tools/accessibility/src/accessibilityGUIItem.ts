@@ -114,28 +114,34 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     }
 
     /**
-     * Callback when the HTML element is clicked. Apply that to BabylonJs entity.
+     * Callback when an event (e.g. click/right click) happens on the HTML element.
+     * Implemented by child classes
+     * @param eventType - Which event is triggered. E.g. "click", "contextmenu"
      */
-    public override click(): void {
-        // If defined eventHandler, override default.
+    public override triggerEvent(eventType: string): void {
         const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
-        if (eventHandler?.click) {
-            eventHandler.click();
-            return;
-        }
 
-        if (!this.isActionable) return;
-        this.entity.onPointerClickObservable.notifyObservers(new Vector2WithInfo(new Vector2()));
+        switch(eventType) {
+            case "click":
+                if (eventHandler?.click) {
+                    eventHandler.click();
+                    return;
+                }
+
+                if (!this.isActionable) return;
+                this.entity.onPointerClickObservable.notifyObservers(new Vector2WithInfo(new Vector2()));
+                break;
+
+            case "contextmenu":
+                if (eventHandler?.contextmenu) {
+                    eventHandler.contextmenu();
+                    return;
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
-    /**
-     * Callback when the HTML element is right clicked. Apply that to BabylonJs entity.
-     */
-    public override rightClick(): void {
-        const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
-        if (eventHandler?.contextmenu) {
-            eventHandler.contextmenu();
-            return;
-        }
-    }
 }

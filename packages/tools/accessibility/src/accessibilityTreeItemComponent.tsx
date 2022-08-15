@@ -26,10 +26,10 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
             return (
                 <button
                     onClick={() => {
-                        a11yItem.click();
+                        a11yItem.triggerEvent("click");
                     }}
                     onContextMenu={() => {
-                        a11yItem.rightClick();
+                        a11yItem.triggerEvent("contextmenu");
                     }}
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
                     onFocus={() => {
