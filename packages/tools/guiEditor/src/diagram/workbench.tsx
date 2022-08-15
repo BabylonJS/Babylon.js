@@ -28,6 +28,7 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
+import { DataStorage } from "core/Misc/dataStorage";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -832,8 +833,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (embed) {
             this.props.globalState.fromPG = true;
-            this._guiSize.width = Number(window.localStorage.getItem("width"));
-            this._guiSize.height = Number(window.localStorage.getItem("height"));
+            this._guiSize.width = DataStorage.ReadNumber("width", 1024);
+            this._guiSize.height = DataStorage.ReadNumber("height", 1024);
         }
 
         this._panAndZoomContainer = new Container("panAndZoom");
