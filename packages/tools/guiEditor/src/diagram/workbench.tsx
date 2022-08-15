@@ -308,6 +308,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (const control of parsed.controls) {
                     newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
+
                 if (newSelection[0].parent?.typeName != "StackPanel") {
                     this._currLeft += CONTROL_OFFSET;
                     this._currTop += CONTROL_OFFSET;
@@ -316,8 +317,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 newSelection[0].leftInPixels = this._currLeft;
                 newSelection[0].topInPixels = this._currTop;
 
-                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
-                this.props.globalState.setSelection(newSelection);
+                const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
+                this.props.globalState.setSelection([newGuiNode]);
+
                 return true;
             }
         } catch {
@@ -537,7 +539,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this.addEditorBehavior(guiElement);
         guiElement.getDescendants(true).forEach((desc) => this.addEditorBehavior(desc));
-        this.trueRootContainer.addControl(guiElement);
+        if (this.props.globalState.selectedControls.length != 0) {
+            this.props.globalState.selectedControls[0].parent?.addControl(guiElement);
+        } else {
+            this.trueRootContainer.addControl(guiElement);
+        }
         return guiElement;
     }
     private parent(dropLocationControl: Nullable<Control>) {

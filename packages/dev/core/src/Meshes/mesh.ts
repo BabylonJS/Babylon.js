@@ -3860,6 +3860,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = new Mesh(parsedMesh.name, scene);
         }
         mesh.id = parsedMesh.id;
+        mesh._waitingParsedUniqueId = parsedMesh.uniqueId;
 
         if (Tags) {
             Tags.AddTagsTo(mesh, parsedMesh.tags);

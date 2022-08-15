@@ -1541,7 +1541,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     cpuSpeedThresholds: [0.5],
                 }
             );
-            this._computePressureObserver.observe();
+            this._computePressureObserver.observe("cpu");
         }
     }
 
@@ -4658,7 +4658,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onActiveCameraChanged.clear();
         this.onComputePressureChanged.clear();
 
-        this._computePressureObserver?.unobserve();
+        this._computePressureObserver?.unobserve("cpu");
         this._computePressureObserver = undefined;
 
         this.detachControl();
@@ -4949,7 +4949,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
