@@ -16,6 +16,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { Logger } from "core/Misc/logger";
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;
@@ -140,7 +141,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                         onClick={
                             inspectable.callback ||
                             function () {
-                                Tools.Warn("no callback function added");
+                                Logger.Warn("no callback function added");
                             }
                         }
                         accept={inspectable.accept || "*"}
