@@ -67,18 +67,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
-    public get currTop() {
-        return this._currTop;
-    }
-    public get currLeft() {
-        return this._currLeft;
-    }
-    public set currTop(val: number) {
-        this._currTop = val;
-    }
-    public set currLeft(val: number) {
-        this._currLeft = val;
-    }
+
     private _panAndZoomContainer: Container;
     public get panAndZoomContainer() {
         return this._panAndZoomContainer;
