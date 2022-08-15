@@ -1399,7 +1399,7 @@ export class Vector3 {
     }
 
     /**
-     * Gets a new Vector3 from current Vector3 floored values
+     * Gets a new Vector3 from current Vector3 fractional values
      * @returns a new Vector3
      */
     public fract(): Vector3 {
@@ -1655,6 +1655,8 @@ export class Vector3 {
 
     /**
      * Slerp between two vectors. See also `SmoothToRef`
+     * Slerp is a spherical linear interpolation
+     * giving a slow in and out effect
      * @param vector0 Start vector
      * @param vector1 End vector
      * @param slerp amount (will be clamped between 0 and 1)
@@ -1771,7 +1773,7 @@ export class Vector3 {
     }
     /**
      * Returns a new Vector3 set to (1.0, 1.0, 1.0)
-     * @returns a new unit Vector3
+     * @returns a new Vector3
      */
     public static One(): Vector3 {
         return new Vector3(1.0, 1.0, 1.0);
@@ -3070,7 +3072,7 @@ export class Vector4 {
     }
 
     /**
-     * Gets a new Vector4 from current Vector3 floored values
+     * Gets a new Vector4 from current Vector4 fractional values
      * @returns a new Vector4
      */
     public fract(): Vector4 {
