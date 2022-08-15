@@ -140,7 +140,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                         onClick={
                             inspectable.callback ||
                             function () {
-                                console.warn("no call back function added");
+                                Tools.Warn("no callback function added");
                             }
                         }
                         accept={inspectable.accept || "*"}
