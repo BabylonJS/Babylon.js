@@ -798,6 +798,7 @@ export class Vector2 {
  * A Vector3 is the main object used in 3D geometry
  * It can represent either the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
+ * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU 
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
@@ -865,6 +866,7 @@ export class Vector3 {
     /**
      * Creates a string representation of the Vector3
      * @returns a string with the Vector3 coordinates.
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#67
      */
     public toString(): string {
         return `{X: ${this._x} Y: ${this._y} Z: ${this._z}}`;
@@ -898,6 +900,7 @@ export class Vector3 {
     /**
      * Creates an array containing three elements : the coordinates of the Vector3
      * @returns a new array of numbers
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#10
      */
     public asArray(): number[] {
         const result: number[] = [];
@@ -910,6 +913,7 @@ export class Vector3 {
      * @param array defines the destination array
      * @param index defines the offset in the destination array
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#65
      */
     public toArray(array: FloatArray, index: number = 0): Vector3 {
         array[index] = this._x;
@@ -923,6 +927,7 @@ export class Vector3 {
      * @param array defines the destination array
      * @param index defines the offset in the destination array
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#24
      */
     public fromArray(array: FloatArray, index: number = 0): Vector3 {
         Vector3.FromArrayToRef(array, index, this);
@@ -932,6 +937,7 @@ export class Vector3 {
     /**
      * Converts the current Vector3 into a quaternion (considering that the Vector3 contains Euler angles representation of a rotation)
      * @returns a new Quaternion object, computed from the Vector3 coordinates
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#66
      */
     public toQuaternion(): Quaternion {
         return Quaternion.RotationYawPitchRoll(this._y, this._x, this._z);
@@ -941,6 +947,7 @@ export class Vector3 {
      * Adds the given vector to the current Vector3
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#4
      */
     public addInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
         return this.addInPlaceFromFloats(otherVector._x, otherVector._y, otherVector._z);
@@ -952,6 +959,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#5
      */
     public addInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
         this.x += x;
@@ -964,6 +972,7 @@ export class Vector3 {
      * Gets a new Vector3, result of the addition the current Vector3 and the given vector
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#3
      */
     public add(otherVector: DeepImmutable<Vector3>): Vector3 {
         return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
@@ -974,6 +983,7 @@ export class Vector3 {
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#6
      */
     public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
@@ -983,6 +993,7 @@ export class Vector3 {
      * Subtract the given vector from the current Vector3
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#61
      */
     public subtractInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
         this.x -= otherVector._x;
@@ -995,6 +1006,7 @@ export class Vector3 {
      * Returns a new Vector3, result of the subtraction of the given vector from the current Vector3
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#60
      */
     public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
         return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
@@ -1005,6 +1017,7 @@ export class Vector3 {
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#63
      */
     public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
@@ -1016,6 +1029,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the resulting Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#62
      */
     public subtractFromFloats(x: number, y: number, z: number): Vector3 {
         return new Vector3(this._x - x, this._y - y, this._z - z);
@@ -1028,6 +1042,7 @@ export class Vector3 {
      * @param z defines the z coordinate of the operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#64
      */
     public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x - x, this._y - y, this._z - z);
@@ -1036,6 +1051,7 @@ export class Vector3 {
     /**
      * Gets a new Vector3 set with the current Vector3 negated coordinates
      * @returns a new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#35
      */
     public negate(): Vector3 {
         return new Vector3(-this._x, -this._y, -this._z);
@@ -1044,6 +1060,7 @@ export class Vector3 {
     /**
      * Negate this vector in place
      * @returns this
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#36
      */
     public negateInPlace(): Vector3 {
         this.x *= -1;
@@ -1056,6 +1073,7 @@ export class Vector3 {
      * Negate the current Vector3 and stores the result in the given vector "result" coordinates
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#37
      */
     public negateToRef(result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * -1, this._y * -1, this._z * -1);
@@ -1065,6 +1083,7 @@ export class Vector3 {
      * Multiplies the Vector3 coordinates by the float "scale"
      * @param scale defines the multiplier factor
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#56
      */
     public scaleInPlace(scale: number): Vector3 {
         this.x *= scale;
@@ -1077,6 +1096,7 @@ export class Vector3 {
      * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale"
      * @param scale defines the multiplier factor
      * @returns a new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#53
      */
     public scale(scale: number): Vector3 {
         return new Vector3(this._x * scale, this._y * scale, this._z * scale);
@@ -1087,6 +1107,7 @@ export class Vector3 {
      * @param scale defines the multiplier factor
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#57
      */
     public scaleToRef(scale: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * scale, this._y * scale, this._z * scale);
@@ -1097,6 +1118,7 @@ export class Vector3 {
      * @param q the unit quaternion representing the rotation
      * @param result the output vector
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#9
      */
     public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
         const ix = q.w * this.x + q.y * this.z - q.z * this.y;
@@ -1115,6 +1137,7 @@ export class Vector3 {
      * Rotates the vector in place using the given unit quaternion
      * @param q the unit quaternion representing the rotation
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#8
      */
     public applyRotationQuaternionInPlace(q: Quaternion): Vector3 {
         return this.applyRotationQuaternionToRef(q, this);
@@ -1124,6 +1147,7 @@ export class Vector3 {
      * Rotates the vector using the given unit quaternion and returns the new vector
      * @param q the unit quaternion representing the rotation
      * @returns a new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#7
      */
     public applyRotationQuaternion(q: Quaternion): Vector3 {
         return this.applyRotationQuaternionToRef(q, Vector3.Zero());
@@ -1134,6 +1158,7 @@ export class Vector3 {
      * @param scale defines the scale factor
      * @param result defines the Vector3 object where to store the result
      * @returns the unmodified current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#55
      */
     public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
         return result.addInPlaceFromFloats(this._x * scale, this._y * scale, this._z * scale);
@@ -1144,6 +1169,7 @@ export class Vector3 {
      * @param plane defines the plane to project to
      * @param origin defines the origin of the projection ray
      * @returns the projected vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#48
      */
     public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
         const result = Vector3.Zero();
@@ -1158,6 +1184,7 @@ export class Vector3 {
      * @param plane defines the plane to project to
      * @param origin defines the origin of the projection ray
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#49
      */
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
         const n = plane.normal;
@@ -1188,6 +1215,7 @@ export class Vector3 {
      * Returns true if the current Vector3 and the given vector coordinates are strictly equal
      * @param otherVector defines the second operand
      * @returns true if both vectors are equals
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#19
      */
     public equals(otherVector: DeepImmutable<Vector3>): boolean {
         return otherVector && this._x === otherVector._x && this._y === otherVector._y && this._z === otherVector._z;
@@ -1198,6 +1226,7 @@ export class Vector3 {
      * @param otherVector defines the second operand
      * @param epsilon defines the minimal distance to define values as equals
      * @returns true if both vectors are distant less than epsilon
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#21
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
         return (
@@ -1214,15 +1243,17 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns true if both vectors are equals
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#20
      */
     public equalsToFloats(x: number, y: number, z: number): boolean {
-        return this._x === x && this._y === y && this._z === z;
+         return this._x === x && this._y === y && this._z === z;
     }
 
     /**
      * Multiplies the current Vector3 coordinates by the given ones
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#32
      */
     public multiplyInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
         this.x *= otherVector._x;
@@ -1235,6 +1266,7 @@ export class Vector3 {
      * Returns a new Vector3, result of the multiplication of the current Vector3 by the given vector
      * @param otherVector defines the second operand
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#31
      */
     public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
         return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
@@ -1245,6 +1277,7 @@ export class Vector3 {
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#33
      */
     public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * otherVector._x, this._y * otherVector._y, this._z * otherVector._z);
@@ -1256,6 +1289,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#34
      */
     public multiplyByFloats(x: number, y: number, z: number): Vector3 {
         return new Vector3(this._x * x, this._y * y, this._z * z);
@@ -1265,6 +1299,7 @@ export class Vector3 {
      * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the given ones
      * @param otherVector defines the second operand
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#16
      */
     public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
         return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
@@ -1275,6 +1310,7 @@ export class Vector3 {
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#18
      */
     public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
@@ -1284,6 +1320,7 @@ export class Vector3 {
      * Divides the current Vector3 coordinates by the given ones.
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#17
      */
     public divideInPlace(otherVector: Vector3): Vector3 {
         return this.divideToRef(otherVector, this);
@@ -1293,6 +1330,7 @@ export class Vector3 {
      * Updates the current Vector3 with the minimal coordinate values between its and the given vector ones
      * @param other defines the second operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#29
      */
     public minimizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
         return this.minimizeInPlaceFromFloats(other._x, other._y, other._z);
@@ -1302,6 +1340,7 @@ export class Vector3 {
      * Updates the current Vector3 with the maximal coordinate values between its and the given vector ones.
      * @param other defines the second operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#27
      */
     public maximizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
         return this.maximizeInPlaceFromFloats(other._x, other._y, other._z);
@@ -1313,6 +1352,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#30
      */
     public minimizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
         if (x < this._x) {
@@ -1333,6 +1373,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#28
      */
     public maximizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
         if (x > this._x) {
@@ -1393,6 +1434,7 @@ export class Vector3 {
     /**
      * Gets a new Vector3 from current Vector3 floored values
      * @returns a new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#22
      */
     public floor(): Vector3 {
         return new Vector3(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z));
@@ -1401,6 +1443,7 @@ export class Vector3 {
     /**
      * Gets a new Vector3 from current Vector3 fractional values
      * @returns a new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#23
      */
     public fract(): Vector3 {
         return new Vector3(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z));
@@ -1410,6 +1453,7 @@ export class Vector3 {
     /**
      * Gets the length of the Vector3
      * @returns the length of the Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#25
      */
     public length(): number {
         return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
@@ -1418,6 +1462,7 @@ export class Vector3 {
     /**
      * Gets the squared length of the Vector3
      * @returns squared length of the Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#26
      */
     public lengthSquared(): number {
         return this._x * this._x + this._y * this._y + this._z * this._z;
@@ -1425,6 +1470,7 @@ export class Vector3 {
 
     /**
      * Gets a boolean indicating if the vector contains a zero in one of its components
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#1
      */
     public get hasAZeroComponent(): boolean {
         return this._x * this._y * this._z === 0;
@@ -1434,6 +1480,7 @@ export class Vector3 {
      * Normalize the current Vector3.
      * Please note that this is an in place operation.
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#122
      */
     public normalize(): Vector3 {
         return this.normalizeFromLength(this.length());
@@ -1443,6 +1490,7 @@ export class Vector3 {
      * Reorders the x y z properties of the vector in place
      * @param order new ordering of the properties (eg. for vector 1,2,3 with "ZYX" will produce 3,2,1)
      * @returns the current updated vector
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#44
      */
     public reorderInPlace(order: string) {
         order = order.toLowerCase();
@@ -1461,6 +1509,7 @@ export class Vector3 {
      * @param quaternion the rotation quaternion
      * @param result vector to store the result
      * @returns the resulting vector
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#47
      */
     public rotateByQuaternionToRef(quaternion: Quaternion, result: Vector3) {
         quaternion.toRotationMatrix(MathTmp.Matrix[0]);
@@ -1474,6 +1523,7 @@ export class Vector3 {
      * @param point the point to rotate around
      * @param result vector to store the result
      * @returns the resulting vector
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#46
      */
     public rotateByQuaternionAroundPointToRef(quaternion: Quaternion, point: Vector3, result: Vector3) {
         this.subtractToRef(point, MathTmp.Vector3[0]);
@@ -1487,6 +1537,7 @@ export class Vector3 {
      * The cross product is then orthogonal to both current and "other"
      * @param other defines the right operand
      * @returns the cross product
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#14
      */
     public cross(other: Vector3) {
         return Vector3.Cross(this, other);
@@ -1497,6 +1548,7 @@ export class Vector3 {
      * Please note that this is an in place operation.
      * @param len the length of the vector
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#123
      */
     public normalizeFromLength(len: number): Vector3 {
         if (len === 0 || len === 1.0) {
@@ -1509,6 +1561,7 @@ export class Vector3 {
     /**
      * Normalize the current Vector3 to a new vector
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#124
      */
     public normalizeToNew(): Vector3 {
         const normalized = new Vector3(0, 0, 0);
@@ -1520,6 +1573,7 @@ export class Vector3 {
      * Normalize the current Vector3 to the reference
      * @param reference define the Vector3 to update
      * @returns the updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#125
      */
     public normalizeToRef(reference: Vector3): Vector3 {
         const len = this.length();
@@ -1533,6 +1587,7 @@ export class Vector3 {
     /**
      * Creates a new Vector3 copied from the current Vector3
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#11
      */
     public clone(): Vector3 {
         return new Vector3(this._x, this._y, this._z);
@@ -1542,6 +1597,7 @@ export class Vector3 {
      * Copies the given vector coordinates to the current Vector3 ones
      * @param source defines the source Vector3
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#12
      */
     public copyFrom(source: DeepImmutable<Vector3>): Vector3 {
         return this.copyFromFloats(source._x, source._y, source._z);
@@ -1553,6 +1609,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#13
      */
     public copyFromFloats(x: number, y: number, z: number): Vector3 {
         this.x = x;
@@ -1567,6 +1624,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#58
      */
     public set(x: number, y: number, z: number): Vector3 {
         return this.copyFromFloats(x, y, z);
@@ -1576,6 +1634,7 @@ export class Vector3 {
      * Copies the given float to the current Vector3 coordinates
      * @param v defines the x, y and z coordinates of the operand
      * @returns the current updated Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#59
      */
     public setAll(v: number): Vector3 {
         this.x = this.y = this.z = v;
@@ -1591,6 +1650,7 @@ export class Vector3 {
      * @param axis defines the axis to use
      * @param size defines the size along the axis
      * @returns the clip factor
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#126
      */
     public static GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: number) {
         const d0 = Vector3.Dot(vector0, axis) - size;
@@ -1607,6 +1667,7 @@ export class Vector3 {
      * @param vector1 angle between vector0 and vector1
      * @param normal direction of the normal
      * @return the angle between vector0 and vector1
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#86
      */
     public static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
@@ -1630,6 +1691,7 @@ export class Vector3 {
      * @param vector1 angle between vector0 and vector1
      * @param normal Normal of the projection plane
      * @returns the angle between vector0 and vector1 projected on the plane with the specified normal
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#87
      */
     public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3) {
         MathTmp.Vector3[0].copyFrom(vector0);
@@ -1661,6 +1723,8 @@ export class Vector3 {
      * @param vector1 End vector
      * @param slerp amount (will be clamped between 0 and 1)
      * @param result The slerped vector
+     * Example Playground 1 https://playground.babylonjs.com/#R1F8YU#108
+     * Example Playground 2 https://playground.babylonjs.com/#R1F8YU#109
      */
     public static SlerpToRef(vector0: Vector3, vector1: Vector3, slerp: number, result: Vector3) {
         slerp = Scalar.Clamp(slerp, 0, 1);
@@ -1704,6 +1768,7 @@ export class Vector3 {
      * @param deltaTime current interpolation frame
      * @param lerpTime total interpolation time
      * @param result the smoothed vector
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#110
      */
     public static SmoothToRef(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: Vector3) {
         Vector3.SlerpToRef(source, goal, lerpTime === 0 ? 1 : deltaTime / lerpTime, result);
@@ -1714,6 +1779,7 @@ export class Vector3 {
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#83
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Vector3 {
         return new Vector3(array[offset], array[offset + 1], array[offset + 2]);
@@ -1735,6 +1801,7 @@ export class Vector3 {
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#84
      */
     public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector3): void {
         result.x = array[offset];
@@ -1759,6 +1826,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the source
      * @param z defines the z coordinate of the source
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#85
      */
     public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
         result.copyFromFloats(x, y, z);
@@ -1781,6 +1849,7 @@ export class Vector3 {
     /**
      * Returns a new Vector3 set to (0.0, 1.0, 0.0)
      * @returns a new up Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#71
      */
     public static Up(): Vector3 {
         return new Vector3(0.0, 1.0, 0.0);
@@ -1838,6 +1907,7 @@ export class Vector3 {
     /**
      * Returns a new Vector3 set to (0.0, -1.0, 0.0)
      * @returns a new down Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#71
      */
     public static Down(): Vector3 {
         return new Vector3(0.0, -1.0, 0.0);
@@ -1846,6 +1916,7 @@ export class Vector3 {
      * Returns a new Vector3 set to (0.0, 0.0, 1.0)
      * @param rightHandedSystem is the scene right-handed (negative z)
      * @returns a new forward Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#71
      */
     public static Forward(rightHandedSystem: boolean = false): Vector3 {
         return new Vector3(0.0, 0.0, rightHandedSystem ? -1.0 : 1.0);
@@ -1853,7 +1924,8 @@ export class Vector3 {
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
      * @param rightHandedSystem is the scene right-handed (negative-z)
-     * @returns a new forward Vector3
+     * @returns a new Backward Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#71
      */
     public static Backward(rightHandedSystem: boolean = false): Vector3 {
         return new Vector3(0.0, 0.0, rightHandedSystem ? 1.0 : -1.0);
@@ -1861,6 +1933,7 @@ export class Vector3 {
     /**
      * Returns a new Vector3 set to (1.0, 0.0, 0.0)
      * @returns a new right Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#71
      */
     public static Right(): Vector3 {
         return new Vector3(1.0, 0.0, 0.0);
@@ -1868,6 +1941,7 @@ export class Vector3 {
     /**
      * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
      * @returns a new left Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#71
      */
     public static Left(): Vector3 {
         return new Vector3(-1.0, 0.0, 0.0);
@@ -1879,6 +1953,7 @@ export class Vector3 {
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @returns the transformed Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#111
      */
     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
         const result = Vector3.Zero();
@@ -1892,7 +1967,7 @@ export class Vector3 {
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
-     */
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#113*/
     public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
         Vector3.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
     }
@@ -1905,6 +1980,7 @@ export class Vector3 {
      * @param z define the z coordinate of the source vector
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#115
      */
     public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
         const m = transformation.m;
@@ -1924,6 +2000,7 @@ export class Vector3 {
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#112
      */
     public static TransformNormal(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
         const result = Vector3.Zero();
@@ -1937,6 +2014,7 @@ export class Vector3 {
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#114
      */
     public static TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
         this.TransformNormalFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
@@ -1950,6 +2028,7 @@ export class Vector3 {
      * @param z define the z coordinate of the source vector
      * @param transformation defines the transformation matrix
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#116
      */
     public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
         const m = transformation.m;
@@ -1966,6 +2045,7 @@ export class Vector3 {
      * @param value4 defines the fourth control point
      * @param amount defines the amount on the spline to use
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#69
      */
     public static CatmullRom(
         value1: DeepImmutable<Vector3>,
@@ -2009,6 +2089,7 @@ export class Vector3 {
      * @param min defines the lower range value
      * @param max defines the upper range value
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#76
      */
     public static Clamp(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Vector3 {
         const v = new Vector3();
@@ -2023,6 +2104,7 @@ export class Vector3 {
      * @param min defines the lower range value
      * @param max defines the upper range value
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#77
      */
     public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
         let x = value._x;
@@ -2045,6 +2127,7 @@ export class Vector3 {
      * @param v defines the vector to test
      * @param min defines the minimum range
      * @param max defines the maximum range
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#75
      */
     public static CheckExtends(v: Vector3, min: Vector3, max: Vector3): void {
         min.minimizeInPlace(v);
@@ -2059,6 +2142,7 @@ export class Vector3 {
      * @param tangent2 defines the second tangent vector
      * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#89
      */
     public static Hermite(
         value1: DeepImmutable<Vector3>,
@@ -2088,6 +2172,7 @@ export class Vector3 {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @returns 1st derivative
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#90
      */
     public static Hermite1stDerivative(
         value1: DeepImmutable<Vector3>,
@@ -2111,6 +2196,7 @@ export class Vector3 {
      * @param tangent2 defines the second tangent
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#91
      */
     public static Hermite1stDerivativeToRef(
         value1: DeepImmutable<Vector3>,
@@ -2133,6 +2219,7 @@ export class Vector3 {
      * @param end defines the end value
      * @param amount max defines amount between both (between 0 and 1)
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#95
      */
     public static Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number): Vector3 {
         const result = new Vector3(0, 0, 0);
@@ -2146,6 +2233,7 @@ export class Vector3 {
      * @param end defines the end value
      * @param amount max defines amount between both (between 0 and 1)
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#93
      */
     public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): void {
         result.x = start._x + (end._x - start._x) * amount;
@@ -2158,6 +2246,7 @@ export class Vector3 {
      * @param left defines the left operand
      * @param right defines the right operand
      * @returns the dot product
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#82
      */
     public static Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): number {
         return left._x * right._x + left._y * right._y + left._z * right._z;
@@ -2169,6 +2258,7 @@ export class Vector3 {
      * @param left defines the left operand
      * @param right defines the right operand
      * @returns the cross product
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#15
      */
     public static Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
         const result = Vector3.Zero();
@@ -2182,6 +2272,7 @@ export class Vector3 {
      * @param left defines the left operand
      * @param right defines the right operand
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#78
      */
     public static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): void {
         const x = left._y * right._z - left._z * right._y;
@@ -2194,6 +2285,7 @@ export class Vector3 {
      * Returns a new Vector3 as the normalization of the given vector
      * @param vector defines the Vector3 to normalize
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#98
      */
     public static Normalize(vector: DeepImmutable<Vector3>): Vector3 {
         const result = Vector3.Zero();
@@ -2205,6 +2297,7 @@ export class Vector3 {
      * Sets the given vector "result" with the normalization of the given first vector
      * @param vector defines the Vector3 to normalize
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#98
      */
     public static NormalizeToRef(vector: DeepImmutable<Vector3>, result: Vector3): void {
         vector.normalizeToRef(result);
@@ -2217,6 +2310,7 @@ export class Vector3 {
      * @param transform defines the transform (view x projection) matrix to use
      * @param viewport defines the screen viewport to use
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#101
      */
     public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
         const result = new Vector3();
@@ -2232,6 +2326,7 @@ export class Vector3 {
      * @param viewport defines the screen viewport to use
      * @param result the vector in which the screen space will be stored
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#102
      */
     public static ProjectToRef(
         vector: DeepImmutable<Vector3>,
@@ -2280,6 +2375,7 @@ export class Vector3 {
      * @param world defines the world matrix to use (can be set to Identity to go to world space)
      * @param transform defines the transform (view x projection) matrix to use
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#121
      */
     public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>): Vector3 {
         return this.Unproject(source, viewportWidth, viewportHeight, world, transform, Matrix.IdentityReadOnly);
@@ -2294,6 +2390,7 @@ export class Vector3 {
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#117
      */
     public static Unproject(
         source: DeepImmutable<Vector3>,
@@ -2319,6 +2416,7 @@ export class Vector3 {
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#119
      */
     public static UnprojectToRef(
         source: DeepImmutable<Vector3>,
@@ -2343,6 +2441,7 @@ export class Vector3 {
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#120
      */
     public static UnprojectFloatsToRef(
         sourceX: float,
@@ -2377,6 +2476,7 @@ export class Vector3 {
      * @param left defines the first operand
      * @param right defines the second operand
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#97
      */
     public static Minimize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
         const min = left.clone();
@@ -2389,6 +2489,7 @@ export class Vector3 {
      * @param left defines the first operand
      * @param right defines the second operand
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#96
      */
     public static Maximize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
         const max = left.clone();
@@ -2401,6 +2502,7 @@ export class Vector3 {
      * @param value1 defines the first operand
      * @param value2 defines the second operand
      * @returns the distance
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#81
      */
     public static Distance(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
         return Math.sqrt(Vector3.DistanceSquared(value1, value2));
@@ -2411,6 +2513,7 @@ export class Vector3 {
      * @param value1 defines the first operand
      * @param value2 defines the second operand
      * @returns the squared distance
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#80
      */
     public static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
         const x = value1._x - value2._x;
@@ -2431,6 +2534,7 @@ export class Vector3 {
      * @param p2 extremity of the triangle
      * @param ref variable to store the result to
      * @returns The distance between "ref" and "vector"
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#104
      */
     public static ProjectOnTriangleToRef(vector: DeepImmutable<Vector3>, p0: DeepImmutable<Vector3>, p1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, ref: Vector3): number {
         const p1p0 = MathTmp.Vector3[0];
@@ -2581,6 +2685,7 @@ export class Vector3 {
      * @param value1 defines the first operand
      * @param value2 defines the second operand
      * @returns the new Vector3
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#72
      */
     public static Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3 {
         return Vector3.CenterToRef(value1, value2, Vector3.Zero());
@@ -2592,6 +2697,7 @@ export class Vector3 {
      * @param value2 defines second vector
      * @param ref defines third vector
      * @returns ref
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#73
      */
     public static CenterToRef(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3 {
         return ref.copyFromFloats((value1._x + value2._x) / 2, (value1._y + value2._y) / 2, (value1._z + value2._z) / 2);
@@ -2607,6 +2713,7 @@ export class Vector3 {
      * @param axis3 defines the third axis
      * @returns a new Vector3
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#106
      */
     public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
         const rotation = Vector3.Zero();
@@ -2620,6 +2727,7 @@ export class Vector3 {
      * @param axis2 defines the second axis
      * @param axis3 defines the third axis
      * @param ref defines the Vector3 where to store the result
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#107
      */
     public static RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3): void {
         const quat = MathTmp.Quaternion[0];
