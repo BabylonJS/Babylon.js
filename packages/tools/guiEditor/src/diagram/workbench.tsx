@@ -816,7 +816,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    public createGUICanvas(fromPG?: boolean) {
+    public createGUICanvas(embed?: boolean) {
         // Get the canvas element from the DOM.
 
         const canvas = this._rootContainer.current as HTMLCanvasElement;
@@ -830,7 +830,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        if (fromPG) {
+        if (embed) {
             this.props.globalState.fromPG = true;
             this._guiSize.width = Number(window.localStorage.getItem("width"));
             this._guiSize.height = Number(window.localStorage.getItem("height"));

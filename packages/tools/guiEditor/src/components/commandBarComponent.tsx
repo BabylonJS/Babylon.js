@@ -102,7 +102,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
         const responsiveSelected = this.props.globalState.fromPG ? window.localStorage.getItem("responsive") === "true" : DataStorage.ReadBoolean("Responsive", true);
         const responsiveUI = this.props.globalState.fromPG ? window.localStorage.getItem("responsiveUI") === "true" : DataStorage.ReadBoolean("Responsive", true);
-        const unresponsiveUI = this.props.globalState.fromPG ? window.localStorage.getItem("responsiveUI") === "false" : !DataStorage.ReadBoolean("Responsive", true);
 
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
@@ -287,7 +286,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 }}
                             />
                         )}
-                        {unresponsiveUI && (
+                        {!responsiveUI && (
                             <>
                                 <FloatLineComponent
                                     lockObject={this._lockObject}
