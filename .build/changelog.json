@@ -1,37 +1,400 @@
 {
-    "fromTag": "5.17.1",
+    "fromTag": "5.18.0",
     "changelog": {
-        "5.17.1": [
+        "5.19.0": [
             {
-                "pr": "12805",
-                "title": "Fix crash when loading node material with loadasync",
+                "pr": "12858",
+                "title": "Update ComputePressureObserver",
+                "description": "Hello.\r\n\r\nI have been working on updating our electron app to the latest electron version (20.0.1, previously we used 17.3.1) and we had a breakage in our use of babylon.js when the scene is disposed:\r\n\r\n> TypeError: Failed to execute 'unobserve' on 'ComputePressureObserver': 1 argument required, but only 0 present.\r\n\r\nNote that not all electron applications will experience this problem. ComputePressureObserver is only exposed if you use `experimentalFeatures: true`.\r\n\r\nIt appears that electron 19 and up is using a Chromium version with an updated ComputePressureObserver API. Here is the relevant change in [the working draft](https://wicg.github.io/compute-pressure/):\r\n- https://github.com/WICG/compute-pressure/issues/21\r\n- https://github.com/WICG/compute-pressure/pull/25\r\n\r\nThe error is ignored in `observe` but not in `unobserve`. My first commit here catches the error in `unobserve`. I first tried to use `catch()` like in `observe` but it didn't work so I had to use `try { ... } catch {}`. Even though it isn't documented in the spec, `observe` is returning a promise but `unobserve` is not.\r\n\r\nThe second commit updates the use of the observer to work with electron >= 19. This disables the observer for electron < 19 (`ComputePressureObserver.supportedSources` is not defined), but I don't think many will notice since the only thing this is used for is the CPU utilization metric in the Realtime Performance Viewer.\r\n\r\n![Screen Shot 2022-08-09 at 14 41 31](https://user-images.githubusercontent.com/1991151/183777526-040bc374-458b-446a-9fd6-5f26676ef13b.png)\r\n\r\nThe spec appears to have more updates than what electron supports. Doesn't look like the `samplerate` property works.\r\n\r\nI made this simple Electron Fiddle that can be used to test with: https://gist.github.com/stefansundin/4cee8e88133efb196f54f2d2a9f05155. You need to run `npm run start` to run the babylon.js server as well.\r\n\r\nPlease let me know if you want me to change anything! Thanks!",
+                "author": {
+                    "name": "stefansundin",
+                    "url": "https://github.com/stefansundin"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/computePressure.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12855",
+                "title": "Fix shortcuts firing while user inputs text",
+                "description": "Forum issue: https://forum.babylonjs.com/t/gui-editor-shortcuts-bug-on-inputtext/32884",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/globalState.ts",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "12854",
+                "title": "Serialize scrollbar properties.",
+                "description": "Forum issue: https://forum.babylonjs.com/t/gui-editor-scrollviewer-bug-cannot-change-bar-color/32862",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/scrollViewers/scrollViewer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "12815",
+                "title": "Inspector step modifier keys",
+                "description": "In one of our projects I had to play around with the positions of objects a bunch to get the perfect position. It annoyed me that the `step` of the position fields was a bit low (pressing the up/down arrow keys only moved it slightly).\r\n\r\nThis PR solves that issue by using modifier keys. You can now hold `shift` to increase the step x10. Additionally, if you hold `ctrl` (`meta` on mac) as well, it will increase x100.\r\n\r\nI implemented this feature for both the `NumericInputComponent` and `FloatLineComponent` so it should work for all number input fields in the inspector.",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "12853",
+                "title": "Fix issues with basis texture and inspector (display format, preview window and broken texture)",
+                "description": "https://forum.babylonjs.com/t/basis-texture-compression-in-inspector/32802/6\r\n\r\nThis addresses:\r\n* wrong format being displayed\r\n* texture broken on fallback to 565\r\n* preview image being broken on fallback to 565\r\n* texture broken after opening the texture inspector",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/inspector/src/textureHelper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "12852",
+                "title": "Add IGizmo-extending interfaces for standard Gizmo variants",
+                "description": "This pull request is a follow-up to #12795 and #12796 and adds interfaces representing what public properties should be implemented by custom gizmos seeking to fulfill the role of one of the standard `Gizmo` variants (`AxisDragGizmo`, `PositionGizmo`, etc).\r\n\r\nAdditionally, `Gizmo`-type properties within relevant classes now use the corresponding gizmo interface instead for easier integration of custom gizmos into `PositionGizmo`/`RotationGizmo`/`ScaleGizmo` as well as the standard `GizmoManager`.",
+                "author": {
+                    "name": "Hsifnus",
+                    "url": "https://github.com/Hsifnus"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/lightGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "12851",
+                "title": "Nme fix",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
                 ],
-                "tags": [
-                    "bug",
-                    "materials"
-                ]
+                "tags": []
             },
             {
-                "pr": "12804",
-                "title": "Allow creation of baseTexture from internalTexture",
-                "description": "https://forum.babylonjs.com/t/cubetexture-from-canvas/32412/8",
+                "pr": "12849",
+                "title": "Add transform nodes result to assetManager",
+                "description": null,
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Textures/baseTexture.ts"
+                    "packages/dev/core/src/Misc/assetsManager.ts"
                 ],
                 "tags": [
                     "enhancement",
-                    "texture"
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "12848",
+                "title": "Show full hex color on Color Picker component",
+                "description": "Forum issue: https://forum.babylonjs.com/t/gui-editor-bug-on-hex-a-color-input/32817",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12843",
+                "title": "Avoid hooking rtt renderList multiple times",
+                "description": "See https://forum.babylonjs.com/t/rendertargettexture-renderlist-crash/31741",
+                "author": {
+                    "name": "fchoisy",
+                    "url": "https://github.com/fchoisy"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12845",
+                "title": "Fixed removal of the last geometry in the \"scene.geometries\" array",
+                "description": "We have:\r\n`scene.geometries == [g1,g2,g3] `\r\nwe call:\r\n`scene.removeGeometry(g3)`\r\ng3 stays in the `scene._geometriesByUniqueId`  map with index == 2. This happens because it is the last one in the scene.geometries  list. This is already a bug and you can stop here but I'll describe the further horror I experienced in my project during debugging.\r\n\r\n\r\nWe call:\r\n`scene.removeGeometry(g2)` After that scene.geometries == [g1] which is ok.\r\nAgain we call:\r\n`scene.removeGeometry(g3)`  (This can easily happen e.g. if AssetContainer.removeAllFromScene  is called)\r\n\r\nAfter that `scene.geometries == [g1, empty]` due to the conditions in the code block I'm updating in this PR. This has all sorts of nasty consequences in other parts of the engine that I'm not gonna describe in detail. Basically every iteration over geometries is in danger.",
+                "author": {
+                    "name": "EvgenyRodygin",
+                    "url": "https://github.com/EvgenyRodygin"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12846",
+                "title": "Add `ZeroReadOnly` to Vector2 and Vector4",
+                "description": "Adds a read-only zero vector to both the Vector2 and Vector4 classes, as well as a  `DownReadOnly` to the Vector3 class.",
+                "author": {
+                    "name": "chapmankyle",
+                    "url": "https://github.com/chapmankyle"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12842",
+                "title": "Fix getHeightAtCoordinates with Impostors and out of bound",
+                "description": "Follow up https://forum.babylonjs.com/t/groundmesh-getheightatcoordinates-is-corrupted-by-physicsimpostor-heightmapimpostor/32774\r\n\r\n2 bugs at once:\r\n- The bounds check was not correct\r\n- This fix was incomplete : https://github.com/BabylonJS/Babylon.js/pull/12818",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/groundMesh.ts",
+                    "packages/dev/core/src/Physics/physicsImpostor.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "12844",
+                "title": "GUI Editor Tool buttons now respond on the entire document instead of…",
+                "description": "… only in the canvas. Also fix an issue where a control could still be moved even if the space key was pressed to pan.\r\n\r\nForum issue: https://forum.babylonjs.com/t/gui-editor-pan-mode-does-not-work-as-expected/32767/4",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx",
+                    "packages/tools/guiEditor/src/globalState.ts",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12841",
+                "title": "Add the possiblity to create custom top level nodes in the scene tree.",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/emptyPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/embedHost/embedHostComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorer.scss",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12840",
+                "title": "Nme drop wire",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/scss/graphCanvas.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12838",
+                "title": "Safari/Selenium Tests",
+                "description": "replace #12811 by simply renaming the test category as requested here: https://github.com/BabylonJS/Babylon.js/pull/12811#pullrequestreview-1060360422\r\n",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "jest.config.ts",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/tools/testTools/package.json",
+                    "packages/tools/testTools/src/index.ts",
+                    "packages/tools/testTools/src/seleniumTestUtils.ts",
+                    "packages/tools/tests/test/interactions/safari.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12837",
+                "title": "More Tests on ProjectToPlane",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12836",
+                "title": "Export Material Plugin Events",
+                "description": "https://forum.babylonjs.com/t/materialpluginevent-is-not-exported-in-materials-index-ts/32760",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/index.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12811",
+                "title": "Safari/Selenium Tests",
+                "description": "This PR has the tentative changes to test the input system in Safari",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "jest.config.ts",
+                    "package.json",
+                    "packages/tools/testTools/package.json",
+                    "packages/tools/testTools/src/index.ts",
+                    "packages/tools/testTools/src/seleniumTestUtils.ts",
+                    "packages/tools/tests/test/selenium/safari.test.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12835",
+                "title": "Move typings to Webgl2RenderingContext",
+                "description": "Fix #12833 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.transformFeedback.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl.d.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "12834",
+                "title": "allow saving a playground when using snapshots",
+                "description": "The snapshot was always removed when a snippet was saved. A clear of location.search is not needed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/saveManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12832",
+                "title": "Support for scss modules",
+                "description": "css modules is a way to import a css and get a list of classes from it that can be applied to the specific moduels used in a component. It is tree-shaking friendly and a very good practice to avoid global css changes cross-projects.\n\nThis step provides support in our build system for both modules and global scss. If the .scss file is called `whatever.modules.scss` it will be loaded as a module. See the shared ui components project for an example.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/sharedUiComponents/src/components/Button.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Label.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/Label.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/scssDeclaration.d.ts",
+                    "packages/tools/guiEditor/src/custom.d.ts",
+                    "packages/tools/nodeEditor/src/custom.d.ts"
+                ],
+                "tags": [
+                    "new feature"
                 ]
             }
         ],
@@ -326,6 +689,40 @@
                     "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "5.17.1": [
+            {
+                "pr": "12805",
+                "title": "Fix crash when loading node material with loadasync",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "12804",
+                "title": "Allow creation of baseTexture from internalTexture",
+                "description": "https://forum.babylonjs.com/t/cubetexture-from-canvas/32412/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
             }
         ],
         "5.17.0": [

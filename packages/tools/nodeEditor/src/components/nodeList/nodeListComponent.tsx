@@ -167,6 +167,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TwirlBlock: "Apply a twirl rotation",
         ElbowBlock: "Passthrough block mostly used to organize your graph",
         ClipPlanesBlock: "A node that add clip planes support",
+        HeightToNormalBlock: "Convert a height map into a normal map",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -391,6 +392,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ColorBlock",
                 "InstanceColorBlock",
                 "NormalBlock",
+                "HeightToNormalBlock",
                 "TBNBlock",
                 "PerturbNormalBlock",
                 "NormalBlendBlock",
