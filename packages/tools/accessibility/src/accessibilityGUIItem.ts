@@ -121,7 +121,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
     public override triggerEvent(eventType: string): void {
         const eventHandler = (this.entity as Control).accessibilityTag?.eventHandler;
 
-        switch(eventType) {
+        switch (eventType) {
             case "click":
                 if (eventHandler?.click) {
                     eventHandler.click();
@@ -143,5 +143,4 @@ export class AccessibilityGUIItem extends AccessibilityItem {
                 break;
         }
     }
-
 }

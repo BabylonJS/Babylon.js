@@ -23,7 +23,6 @@ export interface IAccessibilityTag {
     aria?: { [key in AcceptedARIA]: any };
 }
 
-
 // Based on https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
 type AcceptedRole =
     | "toolbar"

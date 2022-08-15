@@ -98,7 +98,7 @@ export class AccessibilityNodeItem extends AccessibilityItem {
         const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
         const actions: IAction[] = [];
 
-        switch(eventType) {
+        switch (eventType) {
             case "click":
                 if (eventHandler?.click) {
                     eventHandler.click();

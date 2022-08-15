@@ -227,7 +227,6 @@ export class Container extends Control {
             this.removeControl(child);
         }
 
-        this.onControlRemovedObservable.notifyObservers(null);
         return this;
     }
 
