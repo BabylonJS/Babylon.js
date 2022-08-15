@@ -38,6 +38,10 @@ export enum InspectableType {
      * Tab
      */
     Tab = 8,
+    /**
+     * File button
+     */
+    FileButton = 9,
 }
 
 /**
@@ -90,11 +94,17 @@ export interface IInspectable {
      */
     step?: number;
     /**
-     * Gets the callback function when using "Button" mode
+     * Gets the callback function when using "Button" or "FileButton" mode.
+     * In "FileButton" mode, the file is passed as the parameter.
      */
     callback?: () => void;
     /**
      * Gets the list of options when using "Option" mode
      */
     options?: IInspectableOptions[];
+    /**
+     * Gets the extensions to accept when using "FileButton" mode.
+     * The value should be a comma separated string with the list of extensions to accept e.g., ".jpg, .png, .tga, .dds, .env".
+     */
+    accept?: string;
 }

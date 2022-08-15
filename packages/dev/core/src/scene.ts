@@ -4949,7 +4949,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
