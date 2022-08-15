@@ -3072,7 +3072,7 @@ export class Vector4 {
     }
 
     /**
-     * Gets a new Vector4 from current Vector3 fractional values
+     * Gets a new Vector4 from current Vector4 fractional values
      * @returns a new Vector4
      */
     public fract(): Vector4 {
