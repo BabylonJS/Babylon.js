@@ -43,6 +43,7 @@ const ARROW_KEY_MOVEMENT_SMALL = 1; // px
 const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
+const CONTROL_OFFSET = 10; //offset in pixels for when a control is added to editor
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
@@ -61,9 +62,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
+    private _currLeft: number = 0;
+    private _currTop: number = 0;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
+
     private _panAndZoomContainer: Container;
     public get panAndZoomContainer() {
         return this._panAndZoomContainer;
@@ -279,7 +283,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             const obj = {};
             control.serialize(obj);
             controlList.push(obj);
+            this._currLeft = control.leftInPixels;
+            this._currTop = control.topInPixels;
         }
+
         copyFn(
             JSON.stringify({
                 GUIClipboard: true,
@@ -301,8 +308,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (const control of parsed.controls) {
                     newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
+
+                if (newSelection[0].parent?.typeName != "StackPanel") {
+                    this._currLeft += CONTROL_OFFSET;
+                    this._currTop += CONTROL_OFFSET;
+                }
+
+                newSelection[0].leftInPixels = this._currLeft;
+                newSelection[0].topInPixels = this._currTop;
+
                 const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
                 this.props.globalState.setSelection([newGuiNode]);
+
                 return true;
             }
         } catch {
