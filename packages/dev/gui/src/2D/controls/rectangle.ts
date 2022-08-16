@@ -142,13 +142,13 @@ export class Rectangle extends Container {
         context.beginPath();
         context.moveTo(x + radius, y);
         context.lineTo(x + width - radius, y);
-        context.quadraticCurveTo(x + width, y, x + width, y + radius);
+        context.arc(x + width - radius, y + radius, radius, (3 * Math.PI) / 2, Math.PI * 2);
         context.lineTo(x + width, y + height - radius);
-        context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        context.arc(x + width - radius, y + height - radius, radius, 0, Math.PI / 2);
         context.lineTo(x + radius, y + height);
-        context.quadraticCurveTo(x, y + height, x, y + height - radius);
+        context.arc(x + radius, y + height - radius, radius, Math.PI / 2, Math.PI);
         context.lineTo(x, y + radius);
-        context.quadraticCurveTo(x, y, x + radius, y);
+        context.arc(x + radius, y + radius, radius, Math.PI, (3 * Math.PI) / 2);
         context.closePath();
     }
 
