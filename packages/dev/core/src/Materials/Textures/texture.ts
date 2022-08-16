@@ -938,7 +938,7 @@ export class Texture extends BaseTexture {
             return null;
         }
 
-        const onLoaded = () => {
+        const onLoaded = (texture: Texture | null) => {
             // Clear cache
             if (texture && texture._texture) {
                 texture._texture._cachedWrapU = null;
@@ -975,7 +975,7 @@ export class Texture extends BaseTexture {
                     const mirrorTexture = Texture._CreateMirror(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
-                    onLoaded();
+                    onLoaded(mirrorTexture);
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
                     let renderTargetTexture: Nullable<RenderTargetTexture> = null;
@@ -999,7 +999,7 @@ export class Texture extends BaseTexture {
                         );
                         renderTargetTexture._waitingRenderList = parsedTexture.renderList;
                     }
-                    onLoaded();
+                    onLoaded(renderTargetTexture);
                     return renderTargetTexture;
                 } else {
                     let texture: Texture;
@@ -1012,7 +1012,9 @@ export class Texture extends BaseTexture {
                             !generateMipMaps,
                             parsedTexture.invertY,
                             parsedTexture.samplingMode,
-                            onLoaded,
+                            () => {
+                                onLoaded(texture);
+                            },
                             parsedTexture._creationFlags ?? 0,
                             parsedTexture._useSRGBBuffer ?? false
                         );
@@ -1027,7 +1029,9 @@ export class Texture extends BaseTexture {
                         if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
-                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
+                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, () => {
+                            onLoaded(texture);
+                        });
                     }
 
                     return texture;
