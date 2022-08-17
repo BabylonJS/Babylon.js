@@ -1051,7 +1051,7 @@ export class Vector3 {
     /**
      * Gets a new Vector3 set with the current Vector3 negated coordinates
      * Example Playground https://playground.babylonjs.com/#R1F8YU#35
-     * @returns a new Vector3 
+     * @returns a new Vector3
      */
     public negate(): Vector3 {
         return new Vector3(-this._x, -this._y, -this._z);
@@ -2714,7 +2714,7 @@ export class Vector3 {
      * @param axis2 defines the second axis
      * @param axis3 defines the third axis
      * @returns a new Vector3
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align 
+     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
      */
     public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
         const rotation = Vector3.Zero();
