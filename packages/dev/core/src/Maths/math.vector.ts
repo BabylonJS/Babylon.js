@@ -798,7 +798,7 @@ export class Vector2 {
  * A Vector3 is the main object used in 3D geometry
  * It can represent either the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
- * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU 
+ * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
 export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
@@ -1246,7 +1246,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#20
      */
     public equalsToFloats(x: number, y: number, z: number): boolean {
-         return this._x === x && this._y === y && this._z === z;
+        return this._x === x && this._y === y && this._z === z;
     }
 
     /**
