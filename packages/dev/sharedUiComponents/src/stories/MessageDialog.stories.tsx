@@ -7,7 +7,7 @@ export default {
 };
 
 const Template = (args: MessageDialogProps) => {
-    <MessageDialog {...args} />;
+    return <MessageDialog {...args} />;
 };
 
 export const NoError = Template.bind({});
