@@ -88,6 +88,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
+        props.globalState.onWindowResizeObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     public render() {
@@ -96,6 +99,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         const copyyIcon = this.props.globalState.selectedControls.length === 0 ? copyIconDisabled : copyIcon;
         const deleteeIcon = this.props.globalState.selectedControls.length === 0 ? deleteIconDisabled : deleteIcon;
         const pasteeIcon = isPasteDisabled ? pasteIconDisabled : pasteIcon;
+
+        const responsiveUI = this.props.globalState.fromPG ? DataStorage.ReadBoolean("responsiveUI", true) : DataStorage.ReadBoolean("Responsive", true);
+
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
@@ -246,16 +252,19 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             onSelect={(value: boolean) => {
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                                 DataStorage.WriteBoolean("Responsive", value);
+                                DataStorage.WriteBoolean("responsiveUI", value);
                                 this._sizeOption = _sizeOptions.length;
                                 if (value) {
                                     this._sizeOption = 0;
                                     this.props.globalState.workbench.guiSize = _sizeValues[this._sizeOption];
+                                    DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
+                                    DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.height);
                                 }
                                 this.forceUpdate();
                             }}
                             large
                         />
-                        {DataStorage.ReadBoolean("Responsive", true) && (
+                        {responsiveUI && (
                             <OptionsLineComponent
                                 label=""
                                 iconLabel="Size"
@@ -268,12 +277,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     if (this._sizeOption !== _sizeOptions.length) {
                                         const newSize = _sizeValues[this._sizeOption];
                                         this.props.globalState.workbench.guiSize = newSize;
+                                        DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
+                                        DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.height);
                                     }
                                     this.forceUpdate();
                                 }}
                             />
                         )}
-                        {!DataStorage.ReadBoolean("Responsive", true) && (
+                        {!responsiveUI && (
                             <>
                                 <FloatLineComponent
                                     lockObject={this._lockObject}
@@ -285,6 +296,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onChange={(newValue) => {
                                         if (!this._stopUpdating) {
                                             this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                            DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
                                         }
                                     }}
                                     onDragStart={() => {
@@ -293,6 +305,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onDragStop={(newValue) => {
                                         this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: newValue, height: size.height };
+                                        DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
                                     }}
                                     arrows={true}
                                     isInteger={true}
@@ -307,6 +320,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onChange={(newValue) => {
                                         if (!this._stopUpdating) {
                                             this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                            DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.width);
                                         }
                                     }}
                                     onDragStart={() => {
@@ -315,6 +329,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     onDragStop={(newValue) => {
                                         this._stopUpdating = false;
                                         this.props.globalState.workbench.guiSize = { width: size.width, height: newValue };
+                                        DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.width);
                                     }}
                                     arrows={true}
                                     isInteger={true}

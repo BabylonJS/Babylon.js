@@ -28,6 +28,7 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
+import { DataStorage } from "core/Misc/dataStorage";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -837,8 +838,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    public createGUICanvas() {
+    public createGUICanvas(embed?: boolean) {
         // Get the canvas element from the DOM.
+
         const canvas = this._rootContainer.current as HTMLCanvasElement;
         // Associate a Babylon Engine to it.
         this._engine = new Engine(canvas);
@@ -850,7 +852,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        this._guiSize = this._defaultGUISize;
+        if (embed) {
+            this.props.globalState.fromPG = true;
+            this._guiSize.width = DataStorage.ReadNumber("width", 1024);
+            this._guiSize.height = DataStorage.ReadNumber("height", 1024);
+        }
 
         this._panAndZoomContainer = new Container("panAndZoom");
         this._panAndZoomContainer.clipContent = false;
