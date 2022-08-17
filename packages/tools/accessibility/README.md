@@ -10,7 +10,8 @@ Nowadays 2D pages on web generally have good accessibility support to screen rea
 
 The **Accessibility Package** provides a way to create the accessibility tree, which consists of HTML Twins for objects in the scene that should be accessible. Here's an example of a simple scene of three boxes using the Accessibility Package. If you turn on a screen reader to read the page, it will say "A big box in the middle of the scene. A small box on the left of the big box. A small box on the right of the big box".
 
-// TODO: add playground
+Example:
+https://playground.babylonjs.com/?snapshot=refs/pull/12074/merge#C9GZTF#1
 
 ## How to use Accessibility Package to Support Screen Reader and Keyboard Navigation
 
@@ -54,8 +55,8 @@ egg.accessibilityTag = {
     }
 }
 ```
-
-// TODO: example of customize event handler
+Example:
+https://playground.babylonjs.com/?snapshot=refs/pull/12074/merge#C9GZTF#6
 
 ### When is AccessibilityTree Updated
 Your scene might be not static, and you may want to update the accessibility tree when your scene is changed. The accessibility tree will automatically update when:
@@ -66,7 +67,8 @@ Your scene might be not static, and you may want to update the accessibility tre
 - A Control's isVisible status is changed;
 - A Node or Control's IAccessibilityTag is assigned or re-assigned;
 
-// TODO: example of scene changing and update
+Example:
+https://playground.babylonjs.com/?snapshot=refs/pull/12074/merge#C9GZTF#5
 
 ### Customize HTML Twin with ARIA Attributes
 If you are a pro in Web Accessibility, and know what you are doing, you can use IAccessibilityTag.role and IAccessibilityTag.aria to assign different [Role and ARIA attributes](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) to the HTML Twin of this object to do whatevery you want.
