@@ -19,7 +19,7 @@ export class ImageScrollBar extends BaseSlider {
     private _thumbHeight: number = 1;
     private _barImageHeight: number = 1;
     private _tempMeasure = new Measure(0, 0, 0, 0);
-    private _invertDirection = false;
+    private _invertScrollDirection = false;
 
     /** Number of 90° rotation to apply on the images when in vertical mode */
     @serialize()
@@ -27,12 +27,12 @@ export class ImageScrollBar extends BaseSlider {
 
     /** Inverts the scrolling direction (default: false) */
     @serialize()
-    public get invertDirection() {
-        return this._invertDirection;
+    public get invertScrollDirection() {
+        return this._invertScrollDirection;
     }
 
-    public set invertDirection(invert: boolean) {
-        this._invertDirection = invert;
+    public set invertScrollDirection(invert: boolean) {
+        this._invertScrollDirection = invert;
     }
 
     /**
@@ -260,7 +260,7 @@ export class ImageScrollBar extends BaseSlider {
             y = this._transformedPosition.y;
         }
 
-        const sign = this._invertDirection ? -1 : 1;
+        const sign = this._invertScrollDirection ? -1 : 1;
 
         if (this._first) {
             this._first = false;
