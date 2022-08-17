@@ -45,8 +45,9 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
  * If you are in a UMD environment, it will load the package from a URL
  * @param adt
+ * @param embed defines whether editor is being opened from the Playground
  */
-export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
+export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, embed?: boolean) {
     guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();
     if (!guiEditorContainer) {
         if (typeof BABYLON !== "undefined") {
@@ -65,5 +66,5 @@ export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
             throw `Tried to call EditAdvancedDynamicTexture without first injecting the GUI editor. You need to call InjectGUIEditor() with a reference to @babylonjs/gui-editor. It can be imported at runtime using await import("@babylonjs/gui-editor").`;
         }
     }
-    guiEditorContainer.GUIEditor.Show({ liveGuiTexture: adt });
+    guiEditorContainer.GUIEditor.Show({ liveGuiTexture: adt }, embed);
 }
