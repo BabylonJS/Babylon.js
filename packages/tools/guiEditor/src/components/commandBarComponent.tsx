@@ -100,7 +100,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         const deleteeIcon = this.props.globalState.selectedControls.length === 0 ? deleteIconDisabled : deleteIcon;
         const pasteeIcon = isPasteDisabled ? pasteIconDisabled : pasteIcon;
 
-        const responsiveUI = this.props.globalState.fromPG ? DataStorage.ReadBoolean("responsiveUI", true) : DataStorage.ReadBoolean("Responsive", true);
+        const responsiveUI = this.props.globalState.fromPG ? DataStorage.ReadBoolean("responsiveUI", true) : !DataStorage.ReadBoolean("responsiveUI", true);
 
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
@@ -248,10 +248,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         <CheckBoxLineComponent
                             label="Responsive:"
                             iconLabel="Responsive GUIs will resize the UI layout and reflow controls to accommodate different device screen sizes"
-                            isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
+                            isSelected={() => DataStorage.ReadBoolean("responsiveUI", true)}
                             onSelect={(value: boolean) => {
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
-                                DataStorage.WriteBoolean("Responsive", value);
+                                //DataStorage.WriteBoolean("Responsive", value);
                                 DataStorage.WriteBoolean("responsiveUI", value);
                                 this._sizeOption = _sizeOptions.length;
                                 if (value) {
