@@ -11,6 +11,7 @@ describe("safari", () => {
       .build();
 
     beforeAll(async () => {
+        console.log(getGlobalConfig().baseUrl);
         await driver.get(getGlobalConfig().baseUrl + `/empty.html`);
     });
 
