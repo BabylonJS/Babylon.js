@@ -1963,11 +1963,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        // PrePass
-        if (this.prePassRenderer && !this.prePassRenderer.isReady()) {
-            return false;
-        }
-
         return true;
     }
 
