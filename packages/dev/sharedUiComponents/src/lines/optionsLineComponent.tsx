@@ -22,6 +22,7 @@ export interface IOptionsLineComponentProps {
     valuesAreStrings?: boolean;
     defaultIfNull?: number;
     addInput?: boolean;
+    
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
@@ -81,6 +82,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     updateValue(valueString: string) {
+        console.log(valueString)
         const value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
         this._localChange = true;
 
@@ -101,7 +103,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     render() {
-        if(this.props.addInput){
+       if(this.props.addInput){
             return (
                 <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                     {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -109,7 +111,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                         {this.props.label}
                     </div>
                     <div className="options">
-                        <datalist onChange={(evt: React.ChangeEvent<HTMLSelectElement>) => this.updateValue(evt.target.value)} data-value={this.state.value ?? ""}>
+                        <input type="search" list = "options" onChange={(evt) => this.updateValue(evt.target.value)} data-value={this.state.value ?? ""}/>
+                        <datalist id="options">
                             {this.props.options.map((option, i) => {
                                 return (
                                     <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
@@ -123,7 +126,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             );
 
         }
-        else{
+         else{
             return (
                 <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                     {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -143,7 +146,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                     </div>
                 </div>
             );
-        }
+         }
 
         }
         
