@@ -21,6 +21,7 @@ export interface IOptionsLineComponentProps {
     className?: string;
     valuesAreStrings?: boolean;
     defaultIfNull?: number;
+    addInput?: boolean;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
@@ -100,24 +101,50 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     render() {
-        return (
-            <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
-                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
-                <div className="label" title={this.props.label}>
-                    {this.props.label}
+        if(this.props.addInput){
+            return (
+                <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
+                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
+                    <div className="label" title={this.props.label}>
+                        {this.props.label}
+                    </div>
+                    <div className="options">
+                        <datalist onChange={(evt: React.ChangeEvent<HTMLSelectElement>) => this.updateValue(evt.target.value)} data-value={this.state.value ?? ""}>
+                            {this.props.options.map((option, i) => {
+                                return (
+                                    <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
+                                        {option.label}
+                                    </option>
+                                );
+                            })}
+                        </datalist>
+                    </div>
                 </div>
-                <div className="options">
-                    <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
-                        {this.props.options.map((option, i) => {
-                            return (
-                                <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
-                                    {option.label}
-                                </option>
-                            );
-                        })}
-                    </select>
+            );
+
+        }
+        else{
+            return (
+                <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
+                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
+                    <div className="label" title={this.props.label}>
+                        {this.props.label}
+                    </div>
+                    <div className="options">
+                        <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
+                            {this.props.options.map((option, i) => {
+                                return (
+                                    <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
+                                        {option.label}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    </div>
                 </div>
-            </div>
-        );
-    }
+            );
+        }
+
+        }
+        
 }
