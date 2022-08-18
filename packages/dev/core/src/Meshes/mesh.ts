@@ -4423,12 +4423,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
-     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
-     * @param disposeSource when true (default), dispose of the vertices from the source meshes
-     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
-     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
-     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @param meshes array of meshes with the vertices to merge. Entries cannot be empty meshes.
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes.
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true.
+     * @param meshSubclass (optional) can be set to a Mesh where the merged vertices will be inserted.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh into subMeshes.
+     * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
     public static MergeMeshes(
@@ -4444,12 +4444,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
-     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
-     * @param disposeSource when true (default), dispose of the vertices from the source meshes
-     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
-     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
-     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @param meshes array of meshes with the vertices to merge. Entries cannot be empty meshes.
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes.
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true.
+     * @param meshSubclass (optional) can be set to a Mesh where the merged vertices will be inserted.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh into subMeshes.
+     * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
     public static MergeMeshesAsync(
