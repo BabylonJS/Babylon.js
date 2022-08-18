@@ -234,6 +234,19 @@ export class PrePassRenderer {
     }
 
     /**
+     * Gets if the prepass is ready to be used
+     * @returns true if ready otherwise, false
+     */
+    public isReady(): boolean {
+        if (this._isDirty) {
+            this._update();
+            return false;
+        }
+
+        return this.defaultRT.isReady();
+    }
+
+    /**
      * Creates a new PrePassRenderTarget
      * This should be the only way to instantiate a `PrePassRenderTarget`
      * @param name Name of the `PrePassRenderTarget`
