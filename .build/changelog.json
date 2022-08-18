@@ -1,6 +1,332 @@
 {
-    "fromTag": "5.18.0",
+    "fromTag": "5.19.0",
     "changelog": {
+        "5.20.0": [
+            {
+                "pr": "12867",
+                "title": "Add boolean invertDirection to allow inverting the scrollbar navigati…",
+                "description": "…on direction.\r\n\r\nForum issue: https://forum.babylonjs.com/t/scrollviewer-horizontal-direction-is-in-reverse/32995/",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/sliders/imageScrollBar.ts",
+                    "packages/dev/gui/src/2D/controls/sliders/scrollBar.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12868",
+                "title": "GUI Editor launches from PG with correct size",
+                "description": "Launching the GUI Editor from the PG would always have the GUI texture be at the default size (1024x1024) instead of whatever size it was orignally defined as ",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/advancedDynamicTextureTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx",
+                    "packages/tools/guiEditor/src/globalState.ts",
+                    "packages/tools/guiEditor/src/guiEditor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12879",
+                "title": "add the ability to configure teleportation and near interaction",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRDefaultExperience.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12874",
+                "title": "Example Playgrounds for Properties and Methods of Vector3",
+                "description": "My apologies for the length of this comment, it is because I need advice on whether it will be part of my very limited project or a much larger undertaking by the community. As a large community undertaking it needs considering and approval by @deltakosh along with @PirateJC and @RaananW as it involves the docs even though it is on the API side and I would like to include @sebavan as he as also been very supportive and helpful to me. Please include anyone else you would like to talk to about it.\r\n\r\n**Reason Behind PR**\r\nWithin the API classes the search the playground for each property and method is at best hit and miss, so I thought that each property and method of a class should have its own playground example, which should be simple and as meaningful as possible. For my limited project, except for a few where they were trivial or I couldn't think of a good example or I forgot, I have done this for all the methods and classes of Vector3 in this PR.\r\n\r\n**Implications for a Large Community Undertaking**\r\nAn announcement about the undertaking.\r\nIf members do put in example PGs they could come in piecemeal so lots of individual PRs, unless there was somewhere else to submit them. This would require a moderator or moderators.\r\nSome rules for submitting an example PG, eg\r\n1. PGs should be simple and where possible meaningful.\r\n2. Code for the particular property or method should appear near the top of the PG\r\n        When meaningful means more complex code this can be achieved by wrapping the\r\n        a. method code in a function as in [https://playground.babylonjs.com/#R1F8YU#111](https://playground.babylonjs.com/#R1F8YU#111)\r\n         b. method code within an onBeforeRenderObservable as in [https://playground.babylonjs.com/#R1F8YU#63](https://playground.babylonjs.com/#R1F8YU#63)\r\n         c. complex code within functions as in [https://playground.babylonjs.com/#R1F8YU#106](https://playground.babylonjs.com/#R1F8YU#106)\r\n3. There should be comments at the top describing the method/property also stating the example use matching a template\r\n4. Template PGs for each class would be needed\r\n5. New or edited methods without a PG should have a PG submitted when method PR submitted\r\n\r\nI am sure there are more implications and I am happy for the rules to change. I only came up with them after doing half the methods.\r\n\r\nAlso as members of the community have their own agendas it is probably wishful thinking that enough people would get involved to get it done.\r\n\r\nIn terms of my very limited project I am happy to continue with the math.vector.ts classes, eg Vector2, Vector4, etc\r\n\r\nLet me know what you think and whether it is just my limited project or a community appeal.",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12878",
+                "title": "Fix invisible particles being visible again after a call of buildMesh",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/expandable-sps-with-invisible-dummy-particle/33096",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12877",
+                "title": "Fix tests running locally",
+                "description": "There were two issues preventing tests from running correctly when ran locally.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12850",
+                "title": "Created an offset when pasting controls",
+                "description": "When controls were pasted, they were visually directly on top of each other. Now, there is a visible change on screen when controls are pasted due to the offset",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "12876",
+                "title": "Draw rectangles with properly rounded corners",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-rectangle-cannot-achieve-semicircular-fillet/32934\r\n\r\nBefore, for a rectangle with same width and height, and a high corner radius, we didn't get a circle:\r\n![image](https://user-images.githubusercontent.com/6002144/184880333-2636f5e9-3485-46c7-90ee-ba62e4031d44.png)\r\nNow, using arcs to draw the rect:\r\n![image](https://user-images.githubusercontent.com/6002144/184880425-1ae03483-65e7-4cc7-bd88-f3e5e8be2ce7.png)\r\n\r\nSame for width != height, before:\r\n![image](https://user-images.githubusercontent.com/6002144/184880503-9782c85f-f344-4b07-83f1-ef3e564d24dd.png)\r\nNow:\r\n![image](https://user-images.githubusercontent.com/6002144/184880537-3c50cb3c-a6d8-4390-acbc-792b2321ce31.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/rectangle.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12873",
+                "title": "fix signature in scene.ts",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12871",
+                "title": "Adds a FileButton to the InspectableTypes",
+                "description": "This playground would demo how to use it: https://www.babylonjs-playground.com/#XK769K#5",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/iInspectable.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12870",
+                "title": "Pasted controls are selectable",
+                "description": null,
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12872",
+                "title": "comment corrections",
+                "description": "Comment changes only no code changes\r\n\r\nfloored should be fractional\r\n\r\nOne = (1.0, 1.0, 1.0) is not a unit vector as it has magnitude sqrt(3) not 1",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12866",
+                "title": "Use glb meshes for sphere and plane in NME preview window",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12821",
+                "title": "DeviceInputSystem: Update Device Input folder structure",
+                "description": "The purpose of this PR is to consolidate all of the DeviceInputSystem specific files into the DeviceInput folder.  All of the import references should also be updated.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSource.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSourceManager.ts",
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/DeviceInput/inputInterfaces.ts",
+                    "packages/dev/core/src/DeviceInput/internalDeviceSourceManager.ts",
+                    "packages/dev/core/src/DeviceInput/nativeDeviceInputSystem.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.deviceInput.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12864",
+                "title": "Restore viewport on Procedural Texture Render",
+                "description": "https://forum.babylonjs.com/t/potential-rendering-change-between-4-2-1-and-5-x/32949",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12863",
+                "title": "Rectangles couldn't get correctly rounded because -2 was subtracted f…",
+                "description": "…rom corner radius, so remove that subtraction.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/gui-rectangle-cannot-achieve-semicircular-fillet/32934",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/rectangle.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12862",
+                "title": "NME: add copy and paste support for Mac's meta/command key",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "12859",
+                "title": "Fix WebXR helper",
+                "description": "https://forum.babylonjs.com/t/webxr-properties-of-undefined-error-on-enter/32777",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "12860",
+                "title": "Add scrollbar, search text and tooltip on animation selection tool.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/add-a-slider-to-the-animation-selection/32920",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/dropUpButton.tsx",
+                    "packages/tools/sandbox/src/scss/footer.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12857",
+                "title": "Nme height2normal",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12856",
+                "title": "Fix scene serialization and loading issues.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/importing-mesh-loses-hierarchy/32779\r\n\r\nWhen we parse a mesh, the parentId from the JSON probably won't be the same as the uniqueId of the recreated parent, so keep a mapping to properly find this recreated parent.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/serializeAndLoadHierarchy.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/serializeWithoutMaterials.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "5.19.0": [
             {
                 "pr": "12858",
