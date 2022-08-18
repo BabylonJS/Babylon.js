@@ -724,6 +724,7 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.OPACITYFRESNEL = this._opacityFresnel;
                 } else {
                     defines.DIFFUSE = false;
+                    defines.DIFFUSEDIRECTUV = 0;
                     defines.DIFFUSEHASALPHA = false;
                     defines.GAMMADIFFUSE = false;
                     defines.OPACITYFRESNEL = false;
