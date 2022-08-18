@@ -251,7 +251,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             isSelected={() => DataStorage.ReadBoolean("responsiveUI", true)}
                             onSelect={(value: boolean) => {
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
-                                //DataStorage.WriteBoolean("Responsive", value);
+                                DataStorage.WriteBoolean("Responsive", value);
                                 DataStorage.WriteBoolean("responsiveUI", value);
                                 this._sizeOption = _sizeOptions.length;
                                 if (value) {
