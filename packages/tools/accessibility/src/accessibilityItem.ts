@@ -1,4 +1,5 @@
 import type { Node } from "core/node";
+import type { Scene } from "core/scene";
 import type { Control } from "gui/2D/controls/control";
 
 export type AccessibilityEntity = Node | Control;
@@ -13,11 +14,16 @@ export class AccessibilityItem {
     public entity: AccessibilityEntity;
 
     /**
+     * The BabylonJS scene that the corresponding BabylonJS entity is in.
+     */
+    public scene: Scene;
+
+    /**
      * The children of this item in the accessibility tree.
      */
     public children: AccessibilityItem[];
 
-    constructor(entity: AccessibilityEntity, children: AccessibilityItem[]) {
+    constructor(entity: AccessibilityEntity, scene: Scene, children: AccessibilityItem[]) {
         this.entity = entity;
         this.children = children;
     }

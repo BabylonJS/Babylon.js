@@ -3,6 +3,7 @@ import { Constants } from "core/Engines/constants";
 import { Color4 } from "core/Maths/math.color";
 import { Mesh } from "core/Meshes/mesh";
 import type { Node } from "core/node";
+import type { Scene } from "core/scene";
 import { AccessibilityItem } from "./accessibilityItem";
 
 /**
@@ -19,8 +20,8 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      */
     public children: AccessibilityItem[];
 
-    constructor(entity: Node, children: AccessibilityItem[]) {
-        super(entity, children);
+    constructor(entity: Node, scene: Scene, children: AccessibilityItem[]) {
+        super(entity, scene, children);
     }
 
     /**

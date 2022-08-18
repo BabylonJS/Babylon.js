@@ -1,4 +1,5 @@
 import { Vector2 } from "core/Maths/math";
+import type { Scene } from "core/scene";
 import { Button } from "gui/2D/controls/button";
 import type { Control } from "gui/2D/controls/control";
 import { Image } from "gui/2D/controls/image";
@@ -20,8 +21,8 @@ export class AccessibilityGUIItem extends AccessibilityItem {
      */
     public children: AccessibilityGUIItem[];
 
-    constructor(entity: Control, children: AccessibilityGUIItem[]) {
-        super(entity, children);
+    constructor(entity: Control, scene: Scene, children: AccessibilityGUIItem[]) {
+        super(entity, scene, children);
     }
 
     /**
@@ -129,7 +130,7 @@ export class AccessibilityGUIItem extends AccessibilityItem {
                 }
 
                 if (!this.isActionable) return;
-                this.entity.onPointerClickObservable.notifyObservers(new Vector2WithInfo(new Vector2()));
+                this.entity.onPointerClickObservable.notifyObservers(new Vector2WithInfo(new Vector2(this.scene.pointerX, this.scene.pointerY)));
                 break;
 
             case "contextmenu":

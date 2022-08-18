@@ -195,9 +195,9 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
                 const curMesh = curNode as AbstractMesh;
                 const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
                 const guiRoot = adt.getChildren();
-                result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromGUI(guiRoot)));
+                result.push(new AccessibilityNodeItem(curNode, this.props.scene, this._getAccessibilityTreeItemsFromGUI(guiRoot)));
             } else if (curNode.accessibilityTag) {
-                result.push(new AccessibilityNodeItem(curNode, this._getAccessibilityTreeItemsFromNodes(curNode.getChildren())));
+                result.push(new AccessibilityNodeItem(curNode, this.props.scene, this._getAccessibilityTreeItemsFromNodes(curNode.getChildren())));
             } else {
                 queue.push(...curNode.getChildren());
             }
@@ -219,9 +219,9 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             }
             if (curNode instanceof Container && curNode.children.length !== 0 && !(curNode instanceof Button)) {
                 const curContainer = curNode as Container;
-                result.push(new AccessibilityGUIItem(curContainer, this._getAccessibilityTreeItemsFromGUI(curContainer.children)));
+                result.push(new AccessibilityGUIItem(curContainer, this.props.scene, this._getAccessibilityTreeItemsFromGUI(curContainer.children)));
             } else {
-                result.push(new AccessibilityGUIItem(curNode, []));
+                result.push(new AccessibilityGUIItem(curNode, this.props.scene, []));
             }
         }
 

@@ -11,6 +11,9 @@ export class HTMLTwinRenderer {
         accessibilityHost.style.left = "-999px";
         accessibilityHost.style.width = "900px";
         scene.getEngine().getRenderingCanvas()?.after(accessibilityHost);
+        scene.onDisposeObservable.add(() => {
+            accessibilityHost.remove();
+        });
 
         const accessibilityTree = React.createElement(AccessibilityTreeComponent, {
             scene,
