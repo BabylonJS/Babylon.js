@@ -416,7 +416,16 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (!IsWindowObjectExist()) {
+        if (typeof (self as unknown as WorkerSelf).importScripts === "function") {
+            try {
+                (self as unknown as WorkerSelf).importScripts(scriptUrl);
+                onSuccess();
+            } catch (e) {
+                onError?.(`Unable to load script '${scriptUrl}' in worker`, e)
+            }
+            return;
+        } else if (!IsWindowObjectExist()) {
+            onError?.(`Cannot load script '${scriptUrl}' outside of a window or a worker`)
             return;
         }
         const head = document.getElementsByTagName("head")[0];
