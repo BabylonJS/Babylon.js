@@ -575,8 +575,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                            {/* { {<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" /> } } */}
+                             {/* {<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" /> } */}
                             <OptionsLineComponent
+                            
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
@@ -609,7 +610,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                         default:
                                             return -1;
                                     }
+                                    
                                 }}
+                                //addInput = {true}
                             
                             />
                         </div>
