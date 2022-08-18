@@ -1,10 +1,14 @@
-import { CheckTestSuccessStatus, getGlobalConfig, LoadPlayground } from "@tools/test-tools";
+import { CheckTestSuccessStatus, getGlobalConfig, LoadPlayground, macOSSafariCapabilities } from "@tools/test-tools";
 import { Builder, Button, By, Key } from "selenium-webdriver";
 
 jest.setTimeout(60000);
 
 describe("safari", () => {
-    const driver = new Builder().forBrowser("safari").build();
+    const hubURL = "https://hub.browserstack.com/wd/hub";
+    const driver = new Builder()
+      .usingServer(hubURL)
+      .withCapabilities(macOSSafariCapabilities)
+      .build();
 
     beforeAll(async () => {
         await driver.get(getGlobalConfig().baseUrl + `/empty.html`);
