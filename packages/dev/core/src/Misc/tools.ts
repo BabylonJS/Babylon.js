@@ -421,11 +421,11 @@ export class Tools {
                 (self as unknown as WorkerSelf).importScripts(scriptUrl);
                 onSuccess();
             } catch (e) {
-                onError?.(`Unable to load script '${scriptUrl}' in worker`, e)
+                onError?.(`Unable to load script '${scriptUrl}' in worker`, e);
             }
             return;
         } else if (!IsWindowObjectExist()) {
-            onError?.(`Cannot load script '${scriptUrl}' outside of a window or a worker`)
+            onError?.(`Cannot load script '${scriptUrl}' outside of a window or a worker`);
             return;
         }
         const head = document.getElementsByTagName("head")[0];
