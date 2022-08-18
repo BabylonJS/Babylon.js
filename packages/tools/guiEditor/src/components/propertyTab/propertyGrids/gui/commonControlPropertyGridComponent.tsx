@@ -577,7 +577,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
                              {/* {<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" /> } */}
                             <OptionsLineComponent
-                            
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
@@ -612,7 +611,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     }
                                     
                                 }}
-                                //addInput = {true}
+                                addInput={true}
                             
                             />
                         </div>
