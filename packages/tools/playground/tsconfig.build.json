@@ -4,6 +4,12 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "playground/*": ["tools/playground/src/*"]
+        }
     },
 
     "include": ["./src/**/*"]
