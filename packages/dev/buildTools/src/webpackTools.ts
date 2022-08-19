@@ -59,10 +59,10 @@ export const getRules = (
         resourceType?: "asset/inline" | "asset/resource";
         extraRules?: RuleSetRule[];
     } = {
-            includeAssets: true,
-            includeCSS: true,
-            sideEffects: true,
-        }
+        includeAssets: true,
+        includeCSS: true,
+        sideEffects: true,
+    }
 ) => {
     const rules: RuleSetRule[] = [
         {
@@ -166,9 +166,11 @@ export const commonUMDWebpackConfiguration = (options: {
     const packageMapping = getPackageMappingByDevName(options.devPackageName);
     const packageName = getPublicPackageName(options.es6Mode ? packageMapping.es6 : packageMapping.umd);
     const umdPackageName = getPublicPackageName(packageMapping.umd);
-    const filename = `${options.overrideFilename && typeof options.overrideFilename === "string" ? options.overrideFilename : umdPackageMapping[umdPackageName as UMDPackageName].baseFilename
-        }${umdPackageMapping[umdPackageName as UMDPackageName].isBundle ? ".bundle" : ""}${options.maxMode ? (options.mode && options.mode === "development" ? ".max" : "") : options.mode && options.mode === "production" ? ".min" : ""
-        }.js`;
+    const filename = `${
+        options.overrideFilename && typeof options.overrideFilename === "string" ? options.overrideFilename : umdPackageMapping[umdPackageName as UMDPackageName].baseFilename
+    }${umdPackageMapping[umdPackageName as UMDPackageName].isBundle ? ".bundle" : ""}${
+        options.maxMode ? (options.mode && options.mode === "development" ? ".max" : "") : options.mode && options.mode === "production" ? ".min" : ""
+    }.js`;
     return {
         entry: options.entryPoints ?? "./src/index.ts",
         devtool: "source-map",
