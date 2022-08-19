@@ -95,6 +95,8 @@ The files to edit are sceneJs.js and sceneTs.ts in the source folder of the baby
 
 As described in the next section, the babylon server also offers a playground-snippet debugging.
 
+To run the babylon server using the render loop of the visualization tests, set the flag `VIS_TEST_MODE` to true (for example in the .env file)
+
 ### debug a playground snippet
 
 To debug a snippet snippet run the babylon server in debug mode and add the snippet to the index. For example:
