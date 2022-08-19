@@ -2122,6 +2122,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
+            // Ensure materials effects are checked outside render loops
+            this.incrementRenderId();
             this._checkIsReady(checkRenderTargets);
         }, 100);
     }
