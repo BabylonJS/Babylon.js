@@ -50,6 +50,9 @@ import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnl
 import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
+
+
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -62,10 +65,21 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
+    private _fontFamilyOptions: IInspectableOptions[] = [
+        { label: "Arial", value: 0 },
+        { label: "Verdana", value: 1 },
+        { label: "Helvetica", value: 2 },
+        { label: "Trebuchet MS", value: 3 },
+        { label: "Times New Roman", value: 4 },
+        { label: "Georgia", value: 5 },
+        { label: "Garamond", value: 6 },
+        { label: "Courier New", value: 7 },
+        { label: "Brush Script MT", value: 8 },
+    ];
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
-
+        this.addVal = this.addVal.bind(this)
         const controls = this.props.controls;
         for (const control of controls) {
             const transformed = this._getTransformedReferenceCoordinate(control);
@@ -161,6 +175,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
+    public addVal(newVal: {label: string, value: number}){
+        console.log("hi", this._fontFamilyOptions)
+        this._fontFamilyOptions.push(newVal)
+    }
     componentWillUnmount() {
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
@@ -168,6 +186,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     render() {
+        
         const controls = this.props.controls;
         const firstControl = controls[0];
         let horizontalAlignment = firstControl.horizontalAlignment;
@@ -252,17 +271,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
-        const fontFamilyOptions = [
-            { label: "Arial", value: 0 },
-            { label: "Verdana", value: 1 },
-            { label: "Helvetica", value: 2 },
-            { label: "Trebuchet MS", value: 3 },
-            { label: "Times New Roman", value: 4 },
-            { label: "Georgia", value: 5 },
-            { label: "Garamond", value: 6 },
-            { label: "Courier New", value: 7 },
-            { label: "Brush Script MT", value: 8 },
-        ];
+        const proxyFontFamily: (string | undefined)[] =  []
+        for(let i = 0; i < this._fontFamilyOptions.length; i++){
+            proxyFontFamily.push(this._fontFamilyOptions.at(i)?.label)
+        }
+       
 
         let horizontalDisabled = false,
             verticalDisabled = false,
@@ -580,10 +593,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
-                                options={fontFamilyOptions}
+                                options={this._fontFamilyOptions}
+                                addInput = {true}
+                                addVal = {this.addVal}
                                 onSelect={(newValue) => {
-                                    proxy.fontFamily = ["Arial", "Verdana", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"][newValue as number];
+                                    proxy.fontFamily = proxyFontFamily[newValue as number];
+                                    console.log("proxy", proxy.fontFamily)
                                 }}
+                                //why do we need extract value?
                                 extractValue={() => {
                                     switch (proxy.fontFamily) {
                                         case "Arial":
@@ -611,7 +628,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     }
                                     
                                 }}
-                                addInput={true}
                             
                             />
                         </div>

@@ -2,6 +2,7 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import type { CommonControlPropertyGridComponent } from "tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent"
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -11,9 +12,11 @@ export interface IOptionsLineComponentProps {
     target: any;
     propertyName: string;
     options: IInspectableOptions[];
+    addInput?: boolean;
     noDirectUpdate?: boolean;
     onSelect?: (value: number | string) => void;
     extractValue?: (target: any) => number | string;
+    addVal?: (newVal: {label: string, value: number}) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     allowNullValue?: boolean;
     icon?: string;
@@ -21,13 +24,11 @@ export interface IOptionsLineComponentProps {
     className?: string;
     valuesAreStrings?: boolean;
     defaultIfNull?: number;
-    addInput?: boolean;
-    
 }
 
-export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
+export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string, newOptions: IInspectableOptions[] }> {
+    ccpgc: CommonControlPropertyGridComponent;
     private _localChange = false;
-
     private _remapValueIn(value: number | null): number {
         return this.props.allowNullValue && value === null ? Null_Value : value!;
     }
@@ -46,10 +47,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: this._remapValueIn(this._getValue(props)) };
+        this.state = { value: this._remapValueIn(this._getValue(props)), newOptions: this.props.options };
     }
 
-    shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
+    shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number, newOptions: IInspectableOptions[] }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -80,10 +81,28 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     setValue(value: string | number) {
         this.setState({ value: value });
     }
+    // setOptions(label: string, value: number) {
+    //     console.log("before", this.state.newOptions)
+    //     this.state.newOptions.push({label: label, value: value})
+    //     this.setState({ newOptions: this.state.newOptions });
+    //     console.log("after", this.state.newOptions)
+    // }
 
     updateValue(valueString: string) {
-        console.log(valueString)
-        const value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
+        let value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
+        
+       // onkeydown = (event) => { event.keyCode === 13 ? this.ccpgc.fontFamilyOptions = [{label: valueString, value: this.props.options.length}] : null }
+       onkeydown = (event) => { event.keyCode === 13 && this.props.addVal != undefined ? this.props.addVal({label: valueString, value: this.props.options.length}) : null }
+        
+        if(isNaN(Number(value))){
+            for(let i = 0; i < this.props.options.length; i++){
+                if(this.props.options.at(i)?.label === valueString){
+                    value = Number(this.props.options.at(i)?.value)
+                }
+            }
+        }
+        
+       
         this._localChange = true;
 
         const store = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName];
@@ -111,21 +130,29 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                         {this.props.label}
                     </div>
                     <div className="options">
-                        <input type="search" list = "options" onChange={(evt) => this.updateValue(evt.target.value)} data-value={this.state.value ?? ""}/>
-                        <datalist id="options">
-                            {this.props.options.map((option, i) => {
-                                return (
-                                    <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
-                                        {option.label}
-                                    </option>
-                                );
-                            })}
+                        
+                        <input type="text" list = "dropdown" onChange={(evt) => this.updateValue(evt.target.value)} />
+                        <datalist id="dropdown">
+                                {this.props.options.map((option, i) => {
+                                    return (
+                                        <option selected={option.selected} key={option.label + i} value={option.label} title={option.label}>
+                                            {console.log(this.state.newOptions)}
+                                            {option.label}
+                                        </option> 
+                                    );
+                                })}
+                                
+                                
+                                
+                            
                         </datalist>
+                       
                     </div>
+                    
                 </div>
             );
 
-        }
+       }
          else{
             return (
                 <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
