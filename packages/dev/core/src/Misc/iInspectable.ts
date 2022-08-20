@@ -94,10 +94,13 @@ export interface IInspectable {
      */
     step?: number;
     /**
-     * Gets the callback function when using "Button" or "FileButton" mode.
-     * In "FileButton" mode, the file is passed as the parameter.
+     * Gets the callback function when using "Button" mode
      */
     callback?: () => void;
+    /**
+     * Gets the callback function when using "FileButton" mode
+     */
+    fileCallback?: (file: File) => void;
     /**
      * Gets the list of options when using "Option" mode
      */
