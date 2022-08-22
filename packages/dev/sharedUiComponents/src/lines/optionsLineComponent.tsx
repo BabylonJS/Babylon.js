@@ -92,7 +92,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         let value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
         
        // onkeydown = (event) => { event.keyCode === 13 ? this.ccpgc.fontFamilyOptions = [{label: valueString, value: this.props.options.length}] : null }
-       onkeydown = (event) => { event.keyCode === 13 && this.props.addVal != undefined ? this.props.addVal({label: valueString, value: this.props.options.length}) : null }
+       onkeydown = (event) => { event.keyCode === 13 && this.props.addVal != undefined ? (this.props.addVal({label: valueString, value: this.props.options.length}), this.forceUpdate()) : null }
+    //onkeydown = (event) => { event.keyCode === 13 && this.props.addVal != undefined ? this.forceUpdate() : null }
         
         if(isNaN(Number(value))){
             for(let i = 0; i < this.props.options.length; i++){
@@ -123,6 +124,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
     render() {
        if(this.props.addInput){
+        
             return (
                 <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                     {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -136,7 +138,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                                 {this.props.options.map((option, i) => {
                                     return (
                                         <option selected={option.selected} key={option.label + i} value={option.label} title={option.label}>
-                                            {console.log(this.state.newOptions)}
+                                            {console.log("newoptions", this.props.options)}
                                             {option.label}
                                         </option> 
                                     );
