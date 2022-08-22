@@ -52,8 +52,6 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { UnitButton } from "shared-ui-components/lines/unitButton";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 
-
-
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
@@ -79,7 +77,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
-        this.addVal = this.addVal.bind(this)
+        this.addVal = this.addVal.bind(this);
         const controls = this.props.controls;
         for (const control of controls) {
             const transformed = this._getTransformedReferenceCoordinate(control);
@@ -110,6 +108,30 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 }
             }
         });
+        (async () => {
+            let reassignVals = false;
+            await document.fonts.ready;
+            for (const font of this._fontFamilyOptions.values()) {
+                if (!document.fonts.check(`12px "${font.label}"`)) {
+                    this._fontFamilyOptions.splice(Number(font.value), 1);
+                    reassignVals = true
+                }
+            }
+            //need to reassign values if removing an element 
+            if(reassignVals){
+                let val = 0
+                for (const font of this._fontFamilyOptions.values()) {
+                    this._fontFamilyOptions.push({label: font.label, value: val})
+                    // const index = this._fontFamilyOptions.indexOf(font)
+                    // this._fontFamilyOptions.splice(index, 1)
+                     val++
+                }
+                //this._fontFamilyOptions.splice(this._fontFamilyOptions.length / 2)
+        
+            }
+            console.log("in render Available Fonts:", [...this._fontFamilyOptions.values()]);
+        })();
+        
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
@@ -175,10 +197,27 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
-    public addVal(newVal: {label: string, value: number}){
-        console.log("hi", this._fontFamilyOptions)
-        this._fontFamilyOptions.push(newVal)
+    public addVal(newVal: { label: string; value: number }) {
+        (async () => {
+            await document.fonts.ready;
+            if (!(this._fontFamilyOptions.find((element) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
+                alert("that font is already available");
+            } else {
+                this._fontFamilyOptions.push(newVal);
+            }
+
+            for (const font of this._fontFamilyOptions.values()) {
+                //if the font is supported in the browser
+                if (!document.fonts.check(`12px "${font.label}"`)) {
+                    this._fontFamilyOptions.splice(Number(newVal.value), 1);
+                    alert("this font is not supported in the browser");
+                }
+            }
+
+            console.log("Available Fonts:", [...this._fontFamilyOptions.values()]);
+        })();
     }
+
     componentWillUnmount() {
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
@@ -186,7 +225,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     render() {
-        
         const controls = this.props.controls;
         const firstControl = controls[0];
         let horizontalAlignment = firstControl.horizontalAlignment;
@@ -271,11 +309,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
-        const proxyFontFamily: (string | undefined)[] =  []
-        for(let i = 0; i < this._fontFamilyOptions.length; i++){
-            proxyFontFamily.push(this._fontFamilyOptions.at(i)?.label)
+        const proxyFontFamily: (string | undefined)[] = [];
+        for (let i = 0; i < this._fontFamilyOptions.length; i++) {
+            proxyFontFamily.push(this._fontFamilyOptions.at(i)?.label);
         }
-       
 
         let horizontalDisabled = false,
             verticalDisabled = false,
@@ -283,6 +320,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             heightUnitsLocked = false;
 
         const parent = controls[0].parent;
+
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
                 verticalDisabled = true;
@@ -588,23 +626,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                             {/* {<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" /> } */}
+                            {/* {<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" /> } */}
                             <OptionsLineComponent
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
                                 options={this._fontFamilyOptions}
-                                addInput = {true}
-                                addVal = {this.addVal}
+                                addInput={true}
+                                addVal={this.addVal}
                                 onSelect={(newValue) => {
                                     proxy.fontFamily = proxyFontFamily[newValue as number];
-                                    console.log("proxy", proxy.fontFamily)
+                                    console.log("proxy", proxy.fontFamily);
                                 }}
                                 //why do we need extract value?
                                 extractValue={() => {
                                     switch (proxy.fontFamily) {
                                         case "Arial":
-                                            return 0
+                                            return 0;
                                         case "Verdana":
                                             return 1;
                                         case "Helvetica":
@@ -626,9 +664,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                         default:
                                             return -1;
                                     }
-                                    
                                 }}
-                            
                             />
                         </div>
                         <div className="ge-divider">
