@@ -886,6 +886,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const tempViewport = new Viewport(0, 0, 0, 0);
 
         this._prePointerObserver = scene.onPrePointerObservable.add((pi) => {
+            if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId) && pi.type === PointerEventTypes.POINTERUP) {
+                return;
+            }
             if (
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
