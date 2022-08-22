@@ -33,7 +33,7 @@ const runScene = async () => {
         }
     }
 
-    const runInVisualizationTestMode = process.env.VIS_TEST_MODE === "true" || false;
+    const runInVisualizationTestMode = (typeof process !== "undefined" && process.env.VIS_TEST_MODE === "true") || false;
     if (runInVisualizationTestMode) {
         let renderCount = 1;
         scene.useConstantAnimationDeltaTime = true;
