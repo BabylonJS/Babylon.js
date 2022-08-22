@@ -27,6 +27,12 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
             const packages = getPackageMappingByDevName(devPackageName, true);
             const buildTypePackage = getPublicPackageName(packages[type], request);
             const namespaceName = getPublicPackageName(packages.namespace, request);
+            // check if the "external"  is actually a local dependency
+            const umdPackageName = getPublicPackageName(packages["umd"], request) as UMDPackageName;
+            const directoryToExpect = umdPackageMapping[umdPackageName].baseDir || "core";
+            if (directoryToExpect && context.replace(/\\/g, "/").includes("/" + directoryToExpect + "/")) {
+                return callback(null);
+            }
             if (type === "umd" || type === "es6") {
                 return callback(null, {
                     root: namespaceName.indexOf(".") !== -1 ? namespaceName.split(".") : namespaceName,
