@@ -340,7 +340,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
             case "Grid": {
                 const grids = nodes as Grid[];
-                return <GridPropertyGridComponent grids={grids} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                return (
+                    <GridPropertyGridComponent
+                        grids={grids}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onUpdateRequiredObservable={this.props.globalState.onUpdateRequiredObservable}
+                    />
+                );
             }
             case "ScrollViewer": {
                 const scrollViewers = nodes as ScrollViewer[];
