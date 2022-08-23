@@ -7,8 +7,8 @@
         "outDir": "./dist",
         "rootDir": "./generated",
         "paths": {
-            "core/*": ["let/core/dist/*"],
-            "procedural-textures/*": ["let/proceduralTextures/generated/*"]
+            "core/*": ["lts/core/dist/*"],
+            "procedural-textures/*": ["lts/proceduralTextures/generated/*"]
         }
     },
 
