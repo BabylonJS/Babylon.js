@@ -248,7 +248,8 @@ export const LoadImage = (
         LoadFile(
             url,
             (data) => {
-                const url = `data:${mimeType};base64,` + EncodeArrayBufferToBase64(data as ArrayBuffer);
+                const blob = new Blob([data]);
+                const url = URL.createObjectURL(blob);
                 img.src = url;
             },
             undefined,
