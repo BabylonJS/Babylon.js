@@ -911,6 +911,20 @@ For example:
 npm run test:visualization -- -i "webgl2" -t "Particle subemitters"
 ```
 
+## Changlog
+
+The changelog is generated automatically based on a script in the ./scripts/ directory and the `changelog.json` file located in the `.build` directory. It is generated on every npm publish (once a week).
+
+The changelog uses tags from the PR on github to decide what category an issue belongs to. The tags are:
+
+- `breaking change` - a breaking change
+- `feature` - a new feature
+- `bug` - a bug fix
+
+If a PR was not yet published to npm you can still add or remove tags from the PR and the changelog will be updated accordingly. However, if a PR was already published to npm you will need to edit the `changelog.json` file manually.
+
+To do that, fine the corresponding PR in `changelog.json` and change the "tags" array. Add or remove a tag from the array and the changelog will be updated accordingly. The update will happen on the next publish (which is when the .md file is generated).
+
 ## Build tools
 
 Documentation coming soon :-)

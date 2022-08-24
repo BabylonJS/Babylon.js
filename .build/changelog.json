@@ -6640,7 +6640,9 @@
                 "files": [
                     "packages/dev/core/src/Cameras/arcRotateCamera.ts"
                 ],
-                "tags": []
+                "tags": [
+                    "breaking change"
+                ]
             },
             {
                 "pr": "12382",
