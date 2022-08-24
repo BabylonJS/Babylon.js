@@ -11,7 +11,7 @@ const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppe
  * The idea is to convert 'import { Something } from "location/something";' to 'import { Something } from "package/something";'
  * @param location the source's location
  * @param options
- * @param sourceFilename 
+ * @param sourceFilename
  */
 export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");
