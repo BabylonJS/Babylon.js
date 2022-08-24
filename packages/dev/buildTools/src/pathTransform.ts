@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import * as path from "path";
 import type { BuildType, PublicPackageVariable } from "./packageMapping";
 import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping";
 
@@ -10,8 +11,9 @@ const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppe
  * The idea is to convert 'import { Something } from "location/something";' to 'import { Something } from "package/something";'
  * @param location the source's location
  * @param options
+ * @param sourceFilename
  */
-export const transformPackageLocation = (location: string, options: ITransformerOptions) => {
+export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");
     const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
     if (!basePackage || !isValidDevPackageName(basePackage, true) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
@@ -33,7 +35,19 @@ export const transformPackageLocation = (location: string, options: ITransformer
         if (options.keepDev) {
             return location;
         }
-        return addJS("./" + directoryParts.join("/"), options.appendJS);
+        let computedPath = "./" + directoryParts.join("/");
+        if (sourceFilename) {
+            const generatedIndex = sourceFilename.indexOf("generated");
+            const srcIndex = sourceFilename.indexOf("src");
+            if (generatedIndex !== -1) {
+                computedPath = sourceFilename.substring(0, generatedIndex) + "generated/" + computedPath;
+            } else if (srcIndex !== -1) {
+                computedPath = sourceFilename.substring(0, srcIndex) + "src/" + computedPath;
+            }
+            computedPath = path.relative(path.dirname(sourceFilename), computedPath).split(path.sep).join(path.posix.sep);
+            computedPath = computedPath[0] === "." ? computedPath : "./" + computedPath;
+        }
+        return addJS(computedPath, options.appendJS);
     } else {
         return addJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);
     }
@@ -98,7 +112,7 @@ export function transformerFactory<T extends TransformerNode>(context: ts.Transf
     // const aliasResolver = new AliasResolver(context.getCompilerOptions());
     function transformSourceFile(sourceFile: ts.SourceFile) {
         function getResolvedPathNode(node: ts.StringLiteral) {
-            const resolvedPath = transformPackageLocation(/*sourceFile.fileName*/ node.text, options);
+            const resolvedPath = transformPackageLocation(/*sourceFile.fileName*/ node.text, options, sourceFile.fileName);
             return resolvedPath && resolvedPath !== node.text ? ts.factory.createStringLiteral(resolvedPath) : null;
         }
 
