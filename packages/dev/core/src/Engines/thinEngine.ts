@@ -9,6 +9,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { Nullable, DataArray, IndicesArray } from "../types";
 import type { EngineCapabilities } from "./engineCapabilities";
+import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { DepthCullingState } from "../States/depthCullingState";
 import { StencilState } from "../States/stencilState";
@@ -45,15 +46,13 @@ import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOption
 import type { IStencilState } from "../States/IStencilState";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-
-declare type WebRequest = import("../Misc/webRequest").WebRequest;
-declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
-declare type Observer<T> = import("../Misc/observable").Observer<T>;
-declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
-declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type Texture = import("../Materials/Textures/texture").Texture;
-declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
-declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper").WebGLRenderTargetWrapper;
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
+import type { VideoTexture } from "../Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { WebRequest } from "../Misc/webRequest";
+import type { LoadFileError } from "../Misc/fileTools";
+import type { Texture } from "../Materials/Textures/texture";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -1341,6 +1340,7 @@ export class ThinEngine {
                 this._gl.MAX = blendMinMaxExtension.MAX_EXT;
                 this._gl.MIN = blendMinMaxExtension.MIN_EXT;
             }
+            console.log("test");
         }
 
         // sRGB buffers
@@ -1730,7 +1730,7 @@ export class ThinEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame(): void {}
+    public beginFrame(): void { }
 
     /**
      * Enf the current frame
@@ -4163,10 +4163,10 @@ export class ThinEngine {
                 const internalFormat = format
                     ? this._getInternalFormat(format, texture._useSRGBBuffer)
                     : extension === ".jpg" && !texture._useSRGBBuffer
-                    ? gl.RGB
-                    : texture._useSRGBBuffer
-                    ? gl.SRGB8_ALPHA8
-                    : gl.RGBA;
+                        ? gl.RGB
+                        : texture._useSRGBBuffer
+                            ? gl.SRGB8_ALPHA8
+                            : gl.RGBA;
                 let texelFormat = format ? this._getInternalFormat(format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
 
                 if (texture._useSRGBBuffer && this.webGLVersion === 1) {
@@ -4252,7 +4252,7 @@ export class ThinEngine {
      * @param onComplete
      * @hidden
      */
-    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
+    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void { }
 
     /**
      * Creates a raw texture
@@ -4437,7 +4437,7 @@ export class ThinEngine {
      * @param height new height of the texture
      * @param depth new depth of the texture
      */
-    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {}
+    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void { }
 
     /**
      * Update the sampling mode of a given texture
@@ -5378,7 +5378,7 @@ export class ThinEngine {
 
         //clear existing errors
         // eslint-disable-next-line no-empty
-        while (gl.getError() !== gl.NO_ERROR) {}
+        while (gl.getError() !== gl.NO_ERROR) { }
 
         let successful = true;
 
@@ -5420,7 +5420,7 @@ export class ThinEngine {
 
         //clear accumulated errors
         // eslint-disable-next-line no-empty
-        while (!successful && gl.getError() !== gl.NO_ERROR) {}
+        while (!successful && gl.getError() !== gl.NO_ERROR) { }
 
         return successful;
     }
