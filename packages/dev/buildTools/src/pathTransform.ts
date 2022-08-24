@@ -17,12 +17,12 @@ const getPathForComputed = (computedPath: string, sourceFilename: string) => {
         p = p.substring(0, srcIndex) + "src/" + p;
     }
     return p;
-}
-const getRelativePath = (computedPath:string, sourceFilename: string) => {
+};
+const getRelativePath = (computedPath: string, sourceFilename: string) => {
     let p = path.relative(path.dirname(sourceFilename), computedPath).split(path.sep).join(path.posix.sep);
     p = p[0] === "." ? p : "./" + p;
     return p;
-}
+};
 /**
  * Transform the source location to the right location according to build type.
  * Used mainly for publishing and generating LTS versions.
@@ -190,12 +190,12 @@ export function transformerFactory<T extends TransformerNode>(context: ts.Transf
 }
 
 export const storeTsLib = () => {
-    const tsLibPath = path.resolve(path.resolve(".", "dist", "tslib.es6.js"))
+    const tsLibPath = path.resolve(path.resolve(".", "dist", "tslib.es6.js"));
     checkDirectorySync(path.resolve(".", "dist"));
     if (!fs.existsSync(tsLibPath)) {
         fs.writeFileSync(tsLibPath, tslibContent);
     }
-}
+};
 
 // tslib 2.4.0
 const tslibContent = `
@@ -445,4 +445,4 @@ export function __classPrivateFieldIn(state, receiver) {
     if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
     return typeof state === "function" ? receiver === state : state.has(receiver);
 }
-`
+`;
