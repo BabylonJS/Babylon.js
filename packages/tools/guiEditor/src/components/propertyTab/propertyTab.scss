@@ -9,6 +9,7 @@
     --buttonHoverBackground: #afafaf;
 }
 
+
 #ge-propertyTab {
     user-select: none;
     $line-padding-left: 5px;
@@ -159,6 +160,8 @@
         transition: outline-color 0.2s;
         border: transparent;
         padding-left: 5px;
+
+        
         &:focus {
             outline-width: 1px;
             outline-color: black;
