@@ -86,6 +86,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _defaultMousePointerId = 0;
 
     /** @hidden */
+    public _capturedPointerIds = new Set<number>();
+
+    /** @hidden */
     public _numLayoutCalls = 0;
     /** Gets the number of layout calls made the last time the ADT has been rendered */
     public get numLayoutCalls(): number {
@@ -886,7 +889,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const tempViewport = new Viewport(0, 0, 0, 0);
 
         this._prePointerObserver = scene.onPrePointerObservable.add((pi) => {
-            if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId) && pi.type === PointerEventTypes.POINTERUP) {
+            if (
+                scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId) &&
+                pi.type === PointerEventTypes.POINTERUP &&
+                !this._capturedPointerIds.has((pi.event as IPointerEvent).pointerId)
+            ) {
                 return;
             }
             if (
@@ -907,7 +914,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
                 }
             }
-
             this._translateToPicking(scene, tempViewport, pi);
         });
         this._attachPickingToSceneRender(scene, () => this._translateToPicking(scene, tempViewport, null), false);
