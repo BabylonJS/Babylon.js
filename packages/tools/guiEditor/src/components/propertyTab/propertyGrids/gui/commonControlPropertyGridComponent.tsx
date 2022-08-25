@@ -66,12 +66,12 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
-    
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
-        this.state = {
-            fontFamilyOptions : [
+        this.state = { 
+            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts"))) ? JSON.parse(String(window.sessionStorage.getItem("fonts"))) : 
+            [
                 { label: "Custom Font", value: 0},
                 { label: "Arial", value: 1 },
                 { label: "Verdana", value: 2 },
@@ -83,7 +83,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 { label: "Courier New", value: 8 },
                 { label: "Brush Script MT", value: 9 },
             ],
-        }
+        };
+       
         this.addVal = this.addVal.bind(this);
         const controls = this.props.controls;
         for (const control of controls) {
@@ -115,36 +116,35 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 }
             }
         });
-       
     }
 
-    componentWillMount(){
+    componentWillMount() {
         let reassignVals = false;
         //await document.fonts.ready;
-        const correctFonts: IInspectableOptions[] = []
-        correctFonts.push({label: "Custom Font", value: 0})
+        const correctFonts: IInspectableOptions[] = [];
+        correctFonts.push({ label: "Custom Font", value: 0 });
         for (const font of this.state.fontFamilyOptions.values()) {
             if (document.fonts.check(`12px "${font.label}"`) && font.label != "Custom Font") {
-                console.log(font)
+                console.log(font);
                 //this.state.fontFamilyOptions.splice(Number(font.value), 1);
-                correctFonts.push(font)
-                reassignVals = true
+                correctFonts.push(font);
+                reassignVals = true;
             }
         }
-        console.log("cf", correctFonts)
-        if(reassignVals){
-            let val = 0
+        console.log("cf", correctFonts);
+        if (reassignVals) {
+            let val = 0;
             for (const font of correctFonts) {
-                font.value = val 
-                val++
+                font.value = val;
+                val++;
             }
-    
         }
-        this.setState({    
-            fontFamilyOptions: correctFonts
-         });
-        //need to reassign values if removing an element 
-       
+        this.setState({
+            fontFamilyOptions: correctFonts,
+        });
+        //need to reassign values if removing an element
+        window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts))
+
         console.log("in render Available Fonts:", this.state.fontFamilyOptions);
     }
 
@@ -163,7 +163,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 (control as any)[alignment] = value;
             }
         }
-        
     }
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
@@ -211,39 +210,54 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
-    public addVal(newVal: { label: string; value: number }) {
-        console.log("newval", newVal);
-         
+    public addVal(newVal: { label: string; value: number }){
+        // console.log("newval", newVal);
+        //let ret = true;
+
         (async () => {
             await document.fonts.ready;
-            if (!(this.state.fontFamilyOptions.find((element) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
+            const fonts = JSON.parse(String(window.sessionStorage.getItem("fonts")))
+            if (!(fonts.find((element : IInspectableOptions) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
                 alert("that font is already available");
+                //ret = false;
+                //return false;
             } else {
                 if (!document.fonts.check(`12px "${newVal.label}"`)) {
                     alert("this font is not supported in the browser");
-                }
-                else{
-                    this.state.fontFamilyOptions.push(newVal)
-                    this.setState({    
-                        fontFamilyOptions: [...this.state.fontFamilyOptions]
+                    //ret = false;
+                   // return false;
+                } else {
+                    fonts.push(newVal);
+                    this.setState({
+                        fontFamilyOptions: [...fonts],
                     });
                 }
-                
             }
 
+            //this.state.fontFamilyOptions.push(newVal);
+            window.sessionStorage.setItem("fonts", JSON.stringify(this.state.fontFamilyOptions))
             
-                //this.state.fontFamilyOptions.push(newVal);
             console.log("Available Fonts:", [...this.state.fontFamilyOptions.values()]);
+            //return true;
             
         })();
-       
+       // return ret;
+       //return false;
     }
-  
+
     componentWillUnmount() {
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
         }
     }
+
+    // makeProxyList(){
+    //         //await this.addVal()
+    //         (const result = await this.addVal()
+            
+    //         return proxyFontFamily;)
+           
+    // }
 
     render() {
         const controls = this.props.controls;
@@ -330,17 +344,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             { label: "oblique", value: 2 },
         ];
 
-        const proxyFontFamily: (string | undefined)[] = [];
-        for (let i = 0; i < this.state.fontFamilyOptions.length; i++) {
-            proxyFontFamily.push(this.state.fontFamilyOptions.at(i)?.label);
-        }
-
         let horizontalDisabled = false,
             verticalDisabled = false,
             widthUnitsLocked = false,
             heightUnitsLocked = false;
 
         const parent = controls[0].parent;
+        
+        // const makeProxyList = async() => {
+        //   await this.addVal()
+
+        // }
+        const proxyFontFamily: (string | undefined)[] = [];
+        const fonts = JSON.parse(String(window.sessionStorage.getItem("fonts")))
+            for (let i = 0; i < fonts.length; i++) {
+                proxyFontFamily.push(fonts.at(i)?.label);
+            }
 
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
@@ -652,13 +671,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
-                                options={this.state.fontFamilyOptions}
+                                options={fonts}
                                 addVal={this.addVal}
                                 onSelect={(newValue) => {
+                                    console.log("proxylist", proxyFontFamily);
                                     proxy.fontFamily = proxyFontFamily[newValue as number];
-                                    console.log(proxyFontFamily)
                                     console.log("proxy", proxy.fontFamily);
                                 }}
+                               
                                 //why do we need extract value?
                                 extractValue={() => {
                                     switch (proxy.fontFamily) {
