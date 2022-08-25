@@ -9,9 +9,9 @@ export const prepareES6Build = async () => {
     const constFile = checkArgs(["--constFile", "-cf"], false, true);
     try {
         if (constFile) {
-            const constantsContent = fs.readFileSync(path.resolve(baseDir, "dist", constFile as string), "utf8").replace("export { Constants };", "Constants;");
+            const constantsContent = fs.readFileSync(path.resolve(baseDir, "dist", constFile as string), "utf8").replace("export class Constants", "const Constants = ");
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            const Constants = eval(constantsContent);
+            const Constants = eval(constantsContent + "\nConstants;");
             const allSourceFiles = glob.sync(path.resolve(baseDir, "dist", "**", "*.js"));
             allSourceFiles.forEach((file) => {
                 if (file.endsWith(constFile as string)) {
@@ -45,6 +45,7 @@ export const prepareES6Build = async () => {
             });
         }
     } catch (e) {
+        console.log(e);
         process.exit(1);
     }
     // this script copies all files from dist to ../
