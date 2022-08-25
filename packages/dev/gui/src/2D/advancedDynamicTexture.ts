@@ -962,26 +962,35 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         self.removeEventListener("paste", this._onClipboardPaste);
     }
 
-    private _transformUvs(uv: Vector2) {
+    /**
+     * Transform uvs from mesh space to texture space, taking the texture into account
+     * @param uv the uvs in mesh space
+     * @returns the uvs in texture space
+     */
+    private _transformUvs(uv: Vector2): Vector2 {
         const textureMatrix = this.getTextureMatrix();
-        const homogeneousTextureMatrix = TmpVectors.Matrix[0];
+        if (textureMatrix.isIdentityAs3x2()) {
+            return uv;
+        } else {
+            const homogeneousTextureMatrix = TmpVectors.Matrix[0];
 
-        textureMatrix.getRowToRef(0, TmpVectors.Vector4[0]);
-        textureMatrix.getRowToRef(1, TmpVectors.Vector4[1]);
-        textureMatrix.getRowToRef(2, TmpVectors.Vector4[2]);
+            textureMatrix.getRowToRef(0, TmpVectors.Vector4[0]);
+            textureMatrix.getRowToRef(1, TmpVectors.Vector4[1]);
+            textureMatrix.getRowToRef(2, TmpVectors.Vector4[2]);
 
-        const r0 = TmpVectors.Vector4[0];
-        const r1 = TmpVectors.Vector4[1];
-        const r2 = TmpVectors.Vector4[2];
+            const r0 = TmpVectors.Vector4[0];
+            const r1 = TmpVectors.Vector4[1];
+            const r2 = TmpVectors.Vector4[2];
 
-        homogeneousTextureMatrix.setRowFromFloats(0, r0.x, r0.y, 0, 0);
-        homogeneousTextureMatrix.setRowFromFloats(1, r1.x, r1.y, 0, 0);
-        homogeneousTextureMatrix.setRowFromFloats(2, 0, 0, 1, 0);
-        homogeneousTextureMatrix.setRowFromFloats(3, r2.x, r2.y, 0, 1);
+            homogeneousTextureMatrix.setRowFromFloats(0, r0.x, r0.y, 0, 0);
+            homogeneousTextureMatrix.setRowFromFloats(1, r1.x, r1.y, 0, 0);
+            homogeneousTextureMatrix.setRowFromFloats(2, 0, 0, 1, 0);
+            homogeneousTextureMatrix.setRowFromFloats(3, r2.x, r2.y, 0, 1);
 
-        const result = TmpVectors.Vector2[0];
-        Vector2.TransformToRef(uv, homogeneousTextureMatrix, result);
-        return result;
+            const result = TmpVectors.Vector2[0];
+            Vector2.TransformToRef(uv, homogeneousTextureMatrix, result);
+            return result;
+        }
     }
     /**
      * Connect the texture to a hosting mesh to enable interactions
