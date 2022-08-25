@@ -655,6 +655,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onActiveCameraChanged = new Observable<Scene>();
 
     /**
+     * An event triggered when the activeCameras property is updated
+     */
+    public onActiveCamerasChanged = new Observable<Scene>();
+
+    /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -1012,8 +1017,26 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._lightsEnabled;
     }
 
+    private _activeCameras: Nullable<Camera[]> = new Array<Camera>();
     /** All of the active cameras added to this scene. */
-    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
+    // TODO ADD PROXY TO FIRE OBSERVABLE
+    public get activeCameras(): Nullable<Camera[]> {
+        return this._activeCameras;
+    }
+    public addActiveCamera(c: Camera) {
+        if (this._activeCameras) {
+            this._activeCameras.push(c);
+            this.onActiveCamerasChanged.notifyObservers(this);
+        }
+    }
+    public set activeCameras(cameras: Nullable<Camera[]>) {
+        if (cameras) {
+            this._activeCameras = new Array<Camera>(...cameras);
+        } else {
+            this._activeCameras = cameras;
+        }
+        this.onActiveCamerasChanged.notifyObservers(this);
+    }
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;

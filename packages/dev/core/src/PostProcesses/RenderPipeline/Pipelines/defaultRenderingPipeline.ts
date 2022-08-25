@@ -553,6 +553,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     private _depthOfFieldSceneObserver: Nullable<Observer<Scene>> = null;
+    private _activeCameraChangedObserver: Nullable<Observer<Scene>> = null;
 
     private _buildPipeline() {
         if (!this._buildAllowed) {
@@ -689,8 +690,16 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         }
 
         // In multicamera mode, the scene needs to autoclear in between cameras.
-        if (this._scene.activeCameras && this._scene.activeCameras.length > 1) {
+        if ((this._scene.activeCameras && this._scene.activeCameras.length > 1) || (this._scene.activeCamera && this.cameras.indexOf(this._scene.activeCamera) === -1)) {
             this._scene.autoClear = true;
+        }
+        // The active camera on the scene can be changed anytime
+        if (!this._activeCameraChangedObserver) {
+            this._activeCameraChangedObserver = this._scene.onActiveCameraChanged.add(() => {
+                if (this._scene.activeCamera && this.cameras.indexOf(this._scene.activeCamera) === -1) {
+                    this._scene.autoClear = true;
+                }
+            });
         }
 
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
