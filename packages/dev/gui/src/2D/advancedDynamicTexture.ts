@@ -969,8 +969,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     private _transformUvs(uv: Vector2): Vector2 {
         const textureMatrix = this.getTextureMatrix();
+        let result;
         if (textureMatrix.isIdentityAs3x2()) {
-            return uv;
+            result = uv;
         } else {
             const homogeneousTextureMatrix = TmpVectors.Matrix[0];
 
@@ -987,10 +988,32 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             homogeneousTextureMatrix.setRowFromFloats(2, 0, 0, 1, 0);
             homogeneousTextureMatrix.setRowFromFloats(3, r2.x, r2.y, 0, 1);
 
-            const result = TmpVectors.Vector2[0];
+            result = TmpVectors.Vector2[0];
             Vector2.TransformToRef(uv, homogeneousTextureMatrix, result);
-            return result;
         }
+
+        // In wrap and mirror mode, the texture coordinate for coordinates more than 1 is the fractional part of the coordinate
+        if (this.wrapU === Texture.WRAP_ADDRESSMODE || this.wrapU === Texture.MIRROR_ADDRESSMODE) {
+            if (result.x > 1) {
+                let fX = result.x - Math.trunc(result.x);
+                // In mirror mode, the sign of the texture coordinate depends on the integer part -
+                // odd integers means it is mirrored from the original coordinate
+                if (this.wrapU === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                    fX = 1 - fX;
+                }
+                result.x = fX;
+            }
+        }
+        if (this.wrapV === Texture.WRAP_ADDRESSMODE || this.wrapV === Texture.MIRROR_ADDRESSMODE) {
+            if (result.y > 1) {
+                let fY = result.y - Math.trunc(result.y);
+                if (this.wrapV === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                    fY = 1 - fY;
+                }
+                result.y = fY;
+            }
+        }
+        return result;
     }
     /**
      * Connect the texture to a hosting mesh to enable interactions
