@@ -15,7 +15,7 @@ export interface IOptionsLineComponentProps {
     addInput?: boolean;
     noDirectUpdate?: boolean;
     onSelect?: (value: number | string) => void;
-    onKeyDown?: (value: number | string) => void
+    onKeyDown?: (value: string) => void
     extractValue?: (target: any) => number | string;
     addVal?: (newVal: {label: string, value: number}) => void;
 
@@ -82,9 +82,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     setValue(value: string | number) {
-        console.log(this.state.value)
-        this.setState({ value: value });
         console.log(value)
+        this.setState({ value: value });
+        console.log(this.state.value)
     }
    
 
@@ -137,11 +137,27 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
      updateCustomValue(){
         //console.log("called", valueString)
         //console.log("the value", val)
-       // this.setValue(val)
-        if (this.props.onSelect) {
-            console.log("we selectttttt?" + this.state.value)
-            this.props.onSelect(this.props.options.length - 1);
+      
+       this.setValue(this.props.options.length - 1)
+       console.log("I set value", this.state.value)
+       setTimeout(() => {
+        this.setState({addCustom : false})
+        if(this.props.onSelect){
+            console.log("onselect", JSON.parse(String(window.sessionStorage.getItem("fonts"))), JSON.parse(String(window.sessionStorage.getItem("fonts"))).length - 1)
+            this.props.onSelect(JSON.parse(String(window.sessionStorage.getItem("fonts"))).length - 1)
+            this.forceUpdate()
+            
         }
+        
+      }, 100)
+    
+        // if (this.props.onSelect) {
+        //     console.log("selected?" + this.state.value)
+        //     console.log("options", this.props.options)
+           
+            
+            
+        // }
 
      }
 
@@ -170,7 +186,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                                 
                             
                         </datalist> */}
-                        <input type = "text" placeholder = "Enter a custom font here" id = "customFont" onKeyDown = {(event) => { event.keyCode === 13 && this.props.addVal != undefined ? (this.props.addVal({label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length}), this.setState({addCustom : false}), this.updateCustomValue()) : null }} />
+                        <input type = "text" placeholder = "Enter a custom font here" id = "customFont" onKeyDown = {(event) => { event.keyCode === 13 && this.props.addVal != undefined ? (this.props.addVal({label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length}), this.updateCustomValue()) : null }} />
                        
                     </div>
                     
@@ -179,6 +195,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
        }
          else{
+            console.log("hereee")
             return (
                 <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                     {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -186,11 +203,14 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                         {this.props.label}
                     </div>
                     <div className="options">
-                        <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
+                        {console.log("value of select", this.state.value)}
+                        <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value === -1 || null || undefined ? 1 : this.state.value}>
                             {this.props.options.map((option, i) => {
+                                //const select = option.label === "Custom Font" ?  option.selected = false : option.selected = true
                                 return (
+                                    
                                     <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
-                                        {console.log("here", this.props.options)}
+                                        {/* {console.log("here", this.props.options)} */}
                                         {option.label}
                                     </option>
                                 );
