@@ -26,3 +26,7 @@
 	#endif
 	uniform vec4 colorTransformSettings;
 #endif
+
+#ifdef WHITEBALANCE
+	uniform vec3 whiteBalanceScale;
+#endif

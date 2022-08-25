@@ -122,6 +122,8 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public REFLECTIONBGR = false;
 
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
+    public MAINTAINLUMINANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;

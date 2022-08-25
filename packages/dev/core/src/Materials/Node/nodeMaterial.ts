@@ -99,6 +99,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
+    public MAINTAINLUMINANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;

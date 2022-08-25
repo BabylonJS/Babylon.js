@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4, serializeAsColor3 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
-import { Color4 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { ColorCurves } from "../Materials/colorCurves";
 
@@ -17,6 +17,8 @@ declare type Effect = import("../Materials/effect").Effect;
  */
 export interface IImageProcessingConfigurationDefines {
     IMAGEPROCESSING: boolean;
+    WHITEBALANCE: boolean;
+    MAINTAINLUMINANCE: boolean;
     VIGNETTE: boolean;
     VIGNETTEBLENDMODEMULTIPLY: boolean;
     VIGNETTEBLENDMODEOPAQUE: boolean;
@@ -38,6 +40,8 @@ export interface IImageProcessingConfigurationDefines {
  */
 export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
+    public MAINTAINLUMINANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
@@ -363,6 +367,72 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
+    @serialize()
+    private _whiteBalanceEnabled = false;
+    /**
+     * Gets whether the white balance is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this._whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        if (this._whiteBalanceEnabled === value) {
+            return;
+        }
+
+        this._whiteBalanceEnabled = value;
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _luminanceMaintainingWhiteBalanceEnabled = false;
+    /**
+     * Gets whether the white balance maintains luminance.
+     */
+    public get luminanceMaintainingWhiteBalanceEnabled(): boolean {
+        return this._luminanceMaintainingWhiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance maintains luminance.
+     */
+    public set luminanceMaintainingWhiteBalanceEnabled(value: boolean) {
+        if (this._luminanceMaintainingWhiteBalanceEnabled === value) {
+            return;
+        }
+
+        this._luminanceMaintainingWhiteBalanceEnabled = value;
+        this._updateParameters();
+    }
+
+    /**
+     * This is what the inverted white balance color passed to the shader.
+     * Controlled via `whiteBalanceColor`.
+     */
+    private _whiteBalanceScale = Color3.White();
+
+    @serializeAsColor3()
+    private _whiteBalanceColor = Color3.White();
+    /**
+     * Gets the color used for white balancing.
+     */
+    public get whiteBalanceColor(): Color3 {
+        return this._whiteBalanceColor;
+    }
+    /**
+     * Sets the color used for white balancing.
+     */
+    public set whiteBalanceColor(value: Color3) {
+        if (this._whiteBalanceColor.equals(value)) {
+            return;
+        }
+
+        this._whiteBalanceColor.copyFrom(value);
+        this._whiteBalanceScale.set(1.0 / Math.max(0.000001, value.r), 1.0 / Math.max(0.000001, value.g), 1.0 / Math.max(0.000001, value.b));
+    }
+
     /** @hidden */
     @serialize()
     public _applyByPostProcess = false;
@@ -447,6 +517,9 @@ export class ImageProcessingConfiguration {
         if (defines.COLORCURVES) {
             ColorCurves.PrepareUniforms(uniforms);
         }
+        if (defines.WHITEBALANCE) {
+            uniforms.push("whiteBalanceScale");
+        }
     }
 
     /**
@@ -480,6 +553,9 @@ export class ImageProcessingConfiguration {
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
         }
+
+        defines.WHITEBALANCE = this.whiteBalanceEnabled;
+        defines.MAINTAINLUMINANCE = this.whiteBalanceEnabled && this.luminanceMaintainingWhiteBalanceEnabled;
 
         defines.VIGNETTE = this.vignetteEnabled;
         defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;
@@ -570,6 +646,11 @@ export class ImageProcessingConfiguration {
                 textureSize, // textureSize
                 this.colorGradingTexture.level // weight
             );
+        }
+
+        // White Balance
+        if (this._whiteBalanceEnabled) {
+            effect.setColor3("whiteBalanceScale", this._whiteBalanceScale);
         }
     }
 

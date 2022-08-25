@@ -164,6 +164,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public RGBDREFRACTION = false;
 
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
+    public MAINTAINLUMINANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;

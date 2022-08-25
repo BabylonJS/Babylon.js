@@ -2,7 +2,7 @@
 import type { Nullable } from "../types";
 import type { Observer } from "../Misc/observable";
 import { serialize } from "../Misc/decorators";
-import type { Color4 } from "../Maths/math.color";
+import type { Color3, Color4 } from "../Maths/math.color";
 import type { Camera } from "../Cameras/camera";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
@@ -322,6 +322,47 @@ export class ImageProcessingPostProcess extends PostProcess {
         this.imageProcessingConfiguration.vignetteEnabled = value;
     }
 
+    /**
+     * Gets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+     * if vignetteEnabled is set to true.
+     */
+    public get whiteBalanceColor(): Color3 {
+        return this.imageProcessingConfiguration.whiteBalanceColor;
+    }
+    /**
+     * Sets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+     * if vignetteEnabled is set to true.
+     */
+    public set whiteBalanceColor(value: Color3) {
+        this.imageProcessingConfiguration.whiteBalanceColor = value;
+    }
+
+    /**
+     * Gets whether the white balance effect attempts to maintain luminance.
+     */
+    public get luminanceMaintaingWhiteBalanceEnaled(): boolean {
+        return this.imageProcessingConfiguration.luminanceMaintainingWhiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect attempts to maintain luminance.
+     */
+    public set luminanceMaintaingWhiteBalanceEnaled(value: boolean) {
+        this.imageProcessingConfiguration.luminanceMaintainingWhiteBalanceEnabled = value;
+    }
+
+    /**
+     * Gets whether the white balance effect is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this.imageProcessingConfiguration.whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        this.imageProcessingConfiguration.whiteBalanceEnabled = value;
+    }
+
     @serialize()
     private _fromLinearSpace = true;
     /**
@@ -347,6 +388,8 @@ export class ImageProcessingPostProcess extends PostProcess {
      */
     private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
         IMAGEPROCESSING: false,
+        WHITEBALANCE: false,
+        MAINTAINLUMINANCE: false,
         VIGNETTE: false,
         VIGNETTEBLENDMODEMULTIPLY: false,
         VIGNETTEBLENDMODEOPAQUE: false,
