@@ -5,7 +5,6 @@
         "outDir": "./dist",
         "rootDir": "../../../lts/serializers/generated",
         "declaration": true,
-        "target": "es5",
         "importHelpers": true,
         "plugins": [
             { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/serializers", "appendJS": true },
