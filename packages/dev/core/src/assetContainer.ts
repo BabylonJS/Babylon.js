@@ -19,7 +19,7 @@ import type { InstancedMesh } from "./Meshes/instancedMesh";
 /**
  * Set of assets to keep when moving a scene into an asset container.
  */
-export class KeepAssets extends AbstractScene { }
+export class KeepAssets extends AbstractScene {}
 
 /**
  * Class used to store the output of the AssetContainer.instantiateAllMeshesToScene function
@@ -222,7 +222,7 @@ export class AssetContainer extends AbstractScene {
                     }
                 }
             }
-        }
+        };
 
         this.meshes.forEach((o, idx) => {
             if (localOptions.predicate && !localOptions.predicate(o)) {
@@ -241,10 +241,15 @@ export class AssetContainer extends AbstractScene {
                         sourceMap = instanceSourceMap[sourceMeshIndex] as Mesh;
                     }
                 }
-                const newOne = isInstance ? (o as InstancedMesh).instantiateHierarchy(null, {
-                    ...localOptions,
-                    newSourcedMesh: sourceMap
-                }, onNewCreated)
+                const newOne = isInstance
+                    ? (o as InstancedMesh).instantiateHierarchy(
+                          null,
+                          {
+                              ...localOptions,
+                              newSourcedMesh: sourceMap,
+                          },
+                          onNewCreated
+                      )
                     : o.instantiateHierarchy(null, localOptions, onNewCreated);
 
                 if (newOne) {
@@ -689,10 +694,10 @@ export class AssetContainer extends AbstractScene {
         const _targetConverter = targetConverter
             ? targetConverter
             : (target: any) => {
-                let node = null;
+                  let node = null;
 
-                const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
-                /*
+                  const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
+                  /*
               BabylonJS adds special naming to targets that are children of nodes.
               This name attempts to remove that special naming to get the parent nodes name in case the target
               can't be found in the node tree
@@ -700,22 +705,22 @@ export class AssetContainer extends AbstractScene {
               Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name
               of the primitive's parent.
           */
-                const name = target.name.split(".").join("").split("_primitive")[0];
+                  const name = target.name.split(".").join("").split("_primitive")[0];
 
-                switch (targetProperty) {
-                    case "position":
-                    case "rotationQuaternion":
-                        node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
-                        break;
-                    case "influence":
-                        node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
-                        break;
-                    default:
-                        node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
-                }
+                  switch (targetProperty) {
+                      case "position":
+                      case "rotationQuaternion":
+                          node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
+                          break;
+                      case "influence":
+                          node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
+                          break;
+                      default:
+                          node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
+                  }
 
-                return node;
-            };
+                  return node;
+              };
 
         // Copy new node animations
         const nodesInAC = this.getNodes();

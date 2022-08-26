@@ -561,9 +561,9 @@ export class InstancedMesh extends AbstractMesh {
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
      * @returns an instance (or a clone) of the current node with its hierarchy
      */
-     public instantiateHierarchy(
+    public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean), newSourcedMesh?: Mesh },
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean); newSourcedMesh?: Mesh },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true, options && options.newSourcedMesh);
