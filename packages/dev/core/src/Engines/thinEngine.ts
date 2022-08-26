@@ -1340,7 +1340,6 @@ export class ThinEngine {
                 this._gl.MAX = blendMinMaxExtension.MAX_EXT;
                 this._gl.MIN = blendMinMaxExtension.MIN_EXT;
             }
-            console.log("test");
         }
 
         // sRGB buffers
