@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import type { Matrix } from "core/Maths/math.vector";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Vector2, Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { PointerInfoPre, PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
 import { PointerEventTypes } from "core/Events/pointerEvents";
@@ -967,6 +967,60 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         self.removeEventListener("cut", this._onClipboardCut);
         self.removeEventListener("paste", this._onClipboardPaste);
     }
+
+    /**
+     * Transform uvs from mesh space to texture space, taking the texture into account
+     * @param uv the uvs in mesh space
+     * @returns the uvs in texture space
+     */
+    private _transformUvs(uv: Vector2): Vector2 {
+        const textureMatrix = this.getTextureMatrix();
+        let result;
+        if (textureMatrix.isIdentityAs3x2()) {
+            result = uv;
+        } else {
+            const homogeneousTextureMatrix = TmpVectors.Matrix[0];
+
+            textureMatrix.getRowToRef(0, TmpVectors.Vector4[0]);
+            textureMatrix.getRowToRef(1, TmpVectors.Vector4[1]);
+            textureMatrix.getRowToRef(2, TmpVectors.Vector4[2]);
+
+            const r0 = TmpVectors.Vector4[0];
+            const r1 = TmpVectors.Vector4[1];
+            const r2 = TmpVectors.Vector4[2];
+
+            homogeneousTextureMatrix.setRowFromFloats(0, r0.x, r0.y, 0, 0);
+            homogeneousTextureMatrix.setRowFromFloats(1, r1.x, r1.y, 0, 0);
+            homogeneousTextureMatrix.setRowFromFloats(2, 0, 0, 1, 0);
+            homogeneousTextureMatrix.setRowFromFloats(3, r2.x, r2.y, 0, 1);
+
+            result = TmpVectors.Vector2[0];
+            Vector2.TransformToRef(uv, homogeneousTextureMatrix, result);
+        }
+
+        // In wrap and mirror mode, the texture coordinate for coordinates more than 1 is the fractional part of the coordinate
+        if (this.wrapU === Texture.WRAP_ADDRESSMODE || this.wrapU === Texture.MIRROR_ADDRESSMODE) {
+            if (result.x > 1) {
+                let fX = result.x - Math.trunc(result.x);
+                // In mirror mode, the sign of the texture coordinate depends on the integer part -
+                // odd integers means it is mirrored from the original coordinate
+                if (this.wrapU === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                    fX = 1 - fX;
+                }
+                result.x = fX;
+            }
+        }
+        if (this.wrapV === Texture.WRAP_ADDRESSMODE || this.wrapV === Texture.MIRROR_ADDRESSMODE) {
+            if (result.y > 1) {
+                let fY = result.y - Math.trunc(result.y);
+                if (this.wrapV === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                    fY = 1 - fY;
+                }
+                result.y = fY;
+            }
+        }
+        return result;
+    }
     /**
      * Connect the texture to a hosting mesh to enable interactions
      * @param mesh defines the mesh to attach to
@@ -993,8 +1047,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
-                const uv = pi.pickInfo.getTextureCoordinates();
+                let uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
+                    uv = this._transformUvs(uv);
                     const size = this.getSize();
                     this._doPicking(
                         uv.x * size.width,
@@ -1047,8 +1102,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 const pointerId = this._defaultMousePointerId;
                 const pick = scene?.pick(scene.pointerX, scene.pointerY);
                 if (pick && pick.hit && pick.pickedMesh === mesh) {
-                    const uv = pick.getTextureCoordinates();
+                    let uv = pick.getTextureCoordinates();
                     if (uv) {
+                        uv = this._transformUvs(uv);
                         const size = this.getSize();
                         this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height, null, PointerEventTypes.POINTERMOVE, pointerId, 0);
                     }
