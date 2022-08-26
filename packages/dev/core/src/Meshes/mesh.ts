@@ -741,7 +741,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         for (const child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarchy(instance, options, onNewNodeCreated);
+            // instancedMesh should have a different sourced mesh
+            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh") {
+                (child as InstancedMesh).instantiateHierarchy(instance, {
+                    doNotInstantiate: (options && options.doNotInstantiate) || false,
+                    newSourcedMesh: (instance as Mesh)
+                }, onNewNodeCreated);
+            } else {
+                child.instantiateHierarchy(instance, options, onNewNodeCreated);
+            }
         }
 
         return instance;
@@ -2304,8 +2312,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const fillMode = scene.forcePointsCloud
             ? Material.PointFillMode
             : scene.forceWireframe
-            ? Material.WireFrameFillMode
-            : this._internalMeshDataInfo._effectiveMaterial.fillMode;
+                ? Material.WireFrameFillMode
+                : this._internalMeshDataInfo._effectiveMaterial.fillMode;
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
@@ -2568,7 +2576,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 scene.removePendingData(this);
             },
-            () => {},
+            () => { },
             scene.offlineProvider,
             getBinaryData
         );
@@ -2880,7 +2888,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+        Tools.LoadImage(url, onload, () => { }, scene.offlineProvider);
         return this;
     }
 
