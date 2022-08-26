@@ -1019,19 +1019,32 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _activeCameras: Nullable<Camera[]> = new Array<Camera>();
     /** All of the active cameras added to this scene. */
-    // TODO ADD PROXY TO FIRE OBSERVABLE
     public get activeCameras(): Nullable<Camera[]> {
         return this._activeCameras;
     }
-    public addActiveCamera(c: Camera) {
-        if (this._activeCameras) {
-            this._activeCameras.push(c);
-            this.onActiveCamerasChanged.notifyObservers(this);
-        }
+
+    private _proxySet(target: Camera[], property: string | symbol, c: Camera) {
+        this.onActiveCamerasChanged.notifyObservers(this);
+        return Reflect.set(target, property, c);
     }
+
+    private _proxyPush(target: Camera[], ...c: Camera[]) {
+        Array.prototype.push.apply(target, c);
+        this.onActiveCamerasChanged.notifyObservers(this);
+    }
+
+    private _makeObservableArray(array: Camera[]) {
+        const _proxyObject = {
+            set: (target: Camera[], property: string | symbol, c: Camera) => this._proxySet(target, property, c),
+            push: (target: Camera[], ...c: Camera[]) => this._proxyPush(target, ...c),
+        };
+
+        return new Proxy(array, _proxyObject);
+    }
+
     public set activeCameras(cameras: Nullable<Camera[]>) {
         if (cameras) {
-            this._activeCameras = new Array<Camera>(...cameras);
+            this._activeCameras = this._makeObservableArray(cameras);
         } else {
             this._activeCameras = cameras;
         }

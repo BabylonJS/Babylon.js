@@ -554,6 +554,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
     private _depthOfFieldSceneObserver: Nullable<Observer<Scene>> = null;
     private _activeCameraChangedObserver: Nullable<Observer<Scene>> = null;
+    private _activeCamerasChangedObserver: Nullable<Observer<Scene>> = null;
 
     private _buildPipeline() {
         if (!this._buildAllowed) {
@@ -701,6 +702,13 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
                 }
             });
         }
+        if (!this._activeCamerasChangedObserver) {
+            this._activeCamerasChangedObserver = this._scene.onActiveCamerasChanged.add(() => {
+                if (this._scene.activeCameras && this._scene.activeCameras.length > 1) {
+                    this._scene.autoClear = true;
+                }
+            });
+        }
 
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
             Logger.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
@@ -795,6 +803,14 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         if (this._resizeObserver) {
             this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
+        }
+        if (this._activeCameraChangedObserver) {
+            this._scene.onActiveCameraChanged.remove(this._activeCameraChangedObserver);
+            this._activeCameraChangedObserver = null;
+        }
+        if (this._activeCamerasChangedObserver) {
+            this._scene.onActiveCamerasChanged.remove(this._activeCamerasChangedObserver);
+            this._activeCamerasChangedObserver = null;
         }
         this._scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigurationObserver);
         super.dispose();
