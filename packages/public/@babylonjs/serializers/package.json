@@ -18,9 +18,6 @@
         "postcompile": "build-tools -c add-js-to-es6",
         "prepublishOnly": "build-tools -c prepare-es6-build"
     },
-    "dependencies": {
-        "tslib": "^2.4.0"
-    },
     "devDependencies": {
         "@babylonjs/core": "^5.21.0",
         "@dev/build-tools": "^1.0.0",
