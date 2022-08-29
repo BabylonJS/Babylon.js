@@ -1,10 +1,12 @@
-import { CheckTestSuccessStatus, getGlobalConfig, LoadPlayground } from "@tools/test-tools";
+import { CheckTestSuccessStatus, getGlobalConfig, LoadPlayground, macOSSafariCapabilities } from "@tools/test-tools";
 import { Builder, Button, By, Key } from "selenium-webdriver";
 
 jest.setTimeout(60000);
 
 describe("safari", () => {
-    const driver = new Builder().forBrowser("safari").build();
+    const hubURL = "https://hub.browserstack.com/wd/hub";
+    // If running on local MacOS machine, use local WebDriver
+    const driver = process.platform === "darwin" ? new Builder().forBrowser("safari").build() : new Builder().usingServer(hubURL).withCapabilities(macOSSafariCapabilities).build();
 
     beforeAll(async () => {
         await driver.get(getGlobalConfig().baseUrl + `/empty.html`);
@@ -50,26 +52,24 @@ describe("safari", () => {
 
         await driver.sleep(1000);
 
-        await driver
-            .executeScript("BABYLON.Scene.DoubleClickDelay = 500;")
-            .then(async () => {
-                await driver
-                    .actions()
-                    .move({ origin: el })
-                    .press(Button.LEFT)
-                    .release(Button.LEFT)
-                    .press(Button.LEFT)
-                    .release(Button.LEFT)
-                    .press(Button.RIGHT)
-                    .release(Button.RIGHT)
-                    .press(Button.RIGHT)
-                    .release(Button.RIGHT)
-                    .press(Button.MIDDLE)
-                    .release(Button.MIDDLE)
-                    .press(Button.MIDDLE)
-                    .release(Button.MIDDLE)
-                    .perform();
-            });
+        await driver.executeScript("BABYLON.Scene.DoubleClickDelay = 500;").then(async () => {
+            await driver
+                .actions()
+                .move({ origin: el })
+                .press(Button.LEFT)
+                .release(Button.LEFT)
+                .press(Button.LEFT)
+                .release(Button.LEFT)
+                .press(Button.RIGHT)
+                .release(Button.RIGHT)
+                .press(Button.RIGHT)
+                .release(Button.RIGHT)
+                .press(Button.MIDDLE)
+                .release(Button.MIDDLE)
+                .press(Button.MIDDLE)
+                .release(Button.MIDDLE)
+                .perform();
+        });
 
         const testStatus = await CheckTestSuccessStatus(driver);
         expect(testStatus).toBe(true);

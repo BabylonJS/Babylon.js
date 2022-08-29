@@ -5,11 +5,15 @@
         "outDir": "./dist",
         "rootDir": "../../../lts/gui/generated",
         "declaration": true,
-        "target": "es5",
+        "target": "ES2021",
         "importHelpers": true,
         "plugins": [
             { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/gui", "appendJS": true },
-        ]
+        ],
+        "paths": {
+            "core/*": ["lts/core/dist/*"],
+            "gui/*": ["lts/gui/generated/*"],
+        }
     },
 
     "include": ["../../../lts/gui/generated/**/*"]
