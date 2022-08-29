@@ -72,8 +72,6 @@ void main(void) {
 
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-    #include<oitFragment>
-
     #include<clipPlaneFragment>
 
     // _____________________________ Geometry Information ____________________________
@@ -679,6 +677,8 @@ void main(void) {
 #if !defined(PREPASS) || defined(WEBGL2)
     gl_FragColor = finalColor;
 #endif
+
+    #include<oitFragment>
 
 #if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {
