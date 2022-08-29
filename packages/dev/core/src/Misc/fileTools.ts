@@ -245,7 +245,20 @@ export const LoadImage = (
     img.addEventListener("error", errorHandler);
 
     const noOfflineSupport = () => {
-        img.src = url;
+        LoadFile(
+            url,
+            (data) => {
+                const blob = new Blob([data]);
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+            },
+            undefined,
+            offlineProvider || undefined,
+            true,
+            (request, exception) => {
+                onErrorHandler(exception);
+            }
+        );
     };
 
     const loadFromOfflineSupport = () => {

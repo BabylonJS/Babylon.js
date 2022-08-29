@@ -5366,6 +5366,23 @@ export class Matrix {
     }
 
     /**
+     * Gets specific row of the matrix to ref
+     * @param index defines the number of the row to get
+     * @param rowVector vector to store the index-th row of the current matrix
+     * @returns the current matrix
+     */
+    public getRowToRef(index: number, rowVector: Vector4): Matrix {
+        if (index >= 0 && index < 3) {
+            const i = index * 4;
+            rowVector.x = this._m[i + 0];
+            rowVector.y = this._m[i + 1];
+            rowVector.z = this._m[i + 2];
+            rowVector.w = this._m[i + 3];
+        }
+        return this;
+    }
+
+    /**
      * Sets the index-th row of the current matrix to the vector4 values
      * @param index defines the number of the row to set
      * @param row defines the target vector4

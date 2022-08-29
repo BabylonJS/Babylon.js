@@ -11,34 +11,34 @@
             "path": "packages/dev/core/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/gui/tsconfig.nocomposite.json"
+            "path": "packages/dev/gui/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/sharedUiComponents/tsconfig.nocomposite.json"
+            "path": "packages/dev/sharedUiComponents/tsconfig.build.json"
         },
         {
-            "path": "packages/tools/guiEditor/tsconfig.nocomposite.json"
+            "path": "packages/tools/guiEditor/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/materials/tsconfig.nocomposite.json"
+            "path": "packages/dev/materials/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/loaders/tsconfig.nocomposite.json"
+            "path": "packages/dev/loaders/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/serializers/tsconfig.nocomposite.json"
+            "path": "packages/dev/serializers/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/postProcesses/tsconfig.nocomposite.json"
+            "path": "packages/dev/postProcesses/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/proceduralTextures/tsconfig.nocomposite.json"
+            "path": "packages/dev/proceduralTextures/tsconfig.build.json"
         },
         {
-            "path": "packages/tools/nodeEditor/tsconfig.nocomposite.json"
+            "path": "packages/tools/nodeEditor/tsconfig.build.json"
         },
         {
-            "path": "packages/dev/inspector/tsconfig.nocomposite.json"
+            "path": "packages/dev/inspector/tsconfig.build.json"
         },
         {
             "path": "packages/tools/ktx2Decoder/tsconfig.build.json"

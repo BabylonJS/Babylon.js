@@ -139,9 +139,9 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                         key={inspectable.label}
                         label={inspectable.label}
                         onClick={
-                            inspectable.callback ||
+                            inspectable.fileCallback ||
                             function () {
-                                Logger.Warn("no callback function added");
+                                Logger.Warn("no file call back function added");
                             }
                         }
                         accept={inspectable.accept || "*"}

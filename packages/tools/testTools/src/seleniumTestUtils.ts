@@ -2,6 +2,20 @@ import type { ThenableWebDriver } from "selenium-webdriver";
 import "selenium-webdriver/safari";
 import { evaluateDisposeSceneForVisualization, evaluateInitEngineForVisualization, evaluatePrepareScene, evaluateRenderSceneForVisualization } from "./visualizationUtils";
 
+export const macOSSafariCapabilities = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    "bstack:options": {
+        os: "OS X",
+        osVersion: "Monterey",
+        local: "false",
+        seleniumVersion: "4.3.0",
+        userName: process.env["BROWSERSTACK_USERNAME"],
+        accessKey: process.env["BROWSERSTACK_ACCESS_KEY"],
+    },
+    browserName: "Safari",
+    browserVersion: "latest",
+};
+
 // Take Playgorund Id and Selenium webdriver and load snippet info into test page
 export const LoadPlayground = async (
     driver: ThenableWebDriver,
