@@ -137,7 +137,8 @@ export class Rectangle extends Container {
         const width = this._currentMeasure.width - offset * 2;
         const height = this._currentMeasure.height - offset * 2;
 
-        const radius = Math.min(height / 2, Math.min(width / 2, this._cornerRadius));
+        let radius = Math.min(height / 2, Math.min(width / 2, this._cornerRadius));
+        radius = Math.abs(radius);
 
         context.beginPath();
         context.moveTo(x + radius, y);
