@@ -1085,7 +1085,9 @@ Scene.prototype._processLateAnimationBindings = function (): void {
             const holder = target._lateAnimationHolders[path];
             const originalAnimation: RuntimeAnimation = holder.animations[0];
             const originalValue = holder.originalValue;
-
+            if (originalValue === undefined || originalValue === null) {
+                continue;
+            }
             const matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
             let finalValue: any = target[path];
