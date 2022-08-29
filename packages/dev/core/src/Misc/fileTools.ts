@@ -358,7 +358,7 @@ export const ReadFile = (
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
     fileOrUrl: File | string,
-    onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string> | undefined) => void,
+    onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string>) => void,
     onProgress?: (ev: ProgressEvent) => void,
     offlineProvider?: IOfflineProvider,
     useArrayBuffer?: boolean,
