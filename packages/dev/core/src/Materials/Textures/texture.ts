@@ -1005,9 +1005,10 @@ export class Texture extends BaseTexture {
                     let texture: Texture;
 
                     if (parsedTexture.base64String) {
+                        // name and url are the same to ensure caching happens from the actual base64 string
                         texture = Texture.CreateFromBase64String(
                             parsedTexture.base64String,
-                            parsedTexture.name,
+                            parsedTexture.base64String,
                             scene,
                             !generateMipMaps,
                             parsedTexture.invertY,
@@ -1018,6 +1019,9 @@ export class Texture extends BaseTexture {
                             parsedTexture._creationFlags ?? 0,
                             parsedTexture._useSRGBBuffer ?? false
                         );
+
+                        // prettier name to fit with the loaded data
+                        texture.name = parsedTexture.name;
                     } else {
                         let url: string;
                         if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
