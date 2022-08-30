@@ -62,6 +62,8 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
+import { ArrayTools } from "./Misc/arrayTools";
+import type { INotifyArrayChangeType } from "./Misc/arrayTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -657,7 +659,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when the activeCameras property is updated
      */
-    public onActiveCamerasChanged = new Observable<Scene>();
+    public onActiveCamerasChanged = new Observable<INotifyArrayChangeType<Camera>>();
 
     /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
@@ -1017,38 +1019,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._lightsEnabled;
     }
 
-    private _activeCameras: Nullable<Camera[]> = new Array<Camera>();
+    private _activeCameras: Nullable<Camera[]> = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, []);
     /** All of the active cameras added to this scene. */
     public get activeCameras(): Nullable<Camera[]> {
         return this._activeCameras;
     }
 
-    private _proxySet(target: Camera[], property: string | symbol, c: Camera) {
-        this.onActiveCamerasChanged.notifyObservers(this);
-        return Reflect.set(target, property, c);
-    }
-
-    private _proxyPush(target: Camera[], ...c: Camera[]) {
-        Array.prototype.push.apply(target, c);
-        this.onActiveCamerasChanged.notifyObservers(this);
-    }
-
-    private _makeObservableArray(array: Camera[]) {
-        const _proxyObject = {
-            set: (target: Camera[], property: string | symbol, c: Camera) => this._proxySet(target, property, c),
-            push: (target: Camera[], ...c: Camera[]) => this._proxyPush(target, ...c),
-        };
-
-        return new Proxy(array, _proxyObject);
-    }
-
     public set activeCameras(cameras: Nullable<Camera[]>) {
         if (cameras) {
-            this._activeCameras = this._makeObservableArray(cameras);
+            this._activeCameras = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, cameras);
         } else {
             this._activeCameras = cameras;
         }
-        this.onActiveCamerasChanged.notifyObservers(this);
+        this.onActiveCamerasChanged.notifyObservers({ target: this.activeCameras, values: cameras, operation: "new" });
     }
 
     /** @hidden */
