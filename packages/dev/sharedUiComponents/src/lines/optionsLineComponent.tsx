@@ -14,7 +14,6 @@ export interface IOptionsLineComponentProps {
     addInput?: boolean;
     noDirectUpdate?: boolean;
     onSelect?: (value: number | string) => void;
-    onKeyDown?: (value: string) => void;
     extractValue?: (target: any) => number | string;
     addVal?: (newVal: { label: string; value: number }, prevVal: number) => void;
 
