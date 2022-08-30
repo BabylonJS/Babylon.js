@@ -805,14 +805,10 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
         }
-        if (this._activeCameraChangedObserver) {
-            this._scene.onActiveCameraChanged.remove(this._activeCameraChangedObserver);
-            this._activeCameraChangedObserver = null;
-        }
-        if (this._activeCamerasChangedObserver) {
-            this._scene.onActiveCamerasChanged.remove(this._activeCamerasChangedObserver);
-            this._activeCamerasChangedObserver = null;
-        }
+
+        this._scene.onActiveCameraChanged.remove(this._activeCameraChangedObserver);
+        this._scene.onActiveCamerasChanged.remove(this._activeCamerasChangedObserver);
+
         this._scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigurationObserver);
         super.dispose();
     }
