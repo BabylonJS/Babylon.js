@@ -23,6 +23,7 @@ import { Material } from "../Materials/material";
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
+import { RenderTargetTexture } from "..";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -53,6 +54,7 @@ export class DepthPeelingRenderer {
     private _thinTextures: ThinTexture[] = [];
     private _colorMrts: MultiRenderTarget[];
     private _blendBackMrt: MultiRenderTarget;
+    private _outputRT: RenderTargetTexture;
 
     private _blendBackEffectWrapper: EffectWrapper;
     private _blendBackEffectWrapperPingPong: EffectWrapper;
@@ -165,25 +167,26 @@ export class DepthPeelingRenderer {
         };
 
         // 2 for ping pong
-        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 1, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 1, this._scene)];
+        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 3, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 3, this._scene)];
         this._colorMrts = [
-            new MultiRenderTarget("depthPeelingColor0", size, 1, this._scene, { generateDepthBuffer: false }),
-            new MultiRenderTarget("depthPeelingColor1", size, 1, this._scene, { generateDepthBuffer: false }),
+            new MultiRenderTarget("depthPeelingColor0", size, 2, this._scene, { generateDepthBuffer: false }),
+            new MultiRenderTarget("depthPeelingColor1", size, 2, this._scene, { generateDepthBuffer: false }),
         ];
         this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene, { generateDepthBuffer: false });
+        this._outputRT = new RenderTargetTexture("depthPeelingOutput", size, this._scene, false);
 
         // 0 is a depth texture
         // 1 is a color texture
         const optionsArray = [
             {
-                format: Constants.TEXTUREFORMAT_RG,
+                format: Constants.TEXTUREFORMAT_RG, // For MSAA we need RGBA
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: this._engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT,
             } as InternalTextureCreationOptions,
             {
                 format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                type: Constants.TEXTURETYPE_HALF_FLOAT,
+                type: Constants.TEXTURETYPE_HALF_FLOAT, // For MSAA we need FLOAT
             } as InternalTextureCreationOptions,
         ];
 
@@ -195,12 +198,19 @@ export class DepthPeelingRenderer {
             this._depthMrts[i].setInternalTexture(depthTexture, 0);
             this._depthMrts[i].setInternalTexture(frontColorTexture, 1);
             this._depthMrts[i].setInternalTexture(backColorTexture, 2);
-
             this._colorMrts[i].setInternalTexture(frontColorTexture, 0);
             this._colorMrts[i].setInternalTexture(backColorTexture, 1);
 
             this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
         }
+    }
+
+    public set samples(value: number) {
+        for (let i = 0; i < 2; i++) {
+            this._depthMrts[i].samples = value;
+            this._colorMrts[i].samples = value;
+        }
+        this._scene.prePassRenderer!.samples = value;
     }
 
     private _disposeTextures() {
@@ -217,6 +227,7 @@ export class DepthPeelingRenderer {
             this._colorMrts[i].dispose(true);
             this._blendBackMrt.dispose(true);
         }
+        this._outputRT.dispose();
 
         this._thinTextures = [];
         this._colorMrts = [];
@@ -353,7 +364,12 @@ export class DepthPeelingRenderer {
     }
 
     private _finalCompose(writeId: number) {
-        this._engine.restoreDefaultFramebuffer();
+        const output = this._scene.prePassRenderer?.setDepthPeelingOutput(this._outputRT);
+        if (output) {
+            this._engine.bindFramebuffer(this._outputRT.renderTarget!);
+        } else {
+            this._engine.restoreDefaultFramebuffer();
+        }
 
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         this._engine.applyStates();
@@ -411,18 +427,22 @@ export class DepthPeelingRenderer {
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
         this._engine.bindAttachments(this._layoutCache[0]);
         this._engine.clear(this._colorCache[0], true, false, false);
+        this._engine.unBindFramebuffer(this._depthMrts[0].renderTarget!);
 
         this._engine.bindFramebuffer(this._depthMrts[1].renderTarget!);
         this._engine.bindAttachments(this._layoutCache[0]);
         this._engine.clear(this._colorCache[1], true, false, false);
+        this._engine.unBindFramebuffer(this._depthMrts[1].renderTarget!);
 
         this._engine.bindFramebuffer(this._colorMrts[0].renderTarget!);
         this._engine.bindAttachments(this._layoutCache[1]);
         this._engine.clear(this._colorCache[2], true, false, false);
+        this._engine.unBindFramebuffer(this._colorMrts[0].renderTarget!);
 
         this._engine.bindFramebuffer(this._colorMrts[1].renderTarget!);
         this._engine.bindAttachments(this._layoutCache[1]);
         this._engine.clear(this._colorCache[2], true, false, false);
+        this._engine.unBindFramebuffer(this._colorMrts[1].renderTarget!);
 
         // Draw depth for first pass
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
@@ -437,6 +457,7 @@ export class DepthPeelingRenderer {
         this._currentPingPongState = 1;
         // Render
         this._renderSubMeshes(this._candidateSubMeshes);
+        this._engine.unBindFramebuffer(this._depthMrts[0].renderTarget!);
 
         this._scene.resetCachedMaterial();
 
@@ -457,10 +478,12 @@ export class DepthPeelingRenderer {
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
             this._engine.bindAttachments(this._layoutCache[0]);
             this._engine.clear(this._colorCache[0], true, false, false);
+            this._engine.unBindFramebuffer(this._depthMrts[writeId].renderTarget!);
 
             this._engine.bindFramebuffer(this._colorMrts[writeId].renderTarget!);
             this._engine.bindAttachments(this._layoutCache[1]);
             this._engine.clear(this._colorCache[2], true, false, false);
+            this._engine.unBindFramebuffer(this._colorMrts[writeId].renderTarget!);
 
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
             this._engine.bindAttachments(this._layoutCache[2]);
@@ -472,6 +495,7 @@ export class DepthPeelingRenderer {
 
             // Render
             this._renderSubMeshes(this._candidateSubMeshes);
+            this._engine.unBindFramebuffer(this._depthMrts[writeId].renderTarget!);
 
             this._scene.resetCachedMaterial();
 
@@ -486,6 +510,7 @@ export class DepthPeelingRenderer {
             this._engine.enableEffect(blendBackEffectWrapper._drawWrapper);
             blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
             this._effectRenderer.render(blendBackEffectWrapper);
+            this._engine.unBindFramebuffer(this._blendBackMrt.renderTarget!);
         }
 
         this._engine.currentRenderPassId = currentRenderPassId;

@@ -4847,6 +4847,20 @@ export class ThinEngine {
     ): Nullable<WebGLRenderbuffer> {
         const gl = this._gl;
         const renderBuffer = gl.createRenderbuffer();
+        return this._updateRenderBuffer(renderBuffer, width, height, samples, internalFormat, msInternalFormat, attachment, unbindBuffer);
+    }
+
+    public _updateRenderBuffer(
+        renderBuffer: Nullable<WebGLRenderbuffer>,
+        width: number,
+        height: number,
+        samples: number,
+        internalFormat: number,
+        msInternalFormat: number,
+        attachment: number,
+        unbindBuffer = true
+    ): Nullable<WebGLRenderbuffer> {
+        const gl = this._gl;
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
 

@@ -418,6 +418,17 @@ export class PrePassRenderer {
         }
     }
 
+    public setDepthPeelingOutput(rt: RenderTargetTexture) {
+        const firstPP = this._postProcessesSourceForThisPass[0];
+        if (!firstPP) {
+            return false;
+        }
+
+        firstPP.inputTexture = rt.renderTarget!;
+
+        return true;
+    }
+
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
