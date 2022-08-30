@@ -9,7 +9,6 @@
     --buttonHoverBackground: #afafaf;
 }
 
-
 #ge-propertyTab {
     user-select: none;
     $line-padding-left: 5px;
@@ -150,8 +149,7 @@
     }
 
     input,
-    select,
-    datalist {
+    select {
         outline-style: solid;
         outline-width: 0px;
         outline-color: transparent;
@@ -161,7 +159,6 @@
         border: transparent;
         padding-left: 5px;
 
-        
         &:focus {
             outline-width: 1px;
             outline-color: black;
@@ -983,16 +980,12 @@
                 width: 100%;
                 height: 25px;
                 border: transparent;
-            } 
+            }
 
-            input{
+            input {
                 width: 100%;
                 height: 24px;
                 color: #333333;
-            }
-
-            datalist {
-                width: 100%;
             }
         }
     }
