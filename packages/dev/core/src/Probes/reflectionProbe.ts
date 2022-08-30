@@ -75,7 +75,7 @@ export class ReflectionProbe {
     public position = Vector3.Zero();
 
     /**
-     * Gets or sets an object used to store user defined information for the sound.
+     * Gets or sets an object used to store user defined information for the reflection probe.
      */
     public metadata: any = null;
 
