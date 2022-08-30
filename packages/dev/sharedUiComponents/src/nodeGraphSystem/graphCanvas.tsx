@@ -980,7 +980,24 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
             if (!this._candidateLink) {
                 const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
-                this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                if (this._altKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
+                    const node = portElement.node;
+                    // Delete connection
+                    const links = node.getLinksForPortData(portElement.portData);
+
+                    links.forEach((link) => {
+                        link.dispose(false);
+                    });
+
+                    // Pick the first one as target port
+                    const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
+                    const targetPort = links[0].nodeA === node ? links[0].portB : links[0].portA;
+
+                    // Start a new one
+                    this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
+                } else {
+                    this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                }
                 this._candidateLinkedHasMoved = false;
             }
             return;
