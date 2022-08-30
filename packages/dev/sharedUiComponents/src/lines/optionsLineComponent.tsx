@@ -2,7 +2,6 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
-import type { CommonControlPropertyGridComponent } from "tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -17,7 +16,7 @@ export interface IOptionsLineComponentProps {
     onSelect?: (value: number | string) => void;
     onKeyDown?: (value: string) => void;
     extractValue?: (target: any) => number | string;
-    addVal?: (newVal: { label: string; value: number }) => void;
+    addVal?: (newVal: { label: string; value: number }, prevVal: number) => void;
 
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     allowNullValue?: boolean;
@@ -29,9 +28,7 @@ export interface IOptionsLineComponentProps {
     valueProp?: number;
 }
 
-export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string; newOptions: IInspectableOptions[]; addCustom: boolean }> {
-    //private useNewVal = false;
-    ccpgc: CommonControlPropertyGridComponent;
+export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string; addCustom: boolean }> {
     private _localChange = false;
     private _remapValueIn(value: number | null): number {
         return this.props.allowNullValue && value === null ? Null_Value : value!;
@@ -51,10 +48,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: this._remapValueIn(this._getValue(props)), newOptions: this.props.options, addCustom: false };
+        this.state = { value: this._remapValueIn(this._getValue(props)), addCustom: false };
     }
 
-    shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number; newOptions: IInspectableOptions[]; addCustom: boolean }) {
+    shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number; addCustom: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -98,7 +95,6 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         }
 
         this.forceUpdate();
-
         if (value === 0) {
             this.setState({ addCustom: true });
         }
@@ -110,10 +106,15 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         if (!this.props.noDirectUpdate) {
             this.props.target[this.props.propertyName] = this._remapValueOut(value as number);
         }
-        this.setState({ value: value });
-
-        if (this.props.onSelect) {
-            this.props.onSelect(value);
+        if (value != 0) {
+            this.setState({ value: value });
+            if (this.props.onSelect) {
+                this.props.onSelect(value);
+            }
+        } else {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.state.value);
+            }
         }
 
         const newValue = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName];
@@ -140,7 +141,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             id="customFont"
                             onKeyDown={(event) => {
                                 event.keyCode === 13 && this.props.addVal != undefined
-                                    ? (this.props.addVal({ label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length }),
+                                    ? (this.props.addVal(
+                                          { label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length + 1 },
+                                          Number(this.state.value)
+                                      ),
                                       this.updateCustomValue())
                                     : null;
                             }}
