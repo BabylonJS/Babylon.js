@@ -247,9 +247,11 @@ export const LoadImage = (
     const noOfflineSupport = () => {
         LoadFile(
             url,
-            (data) => {
-                const blob = new Blob([data]);
+            (data, _, contentType) => {
+                const type = !mimeType && contentType ? contentType : mimeType;
+                const blob = new Blob([data], { type });
                 const url = URL.createObjectURL(blob);
+                usingObjectURL = true;
                 img.src = url;
             },
             undefined,
@@ -357,7 +359,7 @@ export const ReadFile = (
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
     fileOrUrl: File | string,
-    onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+    onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string>) => void,
     onProgress?: (ev: ProgressEvent) => void,
     offlineProvider?: IOfflineProvider,
     useArrayBuffer?: boolean,
@@ -419,7 +421,7 @@ export const LoadFile = (
     return RequestFile(
         url,
         (data, request) => {
-            onSuccess(data, request ? request.responseURL : undefined);
+            onSuccess(data, request?.responseURL, request?.getResponseHeader("content-type"));
         },
         onProgress,
         offlineProvider,
