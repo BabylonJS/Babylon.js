@@ -944,6 +944,43 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
+        // Port dragging
+        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
+            if (!this._candidateLink) {
+                const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
+                if (this._altKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
+                    const node = portElement.node;
+                    // Delete connection
+                    const links = node.getLinksForPortData(portElement.portData);
+
+                    links.forEach((link) => {
+                        link.dispose(false);
+                    });
+
+                    // Pick the first one as target port
+                    const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
+                    const targetPort = links[0].nodeA === node ? links[0].portB : links[0].portA;
+
+                    // Start a new one
+                    this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
+                } else if (this._multiKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
+                    const node = portElement.node;
+                    const links = node.getLinksForPortData(portElement.portData);
+
+                    // Pick the first one as target port
+                    const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
+                    const targetPort = links[0].nodeA === node ? links[0].portB : links[0].portA;
+
+                    // Start a new one
+                    this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
+                } else {
+                    this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                }
+                this._candidateLinkedHasMoved = false;
+            }
+            return;
+        }
+
         // Selection?
         if (evt.currentTarget === this._hostCanvas && this._multiKeyIsPressed) {
             this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
@@ -973,33 +1010,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
             this._frameCandidate.style.width = "0px";
             this._frameCandidate.style.height = "0px";
-            return;
-        }
-
-        // Port dragging
-        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
-            if (!this._candidateLink) {
-                const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
-                if (this._altKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
-                    const node = portElement.node;
-                    // Delete connection
-                    const links = node.getLinksForPortData(portElement.portData);
-
-                    links.forEach((link) => {
-                        link.dispose(false);
-                    });
-
-                    // Pick the first one as target port
-                    const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
-                    const targetPort = links[0].nodeA === node ? links[0].portB : links[0].portA;
-
-                    // Start a new one
-                    this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
-                } else {
-                    this._candidateLink = new NodeLink(this, portElement, portElement.node);
-                }
-                this._candidateLinkedHasMoved = false;
-            }
             return;
         }
 
