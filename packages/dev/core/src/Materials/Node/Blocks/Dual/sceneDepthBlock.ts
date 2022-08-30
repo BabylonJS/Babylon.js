@@ -12,8 +12,6 @@ import type { Effect } from "../../../effect";
 
 declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 
-let ID = 0;
-
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
  * @since 5.0.0
@@ -186,7 +184,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        this._samplerName = "sceneDepthSampler" + ID++;
+        this._samplerName = state._getFreeVariableName(this.name + "Sampler");
         this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
 
         if (state.sharedData.bindableBlocks.indexOf(this) < 0) {
