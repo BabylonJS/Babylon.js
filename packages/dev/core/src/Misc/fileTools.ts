@@ -251,6 +251,7 @@ export const LoadImage = (
                 const type = !mimeType && contentType ? contentType : mimeType;
                 const blob = new Blob([data], { type });
                 const url = URL.createObjectURL(blob);
+                usingObjectURL = true;
                 img.src = url;
             },
             undefined,
