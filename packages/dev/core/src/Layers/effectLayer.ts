@@ -648,6 +648,27 @@ export abstract class EffectLayer {
             }
         }
 
+        // ClipPlanes
+        const scene = this._scene;
+        if (scene.clipPlane) {
+            defines.push("#define CLIPPLANE");
+        }
+        if (scene.clipPlane2) {
+            defines.push("#define CLIPPLANE2");
+        }
+        if (scene.clipPlane3) {
+            defines.push("#define CLIPPLANE3");
+        }
+        if (scene.clipPlane4) {
+            defines.push("#define CLIPPLANE4");
+        }
+        if (scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+        if (scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
+        }
+
         this._addCustomEffectDefines(defines);
 
         // Get correct effect
@@ -672,6 +693,12 @@ export abstract class EffectLayer {
                         "opacityIntensity",
                         "morphTargetTextureInfo",
                         "morphTargetTextureIndices",
+                        "vClipPlane",
+                        "vClipPlane2",
+                        "vClipPlane3",
+                        "vClipPlane4",
+                        "vClipPlane5",
+                        "vClipPlane6",
                     ],
                     ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
                     join,
@@ -956,6 +983,9 @@ export abstract class EffectLayer {
                 if (enableAlphaMode) {
                     engine.setAlphaMode(material.alphaMode);
                 }
+
+                // Clip planes
+                MaterialHelper.BindClipPlane(effect, scene);
             }
 
             // Draw
