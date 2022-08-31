@@ -6,8 +6,11 @@
 	uniform float contrast;
 #endif
 
-#ifdef VIGNETTE
+#if defined(VIGNETTE) || defined(DITHER)
 	uniform vec2 vInverseScreenSize;
+#endif
+
+#ifdef VIGNETTE
 	uniform vec4 vignetteSettings1;
 	uniform vec4 vignetteSettings2;
 #endif
@@ -27,6 +30,10 @@
 	uniform vec4 colorTransformSettings;
 #endif
 
-#ifdef WHITEBALANCE
-	uniform vec3 whiteBalanceScale;
+#ifdef COLORBALANCE
+	uniform vec3 colorBalanceScale;
+#endif
+
+#ifdef DITHER
+	uniform float ditherIntensity;
 #endif

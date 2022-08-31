@@ -17,7 +17,7 @@ declare type Effect = import("../Materials/effect").Effect;
  */
 export interface IImageProcessingConfigurationDefines {
     IMAGEPROCESSING: boolean;
-    WHITEBALANCE: boolean;
+    COLORBALANCE: boolean;
     VIGNETTE: boolean;
     VIGNETTEBLENDMODEMULTIPLY: boolean;
     VIGNETTEBLENDMODEOPAQUE: boolean;
@@ -30,6 +30,7 @@ export interface IImageProcessingConfigurationDefines {
     COLORGRADING3D: boolean;
     SAMPLER3DGREENDEPTH: boolean;
     SAMPLER3DBGRMAP: boolean;
+    DITHER: boolean;
     IMAGEPROCESSINGPOSTPROCESS: boolean;
     SKIPFINALCOLORCLAMP: boolean;
 }
@@ -39,7 +40,7 @@ export interface IImageProcessingConfigurationDefines {
  */
 export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public IMAGEPROCESSING = false;
-    public WHITEBALANCE = false;
+    public COLORBALANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
@@ -53,6 +54,7 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
+    public DITHER = false;
     public SKIPFINALCOLORCLAMP = false;
 
     constructor() {
@@ -366,69 +368,92 @@ export class ImageProcessingConfiguration {
     }
 
     @serialize()
-    private _whiteBalanceEnabled = false;
+    private _colorBalanceEnabled = false;
     /**
-     * Gets whether the white balance is enabled.
+     * Gets whether the color balance effect is enabled. This is commonly used for white balancing.
+     * The color balance is applied prior to gamma transform, and the effect attempts to maintain luminance.
      */
-    public get whiteBalanceEnabled(): boolean {
-        return this._whiteBalanceEnabled;
+    public get colorBalanceEnabled(): boolean {
+        return this._colorBalanceEnabled;
     }
     /**
-     * Sets whether the white balance is enabled.
+     * Sets whether the color balance effect is enabled. This is commonly used for white balancing.
+     * The color balance is applied prior to gamma transform, and the effect attempts to maintain luminance.
      */
-    public set whiteBalanceEnabled(value: boolean) {
-        if (this._whiteBalanceEnabled === value) {
+    public set colorBalanceEnabled(value: boolean) {
+        if (this._colorBalanceEnabled === value) {
             return;
         }
 
-        this._whiteBalanceEnabled = value;
+        this._colorBalanceEnabled = value;
+        this._updateParameters();
+    }
+
+    /**
+     * This is the inverted `colorBalanceColor` passed to the shader.
+     */
+    private _colorBalanceScale = Color3.White();
+
+    @serializeAsColor3()
+    private _colorBalanceColor = Color3.White();
+    /**
+     * Gets the color used for color balancing.
+     */
+    public get colorBalanceColor(): Color3 {
+        return this._colorBalanceColor;
+    }
+    /**
+     * Sets the color used for color balancing.
+     */
+    public set colorBalanceColor(value: Color3) {
+        if (this._colorBalanceColor.equals(value)) {
+            return;
+        }
+
+        this._colorBalanceColor.copyFrom(value);
+        this._colorBalanceScale.set(1.0 / Math.max(0.000001, value.r), 1.0 / Math.max(0.000001, value.g), 1.0 / Math.max(0.000001, value.b));
+    }
+
+    @serialize()
+    private _ditheringEnabled = false;
+    /**
+     * Gets whether the dithering effect is enabled.
+     * The dithering effect can be used to reduce banding.
+     */
+    public get ditheringEnabled(): boolean {
+        return this._ditheringEnabled;
+    }
+    /**
+     * Sets whether the dithering effect is enabled.
+     * The dithering effect can be used to reduce banding.
+     */
+    public set ditheringEnabled(value: boolean) {
+        if (this._ditheringEnabled === value) {
+            return;
+        }
+
+        this._ditheringEnabled = value;
         this._updateParameters();
     }
 
     @serialize()
-    private _luminanceMaintainingWhiteBalanceEnabled = false;
+    private _ditheringIntensity = 1.0 / 255.0;
     /**
-     * Gets whether the white balance maintains luminance.
+     * Gets the dithering intensity. 0 is no dithering. Default is 1.0 / 255.0.
      */
-    public get luminanceMaintainingWhiteBalanceEnabled(): boolean {
-        return this._luminanceMaintainingWhiteBalanceEnabled;
+    public get ditheringIntensity(): number {
+        return this._ditheringIntensity;
     }
     /**
-     * Sets whether the white balance maintains luminance.
+     * Sets the dithering intensity. 0 is no dithering. Default is 1.0 / 255.0.
      */
-    public set luminanceMaintainingWhiteBalanceEnabled(value: boolean) {
-        if (this._luminanceMaintainingWhiteBalanceEnabled === value) {
+    public set ditheringIntensity(value: number) {
+        if (this._ditheringIntensity === value) {
             return;
         }
 
-        this._luminanceMaintainingWhiteBalanceEnabled = value;
+        this._ditheringIntensity = value;
         this._updateParameters();
-    }
-
-    /**
-     * This is what the inverted white balance color passed to the shader.
-     * Controlled via `whiteBalanceColor`.
-     */
-    private _whiteBalanceScale = Color3.White();
-
-    @serializeAsColor3()
-    private _whiteBalanceColor = Color3.White();
-    /**
-     * Gets the color used for white balancing.
-     */
-    public get whiteBalanceColor(): Color3 {
-        return this._whiteBalanceColor;
-    }
-    /**
-     * Sets the color used for white balancing.
-     */
-    public set whiteBalanceColor(value: Color3) {
-        if (this._whiteBalanceColor.equals(value)) {
-            return;
-        }
-
-        this._whiteBalanceColor.copyFrom(value);
-        this._whiteBalanceScale.set(1.0 / Math.max(0.000001, value.r), 1.0 / Math.max(0.000001, value.g), 1.0 / Math.max(0.000001, value.b));
     }
 
     /** @hidden */
@@ -507,16 +532,21 @@ export class ImageProcessingConfiguration {
         if (defines.COLORGRADING) {
             uniforms.push("colorTransformSettings");
         }
-        if (defines.VIGNETTE) {
+        if (defines.VIGNETTE || defines.DITHER) {
             uniforms.push("vInverseScreenSize");
+        }
+        if (defines.VIGNETTE) {
             uniforms.push("vignetteSettings1");
             uniforms.push("vignetteSettings2");
         }
         if (defines.COLORCURVES) {
             ColorCurves.PrepareUniforms(uniforms);
         }
-        if (defines.WHITEBALANCE) {
-            uniforms.push("whiteBalanceScale");
+        if (defines.COLORBALANCE) {
+            uniforms.push("colorBalanceScale");
+        }
+        if (defines.DITHER) {
+            uniforms.push("ditherIntensity");
         }
     }
 
@@ -538,6 +568,7 @@ export class ImageProcessingConfiguration {
      */
     public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
+            defines.COLORBALANCE = false;
             defines.VIGNETTE = false;
             defines.TONEMAPPING = false;
             defines.TONEMAPPING_ACES = false;
@@ -547,12 +578,13 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
+            defines.DITHER = false;
             defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
         }
 
-        defines.WHITEBALANCE = this.whiteBalanceEnabled;
+        defines.COLORBALANCE = this.colorBalanceEnabled;
 
         defines.VIGNETTE = this.vignetteEnabled;
         defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;
@@ -579,9 +611,18 @@ export class ImageProcessingConfiguration {
         }
         defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
         defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
+        defines.DITHER = this.ditheringEnabled;
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
         defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
-        defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
+        defines.IMAGEPROCESSING =
+            defines.VIGNETTE ||
+            defines.TONEMAPPING ||
+            defines.CONTRAST ||
+            defines.EXPOSURE ||
+            defines.COLORCURVES ||
+            defines.COLORGRADING ||
+            defines.COLORBALANCE ||
+            defines.DITHER;
     }
 
     /**
@@ -604,25 +645,32 @@ export class ImageProcessingConfiguration {
             ColorCurves.Bind(this.colorCurves, effect);
         }
 
-        // Vignette
-        if (this._vignetteEnabled) {
-            const inverseWidth = 1 / effect.getEngine().getRenderWidth();
-            const inverseHeight = 1 / effect.getEngine().getRenderHeight();
+        // Vignette and dither handled together due to common uniform.
+        if (this._vignetteEnabled || this._ditheringEnabled) {
+            const engine = effect.getEngine();
+            const inverseWidth = 1 / engine.getRenderWidth();
+            const inverseHeight = 1 / engine.getRenderHeight();
             effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
-            const aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : inverseHeight / inverseWidth;
+            if (this._ditheringEnabled) {
+                effect.setFloat("ditherIntensity", 0.5 * this._ditheringIntensity);
+            }
 
-            let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
-            let vignetteScaleX = vignetteScaleY * aspectRatio;
+            if (this._vignetteEnabled) {
+                const aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : inverseHeight / inverseWidth;
 
-            const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-            vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-            vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
+                let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
+                let vignetteScaleX = vignetteScaleY * aspectRatio;
 
-            effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
+                const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
+                vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
-            const vignettePower = -2.0 * this.vignetteWeight;
-            effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+                effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
+
+                const vignettePower = -2.0 * this.vignetteWeight;
+                effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+            }
         }
 
         // Exposure
@@ -645,9 +693,9 @@ export class ImageProcessingConfiguration {
             );
         }
 
-        // White Balance
-        if (this._whiteBalanceEnabled) {
-            effect.setColor3("whiteBalanceScale", this._whiteBalanceScale);
+        // Color Balance
+        if (this._colorBalanceEnabled) {
+            effect.setColor3("colorBalanceScale", this._colorBalanceScale);
         }
     }
 

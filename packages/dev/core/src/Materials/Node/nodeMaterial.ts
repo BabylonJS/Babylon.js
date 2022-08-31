@@ -99,7 +99,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;
-    public WHITEBALANCE = false;
+    public COLORBALANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
@@ -112,6 +112,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
 

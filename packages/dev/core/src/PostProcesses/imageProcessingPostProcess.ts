@@ -323,29 +323,57 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets Color of the white balance effect.
+     * Gets Color of the color balance effect.
      */
-    public get whiteBalanceColor(): Color3 {
-        return this.imageProcessingConfiguration.whiteBalanceColor;
+    public get colorBalanceColor(): Color3 {
+        return this.imageProcessingConfiguration.colorBalanceColor;
     }
     /**
-     * Sets Color of the white balance effect.
+     * Sets Color of the color balance effect.
      */
-    public set whiteBalanceColor(value: Color3) {
-        this.imageProcessingConfiguration.whiteBalanceColor = value;
+    public set colorBalanceColor(value: Color3) {
+        this.imageProcessingConfiguration.colorBalanceColor = value;
     }
 
     /**
-     * Gets whether the white balance effect is enabled.
+     * Gets whether the color balance effect is enabled. This is commonly used for white balancing.
+     * The color balance is applied prior to gamma transform, and the effect attempts to maintain luminance.
      */
-    public get whiteBalanceEnabled(): boolean {
-        return this.imageProcessingConfiguration.whiteBalanceEnabled;
+    public get colorBalanceEnabled(): boolean {
+        return this.imageProcessingConfiguration.colorBalanceEnabled;
     }
     /**
-     * Sets whether the white balance effect is enabled.
+     * Sets whether the color balance effect is enabled. This is commonly used for white balancing.
+     * The color balance is applied prior to gamma transform, and the effect attempts to maintain luminance.
      */
-    public set whiteBalanceEnabled(value: boolean) {
-        this.imageProcessingConfiguration.whiteBalanceEnabled = value;
+    public set colorBalanceEnabled(value: boolean) {
+        this.imageProcessingConfiguration.colorBalanceEnabled = value;
+    }
+
+    /**
+     * Gets intensity of the dithering effect.
+     */
+    public get ditheringIntensity(): number {
+        return this.imageProcessingConfiguration.ditheringIntensity;
+    }
+    /**
+     * Sets intensity of the dithering effect.
+     */
+    public set ditheringIntensity(value: number) {
+        this.imageProcessingConfiguration.ditheringIntensity = value;
+    }
+
+    /**
+     * Gets whether the dithering effect is enabled.
+     */
+    public get ditheringEnabled(): boolean {
+        return this.imageProcessingConfiguration.ditheringEnabled;
+    }
+    /**
+     * Sets whether the dithering effect is enabled.
+     */
+    public set ditheringEnabled(value: boolean) {
+        this.imageProcessingConfiguration.ditheringEnabled = value;
     }
 
     @serialize()
@@ -373,7 +401,7 @@ export class ImageProcessingPostProcess extends PostProcess {
      */
     private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
         IMAGEPROCESSING: false,
-        WHITEBALANCE: false,
+        COLORBALANCE: false,
         VIGNETTE: false,
         VIGNETTEBLENDMODEMULTIPLY: false,
         VIGNETTEBLENDMODEOPAQUE: false,
@@ -386,6 +414,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         FROMLINEARSPACE: false,
         SAMPLER3DGREENDEPTH: false,
         SAMPLER3DBGRMAP: false,
+        DITHER: false,
         IMAGEPROCESSINGPOSTPROCESS: false,
         EXPOSURE: false,
         SKIPFINALCOLORCLAMP: false,

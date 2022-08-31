@@ -164,7 +164,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public RGBDREFRACTION = false;
 
     public IMAGEPROCESSING = false;
-    public WHITEBALANCE = false;
+    public COLORBALANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
@@ -176,6 +176,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public MULTIVIEW = false;

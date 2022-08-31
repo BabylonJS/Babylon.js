@@ -99,9 +99,10 @@ vec4 applyImageProcessing(vec4 result) {
 	result.rgb *= exposureLinear;
 #endif
 
-#ifdef WHITEBALANCE
+	// Apply color balancing after exposure and before gamma conversion.
+#ifdef COLORBALANCE
 		float inLuminance = getLuminance(result.rgb);
-		result.rgb *= whiteBalanceScale;
+		result.rgb *= colorBalanceScale;
 		float outLuminance = getLuminance(result.rgb);
 		result.rgb *= max(0.000001, inLuminance) / max(0.000001, outLuminance);
 #endif
@@ -168,11 +169,17 @@ vec4 applyImageProcessing(vec4 result) {
 #ifdef COLORCURVES
 	// Apply Color Curves
 	float luma = getLuminance(result.rgb);
-	vec2 curveMix = clamp(vec2(luma * 3.0 - 1.5, luma * -3.0 + 1.5), vec2(0.0), vec2(1.0));
+	vec2 curveMix = saturate(vec2(luma * 3.0 - 1.5, luma * -3.0 + 1.5));
 	vec4 colorCurve = vCameraColorCurveNeutral + curveMix.x * vCameraColorCurvePositive - curveMix.y * vCameraColorCurveNegative;
 
 	result.rgb *= colorCurve.rgb;
 	result.rgb = mix(vec3(luma), result.rgb, colorCurve.a);
+#endif
+
+#ifdef DITHER
+	float rand = getRand(gl_FragCoord.xy * vInverseScreenSize);
+	float dither = mix(-ditherIntensity, ditherIntensity, rand);
+	result.rgb = saturate(result.rgb + vec3(dither));
 #endif
 
 	return result;

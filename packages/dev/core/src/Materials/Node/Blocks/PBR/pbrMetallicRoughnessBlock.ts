@@ -1032,6 +1032,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // Image processing uniforms
         state.uniforms.push("exposureLinear");
+        state.uniforms.push("colorBalanceScale");
         state.uniforms.push("contrast");
         state.uniforms.push("vInverseScreenSize");
         state.uniforms.push("vignetteSettings1");
@@ -1041,6 +1042,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.uniforms.push("vCameraColorCurvePositive");
         state.uniforms.push("txColorTransform");
         state.uniforms.push("colorTransformSettings");
+        state.uniforms.push("ditherIntensity");
 
         //
         // Includes

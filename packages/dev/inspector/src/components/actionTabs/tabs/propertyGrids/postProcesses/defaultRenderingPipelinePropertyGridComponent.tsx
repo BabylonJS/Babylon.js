@@ -399,6 +399,35 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onSelect={(value) => this.setState({ mode: value })}
                             />
+                            <CheckBoxLineComponent
+                                label="Color balance"
+                                target={renderPipeline.imageProcessing}
+                                propertyName="colorBalanceEnabled"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <Color3LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Color"
+                                target={renderPipeline.imageProcessing}
+                                propertyName="colorBalanceColor"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <CheckBoxLineComponent
+                                label="Dithering"
+                                target={renderPipeline.imageProcessing}
+                                propertyName="ditheringEnabled"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                lockObject={this.props.lockObject}
+                                minimum={0}
+                                maximum={1}
+                                step={0.5 / 255.0}
+                                label="Dithering intensity"
+                                target={renderPipeline.imageProcessing}
+                                propertyName="ditheringIntensity"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                         </div>
                     )}
                 </LineContainerComponent>

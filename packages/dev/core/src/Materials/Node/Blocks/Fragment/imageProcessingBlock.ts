@@ -67,6 +67,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     public initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("exposureLinear");
         state._excludeVariableName("contrast");
+        state._excludeVariableName("colorBalanceScale");
         state._excludeVariableName("vInverseScreenSize");
         state._excludeVariableName("vignetteSettings1");
         state._excludeVariableName("vignetteSettings2");
@@ -75,6 +76,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._excludeVariableName("vCameraColorCurvePositive");
         state._excludeVariableName("txColorTransform");
         state._excludeVariableName("colorTransformSettings");
+        state._excludeVariableName("ditherIntensity");
     }
 
     public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -119,6 +121,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         // Uniforms
         state.uniforms.push("exposureLinear");
         state.uniforms.push("contrast");
+        state.uniforms.push("colorBalanceScale");
         state.uniforms.push("vInverseScreenSize");
         state.uniforms.push("vignetteSettings1");
         state.uniforms.push("vignetteSettings2");
@@ -127,6 +130,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state.uniforms.push("vCameraColorCurvePositive");
         state.uniforms.push("txColorTransform");
         state.uniforms.push("colorTransformSettings");
+        state.uniforms.push("ditherIntensity");
 
         // Emit code
         const color = this.color;
