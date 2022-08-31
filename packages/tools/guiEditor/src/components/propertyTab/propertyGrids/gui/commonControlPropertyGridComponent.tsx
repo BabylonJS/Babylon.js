@@ -199,6 +199,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     public addVal = (newVal: { label: string; value: number }, prevVal: number) => {
+        if (newVal.label === "") {
+            return;
+        }
         (async () => {
             await document.fonts.ready;
             let displayVal = false;
@@ -653,19 +656,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
+                                valueProp={this.state.value}
                                 options={fonts}
                                 addVal={this.addVal}
-                                valueProp={this.state.value}
+                                fromFontDropdown={true}
                                 onSelect={(newValue) => {
                                     const fontFamily = this.state.fontFamilyOptions.filter(({ value }) => value === newValue).map(({ label }) => label);
                                     proxy.fontFamily = fontFamily[0];
                                 }}
                                 extractValue={() => {
-                                    switch (proxy.fontFamily) {
-                                        case this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].label:
-                                            return this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].value;
-                                        default:
-                                            return -1;
+                                    if (this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].label) {
+                                        return this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].value;
+                                    } else {
+                                        return -1;
                                     }
                                 }}
                             />
@@ -681,6 +684,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 target={proxy}
                                 propertyName="fontStyle"
                                 options={fontStyleOptions}
+                                fromFontDropdown={false}
                                 onSelect={(newValue) => {
                                     proxy.fontStyle = ["", "italic", "oblique"][newValue as number];
                                 }}

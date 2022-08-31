@@ -24,6 +24,7 @@ export interface IOptionsLineComponentProps {
     className?: string;
     valuesAreStrings?: boolean;
     defaultIfNull?: number;
+    fromFontDropdown?: boolean;
     valueProp?: number;
 }
 
@@ -53,11 +54,15 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number; addCustom: boolean }) {
         if (this._localChange) {
             this._localChange = false;
+
             return true;
         }
 
-        if (nextProps.valueProp !== undefined && this.props.valueProp !== nextProps.valueProp) {
-            nextState.value = nextProps.valueProp;
+        const newValue = this._remapValueIn(nextProps.extractValue ? nextProps.extractValue(this.props.target) : nextProps.target[nextProps.propertyName]);
+
+        if (newValue != null && newValue !== nextState.value) {
+            nextState.value = newValue;
+
             return true;
         }
 
@@ -93,8 +98,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             }
         }
 
-        this.forceUpdate();
-        if (value === 0) {
+        if (value === 0 && this.props.fromFontDropdown) {
             this.setState({ addCustom: true });
         }
 
@@ -105,14 +109,24 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         if (!this.props.noDirectUpdate) {
             this.props.target[this.props.propertyName] = this._remapValueOut(value as number);
         }
-        if (value != 0) {
+
+        //selecting a regular option from font dropdown
+        if (value != 0 && this.props.fromFontDropdown) {
             this.setState({ value: value });
             if (this.props.onSelect) {
                 this.props.onSelect(value);
             }
-        } else {
+            //selecting 'custom font' from font dropdown
+        } else if (this.props.fromFontDropdown) {
             if (this.props.onSelect) {
                 this.props.onSelect(this.state.value);
+            }
+        }
+        //selecting from a dropdown that's not font dropdown
+        else {
+            this.setState({ value: value });
+            if (this.props.onSelect) {
+                this.props.onSelect(value);
             }
         }
 
@@ -139,12 +153,13 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             placeholder="Enter a custom font here"
                             id="customFont"
                             onKeyDown={(event) => {
-                                event.keyCode === 13 && this.props.addVal != undefined
+                                event.key === "Enter" && this.props.addVal != undefined
                                     ? (this.props.addVal(
                                           { label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length + 1 },
                                           Number(this.state.value)
                                       ),
-                                      this.updateCustomValue())
+                                      this.updateCustomValue(),
+                                      this.forceUpdate())
                                     : null;
                             }}
                             onBlur={() => {
@@ -153,7 +168,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                                           { label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length + 1 },
                                           Number(this.state.value)
                                       ),
-                                      this.updateCustomValue())
+                                      this.updateCustomValue(),
+                                      this.forceUpdate())
                                     : null;
                             }}
                         />
@@ -168,7 +184,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                         {this.props.label}
                     </div>
                     <div className="options">
-                        <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value === -1 || null || undefined ? 1 : this.state.value}>
+                        <select
+                            onChange={(evt) => this.updateValue(evt.target.value)}
+                            value={this.state.value === -1 || this.state.value === null || this.state.value === undefined ? 1 : this.state.value}
+                        >
                             {this.props.options.map((option, i) => {
                                 return (
                                     <option selected={option.selected} key={option.label + i} value={option.value} title={option.label}>
