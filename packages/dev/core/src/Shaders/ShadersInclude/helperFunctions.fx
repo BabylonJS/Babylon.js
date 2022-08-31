@@ -154,9 +154,13 @@ float pow5(float value) {
 }
 
 // Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
-float getLuminance(vec3 color)
-{
-    return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);
+float getLuminance(vec3 color) {
+    return saturate(dot(color, LuminanceEncodeApprox));
+}
+
+// Returns the unsaturated luminance. Assumes input color is linear encoded, not gamma-corrected.
+float getLuminanceUnsaturated(vec3 color) {
+    return dot(color, LuminanceEncodeApprox);
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl

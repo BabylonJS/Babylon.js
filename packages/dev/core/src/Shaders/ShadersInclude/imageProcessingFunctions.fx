@@ -101,9 +101,9 @@ vec4 applyImageProcessing(vec4 result) {
 
 	// Apply color balancing after exposure and before gamma conversion.
 #ifdef COLORBALANCE
-		float inLuminance = getLuminance(result.rgb);
+		float inLuminance = getLuminanceUnsaturated(result.rgb);
 		result.rgb *= colorBalanceScale;
-		float outLuminance = getLuminance(result.rgb);
+		float outLuminance = getLuminanceUnsaturated(result.rgb);
 		result.rgb *= max(0.000001, inLuminance) / max(0.000001, outLuminance);
 #endif
 
