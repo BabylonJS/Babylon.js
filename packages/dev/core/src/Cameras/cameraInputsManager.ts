@@ -125,7 +125,7 @@ export class CameraInputsManager<TCamera extends Camera> {
         }
 
         if (this.attachedToElement) {
-            input.attachControl();
+            input.attachControl(this.noPreventDefault);
         }
     }
 
