@@ -1026,12 +1026,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     public set activeCameras(cameras: Nullable<Camera[]>) {
-        if (cameras) {
-            this._activeCameras = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, cameras);
-        } else {
-            this._activeCameras = cameras;
-        }
-        this.onActiveCamerasChanged.notifyObservers({ target: this.activeCameras, values: cameras, operation: "new" });
+        this._activeCameras = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, cameras);
     }
 
     /** @hidden */

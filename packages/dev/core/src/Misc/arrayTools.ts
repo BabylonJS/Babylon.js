@@ -23,8 +23,7 @@ interface TupleTypes<T> {
 
 export interface INotifyArrayChangeType<T> {
     target: Nullable<Array<T>>;
-    values: Nullable<Array<T>>;
-    operation: string;
+    previousLength?: number; // If the array was previously null/undefined, this will be undefined
 }
 
 /**
@@ -56,43 +55,51 @@ export class ArrayTools {
     }
 
     private static _ProxySet<T>(observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, property: string | symbol, value: T): boolean {
-        observable.notifyObservers({ target, values: [value], operation: "set" });
+        observable.notifyObservers({ target, previousLength: target.length });
         return Reflect.set(target, property, value);
     }
 
     private static _ProxyPushOrUnshift<T>(operation: "push" | "unshift", observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, ...values: Array<T>): number {
-        observable.notifyObservers({ target, values, operation });
+        observable.notifyObservers({ target, previousLength: target.length });
         return operation === "push" ? Array.prototype.push.apply(target, values) : Array.prototype.unshift.apply(target, values);
     }
 
     private static _ProxyDelete<T>(observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, property: string | symbol) {
-        observable.notifyObservers({ target, values: [Reflect.get(target, property)], operation: "delete" });
+        observable.notifyObservers({ target, previousLength: target.length });
         return Reflect.deleteProperty(target, property);
     }
 
     private static _ProxyPopOrShift<T>(operation: "pop" | "shift", observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>) {
         const value = operation === "pop" ? Array.prototype.pop.apply(target) : Array.prototype.shift.apply(target);
-        observable.notifyObservers({ target, operation, values: [value] });
+        observable.notifyObservers({ target, previousLength: target.length });
         return value;
     }
 
     private static _ProxySplice<T>(observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, start: number, deleteNumber: number, ...added: Array<T>) {
         const values = Array.prototype.splice.apply(target, [start, deleteNumber, added]);
-        observable.notifyObservers({ target, values, operation: "splice" });
+        observable.notifyObservers({ target, previousLength: target.length });
         return values;
     }
 
-    public static MakeObservableArray<T>(observable: Observable<INotifyArrayChangeType<T>>, initialArray: Array<T>) {
-        const _proxyObject = {
-            set: (target: Array<T>, property: string | symbol, value: T) => ArrayTools._ProxySet(observable, target, property, value),
-            push: (target: Array<T>, ...values: Array<T>) => ArrayTools._ProxyPushOrUnshift("push", observable, target, ...values),
-            unshift: (target: Array<T>, ...values: Array<T>) => ArrayTools._ProxyPushOrUnshift("unshift", observable, target, ...values),
-            delete: (target: Array<T>, property: string | symbol) => ArrayTools._ProxyDelete(observable, target, property),
-            pop: (target: Array<T>) => ArrayTools._ProxyPopOrShift("pop", observable, target),
-            shift: (target: Array<T>) => ArrayTools._ProxyPopOrShift("shift", observable, target),
-            splice: (target: Array<T>, start: number, deleteNumber: number, ...added: Array<T>) => ArrayTools._ProxySplice(observable, target, start, deleteNumber, added),
-        };
+    public static MakeObservableArray<T>(observable: Observable<INotifyArrayChangeType<T>>, initialArray: Nullable<Array<T>>) {
+        let returnObject;
+        if (initialArray && !Object.prototype.hasOwnProperty.call(initialArray, "isObserved")) {
+            const _proxyObject = {
+                set: (target: Array<T>, property: string | symbol, value: T) => ArrayTools._ProxySet(observable, target, property, value),
+                push: (target: Array<T>, ...values: Array<T>) => ArrayTools._ProxyPushOrUnshift("push", observable, target, ...values),
+                unshift: (target: Array<T>, ...values: Array<T>) => ArrayTools._ProxyPushOrUnshift("unshift", observable, target, ...values),
+                delete: (target: Array<T>, property: string | symbol) => ArrayTools._ProxyDelete(observable, target, property),
+                pop: (target: Array<T>) => ArrayTools._ProxyPopOrShift("pop", observable, target),
+                shift: (target: Array<T>) => ArrayTools._ProxyPopOrShift("shift", observable, target),
+                splice: (target: Array<T>, start: number, deleteNumber: number, ...added: Array<T>) => ArrayTools._ProxySplice(observable, target, start, deleteNumber, ...added),
+                isObserved: true,
+            };
 
-        return new Proxy(initialArray, _proxyObject);
+            returnObject = new Proxy(initialArray, _proxyObject);
+        } else {
+            returnObject = initialArray;
+        }
+        observable.notifyObservers({ target: returnObject });
+        return returnObject;
     }
 }
