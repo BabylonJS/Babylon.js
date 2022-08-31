@@ -323,31 +323,16 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
-     * if vignetteEnabled is set to true.
+     * Gets Color of the white balance effect.
      */
     public get whiteBalanceColor(): Color3 {
         return this.imageProcessingConfiguration.whiteBalanceColor;
     }
     /**
-     * Sets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
-     * if vignetteEnabled is set to true.
+     * Sets Color of the white balance effect.
      */
     public set whiteBalanceColor(value: Color3) {
         this.imageProcessingConfiguration.whiteBalanceColor = value;
-    }
-
-    /**
-     * Gets whether the white balance effect attempts to maintain luminance.
-     */
-    public get luminanceMaintaingWhiteBalanceEnaled(): boolean {
-        return this.imageProcessingConfiguration.luminanceMaintainingWhiteBalanceEnabled;
-    }
-    /**
-     * Sets whether the white balance effect attempts to maintain luminance.
-     */
-    public set luminanceMaintaingWhiteBalanceEnaled(value: boolean) {
-        this.imageProcessingConfiguration.luminanceMaintainingWhiteBalanceEnabled = value;
     }
 
     /**
@@ -389,7 +374,6 @@ export class ImageProcessingPostProcess extends PostProcess {
     private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
         IMAGEPROCESSING: false,
         WHITEBALANCE: false,
-        MAINTAINLUMINANCE: false,
         VIGNETTE: false,
         VIGNETTEBLENDMODEMULTIPLY: false,
         VIGNETTEBLENDMODEOPAQUE: false,

@@ -18,7 +18,6 @@ declare type Effect = import("../Materials/effect").Effect;
 export interface IImageProcessingConfigurationDefines {
     IMAGEPROCESSING: boolean;
     WHITEBALANCE: boolean;
-    MAINTAINLUMINANCE: boolean;
     VIGNETTE: boolean;
     VIGNETTEBLENDMODEMULTIPLY: boolean;
     VIGNETTEBLENDMODEOPAQUE: boolean;
@@ -41,7 +40,6 @@ export interface IImageProcessingConfigurationDefines {
 export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public IMAGEPROCESSING = false;
     public WHITEBALANCE = false;
-    public MAINTAINLUMINANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
@@ -555,7 +553,6 @@ export class ImageProcessingConfiguration {
         }
 
         defines.WHITEBALANCE = this.whiteBalanceEnabled;
-        defines.MAINTAINLUMINANCE = this.whiteBalanceEnabled && this.luminanceMaintainingWhiteBalanceEnabled;
 
         defines.VIGNETTE = this.vignetteEnabled;
         defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;

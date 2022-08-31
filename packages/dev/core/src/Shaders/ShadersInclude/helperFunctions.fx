@@ -166,8 +166,8 @@ float getRand(vec2 seed) {
 
 float dither(vec2 seed, float varianceAmount) {
     float rand = getRand(seed);
-    float dither = mix(-varianceAmount/255.0, varianceAmount/255.0, rand);
-    
+    float normVariance = varianceAmount/255.0;
+    float dither = mix(-normVariance, normVariance, rand);
     return dither;
 }
 

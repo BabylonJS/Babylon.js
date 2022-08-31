@@ -100,14 +100,10 @@ vec4 applyImageProcessing(vec4 result) {
 #endif
 
 #ifdef WHITEBALANCE
-	#ifdef MAINTAINLUMINANCE
 		float inLuminance = getLuminance(result.rgb);
 		result.rgb *= whiteBalanceScale;
 		float outLuminance = getLuminance(result.rgb);
 		result.rgb *= max(0.000001, inLuminance) / max(0.000001, outLuminance);
-	#else
-		result.rgb *= whiteBalanceScale;
-	#endif
 #endif
 
 #ifdef VIGNETTE
