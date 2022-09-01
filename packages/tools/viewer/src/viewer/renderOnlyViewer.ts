@@ -1,5 +1,6 @@
 import type { ViewerConfiguration } from "../configuration/configuration";
 import { AbstractViewer } from "./viewer";
+import "core/Misc/observable.extensions";
 
 export class RenderOnlyViewer extends AbstractViewer {
     constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
