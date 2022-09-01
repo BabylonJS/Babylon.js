@@ -389,11 +389,6 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /**
-     * This is the inverted `colorBalanceColor` passed to the shader.
-     */
-    private _colorBalanceScale = Color3.White();
-
     @serializeAsColor3()
     private _colorBalanceColor = Color3.White();
     /**
@@ -411,7 +406,6 @@ export class ImageProcessingConfiguration {
         }
 
         this._colorBalanceColor.copyFrom(value);
-        this._colorBalanceScale.set(1.0 / Math.max(0.000001, value.r), 1.0 / Math.max(0.000001, value.g), 1.0 / Math.max(0.000001, value.b));
     }
 
     @serialize()
@@ -695,7 +689,7 @@ export class ImageProcessingConfiguration {
 
         // Color Balance
         if (this._colorBalanceEnabled) {
-            effect.setColor3("colorBalanceScale", this._colorBalanceScale);
+            effect.setColor3("colorBalanceScale", this._colorBalanceColor);
         }
     }
 

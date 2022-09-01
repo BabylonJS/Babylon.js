@@ -101,10 +101,10 @@ vec4 applyImageProcessing(vec4 result) {
 
 	// Apply color balancing after exposure and before gamma conversion.
 #ifdef COLORBALANCE
-		float inLuminance = getLuminanceUnsaturated(result.rgb);
+		float luma = getLuminanceUnsaturated(result.rgb);
 		result.rgb *= colorBalanceScale;
-		float outLuminance = getLuminanceUnsaturated(result.rgb);
-		result.rgb *= max(0.000001, inLuminance) / max(0.000001, outLuminance);
+		// Maintain the luminance of pre-balanced color but need to avoid divide by 0.
+		result.rgb *= luma / max(0.00000001, getLuminanceUnsaturated(result.rgb));
 #endif
 
 #ifdef VIGNETTE
