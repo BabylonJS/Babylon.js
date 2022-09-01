@@ -5,7 +5,7 @@ import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/s
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { Tools } from "core/Misc/tools";
 import { Tags } from "core/Misc/tags";
-
+import "core/Misc/observable.extensions";
 import type { ConfigurationContainer } from "../configuration/configurationContainer";
 import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import type { ObservablesManager } from "../managers/observablesManager";
