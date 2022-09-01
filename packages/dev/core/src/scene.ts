@@ -62,6 +62,8 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
+import { ArrayTools } from "./Misc/arrayTools";
+import type { INotifyArrayChangeType } from "./Misc/arrayTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -655,6 +657,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onActiveCameraChanged = new Observable<Scene>();
 
     /**
+     * An event triggered when the activeCameras property is updated
+     */
+    public onActiveCamerasChanged = new Observable<INotifyArrayChangeType<Camera>>();
+
+    /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -1012,8 +1019,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._lightsEnabled;
     }
 
+    private _activeCameras: Nullable<Camera[]> = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, []);
     /** All of the active cameras added to this scene. */
-    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
+    public get activeCameras(): Nullable<Camera[]> {
+        return this._activeCameras;
+    }
+
+    public set activeCameras(cameras: Nullable<Camera[]>) {
+        this._activeCameras = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, cameras);
+    }
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;
