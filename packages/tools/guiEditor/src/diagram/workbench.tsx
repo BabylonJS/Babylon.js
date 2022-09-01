@@ -28,6 +28,9 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
+//import { CommonControlPropertyGridComponent } from "../components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent";
+
+
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -61,6 +64,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
+    private static _addedControls: string[] = [];
+    public static get addedControl(){
+        return this._addedControls
+    }
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
@@ -481,6 +488,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     async loadFromSnippet(snippetId: string) {
+        console.log("eheh")
         this.removeEditorTransformation();
         this.props.globalState.setSelection([]);
         if (this.props.globalState.liveGuiTexture) {
@@ -501,13 +509,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         this.props.globalState.guiTexture.rootContainer.getDescendants().forEach((guiElement) => {
+            console.log(guiElement.fontFamily)
+            WorkbenchComponent._addedControls.push(guiElement.fontFamily)
             this.addEditorBehavior(guiElement);
         });
+        
 
         this._isOverGUINode = [];
         this.props.globalState.setSelection([]);
         this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
     }
+
 
     public updateNodeOutlines() {
         for (const guiControl of this._trueRootContainer.getDescendants()) {
@@ -1045,8 +1057,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             vec.z = 0;
         }
     }
-
+   
     render() {
+        
         let cursor = "default";
         if (this.props.globalState.tool === GUIEditorTool.PAN) {
             cursor = "grab";
@@ -1054,7 +1067,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
         }
         return (
-            <canvas
+          
+                <canvas
                 id="workbench-canvas"
                 onPointerMove={(evt) => {
                     if (this.props.globalState.guiTexture) {
@@ -1071,7 +1085,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
                 style={{ cursor }}
+                
             ></canvas>
+            
+            
+            
+            
         );
     }
 }

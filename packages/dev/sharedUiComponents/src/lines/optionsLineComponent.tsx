@@ -155,7 +155,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             onKeyDown={(event) => {
                                 event.key === "Enter" && this.props.addVal != undefined
                                     ? (this.props.addVal(
-                                          { label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length + 1 },
+                                          { label: (event.target as HTMLInputElement).value, value: this.props.options.length + 1 },
                                           Number(this.state.value)
                                       ),
                                       this.updateCustomValue(),
