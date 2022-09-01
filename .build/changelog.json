@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.20.0",
+    "fromTag": "5.21.0",
     "changelog": {
         "5.21.0": [
             {
@@ -266,6 +266,410 @@
                     "enhancement",
                     "documentation"
                 ]
+            }
+        ],
+        "5.22.0": [
+            {
+                "pr": "12925",
+                "title": "Add support of clipplanes in GlowLayer",
+                "description": "https://forum.babylonjs.com/t/clipping-plane-has-no-effect-on-a-meshs-glow-in-a-glow-layer-unsure-if-this-by-design-or-this-is-a-bug/33565",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Shaders/glowMapGeneration.fragment.fx",
+                    "packages/dev/core/src/Shaders/glowMapGeneration.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "12929",
+                "title": "Revert \"Fixed a bug from opening editor from PG\"",
+                "description": "Reverts BabylonJS/Babylon.js#12899\r\nRequested by @amritanarasimhan ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12928",
+                "title": "Tiny fixes",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerDefaultInput.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12899",
+                "title": "Fixed a bug from opening editor from PG",
+                "description": "Responsive button was in the wrong state",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12927",
+                "title": "Cameras: Add noPreventDefault as argument to attachControl call",
+                "description": "A user in the forum ([Forum Post](https://forum.babylonjs.com/t/potential-inconsistency-with-camerainputsmanagers-add-and-attachelement-functions/32639)) found that there was an inconsistency with how the `noPreventDefault` property was being handled with our camera inputs.  Specifically, if new inputs were added after controls were already attached, the value for `noPreventDefault` was not used when attaching those inputs.  This PR modifies the internal attachControl call to use the input's value for `noPreventDefault`.\r\n\r\nThanks to forum user **kvbh** for the fix suggestion.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/cameraInputsManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "12926",
+                "title": "Fix broken link in `contributing.md` to `what's new.md`",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "contributing.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12924",
+                "title": "Fix Loading Cube Texture from basis file",
+                "description": "https://forum.babylonjs.com/t/error-in-basis-cubetexture/33516/16",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "12923",
+                "title": "Enforce parent blocks being empty in octree",
+                "description": "When creating inner blocks the code enforces that the parent blocks `entries` are ignored (in `octree.select` for example) however the actual `entries` array of the parent block is still populated. Probably not an issue when using just a few objects but it is when using thousands.\r\n\r\nThe code comment says the parent block will be emptied but it isn't.\r\n\r\n",
+                "author": {
+                    "name": "normanb",
+                    "url": "https://github.com/normanb"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Octrees/octreeBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "optimizations"
+                ]
+            },
+            {
+                "pr": "12921",
+                "title": "Shortcuts for search and placement",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12919",
+                "title": "Shortcuts for search and placement",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12918",
+                "title": "Two small fixes",
+                "description": "* Video texture dome should start on pointer down\n* URL should be revoked when not needed anymore",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Helpers/videoDome.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12915",
+                "title": "Fix wording found by @Popov72",
+                "description": null,
+                "author": {
+                    "name": "julien-moreau",
+                    "url": "https://github.com/julien-moreau"
+                },
+                "files": [
+                    "packages/dev/core/src/Probes/reflectionProbe.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12913",
+                "title": "Generate sampler name in buildBlock",
+                "description": "Related issue: https://forum.babylonjs.com/t/nme-bug-about-screen-depth/33404",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12912",
+                "title": "Add type on blob creation",
+                "description": "This fixes loading of SVG Textures",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12914",
+                "title": "Clamp negative rgb values to zero to avoid parse errors in native",
+                "description": "When setting a canvas's fill style to `\"rgb(x, y, z)\"`, browsers clamp negative x/y/z values to zero but native throws parse errors like \"Exception in HostFunction: Unable to parse color: rgb(-51, 13, -128)\".\r\n\r\nThis change fixes the issue by clamping negative rgb values to zero before using them in the style's rgb function.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12907",
+                "title": "Fixing oit + derivatives branching",
+                "description": "https://forum.babylonjs.com/t/order-independent-transparency-bugs-with-bump-texture-and-rendering-pipeline/29173/13",
+                "author": {
+                    "name": "CraigFeldspar",
+                    "url": "https://github.com/CraigFeldspar"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12911",
+                "title": "Add \"metadata\" support to \"ReflectionProbe\" class",
+                "description": null,
+                "author": {
+                    "name": "julien-moreau",
+                    "url": "https://github.com/julien-moreau"
+                },
+                "files": [
+                    "packages/dev/core/src/Probes/reflectionProbe.ts",
+                    "what's new.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12910",
+                "title": "TouchButton3D's getPressDepth(position) call has depth discrepancy",
+                "description": "Fixes #12109\n\nThe issue is not exactly as described in the ticket. During apointer move, the cached integer was not updated, so onPointerMove you wouldn't be able to check the depth to the button. onPointerDown's depth is correct, as onPointerDown is triggered when the button is defined as pressed, which is not when the sphere's center is at the end of the button, but a little before. This \"little\" before is defined by the pickRadius in near interaction (0.02 units).\n\nThis PR updated the height variable on pointer move as well, which would allow to check the distance correctly when using pointer move.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/controls/touchButton3D.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12901",
+                "title": "Document the ranges of FromHSV's parameters",
+                "description": "PR to help clear up confusion about the range of the hue, saturation, and value parameters to Vector3.FromHSV. :)\r\nForum: https://forum.babylonjs.com/t/color3-fromhsv-constructor-needs-more-detailed-documentation/33374",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12908",
+                "title": "Fix drawing a rounded rectangle",
+                "description": "Related issue: https://forum.babylonjs.com/t/potential-regression-in-bjs-5-21-0-failed-to-execute-arc-on-canvasrenderingcontext2d/33455\r\nRelated playground: https://playground.babylonjs.com/#R6NPW8",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/rectangle.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12909",
+                "title": "Fix null error in late animation bindings",
+                "description": "https://forum.babylonjs.com/t/error-in-processlateanimationbindings/33464\r\n\r\n```\r\nTypeError: Cannot read properties of null (reading 'm')\r\n    at core_scene.a._processLateAnimationBindings (animatable.js:730:48)\r\n    at core_scene.a._animate (animatable.js:429:1)\r\n    at Scene.animate (scene.js:3661:1)\r\n    at Scene.render (scene.js:3737:1)\r\n```",
+                "author": {
+                    "name": "jjv360",
+                    "url": "https://github.com/jjv360"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12900",
+                "title": "Bump trim-newlines from 1.0.0 to 3.0.1",
+                "description": "Bumps [trim-newlines](https://github.com/sindresorhus/trim-newlines) from 1.0.0 to 3.0.1.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/sindresorhus/trim-newlines/releases\">trim-newlines's releases</a>.</em></p>\n<blockquote>\n<h2>v3.0.0</h2>\n<p>Breaking:</p>\n<ul>\n<li>Require Node.js 8 (<a href=\"https://github-redirect.dependabot.com/sindresorhus/trim-newlines/issues/1\">#1</a>)  75db891</li>\n</ul>\n<p>Enhancements:</p>\n<ul>\n<li>Add TypeScript definition (<a href=\"https://github-redirect.dependabot.com/sindresorhus/trim-newlines/issues/1\">#1</a>)  75db891</li>\n</ul>\n<p><a href=\"https://github.com/sindresorhus/trim-newlines/compare/v2.0.0...v3.0.0\">https://github.com/sindresorhus/trim-newlines/compare/v2.0.0...v3.0.0</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li>See full diff in <a href=\"https://github.com/sindresorhus/trim-newlines/commits\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=trim-newlines&package-manager=npm_and_yarn&previous-version=1.0.0&new-version=3.0.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "12904",
+                "title": "InstancedMesh should be cloned with the new source mesh",
+                "description": "Forum thread:\nhttps://forum.babylonjs.com/t/instancedmeshes-cloned-from-assetcontainer-set-new-source/33301\n\nQuick explanation - when using the assets container to instantiate meshes to the scene and cloning a new InstancedMesh, its sourceMesh is the one that is in the assets container and not the clone that was added to the scene.\n\nThis PR does the following:\n\n* Adding the option to set the new source mesh to the instanced mesh cloning function\n* when cloning a mesh that has an instanced mesh as a child the source mesh will be updated\n* when using the assets container the new instanced mesh will have the cloned mesh as a source mesh.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12897",
+                "title": "Remove tslib reference in es6 packages (First step towards esm)",
+                "description": "Fixes #12784\n\nThis PR removes the tslib dependency (while still providing it locally in its es6 version). This will allow using the es6 packages in the browser directly and will minimally help tree shaking, as not all of tslib is even needed (ATM only decorators).\n\nAnother change - the output for the esm packages is no longer es5! it is now es2021.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/gui/tsconfig.build.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/materials/tsconfig.build.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/procedural-textures/tsconfig.build.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/@babylonjs/serializers/tsconfig.build.json",
+                    "tsconfig.build.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12902",
+                "title": "Fix picking on ADV to account for texture coordinates",
+                "description": "This was the underlying issue for this report: https://forum.babylonjs.com/t/why-elements-holographicslate-are-not-always-clickable/33299, but was also affecting any texture that had transformations (offset, rotation and scale).\r\n\r\nExample playground: https://playground.babylonjs.com/#H8NS43",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12899",
+                "title": "Fixed a bug from opening editor from PG",
+                "description": "Responsive button was in the wrong state",
+                "author": {
+                    "name": "amritanarasimhan",
+                    "url": "https://github.com/amritanarasimhan"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": []
             }
         ],
         "5.20.0": [
