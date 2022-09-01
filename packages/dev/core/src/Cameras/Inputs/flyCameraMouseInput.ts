@@ -225,8 +225,8 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        const offsetX = e.babylonMovementX || 0;
-        const offsetY = e.babylonMovementY || 0;
+        const offsetX = e.movementX || 0;
+        const offsetY = e.movementY || 0;
 
         this._rotateCamera(offsetX, offsetY);
 

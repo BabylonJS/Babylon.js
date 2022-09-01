@@ -1,6 +1,5 @@
 import type { Engine } from "../Engines/engine";
-import type { IPointerEvent, IUIEvent, IWheelEvent } from "../Events/deviceInputEvents";
-import { EventConstants } from "../Events/deviceInputEvents";
+import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
 import { DomManagement } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
@@ -70,15 +69,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _gamepadDisconnectedEvent = (evt: any) => {};
 
     private _eventPrefix: string;
-
-    /**
-     * Firefox uses a different scheme to report scroll distances to other
-     * browsers. Rather than use complicated methods to calculate the exact
-     * multiple we need to apply, let's just cheat and use a constant.
-     * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
-     * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
-     */
-    private _ffMultiplier: number = 40;
 
     constructor(
         engine: Engine,
@@ -430,13 +420,20 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
+                const deviceEvent = evt as IPointerEvent;
+                deviceEvent.inputIndex = PointerInput.Move;
+
+                if (!("movementX" in evt)) {
+                    const movementX = evt.clientX - pointer[PointerInput.Horizontal];
+                    evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || movementX;
+                }
+                if (!("movementY" in evt)) {
+                    const movementY = evt.clientY - pointer[PointerInput.Vertical];
+                    evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || movementY;
+                }
+
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
-
-                const deviceEvent = evt as IUIEvent;
-                deviceEvent.inputIndex = PointerInput.Move;
-                (deviceEvent as IPointerEvent).babylonMovementX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                (deviceEvent as IPointerEvent).babylonMovementY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
@@ -525,8 +522,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
-                    (deviceEvent as IPointerEvent).babylonMovementX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                    (deviceEvent as IPointerEvent).babylonMovementY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                    if (!("movementX" in evt)) {
+                        const movementX = evt.clientX - previousHorizontal;
+                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || movementX;
+                    }
+                    if (!("movementY" in evt)) {
+                        const movementY = evt.clientY - previousVertical;
+                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || movementY;
+                    }
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
             }
@@ -557,8 +560,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
-                    (deviceEvent as IPointerEvent).babylonMovementX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                    (deviceEvent as IPointerEvent).babylonMovementY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                    if (!("movementX" in evt)) {
+                        const movementX = evt.clientX - previousHorizontal;
+                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || movementX;
+                    }
+                    if (!("movementY" in evt)) {
+                        const movementY = evt.clientY - previousVertical;
+                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || movementY;
+                    }
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
 
@@ -709,15 +718,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
 
                 const deviceEvent = evt as IUIEvent;
-                (deviceEvent as IWheelEvent).babylonDeltaY = 0;
 
                 if (pointer[PointerInput.MouseWheelX] !== 0) {
                     deviceEvent.inputIndex = PointerInput.MouseWheelX;
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
                 if (pointer[PointerInput.MouseWheelY] !== 0) {
-                    const platformScale = evt.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1;
-                    (deviceEvent as IWheelEvent).babylonDeltaY = pointer[PointerInput.MouseWheelY] * platformScale;
                     deviceEvent.inputIndex = PointerInput.MouseWheelY;
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }

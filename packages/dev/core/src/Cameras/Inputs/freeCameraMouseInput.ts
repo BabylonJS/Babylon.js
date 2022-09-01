@@ -169,7 +169,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 return;
             }
 
-            let offsetX = evt.babylonMovementX || 0;
+            let offsetX = evt.movementX || 0;
             if (this.camera.getScene().useRightHandedSystem) {
                 offsetX *= -1;
             }
@@ -178,7 +178,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             }
             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
-            const offsetY = evt.babylonMovementY || 0;
+            const offsetY = evt.movementY || 0;
             this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
             this._previousPosition = null;

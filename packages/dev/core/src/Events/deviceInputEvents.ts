@@ -156,33 +156,27 @@ export interface IMouseEvent extends IUIEvent {
 
     /**
      * Delta of movement on X axis
+     * @deprecated
      */
     mozMovementX?: number;
 
     /**
      * Delta of movement on Y axis
+     * @deprecated
      */
     mozMovementY?: number;
 
     /**
      * Delta of movement on X axis
+     * @deprecated
      */
-    msMovementX?: any;
+    msMovementX?: number;
 
     /**
      * Delta of movement on Y axis
+     * @deprecated
      */
-    msMovementY?: any;
-
-    /**
-     * Delta of movement on X axis (used with Babylon's internal system, works like movementX)
-     */
-    babylonMovementX?: any;
-
-    /**
-     * Delta of movement on Y axis (used with Babylon's internal system, works like movementY)
-     */
-    babylonMovementY?: any;
+    msMovementY?: number;
 
     /**
      * Current coordinate of X within container
@@ -211,13 +205,15 @@ export interface IMouseEvent extends IUIEvent {
 
     /**
      * Delta of movement on X axis
+     * @deprecated
      */
-    webkitMovementX?: any;
+    webkitMovementX?: number;
 
     /**
      * Delta of movement on Y axis
+     * @deprecated
      */
-    webkitMovementY?: any;
+    webkitMovementY?: number;
 
     /**
      * Alias of clientX
@@ -275,17 +271,13 @@ export interface IWheelEvent extends IMouseEvent {
     deltaY: number;
 
     /**
-     * Vertical scroll delta (used with Babylon's internal system, works like deltaY)
-     */
-    babylonDeltaY: number;
-
-    /**
      * Z-Axis scroll delta
      */
     deltaZ: number;
 
     /**
      * WheelDelta (From MouseWheel Event)
+     * @deprecated
      */
     wheelDelta?: number;
 }

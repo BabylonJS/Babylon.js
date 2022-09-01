@@ -10,9 +10,19 @@ import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
 import { Tools } from "../../Misc/tools";
 
+/**
+ * Firefox uses a different scheme to report scroll distances to other
+ * browsers. Rather than use complicated methods to calculate the exact
+ * multiple we need to apply, let's just cheat and use a constant.
+ * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
+ * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
+ */
+ const ffMultiplier = 40;
+ 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -76,8 +86,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
             const event = <IWheelEvent>p.event;
             let delta = 0;
+            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
-            const wheelDelta = -event.babylonDeltaY;
+            const wheelDelta = -(event.deltaY * platformScale);
 
             if (this.customComputeDeltaFromMouseWheel) {
                 delta = this.customComputeDeltaFromMouseWheel(wheelDelta, this, event);
