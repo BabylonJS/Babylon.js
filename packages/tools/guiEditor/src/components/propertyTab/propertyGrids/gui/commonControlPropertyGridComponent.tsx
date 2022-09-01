@@ -39,6 +39,7 @@ import shadowColorIcon from "shared-ui-components/imgs/shadowColorIcon.svg";
 import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -484,7 +485,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <>
                         <TextLineComponent label="LINK OFFSET" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider double">
-                            <IconComponent icon={positionIcon} label={"Link offset"} />
+                            <IconComponent icon={linkedMeshOffsetIcon} label={"Link offset"} />
                             <TextInputLineComponent
                                 numbersOnly={true}
                                 lockObject={this.props.lockObject}
