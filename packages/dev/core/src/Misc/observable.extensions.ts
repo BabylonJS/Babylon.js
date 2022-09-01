@@ -64,7 +64,7 @@ declare module "./observable" {
          * @param userInfo defines any user info to send to observers
          * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
          */
-        notifyObserversWithPromise(eventData: T, mask: number, target?: any, currentTarget?: any, userInfo?: any): Promise<T>
+        notifyObserversWithPromise(eventData: T, mask: number, target?: any, currentTarget?: any, userInfo?: any): Promise<T>;
     }
 }
 
@@ -113,4 +113,4 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
     // return the eventData
     await p;
     return eventData;
-}
+};

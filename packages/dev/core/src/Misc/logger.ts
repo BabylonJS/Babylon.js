@@ -38,7 +38,7 @@ export class Logger {
         { color: "orange", logFunc: console.warn, name: "Warn" },
         {},
         { color: "red", logFunc: console.error, name: "Error" },
-    ]
+    ];
 
     /**
      * Gets a value indicating the number of loading errors
@@ -148,7 +148,7 @@ export class Logger {
         [Logger.MessageLogLevel, Logger.WarningLogLevel, Logger.ErrorLogLevel].forEach((l) => {
             if ((level & l) === l) {
                 const type = this._Levels[l];
-                Logger[type.name as 'Log' | 'Warn' | 'Error'] = Logger._LogEnabled.bind(Logger, l);
+                Logger[type.name as "Log" | "Warn" | "Error"] = Logger._LogEnabled.bind(Logger, l);
             }
         });
     }
