@@ -12,6 +12,8 @@ import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
 import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
+import localStyles from "./graphNode.modules.scss";
+import commonStyles from "./common.modules.scss";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -310,8 +312,8 @@ export class GraphNode {
             this._displayManager.updatePreviewContent(this.content, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.content);
             const additionalClass = this._displayManager.getHeaderClass(this.content);
-            this._header.classList.value = "header";
-            this._headerContainer.classList.value = "header-container";
+            this._header.classList.value = localStyles.header;
+            this._headerContainer.classList.value = localStyles["header-container"];
             if (additionalClass) {
                 this._headerContainer.classList.add(additionalClass);
             }
@@ -485,51 +487,51 @@ export class GraphNode {
 
         // DOM
         this._visual = root.ownerDocument!.createElement("div");
-        this._visual.classList.add("visual");
+        this._visual.classList.add(localStyles.visual);
 
         this._visual.addEventListener("pointerdown", (evt) => this._onDown(evt));
         this._visual.addEventListener("pointerup", (evt) => this._onUp(evt));
         this._visual.addEventListener("pointermove", (evt) => this._onMove(evt));
 
         this._headerContainer = root.ownerDocument!.createElement("div");
-        this._headerContainer.classList.add("header-container");
+        this._headerContainer.classList.add(localStyles["header-container"]);
         this._visual.appendChild(this._headerContainer);
 
         this._header = root.ownerDocument!.createElement("div");
-        this._header.classList.add("header");
+        this._header.classList.add(localStyles.header);
         this._headerContainer.appendChild(this._header);
 
         this._headerIcon = root.ownerDocument!.createElement("div");
-        this._headerIcon.classList.add("headerIcon");
+        this._headerIcon.classList.add(localStyles.headerIcon);
         this._headerIconImg = root.ownerDocument!.createElement("img");
         this._headerIcon.appendChild(this._headerIconImg);
-        this._visual.appendChild(this._headerIcon);
+        this._headerContainer.appendChild(this._headerIcon);
 
         const selectionBorder = root.ownerDocument!.createElement("div");
         selectionBorder.classList.add("selection-border");
         this._visual.appendChild(selectionBorder);
 
         this._connections = root.ownerDocument!.createElement("div");
-        this._connections.classList.add("connections");
+        this._connections.classList.add(localStyles.connections);
         this._visual.appendChild(this._connections);
 
         this._inputsContainer = root.ownerDocument!.createElement("div");
-        this._inputsContainer.classList.add("inputsContainer");
+        this._inputsContainer.classList.add(commonStyles.inputsContainer);
         this._connections.appendChild(this._inputsContainer);
 
         this._outputsContainer = root.ownerDocument!.createElement("div");
-        this._outputsContainer.classList.add("outputsContainer");
+        this._outputsContainer.classList.add(commonStyles.outputsContainer);
         this._connections.appendChild(this._outputsContainer);
 
         this._content = root.ownerDocument!.createElement("div");
-        this._content.classList.add("content");
+        this._content.classList.add(localStyles.content);
         this._visual.appendChild(this._content);
 
         root.appendChild(this._visual);
 
         // Comments
         this._comments = root.ownerDocument!.createElement("div");
-        this._comments.classList.add("comments");
+        this._comments.classList.add(localStyles.comments);
 
         this._visual.appendChild(this._comments);
 
