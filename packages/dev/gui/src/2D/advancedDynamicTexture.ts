@@ -1214,6 +1214,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+     * Clones the ADT
+     * @param newName defines the name of the new ADT
+     * @returns the clone of the ADT
+     */
+    public clone(newName?: string): AdvancedDynamicTexture {
+        const scene = this.getScene();
+
+        if (!scene) {
+            return this;
+        }
+
+        const data = this.serializeContent();
+        const clone = AdvancedDynamicTexture.CreateFullscreenUI(newName || "Clone of " + this.name, this.isForeground, scene, this.samplingMode);
+        clone.parseSerializedObject(data);
+
+        return clone;
+    }
+
+    /**
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
