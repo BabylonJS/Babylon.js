@@ -52,11 +52,18 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { UnitButton } from "shared-ui-components/lines/unitButton";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 
+
+import {WorkbenchComponent} from "../../../../diagram/workbench"
+
+
+
+
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     hideDimensions?: boolean;
+    //globalState?: GlobalState
 }
 interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
@@ -120,7 +127,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
+    
+
     componentWillMount() {
+    
         const correctFonts: IInspectableOptions[] = [];
         correctFonts.push({ label: "Custom Font", value: 0 });
         for (const font of this.state.fontFamilyOptions.values()) {
@@ -128,13 +138,40 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 correctFonts.push(font);
             }
         }
+        const correctLabels = correctFonts.map(element => element.label)
+    
 
-        this.setState({
-            fontFamilyOptions: correctFonts,
-        });
+        // console.log(correctFonts)
+        setTimeout(() => {
+            const moreFonts = WorkbenchComponent.addedControl
+            console.log("all de fonts", moreFonts[0])
+            console.log(JSON.stringify(moreFonts))
+         for(let i = 0; i < moreFonts.length; i++){
+            
+            
+            if(!correctLabels.includes(moreFonts[i]) && document.fonts.check(`12px "${moreFonts[i]}"`)) {
+                correctFonts.push({label: moreFonts[i], value: correctFonts.length + 1} );
+                correctLabels.push(moreFonts[i])
+            }
+            else if(!document.fonts.check(`12px "${moreFonts[i]}"`)){
+                alert("The font " + moreFonts[i] + " is unable to load")
+            }
+            console.log("fontsss", correctFonts)
+            this.setState({
+                fontFamilyOptions: correctFonts,
+            });
+    
+            window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
+        }
+          }, 500)
 
-        window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
+          
+    
+       
     }
+
+
+    
 
     private _getTransformedReferenceCoordinate(control: Control) {
         const nodeMatrix = CoordinateHelper.GetNodeMatrix(control);
