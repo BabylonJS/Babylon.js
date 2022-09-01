@@ -1041,6 +1041,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.uniforms.push("vCameraColorCurvePositive");
         state.uniforms.push("txColorTransform");
         state.uniforms.push("colorTransformSettings");
+        state.uniforms.push("ditherIntensity");
 
         //
         // Includes
