@@ -325,7 +325,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     /**
      * Gets intensity of the dithering effect.
      */
-     public get ditheringIntensity(): number {
+    public get ditheringIntensity(): number {
         return this.imageProcessingConfiguration.ditheringIntensity;
     }
     /**
