@@ -395,14 +395,16 @@ export const LoadFile = (
     }
 
     // For a Base64 Data URL
-    if (IsBase64DataUrl(url)) {
+    const { match, type } = TestBase64DataUrl(url);
+    if (match) {
         const fileRequest: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
             abort: () => () => {},
         };
 
         try {
-            onSuccess(useArrayBuffer ? DecodeBase64UrlToBinary(url) : DecodeBase64UrlToString(url));
+            const data = useArrayBuffer ? DecodeBase64UrlToBinary(url) : DecodeBase64UrlToString(url);
+            onSuccess(data, undefined, type);
         } catch (error) {
             if (onError) {
                 onError(undefined, error);
@@ -669,6 +671,16 @@ export const IsFileURL = (): boolean => {
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
     return Base64DataUrlRegEx.test(uri);
+};
+
+export const TestBase64DataUrl = (uri: string): { match: boolean; type: string } => {
+    const results = Base64DataUrlRegEx.exec(uri);
+    if (results === null) {
+        return { match: false, type: "" };
+    } else {
+        const type = results[0].replace("data:", "").replace("base64,", "");
+        return { match: true, type };
+    }
 };
 
 /**
