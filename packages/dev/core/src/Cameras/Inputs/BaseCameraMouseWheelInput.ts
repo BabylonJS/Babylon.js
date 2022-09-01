@@ -154,7 +154,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
      * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
      */
-     private readonly _ffMultiplier = 12;
+    private readonly _ffMultiplier = 12;
 
     /**
      * Different event attributes for wheel data fall into a few set ranges.

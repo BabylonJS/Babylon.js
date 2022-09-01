@@ -21,8 +21,8 @@ import { Tools } from "../../Misc/tools";
  * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
  * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
  */
- const ffMultiplier = 40;
- 
+const ffMultiplier = 40;
+
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
