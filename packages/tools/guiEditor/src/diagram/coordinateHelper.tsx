@@ -8,7 +8,18 @@ import type { Observable } from "core/Misc/observable";
 import type { GlobalState } from "../globalState";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
-export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
+export type DimensionProperties =
+    | "width"
+    | "left"
+    | "height"
+    | "top"
+    | "paddingLeft"
+    | "paddingRight"
+    | "paddingTop"
+    | "paddingBottom"
+    | "fontSize"
+    | "linkOffsetX"
+    | "linkOffsetY";
 
 export class Rect {
     public top: number;
