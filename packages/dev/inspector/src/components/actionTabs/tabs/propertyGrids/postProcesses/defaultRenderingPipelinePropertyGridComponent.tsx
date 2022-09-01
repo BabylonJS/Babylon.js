@@ -398,7 +398,8 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 propertyName="vignetteBlendMode"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onSelect={(value) => this.setState({ mode: value })}
-                            /><CheckBoxLineComponent
+                            />
+                            <CheckBoxLineComponent
                                 label="Dithering"
                                 target={renderPipeline.imageProcessing}
                                 propertyName="ditheringEnabled"
