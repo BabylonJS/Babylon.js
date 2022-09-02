@@ -147,7 +147,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         super._buildBlock(state);
 
         if (!this.texture) {
-            state.compilationString += this.writeOutputs(state, "vec3(0.)");
+            state.compilationString += this.writeOutputs(state, "vec4(0.)");
             return this;
         }
 
