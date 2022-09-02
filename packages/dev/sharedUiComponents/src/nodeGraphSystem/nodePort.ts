@@ -8,6 +8,7 @@ import type { FrameNodePort } from "./frameNodePort";
 import type { IDisplayManager } from "./interfaces/displayManager";
 import type { IPortData } from "./interfaces/portData";
 import commonStyles from "./common.modules.scss";
+import localStyles from "./nodePort.modules.scss";
 
 export class NodePort {
     protected _element: HTMLDivElement;
@@ -121,20 +122,20 @@ export class NodePort {
             const rect = this._element.getBoundingClientRect();
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
-                this._element.classList.remove("selected");
+                this._element.classList.remove(localStyles["selected"]);
                 return;
             }
 
-            this._element.classList.add("selected");
+            this._element.classList.add(localStyles["selected"]);
             this._stateManager.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
-                this._img.classList.add("selected");
+                this._img.classList.add(localStyles["selected"]);
             } else {
-                this._img.classList.remove("selected");
+                this._img.classList.remove(localStyles["selected"]);
             }
         });
 

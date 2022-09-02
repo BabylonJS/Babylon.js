@@ -4,11 +4,11 @@
         stroke: white !important;
         stroke-dasharray: 10, 2;
     }
+}
 
-    &.target-candidate {
-        filter: brightness(1.5);
-        stroke-width: 6px;
-    }
+.target-candidate {
+    filter: brightness(1.5);
+    stroke-width: 6px;
 }
 
 .selection-link {
