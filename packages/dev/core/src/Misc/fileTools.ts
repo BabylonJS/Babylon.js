@@ -675,7 +675,7 @@ export const IsBase64DataUrl = (uri: string): boolean => {
 
 export const TestBase64DataUrl = (uri: string): { match: boolean; type: string } => {
     const results = Base64DataUrlRegEx.exec(uri);
-    if (results === null) {
+    if (results === null || results.length === 0) {
         return { match: false, type: "" };
     } else {
         const type = results[0].replace("data:", "").replace("base64,", "");
