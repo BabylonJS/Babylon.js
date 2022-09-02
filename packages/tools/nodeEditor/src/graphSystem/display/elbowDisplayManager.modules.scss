@@ -1,0 +1,23 @@
+.elbow-block {
+    width: 40px;
+    grid-template-rows: 0px 40px 0px;
+    border: 0;
+    border-radius: 40px;
+    transform: translateY(-7px);
+
+    .selection-border {
+        border-radius: 40px;
+    }
+
+    .header-container {
+        display: none;
+    }
+
+    .connections {
+        transform: translateY(7px);
+    }
+
+    .content {
+        display: none;
+    }
+}

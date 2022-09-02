@@ -3,6 +3,7 @@ import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import styles from "./elbowDisplayManager.modules.scss";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -24,6 +25,6 @@ export class ElbowDisplayManager implements IDisplayManager {
     }
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-        contentArea.parentElement!.classList.add("elbow-block");
+        contentArea.parentElement!.classList.add(styles["elbow-block"]);
     }
 }
