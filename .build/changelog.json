@@ -1,43 +1,41 @@
 {
-    "fromTag": "5.21.0",
+    "fromTag": "5.22.0",
     "changelog": {
-        "5.21.0": [
+        "5.22.1": [
             {
-                "pr": "12883",
-                "title": "Testing: Update Safari Interactions test to point to BrowserStack",
-                "description": "There are slight modifications that have been made to the safari tests so that they use BrowserStack.  This change should allow these tests to be used in the CI.",
+                "pr": "12941",
+                "title": "switch to new PG",
+                "description": null,
                 "author": {
-                    "name": "PolygonalSun",
-                    "url": "https://github.com/PolygonalSun"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/tools/testTools/src/seleniumTestUtils.ts",
-                    "packages/tools/tests/test/interactions/safari.test.ts"
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "12896",
-                "title": "Store which pointerIds have been captured by the ADV so those are the…",
-                "description": "… only ones that fire pointerout events.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/nothing-happens-when-you-click-grid/33320\r\n\r\nThis is to compliment another fix from #12887, where the condition should only apply if the control has been captured by the scene only, and not by the GUI.",
+                "pr": "12940",
+                "title": "Fix reflection block empty output",
+                "description": null,
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
-                    "packages/dev/gui/src/2D/controls/control.ts"
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug"
                 ]
             },
             {
-                "pr": "12891",
-                "title": "Use LoadFile when loading images so that WebRequest custom headers ar…",
-                "description": "…e properly passed.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/why-does-textureassettask-ignore-webrequest/33197\r\nRelated Playground: https://playground.babylonjs.com/#ZJYNY#1297\r\n\r\n![vvvvvvvv](https://user-images.githubusercontent.com/6002144/186015150-d25a4d1e-8da6-466a-b3ef-2840407fb761.png)\r\n",
+                "pr": "12937",
+                "title": "Fix loading of base64 svgs",
+                "description": null,
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
@@ -50,221 +48,131 @@
                 ]
             },
             {
-                "pr": "12893",
-                "title": "Allow package name in local packages",
-                "description": "Further changes to support that in lts as well",
+                "pr": "12939",
+                "title": "Empty array, no reassign",
+                "description": "Fixes #12938",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/buildTools/src/ltsTransformer.ts",
-                    "packages/dev/buildTools/src/pathTransform.ts",
-                    "packages/dev/buildTools/src/webpackTools.ts",
-                    "packages/dev/core/tsconfig.build.json",
-                    "packages/dev/gui/tsconfig.build.json",
-                    "packages/dev/inspector/tsconfig.build.json",
-                    "packages/dev/loaders/tsconfig.build.json",
-                    "packages/dev/materials/tsconfig.build.json",
-                    "packages/dev/postProcesses/tsconfig.build.json",
-                    "packages/dev/proceduralTextures/tsconfig.build.json",
-                    "packages/dev/serializers/tsconfig.build.json",
-                    "packages/dev/sharedUiComponents/tsconfig.build.json",
-                    "packages/lts/core/tsconfig.build.json",
-                    "packages/lts/gui/tsconfig.build.json",
-                    "packages/lts/loaders/tsconfig.build.json",
-                    "packages/lts/materials/tsconfig.build.json",
-                    "packages/lts/postProcesses/tsconfig.build.json",
-                    "packages/lts/proceduralTextures/tsconfig.build.json",
-                    "packages/lts/serializers/tsconfig.build.json",
-                    "packages/public/@babylonjs/core/tsconfig.build.json",
-                    "packages/public/@babylonjs/gui/tsconfig.build.json",
-                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
-                    "packages/public/@babylonjs/materials/tsconfig.build.json",
-                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
-                    "packages/tools/guiEditor/tsconfig.build.json",
-                    "packages/tools/nodeEditor/tsconfig.build.json",
-                    "packages/tools/playground/tsconfig.build.json",
-                    "tsconfig.devpackages.json"
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts"
                 ],
-                "tags": [
-                    "skip changelog"
-                ]
+                "tags": []
             },
             {
-                "pr": "12894",
-                "title": "make a PR a breaking change and document how to do it",
+                "pr": "12936",
+                "title": "Reducing amount of code in Observable and Logger",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    ".build/changelog.json",
-                    "buildSystem.md"
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/logger.ts",
+                    "packages/dev/core/src/Misc/observable.extensions.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/tools/viewer/src/loader/modelLoader.ts",
+                    "packages/tools/viewer/src/managers/sceneManager.ts",
+                    "packages/tools/viewer/src/model/viewerModel.ts",
+                    "packages/tools/viewer/src/viewer/renderOnlyViewer.ts",
+                    "packages/tools/viewer/src/viewer/viewer.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "12890",
-                "title": "Fix a bug where deleting a row/column with a control inside wouldn't …",
-                "description": "…remove that control from the Scene Explorer.\r\n\r\nRelated issue: https://forum.babylonjs.com/t/gui-editor-bugs-from-editing/33214\r\nRelated Playground: https://gui.babylonjs.com/#LIDH5L#1",
+                "pr": "12933",
+                "title": "Add Link offset properties to Gui Editor",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/improve-the-linewidthmesh-attribute-of-gui-functions/31630\r\n![image](https://user-images.githubusercontent.com/6002144/187906219-015a7a92-f52b-4903-9ed1-f49ed01da695.png)\r\n",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/gridPropertyGridComponent.tsx",
-                    "packages/tools/guiEditor/src/components/propertyTab/propertyTabComponent.tsx",
-                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                    "packages/dev/sharedUiComponents/src/imgs/linkedMeshOffsetIcon.svg",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/coordinateHelper.tsx"
                 ],
                 "tags": [
-                    "bug"
+                    "enhancement",
+                    "gui editor"
                 ]
             },
             {
-                "pr": "12887",
-                "title": "Fix Drag/Release Behavior in GUI and Photo Dome",
-                "description": "See: https://forum.babylonjs.com/t/ispointerblocker-improvement/31152/10?u=stevendelapena\r\n\r\nRecent changes to GUI mouse behavior breaks previous behavior for scenes utilizing a Video and Photo Domes. See PG: https://playground.babylonjs.com/#SQ5UC1#375 and https://playground.babylonjs.com/#14KRGG#715\r\n\r\nClick and drag from outside of GUI element to gain control of camera. Release mouse from within the GUI element. You’ll notice the camera is still observing the mouse movement and pans around with mouse even though click/pointer has been released\r\n\r\nFix suggested is to allow mouse release to propagate to scene to allow for release of camera observers.",
+                "pr": "12935",
+                "title": "ADT clone method needs special version",
+                "description": null,
                 "author": {
-                    "name": "stevendelapena",
-                    "url": "https://github.com/stevendelapena"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
                     "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "12932",
+                "title": "Add dithering effect to image processing.",
+                "description": "This can be used to reduce banding in final output. It's good to have it as part of the image processing functions, as the more artistic alternative to this would be the grain post process which requires a separate pass and thus has more overhead. If all you're looking for is to reduce banding, this will be a simple/efficient option.\r\n\r\nI've been testing this change via the inspector -> add a default rendering pipeline -> enable dithering.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/imageProcessingDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/imageProcessingFunctions.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12934",
+                "title": "Time Factor for crowd agents update",
+                "description": "Follow up https://forum.babylonjs.com/t/possible-to-pause-recastjs-crowd-navigation/33025/7\r\nAnd add a little twist.\r\nInstead of just pausing a sim, it's possible to change the time factor. So a pause is possible, and even a progressive one.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Navigation/Plugins/recastJSPlugin.ts"
                 ],
                 "tags": [
                     "new feature"
                 ]
             },
             {
-                "pr": "12886",
-                "title": "Allow package name in local files.",
-                "description": "This PR provides the ability to import from the local package's package - for example use `import ... from core/...` in the core directory. So far we had to have relative files.\n\nThere might be other consequences to the change, so I will be monitoring that.",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/buildTools/src/webpackTools.ts",
-                    "packages/dev/core/tsconfig.build.json",
-                    "packages/dev/gui/tsconfig.build.json",
-                    "packages/dev/inspector/tsconfig.build.json",
-                    "packages/dev/loaders/tsconfig.build.json",
-                    "packages/dev/materials/tsconfig.build.json",
-                    "packages/dev/postProcesses/tsconfig.build.json",
-                    "packages/dev/proceduralTextures/tsconfig.build.json",
-                    "packages/dev/serializers/tsconfig.build.json",
-                    "packages/dev/sharedUiComponents/tsconfig.build.json",
-                    "packages/tools/guiEditor/tsconfig.build.json",
-                    "packages/tools/nodeEditor/tsconfig.build.json",
-                    "packages/tools/playground/tsconfig.build.json",
-                    "tsconfig.devpackages.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12888",
-                "title": "Create a separate callback for the FileButton",
-                "description": "The previous PR I recently submitted to add a FileButton can produce an error in the Typescript compiler since the `callback` function of the inspectable does not expect a parameter (so putting in a File parameter causes a compiler error).\r\n\r\nThis can be worked around by using a callback that takes a file param and then recasting it into a callback that takes no parameter i.e.,\r\n\r\n```\r\n        {\r\n            label: \"File Button demo\",\r\n            propertyName: \"unused\",\r\n            type: InspectableType.FileButton,\r\n            callback: ((file: File) => {\r\n                // ...\r\n            }) as () => void,\r\n            accept: \".jpg, .jpeg\",\r\n        },\r\n```\r\n\r\nBut that's not so great.\r\n\r\nHere's a better solution. Add an explicit fileCallback that takes the file as a parameter. This is the callback that will be used with the FileButton.",
-                "author": {
-                    "name": "kircher1",
-                    "url": "https://github.com/kircher1"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/iInspectable.ts",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12885",
-                "title": "run the babylon server in visual test mode",
-                "description": null,
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "buildSystem.md",
-                    "packages/tools/babylonServer/src/sceneJs.js"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "12847",
-                "title": "Shared message dialog",
-                "description": null,
+                "pr": "12905",
+                "title": "Fix scene not clearing in some Default Rendering Pipeline with multicamera cases",
+                "description": "Examples of where this would happen:\r\n\r\n- Have a DRP with a camera different than the scene's active camera (rendering to a RTT for instance): https://playground.babylonjs.com/#QW6XJE#4\r\n- Set multiple active cameras AFTER the DRP has been created: https://playground.babylonjs.com/#QW6XJE#13",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/sharedUiComponents/src/components/MessageDialog.modules.scss",
-                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
-                    "packages/dev/sharedUiComponents/src/stories/MessageDialog.stories.tsx",
-                    "packages/tools/guiEditor/src/main.scss",
-                    "packages/tools/guiEditor/src/sharedComponents/messageDialog.tsx",
-                    "packages/tools/guiEditor/src/workbenchEditor.tsx",
-                    "packages/tools/nodeEditor/src/graphEditor.tsx",
-                    "packages/tools/nodeEditor/src/main.scss",
-                    "packages/tools/nodeEditor/src/sharedComponents/messageDialog.tsx"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "12884",
-                "title": "Enable use of Tools.LoadScript in a WebWorker",
-                "description": "Fixes #12882 \r\n\r\n* Checks if `LoadScript` is called from a `WebWorker` context and, if so, uses `importScripts` instead of `HTMLScriptElement` to load the script.\r\n* Ensures `LoadScript` always resolves with either `onSuccess` or `onError`\r\n\r\nUse case: using `ImportMeshAsync` in a `WebWorker` for meshes requiring `MeshoptCompression`\r\n\r\nRE the typings: there's apparently no clean solution as [TypeScript is extremely not a fan of code designed to run in both DOM and WebWorker](https://github.com/Microsoft/TypeScript/issues/20595), these hideous double type assertions seemed less bad than falsely declaring importScripts as available on the Window interface\r\n",
-                "author": {
-                    "name": "wmurphyrd",
-                    "url": "https://github.com/wmurphyrd"
-                },
-                "files": [
-                    "packages/dev/core/src/LibDeclarations/browser.d.ts",
-                    "packages/dev/core/src/Misc/tools.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "tools"
-                ]
-            },
-            {
-                "pr": "12880",
-                "title": "Fix is ready in a few scenari (light dirty, rendering pass id, material changes outside render loop)",
-                "description": null,
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/materialHelper.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Misc/arrayTools.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
                     "packages/dev/core/src/scene.ts"
                 ],
                 "tags": [
                     "bug",
-                    "rendering engine"
-                ]
-            },
-            {
-                "pr": "12881",
-                "title": "Improve MergeMeshes documentation.",
-                "description": "Related forum issue: https://forum.babylonjs.com/t/strategy-for-merging-glb-gltf-files-into-single-mesh/33159",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/mesh.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "documentation"
+                    "post-process"
                 ]
             }
         ],
@@ -670,6 +578,273 @@
                     "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
                 ],
                 "tags": []
+            }
+        ],
+        "5.21.0": [
+            {
+                "pr": "12883",
+                "title": "Testing: Update Safari Interactions test to point to BrowserStack",
+                "description": "There are slight modifications that have been made to the safari tests so that they use BrowserStack.  This change should allow these tests to be used in the CI.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/tools/testTools/src/seleniumTestUtils.ts",
+                    "packages/tools/tests/test/interactions/safari.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12896",
+                "title": "Store which pointerIds have been captured by the ADV so those are the…",
+                "description": "… only ones that fire pointerout events.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/nothing-happens-when-you-click-grid/33320\r\n\r\nThis is to compliment another fix from #12887, where the condition should only apply if the control has been captured by the scene only, and not by the GUI.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12891",
+                "title": "Use LoadFile when loading images so that WebRequest custom headers ar…",
+                "description": "…e properly passed.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/why-does-textureassettask-ignore-webrequest/33197\r\nRelated Playground: https://playground.babylonjs.com/#ZJYNY#1297\r\n\r\n![vvvvvvvv](https://user-images.githubusercontent.com/6002144/186015150-d25a4d1e-8da6-466a-b3ef-2840407fb761.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12893",
+                "title": "Allow package name in local packages",
+                "description": "Further changes to support that in lts as well",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/tsconfig.build.json",
+                    "packages/dev/gui/tsconfig.build.json",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/dev/loaders/tsconfig.build.json",
+                    "packages/dev/materials/tsconfig.build.json",
+                    "packages/dev/postProcesses/tsconfig.build.json",
+                    "packages/dev/proceduralTextures/tsconfig.build.json",
+                    "packages/dev/serializers/tsconfig.build.json",
+                    "packages/dev/sharedUiComponents/tsconfig.build.json",
+                    "packages/lts/core/tsconfig.build.json",
+                    "packages/lts/gui/tsconfig.build.json",
+                    "packages/lts/loaders/tsconfig.build.json",
+                    "packages/lts/materials/tsconfig.build.json",
+                    "packages/lts/postProcesses/tsconfig.build.json",
+                    "packages/lts/proceduralTextures/tsconfig.build.json",
+                    "packages/lts/serializers/tsconfig.build.json",
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/gui/tsconfig.build.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
+                    "packages/public/@babylonjs/materials/tsconfig.build.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
+                    "packages/tools/guiEditor/tsconfig.build.json",
+                    "packages/tools/nodeEditor/tsconfig.build.json",
+                    "packages/tools/playground/tsconfig.build.json",
+                    "tsconfig.devpackages.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12894",
+                "title": "make a PR a breaking change and document how to do it",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".build/changelog.json",
+                    "buildSystem.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12890",
+                "title": "Fix a bug where deleting a row/column with a control inside wouldn't …",
+                "description": "…remove that control from the Scene Explorer.\r\n\r\nRelated issue: https://forum.babylonjs.com/t/gui-editor-bugs-from-editing/33214\r\nRelated Playground: https://gui.babylonjs.com/#LIDH5L#1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/gridPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12887",
+                "title": "Fix Drag/Release Behavior in GUI and Photo Dome",
+                "description": "See: https://forum.babylonjs.com/t/ispointerblocker-improvement/31152/10?u=stevendelapena\r\n\r\nRecent changes to GUI mouse behavior breaks previous behavior for scenes utilizing a Video and Photo Domes. See PG: https://playground.babylonjs.com/#SQ5UC1#375 and https://playground.babylonjs.com/#14KRGG#715\r\n\r\nClick and drag from outside of GUI element to gain control of camera. Release mouse from within the GUI element. You’ll notice the camera is still observing the mouse movement and pans around with mouse even though click/pointer has been released\r\n\r\nFix suggested is to allow mouse release to propagate to scene to allow for release of camera observers.",
+                "author": {
+                    "name": "stevendelapena",
+                    "url": "https://github.com/stevendelapena"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "12886",
+                "title": "Allow package name in local files.",
+                "description": "This PR provides the ability to import from the local package's package - for example use `import ... from core/...` in the core directory. So far we had to have relative files.\n\nThere might be other consequences to the change, so I will be monitoring that.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/tsconfig.build.json",
+                    "packages/dev/gui/tsconfig.build.json",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/dev/loaders/tsconfig.build.json",
+                    "packages/dev/materials/tsconfig.build.json",
+                    "packages/dev/postProcesses/tsconfig.build.json",
+                    "packages/dev/proceduralTextures/tsconfig.build.json",
+                    "packages/dev/serializers/tsconfig.build.json",
+                    "packages/dev/sharedUiComponents/tsconfig.build.json",
+                    "packages/tools/guiEditor/tsconfig.build.json",
+                    "packages/tools/nodeEditor/tsconfig.build.json",
+                    "packages/tools/playground/tsconfig.build.json",
+                    "tsconfig.devpackages.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12888",
+                "title": "Create a separate callback for the FileButton",
+                "description": "The previous PR I recently submitted to add a FileButton can produce an error in the Typescript compiler since the `callback` function of the inspectable does not expect a parameter (so putting in a File parameter causes a compiler error).\r\n\r\nThis can be worked around by using a callback that takes a file param and then recasting it into a callback that takes no parameter i.e.,\r\n\r\n```\r\n        {\r\n            label: \"File Button demo\",\r\n            propertyName: \"unused\",\r\n            type: InspectableType.FileButton,\r\n            callback: ((file: File) => {\r\n                // ...\r\n            }) as () => void,\r\n            accept: \".jpg, .jpeg\",\r\n        },\r\n```\r\n\r\nBut that's not so great.\r\n\r\nHere's a better solution. Add an explicit fileCallback that takes the file as a parameter. This is the callback that will be used with the FileButton.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/iInspectable.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12885",
+                "title": "run the babylon server in visual test mode",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "buildSystem.md",
+                    "packages/tools/babylonServer/src/sceneJs.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12847",
+                "title": "Shared message dialog",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/MessageDialog.stories.tsx",
+                    "packages/tools/guiEditor/src/main.scss",
+                    "packages/tools/guiEditor/src/sharedComponents/messageDialog.tsx",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeEditor/src/sharedComponents/messageDialog.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12884",
+                "title": "Enable use of Tools.LoadScript in a WebWorker",
+                "description": "Fixes #12882 \r\n\r\n* Checks if `LoadScript` is called from a `WebWorker` context and, if so, uses `importScripts` instead of `HTMLScriptElement` to load the script.\r\n* Ensures `LoadScript` always resolves with either `onSuccess` or `onError`\r\n\r\nUse case: using `ImportMeshAsync` in a `WebWorker` for meshes requiring `MeshoptCompression`\r\n\r\nRE the typings: there's apparently no clean solution as [TypeScript is extremely not a fan of code designed to run in both DOM and WebWorker](https://github.com/Microsoft/TypeScript/issues/20595), these hideous double type assertions seemed less bad than falsely declaring importScripts as available on the Window interface\r\n",
+                "author": {
+                    "name": "wmurphyrd",
+                    "url": "https://github.com/wmurphyrd"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/browser.d.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "12880",
+                "title": "Fix is ready in a few scenari (light dirty, rendering pass id, material changes outside render loop)",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12881",
+                "title": "Improve MergeMeshes documentation.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/strategy-for-merging-glb-gltf-files-into-single-mesh/33159",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "documentation"
+                ]
             }
         ],
         "5.20.0": [
