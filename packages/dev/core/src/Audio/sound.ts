@@ -158,7 +158,7 @@ export class Sound {
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
-    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" |"MediaElement" = "Unknown";
+    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
 
@@ -274,7 +274,7 @@ export class Sound {
                                 this._readyToPlayCallback();
                             }
                             break;
-                        case "ArrayBuffer":                            
+                        case "ArrayBuffer":
                             if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
                                 codecSupportedFound = true;
                                 this._soundLoaded(urlOrArrayBuffer);
@@ -451,7 +451,7 @@ export class Sound {
     private _audioBufferLoaded(buffer: AudioBuffer) {
         if (!Engine.audioEngine?.audioContext) {
             return;
-        }       
+        }
         this._audioBuffer = buffer;
         this._isReadyToPlay = true;
         if (this.autoplay) {
