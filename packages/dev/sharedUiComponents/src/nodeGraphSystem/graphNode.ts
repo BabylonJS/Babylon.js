@@ -54,9 +54,9 @@ export class GraphNode {
         this._isVisible = value;
 
         if (!value) {
-            this._visual.classList.add("hidden");
+            this._visual.classList.add(commonStyles["hidden"]);
         } else {
-            this._visual.classList.remove("hidden");
+            this._visual.classList.remove(commonStyles["hidden"]);
             this._upateNodePortNames();
         }
 
@@ -170,7 +170,7 @@ export class GraphNode {
         this._isSelected = value;
 
         if (!value) {
-            this._visual.classList.remove("selected");
+            this._visual.classList.remove(localStyles["selected"]);
             const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
 
             if (indexInSelection > -1) {
@@ -187,11 +187,11 @@ export class GraphNode {
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection: node } = options || {};
             if (node === this) {
-                this._visual.classList.add("selected");
+                this._visual.classList.add(localStyles["selected"]);
             } else {
                 setTimeout(() => {
                     if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
-                        this._visual.classList.remove("selected");
+                        this._visual.classList.remove(localStyles["selected"]);
                     }
                 });
             }

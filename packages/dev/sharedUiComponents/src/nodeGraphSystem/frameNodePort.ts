@@ -8,6 +8,7 @@ import { IsFramePortData } from "./tools";
 import type { FramePortPosition } from "./graphFrame";
 import type { StateManager } from "./stateManager";
 import type { FramePortData } from "./types/framePortData";
+import commonStyles from "./common.modules.scss";
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;
@@ -59,9 +60,9 @@ export class FrameNodePort extends NodePort {
         this._onSelectionChangedObserver = stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (IsFramePortData(selection) && (selection as FramePortData).port === this) {
-                this._img.classList.add("selected");
+                this._img.classList.add(commonStyles["selected"]);
             } else {
-                this._img.classList.remove("selected");
+                this._img.classList.remove(commonStyles["selected"]);
             }
         });
 
@@ -80,7 +81,7 @@ export class FrameNodePort extends NodePort {
     ) {
         const portContainer = root.ownerDocument!.createElement("div");
 
-        portContainer.classList.add("portLine");
+        portContainer.classList.add(commonStyles["portLine"]);
         if (framePortId !== null) {
             portContainer.dataset.framePortId = `${framePortId}`;
         }
@@ -88,7 +89,7 @@ export class FrameNodePort extends NodePort {
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(portData)) {
             const portLabel = root.ownerDocument!.createElement("div");
-            portLabel.classList.add("port-label");
+            portLabel.classList.add(commonStyles["port-label"]);
 
             portLabel.innerHTML = portData.name;
             portContainer.appendChild(portLabel);

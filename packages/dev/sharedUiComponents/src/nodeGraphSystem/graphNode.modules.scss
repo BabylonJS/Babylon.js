@@ -51,9 +51,6 @@
     pointer-events: none;
     width: 20px;
     display: grid;
-
-    // &.visible {
-    // }
 }
 
 .header {
@@ -95,4 +92,8 @@
     display: grid;
     align-items: flex-end;
     pointer-events: none;
+}
+
+.selected {
+    border-color: white !important;
 }

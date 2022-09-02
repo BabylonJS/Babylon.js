@@ -218,3 +218,30 @@
         height: 12px;
     }
 }
+
+.collapsed {
+    height: auto !important;
+    width: 200px !important;
+    z-index: 3;
+
+    .frame-box-header {
+        font-size: 16px;
+        grid-template-columns: calc(100% - 37px) 30px 7px;
+
+        .frame-box-header-collapse {
+            margin-top: -2px;
+        }
+
+        .frame-box-header-close {
+            display: none;
+        }
+    }
+
+    .frame-comments.has-comments {
+        .frame-comment-span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
+}

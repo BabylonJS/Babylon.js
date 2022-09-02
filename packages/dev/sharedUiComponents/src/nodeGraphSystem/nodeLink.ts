@@ -36,9 +36,9 @@ export class NodeLink {
         this._isTargetCandidate = value;
 
         if (value) {
-            this._path.classList.add("target-candidate");
+            this._path.classList.add(styles["target-candidate"]);
         } else {
-            this._path.classList.remove("target-candidate");
+            this._path.classList.remove(styles["target-candidate"]);
         }
     }
 
@@ -145,11 +145,11 @@ export class NodeLink {
         this._onSelectionChangedObserver = this._graphCanvas.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
-                this._path.classList.add("selected");
-                this._selectionPath.classList.add("selected");
+                this._path.classList.add(styles["selected"]);
+                this._selectionPath.classList.add(styles["selected"]);
             } else {
-                this._path.classList.remove("selected");
-                this._selectionPath.classList.remove("selected");
+                this._path.classList.remove(styles["selected"]);
+                this._selectionPath.classList.remove(styles["selected"]);
             }
         });
     }
