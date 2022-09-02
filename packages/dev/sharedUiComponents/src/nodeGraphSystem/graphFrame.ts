@@ -11,6 +11,7 @@ import type { IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
 import styles from "./graphFrame.modules.scss";
 import commonStyles from "./common.modules.scss";
+import { ClassNames } from "shared-ui-components/components/classNames";
 
 declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
 
@@ -566,40 +567,41 @@ export class GraphFrame {
         this.element.appendChild(rightHandle);
         rightHandle.addEventListener("pointerdown", this._onRightHandlePointerDown);
 
-        // const leftHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        const leftHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
         // leftHandle.className = "handle left-handle";
-        // this.element.appendChild(leftHandle);
-        // leftHandle.addEventListener("pointerdown", this._onLeftHandlePointerDown);
+        leftHandle.className = styles["left-handle"];
+        this.element.appendChild(leftHandle);
+        leftHandle.addEventListener("pointerdown", this._onLeftHandlePointerDown);
 
-        // const bottomHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // bottomHandle.className = "handle bottom-handle";
-        // this.element.appendChild(bottomHandle);
-        // bottomHandle.addEventListener("pointerdown", this._onBottomHandlePointerDown);
+        const bottomHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        bottomHandle.className = styles["bottom-handle"];
+        this.element.appendChild(bottomHandle);
+        bottomHandle.addEventListener("pointerdown", this._onBottomHandlePointerDown);
 
-        // const topHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // topHandle.className = "handle top-handle";
-        // this.element.appendChild(topHandle);
-        // topHandle.addEventListener("pointerdown", this._onTopHandlePointerDown);
+        const topHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        topHandle.className = styles["top-handle"];
+        this.element.appendChild(topHandle);
+        topHandle.addEventListener("pointerdown", this._onTopHandlePointerDown);
 
-        // const topRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // topRightCornerHandle.className = "handle right-handle top-right-corner-handle";
-        // this.element.appendChild(topRightCornerHandle);
-        // topRightCornerHandle.addEventListener("pointerdown", this._onTopRightHandlePointerDown);
+        const topRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        topRightCornerHandle.className = ClassNames({ "right-handle": true, "top-right-corner-handle": true }, styles);
+        this.element.appendChild(topRightCornerHandle);
+        topRightCornerHandle.addEventListener("pointerdown", this._onTopRightHandlePointerDown);
 
-        // const bottomRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // bottomRightCornerHandle.className = "handle right-handle bottom-right-corner-handle";
-        // this.element.appendChild(bottomRightCornerHandle);
-        // bottomRightCornerHandle.addEventListener("pointerdown", this._onBottomRightHandlePointerDown);
+        const bottomRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        bottomRightCornerHandle.className = ClassNames({ "right-handle": true, "bottom-right-corner-handle": true }, styles);
+        this.element.appendChild(bottomRightCornerHandle);
+        bottomRightCornerHandle.addEventListener("pointerdown", this._onBottomRightHandlePointerDown);
 
-        // const topLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // topLeftCornerHandle.className = "handle left-handle top-left-corner-handle";
-        // this.element.appendChild(topLeftCornerHandle);
-        // topLeftCornerHandle.addEventListener("pointerdown", this._onTopLeftHandlePointerDown);
+        const topLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        topLeftCornerHandle.className = ClassNames({ "left-handle": true, "top-left-corner-handle": true }, styles);
+        this.element.appendChild(topLeftCornerHandle);
+        topLeftCornerHandle.addEventListener("pointerdown", this._onTopLeftHandlePointerDown);
 
-        // const bottomLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // bottomLeftCornerHandle.className = "handle left-handle bottom-left-corner-handle";
-        // this.element.appendChild(bottomLeftCornerHandle);
-        // bottomLeftCornerHandle.addEventListener("pointerdown", this._onBottomLeftHandlePointerDown);
+        const bottomLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        bottomLeftCornerHandle.className = ClassNames({ "left-handle": true, "bottom-left-corner-handle": true }, styles);
+        this.element.appendChild(bottomLeftCornerHandle);
+        bottomLeftCornerHandle.addEventListener("pointerdown", this._onBottomLeftHandlePointerDown);
 
         // add header elements
 
@@ -669,9 +671,9 @@ export class GraphFrame {
 
         this._onSelectionChangedObserver = canvas.stateManager.onSelectionChangedObservable.add(() => {
             if (this._ownerCanvas.selectedFrames.indexOf(this) !== -1) {
-                this.element.classList.add("selected");
+                this._borderElement.classList.add(styles["selected"]);
             } else {
-                this.element.classList.remove("selected");
+                this._borderElement.classList.remove(styles["selected"]);
             }
         });
 

@@ -22,6 +22,10 @@
     box-sizing: border-box;
 }
 
+.selected.frame-box-border {
+    border-color: white;
+}
+
 .frame-box-header {
     grid-row: 1;
     grid-column: 1;
