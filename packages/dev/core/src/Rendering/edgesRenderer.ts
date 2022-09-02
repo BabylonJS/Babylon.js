@@ -678,7 +678,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                 this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices, remapVertexIndices);
             }
 
-            (mustTesselate as any) = null;
+            mustTesselate.length = 0;
         }
 
         /**
