@@ -18,7 +18,7 @@
         "clean": "rimraf dist"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^5.0.0",
+        "@babylonjs/core": "^5.22.0",
         "@types/react": ">=16.7.3",
         "@types/react-dom": ">=16.0.9"
     },
