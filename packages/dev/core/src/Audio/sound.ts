@@ -158,7 +158,7 @@ export class Sound {
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
-    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "MediaElement" = "Unknown";
+    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" |"MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
 
@@ -238,6 +238,8 @@ export class Sound {
                         this._urlType = "MediaElement";
                     } else if (urlOrArrayBuffer instanceof MediaStream) {
                         this._urlType = "MediaStream";
+                    } else if (urlOrArrayBuffer instanceof AudioBuffer) {
+                        this._urlType = "AudioBuffer";
                     } else if (Array.isArray(urlOrArrayBuffer)) {
                         this._urlType = "Array";
                     }
@@ -272,11 +274,14 @@ export class Sound {
                                 this._readyToPlayCallback();
                             }
                             break;
-                        case "ArrayBuffer":
+                        case "ArrayBuffer":                            
                             if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
                                 codecSupportedFound = true;
                                 this._soundLoaded(urlOrArrayBuffer);
                             }
+                            break;
+                        case "AudioBuffer":
+                            this._audioBufferLoaded(urlOrArrayBuffer);
                             break;
                         case "String":
                             urls.push(urlOrArrayBuffer);
@@ -443,6 +448,20 @@ export class Sound {
         return "Sound";
     }
 
+    private _audioBufferLoaded(buffer: AudioBuffer) {
+        if (!Engine.audioEngine?.audioContext) {
+            return;
+        }       
+        this._audioBuffer = buffer;
+        this._isReadyToPlay = true;
+        if (this.autoplay) {
+            this.play(0, this._offset, this._length);
+        }
+        if (this._readyToPlayCallback) {
+            this._readyToPlayCallback();
+        }
+    }
+
     private _soundLoaded(audioData: ArrayBuffer) {
         if (!Engine.audioEngine?.audioContext) {
             return;
@@ -450,14 +469,7 @@ export class Sound {
         Engine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {
-                this._audioBuffer = buffer;
-                this._isReadyToPlay = true;
-                if (this.autoplay) {
-                    this.play(0, this._offset, this._length);
-                }
-                if (this._readyToPlayCallback) {
-                    this._readyToPlayCallback();
-                }
+                this._audioBufferLoaded(buffer);
             },
             (err: any) => {
                 Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err);
