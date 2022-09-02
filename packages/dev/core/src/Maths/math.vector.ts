@@ -976,10 +976,11 @@ export class Vector3 {
 
 	/**
 	 * Converts the current Vector3 to its polar coordinates
-	 * @returns the current polar coordinates
+	 * @returns the current polar coordinates (r, theta, phi)
 	 */
 	public toPolar(): Vector3{
-		return Vector3.GetRotationBetweenVectors(Vector3.Zero(), this);
+		let angles = Vector3.GetRotationBetweenVectors(Vector3.Zero(), this);
+		return new Vector3(this.length(), angles.x, angles.y);
 	}
 
     /**
