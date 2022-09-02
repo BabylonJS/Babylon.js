@@ -98,6 +98,15 @@ export class Vector2 {
         return result;
     }
 
+	/**
+	 * Gets the polar coordinates of the current Vector2
+	 * @returns a new Vector2 with the polar coordinates
+	 */
+	public toPolar(): Vector2{
+		let theta = Vector2.GetAngleBetweenVectors(Vector2.Zero(), this)
+		return new Vector2(this.length(), theta);
+	}
+
     /**
      * Sets the Vector2 coordinates with the given Vector2 coordinates
      * @param source defines the source Vector2
@@ -481,6 +490,28 @@ export class Vector2 {
         result.x = array[offset];
         result.y = array[offset + 1];
     }
+
+	/**
+	 * Gets the angle between 2 vectors
+	 * @param vector0 defines 1st vector
+	 * @param vector1 defines 2nd vector
+	 * @returns the angle between vector0 and vector1
+	 */
+	public static GetAngleBetweenVectors(vector0: Vector2, vector1: Vector2): Number{
+		let diff = vector1.subtract(vector0);
+		return Math.atan(diff.y / diff.x);
+	}
+
+	/**
+	 * Converts a polar coordinate Vector2 to its rectangular coordinates
+	 * @param polar the polar coordinates
+	 * @returns the rectangular coordinates
+	 */
+	public static fromPolar(polar: Vector2): Vector2{
+		let x =  polar.x * Math.cos(polar.y);
+		let y =  polar.x * Math.sin(polar.y);
+		return new Vector2(x, y);
+	}
 
     /**
      * Gets a new Vector2 located for "amount" (float) on the CatmullRom spline defined by the given four Vector2
@@ -942,6 +973,14 @@ export class Vector3 {
     public toQuaternion(): Quaternion {
         return Quaternion.RotationYawPitchRoll(this._y, this._x, this._z);
     }
+
+	/**
+	 * Converts the current Vector3 to its polar coordinates
+	 * @returns the current polar coordinates
+	 */
+	public toPolar(): Vector3{
+		return Vector3.GetRotationBetweenVectors(Vector3.Zero(), this);
+	}
 
     /**
      * Adds the given vector to the current Vector3
@@ -1661,11 +1700,39 @@ export class Vector3 {
         return s;
     }
 
+	/**
+	 * Gets the rectangular coordinates of a Vector3 from its polar coordinates
+	 * @param theta defines the angle for the vertical
+	 * @param phi defines the angle for the horizontal
+	 * @param length defines the length of the Vector3 (in polar coordinate space)
+	 * @returns the rectangular coordinate Vector3
+	 */
+	public static FromPolar(theta: Number, phi: Number, length: Number): Vector3{
+		let x = length * Math.sin(theta) * Math.cos(phi);
+		let y = length * Math.sin(theta) * Math.sin(phi);
+		let z = length * Math.cos(theta);
+		return new Vector3(x, y, z);
+	}
+
+	/**
+	* Get rotation between two vectors
+	* @param origin defines the starting point
+	* @param target defines the ending point
+	* @returns the rotation between the vectors
+	*/
+	public static GetRotationBetweenVectors(origin: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>): Vector3{
+		let diff: Vector3 = target.subtract(origin),
+		distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
+		phi = Math.acos(diff.z / distance) || 0,
+		theta = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
+		return new Vector3(theta, Math.sign(diff.x || 1) * phi, 0);
+	}
+
     /**
      * Get angle between two vectors
      * Example Playground https://playground.babylonjs.com/#R1F8YU#86
-     * @param vector0 angle between vector0 and vector1
-     * @param vector1 angle between vector0 and vector1
+     * @param vector0 the starting point
+     * @param vector1 the ending point
      * @param normal direction of the normal
      * @return the angle between vector0 and vector1
      */
