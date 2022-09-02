@@ -510,9 +510,16 @@ export class Skeleton implements IAnimatable {
         if (this._numBonesWithLinkedTransformNode > 0) {
             for (const bone of this.bones) {
                 if (bone._linkedTransformNode) {
-                    // Computing the world matrix also computes the local matrix.
-                    bone._linkedTransformNode.computeWorldMatrix();
-                    bone._matrix = bone._linkedTransformNode._localMatrix;
+                    const node = bone._linkedTransformNode;
+                    bone.position = node.position;
+                    bone.rotationQuaternion = node.rotationQuaternion!;
+                    if (node.rotationQuaternion) {
+                        bone.rotationQuaternion = node.rotationQuaternion;
+                    }
+                    else {
+                        bone.rotation = node.rotation;
+                    }
+                    bone.scaling = node.scaling;
                 }
             }
         }
