@@ -515,8 +515,7 @@ export class Skeleton implements IAnimatable {
                     bone.rotationQuaternion = node.rotationQuaternion!;
                     if (node.rotationQuaternion) {
                         bone.rotationQuaternion = node.rotationQuaternion;
-                    }
-                    else {
+                    } else {
                         bone.rotation = node.rotation;
                     }
                     bone.scaling = node.scaling;
