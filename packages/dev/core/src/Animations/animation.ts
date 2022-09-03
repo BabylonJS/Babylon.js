@@ -930,169 +930,166 @@ export class Animation {
             return this._getKeyValue(keys[0].value);
         }
 
-        let startKeyIndex = state.key;
+        let key = state.key;
 
-        if (keys[startKeyIndex].frame >= currentFrame) {
-            while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
-                startKeyIndex--;
+        while (key > 0 && keys[key].frame > currentFrame) {
+            --key;
+        }
+
+        while (key + 1 < keys.length && keys[key + 1].frame <= currentFrame) {
+            ++key;
+        }
+
+        currentFrame = Scalar.Clamp(currentFrame, keys[0].frame, keys[keys.length - 1].frame);
+
+        state.key = key;
+
+        const startKey = keys[key];
+        const endKey = keys[key + 1];
+        const startValue = this._getKeyValue(startKey.value);
+        const endValue = this._getKeyValue(endKey.value);
+        if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
+            if (endKey.frame > currentFrame) {
+                return startValue;
+            } else {
+                return endValue;
             }
         }
 
-        for (let key = startKeyIndex; key < keys.length - 1; key++) {
-            const endKey = keys[key + 1];
+        const useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+        const frameDelta = endKey.frame - startKey.frame;
 
-            if (endKey.frame >= currentFrame) {
-                state.key = key;
-                const startKey = keys[key];
-                const startValue = this._getKeyValue(startKey.value);
-                const endValue = this._getKeyValue(endKey.value);
-                if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
-                    if (endKey.frame > currentFrame) {
-                        return startValue;
-                    } else {
-                        return endValue;
-                    }
+        // gradient : percent of currentFrame between the frame inf and the frame sup
+        let gradient = (currentFrame - startKey.frame) / frameDelta;
+
+        // check for easingFunction and correction of gradient
+        const easingFunction = this.getEasingFunction();
+        if (easingFunction !== null) {
+            gradient = easingFunction.ease(gradient);
+        }
+
+        switch (this.dataType) {
+            // Float
+            case Animation.ANIMATIONTYPE_FLOAT: {
+                const floatValue = useTangent
+                    ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
+                    : this.floatInterpolateFunction(startValue, endValue, gradient);
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                        return floatValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return state.offsetValue * state.repeatCount + floatValue;
                 }
-
-                const useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
-                const frameDelta = endKey.frame - startKey.frame;
-
-                // gradient : percent of currentFrame between the frame inf and the frame sup
-                let gradient = (currentFrame - startKey.frame) / frameDelta;
-
-                // check for easingFunction and correction of gradient
-                const easingFunction = this.getEasingFunction();
-                if (easingFunction !== null) {
-                    gradient = easingFunction.ease(gradient);
-                }
-
-                switch (this.dataType) {
-                    // Float
-                    case Animation.ANIMATIONTYPE_FLOAT: {
-                        const floatValue = useTangent
-                            ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
-                            : this.floatInterpolateFunction(startValue, endValue, gradient);
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return floatValue;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return state.offsetValue * state.repeatCount + floatValue;
-                        }
-                        break;
-                    }
-                    // Quaternion
-                    case Animation.ANIMATIONTYPE_QUATERNION: {
-                        const quatValue = useTangent
-                            ? this.quaternionInterpolateFunctionWithTangents(
-                                  startValue,
-                                  startKey.outTangent.scale(frameDelta),
-                                  endValue,
-                                  endKey.inTangent.scale(frameDelta),
-                                  gradient
-                              )
-                            : this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return quatValue;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
-                        }
-
+                break;
+            }
+            // Quaternion
+            case Animation.ANIMATIONTYPE_QUATERNION: {
+                const quatValue = useTangent
+                    ? this.quaternionInterpolateFunctionWithTangents(
+                            startValue,
+                            startKey.outTangent.scale(frameDelta),
+                            endValue,
+                            endKey.inTangent.scale(frameDelta),
+                            gradient
+                        )
+                    : this.quaternionInterpolateFunction(startValue, endValue, gradient);
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
                         return quatValue;
-                    }
-                    // Vector3
-                    case Animation.ANIMATIONTYPE_VECTOR3: {
-                        const vec3Value = useTangent
-                            ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                            : this.vector3InterpolateFunction(startValue, endValue, gradient);
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return vec3Value;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return vec3Value.add(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
+                }
+
+                return quatValue;
+            }
+            // Vector3
+            case Animation.ANIMATIONTYPE_VECTOR3: {
+                const vec3Value = useTangent
+                    ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                    : this.vector3InterpolateFunction(startValue, endValue, gradient);
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                        return vec3Value;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return vec3Value.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Vector2
+            case Animation.ANIMATIONTYPE_VECTOR2: {
+                const vec2Value = useTangent
+                    ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                    : this.vector2InterpolateFunction(startValue, endValue, gradient);
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                        return vec2Value;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return vec2Value.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Size
+            case Animation.ANIMATIONTYPE_SIZE: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                        return this.sizeInterpolateFunction(startValue, endValue, gradient);
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Color3
+            case Animation.ANIMATIONTYPE_COLOR3: {
+                const color3Value = useTangent
+                    ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                    : this.color3InterpolateFunction(startValue, endValue, gradient);
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                        return color3Value;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return color3Value.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Color4
+            case Animation.ANIMATIONTYPE_COLOR4: {
+                const color4Value = useTangent
+                    ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                    : this.color4InterpolateFunction(startValue, endValue, gradient);
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                        return color4Value;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return color4Value.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Matrix
+            case Animation.ANIMATIONTYPE_MATRIX: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT: {
+                        if (Animation.AllowMatricesInterpolation) {
+                            return this.matrixInterpolateFunction(startValue, endValue, gradient, state.workValue);
                         }
-                        break;
+                        return startValue;
                     }
-                    // Vector2
-                    case Animation.ANIMATIONTYPE_VECTOR2: {
-                        const vec2Value = useTangent
-                            ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                            : this.vector2InterpolateFunction(startValue, endValue, gradient);
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return vec2Value;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return vec2Value.add(state.offsetValue.scale(state.repeatCount));
-                        }
-                        break;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE: {
+                        return startValue;
                     }
-                    // Size
-                    case Animation.ANIMATIONTYPE_SIZE: {
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return this.sizeInterpolateFunction(startValue, endValue, gradient);
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
-                        }
-                        break;
-                    }
-                    // Color3
-                    case Animation.ANIMATIONTYPE_COLOR3: {
-                        const color3Value = useTangent
-                            ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                            : this.color3InterpolateFunction(startValue, endValue, gradient);
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return color3Value;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return color3Value.add(state.offsetValue.scale(state.repeatCount));
-                        }
-                        break;
-                    }
-                    // Color4
-                    case Animation.ANIMATIONTYPE_COLOR4: {
-                        const color4Value = useTangent
-                            ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                            : this.color4InterpolateFunction(startValue, endValue, gradient);
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                                return color4Value;
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return color4Value.add(state.offsetValue.scale(state.repeatCount));
-                        }
-                        break;
-                    }
-                    // Matrix
-                    case Animation.ANIMATIONTYPE_MATRIX: {
-                        switch (state.loopMode) {
-                            case Animation.ANIMATIONLOOPMODE_CYCLE:
-                            case Animation.ANIMATIONLOOPMODE_CONSTANT: {
-                                if (Animation.AllowMatricesInterpolation) {
-                                    return this.matrixInterpolateFunction(startValue, endValue, gradient, state.workValue);
-                                }
-                                return startValue;
-                            }
-                            case Animation.ANIMATIONLOOPMODE_RELATIVE: {
-                                return startValue;
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        break;
                 }
                 break;
             }
         }
 
-        return this._getKeyValue(keys[keys.length - 1].value);
+        return 0;
     }
 
     /**
