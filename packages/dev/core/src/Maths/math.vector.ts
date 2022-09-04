@@ -103,7 +103,7 @@ export class Vector2 {
 	 * @returns a new Polar with the polar coordinates
 	 */
 	public toPolar(): Polar{
-		return Polar.fromVector2(this);
+		return Polar.FromVector2(this);
 	}
 
     /**
@@ -502,13 +502,13 @@ export class Vector2 {
 	}
 
 	/**
-	 * Converts a polar coordinate Vector2 to its rectangular coordinates
+	 * Converts a polar coordinate to its rectangular coordinates
 	 * @param polar the polar coordinates
 	 * @returns the rectangular coordinates
 	 */
-	public static fromPolar(polar: Polar): Vector2{
-		let x =  polar.length * Math.cos(polar.theta);
-		let y =  polar.length * Math.sin(polar.theta);
+	public static FromPolar(polar: Polar): Vector2{
+		let x =  polar.radius * Math.cos(polar.theta);
+		let y =  polar.radius * Math.sin(polar.theta);
 		return new Vector2(x, y);
 	}
 
@@ -827,16 +827,16 @@ export class Vector2 {
  * Class used to store (r, theta) vector representation
  */
 export class Polar {
-	public length: number;
+	public radius: number;
 	public theta: number;
 
 	/**
 	 * Creates a new Polar object
-	 * @param length the length of the vector
+	 * @param radius the radius of the vector
 	 * @param theta the angle of the vector
 	 */
-	constructor(length: number, theta: number){
-		this.length = length;
+	constructor(radius: number, theta: number){
+		this.radius = radius;
 		this.theta = theta;
 	}
 
@@ -845,7 +845,7 @@ export class Polar {
 	 * @returns the rectangular coordinates
 	 */
 	public toVector2(): Vector2{
-		return Vector2.fromPolar(this);
+		return Vector2.FromPolar(this);
 	}
 
 	/**
@@ -853,8 +853,8 @@ export class Polar {
 	 * @param v the Vector2 to convert
 	 * @returns a Polar
 	 */
-	public static fromVector2(v: Vector2): Polar{
-		let theta = Vector2.GetAngleBetweenVectors(Vector2.Zero(), v);
+	public static FromVector2(v: Vector2): Polar{
+		const theta  = Math.sign(v.y) * Math.acos(v.x / v.length())
 		return new Polar(v.length(), theta);
 	}
 }
