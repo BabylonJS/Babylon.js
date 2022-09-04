@@ -100,11 +100,10 @@ export class Vector2 {
 
 	/**
 	 * Gets the polar coordinates of the current Vector2
-	 * @returns a new Vector2 with the polar coordinates
+	 * @returns a new Polar with the polar coordinates
 	 */
-	public toPolar(): Vector2{
-		let theta = Vector2.GetAngleBetweenVectors(Vector2.Zero(), this)
-		return new Vector2(this.length(), theta);
+	public toPolar(): Polar{
+		return Polar.fromVector2(this);
 	}
 
     /**
@@ -507,9 +506,9 @@ export class Vector2 {
 	 * @param polar the polar coordinates
 	 * @returns the rectangular coordinates
 	 */
-	public static fromPolar(polar: Vector2): Vector2{
-		let x =  polar.x * Math.cos(polar.y);
-		let y =  polar.x * Math.sin(polar.y);
+	public static fromPolar(polar: Polar): Vector2{
+		let x =  polar.length * Math.cos(polar.theta);
+		let y =  polar.length * Math.sin(polar.theta);
 		return new Vector2(x, y);
 	}
 
@@ -822,6 +821,42 @@ export class Vector2 {
         const proj = segA.add(v.multiplyByFloats(t, t));
         return Vector2.Distance(p, proj);
     }
+}
+
+/**
+ * Class used to store (r, theta) vector representation
+ */
+export class Polar {
+	public length: number;
+	public theta: number;
+
+	/**
+	 * Creates a new Polar object
+	 * @param length the length of the vector
+	 * @param theta the angle of the vector
+	 */
+	constructor(length: number, theta: number){
+		this.length = length;
+		this.theta = theta;
+	}
+
+	/**
+	 * Gets the rectangular coordinates of the current Polar
+	 * @returns the rectangular coordinates
+	 */
+	public toVector2(): Vector2{
+		return Vector2.fromPolar(this);
+	}
+
+	/**
+	 * Converts a given Vector2 to its polar coordinates
+	 * @param v the Vector2 to convert
+	 * @returns a Polar
+	 */
+	public static fromVector2(v: Vector2): Polar{
+		let theta = Vector2.GetAngleBetweenVectors(Vector2.Zero(), v);
+		return new Polar(v.length(), theta);
+	}
 }
 
 /**
@@ -1681,6 +1716,23 @@ export class Vector3 {
         return this;
     }
 
+	/**
+	 * Gets the rotation on all axes from the current vector to a vector
+	 * @param vector the target vector
+	 * @returns the rotation in the form (pitch, yaw, roll)
+	 */
+	public getRotationToVector(vector: DeepImmutable<Vector3>): Vector3 {
+		return Vector3.RotationBetweenVectors(this, vector);
+	}
+
+	/**
+	 * Gets the spherical coordinates of the current vector
+	 * @returns the spherical coordinates for the current vector
+	 */
+	public toSpherical(): Spherical {
+		return Spherical.FromVector3(this);
+	}
+
     // Statics
 
     /**
@@ -1702,31 +1754,15 @@ export class Vector3 {
     }
 
 	/**
-	 * Gets the rectangular coordinates of a Vector3 from its polar coordinates
-	 * @param theta defines the angle for the vertical
-	 * @param phi defines the angle for the horizontal
-	 * @param length defines the length of the Vector3 (in polar coordinate space)
-	 * @returns the rectangular coordinate Vector3
+	 * Gets the (x, y, z) representation for a set of spherical coordinates
+	 * @param spherical defines the spherical coordinates
+	 * @returns the Vector3
 	 */
-	public static FromPolar(theta: Number, phi: Number, length: Number): Vector3{
-		let x = length * Math.sin(theta) * Math.cos(phi);
-		let y = length * Math.sin(theta) * Math.sin(phi);
-		let z = length * Math.cos(theta);
+	public static FromSpherical(spherical: Spherical): Vector3{
+		let x = spherical.length * Math.sin(spherical.theta) * Math.cos(spherical.phi);
+		let y = spherical.length * Math.sin(spherical.theta) * Math.sin(spherical.phi);
+		let z = spherical.length * Math.cos(spherical.theta);
 		return new Vector3(x, y, z);
-	}
-
-	/**
-	* Get rotation between two vectors
-	* @param origin defines the starting point
-	* @param target defines the ending point
-	* @returns the rotation between the vectors
-	*/
-	public static GetRotationBetweenVectors(origin: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>): Vector3{
-		let diff: Vector3 = target.subtract(origin),
-		distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
-		phi = Math.acos(diff.z / distance) || 0,
-		theta = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
-		return new Vector3(theta, Math.sign(diff.x || 1) * phi, 0);
 	}
 
     /**
@@ -2803,6 +2839,53 @@ export class Vector3 {
         Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
         quat.toEulerAnglesToRef(ref);
     }
+ 
+	/**
+	 * Gets the rotation on all axes between two vectors
+	 * @param vector0 defines the first vector
+	 * @param vector1 defines the second vector
+	 * @param offset defined the amount to offset the output rotation
+	 * @returns a new Vector3 in the form (pitch, yaw, roll)
+	 * Output roll without offset will always be 0
+	 */
+	public static RotationBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3>): Vector3{
+		let diff: Vector3 = vector1.subtract(vector0),
+		distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
+		phi = Math.acos(diff.z / distance) || 0,
+		theta = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
+		let rotation = new Vector3(theta, Math.sign(diff.x || 1) * phi, 0);
+		return rotation.add(offset);
+	}
+}
+
+export class Spherical {
+	public length: number;
+	public theta: number;
+	public phi: number;
+
+	constructor(length, theta, phi){
+		this.length = length;
+		this.theta = theta;
+		this.phi = phi;
+	}
+
+	/**
+	 * Gets a Vector3 from the current spherical coordinates
+	 * @returns the Vector3
+	 */
+	public toVector3(): Vector3{
+		return Vector3.FromSpherical(this);
+	}
+
+	/**
+	 * Gets a Spherical from a Vector3
+	 * @param vector defines the vector in (x, y, z) coordinate space
+	 * @returns a new Spherical 
+	 */
+	public static FromVector3(vector: DeepImmutable<Vector3>): Spherical{
+		let rotation = Vector3.RotationBetweenVectors(Vector3.Zero(), vector);
+		return new Spherical(vector.length, rotation.x, rotation.y);
+	}
 }
 
 /**
