@@ -544,6 +544,10 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         }
 
+        scene.geometries.forEach((g) => {
+            g._loadedUniqueId = "";
+        });
+
         AbstractScene.Parse(parsedData, scene, container, rootUrl);
 
         // Actions (scene) Done last as it can access other objects.
