@@ -24,9 +24,7 @@ export class ElbowDisplayManager implements IDisplayManager {
         return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);
     }
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-        // contentArea.parentElement!.classList.add(styles["elbow-block"]);
-    }
+    public updatePreviewContent(_nodeData: INodeData, _contentArea: HTMLDivElement): void {}
 
     public updateFullVisualContent(data: INodeData, visualContent: VisualContentDescription): void {
         const visual = visualContent.visual;

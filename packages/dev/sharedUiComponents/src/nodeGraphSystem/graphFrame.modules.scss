@@ -22,6 +22,15 @@
     box-sizing: border-box;
 }
 
+.frame-comments {
+    display: grid;
+    grid-row: 2;
+    grid-column: 1;
+    padding: 0 10px;
+    font-style: italic;
+    word-wrap: break-word;
+}
+
 .selected.frame-box-border {
     border-color: white;
 }
@@ -89,10 +98,6 @@
         bottom: 0;
         margin-left: -4px;
         cursor: ew-resize;
-    }
-
-    &.collapsed {
-        cursor: pointer;
     }
 }
 
@@ -227,25 +232,4 @@
     height: auto !important;
     width: 200px !important;
     z-index: 3;
-
-    .frame-box-header {
-        font-size: 16px;
-        grid-template-columns: calc(100% - 37px) 30px 7px;
-
-        .frame-box-header-collapse {
-            margin-top: -2px;
-        }
-
-        .frame-box-header-close {
-            display: none;
-        }
-    }
-
-    .frame-comments.has-comments {
-        .frame-comment-span {
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-    }
 }
