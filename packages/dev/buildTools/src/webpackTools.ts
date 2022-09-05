@@ -121,7 +121,7 @@ export const getRules = (
                         options: {
                             sourceMap: true,
                             modules: {
-                                localIdentName: options.mode === "development" ? "[path][name]__[local]" : "[hash:base64]",
+                                localIdentName: options.mode === "production" ? "[hash:base64]" : "[path][name]__[local]",
                             },
                         },
                     },
