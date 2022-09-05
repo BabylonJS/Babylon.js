@@ -397,7 +397,13 @@ export class SpriteSceneComponent implements ISceneComponent {
         return pickResult;
     }
 
-    private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent, doubleClick: boolean): Nullable<PickingInfo> {
+    private _pointerUp(
+        unTranslatedPointerX: number,
+        unTranslatedPointerY: number,
+        pickResult: Nullable<PickingInfo>,
+        evt: IPointerEvent,
+        doubleClick: boolean
+    ): Nullable<PickingInfo> {
         const scene = this.scene;
         if (scene.spriteManagers.length > 0) {
             const spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
