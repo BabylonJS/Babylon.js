@@ -562,13 +562,11 @@ export class GraphFrame {
         // add resizing side handles
 
         const rightHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // rightHandle.className = "handle right-handle";
         rightHandle.className = styles["right-handle"];
         this.element.appendChild(rightHandle);
         rightHandle.addEventListener("pointerdown", this._onRightHandlePointerDown);
 
         const leftHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
-        // leftHandle.className = "handle left-handle";
         leftHandle.className = styles["left-handle"];
         this.element.appendChild(leftHandle);
         leftHandle.addEventListener("pointerdown", this._onLeftHandlePointerDown);
@@ -1049,7 +1047,6 @@ export class GraphFrame {
         }
     };
 
-    // @ts-ignore
     private _onBottomHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
@@ -1087,7 +1084,6 @@ export class GraphFrame {
         }
     };
 
-    // @ts-ignore
     private _onLeftHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
@@ -1129,7 +1125,6 @@ export class GraphFrame {
         }
     };
 
-    // @ts-ignore
     private _onTopHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
@@ -1168,7 +1163,6 @@ export class GraphFrame {
         }
     };
 
-    // @ts-ignore
     private _onTopRightHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
@@ -1227,7 +1221,6 @@ export class GraphFrame {
         }
     };
 
-    // @ts-ignore
     private _onBottomRightHandlePointerDown = (evt: PointerEvent) => {
         if (this.isCollapsed) {
             return;
