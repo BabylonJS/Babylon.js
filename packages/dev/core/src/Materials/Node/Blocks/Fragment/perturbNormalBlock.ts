@@ -211,7 +211,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
-        const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+        let normalSamplerName = null;
+        if (this.normalMapColor.connectedPoint) {
+            normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+        }
         const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
         const replaceForParallaxInfos = !this.parallaxScale.isConnectedToInputBlock
