@@ -12,11 +12,6 @@
         width: 100%;
     }
 
-    img.selected {
-        box-shadow: 0 0 0 2px;
-        border-radius: 50%;
-    }
-
     &:hover,
     &.selected {
         filter: brightness(2);

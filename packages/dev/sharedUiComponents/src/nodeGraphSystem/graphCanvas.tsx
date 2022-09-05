@@ -18,7 +18,6 @@ import type { INodeContainer } from "./interfaces/nodeContainer";
 import styles from "./graphCanvas.modules.scss";
 import commonStyles from "./common.modules.scss";
 
-// import "./scss/graphCanvas.scss";
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
 
