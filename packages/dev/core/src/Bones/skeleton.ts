@@ -512,7 +512,6 @@ export class Skeleton implements IAnimatable {
                 if (bone._linkedTransformNode) {
                     const node = bone._linkedTransformNode;
                     bone.position = node.position;
-                    bone.rotationQuaternion = node.rotationQuaternion!;
                     if (node.rotationQuaternion) {
                         bone.rotationQuaternion = node.rotationQuaternion;
                     } else {

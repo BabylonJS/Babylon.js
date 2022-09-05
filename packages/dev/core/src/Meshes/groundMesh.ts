@@ -67,10 +67,11 @@ export class GroundMesh extends Mesh {
     }
 
     /**
-     * This function will update an octree to help to select the right submeshes for rendering, picking and collision computations.
-     * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
-     * @param chunksCount the number of subdivisions for x and y
-     * @param octreeBlocksSize (Default: 32)
+     * This function will divide the mesh into submeshes and update an octree to help to select the right submeshes
+     * for rendering, picking and collision computations. Please note that you must have a decent number of submeshes
+     * to get performance improvements when using an octree.
+     * @param chunksCount the number of submeshes the mesh will be divided into
+     * @param octreeBlocksSize the maximum size of the octree blocks (Default: 32)
      */
     public optimize(chunksCount: number, octreeBlocksSize = 32): void {
         this._subdivisionsX = chunksCount;
