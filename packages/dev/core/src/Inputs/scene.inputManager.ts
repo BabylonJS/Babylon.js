@@ -345,7 +345,7 @@ export class InputManager {
             }
         } else {
             for (const step of scene._pointerDownStage) {
-                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt, false);
             }
         }
 
@@ -431,7 +431,7 @@ export class InputManager {
         } else {
             if (!clickInfo.ignore) {
                 for (const step of scene._pointerUpStage) {
-                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt, clickInfo.doubleClick);
                 }
             }
         }

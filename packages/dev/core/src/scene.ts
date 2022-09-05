@@ -3545,7 +3545,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param data the data object to associate to the key for this Engine instance
      * @return true if no such key were already present and the data was added successfully, false otherwise
      */
-    public addExternalData<T>(key: string, data: T): boolean {
+    public addExternalData<T extends Object>(key: string, data: T): boolean {
         if (!this._externalData) {
             this._externalData = new StringDictionary<Object>();
         }
@@ -3570,7 +3570,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param factory the factory that will be called to create the instance if and only if it doesn't exists
      * @return the associated data, can be null if the factory returned null.
      */
-    public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+    public getOrAddExternalDataWithFactory<T extends Object>(key: string, factory: (k: string) => T): T {
         if (!this._externalData) {
             this._externalData = new StringDictionary<Object>();
         }

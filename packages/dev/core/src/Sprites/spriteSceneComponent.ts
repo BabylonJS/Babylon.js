@@ -397,7 +397,7 @@ export class SpriteSceneComponent implements ISceneComponent {
         return pickResult;
     }
 
-    private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent): Nullable<PickingInfo> {
+    private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent, doubleClick: boolean): Nullable<PickingInfo> {
         const scene = this.scene;
         if (scene.spriteManagers.length > 0) {
             const spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
@@ -409,10 +409,18 @@ export class SpriteSceneComponent implements ISceneComponent {
                             Constants.ACTION_OnPickUpTrigger,
                             ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt)
                         );
+
                         if (spritePickResult.pickedSprite.actionManager) {
                             if (!this.scene._inputManager._isPointerSwiping()) {
                                 spritePickResult.pickedSprite.actionManager.processTrigger(
                                     Constants.ACTION_OnPickTrigger,
+                                    ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt)
+                                );
+                            }
+
+                            if (doubleClick) {
+                                spritePickResult.pickedSprite.actionManager.processTrigger(
+                                    Constants.ACTION_OnDoublePickTrigger,
                                     ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt)
                                 );
                             }
