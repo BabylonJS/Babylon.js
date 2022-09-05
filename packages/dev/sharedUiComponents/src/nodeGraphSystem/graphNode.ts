@@ -26,6 +26,7 @@ export class GraphNode {
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
     private _comments: HTMLDivElement;
+    private _selectionBorder: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];
@@ -317,6 +318,21 @@ export class GraphNode {
             if (additionalClass) {
                 this._headerContainer.classList.add(additionalClass);
             }
+            if (this._displayManager.updateFullVisualContent) {
+                this._displayManager.updateFullVisualContent(this.content, {
+                    visual: this._visual,
+                    header: this._header,
+                    headerContainer: this._headerContainer,
+                    headerIcon: this._headerIcon,
+                    headerIconImg: this._headerIconImg,
+                    comments: this._comments,
+                    connections: this._connections,
+                    inputsContainer: this._inputsContainer,
+                    outputsContainer: this._outputsContainer,
+                    content: this._content,
+                    selectionBorder: this._selectionBorder,
+                });
+            }
         } else {
             this._header.innerHTML = this.content.name;
         }
@@ -507,9 +523,9 @@ export class GraphNode {
         this._headerIcon.appendChild(this._headerIconImg);
         this._headerContainer.appendChild(this._headerIcon);
 
-        const selectionBorder = root.ownerDocument!.createElement("div");
-        selectionBorder.classList.add("selection-border");
-        this._visual.appendChild(selectionBorder);
+        this._selectionBorder = root.ownerDocument!.createElement("div");
+        this._selectionBorder.classList.add("selection-border");
+        this._visual.appendChild(this._selectionBorder);
 
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add(localStyles.connections);
