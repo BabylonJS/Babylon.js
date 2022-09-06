@@ -3973,10 +3973,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
             this.onAfterParticlesRenderingObservable.notifyObservers(this);
         }
-
-        if (this.performancePriority === ScenePerformancePriority.Aggressive) {
-            this.freezeActiveMeshes(true, undefined, undefined, true, false);
-        }
     }
 
     private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
