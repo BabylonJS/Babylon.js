@@ -268,10 +268,27 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._imageProcessingConfiguration;
     }
 
+    private _performancePriority = ScenePerformancePriority.BackwardCompatible;
     /**
      * Gets or sets a value indicating how to treat performance relatively to ease of use and backward compatibility
      */
-    public performancePriority = ScenePerformancePriority.BackwardCompatible;
+    public get performancePriority() {
+        return this._performancePriority;
+    }
+
+    public set performancePriority(value) {
+        if (value === this._performancePriority) {
+            return;
+        }
+
+        this._performancePriority = value;
+
+        switch (value) {
+            case ScenePerformancePriority.Aggressive:
+                this.skipPointerMovePicking = true;
+                break;
+        }        
+    }
 
     private _forceWireframe = false;
     /**
