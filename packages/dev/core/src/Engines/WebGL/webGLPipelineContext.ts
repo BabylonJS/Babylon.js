@@ -142,7 +142,6 @@ export class WebGLPipelineContext implements IPipelineContext {
      **/
     public dispose() {
         this._uniforms = {};
-        this._proxy.revoke();
     }
 
     /**
