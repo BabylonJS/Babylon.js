@@ -286,6 +286,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         switch (value) {
             case ScenePerformancePriority.Aggressive:
                 this.skipPointerMovePicking = true;
+                this.skipFrustumClipping = true;
                 break;
         }
     }
