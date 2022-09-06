@@ -969,8 +969,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     const links = node.getLinksForPortData(portElement.portData);
 
                     // Pick the first one as target port
-                    const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
-                    const targetPort = links[0].nodeA === node ? links[0].portB : links[0].portA;
+                    const linkToConsider = this._selectedLink || links[0];
+                    const targetNode = linkToConsider.nodeA === node ? linkToConsider.nodeB : linkToConsider.nodeA;
+                    const targetPort = linkToConsider.nodeA === node ? linkToConsider.portB : linkToConsider.portA;
 
                     // Start a new one
                     this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
@@ -1152,6 +1153,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             // No destination so let's spin a new input node
             const newDefaultInput = this.props.stateManager.createDefaultInputData(this.props.stateManager.data, this._candidateLink!.portA.portData, this);
+            if (!newDefaultInput) {
+                return;
+            }
             const pointName = newDefaultInput.name;
             const emittedNodeData = newDefaultInput.data;
 

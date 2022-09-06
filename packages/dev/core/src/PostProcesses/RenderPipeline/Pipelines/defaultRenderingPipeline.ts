@@ -27,6 +27,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import type { INotifyArrayChangeType } from "core/Misc/arrayTools";
 
 declare type Animation = import("../../../Animations/animation").Animation;
 
@@ -553,6 +554,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     private _depthOfFieldSceneObserver: Nullable<Observer<Scene>> = null;
+    private _activeCameraChangedObserver: Nullable<Observer<Scene>> = null;
+    private _activeCamerasChangedObserver: Nullable<Observer<INotifyArrayChangeType<Camera>>> = null;
 
     private _buildPipeline() {
         if (!this._buildAllowed) {
@@ -689,8 +692,23 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         }
 
         // In multicamera mode, the scene needs to autoclear in between cameras.
-        if (this._scene.activeCameras && this._scene.activeCameras.length > 1) {
+        if ((this._scene.activeCameras && this._scene.activeCameras.length > 1) || (this._scene.activeCamera && this.cameras.indexOf(this._scene.activeCamera) === -1)) {
             this._scene.autoClear = true;
+        }
+        // The active camera on the scene can be changed anytime
+        if (!this._activeCameraChangedObserver) {
+            this._activeCameraChangedObserver = this._scene.onActiveCameraChanged.add(() => {
+                if (this._scene.activeCamera && this.cameras.indexOf(this._scene.activeCamera) === -1) {
+                    this._scene.autoClear = true;
+                }
+            });
+        }
+        if (!this._activeCamerasChangedObserver) {
+            this._activeCamerasChangedObserver = this._scene.onActiveCamerasChanged.add(() => {
+                if (this._scene.activeCameras && this._scene.activeCameras.length > 1) {
+                    this._scene.autoClear = true;
+                }
+            });
         }
 
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
@@ -787,6 +805,10 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
         }
+
+        this._scene.onActiveCameraChanged.remove(this._activeCameraChangedObserver);
+        this._scene.onActiveCamerasChanged.remove(this._activeCamerasChangedObserver);
+
         this._scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigurationObserver);
         super.dispose();
     }

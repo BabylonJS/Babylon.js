@@ -34,6 +34,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
     private _maximumSubStepCount: number = 10;
     private _timeStep: number = 1 / 60;
+    private _timeFactor: number = 1;
 
     private _tempVec1: any;
     private _tempVec2: any;
@@ -109,6 +110,22 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     getMaximumSubStepCount(): number {
         return this._maximumSubStepCount;
+    }
+
+    /**
+     * Time factor applied when updating crowd agents (default 1). A value of 0 will pause crowd updates.
+     * @param value the time factor applied at update
+     */
+    public set timeFactor(value: number) {
+        this._timeFactor = Math.max(value, 0);
+    }
+
+    /**
+     * Get the time factor used for crowd agent update
+     * @returns the time factor
+     */
+    public get timeFactor(): number {
+        return this._timeFactor;
     }
 
     /**
@@ -547,7 +564,7 @@ export class RecastJSCrowd implements ICrowd {
         this._scene = scene;
 
         this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
-            this.update(scene.getEngine().getDeltaTime() * 0.001);
+            this.update(scene.getEngine().getDeltaTime() * 0.001 * plugin.timeFactor);
         });
     }
 
@@ -750,6 +767,10 @@ export class RecastJSCrowd implements ICrowd {
     update(deltaTime: number): void {
         // update obstacles
         this.bjsRECASTPlugin.navMesh.update();
+
+        if (deltaTime <= Epsilon) {
+            return;
+        }
         // update crowd
         const timeStep = this.bjsRECASTPlugin.getTimeStep();
         const maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();

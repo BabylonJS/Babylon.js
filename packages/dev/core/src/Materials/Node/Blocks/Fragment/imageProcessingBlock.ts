@@ -75,6 +75,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._excludeVariableName("vCameraColorCurvePositive");
         state._excludeVariableName("txColorTransform");
         state._excludeVariableName("colorTransformSettings");
+        state._excludeVariableName("ditherIntensity");
     }
 
     public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -127,6 +128,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state.uniforms.push("vCameraColorCurvePositive");
         state.uniforms.push("txColorTransform");
         state.uniforms.push("colorTransformSettings");
+        state.uniforms.push("ditherIntensity");
 
         // Emit code
         const color = this.color;
