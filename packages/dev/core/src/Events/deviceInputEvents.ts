@@ -156,25 +156,25 @@ export interface IMouseEvent extends IUIEvent {
 
     /**
      * Delta of movement on X axis
-     * @deprecated
+     * @deprecated Use 'movementX' instead
      */
     mozMovementX?: number;
 
     /**
      * Delta of movement on Y axis
-     * @deprecated
+     * @deprecated Use 'movementY' instead
      */
     mozMovementY?: number;
 
     /**
      * Delta of movement on X axis
-     * @deprecated
+     * @deprecated Use 'movementX' instead
      */
     msMovementX?: number;
 
     /**
      * Delta of movement on Y axis
-     * @deprecated
+     * @deprecated Use 'movementY' instead
      */
     msMovementY?: number;
 
@@ -205,13 +205,13 @@ export interface IMouseEvent extends IUIEvent {
 
     /**
      * Delta of movement on X axis
-     * @deprecated
+     * @deprecated Use 'movementX' instead
      */
     webkitMovementX?: number;
 
     /**
      * Delta of movement on Y axis
-     * @deprecated
+     * @deprecated Use 'movementY' instead
      */
     webkitMovementY?: number;
 

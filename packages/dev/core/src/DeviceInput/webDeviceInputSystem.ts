@@ -423,13 +423,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const deviceEvent = evt as IPointerEvent;
                 deviceEvent.inputIndex = PointerInput.Move;
 
-                if (!("movementX" in evt)) {
-                    const movementX = evt.clientX - pointer[PointerInput.Horizontal];
-                    evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || movementX;
+                if (evt.movementX === undefined) {
+                    evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || (evt.clientX - pointer[PointerInput.Horizontal]);
                 }
-                if (!("movementY" in evt)) {
-                    const movementY = evt.clientY - pointer[PointerInput.Vertical];
-                    evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || movementY;
+                if (evt.movementY === undefined) {
+                    evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || (evt.clientY - pointer[PointerInput.Vertical]);
                 }
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
@@ -522,13 +520,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
-                    if (!("movementX" in evt)) {
-                        const movementX = evt.clientX - previousHorizontal;
-                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || movementX;
+                    if (evt.movementX === undefined) {
+                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || (evt.clientX - pointer[PointerInput.Horizontal]);
                     }
-                    if (!("movementY" in evt)) {
-                        const movementY = evt.clientY - previousVertical;
-                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || movementY;
+                    if (evt.movementY === undefined) {
+                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || (evt.clientY - pointer[PointerInput.Vertical]);
                     }
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
@@ -560,13 +556,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
-                    if (!("movementX" in evt)) {
-                        const movementX = evt.clientX - previousHorizontal;
-                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || movementX;
+                    if (evt.movementX === undefined) {
+                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || (evt.clientX - pointer[PointerInput.Horizontal]);
                     }
-                    if (!("movementY" in evt)) {
-                        const movementY = evt.clientY - previousVertical;
-                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || movementY;
+                    if (evt.movementY === undefined) {
+                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || (evt.clientY - pointer[PointerInput.Vertical]);
                     }
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
