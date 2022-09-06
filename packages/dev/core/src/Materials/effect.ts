@@ -845,15 +845,15 @@ export class Effect implements IDisposable {
         Logger.Error("Unable to compile effect:");
         Logger.Error(
             "Uniforms: " +
-                this._uniformsNames.map(function (uniform) {
-                    return " " + uniform;
-                })
+            this._uniformsNames.map(function (uniform) {
+                return " " + uniform;
+            })
         );
         Logger.Error(
             "Attributes: " +
-                attributesNames.map(function (attribute) {
-                    return " " + attribute;
-                })
+            attributesNames.map(function (attribute) {
+                return " " + attribute;
+            })
         );
         Logger.Error("Defines:\r\n" + this.defines);
         if (Effect.LogShaderCodeOnCompilationError) {
@@ -1307,12 +1307,9 @@ export class Effect implements IDisposable {
      * Release all associated resources.
      **/
     public dispose() {
-        this._proxy && this._proxy.revoke();
-        if (this._pipelineContext) {
-            this._pipelineContext.dispose();
-        }
         this._engine._releaseEffect(this);
-
+        this._pipelineContext?.dispose();
+        this._proxy && this._proxy.revoke();
         this._isDisposed = true;
     }
 
