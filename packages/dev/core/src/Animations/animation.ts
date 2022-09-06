@@ -986,13 +986,7 @@ export class Animation {
             // Quaternion
             case Animation.ANIMATIONTYPE_QUATERNION: {
                 const quatValue = useTangent
-                    ? this.quaternionInterpolateFunctionWithTangents(
-                        startValue,
-                        startKey.outTangent.scale(frameDelta),
-                        endValue,
-                        endKey.inTangent.scale(frameDelta),
-                        gradient
-                    )
+                    ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
                     : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
