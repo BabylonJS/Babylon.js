@@ -141,8 +141,8 @@ export class WebGLPipelineContext implements IPipelineContext {
      * Release all associated resources.
      **/
     public dispose() {
-        this._proxy.revoke();
         this._uniforms = {};
+        this._proxy.revoke();
     }
 
     /**
