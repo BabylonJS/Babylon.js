@@ -86,18 +86,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
             const event = <IWheelEvent>p.event;
             let delta = 0;
-
-            const mouseWheelLegacyEvent = event as any;
-            let wheelDelta = 0;
-
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
-            if (event.deltaY !== undefined) {
-                wheelDelta = -(event.deltaY * platformScale);
-            } else if ((<any>event).wheelDeltaY !== undefined) {
-                wheelDelta = -((<any>event).wheelDeltaY * platformScale);
-            } else {
-                wheelDelta = mouseWheelLegacyEvent.wheelDelta;
-            }
+
+            const wheelDelta = -(event.deltaY * platformScale);
 
             if (this.customComputeDeltaFromMouseWheel) {
                 delta = this.customComputeDeltaFromMouseWheel(wheelDelta, this, event);

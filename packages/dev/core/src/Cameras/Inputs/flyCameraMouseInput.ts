@@ -148,7 +148,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        const srcElement = <HTMLElement>(e.srcElement || e.target);
+        const srcElement = <HTMLElement>e.target;
 
         // Mouse down.
         if (p.type === PointerEventTypes.POINTERDOWN) {
@@ -225,8 +225,8 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        const offsetX = e.movementX || e.mozMovementX || e.webkitMovementX || e.msMovementX || 0;
-        const offsetY = e.movementY || e.mozMovementY || e.webkitMovementY || e.msMovementY || 0;
+        const offsetX = e.movementX;
+        const offsetY = e.movementY;
 
         this._rotateCamera(offsetX, offsetY);
 
