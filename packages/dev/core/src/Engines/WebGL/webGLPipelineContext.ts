@@ -19,13 +19,13 @@ const cacheToSetProxyReference: { [key: string]: string } = {
     setColor3: "_cacheFloat3",
     setColor4: "_cacheFloat4",
     setDirectColor4: "_cacheFloat4",
-}
+};
 
 /** @hidden */
 export class WebGLPipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
-    private _proxy: { proxy: WebGLPipelineContext, revoke: () => void };
+    private _proxy: { proxy: WebGLPipelineContext; revoke: () => void };
 
     public engine: ThinEngine;
     public program: Nullable<WebGLProgram>;
@@ -61,7 +61,7 @@ export class WebGLPipelineContext implements IPipelineContext {
                     }
                 }
             }
-        }
+        };
         this._proxy = Proxy.revocable(this, {
             get: function (target, prop: keyof WebGLPipelineContext) {
                 if (target[prop] === undefined && prop.startsWith("set")) {
@@ -70,7 +70,7 @@ export class WebGLPipelineContext implements IPipelineContext {
                 } else {
                     return target[prop];
                 }
-            }
+            },
         });
         return this._proxy.proxy;
     }

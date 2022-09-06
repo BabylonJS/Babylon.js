@@ -396,7 +396,7 @@ export class Effect implements IDisposable {
                 (func as (uniformName: string, ...payload: any) => void).call(this._pipelineContext, uniformName, ...payload);
             }
             return this;
-        }
+        };
         this._proxy = Proxy.revocable(this, {
             get: function (target, prop: keyof Effect) {
                 if (target[prop] === undefined && prop.startsWith("set")) {
@@ -405,7 +405,7 @@ export class Effect implements IDisposable {
                 } else {
                     return target[prop];
                 }
-            }
+            },
         });
         return this._proxy.proxy;
     }
@@ -845,15 +845,15 @@ export class Effect implements IDisposable {
         Logger.Error("Unable to compile effect:");
         Logger.Error(
             "Uniforms: " +
-            this._uniformsNames.map(function (uniform) {
-                return " " + uniform;
-            })
+                this._uniformsNames.map(function (uniform) {
+                    return " " + uniform;
+                })
         );
         Logger.Error(
             "Attributes: " +
-            attributesNames.map(function (attribute) {
-                return " " + attribute;
-            })
+                attributesNames.map(function (attribute) {
+                    return " " + attribute;
+                })
         );
         Logger.Error("Defines:\r\n" + this.defines);
         if (Effect.LogShaderCodeOnCompilationError) {
