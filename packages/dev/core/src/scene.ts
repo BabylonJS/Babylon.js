@@ -130,6 +130,18 @@ export interface SceneOptions {
 }
 
 /**
+ * Define how the scene should favor performance over ease of use
+ */
+export enum ScenePerformancePriority {
+    /** Default mode. No change. Performance will be treated as less important than backward compatibility */
+    BackwardCompatible,
+    /** Some performance options will be turned on trying to strike a balance between perf and ease of use */
+    Intermediate,
+    /** Performance will be to priority */
+    Aggressive,
+}
+
+/**
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/scene
  */
@@ -255,6 +267,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
     }
+
+    /**
+     * Gets or sets a value indicating how to treat performance relatively to ease of use and backward compatibility
+     */
+    public performancePriority = ScenePerformancePriority.BackwardCompatible;
 
     private _forceWireframe = false;
     /**
@@ -3938,6 +3955,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             }
             this.onAfterParticlesRenderingObservable.notifyObservers(this);
+        }
+
+        if (this.performancePriority === ScenePerformancePriority.Aggressive) {
+            this.freezeActiveMeshes(true, undefined, undefined, true, false);
         }
     }
 
