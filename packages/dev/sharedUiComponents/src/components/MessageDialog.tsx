@@ -6,6 +6,7 @@ import styles from "./MessageDialog.modules.scss";
 export interface MessageDialogProps {
     message: string;
     isError: boolean;
+    onClose?: () => void;
 }
 
 export const MessageDialog: React.FC<MessageDialogProps> = (props) => {
@@ -17,16 +18,23 @@ export const MessageDialog: React.FC<MessageDialogProps> = (props) => {
         setIsError(props.isError);
     }, [props]);
 
+    const onClick = () => {
+        setMessage("");
+        if (props.onClose) {
+            props.onClose();
+        }
+    };
+
     if (!message) {
         return null;
     }
 
     return (
-        <div className={ClassNames({ "dialog-container": true }, styles)}>
-            <div className={ClassNames({ dialog: true }, styles)}>
-                <div className={ClassNames({ "dialog-message": true }, styles)}>{message}</div>
-                <div className={ClassNames({ "dialog-buttons": true }, styles)}>
-                    <div className={ClassNames({ "dialog-button-ok": true, error: isError }, styles)} onClick={() => setMessage("")}>
+        <div className={styles["dialog-container"]}>
+            <div className={styles["dialog"]}>
+                <div className={styles["dialog-message"]}>{message}</div>
+                <div className={styles["dialog-buttons"]}>
+                    <div className={ClassNames({ "dialog-button-ok": true, error: isError }, styles)} onClick={onClick}>
                         OK
                     </div>
                 </div>

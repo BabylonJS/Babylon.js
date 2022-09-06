@@ -219,7 +219,13 @@ export type PointerMoveStageAction = (
 /**
  * Strong typing of a pointer up/down action.
  */
-export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
+export type PointerUpDownStageAction = (
+    unTranslatedPointerX: number,
+    unTranslatedPointerY: number,
+    pickResult: Nullable<PickingInfo>,
+    evt: IPointerEvent,
+    doubleClick: boolean
+) => Nullable<PickingInfo>;
 
 /**
  * Representation of a stage in the scene (Basically a list of ordered steps)
