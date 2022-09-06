@@ -1307,9 +1307,8 @@ export class Effect implements IDisposable {
      * Release all associated resources.
      **/
     public dispose() {
-        this._engine._releaseEffect(this);
         this._pipelineContext?.dispose();
-        this._proxy && this._proxy.revoke();
+        this._engine._releaseEffect(this);
         this._isDisposed = true;
     }
 
