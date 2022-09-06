@@ -622,7 +622,7 @@ export class RuntimeAnimation {
                 }
             }
 
-            this._animationState.key = (speedRatio > 0 ? 0 : animation.getKeys().length - 1);
+            this._animationState.key = speedRatio > 0 ? 0 : animation.getKeys().length - 1;
         }
         this._currentFrame = currentFrame;
         this._animationState.repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
