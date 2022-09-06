@@ -76,7 +76,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 return;
             }
 
-            const srcElement = <HTMLElement>(evt.srcElement || evt.target);
+            const srcElement = <HTMLElement>evt.target;
 
             this._altKey = evt.altKey;
             this._ctrlKey = evt.ctrlKey;
@@ -85,8 +85,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this._buttonsPressed = evt.buttons;
 
             if (engine.isPointerLock) {
-                const offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                const offsetX = evt.movementX;
+                const offsetY = evt.movementY;
 
                 this.onTouch(null, offsetX, offsetY);
                 this._pointA = null;
