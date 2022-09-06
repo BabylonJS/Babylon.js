@@ -952,10 +952,13 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
             const currentQuaternion = TmpVectors.Quaternion[1];
 
             runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
+
             currentScaling.scaleAndAddToRef(scale, finalScaling);
-            currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
+            currentQuaternion.scaleAndAddToRef(Quaternion.Dot(finalQuaternion, currentQuaternion) > 0 ? scale : -scale, finalQuaternion);
             currentPosition.scaleAndAddToRef(scale, finalPosition);
         }
+
+        finalQuaternion.normalize();
     }
 
     // Add up the additive animations
