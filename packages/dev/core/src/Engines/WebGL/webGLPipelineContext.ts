@@ -190,7 +190,7 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
 
         let changed = false;
-        cache.forEach((num, idx) => {
+        cache.forEach(function (num, idx) {
             if (num !== arguments[idx + 1]) {
                 cache[idx] = arguments[idx + 1];
                 changed = true;
