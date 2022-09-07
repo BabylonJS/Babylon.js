@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DeepImmutable, Nullable, float } from "../types";
 import { TmpVectors } from "./math.vector";
-import {Vector2, Vector3} from "./math.vector";
+import { Vector2, Vector3 } from "./math.vector";
 
 /**
  * Class used to store (r, theta) vector representation
