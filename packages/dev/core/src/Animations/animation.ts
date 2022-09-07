@@ -932,17 +932,21 @@ export class Animation {
 
         let key = state.key;
 
-        while (key > 0 && keys[key].frame > currentFrame) {
+        while (key >= 0 && currentFrame < keys[key].frame) {
             --key;
         }
 
-        while (key + 1 < keys.length && keys[key + 1].frame <= currentFrame) {
+        while (key + 1 <= keys.length - 1 && currentFrame >= keys[key + 1].frame) {
             ++key;
         }
 
-        currentFrame = Scalar.Clamp(currentFrame, keys[0].frame, keys[keys.length - 1].frame);
-
         state.key = key;
+
+        if (key < 0) {
+            return keys[0].value;
+        } else if (key + 1 > keys.length - 1) {
+            return keys[keys.length - 1].value;
+        }
 
         const startKey = keys[key];
         const endKey = keys[key + 1];
