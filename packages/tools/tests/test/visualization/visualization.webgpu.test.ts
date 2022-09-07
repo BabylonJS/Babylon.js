@@ -101,12 +101,10 @@ test /*.concurrent*/
             expect(await page.evaluate(evaluatePrepareScene, test, getGlobalConfig())).toBeTruthy();
 
             const renderCount = test.renderCount || 1;
-            // await jestPuppeteer.debug();
 
-            expect(await page.evaluate(evaluateRenderSceneForVisualization, renderCount)).toBeTruthy();
-
-            // const glError = await page.evaluate(evaluateIsGLError);
-            // expect(glError).toBe(false);
+            const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, renderCount);
+            debug && await jestPuppeteer.debug();
+            expect(renderResult).toBeTruthy();
             // Take screenshot
             const screenshot = await page.screenshot();
 
@@ -123,5 +121,5 @@ test /*.concurrent*/
             expect(disposeResult).toBe(true);
         }
     },
-    600000
+    debug ? 1000000 : 600000
 );
