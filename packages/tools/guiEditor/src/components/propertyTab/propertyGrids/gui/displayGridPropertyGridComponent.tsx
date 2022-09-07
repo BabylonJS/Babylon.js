@@ -23,6 +23,7 @@ interface IDisplayGridPropertyGridComponentProps {
     displayGrids: DisplayGrid[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
@@ -36,7 +37,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={displayGrids} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={displayGrids} onPropertyChangedObservable={onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="DISPLAY GRID" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">

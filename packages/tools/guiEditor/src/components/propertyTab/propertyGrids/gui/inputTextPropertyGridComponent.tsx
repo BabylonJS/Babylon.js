@@ -31,6 +31,7 @@ interface IInputTextPropertyGridComponentProps {
     inputTexts: InputText[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
@@ -44,7 +45,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={inputTexts} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={inputTexts} onPropertyChangedObservable={onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="INPUT TEXT" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

@@ -22,6 +22,7 @@ interface IGridPropertyGridComponentProps {
     grids: Grid[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
@@ -299,7 +300,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={grids} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={grids} onPropertyChangedObservable={this.props.onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID" value=" " color="grey"></TextLineComponent>
                 {this.renderRows()}

@@ -89,7 +89,9 @@ export class GlobalState {
     onGizmoUpdateRequireObservable = new Observable<void>();
     onArtBoardUpdateRequiredObservable = new Observable<void>();
     onBackgroundColorChangeObservable = new Observable<void>();
+    onFontsParsedObservable = new Observable<void>();
     onPointerMoveObservable = new Observable<React.PointerEvent<HTMLCanvasElement>>();
+   
     onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;

@@ -15,6 +15,7 @@ interface IColorPickerPropertyGridComponentProps {
     colorPickers: ColorPicker[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
@@ -27,7 +28,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={colorPickers} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={colorPickers} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="COLOR PICKER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

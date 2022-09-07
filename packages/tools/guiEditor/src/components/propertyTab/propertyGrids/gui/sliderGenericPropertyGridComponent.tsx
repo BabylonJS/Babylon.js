@@ -10,6 +10,7 @@ interface ISliderGenericPropertyGridComponentProps {
     sliders: Slider[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class SliderGenericPropertyGridComponent extends React.Component<ISliderGenericPropertyGridComponentProps> {
@@ -22,7 +23,7 @@ export class SliderGenericPropertyGridComponent extends React.Component<ISliderG
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={sliders} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={sliders} onPropertyChangedObservable={this.props.onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <SliderPropertyGridComponent sliders={sliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );

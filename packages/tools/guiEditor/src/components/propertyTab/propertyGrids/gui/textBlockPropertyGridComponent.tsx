@@ -16,6 +16,7 @@ interface ITextBlockPropertyGridComponentProps {
     textBlocks: TextBlock[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
@@ -46,7 +47,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={textBlocks} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={textBlocks} onPropertyChangedObservable={this.props.onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="TEXTBLOCK" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

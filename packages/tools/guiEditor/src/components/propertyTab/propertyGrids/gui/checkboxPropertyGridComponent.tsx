@@ -19,6 +19,7 @@ interface ICheckboxPropertyGridComponentProps {
     checkboxes: Checkbox[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class CheckboxPropertyGridComponent extends React.Component<ICheckboxPropertyGridComponentProps> {
@@ -31,7 +32,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={checkboxes} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={checkboxes} onPropertyChangedObservable={this.props.onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

@@ -25,6 +25,7 @@ interface IImagePropertyGridComponentProps {
     images: Image[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
@@ -112,7 +113,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={images} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={images} onPropertyChangedObservable={this.props.onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">

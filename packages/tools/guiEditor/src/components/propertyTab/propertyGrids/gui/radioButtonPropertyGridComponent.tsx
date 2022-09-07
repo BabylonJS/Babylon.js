@@ -20,6 +20,7 @@ interface IRadioButtonPropertyGridComponentProps {
     radioButtons: RadioButton[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
@@ -36,6 +37,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                     lockObject={this.props.lockObject}
                     controls={radioButtons}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
                 />
                 <hr />
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>

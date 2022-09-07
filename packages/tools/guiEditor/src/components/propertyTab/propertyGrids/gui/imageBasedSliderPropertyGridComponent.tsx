@@ -18,6 +18,7 @@ interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSliders: ImageBasedSlider[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class ImageBasedSliderPropertyGridComponent extends React.Component<IImageBasedSliderPropertyGridComponentProps> {
@@ -34,6 +35,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     lockObject={this.props.lockObject}
                     controls={imageBasedSliders}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
                 />
                 <hr />
                 <TextLineComponent label="IMAGE LINKS" value=" " color="grey"></TextLineComponent>
