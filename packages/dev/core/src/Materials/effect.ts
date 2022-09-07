@@ -387,15 +387,18 @@ export class Effect implements IDisposable {
         });
         const proxyFunction = (functionName: Partial<keyof this>, uniformName: string, ...payload: any) => {
             // check if the function exists in the pipelineContext
-            const func = this._pipelineContext![functionName as keyof IPipelineContext];
-            if (typeof func === "function") {
-                (func as (uniformName: string, ...payload: any) => void).call(this._pipelineContext, uniformName, ...payload);
+            if (this._pipelineContext) {
+                const func = this._pipelineContext[functionName as keyof IPipelineContext];
+                if (typeof func === "function") {
+                    (func as (uniformName: string, ...payload: any) => void).call(this._pipelineContext, uniformName, ...payload);
+                    return this;
+                }
             }
-            return this;
+            return undefined;
         };
         return new Proxy(this, {
             get: function (target, prop: keyof Effect) {
-                return target[prop] || proxyFunction.bind(target, prop as keyof Effect);
+                return target[prop] || (prop.startsWith("set") ? proxyFunction.bind(target, prop as keyof Effect) : target[prop]);
             },
         });
     }
@@ -835,15 +838,15 @@ export class Effect implements IDisposable {
         Logger.Error("Unable to compile effect:");
         Logger.Error(
             "Uniforms: " +
-                this._uniformsNames.map(function (uniform) {
-                    return " " + uniform;
-                })
+            this._uniformsNames.map(function (uniform) {
+                return " " + uniform;
+            })
         );
         Logger.Error(
             "Attributes: " +
-                attributesNames.map(function (attribute) {
-                    return " " + attribute;
-                })
+            attributesNames.map(function (attribute) {
+                return " " + attribute;
+            })
         );
         Logger.Error("Defines:\r\n" + this.defines);
         if (Effect.LogShaderCodeOnCompilationError) {
