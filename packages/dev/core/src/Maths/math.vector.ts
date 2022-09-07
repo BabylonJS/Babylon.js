@@ -2921,34 +2921,34 @@ export class Vector3 {
     }
 
 	/**
-	 * Gets the rotation on all axes between two vectors and assigns it to the result
+	 * Gets the pitch, yaw, roll needed to change direction from one vector to another
 	 * @param vector0 defines the first vector
 	 * @param vector1 defines the second vector
 	 * @param offset defines the amount to offset the output rotation
-	 * @param result the vector to apply the result
+	 * @param result the rotation (pitch, yaw, roll) to apply
 	 * @returns the updated result in the form (pitch, yaw, roll)
-	 * Output roll without offset will always be 0
+	 * Output roll will always be 0 + offset.z
 	 */
-	public static RotationBetweenVectorsToRef(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3>, result: DeepImmutable<Vector3>): Vector3{
+	public static PitchYawRollForDirectionChangeToRef(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3> = Vector3.ZeroReadOnly, result: DeepImmutable<Vector3>): Vector3{
 		let diff: Vector3 = TmpVectors.Vector3[0];
 		vector1.subtractToRef(vector0, diff);
 		let distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
-		phi = Math.acos(diff.z / distance) || 0,
-		theta = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
-		result.set(theta, Math.sign(diff.x || 1) * phi, 0);
+		theta = Math.acos(diff.z / distance) || 0,
+		phi = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
+		result.set(theta, phi, 0).addInPlace(offset);
 	}
  
 	/**
-	 * Gets the rotation on all axes between two vectors
+	 * Gets the pitch, yaw, roll needed to change direction from one vector to another
 	 * @param vector0 defines the first vector
 	 * @param vector1 defines the second vector
 	 * @param offset defines the amount to offset the output rotation
-	 * @returns a new Vector3 in the form (pitch, yaw, roll)
-	 * Output roll without offset will always be 0
+	 * @returns the result as a vector in the form (pitch, yaw, roll)
+	 * Output roll will always be 0 + offset.z
 	 */
-	public static RotationBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3>): Vector3{
-		let rotation = new Vector3();
-		Vector3.RotationBetweenVectorsToRef(vector0, vector1, offset, rotation);
+	public static PitchYawRollForDirectionChange(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3> = Vector3.ZeroReadOnly): Vector3{
+		let rotation = TmpVectors.Vector3[0];
+		Vector3.PitchYawRollForDirectionChangeToRef(vector0, vector1, offset, rotation);
 		return rotation;
 	}
 }
@@ -2988,7 +2988,7 @@ export class Spherical {
 	 * @returns the updated ref
 	 */
 	public static FromVector3ToRef(vector: DeepImmutable<Vector3>, ref: Spherical): Spherical{
-		let rotation = Vector3.RotationBetweenVectors(Vector3.Zero(), vector);
+		let rotation = Vector3.PitchYawRollForDirectionChange(Vector3.Zero(), vector);
 		ref.radius = vector.length();
 		ref.theta = rotation.x;
 		ref.phi = rotation.y;
