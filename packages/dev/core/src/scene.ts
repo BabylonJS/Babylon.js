@@ -130,6 +130,18 @@ export interface SceneOptions {
 }
 
 /**
+ * Define how the scene should favor performance over ease of use
+ */
+export enum ScenePerformancePriority {
+    /** Default mode. No change. Performance will be treated as less important than backward compatibility */
+    BackwardCompatible,
+    /** Some performance options will be turned on trying to strike a balance between perf and ease of use */
+    Intermediate,
+    /** Performance will be top priority */
+    Aggressive,
+}
+
+/**
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/scene
  */
@@ -254,6 +266,32 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
+    }
+
+    private _performancePriority = ScenePerformancePriority.BackwardCompatible;
+    /**
+     * Gets or sets a value indicating how to treat performance relatively to ease of use and backward compatibility
+     */
+    public get performancePriority() {
+        return this._performancePriority;
+    }
+
+    public set performancePriority(value) {
+        if (value === this._performancePriority) {
+            return;
+        }
+
+        this._performancePriority = value;
+
+        switch (value) {
+            case ScenePerformancePriority.Aggressive:
+                this.skipFrustumClipping = true;
+            // eslint-disable-next-line no-fallthrough
+            case ScenePerformancePriority.Intermediate:
+                this.skipPointerMovePicking = true;
+                this.autoClear = false;
+                break;
+        }
     }
 
     private _forceWireframe = false;
