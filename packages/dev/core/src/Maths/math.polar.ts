@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DeepImmutable, Nullable, float } from "../types";
+import { TmpVectors } from "./math.vector";
 import {Vector2, Vector3} from "./math.vector";
 
 /**
@@ -21,11 +22,13 @@ export class Polar {
 
 	/**
 	 * Gets the rectangular coordinates of the current Polar
-	 * @param the reference to assign the result
+	 * @param ref the reference to assign the result
 	 * @returns the updated reference
 	 */
 	 public toVector2ToRef(ref: Vector2): Vector2{
-		Vector2.FromPolarToRef(this, ref);
+		let x = this.radius * Math.cos(this.theta);
+		let y = this.radius * Math.sin(this.theta);
+		ref.set(x, y);
 		return ref;
 	}
 
@@ -34,7 +37,8 @@ export class Polar {
 	 * @returns the rectangular coordinates
 	 */
 	public toVector2(): Vector2{
-		return Vector2.FromPolar(this);
+		let ref = TmpVectors.Vector2[0];
+		return this.toVector2ToRef(ref);
 	}
 
 	/**
@@ -79,7 +83,11 @@ export class Spherical {
 	 * @returns the updated Vector3
 	 */
 	public toVector3ToRef(ref: DeepImmutable<Vector3>): Vector3{
-		return Vector3.FromSphericalToRef(ref);
+		let x = this.length * Math.sin(this.theta) * Math.cos(this.phi);
+		let y = this.length * Math.sin(this.theta) * Math.sin(this.phi);
+		let z = this.length * Math.cos(this.theta);
+		ref.set(x, y, z);
+		return ref;
 	}
 
 	/**
@@ -87,7 +95,8 @@ export class Spherical {
 	 * @returns the Vector3
 	 */
 	public toVector3(): Vector3{
-		return Vector3.FromSpherical(this);
+		let ref = TmpVectors.Vector3[0];
+		return this.toVector3ToRef(ref);
 	}
 
 	/**
