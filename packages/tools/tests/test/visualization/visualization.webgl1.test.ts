@@ -109,7 +109,9 @@ test /*.concurrent*/
             const renderCount = /*getGlobalConfig().qs && getGlobalConfig().qs.checkresourcecreation ? 50 : */ test.renderCount || 1;
             // await jestPuppeteer.debug();
 
-            expect(await page.evaluate(evaluateRenderSceneForVisualization, renderCount)).toBeTruthy();
+            const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, renderCount);
+            debug && await jestPuppeteer.debug();
+            expect(renderResult).toBeTruthy();
 
             const glError = await page.evaluate(evaluateIsGLError);
             expect(glError).toBe(false);
@@ -129,5 +131,5 @@ test /*.concurrent*/
             expect(disposeResult).toBe(true);
         }
     },
-    40000
+    debug ? 1000000 : 40000
 );
