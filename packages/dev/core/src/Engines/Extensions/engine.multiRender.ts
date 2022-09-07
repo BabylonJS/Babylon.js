@@ -386,7 +386,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
 
     // Dispose previous render buffers
     const useDepthStencil = !!rtWrapper._depthStencilBuffer;
-    if (rtWrapper._depthStencilBuffer) {
+    if (useDepthStencil) {
         gl.deleteRenderbuffer(rtWrapper._depthStencilBuffer);
         rtWrapper._depthStencilBuffer = null;
     }

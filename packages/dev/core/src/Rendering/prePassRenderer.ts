@@ -418,7 +418,14 @@ export class PrePassRenderer {
         }
     }
 
-    public setDepthPeelingOutput(rt: RenderTargetTexture) {
+    /**
+     * Sets an intermediary texture between prepass and postprocesses. This texture
+     * will be used as input for post processes
+     * @param rt
+     * @returns true if there are postprocesses that will use this texture,
+     * false if there is no postprocesses - and the function has no effect
+     */
+    public setCustomOutput(rt: RenderTargetTexture) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         if (!firstPP) {
             return false;

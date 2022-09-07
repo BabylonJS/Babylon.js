@@ -15,6 +15,7 @@ import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import type { PrePassRenderer } from "./prePassRenderer";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Logger } from "../Misc/logger";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import type { DrawWrapper } from "../Materials/drawWrapper";
@@ -23,7 +24,6 @@ import { Material } from "../Materials/material";
 import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
-import { RenderTargetTexture } from "..";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -364,7 +364,7 @@ export class DepthPeelingRenderer {
     }
 
     private _finalCompose(writeId: number) {
-        const output = this._scene.prePassRenderer?.setDepthPeelingOutput(this._outputRT);
+        const output = this._scene.prePassRenderer?.setCustomOutput(this._outputRT);
         if (output) {
             this._engine.bindFramebuffer(this._outputRT.renderTarget!);
         } else {
