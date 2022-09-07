@@ -129,6 +129,7 @@ export class SolidParticleSystem implements IDisposable {
     private _computeParticleRotation: boolean = true;
     private _computeParticleVertex: boolean = false;
     private _computeBoundingBox: boolean = false;
+    private _autoFixFaceOrientation: boolean = false;
     private _depthSortParticles: boolean = true;
     private _camera: TargetCamera;
     private _mustUnrotateFixedNormals = false;
@@ -192,6 +193,7 @@ export class SolidParticleSystem implements IDisposable {
             useModelMaterial?: boolean;
             enableMultiMaterial?: boolean;
             computeBoundingBox?: boolean;
+            autoFixFaceOrientation?: boolean;
         }
     ) {
         this.name = name;
@@ -207,6 +209,7 @@ export class SolidParticleSystem implements IDisposable {
         this._bSphereOnly = options ? <boolean>options.boundingSphereOnly : false;
         this._bSphereRadiusFactor = options && options.bSphereRadiusFactor ? options.bSphereRadiusFactor : 1.0;
         this._computeBoundingBox = options?.computeBoundingBox ? options.computeBoundingBox : false;
+        this._autoFixFaceOrientation = options?.autoFixFaceOrientation ? options.autoFixFaceOrientation : false;
         if (options && options.updatable !== undefined) {
             this._updatable = options.updatable;
         } else {
@@ -1082,6 +1085,7 @@ export class SolidParticleSystem implements IDisposable {
         const indices32 = this._indices32;
         const indices = this._indices;
         const fixedNormal32 = this._fixedNormal32;
+        const depthSortParticles = this._depthSort && this._depthSortParticles;
 
         const tempVectors = TmpVectors.Vector3;
         const camAxisX = tempVectors[5].copyFromFloats(1.0, 0.0, 0.0);
@@ -1167,7 +1171,7 @@ export class SolidParticleSystem implements IDisposable {
             const particleGlobalPosition = particle._globalPosition;
 
             // camera-particle distance for depth sorting
-            if (this._depthSort && this._depthSortParticles) {
+            if (depthSortParticles) {
                 const dsp = this.depthSortedParticles[p];
                 dsp.idx = particle.idx;
                 dsp.ind = particle._ind;
@@ -1452,7 +1456,7 @@ export class SolidParticleSystem implements IDisposable {
                     }
                 }
             }
-            if (this._depthSort && this._depthSortParticles) {
+            if (depthSortParticles) {
                 const depthSortedParticles = this.depthSortedParticles;
                 depthSortedParticles.sort(this._depthSortFunction);
                 const dspl = depthSortedParticles.length;
@@ -1476,7 +1480,28 @@ export class SolidParticleSystem implements IDisposable {
                         }
                     }
                 }
-                mesh.updateIndices(indices32);
+            }
+            if (this._autoFixFaceOrientation) {
+              let particleInd = 0;
+      
+              for (let particleIdx = 0; particleIdx < this.particles.length; particleIdx++) {
+                const particle = depthSortParticles ? this.particles[this.depthSortedParticles[particleIdx].idx] : this.particles[particleIdx];
+                const flipFaces = particle.scale.x * particle.scale.y * particle.scale.z < 0;
+      
+                if (flipFaces) {
+                  for (let faceInd = 0; faceInd < particle._model._indicesLength; faceInd += 3) {
+                    const tmp = indices[particle._ind + faceInd];
+                    indices32[particleInd + faceInd] = indices[particle._ind + faceInd + 1];
+                    indices32[particleInd + faceInd + 1] = tmp;
+                  }
+                }
+      
+                particleInd += particle._model._indicesLength;
+              }
+            }
+      
+            if (depthSortParticles || this._autoFixFaceOrientation) {
+              mesh.updateIndices(indices32);
             }
         }
         if (this._computeBoundingBox) {
