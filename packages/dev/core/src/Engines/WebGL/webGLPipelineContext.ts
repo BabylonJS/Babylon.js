@@ -25,7 +25,6 @@ const cacheToSetProxyReference: { [key: string]: string } = {
 export class WebGLPipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
-    private _proxy: { proxy: WebGLPipelineContext; revoke: () => void };
 
     public engine: ThinEngine;
     public program: Nullable<WebGLProgram>;
@@ -62,17 +61,11 @@ export class WebGLPipelineContext implements IPipelineContext {
                 }
             }
         };
-        this._proxy = Proxy.revocable(this, {
+        return new Proxy(this, {
             get: function (target, prop: keyof WebGLPipelineContext) {
-                if (target[prop] === undefined && prop.startsWith("set")) {
-                    // proxy to the pipeline context if the missing function starts with "set"
-                    return proxyFunction.bind(target, prop);
-                } else {
-                    return target[prop];
-                }
+                return target[prop] || proxyFunction.bind(target, prop);
             },
         });
-        return this._proxy.proxy;
     }
 
     public get isAsync() {

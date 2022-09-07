@@ -215,10 +215,6 @@ export class Effect implements IDisposable {
 
     private static _BaseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
-    private _proxy: Nullable<{
-        proxy: Effect;
-        revoke: () => void;
-    }> = null;
 
     /**
      * Instantiates an effect.
@@ -397,17 +393,11 @@ export class Effect implements IDisposable {
             }
             return this;
         };
-        this._proxy = Proxy.revocable(this, {
+        return new Proxy(this, {
             get: function (target, prop: keyof Effect) {
-                if (target[prop] === undefined && prop.startsWith("set")) {
-                    // proxy to the pipeline context if the missing function starts with "set"
-                    return proxyFunction.bind(target, prop);
-                } else {
-                    return target[prop];
-                }
+                return target[prop] || proxyFunction.bind(target, prop as keyof Effect);
             },
         });
-        return this._proxy.proxy;
     }
 
     private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
