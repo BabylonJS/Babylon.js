@@ -1,0 +1,24 @@
+.input-block {
+    grid-row: 2;
+    min-height: 34px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 10px 5px;
+    display: grid;
+    align-content: center;
+
+    &.small-font {
+        font-size: 17px;
+    }
+}
+
+.constant {
+    border-color: #464348;
+    background: #464348;
+}
+
+.inspector {
+    border-color: #66491b;
+    background: #66491b;
+}

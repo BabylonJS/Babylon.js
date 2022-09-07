@@ -15,8 +15,9 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import { PortDataDirection } from "./interfaces/portData";
 import type { INodeContainer } from "./interfaces/nodeContainer";
+import styles from "./graphCanvas.modules.scss";
+import commonStyles from "./common.modules.scss";
 
-import "./scss/graphCanvas.scss";
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
 
@@ -985,7 +986,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Selection?
         if (evt.currentTarget === this._hostCanvas && this._multiKeyIsPressed) {
             this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
-            this._selectionBox.classList.add("selection-box");
+            this._selectionBox.classList.add(styles["selection-box"]);
             this._selectionContainer.appendChild(this._selectionBox);
 
             const rootRect = this.canvasContainer.getBoundingClientRect();
@@ -1001,7 +1002,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Frame?
         if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
             this._frameCandidate = this.props.stateManager.hostDocument.createElement("div");
-            this._frameCandidate.classList.add("frame-box");
+            this._frameCandidate.classList.add(commonStyles["frame-box"]);
             this._frameContainer.appendChild(this._frameCandidate);
 
             const rootRect = this.canvasContainer.getBoundingClientRect();
@@ -1367,16 +1368,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return (
             <div
                 id="graph-canvas"
+                className={styles["graph-canvas"]}
                 onWheel={(evt) => this.onWheel(evt)}
                 onPointerMove={(evt) => this.onMove(evt)}
                 onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => this.onUp(evt)}
             >
-                <div id="graph-container">
-                    <div id="graph-canvas-container"></div>
-                    <div id="frame-container"></div>
-                    <svg id="graph-svg-container"></svg>
-                    <div id="selection-container"></div>
+                <div id="graph-container" className={styles["graph-container"]}>
+                    <div id="graph-canvas-container" className={styles["graph-canvas-container"]}></div>
+                    <div id="frame-container" className={styles["frame-container"]}></div>
+                    <svg id="graph-svg-container" className={styles["graph-svg-container"]}></svg>
+                    <div id="selection-container" className={styles["selection-container"]}></div>
                 </div>
             </div>
         );
