@@ -78,34 +78,6 @@ class BufferPointer {
     public buffer: WebGLBuffer;
 }
 
-const mapEngineToGLFunction: {
-    [key: string]: {
-        gl: string;
-        array?: number;
-        addFalse?: boolean;
-    };
-} = {
-    setInt: { gl: "1i" },
-    setInt2: { gl: "2i" },
-    setInt3: { gl: "3i" },
-    setInt4: { gl: "4i" },
-    setFloat: { gl: "1f" },
-    setFloat2: { gl: "2f" },
-    setFloat3: { gl: "3f" },
-    setFloat4: { gl: "4f" },
-    setMatrices: { gl: "Matrix4fv", addFalse: true },
-    setMatrix3x3: { gl: "Matrix3fv", addFalse: true },
-    setMatrix2x2: { gl: "Matrix2fv", addFalse: true },
-    setArray: { gl: "1fv", array: 1 },
-    setArray2: { gl: "2fv", array: 2 },
-    setArray3: { gl: "3fv", array: 3 },
-    setArray4: { gl: "4fv", array: 4 },
-    setIntArray: { gl: "1iv", array: 1 },
-    setIntArray2: { gl: "2iv", array: 2 },
-    setIntArray3: { gl: "3iv", array: 3 },
-    setIntArray4: { gl: "4iv", array: 4 },
-};
-
 /**
  * Information about the current host
  */
@@ -804,38 +776,6 @@ export class ThinEngine {
         if (!canvasOrContext) {
             return;
         }
-
-        // proxy functions
-        const glProxy = function (this: ThinEngine, functionName: Partial<keyof ThinEngine>, uniform: Nullable<WebGLUniformLocation>, ...payload: any[]): boolean {
-            if (!uniform) {
-                return false;
-            }
-            const glFunc = mapEngineToGLFunction[functionName as string];
-            if (glFunc.array && ((glFunc.array === 1 && payload[0].length === 0) || payload[0].length % glFunc.array !== 0)) {
-                return false;
-            }
-            const func = this._gl[`uniform${glFunc.gl}` as keyof WebGL2RenderingContext] as Function;
-            // avoid using `apply`, as this will create an array per call. Using `.call` instead
-            if (glFunc.addFalse) {
-                func.call(this._gl, uniform, false, ...payload);
-            } else {
-                func.call(this._gl, uniform, ...payload);
-            }
-            return true;
-        };
-        ["Int?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2", "IntArray?", "Array?"].forEach((functionName) => {
-            const name = `set${functionName}`;
-            if (this[name as keyof this]) {
-                return;
-            }
-            if (name.endsWith("?")) {
-                ["", 2, 3, 4].forEach((n) => {
-                    this[(name.slice(0, -1) + n) as keyof this] = glProxy.bind(this, name.slice(0, -1) + n);
-                });
-            } else {
-                this[name as keyof this] = glProxy.bind(this, name);
-            }
-        });
 
         adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
 
@@ -3269,7 +3209,15 @@ export class ThinEngine {
      * @param value defines the int number to store
      * @returns true if the value was set
      */
-    public setInt: (uniform: Nullable<WebGLUniformLocation>, value: number) => boolean;
+    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform1i(uniform, value);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a int2
@@ -3278,7 +3226,15 @@ export class ThinEngine {
      * @param y defines the 2nd component of the value
      * @returns true if the value was set
      */
-    public setInt2: (uniform: Nullable<WebGLUniformLocation>, x: number, y: number) => boolean;
+    public setInt2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform2i(uniform, x, y);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a int3
@@ -3288,7 +3244,15 @@ export class ThinEngine {
      * @param z defines the 3rd component of the value
      * @returns true if the value was set
      */
-    public setInt3: (uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number) => boolean;
+    public setInt3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform3i(uniform, x, y, z);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a int4
@@ -3299,7 +3263,15 @@ export class ThinEngine {
      * @param w defines the 4th component of the value
      * @returns true if the value was set
      */
-    public setInt4: (uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number) => boolean;
+    public setInt4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform4i(uniform, x, y, z, w);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of int32
@@ -3307,7 +3279,15 @@ export class ThinEngine {
      * @param array defines the array of int32 to store
      * @returns true if the value was set
      */
-    public setIntArray: (uniform: Nullable<WebGLUniformLocation>, array: Int32Array) => boolean;
+    public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform1iv(uniform, array);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec2)
@@ -3315,7 +3295,14 @@ export class ThinEngine {
      * @param array defines the array of int32 to store
      * @returns true if the value was set
      */
-    public setIntArray2: (uniform: Nullable<WebGLUniformLocation>, array: Int32Array) => boolean;
+    public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+        if (!uniform || array.length % 2 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform2iv(uniform, array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec3)
@@ -3323,7 +3310,14 @@ export class ThinEngine {
      * @param array defines the array of int32 to store
      * @returns true if the value was set
      */
-    public setIntArray3: (uniform: Nullable<WebGLUniformLocation>, array: Int32Array) => boolean;
+    public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+        if (!uniform || array.length % 3 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform3iv(uniform, array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec4)
@@ -3331,7 +3325,14 @@ export class ThinEngine {
      * @param array defines the array of int32 to store
      * @returns true if the value was set
      */
-    public setIntArray4: (uniform: Nullable<WebGLUniformLocation>, array: Int32Array) => boolean;
+    public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+        if (!uniform || array.length % 4 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform4iv(uniform, array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of number
@@ -3339,7 +3340,17 @@ export class ThinEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray: (uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array) => boolean;
+    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        if (array.length < 1) {
+            return false;
+        }
+        this._gl.uniform1fv(uniform, array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec2)
@@ -3347,7 +3358,14 @@ export class ThinEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray2: (uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array) => boolean;
+    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+        if (!uniform || array.length % 2 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform2fv(uniform, <any>array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec3)
@@ -3355,7 +3373,14 @@ export class ThinEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray3: (uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array) => boolean;
+    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+        if (!uniform || array.length % 3 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform3fv(uniform, <any>array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec4)
@@ -3363,7 +3388,14 @@ export class ThinEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray4: (uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array) => boolean;
+    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+        if (!uniform || array.length % 4 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform4fv(uniform, <any>array);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as matrices)
@@ -3371,7 +3403,14 @@ export class ThinEngine {
      * @param matrices defines the array of float32 to store
      * @returns true if the value was set
      */
-    public setMatrices: (uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array) => boolean;
+    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniformMatrix4fv(uniform, false, matrices);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a matrix (3x3)
@@ -3379,7 +3418,14 @@ export class ThinEngine {
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
      * @returns true if the value was set
      */
-    public setMatrix3x3: (uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array) => boolean;
+    public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniformMatrix3fv(uniform, false, matrix);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a matrix (2x2)
@@ -3387,7 +3433,14 @@ export class ThinEngine {
      * @param matrix defines the Float32Array representing the 2x2 matrix to store
      * @returns true if the value was set
      */
-    public setMatrix2x2: (uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array) => boolean;
+    public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniformMatrix2fv(uniform, false, matrix);
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a number (float)
@@ -3395,7 +3448,15 @@ export class ThinEngine {
      * @param value defines the float number to store
      * @returns true if the value was transferred
      */
-    public setFloat: (uniform: Nullable<WebGLUniformLocation>, value: number) => boolean;
+    public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform1f(uniform, value);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a vec2
@@ -3404,7 +3465,15 @@ export class ThinEngine {
      * @param y defines the 2nd component of the value
      * @returns true if the value was set
      */
-    public setFloat2: (uniform: Nullable<WebGLUniformLocation>, x: number, y: number) => boolean;
+    public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform2f(uniform, x, y);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a vec3
@@ -3414,7 +3483,15 @@ export class ThinEngine {
      * @param z defines the 3rd component of the value
      * @returns true if the value was set
      */
-    public setFloat3: (uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number) => boolean;
+    public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform3f(uniform, x, y, z);
+
+        return true;
+    }
 
     /**
      * Set the value of an uniform to a vec4
@@ -3425,7 +3502,15 @@ export class ThinEngine {
      * @param w defines the 4th component of the value
      * @returns true if the value was set
      */
-    public setFloat4: (uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number) => boolean;
+    public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform4f(uniform, x, y, z, w);
+
+        return true;
+    }
 
     // States
 
