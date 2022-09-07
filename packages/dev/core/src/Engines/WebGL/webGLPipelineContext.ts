@@ -41,24 +41,31 @@ export class WebGLPipelineContext implements IPipelineContext {
     public programValidationError: Nullable<string> = null;
 
     constructor() {
-        const proxyFunction = (functionName: Partial<keyof this>, uniformName: string, ...payload: any[]) => {
-            const func = this.engine[functionName as keyof ThinEngine];
-            if (typeof func === "function") {
-                const cacheFunction = cacheToSetProxyReference[functionName as string];
-                if (cacheFunction) {
-                    const cacheFunc = this[`_cache${cacheFunction}` as Partial<keyof WebGLPipelineContext>];
-                    if (typeof cacheFunc === "function" && cacheFunc.call(this, uniformName, ...payload)) {
-                        if (!func.call(this.engine, this._uniforms[uniformName], ...payload)) {
-                            this._valueCache[uniformName] = null;
+        const args: any[] = [];
+        const proxyFunction: (functionName: string) => ((/*uniformName: string, ...payload: any[]*/) => void) | undefined = (functionName: string) => {
+            const cacheFunction = cacheToSetProxyReference[functionName as string];
+            if (cacheFunction) {
+                const cacheFunc = this[`_cache${cacheFunction}` as Partial<keyof WebGLPipelineContext>];
+                return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
+                    const func = this.engine[functionName as keyof ThinEngine];
+                    Array.prototype.push.apply(args, arguments);
+                    args[0] = this._uniforms[args[0]];
+                    if ((cacheFunc as Function).apply(this, arguments)) {
+                        if (!func.apply(this.engine, args)) {
+                            this._valueCache[arguments[0]] = null;
                         }
                     }
-                } else {
-                    // should this be here??
-                    if (payload[0] !== undefined) {
-                        this._valueCache[uniformName] = null;
-                        func.call(this.engine, this._uniforms[uniformName], ...payload);
+                };
+            } else {
+                return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
+                    const func = this.engine[functionName as keyof ThinEngine];
+                    Array.prototype.push.apply(args, arguments);
+                    args[0] = this._uniforms[args[0]];
+                    if (arguments[1] !== undefined) {
+                        this._valueCache[arguments[0]] = null;
+                        func.apply(this.engine, args);
                     }
-                }
+                };
             }
         };
         ["Int?", "IntArray?", "FloatArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
@@ -68,10 +75,10 @@ export class WebGLPipelineContext implements IPipelineContext {
             }
             if (name.endsWith("?")) {
                 ["", 2, 3, 4].forEach((n) => {
-                    this[(name.slice(0, -1) + n) as keyof this] = proxyFunction.bind(this, name.slice(0, -1) + n);
+                    this[(name.slice(0, -1) + n) as keyof this] = proxyFunction(name.slice(0, -1) + n)!.bind(this);
                 });
             } else {
-                this[name as keyof this] = proxyFunction.bind(this, name);
+                this[name as keyof this] = proxyFunction(name)!.bind(this);
             }
         });
     }
@@ -163,30 +170,43 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
+     * @param _uniformName
+     * @param _x
+     * @param _y
+     * @param _z
+     * @param _w
+     * @hidden
+     */
+    public _cacheFloatN(_uniformName: string, _x: number, _y: number, _z?: number, _w?: number): boolean {
+        /**
+         * arguments will be used to abstract the cache function.
+         * arguments[0] is the uniform name. the rest are numbers.
+         */
+        let cache: number[] = this._valueCache[arguments[0]];
+        if (!cache || cache.length !== 2) {
+            cache = Array.prototype.slice.call(arguments, 1);
+            this._valueCache[arguments[0]] = cache;
+            return true;
+        }
+
+        let changed = false;
+        cache.forEach((num, idx) => {
+            if (num !== arguments[idx + 1]) {
+                cache[idx] = arguments[idx + 1];
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
+    /**
      * @param uniformName
      * @param x
      * @param y
      * @hidden
      */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache || cache.length !== 2) {
-            cache = [x, y];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-
-        return changed;
+        return this._cacheFloatN(uniformName, x, y);
     }
 
     /**
@@ -197,28 +217,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @hidden
      */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache || cache.length !== 3) {
-            cache = [x, y, z];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-        if (cache[2] !== z) {
-            cache[2] = z;
-            changed = true;
-        }
-
-        return changed;
+        return this._cacheFloatN(uniformName, x, y, z);
     }
 
     /**
@@ -230,32 +229,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @hidden
      */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache || cache.length !== 4) {
-            cache = [x, y, z, w];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-        if (cache[2] !== z) {
-            cache[2] = z;
-            changed = true;
-        }
-        if (cache[3] !== w) {
-            cache[3] = w;
-            changed = true;
-        }
-
-        return changed;
+        return this._cacheFloatN(uniformName, x, y, z, w);
     }
 
     /**
