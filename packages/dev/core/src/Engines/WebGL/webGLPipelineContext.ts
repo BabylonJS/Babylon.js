@@ -45,7 +45,7 @@ export class WebGLPipelineContext implements IPipelineContext {
             args.length = 0;
             Array.prototype.push.apply(args, arguments);
             args[0] = this._uniforms[args[0]];
-        }
+        };
         const proxyFunction: (functionName: string) => ((/*uniformName: string, ...payload: any[]*/) => void) | undefined = (functionName: string) => {
             const cacheFunction = cacheToSetProxyReference[functionName as string];
             if (cacheFunction) {
@@ -192,12 +192,12 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
 
         let changed = false;
-        cache.forEach(function (num, idx) {
-            if (num !== arguments[idx + 1]) {
-                cache[idx] = arguments[idx + 1];
+        for (let i = 0; i < cache.length; ++i) {
+            if (cache[i] !== arguments[i + 1]) {
+                cache[i] = arguments[i + 1];
                 changed = true;
             }
-        });
+        }
         return changed;
     }
 
