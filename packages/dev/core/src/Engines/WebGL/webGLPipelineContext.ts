@@ -63,7 +63,7 @@ export class WebGLPipelineContext implements IPipelineContext {
         };
         return new Proxy(this, {
             get: function (target, prop: keyof WebGLPipelineContext) {
-                return target[prop] || proxyFunction.bind(target, prop);
+                return target[prop] || (prop.startsWith("set") ? proxyFunction.bind(target, prop) : target[prop]);
             },
         });
     }
