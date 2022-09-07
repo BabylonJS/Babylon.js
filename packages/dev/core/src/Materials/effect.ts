@@ -385,22 +385,28 @@ export class Effect implements IDisposable {
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
         });
-        const proxyFunction = (functionName: Partial<keyof this>, uniformName: string, ...payload: any) => {
+        const proxyFunction = function (this: Effect, functionName: Partial<keyof Effect>, uniformName: string, ...payload: any) {
             // check if the function exists in the pipelineContext
             if (this._pipelineContext) {
                 const func = this._pipelineContext[functionName as keyof IPipelineContext];
                 if (typeof func === "function") {
                     (func as (uniformName: string, ...payload: any) => void).call(this._pipelineContext, uniformName, ...payload);
-                    return this;
                 }
             }
-            return undefined;
+            return this;
         };
-        return new Proxy(this, {
-            get: function (target, prop: keyof Effect) {
-                return target[prop] || (prop.startsWith("set") ? proxyFunction.bind(target, prop as keyof Effect) : target[prop]);
-            },
-        });
+        ["Int?", "IntArray?", "FloatArray?", "Array?", "Color?", "Vector?", "Float?", "Matrices", "Matrix", "Matrix3x3", "Matrix2x2", "Quaternion", "DirectColor4"].forEach(
+            (functionName) => {
+                const name = `set${functionName}`;
+                if (name.endsWith("?")) {
+                    ["", 2, 3, 4].forEach((n) => {
+                        this[(name.slice(0, -1) + n) as keyof this] = proxyFunction.bind(this, name.slice(0, -1) + n);
+                    });
+                } else {
+                    this[name as keyof this] = proxyFunction.bind(this, name);
+                }
+            }
+        );
     }
 
     private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {

@@ -5,20 +5,20 @@ import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like
 import type { ThinEngine } from "../thinEngine";
 
 const cacheToSetProxyReference: { [key: string]: string } = {
-    setInt2: "_cacheFloat2",
-    setInt3: "_cacheFloat3",
-    setInt4: "_cacheFloat4",
-    setMatrix: "_cacheMatrix",
-    setVector2: "_cacheFloat2",
-    setVector3: "_cacheFloat3",
-    setVector4: "_cacheFloat4",
-    setFloat2: "_cacheFloat2",
-    setFloat3: "_cacheFloat3",
-    setFloat4: "_cacheFloat4",
-    setQuaternion: "_cacheFloat4",
-    setColor3: "_cacheFloat3",
-    setColor4: "_cacheFloat4",
-    setDirectColor4: "_cacheFloat4",
+    setInt2: "Float2",
+    setInt3: "Float3",
+    setInt4: "Float4",
+    setMatrix: "Matrix",
+    setVector2: "Float2",
+    setVector3: "Float3",
+    setVector4: "Float4",
+    setFloat2: "Float2",
+    setFloat3: "Float3",
+    setFloat4: "Float4",
+    setQuaternion: "Float4",
+    setColor3: "Float3",
+    setColor4: "Float4",
+    setDirectColor4: "Float4",
 };
 
 /** @hidden */
@@ -46,7 +46,7 @@ export class WebGLPipelineContext implements IPipelineContext {
             if (typeof func === "function") {
                 const cacheFunction = cacheToSetProxyReference[functionName as string];
                 if (cacheFunction) {
-                    const cacheFunc = this[cacheFunction as Partial<keyof WebGLPipelineContext>];
+                    const cacheFunc = this[`_cache${cacheFunction}` as Partial<keyof WebGLPipelineContext>];
                     if (typeof cacheFunc === "function" && cacheFunc.call(this, uniformName, ...payload)) {
                         if (!func.call(this.engine, this._uniforms[uniformName], ...payload)) {
                             this._valueCache[uniformName] = null;
@@ -61,10 +61,18 @@ export class WebGLPipelineContext implements IPipelineContext {
                 }
             }
         };
-        return new Proxy(this, {
-            get: function (target, prop: keyof WebGLPipelineContext) {
-                return target[prop] || (prop.startsWith("set") ? proxyFunction.bind(target, prop) : target[prop]);
-            },
+        ["Int?", "IntArray?", "FloatArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
+            const name = `set${functionName}`;
+            if (this[name as keyof this]) {
+                return;
+            }
+            if (name.endsWith("?")) {
+                ["", 2, 3, 4].forEach((n) => {
+                    this[(name.slice(0, -1) + n) as keyof this] = proxyFunction.bind(this, name.slice(0, -1) + n);
+                });
+            } else {
+                this[name as keyof this] = proxyFunction.bind(this, name);
+            }
         });
     }
 
