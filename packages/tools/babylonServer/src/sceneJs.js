@@ -33,14 +33,43 @@ const runScene = async () => {
         }
     }
 
-    // Register a render loop to repeatedly render the scene
-    engine.runRenderLoop(function () {
-        if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
-            scene.render();
-        }
-    });
+    const runInVisualizationTestMode = (typeof process !== "undefined" && process.env.VIS_TEST_MODE === "true") || false;
+    if (runInVisualizationTestMode) {
+        let renderCount = 1;
+        scene.useConstantAnimationDeltaTime = true;
 
-    // Watch for browser/canvas resize events
+        scene.executeWhenReady(function () {
+            if (!scene || !engine) {
+                return;
+            }
+            if (scene.activeCamera && scene.activeCamera.useAutoRotationBehavior) {
+                scene.activeCamera.useAutoRotationBehavior = false;
+            }
+            engine.runRenderLoop(function () {
+                try {
+                    if (renderCount === 0) {
+                        engine && engine.stopRenderLoop();
+                    } else {
+                        scene && scene.render();
+                        renderCount--;
+                    }
+                } catch (e) {
+                    engine && engine.stopRenderLoop();
+                    console.error(e);
+                    return;
+                }
+            });
+        }, true);
+    } else {
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+            if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+                scene.render();
+            }
+        });
+    }
+
+    // Register a render loop to repeatedly render the scene
 };
 
 runScene();

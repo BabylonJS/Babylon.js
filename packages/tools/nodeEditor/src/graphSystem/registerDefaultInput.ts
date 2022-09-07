@@ -15,6 +15,9 @@ export const RegisterDefaultInput = (stateManager: StateManager) => {
         let emittedBlock;
 
         if (!customInputBlock) {
+            if (point.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                return null;
+            }
             emittedBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[point.type], undefined, point.type);
         } else {
             [emittedBlock, pointName] = customInputBlock;

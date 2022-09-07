@@ -60,7 +60,7 @@ To validate your PR, please follow these steps:
 
 - Run "gulp" locally and make sure that no error is generated
 - Make sure that all public functions and classes are commented using JSDoc syntax
-- Make sure to add a line about your PR in the [what's new](https://github.com/BabylonJS/Babylon.js/blob/master/dist/preview%20release/what's%20new.md)
+- Make sure to add a line about your PR in the [what's new](https://github.com/BabylonJS/Babylon.js/blob/master/what's%20new.md)
 
 ## What should go where
 

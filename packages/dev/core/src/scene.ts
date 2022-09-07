@@ -62,6 +62,8 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
+import { ArrayTools } from "./Misc/arrayTools";
+import type { INotifyArrayChangeType } from "./Misc/arrayTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -655,6 +657,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onActiveCameraChanged = new Observable<Scene>();
 
     /**
+     * An event triggered when the activeCameras property is updated
+     */
+    public onActiveCamerasChanged = new Observable<INotifyArrayChangeType<Camera>>();
+
+    /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -1012,8 +1019,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._lightsEnabled;
     }
 
+    private _activeCameras: Nullable<Camera[]> = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, []);
     /** All of the active cameras added to this scene. */
-    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
+    public get activeCameras(): Nullable<Camera[]> {
+        return this._activeCameras;
+    }
+
+    public set activeCameras(cameras: Nullable<Camera[]>) {
+        this._activeCameras = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, cameras);
+    }
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;
@@ -1541,7 +1555,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     cpuSpeedThresholds: [0.5],
                 }
             );
-            this._computePressureObserver.observe();
+            this._computePressureObserver.observe("cpu");
         }
     }
 
@@ -2122,6 +2136,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
+            // Ensure materials effects are checked outside render loops
+            this.incrementRenderId();
             this._checkIsReady(checkRenderTargets);
         }, 100);
     }
@@ -3125,9 +3141,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.geometries[index] = lastGeometry;
                 if (this._geometriesByUniqueId) {
                     this._geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                    this._geometriesByUniqueId[geometry.uniqueId] = undefined;
                 }
             }
+        }
+
+        if (this._geometriesByUniqueId) {
+            this._geometriesByUniqueId[geometry.uniqueId] = undefined;
         }
 
         this.geometries.pop();
@@ -3526,7 +3545,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param data the data object to associate to the key for this Engine instance
      * @return true if no such key were already present and the data was added successfully, false otherwise
      */
-    public addExternalData<T>(key: string, data: T): boolean {
+    public addExternalData<T extends Object>(key: string, data: T): boolean {
         if (!this._externalData) {
             this._externalData = new StringDictionary<Object>();
         }
@@ -3551,7 +3570,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param factory the factory that will be called to create the instance if and only if it doesn't exists
      * @return the associated data, can be null if the factory returned null.
      */
-    public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+    public getOrAddExternalDataWithFactory<T extends Object>(key: string, factory: (k: string) => T): T {
         if (!this._externalData) {
             this._externalData = new StringDictionary<Object>();
         }
@@ -4655,7 +4674,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onActiveCameraChanged.clear();
         this.onComputePressureChanged.clear();
 
-        this._computePressureObserver?.unobserve();
+        this._computePressureObserver?.unobserve("cpu");
         this._computePressureObserver = undefined;
 
         this.detachControl();
@@ -4946,7 +4965,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 

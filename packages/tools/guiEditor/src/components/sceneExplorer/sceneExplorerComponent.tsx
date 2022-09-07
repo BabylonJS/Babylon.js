@@ -47,6 +47,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onParrentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
     private _onPropertyChangedObservable: Nullable<Observer<PropertyChangedEvent>>;
+    private _onUpdateRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: ISceneExplorerComponentProps) {
         super(props);
@@ -61,6 +62,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             if (event.property === "name" || event.property === "_columnNumber" || event.property === "_rowNumber") {
                 this.forceUpdate();
             }
+        });
+        this._onUpdateRequiredObserver = this.props.globalState.onUpdateRequiredObservable.add(() => {
+            this.forceUpdate();
         });
     }
 
@@ -95,6 +99,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._onPropertyChangedObservable) {
             this.props.globalState.onPropertyChangedObservable.remove(this._onPropertyChangedObservable);
+        }
+
+        if (this._onUpdateRequiredObserver) {
+            this.props.globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         }
     }
 

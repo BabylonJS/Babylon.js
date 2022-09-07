@@ -30,5 +30,18 @@ describe("Babylon Vectors", () => {
 
             expect(rayGoingThrough.projectOnPlane(simplePlane, rayOrigin)).toEqual(expected);
         });
+
+        it("can project parallel to a plane", () => {
+            // A ground plane 10 units below origin
+            const simplePlane = Plane.FromPositionAndNormal(new Vector3(0, 0, 0), Vector3.Up());
+
+            const rayOrigin = new Vector3(0, 10, 0);
+            const rayGoingThrough = new Vector3(10, 10, 0);
+
+            // Going parallel to the plane should return infinity
+            const expected = new Vector3(Infinity, Infinity, Infinity);
+
+            expect(rayGoingThrough.projectOnPlane(simplePlane, rayOrigin)).toEqual(expected);
+        });
     });
 });

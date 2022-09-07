@@ -99,8 +99,6 @@ void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-#include<oitFragment>
-
 #include<clipPlaneFragment>
 
 
@@ -466,6 +464,7 @@ color.rgb = max(color.rgb, 0.);
 #if !defined(PREPASS) || defined(WEBGL2)
 	gl_FragColor = color;
 #endif
+#include<oitFragment>
 
 #if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {

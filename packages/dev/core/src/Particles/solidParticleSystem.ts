@@ -149,6 +149,7 @@ export class SolidParticleSystem implements IDisposable {
     private _defaultMaterial: Material;
     private _autoUpdateSubMeshes: boolean = false;
     private _tmpVertex: SolidParticleVertex;
+    private _recomputeInvisibles: boolean = false;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -314,6 +315,7 @@ export class SolidParticleSystem implements IDisposable {
         }
         this._isNotBuilt = false;
         this.recomputeNormals = false;
+        this._recomputeInvisibles = true;
         return this.mesh;
     }
 
@@ -1174,7 +1176,7 @@ export class SolidParticleSystem implements IDisposable {
             }
 
             // skip the computations for inactive or already invisible particles
-            if (!particle.alive || (particle._stillInvisible && !particle.isVisible)) {
+            if (!particle.alive || (particle._stillInvisible && !particle.isVisible && !this._recomputeInvisibles)) {
                 // increment indexes for the next particle
                 pt = shape.length;
                 index += pt * 3;
@@ -1487,6 +1489,7 @@ export class SolidParticleSystem implements IDisposable {
         if (this._autoUpdateSubMeshes) {
             this.computeSubMeshes();
         }
+        this._recomputeInvisibles = false;
         this.afterUpdateParticles(start, end, update);
         return this;
     }

@@ -133,6 +133,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
@@ -724,6 +725,7 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.OPACITYFRESNEL = this._opacityFresnel;
                 } else {
                     defines.DIFFUSE = false;
+                    defines.DIFFUSEDIRECTUV = 0;
                     defines.DIFFUSEHASALPHA = false;
                     defines.GAMMADIFFUSE = false;
                     defines.OPACITYFRESNEL = false;

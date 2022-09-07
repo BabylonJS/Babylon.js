@@ -24,11 +24,14 @@ uniform sampler2D emissiveSampler;
 
 uniform vec4 glowColor;
 
+#include<clipPlaneFragmentDeclaration>
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 void main(void)
 {
+
+#include<clipPlaneFragment>
 
 vec4 finalColor = glowColor;
 
