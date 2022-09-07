@@ -926,9 +926,7 @@ export class Animation {
         }
 
         const keys = this._keys;
-        if (keys.length === 1) {
-            return this._getKeyValue(keys[0].value);
-        }
+        const keysLength = keys.length;
 
         let key = state.key;
 
@@ -936,16 +934,16 @@ export class Animation {
             --key;
         }
 
-        while (key + 1 <= keys.length - 1 && currentFrame >= keys[key + 1].frame) {
+        while (key + 1 <= keysLength - 1 && currentFrame >= keys[key + 1].frame) {
             ++key;
         }
 
         state.key = key;
 
         if (key < 0) {
-            return keys[0].value;
-        } else if (key + 1 > keys.length - 1) {
-            return keys[keys.length - 1].value;
+            return this._getKeyValue(keys[0].value);
+        } else if (key + 1 > keysLength - 1) {
+            return this._getKeyValue(keys[keysLength - 1].value);
         }
 
         const startKey = keys[key];
