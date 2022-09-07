@@ -22,6 +22,7 @@ interface IScrollViewerPropertyGridComponentProps {
     scrollViewers: ScrollViewer[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
@@ -35,7 +36,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={scrollViewers} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={scrollViewers} onPropertyChangedObservable={this.props.onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

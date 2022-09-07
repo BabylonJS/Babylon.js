@@ -270,6 +270,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         textBlocks={textBlocks}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -280,6 +281,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         inputTexts={inputTexts}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -290,13 +292,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         colorPickers={colorPickers}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
+
                     />
                 );
             }
             case "Image": {
                 const images = nodes as Image[];
                 return (
-                    <ImagePropertyGridComponent images={images} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    <ImagePropertyGridComponent images={images} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}/>
                 );
             }
             case "Slider": {
@@ -306,6 +310,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         sliders={sliders}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -316,6 +321,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         imageBasedSliders={imageBasedSliders}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -325,6 +331,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         rectangles={nodes as Rectangle[]}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -335,12 +342,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         stackPanels={stackPanels}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
             case "Grid": {
                 const grids = nodes as Grid[];
-                return <GridPropertyGridComponent grids={grids} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                return <GridPropertyGridComponent grids={grids} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}/>;
             }
             case "ScrollViewer": {
                 const scrollViewers = nodes as ScrollViewer[];
@@ -349,6 +357,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         scrollViewers={scrollViewers}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -359,6 +368,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         ellipses={ellipses}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -369,6 +379,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         checkboxes={checkboxes}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -379,12 +390,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         radioButtons={radioButtons}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
             case "Line": {
                 const lines = nodes as Line[];
-                return <LinePropertyGridComponent lines={lines} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                return <LinePropertyGridComponent lines={lines} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}/>;
             }
             case "DisplayGrid": {
                 const displayGrids = nodes as DisplayGrid[];
@@ -393,6 +405,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         displayGrids={displayGrids}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
@@ -411,14 +424,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 button.addControl(guiElement);
                                 this.props.globalState.select(guiElement);
                             }
+                       
                         }}
+                        onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                     />
                 );
             }
         }
 
         const controls = nodes as Control[];
-        return <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+        return <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}/>;
     }
 
     renderControlIcon(nodes: Control[]) {

@@ -18,6 +18,7 @@ interface IRectanglePropertyGridComponentProps {
     rectangles: Rectangle[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class RectanglePropertyGridComponent extends React.Component<IRectanglePropertyGridComponentProps> {
@@ -31,7 +32,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">

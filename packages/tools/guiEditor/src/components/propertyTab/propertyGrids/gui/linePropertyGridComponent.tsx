@@ -20,6 +20,7 @@ interface ILinePropertyGridComponentProps {
     lines: Line[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
@@ -84,7 +85,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                     <TextInputLineComponent lockObject={lockObject} label="" target={proxy} value={dashString} onChange={(newValue) => this.onDashChange(newValue)} />
                 </div>
                 <hr />
-                <CommonControlPropertyGridComponent hideDimensions lockObject={lockObject} controls={lines} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent hideDimensions lockObject={lockObject} controls={lines} onPropertyChangedObservable={onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
             </div>
         );
     }

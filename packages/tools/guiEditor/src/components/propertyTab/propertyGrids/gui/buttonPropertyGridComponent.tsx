@@ -22,6 +22,7 @@ interface IButtonPropertyGridComponentProps {
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onAddComponent: (newComponent: string) => void;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
@@ -35,7 +36,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

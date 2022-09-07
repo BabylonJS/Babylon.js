@@ -17,6 +17,7 @@ interface IEllipsePropertyGridComponentProps {
     ellipses: Ellipse[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
 }
 
 export class EllipsePropertyGridComponent extends React.Component<IEllipsePropertyGridComponentProps> {
@@ -30,7 +31,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} onFontsParsedObservable={this.props.onFontsParsedObservable}/>
                 <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
