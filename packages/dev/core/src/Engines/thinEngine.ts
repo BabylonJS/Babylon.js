@@ -814,7 +814,7 @@ export class ThinEngine {
             if (glFunc.array && ((glFunc.array === 1 && payload[0].length === 0) || payload[0].length % glFunc.array !== 0)) {
                 return false;
             }
-            const func = (this._gl[`uniform${glFunc.gl}` as keyof WebGL2RenderingContext] as Function);
+            const func = this._gl[`uniform${glFunc.gl}` as keyof WebGL2RenderingContext] as Function;
             // avoid using `apply`, as this will create an array per call. Using `.call` instead
             if (glFunc.addFalse) {
                 func.call(this._gl, uniform, false, ...payload);
@@ -1789,7 +1789,7 @@ export class ThinEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame(): void { }
+    public beginFrame(): void {}
 
     /**
      * Enf the current frame
@@ -4077,10 +4077,10 @@ export class ThinEngine {
                 const internalFormat = format
                     ? this._getInternalFormat(format, texture._useSRGBBuffer)
                     : extension === ".jpg" && !texture._useSRGBBuffer
-                        ? gl.RGB
-                        : texture._useSRGBBuffer
-                            ? gl.SRGB8_ALPHA8
-                            : gl.RGBA;
+                    ? gl.RGB
+                    : texture._useSRGBBuffer
+                    ? gl.SRGB8_ALPHA8
+                    : gl.RGBA;
                 let texelFormat = format ? this._getInternalFormat(format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
 
                 if (texture._useSRGBBuffer && this.webGLVersion === 1) {
@@ -4166,7 +4166,7 @@ export class ThinEngine {
      * @param onComplete
      * @hidden
      */
-    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void { }
+    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
 
     /**
      * Creates a raw texture
@@ -4351,7 +4351,7 @@ export class ThinEngine {
      * @param height new height of the texture
      * @param depth new depth of the texture
      */
-    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void { }
+    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {}
 
     /**
      * Update the sampling mode of a given texture
@@ -5292,7 +5292,7 @@ export class ThinEngine {
 
         //clear existing errors
         // eslint-disable-next-line no-empty
-        while (gl.getError() !== gl.NO_ERROR) { }
+        while (gl.getError() !== gl.NO_ERROR) {}
 
         let successful = true;
 
@@ -5334,7 +5334,7 @@ export class ThinEngine {
 
         //clear accumulated errors
         // eslint-disable-next-line no-empty
-        while (!successful && gl.getError() !== gl.NO_ERROR) { }
+        while (!successful && gl.getError() !== gl.NO_ERROR) {}
 
         return successful;
     }
