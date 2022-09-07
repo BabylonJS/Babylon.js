@@ -219,8 +219,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                 indices[indicesCount + 1] = indicesCount + 2;
                 indices[indicesCount + 2] = indicesCount + 1;
                 indicesCount += 3;
-            }
-            else {
+            } else {
                 indices[indicesCount] = indicesCount++;
                 indices[indicesCount] = indicesCount++;
                 indices[indicesCount] = indicesCount++;
@@ -267,8 +266,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             if (rightHanded) {
                 indices.push(indicesCount, indicesCount + 2, indicesCount + 1);
                 indicesCount += 3;
-            }
-            else {
+            } else {
                 indices.push(indicesCount++, indicesCount++, indicesCount++);
             }
             this.vertexPattern.lastIndex = 0;
