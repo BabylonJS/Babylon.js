@@ -245,7 +245,22 @@ export const LoadImage = (
     img.addEventListener("error", errorHandler);
 
     const noOfflineSupport = () => {
-        img.src = url;
+        LoadFile(
+            url,
+            (data, _, contentType) => {
+                const type = !mimeType && contentType ? contentType : mimeType;
+                const blob = new Blob([data], { type });
+                const url = URL.createObjectURL(blob);
+                usingObjectURL = true;
+                img.src = url;
+            },
+            undefined,
+            offlineProvider || undefined,
+            true,
+            (request, exception) => {
+                onErrorHandler(exception);
+            }
+        );
     };
 
     const loadFromOfflineSupport = () => {
@@ -344,7 +359,7 @@ export const ReadFile = (
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
     fileOrUrl: File | string,
-    onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+    onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string>) => void,
     onProgress?: (ev: ProgressEvent) => void,
     offlineProvider?: IOfflineProvider,
     useArrayBuffer?: boolean,
@@ -380,14 +395,16 @@ export const LoadFile = (
     }
 
     // For a Base64 Data URL
-    if (IsBase64DataUrl(url)) {
+    const { match, type } = TestBase64DataUrl(url);
+    if (match) {
         const fileRequest: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
             abort: () => () => {},
         };
 
         try {
-            onSuccess(useArrayBuffer ? DecodeBase64UrlToBinary(url) : DecodeBase64UrlToString(url));
+            const data = useArrayBuffer ? DecodeBase64UrlToBinary(url) : DecodeBase64UrlToString(url);
+            onSuccess(data, undefined, type);
         } catch (error) {
             if (onError) {
                 onError(undefined, error);
@@ -406,7 +423,7 @@ export const LoadFile = (
     return RequestFile(
         url,
         (data, request) => {
-            onSuccess(data, request ? request.responseURL : undefined);
+            onSuccess(data, request?.responseURL, request?.getResponseHeader("content-type"));
         },
         onProgress,
         offlineProvider,
@@ -654,6 +671,16 @@ export const IsFileURL = (): boolean => {
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
     return Base64DataUrlRegEx.test(uri);
+};
+
+export const TestBase64DataUrl = (uri: string): { match: boolean; type: string } => {
+    const results = Base64DataUrlRegEx.exec(uri);
+    if (results === null || results.length === 0) {
+        return { match: false, type: "" };
+    } else {
+        const type = results[0].replace("data:", "").replace("base64,", "");
+        return { match: true, type };
+    }
 };
 
 /**

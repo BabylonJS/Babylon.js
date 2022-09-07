@@ -105,7 +105,7 @@
         },
         {
             "title": "Node material 6",
-            "playgroundId": "#2XY3Z4#1",
+            "playgroundId": "#2XY3Z4#3",
             "referenceImage": "node-material6.png"
         },
         {
@@ -717,7 +717,7 @@
             "title": "GLTF Serializer KHR gpu instancing",
             "playgroundId": "#1Q2BWN#10",
             "referenceImage": "glTFSerializerKhrGpuInstancing.png"
-        },   
+        },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
@@ -1450,6 +1450,16 @@
             "renderCount": 2,
             "playgroundId": "#UB4F3B#7",
             "referenceImage": "guiInputTest.png"
+        },
+        {
+            "title": "Serialize and Load Hierarchy",
+            "playgroundId": "#3ZQ1SL#8",
+            "referenceImage": "serializeAndLoadHierarchy.png"
+        },
+        {
+            "title": "Serialize scene without materials",
+            "playgroundId": "#PH4DEZ#1",
+            "referenceImage": "serializeWithoutMaterials.png"
         }
     ]
 }

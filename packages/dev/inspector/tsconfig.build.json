@@ -4,7 +4,23 @@
     "compilerOptions": {
         "composite": true,
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
+            "post-processes/*": ["dev/postProcesses/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/dist/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "serializers/*": ["dev/serializers/dist/*"],
+            "inspector/*": ["dev/inspector/src/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "node-editor/*": ["tools/nodeEditor/dist/*"],
+            "gui-editor/*": ["tools/guiEditor/dist/*"],
+            "viewer/*": ["tools/viewer/dist/*"],
+            "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
+            "vsm": ["tools/vsm/dist/*"]
+        }
     },
 
     "references": [

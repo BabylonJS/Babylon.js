@@ -9,6 +9,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { Nullable, DataArray, IndicesArray } from "../types";
 import type { EngineCapabilities } from "./engineCapabilities";
+import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { DepthCullingState } from "../States/depthCullingState";
 import { StencilState } from "../States/stencilState";
@@ -45,15 +46,13 @@ import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOption
 import type { IStencilState } from "../States/IStencilState";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-
-declare type WebRequest = import("../Misc/webRequest").WebRequest;
-declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
-declare type Observer<T> = import("../Misc/observable").Observer<T>;
-declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
-declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type Texture = import("../Materials/Textures/texture").Texture;
-declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
-declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper").WebGLRenderTargetWrapper;
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
+import type { VideoTexture } from "../Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { WebRequest } from "../Misc/webRequest";
+import type { LoadFileError } from "../Misc/fileTools";
+import type { Texture } from "../Materials/Textures/texture";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -201,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.17.1";
+        return "babylonjs@5.22.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.17.1";
+        return "5.22.1";
     }
 
     /**
@@ -368,7 +367,7 @@ export class ThinEngine {
     // Private Members
 
     /** @hidden */
-    public _gl: WebGLRenderingContext;
+    public _gl: WebGL2RenderingContext;
     /** @hidden */
     public _webGLVersion = 1.0;
     protected _renderingCanvas: Nullable<HTMLCanvasElement>;
@@ -945,7 +944,7 @@ export class ThinEngine {
                     throw new Error("The provided canvas is null or undefined.");
                 }
                 try {
-                    this._gl = <WebGLRenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+                    this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 } catch (e) {
                     throw new Error("WebGL not supported");
                 }
@@ -955,10 +954,10 @@ export class ThinEngine {
                 throw new Error("WebGL not supported");
             }
         } else {
-            this._gl = <WebGLRenderingContext>canvasOrContext;
+            this._gl = <WebGL2RenderingContext>canvasOrContext;
             this._renderingCanvas = this._gl.canvas as HTMLCanvasElement;
 
-            if (this._gl.renderbufferStorageMultisample) {
+            if ((this._gl as any).renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
                 this._shaderPlatformName = "WEBGL2";
             } else {
@@ -1226,7 +1225,7 @@ export class ThinEngine {
             if (this._webGLVersion === 1) {
                 this._gl.getQuery = (<any>this._caps.timerQuery).getQueryEXT.bind(this._caps.timerQuery);
             }
-            this._caps.canUseTimestampForTimerQuery = this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) > 0;
+            this._caps.canUseTimestampForTimerQuery = (this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) ?? 0) > 0;
         }
 
         this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension
@@ -2331,6 +2330,10 @@ export class ThinEngine {
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): WebGLVertexArrayObject {
         const vao = this._gl.createVertexArray();
+
+        if (!vao) {
+            throw new Error("Unable to create VAO");
+        }
 
         this._vaoRecordInProgress = true;
 

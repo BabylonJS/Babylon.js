@@ -3,6 +3,7 @@ import { Vector3, Quaternion } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import type { IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { Node } from "../node";
@@ -22,9 +23,21 @@ import { Observable } from "../Misc/observable";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 
 /**
+ * Interface for light gizmo
+ */
+export interface ILightGizmo extends IGizmo {
+    /** Event that fires each time the gizmo is clicked */
+    onClickedObservable: Observable<Light>;
+    /** The light that the gizmo is attached to */
+    light: Nullable<Light>;
+    /** The material used to render the light gizmo */
+    readonly material: StandardMaterial;
+}
+
+/**
  * Gizmo that enables viewing a light
  */
-export class LightGizmo extends Gizmo {
+export class LightGizmo extends Gizmo implements ILightGizmo {
     protected _lightMesh: Mesh;
     protected _material: StandardMaterial;
     protected _cachedPosition = new Vector3();

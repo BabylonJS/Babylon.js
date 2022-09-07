@@ -727,6 +727,10 @@ export class TransformNode extends Node {
      * @returns this  node
      */
     public markAsDirty(property?: string): Node {
+        if (this._isDirty) {
+            return this;
+        }
+
         // We need to explicitly update the children
         // as the scene.evaluateActiveMeshes will not poll the transform nodes
         if (this._children) {
@@ -1392,6 +1396,8 @@ export class TransformNode extends Node {
         }
 
         transformNode.setEnabled(parsedTransformNode.isEnabled);
+
+        transformNode._waitingParsedUniqueId = parsedTransformNode.uniqueId;
 
         // Parent
         if (parsedTransformNode.parentId !== undefined) {

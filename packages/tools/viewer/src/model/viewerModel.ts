@@ -5,7 +5,7 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
-
+import "core/Misc/observable.extensions";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import type { Animatable } from "core/Animations/index";
 import {

@@ -66,6 +66,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public _frameIsMoving = false;
     public _isLoading = false;
+    public _targetLinkCandidate: Nullable<NodeLink> = null;
 
     private _copiedNodes: GraphNode[] = [];
     private _copiedFrames: GraphFrame[] = [];
@@ -308,9 +309,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         );
     }
 
-    automaticRewire(inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[]) {
+    automaticRewire(inputs: Nullable<IPortData>[], outputs: Nullable<IPortData>[], firstOnly = false) {
+        let oneConnectionFound = false;
         if (outputs.length && inputs.length) {
             inputs.forEach((input) => {
+                if (oneConnectionFound) {
+                    return;
+                }
                 if (!input) {
                     return;
                 }
@@ -320,6 +325,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     const nodeOutput = this.findNodeFromData(output.ownerData);
                     this.connectNodes(nodeInput, input, nodeOutput, output);
                     outputs.shift();
+                    if (firstOnly) {
+                        oneConnectionFound = true;
+                        return;
+                    }
                 }
             });
         }
@@ -382,7 +391,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        if (!evt.ctrlKey || this.props.stateManager.lockObject.lock) {
+        if ((!evt.ctrlKey && !evt.metaKey) || this.props.stateManager.lockObject.lock) {
             return;
         }
 
@@ -935,6 +944,44 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
+        // Port dragging
+        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
+            if (!this._candidateLink) {
+                const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
+                if (this._altKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
+                    const node = portElement.node;
+                    // Delete connection
+                    const links = node.getLinksForPortData(portElement.portData);
+
+                    links.forEach((link) => {
+                        link.dispose(false);
+                    });
+
+                    // Pick the first one as target port
+                    const targetNode = links[0].nodeA === node ? links[0].nodeB : links[0].nodeA;
+                    const targetPort = links[0].nodeA === node ? links[0].portB : links[0].portA;
+
+                    // Start a new one
+                    this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
+                } else if (this._multiKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
+                    const node = portElement.node;
+                    const links = node.getLinksForPortData(portElement.portData);
+
+                    // Pick the first one as target port
+                    const linkToConsider = this._selectedLink || links[0];
+                    const targetNode = linkToConsider.nodeA === node ? linkToConsider.nodeB : linkToConsider.nodeA;
+                    const targetPort = linkToConsider.nodeA === node ? linkToConsider.portB : linkToConsider.portA;
+
+                    // Start a new one
+                    this._candidateLink = new NodeLink(this, targetPort!, targetNode!);
+                } else {
+                    this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                }
+                this._candidateLinkedHasMoved = false;
+            }
+            return;
+        }
+
         // Selection?
         if (evt.currentTarget === this._hostCanvas && this._multiKeyIsPressed) {
             this._selectionBox = this.props.stateManager.hostDocument.createElement("div");
@@ -964,16 +1011,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
             this._frameCandidate.style.width = "0px";
             this._frameCandidate.style.height = "0px";
-            return;
-        }
-
-        // Port dragging
-        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
-            if (!this._candidateLink) {
-                const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
-                this._candidateLink = new NodeLink(this, portElement, portElement.node);
-                this._candidateLinkedHasMoved = false;
-            }
             return;
         }
 
@@ -1115,6 +1152,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             // No destination so let's spin a new input node
             const newDefaultInput = this.props.stateManager.createDefaultInputData(this.props.stateManager.data, this._candidateLink!.portA.portData, this);
+            if (!newDefaultInput) {
+                return;
+            }
             const pointName = newDefaultInput.name;
             const emittedNodeData = newDefaultInput.data;
 

@@ -54,7 +54,11 @@ declare module "../../Engines/engine" {
 }
 
 Engine.prototype.createTransformFeedback = function (): WebGLTransformFeedback {
-    return this._gl.createTransformFeedback();
+    const transformFeedback = this._gl.createTransformFeedback();
+    if (!transformFeedback) {
+        throw new Error("Unable to create Transform Feedback");
+    }
+    return transformFeedback;
 };
 
 Engine.prototype.deleteTransformFeedback = function (value: WebGLTransformFeedback): void {

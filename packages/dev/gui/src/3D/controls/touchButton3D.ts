@@ -199,7 +199,7 @@ export class TouchButton3D extends Button3D {
      * @hidden
      */
     public _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number {
-        if (providedType === PointerEventTypes.POINTERDOWN) {
+        if (providedType === PointerEventTypes.POINTERDOWN || providedType === PointerEventTypes.POINTERMOVE) {
             if (!this._isInteractionInFrontOfButton(nearMeshPosition)) {
                 // Near interaction mesh is behind the button, don't send a pointer down
                 return PointerEventTypes.POINTERMOVE;

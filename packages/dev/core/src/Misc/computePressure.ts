@@ -20,24 +20,30 @@ export class ComputePressureObserverWrapper {
      * Returns true if ComputePressureObserver is available for use, false otherwise.
      */
     public static get IsAvailable() {
-        return IsWindowObjectExist() && "ComputePressureObserver" in window;
+        return IsWindowObjectExist() && "ComputePressureObserver" in window && (<any>window).ComputePressureObserver?.supportedSources?.includes("cpu");
     }
 
     /**
      * Method that must be called to begin observing changes, and triggering callbacks.
+     * @param source defines the source to observe
      */
-    observe(): void {
+    observe(source: IComputePressureSource): void {
         this._observer?.observe &&
-            this._observer?.observe().catch(() => {
+            this._observer?.observe(source).catch(() => {
                 // Ignore error
             });
     }
 
     /**
      * Method that must be called to stop observing changes and triggering callbacks (cleanup function).
+     * @param source defines the source to unobserve
      */
-    unobserve(): void {
-        this._observer?.unobserve && this._observer?.unobserve();
+    unobserve(source: IComputePressureSource): void {
+        try {
+            this._observer?.unobserve && this._observer?.unobserve(source);
+        } catch {
+            // Ignore error
+        }
     }
 }
 
@@ -69,3 +75,8 @@ export interface IComputePressureData {
      */
     cpuSpeed: number;
 }
+
+/**
+ * The possible sources for the compute pressure observer.
+ */
+export type IComputePressureSource = "cpu";

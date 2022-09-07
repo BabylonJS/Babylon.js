@@ -22,6 +22,12 @@ interface Window {
     setImmediate(handler: (...args: any[]) => void): number;
 }
 
+interface WorkerGlobalScope {
+    importScripts: (...args: string[]) => void;
+}
+
+type WorkerSelf = WindowOrWorkerGlobalScope & WorkerGlobalScope;
+
 interface HTMLCanvasElement {
     requestPointerLock(): void;
     msRequestPointerLock?(): void;

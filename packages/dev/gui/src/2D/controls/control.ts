@@ -21,6 +21,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
+import type { IPointerEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Root class used for all 2D controls
@@ -2200,6 +2201,10 @@ export class Control {
             this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
         }
 
+        if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
+            this._host._capturedPointerIds.add((pi.event as IPointerEvent).pointerId);
+        }
+
         return true;
     }
 
@@ -2228,6 +2233,10 @@ export class Control {
 
         if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
+        }
+
+        if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
+            this._host._capturedPointerIds.delete((pi.event as IPointerEvent).pointerId);
         }
     }
 

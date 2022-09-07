@@ -5,11 +5,14 @@
         "outDir": "./dist",
         "rootDir": "../../../lts/loaders/generated",
         "declaration": true,
-        "target": "es5",
         "importHelpers": true,
         "plugins": [
             { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/loaders", "appendJS": true },
-        ]
+        ],
+        "paths": {
+            "core/*": ["lts/core/dist/*"],
+            "loaders/*": ["lts/loaders/generated/*"]
+        }
     },
 
     "include": ["../../../lts/loaders/generated/**/*"]
