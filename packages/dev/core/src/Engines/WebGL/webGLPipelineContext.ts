@@ -6,12 +6,14 @@ import type { ThinEngine } from "../thinEngine";
 
 const cacheToSetProxyReference: { [key: string]: string } = {
     setInt2: "FloatN",
+    setInt: "FloatN",
     setInt3: "FloatN",
     setInt4: "FloatN",
     setVector2: "FloatN",
     setVector3: "FloatN",
     setVector4: "FloatN",
     setFloat2: "FloatN",
+    setFloat: "FloatN",
     setFloat3: "FloatN",
     setFloat4: "FloatN",
     setQuaternion: "FloatN",
@@ -179,7 +181,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param _w
      * @hidden
      */
-    public _cacheFloatN(_uniformName: string, _x: number, _y: number, _z?: number, _w?: number): boolean {
+    public _cacheFloatN(_uniformName: string, _x: number, _y?: number, _z?: number, _w?: number): boolean {
         /**
          * arguments will be used to abstract the cache function.
          * arguments[0] is the uniform name. the rest are numbers.
