@@ -9,7 +9,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
-import {Polar, Spherical} from "./math.polar";
+import type {Polar, Spherical} from "./math.polar";
 
 type TransformNode = import("../Meshes/transformNode").TransformNode;
 
@@ -98,24 +98,6 @@ export class Vector2 {
         this.toArray(result, 0);
         return result;
     }
-
-	/**
-	 * Gets the polar coordinates of the current Vector2
-	 * @param polar the reference to assign the result
-	 * @returns the current Vector2
-	 */
-	 public toPolarToRef(polar: Polar): Polar{
-		Polar.FromVector2ToRef(this, polar);
-		return this;
-	}
-
-	/**
-	 * Gets the polar coordinates of the current Vector2
-	 * @returns a new Polar with the polar coordinates
-	 */
-	public toPolar(): Polar{
-		return Polar.FromVector2(this);
-	}
 
     /**
      * Sets the Vector2 coordinates with the given Vector2 coordinates
@@ -525,28 +507,6 @@ export class Vector2 {
 		let result = 0;
 		Vector2.GetAngleBetweenVectorsToRef(vector0, vector1, result);
 		return result;
-	}
-
-	/**
-	 * Converts a polar coordinate to its rectangular coordinates
-	 * @param polar the polar coordinates
-	 * @param ref the reference to assign the result
-	 * @returns the reference Vector2
-	 */
-	 public static FromPolarToRef(polar: Polar, ref: Vector2): Vector2{
-		let x =  polar.radius * Math.cos(polar.theta);
-		let y =  polar.radius * Math.sin(polar.theta);
-		ref.set(x, y)
-		return ref;
-	}
-
-	/**
-	 * Converts a polar coordinate to its rectangular coordinates
-	 * @param polar the polar coordinates
-	 * @returns the rectangular coordinates
-	 */
-	public static FromPolar(polar: Polar): Vector2{
-		return Vector2.FromPolarToRef(polar, Vector2.Zero());
 	}
 
     /**
@@ -1727,23 +1687,6 @@ export class Vector3 {
 		return Vector3.RotationBetweenVectors(this, vector, Vector3.ZeroReadOnly);
 	}
 
-	/**
-	 * Gets the spherical coordinates of the current vector
-	 * @param ref the reference Spherical to assign the result
-	 * @returns the spherical coordinates for the current vector
-	 */
-	public toSphericalToRef(ref: Spherical): Spherical {
-		return Spherical.FromVector3ToRef(this, ref);
-	}
-
-	/**
-	 * Gets the spherical coordinates of the current vector
-	 * @returns the spherical coordinates for the current vector
-	 */
-	public toSpherical(): Spherical {
-		return Spherical.FromVector3(this);
-	}
-
     // Statics
 
     /**
@@ -1763,29 +1706,6 @@ export class Vector3 {
 
         return s;
     }
-
-	/**
-	 * Gets the (x, y, z) representation for a set of spherical coordinates
-	 * @param spherical defines the spherical coordinates
-	 * @param ref defines the target to assign the coordinates to
-	 * @returns the updated Vector3
-	 */
-	 public static FromSphericalToRef(spherical: Spherical, ref: DeepImmutable<Vector3>): Vector3{
-		let x = spherical.length * Math.sin(spherical.theta) * Math.cos(spherical.phi);
-		let y = spherical.length * Math.sin(spherical.theta) * Math.sin(spherical.phi);
-		let z = spherical.length * Math.cos(spherical.theta);
-		ref.set(x, y, z);
-		return ref;
-	}
-
-	/**
-	 * Gets the (x, y, z) representation for a set of spherical coordinates
-	 * @param spherical defines the spherical coordinates
-	 * @returns the Vector3
-	 */
-	public static FromSpherical(spherical: Spherical): Vector3{
-		return Vector3.FromSphericalToRef(spherical, Vector3.Zero());
-	}
 
     /**
      * Get angle between two vectors
