@@ -137,7 +137,7 @@ export enum ScenePerformancePriority {
     BackwardCompatible,
     /** Some performance options will be turned on trying to strike a balance between perf and ease of use */
     Intermediate,
-    /** Performance will be to priority */
+    /** Performance will be top priority */
     Aggressive,
 }
 
@@ -284,16 +284,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._performancePriority = value;
 
         switch (value) {
+            case ScenePerformancePriority.Aggressive:
+                this.skipFrustumClipping = true;
+            // eslint-disable-next-line no-fallthrough
             case ScenePerformancePriority.Intermediate:
                 this.skipPointerMovePicking = true;
                 this.autoClear = false;
                 break;
-            case ScenePerformancePriority.Aggressive:
-                this.autoClear = false;
-                this.skipPointerMovePicking = true;
-                this.skipFrustumClipping = true;
-                break;
-        }
+            }
     }
 
     private _forceWireframe = false;
