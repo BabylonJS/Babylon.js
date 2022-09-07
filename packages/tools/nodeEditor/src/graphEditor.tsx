@@ -682,7 +682,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>
-                <MessageDialog message={this.state.message} isError={this.state.isError} />
+                <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Node Material Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
