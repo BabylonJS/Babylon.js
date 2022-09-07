@@ -5,20 +5,19 @@ import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like
 import type { ThinEngine } from "../thinEngine";
 
 const cacheToSetProxyReference: { [key: string]: string } = {
-    setInt2: "Float2",
-    setInt3: "Float3",
-    setInt4: "Float4",
-    setMatrix: "Matrix",
-    setVector2: "Float2",
-    setVector3: "Float3",
-    setVector4: "Float4",
-    setFloat2: "Float2",
-    setFloat3: "Float3",
-    setFloat4: "Float4",
-    setQuaternion: "Float4",
-    setColor3: "Float3",
-    setColor4: "Float4",
-    setDirectColor4: "Float4",
+    setInt2: "FloatN",
+    setInt3: "FloatN",
+    setInt4: "FloatN",
+    setVector2: "FloatN",
+    setVector3: "FloatN",
+    setVector4: "FloatN",
+    setFloat2: "FloatN",
+    setFloat3: "FloatN",
+    setFloat4: "FloatN",
+    setQuaternion: "FloatN",
+    setColor3: "FloatN",
+    setColor4: "FloatN",
+    setDirectColor4: "FloatN",
 };
 
 /** @hidden */
@@ -42,14 +41,18 @@ export class WebGLPipelineContext implements IPipelineContext {
 
     constructor() {
         const args: any[] = [];
+        const prepareArray = function (this: WebGLPipelineContext) {
+            args.length = 0;
+            Array.prototype.push.apply(args, arguments);
+            args[0] = this._uniforms[args[0]];
+        }
         const proxyFunction: (functionName: string) => ((/*uniformName: string, ...payload: any[]*/) => void) | undefined = (functionName: string) => {
             const cacheFunction = cacheToSetProxyReference[functionName as string];
             if (cacheFunction) {
                 const cacheFunc = this[`_cache${cacheFunction}` as Partial<keyof WebGLPipelineContext>];
                 return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
                     const func = this.engine[functionName as keyof ThinEngine];
-                    Array.prototype.push.apply(args, arguments);
-                    args[0] = this._uniforms[args[0]];
+                    prepareArray.apply(this, arguments);
                     if ((cacheFunc as Function).apply(this, arguments)) {
                         if (!func.apply(this.engine, args)) {
                             this._valueCache[arguments[0]] = null;
@@ -59,8 +62,7 @@ export class WebGLPipelineContext implements IPipelineContext {
             } else {
                 return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
                     const func = this.engine[functionName as keyof ThinEngine];
-                    Array.prototype.push.apply(args, arguments);
-                    args[0] = this._uniforms[args[0]];
+                    prepareArray.apply(this, arguments);
                     if (arguments[1] !== undefined) {
                         this._valueCache[arguments[0]] = null;
                         func.apply(this.engine, args);
