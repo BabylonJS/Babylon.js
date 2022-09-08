@@ -395,18 +395,16 @@ export class Effect implements IDisposable {
                 return this;
             };
         };
-        ["Int?", "IntArray?", "FloatArray?", "Array?", "Color?", "Vector?", "Float?", "Matrices", "Matrix", "Matrix3x3", "Matrix2x2", "Quaternion", "DirectColor4"].forEach(
-            (functionName) => {
-                const name = `set${functionName}`;
-                if (name.endsWith("?")) {
-                    ["", 2, 3, 4].forEach((n) => {
-                        this[(name.slice(0, -1) + n) as keyof this] = proxyFunction(name.slice(0, -1) + n).bind(this);
-                    });
-                } else {
-                    this[name as keyof this] = proxyFunction(name).bind(this);
-                }
+        ["Int?", "IntArray?", "Array?", "Color?", "Vector?", "Float?", "Matrices", "Matrix", "Matrix3x3", "Matrix2x2", "Quaternion", "DirectColor4"].forEach((functionName) => {
+            const name = `set${functionName}`;
+            if (name.endsWith("?")) {
+                ["", 2, 3, 4].forEach((n) => {
+                    this[(name.slice(0, -1) + n) as keyof this] = this[(name.slice(0, -1) + n) as keyof this] || proxyFunction(name.slice(0, -1) + n).bind(this);
+                });
+            } else {
+                this[name as keyof this] = this[name as keyof this] || proxyFunction(name).bind(this);
             }
-        );
+        });
     }
 
     private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
