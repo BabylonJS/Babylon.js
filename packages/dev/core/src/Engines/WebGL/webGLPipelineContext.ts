@@ -4,23 +4,23 @@ import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { ThinEngine } from "../thinEngine";
 
-const cacheToSetProxyReference: { [key: string]: string } = {
-    setInt2: "FloatN",
-    setInt: "FloatN",
-    setInt3: "FloatN",
-    setInt4: "FloatN",
-    setVector2: "FloatN",
-    setVector3: "FloatN",
-    setVector4: "FloatN",
-    setFloat2: "FloatN",
-    setFloat: "FloatN",
-    setFloat3: "FloatN",
-    setFloat4: "FloatN",
-    setQuaternion: "FloatN",
-    setColor3: "FloatN",
-    setColor4: "FloatN",
-    setDirectColor4: "FloatN",
-};
+const floatNCache: string[] = [
+    "Int2",
+    "Int",
+    "Int3",
+    "Int4",
+    "Vector2",
+    "Vector3",
+    "Vector4",
+    "Float2",
+    "Float",
+    "Float3",
+    "Float4",
+    "Quaternion",
+    "Color3",
+    "Color4",
+    "DirectColor4",
+];
 
 /** @hidden */
 export class WebGLPipelineContext implements IPipelineContext {
@@ -49,7 +49,7 @@ export class WebGLPipelineContext implements IPipelineContext {
             args[0] = this._uniforms[args[0]];
         };
         const proxyFunction: (functionName: string) => ((/*uniformName: string, ...payload: any[]*/) => void) | undefined = (functionName: string) => {
-            const cacheFunction = cacheToSetProxyReference[functionName as string];
+            const cacheFunction = floatNCache.includes(functionName.substring(3)) && "FloatN";
             if (cacheFunction) {
                 const cacheFunc = this[`_cache${cacheFunction}` as Partial<keyof WebGLPipelineContext>];
                 return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
@@ -241,16 +241,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
-    public setInt(uniformName: string, value: number): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === value) {
-            return;
-        }
-
-        if (this.engine.setInt(this._uniforms[uniformName], value)) {
-            this._valueCache[uniformName] = value;
-        }
-    }
+    public setInt: (uniformName: string, value: number) => void;
 
     /**
      * Sets a int2 on a uniform variable.
@@ -376,16 +367,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param value value to be set.
      * @returns this effect.
      */
-    public setFloat(uniformName: string, value: number): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === value) {
-            return;
-        }
-
-        if (this.engine.setFloat(this._uniforms[uniformName], value)) {
-            this._valueCache[uniformName] = value;
-        }
-    }
+    public setFloat: (uniformName: string, value: number) => void;
 
     /**
      * Sets a Vector2 on a uniform variable.
