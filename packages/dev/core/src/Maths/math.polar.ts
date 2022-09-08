@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DeepImmutable, Nullable, float } from "../types";
+import type { Vector2, Vector3 } from "./math.vector";
 import { TmpVectors } from "./math.vector";
-import { Vector2, Vector3 } from "./math.vector";
 
 /**
  * Class used to store (r, theta) vector representation
@@ -67,12 +67,12 @@ export class Polar {
 }
 
 export class Spherical {
-	public length: number;
+	public radius: number;
 	public theta: number;
 	public phi: number;
 
-	constructor(length, theta, phi){
-		this.length = length;
+	constructor(radius, theta, phi){
+		this.radius = radius;
 		this.theta = theta;
 		this.phi = phi;
 	}
@@ -83,9 +83,9 @@ export class Spherical {
 	 * @returns the updated Vector3
 	 */
 	public toVector3ToRef(ref: DeepImmutable<Vector3>): Vector3{
-		let x = this.length * Math.sin(this.theta) * Math.cos(this.phi);
-		let y = this.length * Math.sin(this.theta) * Math.sin(this.phi);
-		let z = this.length * Math.cos(this.theta);
+		let x = this.radius * Math.sin(this.theta) * Math.cos(this.phi);
+		let y = this.radius  * Math.sin(this.theta) * Math.sin(this.phi);
+		let z = this.radius * Math.cos(this.theta);
 		ref.set(x, y, z);
 		return ref;
 	}
