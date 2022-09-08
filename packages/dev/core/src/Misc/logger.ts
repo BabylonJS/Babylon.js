@@ -70,7 +70,7 @@ export class Logger {
         }
         const type = this._Levels[level];
         if (entry.current === entry.limit) {
-            Logger.Log(Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, type.name ?? ""));
+            Logger[type.name as "Log" | "Warn" | "Error"](Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, type.name ?? ""));
         }
     }
 
