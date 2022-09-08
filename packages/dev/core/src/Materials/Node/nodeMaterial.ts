@@ -1350,7 +1350,7 @@ export class NodeMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
         if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.freeze();
+            this.checkReadyOnlyOnce = true;
         }
 
         return true;
