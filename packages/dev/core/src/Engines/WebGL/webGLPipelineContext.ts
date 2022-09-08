@@ -72,17 +72,17 @@ export class WebGLPipelineContext implements IPipelineContext {
                 };
             }
         };
-        ["Int?", "IntArray?", "FloatArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
+        ["Int?", "IntArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
             const name = `set${functionName}`;
             if (this[name as keyof this]) {
                 return;
             }
             if (name.endsWith("?")) {
                 ["", 2, 3, 4].forEach((n) => {
-                    this[(name.slice(0, -1) + n) as keyof this] = proxyFunction(name.slice(0, -1) + n)!.bind(this);
+                    this[(name.slice(0, -1) + n) as keyof this] = this[(name.slice(0, -1) + n) as keyof this] || proxyFunction(name.slice(0, -1) + n)!.bind(this);
                 });
             } else {
-                this[name as keyof this] = proxyFunction(name)!.bind(this);
+                this[name as keyof this] = this[name as keyof this] || proxyFunction(name)!.bind(this);
             }
         });
     }
