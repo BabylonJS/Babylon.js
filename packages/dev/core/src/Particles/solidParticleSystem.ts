@@ -306,7 +306,7 @@ export class SolidParticleSystem implements IDisposable {
 
         if (!this._expandable) {
             // free memory
-            if (!this._depthSort && !this._multimaterialEnabled) {
+            if (!this._depthSort && !this._multimaterialEnabled && !this._autoFixFaceOrientation) {
                 (<any>this._indices) = null;
             }
             (<any>this._positions) = null;
