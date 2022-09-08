@@ -246,7 +246,7 @@ export class InputManager {
     // Pointers handling
     private _setRayOnPointerInfo(pointerInfo: PointerInfo, pickInfoType: string) {
         const scene = this._scene;
-        if (pickInfoType !== "function" && pointerInfo.pickInfo && scene._pickingAvailable) {
+        if (pickInfoType === "object" && pointerInfo.pickInfo && scene._pickingAvailable) {
             if (!pointerInfo.pickInfo.ray) {
                 pointerInfo.pickInfo.ray = scene.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), scene.activeCamera);
             }
