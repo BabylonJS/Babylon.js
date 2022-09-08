@@ -1,0 +1,79 @@
+.hidden {
+    display: none !important;
+}
+
+.port {
+    border-radius: 20px;
+    width: 20px;
+    height: 20px;
+    align-self: center;
+
+    .img {
+        width: 100%;
+    }
+
+    &:hover,
+    &.selected {
+        filter: brightness(2);
+    }
+}
+
+.portLine {
+    height: 24px;
+    display: grid;
+    grid-template-rows: 100%;
+}
+
+.port-label {
+    align-items: center;
+}
+
+.inputsContainer {
+    grid-row: 1;
+    grid-column: 1;
+
+    .portLine {
+        grid-template-columns: 12px calc(100% - 15px);
+
+        .port-label {
+            grid-row: 1;
+            grid-column: 2;
+        }
+
+        .port {
+            grid-row: 1;
+            grid-column: 1;
+            transform: translateX(-12px);
+        }
+    }
+}
+
+.outputsContainer {
+    grid-row: 1;
+    grid-column: 2;
+
+    .portLine {
+        grid-template-columns: calc(100% - 10px) 12px;
+
+        .port-label {
+            grid-row: 1;
+            grid-column: 1;
+            text-align: right;
+        }
+
+        .port {
+            grid-row: 1;
+            grid-column: 2;
+            transform: translateX(2px);
+        }
+    }
+}
+
+.frame-box {
+    position: absolute;
+    background: rgba(72, 72, 72, 0.7);
+    display: grid;
+    grid-template-rows: 40px calc(100% - 40px);
+    grid-template-columns: 100%;
+    box-sizing: border-box;
+}
