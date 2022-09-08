@@ -833,9 +833,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name, !this.getScene().getEngine().isWebGPU);
         this._buildUniformLayout();
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.alwaysSelectAsActiveMesh = true;
-            this.isPickable = false;
+        switch (scene.performancePriority) {
+            case ScenePerformancePriority.Aggressive:
+                this.doNotSyncBoundingInfo = true;
+            // eslint-disable-next-line no-fallthrough
+            case ScenePerformancePriority.Intermediate:
+                this.alwaysSelectAsActiveMesh = true;
+                this.isPickable = false;
+                break;
         }
     }
 
