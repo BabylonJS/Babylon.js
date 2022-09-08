@@ -187,7 +187,7 @@ export class WebGLPipelineContext implements IPipelineContext {
          * arguments[0] is the uniform name. the rest are numbers.
          */
         let cache: number[] = this._valueCache[arguments[0]];
-        if (!cache || cache.length !== 2) {
+        if (!cache || cache.length !== arguments.length - 1) {
             cache = Array.prototype.slice.call(arguments, 1);
             this._valueCache[arguments[0]] = cache;
             return true;
