@@ -66,6 +66,10 @@ export class Polar {
 	}
 }
 
+
+/**
+ * Class used for (radius, theta, phi) vector representation.
+ */
 export class Spherical {
 	public radius: number;
 	public theta: number;
