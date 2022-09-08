@@ -2795,9 +2795,9 @@ export class Vector3 {
 		let diff: Vector3 = TmpVectors.Vector3[0];
 		vector1.subtractToRef(vector0, diff);
 		let distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
-		theta = Math.acos(diff.z / distance) || 0,
-		phi = Math.asin(diff.y / (Math.sin(theta) * distance)) || 0;
-		result.set(phi, Math.sign(diff.x || 1) * theta, 0);
+		theta = Math.atan(diff.z / diff.x) || 0,
+		phi = Math.asin(diff.y / distance) || 0;
+		result.set(phi, theta, 0);
 		return result;
 	}
  
