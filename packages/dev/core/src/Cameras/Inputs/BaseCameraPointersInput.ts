@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { EventState, Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import type { Camera } from "../../Cameras/camera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import type { PointerInfo, PointerTouch } from "../../Events/pointerEvents";
+import type { PointerTouch } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
+import { DeviceType, PointerInput } from "../../DeviceInput/InputDevices/deviceEnums";
+import { InputManager } from "../../Inputs/scene.inputManager";
 
 /**
  * Base class for Camera Pointer Inputs.
@@ -36,6 +39,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
     private _currentActiveButton: number = -1;
     private _contextMenuBind: EventListener;
+    private _previousStartingPointerTime = 0;
+    private _doubleClickOccured = false;
 
     /**
      * Defines the buttons associated with the input to handle camera move.
@@ -64,15 +69,63 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._shiftKey = false;
         this._buttonsPressed = 0;
 
-        this._pointerInput = (p) => {
-            const evt = <IPointerEvent>p.event;
+        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
+                    if (!("deltaY" in eventData)) {
+                        let type = PointerEventTypes.POINTERMOVE;
+
+                        if (eventData.inputIndex !== PointerInput.Move) {
+                            type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                        }
+
+                        this._pointerInput(eventData, type);
+
+                        if (Date.now() - this._previousStartingPointerTime < InputManager.DoubleClickDelay && !this._doubleClickOccured && type === PointerEventTypes.POINTERUP) {
+                            this._doubleClickOccured = true;
+                            type = PointerEventTypes.POINTERDOUBLETAP;
+                            this._pointerInput(eventData, type);
+                        } else {
+                            this._doubleClickOccured = false;
+                        }
+
+                        if (type === PointerEventTypes.POINTERUP || type === PointerEventTypes.POINTERDOUBLETAP) {
+                            this._previousStartingPointerTime = Date.now();
+                        }
+                    }
+                });
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
+                this._touchObservers[deviceSource.deviceSlot] = deviceSource.onInputChangedObservable.add((eventData) => {
+                    let type = PointerEventTypes.POINTERMOVE;
+
+                    if (eventData.inputIndex !== PointerInput.Move) {
+                        type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                    }
+
+                    this._pointerInput(eventData, type);
+                });
+            }
+        });
+
+        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                deviceSource.onInputChangedObservable.remove(this._mouseObserver);
+                this._mouseObserver = null;
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
+                deviceSource.onInputChangedObservable.remove(this._touchObservers[deviceSource.deviceSlot]);
+                this._touchObservers[deviceSource.deviceSlot] = null;
+            }
+        });
+
+        this._pointerInput = (p, t) => {
+            const evt = p;
             const isTouch = evt.pointerType === "touch";
 
             if (engine.isInVRExclusivePointerMode) {
                 return;
             }
 
-            if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
+            if (t !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                 return;
             }
 
@@ -91,7 +144,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 this.onTouch(null, offsetX, offsetY);
                 this._pointA = null;
                 this._pointB = null;
-            } else if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
+            } else if (t === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                 try {
                     srcElement?.setPointerCapture(evt.pointerId);
                 } catch (e) {
@@ -123,9 +176,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     evt.preventDefault();
                     element && element.focus();
                 }
-            } else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
+            } else if (t === PointerEventTypes.POINTERDOUBLETAP) {
                 this.onDoubleTap(evt.pointerType);
-            } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+            } else if (t === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                 try {
                     srcElement?.releasePointerCapture(evt.pointerId);
                 } catch (e) {
@@ -177,7 +230,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
-            } else if (p.type === PointerEventTypes.POINTERMOVE) {
+            } else if (t === PointerEventTypes.POINTERMOVE) {
                 if (!noPreventDefault) {
                     evt.preventDefault();
                 }
@@ -214,13 +267,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
         };
 
-        this._observer = this.camera
-            .getScene()
-            .onPointerObservable.add(
-                this._pointerInput,
-                PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP
-            );
-
         this._onLostFocus = () => {
             this._pointA = this._pointB = null;
             previousPinchSquaredDistance = 0;
@@ -250,9 +296,16 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
         }
 
-        if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
-            this._observer = null;
+        if (this._connectedObserver || this._disconnectedObserver) {
+            this.camera._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
+            this.camera._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+            const mouse = this.camera._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
+            const touches = this.camera._deviceSourceManager?.getDeviceSources(DeviceType.Touch);
+
+            mouse?.onInputChangedObservable.remove(this._mouseObserver);
+            touches?.forEach((touch) => {
+                touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
+            });
 
             if (this._contextMenuBind) {
                 const inputElement = this.camera.getScene().getEngine().getInputElement();
@@ -357,8 +410,11 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     public onLostFocus(): void {}
 
-    private _pointerInput: (p: PointerInfo, s: EventState) => void;
-    private _observer: Nullable<Observer<PointerInfo>>;
+    private _pointerInput: (p: IPointerEvent, type: PointerEventTypes) => void;
+    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _mouseObserver: Nullable<Observer<IPointerEvent | IWheelEvent>>;
+    private _touchObservers: Array<Nullable<Observer<IPointerEvent>>> = [];
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
     private _pointA: Nullable<PointerTouch>;
     private _pointB: Nullable<PointerTouch>;

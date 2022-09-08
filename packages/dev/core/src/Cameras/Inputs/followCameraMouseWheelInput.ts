@@ -1,13 +1,13 @@
 import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { EventState, Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import type { FollowCamera } from "../../Cameras/followCamera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 import { Tools } from "../../Misc/tools";
+import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
+import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
@@ -51,8 +51,10 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     @serialize()
     public wheelDeltaPercentage = 0;
 
-    private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
-    private _observer: Nullable<Observer<PointerInfo>>;
+    private _wheel: (p: IWheelEvent) => void;
+    private _observer: Nullable<Observer<IPointerEvent | IWheelEvent>>;
+    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -60,12 +62,24 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
      */
     public attachControl(noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        this._wheel = (p) => {
-            // sanity check - this should be a PointerWheel event.
-            if (p.type !== PointerEventTypes.POINTERWHEEL) {
-                return;
+        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                this._observer = deviceSource.onInputChangedObservable.add((eventData) => {
+                    if ("deltaY" in eventData) {
+                        this._wheel(eventData);
+                    }
+                });
             }
-            const event = <IWheelEvent>p.event;
+        });
+
+        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                deviceSource.onInputChangedObservable.remove(this._observer);
+                this._observer = null;
+            }
+        });
+
+        this._wheel = (event) => {
             let delta = 0;
 
             // Chrome, Safari: event.deltaY
@@ -113,8 +127,6 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
                 }
             }
         };
-
-        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
 
     /**
@@ -122,9 +134,10 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
-            this._observer = null;
-            this._wheel = null;
+            this.camera._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
+            this.camera._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+            const mouse = this.camera._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
+            mouse?.onInputChangedObservable.remove(this._observer);
         }
     }
 

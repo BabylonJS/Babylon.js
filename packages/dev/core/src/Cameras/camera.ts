@@ -17,6 +17,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
 import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
+import type { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -164,6 +165,9 @@ export class Camera extends Node {
 
         return x * y;
     }
+
+    /** @hidden */
+    public _deviceSourceManager: Nullable<DeviceSourceManager>;
 
     /**
      * Define the current limit on the left side for an orthographic camera

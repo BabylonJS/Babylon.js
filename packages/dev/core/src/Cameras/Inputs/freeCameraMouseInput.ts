@@ -1,14 +1,15 @@
-import type { Observer, EventState } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import { serialize } from "../../Misc/decorators";
 import type { Nullable } from "../../types";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FreeCamera } from "../../Cameras/freeCamera";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from "../../Misc/tools";
-import type { IMouseEvent, IPointerEvent } from "../../Events/deviceInputEvents";
+import type { IMouseEvent, IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
+import { DeviceType, PointerInput } from "../../DeviceInput/InputDevices/deviceEnums";
+import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
+import { PointerEventTypes } from "../../Events";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -31,10 +32,13 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     @serialize()
     public angularSensibility = 2000.0;
 
-    private _pointerInput: (p: PointerInfo, s: EventState) => void;
+    private _pointerInput: (p: IPointerEvent, type: PointerEventTypes) => void;
     private _onMouseMove: Nullable<(e: IMouseEvent) => any>;
-    private _observer: Nullable<Observer<PointerInfo>>;
+    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
     private _previousPosition: Nullable<{ x: number; y: number }> = null;
+    private _mouseObserver: Nullable<Observer<IPointerEvent | IWheelEvent>>;
+    private _touchObservers: Array<Nullable<Observer<IPointerEvent>>>;
 
     /**
      * Observable for when a pointer move event occurs containing the move offset
@@ -60,7 +64,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
          * Define if touch is enabled in the mouse input
          */
         public touchEnabled = true
-    ) {}
+    ) {
+        this._touchObservers = [];
+    }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -72,9 +78,45 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         const engine = this.camera.getEngine();
         const element = engine.getInputElement();
 
+        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
+                    if (!("deltaY" in eventData)) {
+                        let type = PointerEventTypes.POINTERMOVE;
+
+                        if (eventData.inputIndex !== PointerInput.Move) {
+                            type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                        }
+
+                        this._pointerInput(eventData, type);
+                    }
+                });
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
+                this._touchObservers[deviceSource.deviceSlot] = deviceSource.onInputChangedObservable.add((eventData) => {
+                    let type = PointerEventTypes.POINTERMOVE;
+
+                    if (eventData.inputIndex !== PointerInput.Move) {
+                        type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                    }
+
+                    this._pointerInput(eventData, type);
+                });
+            }
+        });
+
+        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                deviceSource.onInputChangedObservable.remove(this._mouseObserver);
+                this._mouseObserver = null;
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
+                deviceSource.onInputChangedObservable.remove(this._touchObservers[deviceSource.deviceSlot]);
+                this._touchObservers[deviceSource.deviceSlot] = null;
+            }
+        });
+
         if (!this._pointerInput) {
-            this._pointerInput = (p) => {
-                const evt = <IPointerEvent>p.event;
+            this._pointerInput = (p, t) => {
+                const evt = p;
                 const isTouch = evt.pointerType === "touch";
 
                 if (engine.isInVRExclusivePointerMode) {
@@ -85,13 +127,13 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     return;
                 }
 
-                if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
+                if (t !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }
 
                 const srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
-                if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
+                if (t === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                     try {
                         srcElement?.setPointerCapture(evt.pointerId);
                     } catch (e) {
@@ -114,9 +156,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                     // This is required to move while pointer button is down
                     if (engine.isPointerLock && this._onMouseMove) {
-                        this._onMouseMove(p.event);
+                        this._onMouseMove(p);
                     }
-                } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+                } else if (t === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
                     try {
                         srcElement?.releasePointerCapture(evt.pointerId);
                     } catch (e) {
@@ -128,9 +170,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventTypes.POINTERMOVE) {
+                } else if (t === PointerEventTypes.POINTERMOVE) {
                     if (engine.isPointerLock && this._onMouseMove) {
-                        this._onMouseMove(p.event);
+                        this._onMouseMove(p);
                     } else if (this._previousPosition) {
                         let offsetX = evt.clientX - this._previousPosition.x;
                         const offsetY = evt.clientY - this._previousPosition.y;
@@ -188,10 +230,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             }
         };
 
-        this._observer = this.camera
-            .getScene()
-            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
-
         if (element) {
             this._contextMenuBind = this.onContextMenu.bind(this);
             element.addEventListener("contextmenu", this._contextMenuBind, false); // TODO: We need to figure out how to handle this for Native
@@ -211,8 +249,16 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+        if (this._connectedObserver || this._disconnectedObserver) {
+            this.camera._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
+            this.camera._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+            const mouse = this.camera._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
+            const touches = this.camera._deviceSourceManager?.getDeviceSources(DeviceType.Touch);
+
+            mouse?.onInputChangedObservable.remove(this._mouseObserver);
+            touches?.forEach((touch) => {
+                touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
+            });
 
             if (this._contextMenuBind) {
                 const engine = this.camera.getEngine();
@@ -224,7 +270,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 this.onPointerMovedObservable.clear();
             }
 
-            this._observer = null;
             this._onMouseMove = null;
             this._previousPosition = null;
         }

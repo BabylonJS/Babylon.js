@@ -1,14 +1,15 @@
 import { serialize } from "../../Misc/decorators";
-import type { Observer, EventState } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FreeCamera } from "../../Cameras/freeCamera";
-import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
-import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
+import { DeviceType, PointerInput } from "../../DeviceInput/InputDevices/deviceEnums";
 /**
  * Manage the touch inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -42,9 +43,12 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _offsetY: Nullable<number> = null;
 
     private _pointerPressed = new Array<number>();
-    private _pointerInput?: (p: PointerInfo, s: EventState) => void;
-    private _observer: Nullable<Observer<PointerInfo>>;
+    private _pointerInput: (p: IPointerEvent, type: PointerEventTypes) => void;
+    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
+    private _mouseObserver: Nullable<Observer<IPointerEvent | IWheelEvent>>;
+    private _touchObservers: Array<Nullable<Observer<IPointerEvent>>>;
     private _isSafari: boolean;
 
     /**
@@ -70,14 +74,50 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         let previousPosition: Nullable<{ x: number; y: number }> = null;
 
+        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
+                    if (!("deltaY" in eventData)) {
+                        let type = PointerEventTypes.POINTERMOVE;
+
+                        if (eventData.inputIndex !== PointerInput.Move) {
+                            type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                        }
+
+                        this._pointerInput(eventData, type);
+                    }
+                });
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
+                this._touchObservers[deviceSource.deviceSlot] = deviceSource.onInputChangedObservable.add((eventData) => {
+                    let type = PointerEventTypes.POINTERMOVE;
+
+                    if (eventData.inputIndex !== PointerInput.Move) {
+                        type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                    }
+
+                    this._pointerInput(eventData, type);
+                });
+            }
+        });
+
+        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                deviceSource.onInputChangedObservable.remove(this._mouseObserver);
+                this._mouseObserver = null;
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
+                deviceSource.onInputChangedObservable.remove(this._touchObservers[deviceSource.deviceSlot]);
+                this._touchObservers[deviceSource.deviceSlot] = null;
+            }
+        });
+
         if (this._pointerInput === undefined) {
             this._onLostFocus = () => {
                 this._offsetX = null;
                 this._offsetY = null;
             };
 
-            this._pointerInput = (p) => {
-                const evt = <IPointerEvent>p.event;
+            this._pointerInput = (p, t) => {
+                const evt = p;
 
                 const isMouseEvent = evt.pointerType === "mouse" || (this._isSafari && typeof evt.pointerType === "undefined");
 
@@ -85,7 +125,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                     return;
                 }
 
-                if (p.type === PointerEventTypes.POINTERDOWN) {
+                if (t === PointerEventTypes.POINTERDOWN) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -100,7 +140,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                         x: evt.clientX,
                         y: evt.clientY,
                     };
-                } else if (p.type === PointerEventTypes.POINTERUP) {
+                } else if (t === PointerEventTypes.POINTERUP) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -118,7 +158,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                     previousPosition = null;
                     this._offsetX = null;
                     this._offsetY = null;
-                } else if (p.type === PointerEventTypes.POINTERMOVE) {
+                } else if (t === PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -139,10 +179,6 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
         }
 
-        this._observer = this.camera
-            .getScene()
-            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
-
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
             const element = engine.getInputElement();
@@ -154,11 +190,16 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        if (this._pointerInput) {
-            if (this._observer) {
-                this.camera.getScene().onPointerObservable.remove(this._observer);
-                this._observer = null;
-            }
+        if (this._connectedObserver || this._disconnectedObserver) {
+            this.camera._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
+            this.camera._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+            const mouse = this.camera._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
+            const touches = this.camera._deviceSourceManager?.getDeviceSources(DeviceType.Touch);
+
+            mouse?.onInputChangedObservable.remove(this._mouseObserver);
+            touches?.forEach((touch) => {
+                touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
+            });
 
             if (this._onLostFocus) {
                 const engine = this.camera.getEngine();

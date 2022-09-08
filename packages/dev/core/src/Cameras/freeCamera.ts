@@ -9,6 +9,7 @@ import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools";
+import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -277,6 +278,7 @@ export class FreeCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored?: any, noPreventDefault?: boolean): void {
+        this._deviceSourceManager = new DeviceSourceManager(this.getEngine());
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
@@ -287,6 +289,8 @@ export class FreeCamera extends TargetCamera {
      */
     public detachControl(): void {
         this.inputs.detachElement();
+        this._deviceSourceManager?.dispose();
+        this._deviceSourceManager = null;
 
         this.cameraDirection = new Vector3(0, 0, 0);
         this.cameraRotation = new Vector2(0, 0);

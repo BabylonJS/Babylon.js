@@ -7,6 +7,7 @@ import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from "./followCameraInputsManager";
+import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 Node.AddNodeConstructor("FollowCamera", (name, scene) => {
     return () => new FollowCamera(name, Vector3.Zero(), scene);
 });
@@ -173,6 +174,7 @@ export class FollowCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored: any, noPreventDefault?: boolean): void {
+        this._deviceSourceManager = new DeviceSourceManager(this.getEngine());
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
@@ -185,6 +187,8 @@ export class FollowCamera extends TargetCamera {
      */
     public detachControl(): void {
         this.inputs.detachElement();
+        this._deviceSourceManager?.dispose();
+        this._deviceSourceManager = null;
 
         if (this._reset) {
             this._reset();

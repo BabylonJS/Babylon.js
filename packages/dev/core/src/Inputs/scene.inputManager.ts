@@ -201,7 +201,7 @@ export class InputManager {
             }
         }
 
-        if (scene._registeredActionManagers > 0){
+        if (scene._registeredActionManagers > 0) {
             pickResult = typeof pickResult === "function" ? pickResult() : pickResult;
         }
 

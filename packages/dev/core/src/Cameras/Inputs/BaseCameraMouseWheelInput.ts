@@ -4,11 +4,11 @@ import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { Camera } from "../../Cameras/camera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import type { IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Tools } from "../../Misc/tools";
+import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
+import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 
 /**
  * Base class for mouse wheel input..
@@ -47,8 +47,10 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     public onChangedObservable = new Observable<{ wheelDeltaX: number; wheelDeltaY: number; wheelDeltaZ: number }>();
 
-    private _wheel: Nullable<(pointer: PointerInfo) => void>;
-    private _observer: Nullable<Observer<PointerInfo>>;
+    private _wheel: (event: IWheelEvent) => void;
+    private _observer: Nullable<Observer<IPointerEvent | IWheelEvent>>;
+    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -59,14 +61,24 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     public attachControl(noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
-        this._wheel = (pointer) => {
-            // sanity check - this should be a PointerWheel event.
-            if (pointer.type !== PointerEventTypes.POINTERWHEEL) {
-                return;
+        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                this._observer = deviceSource.onInputChangedObservable.add((eventData) => {
+                    if ("deltaY" in eventData) {
+                        this._wheel(eventData);
+                    }
+                });
             }
+        });
 
-            const event = <IWheelEvent>pointer.event;
+        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                deviceSource.onInputChangedObservable.remove(this._observer);
+                this._observer = null;
+            }
+        });
 
+        this._wheel = (event) => {
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
             if (event.deltaY !== undefined) {
@@ -96,8 +108,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 }
             }
         };
-
-        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
 
     /**
@@ -105,9 +115,11 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
+            this.camera._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+            const mouse = this.camera._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
+            mouse?.onInputChangedObservable.remove(this._observer);
             this._observer = null;
-            this._wheel = null;
         }
         if (this.onChangedObservable) {
             this.onChangedObservable.clear();

@@ -3,10 +3,12 @@ import { Texture } from "../Materials/Textures/texture";
 import type { VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { TextureDome } from "./textureDome";
-import type { PointerInfo } from "../Events/pointerEvents";
-import { PointerEventTypes } from "../Events/pointerEvents";
 import type { Nullable } from "../types";
 import type { Observer } from "../Misc/observable";
+import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
+import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
+import type { IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import type { DeviceSourceType } from "../DeviceInput/internalDeviceSourceManager";
 
 /**
  * Display a 360/180 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
@@ -48,8 +50,12 @@ export class VideoDome extends TextureDome<VideoTexture> {
         this.textureMode = value;
     }
 
-    private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _textureObserver: Nullable<Observer<Texture>>;
+    private _deviceSourceManager: Nullable<DeviceSourceManager> = null;
+    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _mouseObserver: Nullable<Observer<IPointerEvent | IWheelEvent>>;
+    private _touchObservers: Array<Nullable<Observer<IPointerEvent>>> = [];
 
     protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture {
         const tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
@@ -64,9 +70,33 @@ export class VideoDome extends TextureDome<VideoTexture> {
         );
         // optional configuration
         if (options.clickToPlay) {
-            this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type !== PointerEventTypes.POINTERUP) {
-                    this._texture.video.play();
+            this._deviceSourceManager = new DeviceSourceManager(scene.getEngine());
+            this._connectedObserver = this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
+                if (deviceSource.deviceType === DeviceType.Mouse) {
+                    this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
+                        if (
+                            !("deltaY" in eventData) &&
+                            (eventData.inputIndex === PointerInput.LeftClick ||
+                                eventData.inputIndex === PointerInput.MiddleClick ||
+                                eventData.inputIndex === PointerInput.RightClick)
+                        ) {
+                            if (deviceSource.getInput(eventData.inputIndex) === 1) {
+                                this._texture.video.play();
+                            }
+                        }
+                    });
+                }
+
+                if (deviceSource.deviceType === DeviceType.Touch) {
+                    this._touchObservers.push(
+                        deviceSource.onInputChangedObservable.add((eventData) => {
+                            if (eventData.inputIndex === PointerInput.LeftClick) {
+                                if (deviceSource.getInput(eventData.inputIndex) === 1) {
+                                    this._texture.video.play();
+                                }
+                            }
+                        })
+                    );
                 }
             });
         }
@@ -83,7 +113,15 @@ export class VideoDome extends TextureDome<VideoTexture> {
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         this._texture.onLoadObservable.remove(this._textureObserver);
-        this._scene.onPointerObservable.remove(this._pointerObserver);
+        this._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
+        this._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+        const mouse = this._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
+        const touches = this._deviceSourceManager?.getDeviceSources(DeviceType.Touch);
+
+        mouse?.onInputChangedObservable.remove(this._mouseObserver);
+        touches?.forEach((touch) => {
+            touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
+        });
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 }
