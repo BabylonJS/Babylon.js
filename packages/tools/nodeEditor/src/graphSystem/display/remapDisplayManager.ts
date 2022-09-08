@@ -4,6 +4,7 @@ import type { RemapBlock } from "core/Materials/Node/Blocks/remapBlock";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import styles from "./remapDisplayManager.modules.scss";
 
 export class RemapDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -44,7 +45,7 @@ export class RemapDisplayManager implements IDisplayManager {
         const targetRangeX = remapBlock.targetMin.isConnected ? this._extractInputValue(remapBlock.targetMin) : remapBlock.targetRange.x;
         const targetRangeY = remapBlock.targetMax.isConnected ? this._extractInputValue(remapBlock.targetMax) : remapBlock.targetRange.y;
 
-        contentArea.classList.add("remap-block");
+        contentArea.classList.add(styles["remap-block"]);
         contentArea.innerHTML = `[${sourceRangeX}, ${sourceRangeY}] -> [${targetRangeX}, ${targetRangeY}]`;
     }
 }

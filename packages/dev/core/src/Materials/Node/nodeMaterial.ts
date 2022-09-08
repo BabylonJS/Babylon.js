@@ -2,6 +2,7 @@
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
 import type { Scene } from "../../scene";
+import { ScenePerformancePriority } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
@@ -1347,6 +1348,10 @@ export class NodeMaterial extends PushMaterial {
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+
+        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+            this.freeze();
+        }
 
         return true;
     }

@@ -8,6 +8,7 @@ import type { Color3 } from "core/Maths/math.color";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import styles from "./inputDisplayManager.modules.scss";
 
 const inputNameToAttributeValue: { [name: string]: string } = {
     position2d: "position",
@@ -30,11 +31,11 @@ export class InputDisplayManager implements IDisplayManager {
         const inputBlock = nodeData.data as InputBlock;
 
         if (inputBlock.isConstant) {
-            return "constant";
+            return styles["constant"];
         }
 
         if (inputBlock.visibleInInspector) {
-            return "inspector";
+            return styles["inspector"];
         }
 
         return "";
@@ -152,6 +153,6 @@ export class InputDisplayManager implements IDisplayManager {
         }
 
         contentArea.innerHTML = value;
-        contentArea.classList.add("input-block");
+        contentArea.classList.add(styles["input-block"]);
     }
 }

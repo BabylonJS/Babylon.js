@@ -154,10 +154,9 @@ export class PostProcessRenderPipeline {
             if (!camera) {
                 continue;
             }
-            const cameraName = camera.name;
 
             if (this._cameras.indexOf(camera) === -1) {
-                this._cameras[cameraName] = camera;
+                this._cameras.push(camera);
             } else if (unique) {
                 indicesToDelete.push(i);
             }
