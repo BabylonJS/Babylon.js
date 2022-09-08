@@ -106,10 +106,9 @@ export class Spherical {
 	 * @returns the updated ref
 	 */
 	public static FromVector3ToRef(vector: DeepImmutable<Vector3>, ref: Spherical): Spherical{
-		let rotation = Vector3.PitchYawRollForDirectionChange(Vector3.Zero(), vector);
 		ref.radius = vector.length();
-		ref.theta = rotation.x;
-		ref.phi = rotation.y;
+		ref.theta = Math.atan(diff.z / diff.x);
+		ref.phi = Math.asin(diff.y / ref.radius);
 		return ref;
 	}
 
