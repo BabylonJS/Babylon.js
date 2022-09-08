@@ -2791,13 +2791,14 @@ export class Vector3 {
 	 * @returns the updated result in the form (pitch, yaw, roll)
 	 * Output roll will always be 0 + offset.z
 	 */
-	public static PitchYawRollForDirectionChangeToRef(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3> = Vector3.ZeroReadOnly, result: DeepImmutable<Vector3>): Vector3{
+	public static PitchYawRollForDirectionChangeToRef(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, result: DeepImmutable<Vector3>): Vector3{
 		let diff: Vector3 = TmpVectors.Vector3[0];
 		vector1.subtractToRef(vector0, diff);
 		let distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
 		theta = Math.acos(diff.z / distance) || 0,
 		phi = Math.sign(diff.x || 1) * Math.asin(diff.y / (Math.sin(theta) * distance)) || 0;
-		result.set(theta, phi, 0).addInPlace(offset);
+		result.set(theta, phi, 0);
+		return result;
 	}
  
 	/**
@@ -2808,9 +2809,9 @@ export class Vector3 {
 	 * @returns the result as a vector in the form (pitch, yaw, roll)
 	 * Output roll will always be 0 + offset.z
 	 */
-	public static PitchYawRollForDirectionChange(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, offset: DeepImmutable<Vector3> = Vector3.ZeroReadOnly): Vector3{
+	public static PitchYawRollForDirectionChange(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>): Vector3{
 		let rotation = TmpVectors.Vector3[0];
-		Vector3.PitchYawRollForDirectionChangeToRef(vector0, vector1, offset, rotation);
+		Vector3.PitchYawRollForDirectionChangeToRef(vector0, vector1, rotation);
 		return rotation;
 	}
 }
