@@ -104,21 +104,35 @@ export class PointerInfoPre extends PointerInfoBase {
  * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
  */
 export class PointerInfo extends PointerInfoBase {
+    private _getPickInfo: () => Nullable<PickingInfo>;
+
+    /**
+     * Defines the picking info associated to the info (if any)
+     */
+    public get pickInfo(): Nullable<PickingInfo> {
+        return this._getPickInfo();
+    }
     /**
      * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
      * @param type Defines the type of event (PointerEventTypes)
      * @param event Defines the related dom event
      * @param pickInfo Defines the picking info associated to the info (if any)\
      */
-    constructor(
-        type: number,
-        event: IMouseEvent,
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        public pickInfo: Nullable<PickingInfo>
-    ) {
+    constructor(type: number, event: IMouseEvent, pickInfo: Nullable<PickingInfo> | (() => Nullable<PickingInfo>)) {
         super(type, event);
+
+        if (typeof pickInfo === "function") {
+            let info: Nullable<PickingInfo> = null;
+            this._getPickInfo = () => {
+                if (!info) {
+                    info = pickInfo();
+                }
+
+                return info;
+            };
+        } else {
+            this._getPickInfo = () => pickInfo;
+        }
     }
 }
 

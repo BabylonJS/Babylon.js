@@ -187,7 +187,7 @@ export class InputManager {
         this._unTranslatedPointerY = this._pointerY;
     }
 
-    private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: IPointerEvent) {
+    private _processPointerMove(pickResult: Nullable<PickingInfo> | (() => Nullable<PickingInfo>), evt: IPointerEvent) {
         const scene = this._scene;
         const engine = scene.getEngine();
         const canvas = engine.getInputElement();
@@ -201,43 +201,52 @@ export class InputManager {
             }
         }
 
-        const isMeshPicked = pickResult && pickResult.hit && pickResult.pickedMesh ? true : false;
-        if (isMeshPicked) {
-            scene.setPointerOverMesh(pickResult!.pickedMesh, evt.pointerId, pickResult);
+        if (scene._registeredActionManagers > 0){
+            pickResult = typeof pickResult === "function" ? pickResult() : pickResult;
+        }
 
-            if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
-                const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
-                if (actionManager && actionManager.hasPointerTriggers) {
-                    canvas.style.cursor = actionManager.hoverCursor || scene.hoverCursor;
+        if (typeof pickResult !== "function") {
+            const isMeshPicked = pickResult && pickResult.hit && pickResult.pickedMesh ? true : false;
+            if (isMeshPicked) {
+                scene.setPointerOverMesh(pickResult!.pickedMesh, evt.pointerId, pickResult);
+
+                if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
+                    const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
+                    if (actionManager && actionManager.hasPointerTriggers) {
+                        canvas.style.cursor = actionManager.hoverCursor || scene.hoverCursor;
+                    }
                 }
+            } else {
+                scene.setPointerOverMesh(null, evt.pointerId, pickResult);
             }
-        } else {
-            scene.setPointerOverMesh(null, evt.pointerId, pickResult);
         }
 
         for (const step of scene._pointerMoveStage) {
-            pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
+            const pr = typeof pickResult !== "function" ? pickResult : pickResult();
+            const isMeshPicked = pr && pr.hit && pr.pickedMesh ? true : false;
+            pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pr, isMeshPicked, canvas);
         }
 
         if (pickResult) {
             const type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
             if (scene.onPointerMove) {
-                scene.onPointerMove(evt, pickResult, type);
+                const pr = typeof pickResult !== "function" ? pickResult : pickResult();
+                scene.onPointerMove(evt, pr!, type);
             }
 
             if (scene.onPointerObservable.hasObservers()) {
                 const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
+                this._setRayOnPointerInfo(pi, typeof pickResult);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
         }
     }
 
     // Pointers handling
-    private _setRayOnPointerInfo(pointerInfo: PointerInfo) {
+    private _setRayOnPointerInfo(pointerInfo: PointerInfo, pickInfoType: string) {
         const scene = this._scene;
-        if (pointerInfo.pickInfo && !pointerInfo.pickInfo._pickingUnavailable) {
+        if (pickInfoType !== "function" && pointerInfo.pickInfo && scene._pickingAvailable) {
             if (!pointerInfo.pickInfo.ray) {
                 pointerInfo.pickInfo.ray = scene.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), scene.activeCamera);
             }
@@ -358,7 +367,7 @@ export class InputManager {
 
             if (scene.onPointerObservable.hasObservers()) {
                 const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
+                this._setRayOnPointerInfo(pi, typeof pickResult);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
         }
@@ -411,7 +420,7 @@ export class InputManager {
                 if (clickInfo.singleClick && !clickInfo.ignore && scene.onPointerObservable.hasObservers()) {
                     const type = PointerEventTypes.POINTERPICK;
                     const pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
+                    this._setRayOnPointerInfo(pi, typeof pickResult);
                     scene.onPointerObservable.notifyObservers(pi, type);
                 }
             }
@@ -453,7 +462,7 @@ export class InputManager {
                 }
                 if (type) {
                     const pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
+                    this._setRayOnPointerInfo(pi, typeof pickResult);
                     scene.onPointerObservable.notifyObservers(pi, type);
                 }
             }
@@ -461,7 +470,7 @@ export class InputManager {
             if (!clickInfo.ignore) {
                 type = PointerEventTypes.POINTERUP;
                 const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
+                this._setRayOnPointerInfo(pi, typeof pickResult);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
         }
@@ -686,14 +695,35 @@ export class InputManager {
             }
 
             // Meshes
-            const pickResult = scene.pick(
-                this._unTranslatedPointerX,
-                this._unTranslatedPointerY,
-                scene.pointerMovePredicate,
-                false,
-                scene.cameraToUseForPointers,
-                scene.pointerMoveTrianglePredicate
-            );
+            const pickResult = () => {
+                const scene = this._scene;
+                const engine = scene.getEngine();
+                const canvas = engine.getInputElement();
+                const pr = scene.pick(
+                    this._unTranslatedPointerX,
+                    this._unTranslatedPointerY,
+                    scene.pointerMovePredicate,
+                    false,
+                    scene.cameraToUseForPointers,
+                    scene.pointerMoveTrianglePredicate
+                );
+
+                const isMeshPicked = pr && pr.hit && pr.pickedMesh ? true : false;
+                if (isMeshPicked && typeof pickResult !== "function") {
+                    scene.setPointerOverMesh(pr!.pickedMesh, (evt as IPointerEvent).pointerId, pickResult);
+
+                    if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
+                        const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
+                        if (actionManager && actionManager.hasPointerTriggers) {
+                            canvas.style.cursor = actionManager.hoverCursor || scene.hoverCursor;
+                        }
+                    }
+                } else {
+                    scene.setPointerOverMesh(null, (evt as IPointerEvent).pointerId, pr);
+                }
+
+                return pr;
+            };
 
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };

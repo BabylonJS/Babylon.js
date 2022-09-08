@@ -4880,6 +4880,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    public get _pickingAvailable(): boolean {
+        return false;
+    }
+
+    /** @hidden */
+    public _registeredActionManagers: number = 0;
+    
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
      * @param y position on screen
@@ -4899,7 +4906,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
-        pi._pickingUnavailable = true;
         return pi;
     }
 
@@ -4914,7 +4920,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
         const pi = new PickingInfo();
-        pi._pickingUnavailable = true;
         return pi;
     }
 
