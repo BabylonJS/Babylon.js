@@ -516,7 +516,7 @@ export class InputManager {
         // Because this is only called from _initClickEvent, which is called in _onPointerUp, we'll use the pointerUpPredicate for the pick call
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
-                const pickResult = scene.skipPointerUpPicking
+                const pickResult = scene.skipPointerUpPicking || (scene._registeredActionManagers === 0 && !scene.onPointerObservable.hasObservers())
                     ? null
                     : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -775,7 +775,7 @@ export class InputManager {
             // Meshes
             this._pickedDownMesh = null;
             let pickResult;
-            if (scene.skipPointerDownPicking) {
+            if (scene.skipPointerDownPicking || (scene._registeredActionManagers === 0 && !scene.onPointerObservable.hasObservers())) {
                 pickResult = new PickingInfo();
             } else {
                 pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
