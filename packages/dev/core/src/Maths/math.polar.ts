@@ -111,7 +111,7 @@ export class Spherical {
 	 */
 	public static FromVector3ToRef(vector: DeepImmutable<Vector3>, ref: Spherical): Spherical{
 		ref.radius = vector.length();
-		ref.theta = Math.atan(diff.z / diff.x);
+		ref.theta = Math.atan2(diff.z, diff.x);
 		ref.phi = Math.asin(diff.y / ref.radius);
 		return ref;
 	}
