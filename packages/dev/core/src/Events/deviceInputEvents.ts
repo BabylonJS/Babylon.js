@@ -156,23 +156,27 @@ export interface IMouseEvent extends IUIEvent {
 
     /**
      * Delta of movement on X axis
+     * @deprecated Use 'movementX' instead
      */
     mozMovementX?: number;
 
     /**
      * Delta of movement on Y axis
+     * @deprecated Use 'movementY' instead
      */
     mozMovementY?: number;
 
     /**
      * Delta of movement on X axis
+     * @deprecated Use 'movementX' instead
      */
-    msMovementX?: any;
+    msMovementX?: number;
 
     /**
      * Delta of movement on Y axis
+     * @deprecated Use 'movementY' instead
      */
-    msMovementY?: any;
+    msMovementY?: number;
 
     /**
      * Current coordinate of X within container
@@ -201,13 +205,15 @@ export interface IMouseEvent extends IUIEvent {
 
     /**
      * Delta of movement on X axis
+     * @deprecated Use 'movementX' instead
      */
-    webkitMovementX?: any;
+    webkitMovementX?: number;
 
     /**
      * Delta of movement on Y axis
+     * @deprecated Use 'movementY' instead
      */
-    webkitMovementY?: any;
+    webkitMovementY?: number;
 
     /**
      * Alias of clientX
@@ -271,6 +277,7 @@ export interface IWheelEvent extends IMouseEvent {
 
     /**
      * WheelDelta (From MouseWheel Event)
+     * @deprecated
      */
     wheelDelta?: number;
 }
