@@ -205,13 +205,15 @@ export class DepthPeelingRenderer {
         }
     }
 
-    public set samples(value: number) {
-        for (let i = 0; i < 2; i++) {
-            this._depthMrts[i].samples = value;
-            this._colorMrts[i].samples = value;
-        }
-        this._scene.prePassRenderer!.samples = value;
-    }
+    // TODO : explore again MSAA with depth peeling when
+    // we are able to fetch individual samples in a multisampled renderbuffer
+    // public set samples(value: number) {
+    //     for (let i = 0; i < 2; i++) {
+    //         this._depthMrts[i].samples = value;
+    //         this._colorMrts[i].samples = value;
+    //     }
+    //     this._scene.prePassRenderer!.samples = value;
+    // }
 
     private _disposeTextures() {
         for (let i = 0; i < this._thinTextures.length; i++) {
