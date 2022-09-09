@@ -3203,6 +3203,27 @@ export class ThinEngine {
         }
     }
 
+    private _args: any[] = [];
+
+    // type def for typescript only
+    private _setUsingContext(functionName: string, arrayLength: number, uniform: Nullable<WebGLUniformLocation>, ...values: any[]): boolean;
+    private _setUsingContext(): boolean {
+        this._args.length = 0;
+        Array.prototype.push.apply(this._args, arguments);
+        if (!this._args[2] || (this._args[1] && (this._args[1] === 1 ? !this._args[3].length : this._args[3] % this._args[1]))) {
+            return false;
+        }
+        // remove first two without triggering gc
+        this._args.shift();
+        this._args.shift();
+        // Matrix functions need false as 2nd variable
+        if (arguments[0].includes("Matrix")) {
+            this._args.unshift(this._args.shift(), false);
+        }
+        (this._gl[`uniform${arguments[0]}` as keyof typeof this._gl] as Function).apply(this._gl, this._args);
+        return true;
+    }
+
     /**
      * Set the value of an uniform to a number (int)
      * @param uniform defines the webGL uniform location where to store the value
@@ -3210,13 +3231,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform1i(uniform, value);
-
-        return true;
+        return this._setUsingContext("1i", 0, uniform, value);
     }
 
     /**
@@ -3227,13 +3242,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setInt2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform2i(uniform, x, y);
-
-        return true;
+        return this._setUsingContext("2i", 0, uniform, x, y);
     }
 
     /**
@@ -3245,13 +3254,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setInt3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform3i(uniform, x, y, z);
-
-        return true;
+        return this._setUsingContext("3i", 0, uniform, x, y, z);
     }
 
     /**
@@ -3264,13 +3267,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setInt4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform4i(uniform, x, y, z, w);
-
-        return true;
+        return this._setUsingContext("4i", 0, uniform, x, y, z, w);
     }
 
     /**
@@ -3280,13 +3277,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform1iv(uniform, array);
-
-        return true;
+        return this._setUsingContext("1iv", 1, uniform, array);
     }
 
     /**
@@ -3296,12 +3287,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
-        if (!uniform || array.length % 2 !== 0) {
-            return false;
-        }
-
-        this._gl.uniform2iv(uniform, array);
-        return true;
+        return this._setUsingContext("2iv", 2, uniform, array);
     }
 
     /**
@@ -3311,12 +3297,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
-        if (!uniform || array.length % 3 !== 0) {
-            return false;
-        }
-
-        this._gl.uniform3iv(uniform, array);
-        return true;
+        return this._setUsingContext("3iv", 3, uniform, array);
     }
 
     /**
@@ -3326,12 +3307,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
-        if (!uniform || array.length % 4 !== 0) {
-            return false;
-        }
-
-        this._gl.uniform4iv(uniform, array);
-        return true;
+        return this._setUsingContext("4iv", 4, uniform, array);
     }
 
     /**
@@ -3341,15 +3317,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        if (array.length < 1) {
-            return false;
-        }
-        this._gl.uniform1fv(uniform, array);
-        return true;
+        return this._setUsingContext("1fv", 1, uniform, array);
     }
 
     /**
@@ -3359,12 +3327,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
-        if (!uniform || array.length % 2 !== 0) {
-            return false;
-        }
-
-        this._gl.uniform2fv(uniform, <any>array);
-        return true;
+        return this._setUsingContext("2fv", 2, uniform, array);
     }
 
     /**
@@ -3374,12 +3337,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
-        if (!uniform || array.length % 3 !== 0) {
-            return false;
-        }
-
-        this._gl.uniform3fv(uniform, <any>array);
-        return true;
+        return this._setUsingContext("3fv", 3, uniform, array);
     }
 
     /**
@@ -3389,12 +3347,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
-        if (!uniform || array.length % 4 !== 0) {
-            return false;
-        }
-
-        this._gl.uniform4fv(uniform, <any>array);
-        return true;
+        return this._setUsingContext("4fv", 4, uniform, array);
     }
 
     /**
@@ -3404,12 +3357,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniformMatrix4fv(uniform, false, matrices);
-        return true;
+        return this._setUsingContext("Matrix4fv", 1, uniform, matrices);
     }
 
     /**
@@ -3419,12 +3367,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniformMatrix3fv(uniform, false, matrix);
-        return true;
+        return this._setUsingContext("Matrix3fv", 1, uniform, matrix);
     }
 
     /**
@@ -3434,12 +3377,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniformMatrix2fv(uniform, false, matrix);
-        return true;
+        return this._setUsingContext("Matrix2fv", 1, uniform, matrix);
     }
 
     /**
@@ -3449,13 +3387,7 @@ export class ThinEngine {
      * @returns true if the value was transferred
      */
     public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform1f(uniform, value);
-
-        return true;
+        return this._setUsingContext("1f", 0, uniform, value);
     }
 
     /**
@@ -3466,13 +3398,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform2f(uniform, x, y);
-
-        return true;
+        return this._setUsingContext("2f", 0, uniform, x, y);
     }
 
     /**
@@ -3484,13 +3410,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform3f(uniform, x, y, z);
-
-        return true;
+        return this._setUsingContext("3f", 0, uniform, x, y, z);
     }
 
     /**
@@ -3503,13 +3423,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
-        if (!uniform) {
-            return false;
-        }
-
-        this._gl.uniform4f(uniform, x, y, z, w);
-
-        return true;
+        return this._setUsingContext("4f", 0, uniform, x, y, z, w);
     }
 
     // States
