@@ -3208,19 +3208,18 @@ export class ThinEngine {
     // type def for typescript only
     private _setUsingContext(functionName: string, arrayLength: number, uniform: Nullable<WebGLUniformLocation>, ...values: any[]): boolean;
     private _setUsingContext(): boolean {
-        this._args.length = 0;
-        Array.prototype.push.apply(this._args, arguments);
-        if (!this._args[2] || (this._args[1] && (this._args[1] === 1 ? !this._args[3].length : this._args[3] % this._args[1]))) {
+        const a = arguments;
+        for (let i = 2; i < a.length; ++i) {
+            this._args[i - 2] = a[i];
+        }
+        if (!a[2] || (a[1] && (a[1] === 1 ? !a[3].length : a[3] % a[1]))) {
             return false;
         }
-        // remove first two without triggering gc
-        this._args.shift();
-        this._args.shift();
         // Matrix functions need false as 2nd variable
-        if (arguments[0].includes("Matrix")) {
+        if (a[0].includes("Matrix")) {
             this._args.unshift(this._args.shift(), false);
         }
-        (this._gl[`uniform${arguments[0]}` as keyof typeof this._gl] as Function).apply(this._gl, this._args);
+        (this._gl[`uniform${a[0]}` as keyof typeof this._gl] as Function).apply(this._gl, this._args);
         return true;
     }
 
