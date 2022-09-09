@@ -848,7 +848,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
      * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
      * @param mesh The mesh to be added as LOD level (can be null)
-     * @return This mesh (for chaining)
+     * @returns This mesh (for chaining)
      */
     public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>): Mesh {
         if (mesh && mesh._masterMesh) {
@@ -890,7 +890,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Remove a mesh from the LOD array
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param mesh defines the mesh to be removed
-     * @return This mesh (for chaining)
+     * @returns This mesh (for chaining)
      */
     public removeLODLevel(mesh: Mesh): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
@@ -912,7 +912,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param camera defines the camera to use to compute distance
      * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
-     * @return This mesh (for chaining)
+     * @returns This mesh (for chaining)
      */
     public getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
         const internalDataInfo = this._internalMeshDataInfo;

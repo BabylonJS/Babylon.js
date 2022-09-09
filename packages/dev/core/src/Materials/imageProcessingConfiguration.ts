@@ -462,7 +462,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Gets the current class name.
-     * @return "ImageProcessingConfiguration"
+     * @returns "ImageProcessingConfiguration"
      */
     public getClassName(): string {
         return "ImageProcessingConfiguration";
@@ -632,7 +632,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Clones the current image processing instance.
-     * @return The cloned image processing
+     * @returns The cloned image processing
      */
     public clone(): ImageProcessingConfiguration {
         return SerializationHelper.Clone(() => new ImageProcessingConfiguration(), this);
@@ -640,7 +640,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Serializes the current image processing instance to a json representation.
-     * @return a JSON representation
+     * @returns a JSON representation
      */
     public serialize(): any {
         return SerializationHelper.Serialize(this);
@@ -649,7 +649,7 @@ export class ImageProcessingConfiguration {
     /**
      * Parses the image processing from a json representation.
      * @param source the JSON source to parse
-     * @return The parsed image processing
+     * @returns The parsed image processing
      */
     public static Parse(source: any): ImageProcessingConfiguration {
         return SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);

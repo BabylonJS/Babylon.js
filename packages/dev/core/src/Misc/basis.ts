@@ -542,7 +542,7 @@ function workerFunc(): void {
      * @param srcByteOffset offset for the start of src
      * @param  width aligned width of the image
      * @param  height aligned height of the image
-     * @return the converted pixels
+     * @returns the converted pixels
      */
     function ConvertDxtToRgb565(src: Uint8Array, srcByteOffset: number, width: number, height: number): Uint16Array {
         const c = new Uint16Array(4);

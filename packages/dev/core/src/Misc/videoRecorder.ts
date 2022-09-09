@@ -160,7 +160,7 @@ export class VideoRecorder {
      * If null no automatic download will start and you can rely on the promise to get the data back.
      * @param maxDuration Defines the maximum recording time in seconds.
      * It defaults to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
-     * @return A promise callback at the end of the recording with the video data in Blob.
+     * @returns A promise callback at the end of the recording with the video data in Blob.
      */
     public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 7): Promise<Blob> {
         if (!this._canvas || !this._mediaRecorder) {

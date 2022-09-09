@@ -543,7 +543,7 @@ export class Camera extends Node {
     /**
      * Is this camera ready to be used/rendered
      * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
-     * @return true if the camera is ready
+     * @returns true if the camera is ready
      */
     public isReady(completeCheck = false): boolean {
         if (completeCheck) {
@@ -1362,7 +1362,7 @@ export class Camera extends Node {
     /**
      * Gets the direction of the camera relative to a given local axis.
      * @param localAxis Defines the reference axis to provide a relative direction.
-     * @return the direction
+     * @returns the direction
      */
     public getDirection(localAxis: Vector3): Vector3 {
         const result = Vector3.Zero();

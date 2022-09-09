@@ -733,7 +733,7 @@ export class ThinEngine {
      * Create a canvas. This method is overridden by other engines
      * @param width width
      * @param height height
-     * @return ICanvas interface
+     * @returns ICanvas interface
      */
     public createCanvas(width: number, height: number): ICanvas {
         return ThinEngine._CreateCanvas(width, height);
@@ -741,7 +741,7 @@ export class ThinEngine {
 
     /**
      * Create an image to use with canvas
-     * @return IImage interface
+     * @returns IImage interface
      */
     public createCanvasImage(): IImage {
         return document.createElement("img");
@@ -5858,7 +5858,7 @@ export class ThinEngine {
     /**
      * Find the next highest power of two.
      * @param x Number to start search from.
-     * @return Next highest power of two.
+     * @returns Next highest power of two.
      */
     public static CeilingPOT(x: number): number {
         x--;
@@ -5874,7 +5874,7 @@ export class ThinEngine {
     /**
      * Find the next lowest power of two.
      * @param x Number to start search from.
-     * @return Next lowest power of two.
+     * @returns Next lowest power of two.
      */
     public static FloorPOT(x: number): number {
         x = x | (x >> 1);
@@ -5888,7 +5888,7 @@ export class ThinEngine {
     /**
      * Find the nearest power of two.
      * @param x Number to start search from.
-     * @return Next nearest power of two.
+     * @returns Next nearest power of two.
      */
     public static NearestPOT(x: number): number {
         const c = ThinEngine.CeilingPOT(x);
