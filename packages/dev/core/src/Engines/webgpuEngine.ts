@@ -854,6 +854,10 @@ export class WebGPUEngine extends Engine {
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
     private _initializeMainAttachments(): void {
+        if (!this._bufferManager) {
+            return;
+        }
+
         this._mainTextureExtends = {
             width: this.getRenderWidth(),
             height: this.getRenderHeight(),
