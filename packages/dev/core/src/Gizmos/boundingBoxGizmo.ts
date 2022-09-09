@@ -233,6 +233,13 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _hoverColoredMaterial: StandardMaterial;
 
     /**
+     * Get the pointerDragBehavior
+     */
+    public get pointerDragBehavior(): PointerDragBehavior {
+        return this._pointerDragBehavior;
+    }
+
+    /**
      * Sets the color of the bounding box gizmo
      * @param color the color to set
      */
