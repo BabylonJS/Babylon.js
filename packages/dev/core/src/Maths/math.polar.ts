@@ -75,6 +75,11 @@ export class Spherical {
 	public theta: number;
 	public phi: number;
 
+	/**
+	 * @param radius spherical radius
+	 * @param theta angle from positive y axis to radial line from 0 to PI (vertical)
+	 * @param phi angle from positive x axis measured anticlockwise from -PI to PI (horizontal)
+	 */
 	constructor(radius, theta, phi){
 		this.radius = radius;
 		this.theta = theta;
@@ -111,8 +116,8 @@ export class Spherical {
 	 */
 	public static FromVector3ToRef(vector: DeepImmutable<Vector3>, ref: Spherical): Spherical{
 		ref.radius = vector.length();
-		ref.theta = Math.atan2(diff.z, diff.x);
-		ref.phi = Math.asin(diff.y / ref.radius);
+		ref.theta = Math.asin(diff.y / ref.radius);
+		ref.phi = Math.atan2(diff.z, diff.x);
 		return ref;
 	}
 
