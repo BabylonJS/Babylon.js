@@ -59,7 +59,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         const gl = this._context;
         const depthbuffer = this._depthStencilBuffer;
-        const framebuffer = renderTarget._framebuffer;
+        const framebuffer = renderTarget._MSAAFramebuffer || renderTarget._framebuffer;
 
         if (renderTarget._depthStencilBuffer) {
             gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);

@@ -27,13 +27,18 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * @param scene Define the scene the texture belongs to
      * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
      * @param generateMipMaps Define if the texture should creates mip maps or not
+     * @param skipJson Define a boolena indicating that there is no json config file to load
      */
-    constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+    constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean, skipJson?: boolean) {
         super(name, size, null, scene, fallbackTexture, generateMipMaps);
         this._texturePath = texturePath;
 
-        //Try to load json
-        this._loadJson(texturePath);
+        if (!skipJson) {
+            //Try to load json
+            this._loadJson(texturePath);
+        } else {
+            this.setFragment(this._texturePath);
+        }
         this.refreshRate = 1;
     }
 
