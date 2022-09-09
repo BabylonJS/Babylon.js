@@ -9,6 +9,7 @@ import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "..
 import type { Nullable, FloatArray, IndicesArray } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
+import { ScenePerformancePriority } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { Engine } from "../Engines/engine";
@@ -1835,6 +1836,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             batchCache.visibleInstances[subMeshId] !== null &&
             batchCache.visibleInstances[subMeshId] !== undefined;
         this._instanceDataStorage.previousBatch = batchCache;
+
         return batchCache;
     }
 
@@ -2364,6 +2366,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             oldCamera.maxZ = oldCameraMaxZ;
             scene.updateTransformMatrix(true);
         }
+
+        if (scene.performancePriority === ScenePerformancePriority.Aggressive && !instanceDataStorage.isFrozen) {
+            this._freeze();
+        }
+
         return this;
     }
 
