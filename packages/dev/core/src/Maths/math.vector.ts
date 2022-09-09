@@ -483,32 +483,6 @@ export class Vector2 {
         result.y = array[offset + 1];
     }
 
-	/**
-	 * Gets the angle between 2 vectors
-	 * @param vector0 defines 1st vector
-	 * @param vector1 defines 2nd vector
-	 * @param ref the reference to assign the result
-	 * @returns the updated reference
-	 */
-	 public static GetAngleBetweenVectorsToRef(vector0: Vector2, vector1: Vector2, ref: number): number {
-		let diff = TmpVectors.Vector2[0];
-		vector1.subtractToRef(vector0, diff);
-		ref = Math.sign(diff.y) * Math.acos(diff.x / diff.length());
-		return ref
-	}
-
-	/**
-	 * Gets the angle between 2 vectors
-	 * @param vector0 defines 1st vector
-	 * @param vector1 defines 2nd vector
-	 * @returns the angle between vector0 and vector1
-	 */
-	public static GetAngleBetweenVectors(vector0: Vector2, vector1: Vector2): number {
-		let result = 0;
-		Vector2.GetAngleBetweenVectorsToRef(vector0, vector1, result);
-		return result;
-	}
-
     /**
      * Gets a new Vector2 located for "amount" (float) on the CatmullRom spline defined by the given four Vector2
      * @param value1 defines 1st point of control
