@@ -525,7 +525,6 @@ export class WebGPUEngine extends Engine {
         (this.hasOriginBottomLeft as any) = false;
 
         options.deviceDescriptor = options.deviceDescriptor || {};
-        options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
@@ -537,6 +536,8 @@ export class WebGPUEngine extends Engine {
             Logger.Error("WebGPU is not supported by your browser.");
             return;
         }
+
+        options.swapChainFormat = options.swapChainFormat || navigator.gpu.getPreferredCanvasFormat();
 
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
@@ -853,6 +854,10 @@ export class WebGPUEngine extends Engine {
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
     private _initializeMainAttachments(): void {
+        if (!this._bufferManager) {
+            return;
+        }
+
         this._mainTextureExtends = {
             width: this.getRenderWidth(),
             height: this.getRenderHeight(),
