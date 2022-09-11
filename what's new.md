@@ -261,7 +261,6 @@
 - Add `NativeXRPlugin` and `NativeXRFrame` to improve XR performance on BabylonNative ([rgerd](https://github.com/rgerd))
 - Reset XR Camera's orientation when entering an AR session for consistent experience ([RaananW](https://github.com/RaananW))
 - Enable multiview rendering to `XRProjectionLayer` with texture type "texture-array" ([#10767](https://github.com/BabylonJS/Babylon.js/issues/10767)) ([rgerd](https://github.com/rgerd))
-- Support enable / disable switch for WebXR specutator camera and be able to assign refresh rate in `enableSpectatorMode` ([daoshengmu](https://github.com/daoshengmu))
 
 ### Gizmos
 
