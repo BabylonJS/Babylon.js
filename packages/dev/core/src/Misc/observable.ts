@@ -389,7 +389,7 @@ export class Observable<T> {
     /**
      * Does this observable handles observer registered with a given mask
      * @param mask defines the mask to be tested
-     * @return whether or not one observer registered with the given mask is handled
+     * @returns whether or not one observer registered with the given mask is handled
      **/
     public hasSpecificMask(mask: number = -1): boolean {
         for (const obs of this._observers) {

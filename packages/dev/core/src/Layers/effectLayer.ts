@@ -233,7 +233,7 @@ export abstract class EffectLayer {
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public abstract getEffectName(): string;
 
@@ -241,7 +241,7 @@ export abstract class EffectLayer {
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
@@ -499,7 +499,7 @@ export abstract class EffectLayer {
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
         const engine = this._scene.getEngine();
