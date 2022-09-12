@@ -156,7 +156,7 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "Skeleton";
@@ -241,7 +241,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Get bone's index searching by name
      * @param name defines bone's name to search for
-     * @return the indice of the bone. Returns -1 if not found
+     * @returns the indice of the bone. Returns -1 if not found
      */
     public getBoneIndexByName(name: string): number {
         for (let boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {

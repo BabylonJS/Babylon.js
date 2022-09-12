@@ -107,7 +107,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * Adds a new diffusion profile.
      * Useful for more realistic subsurface scattering on diverse materials.
      * @param color The color of the diffusion profile. Should be the average color of the material.
-     * @return The index of the diffusion profile for the material subsurface configuration
+     * @returns The index of the diffusion profile for the material subsurface configuration
      */
     public addDiffusionProfile(color: Color3): number {
         if (this.ssDiffusionD.length >= 5) {
@@ -133,7 +133,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
 
     /**
      * Creates the sss post process
-     * @return The created post process
+     * @returns The created post process
      */
     public createPostProcess(): SubSurfaceScatteringPostProcess {
         this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());

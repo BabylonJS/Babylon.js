@@ -14,7 +14,7 @@ import type { Engine } from "../Engines/engine";
  * @param width defines the desired width
  * @param height defines the desired height
  * @param useBilinearMode defines if bilinear mode has to be used
- * @return the generated texture
+ * @returns the generated texture
  */
 export function CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode: boolean = true): Texture {
     const scene = <Scene>texture.getScene();
@@ -88,7 +88,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
  * @param type type of the output texture. If not provided, use the one from internalTexture
  * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
  * @param format format of the output texture. If not provided, use the one from internalTexture
- * @return a promise with the internalTexture having its texture replaced by the result of the processing
+ * @returns a promise with the internalTexture having its texture replaced by the result of the processing
  */
 export function ApplyPostProcess(
     postProcessName: string,
@@ -236,7 +236,7 @@ export const TextureTools = {
      * @param width defines the desired width
      * @param height defines the desired height
      * @param useBilinearMode defines if bilinear mode has to be used
-     * @return the generated texture
+     * @returns the generated texture
      */
     CreateResizedCopy,
 
@@ -248,7 +248,7 @@ export const TextureTools = {
      * @param type type of the output texture. If not provided, use the one from internalTexture
      * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
      * @param format format of the output texture. If not provided, use the one from internalTexture
-     * @return a promise with the internalTexture having its texture replaced by the result of the processing
+     * @returns a promise with the internalTexture having its texture replaced by the result of the processing
      */
     ApplyPostProcess,
     /**
