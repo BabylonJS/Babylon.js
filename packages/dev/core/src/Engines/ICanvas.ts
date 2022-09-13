@@ -394,6 +394,18 @@ export interface ICanvasRenderingContext {
     createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
 
     /**
+     * Creates a linear gradient along the line given by the coordinates represented by the parameters.
+     * @param x0 The x-axis coordinate of the start circle.
+     * @param y0 The y-axis coordinate of the start circle.
+     * @param r0 The radius of the start circle. Must be non-negative and finite.
+     * @param x1 The x-axis coordinate of the end point.
+     * @param y1 The y-axis coordinate of the end point.
+     * @param r1 The radius of the end circle. Must be non-negative and finite.
+     * @returns ICanvasGradient A linear ICanvasGradient initialized with the two specified circles.
+     */
+    createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): ICanvasGradient;
+
+    /**
      * Resets the current transform to matrix composed with a, b, c, d, e, f.
      * @param a Horizontal scaling. A value of 1 results in no scaling.
      * @param b Vertical skewing.
