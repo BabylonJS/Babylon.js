@@ -373,7 +373,8 @@ export class GraphFrame {
 
         // Need to delegate the outside ports to the frame
         if (value) {
-            this.element.classList.add(styles["collapsed"]);
+            this.element.classList.add(styles.collapsed);
+            this.element.classList.remove(styles.expanded);
 
             this._moveFrame((this.width - this._collapsedWidth) / 2, 0);
 
@@ -381,7 +382,8 @@ export class GraphFrame {
 
             this._markFramePortPositions();
         } else {
-            this.element.classList.remove(styles["collapsed"]);
+            this.element.classList.add(styles.expanded);
+            this.element.classList.remove(styles.collapsed);
             this._outputPortContainer.innerHTML = "";
             this._inputPortContainer.innerHTML = "";
 
