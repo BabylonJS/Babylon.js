@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { DeepImmutable, Nullable, float } from "../types";
+import type { DeepImmutable } from "../types";
 import type { Vector2, Vector3 } from "./math.vector";
 import { TmpVectors } from "./math.vector";
 
@@ -60,7 +60,7 @@ export class Polar {
 	 * @returns a Polar
 	 */
 	public static FromVector2(v: Vector2): Polar{
-		let polar = new Polar();
+		let polar = new Polar(0, 0);
 		Polar.FromVector2ToRef(v, polar);
 		return polar;
 	}
@@ -80,7 +80,7 @@ export class Spherical {
 	 * @param theta angle from positive y axis to radial line from 0 to PI (vertical)
 	 * @param phi angle from positive x axis measured anticlockwise from -PI to PI (horizontal)
 	 */
-	constructor(radius, theta, phi){
+	constructor(radius: number, theta: number, phi: number){
 		this.radius = radius;
 		this.theta = theta;
 		this.phi = phi;
@@ -127,7 +127,7 @@ export class Spherical {
 	 * @returns a new Spherical 
 	 */
 	public static FromVector3(vector: DeepImmutable<Vector3>): Spherical{
-		let spherical = new Spherical();
+		let spherical = new Spherical(0, 0, 0);
 		Spherical.FromVector3ToRef(vector, spherical);
 		return spherical;
 	}
