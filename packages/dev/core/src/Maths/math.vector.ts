@@ -9,7 +9,6 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
-import type {Polar, Spherical} from "./math.polar";
 
 type TransformNode = import("../Meshes/transformNode").TransformNode;
 
@@ -1641,25 +1640,6 @@ export class Vector3 {
         this.x = this.y = this.z = v;
         return this;
     }
-
-	/**
-	 * Gets the rotation on all axes from the current vector to a vector
-	 * @param vector the target vector
-	 * @param ref the reference vector to assign the result;
-	 * @returns the rotation in the form (pitch, yaw, roll)
-	 */
-	 public getRotationToVectorToRef(vector: DeepImmutable<Vector3>, ref: DeepImmutable<Vector3>): Vector3 {
-		return Vector3.RotationBetweenVectorsToRef(this, vector, Vector3.ZeroReadOnly, ref);
-	}
-
-	/**
-	 * Gets the rotation on all axes from the current vector to a vector
-	 * @param vector the target vector
-	 * @returns the rotation in the form (pitch, yaw, roll)
-	 */
-	public getRotationToVector(vector: DeepImmutable<Vector3>): Vector3 {
-		return Vector3.RotationBetweenVectors(this, vector, Vector3.ZeroReadOnly);
-	}
 
     // Statics
 
