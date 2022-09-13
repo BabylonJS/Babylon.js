@@ -62,8 +62,7 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
-import { ArrayTools } from "./Misc/arrayTools";
-import type { INotifyArrayChangeType } from "./Misc/arrayTools";
+import { _ObserveArray } from "./Misc/arrayTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -697,7 +696,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when the activeCameras property is updated
      */
-    public onActiveCamerasChanged = new Observable<INotifyArrayChangeType<Camera>>();
+    public onActiveCamerasChanged = new Observable<Scene>();
 
     /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
@@ -1057,14 +1056,27 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._lightsEnabled;
     }
 
-    private _activeCameras: Nullable<Camera[]> = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, []);
+    private _activeCameras: Nullable<Camera[]>;
+    private _unObserveActiveCameras: Nullable<() => void> = null;
+
     /** All of the active cameras added to this scene. */
     public get activeCameras(): Nullable<Camera[]> {
         return this._activeCameras;
     }
 
     public set activeCameras(cameras: Nullable<Camera[]>) {
-        this._activeCameras = ArrayTools.MakeObservableArray(this.onActiveCamerasChanged, cameras);
+        if (this._unObserveActiveCameras) {
+            this._unObserveActiveCameras();
+            this._unObserveActiveCameras = null;
+        }
+
+        if (cameras) {
+            this._unObserveActiveCameras = _ObserveArray(cameras, () => {
+                this.onActiveCamerasChanged.notifyObservers(this);
+            });
+        }
+
+        this._activeCameras = cameras;
     }
 
     /** @hidden */
@@ -1532,6 +1544,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
+
+        this.activeCameras = new Array<Camera>();
 
         const fullOptions = {
             useGeometryUniqueIdsMap: true,

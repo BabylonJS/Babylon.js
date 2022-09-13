@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { Observable } from "./observable";
 import type { Nullable } from "../types";
 
 /** @hidden */
@@ -19,11 +18,6 @@ interface TupleTypes<T> {
     13: [T, T, T, T, T, T, T, T, T, T, T, T, T];
     14: [T, T, T, T, T, T, T, T, T, T, T, T, T, T];
     15: [T, T, T, T, T, T, T, T, T, T, T, T, T, T, T];
-}
-
-export interface INotifyArrayChangeType<T> {
-    target: Nullable<Array<T>>;
-    previousLength?: number; // If the array was previously null/undefined, this will be undefined
 }
 
 /**
@@ -53,53 +47,94 @@ export class ArrayTools {
     public static BuildTuple<T, N extends keyof TupleTypes<unknown>>(size: N, itemBuilder: () => T): TupleTypes<T>[N] {
         return ArrayTools.BuildArray(size, itemBuilder) as any;
     }
+}
 
-    private static _ProxySet<T>(observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, property: string | symbol, value: T): boolean {
-        observable.notifyObservers({ target, previousLength: target.length });
-        return Reflect.set(target, property, value);
+/**
+ * Defines the callback type used when an observed array function is triggered.
+ * @hidden
+ */
+export type _ObserveCallback = (functionName: string, previousLength: number) => void;
+
+/**
+ * Observes a function and calls the given callback when it is called.
+ * @param object Defines the object the function to observe belongs to.
+ * @param functionName Defines the name of the function to observe.
+ * @param callback Defines the callback to call when the function is called.
+ * @returns A function to call to stop observing
+ */
+function _observeArrayfunction(object: { [key: string]: any }, functionName: string, callback: _ObserveCallback): Nullable<() => void> {
+    // Finds the function to observe
+    const oldFunction = object[functionName];
+    if (typeof oldFunction !== "function") {
+        return null;
     }
 
-    private static _ProxyPushOrUnshift<T>(operation: "push" | "unshift", observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, ...values: Array<T>): number {
-        observable.notifyObservers({ target, previousLength: target.length });
-        return operation === "push" ? Array.prototype.push.apply(target, values) : Array.prototype.unshift.apply(target, values);
-    }
+    // Creates a new function that calls the callback and the old function
+    const newFunction = function () {
+        const previousLength = object.length;
+        callback(functionName, previousLength);
+        return newFunction.previous.apply(object, arguments);
+    } as any;
 
-    private static _ProxyDelete<T>(observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, property: string | symbol) {
-        observable.notifyObservers({ target, previousLength: target.length });
-        return Reflect.deleteProperty(target, property);
-    }
+    // Doublishly links the new function and the old function
+    oldFunction.next = newFunction;
+    newFunction.previous = oldFunction;
 
-    private static _ProxyPopOrShift<T>(operation: "pop" | "shift", observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>) {
-        const value = operation === "pop" ? Array.prototype.pop.apply(target) : Array.prototype.shift.apply(target);
-        observable.notifyObservers({ target, previousLength: target.length });
-        return value;
-    }
+    // Replaces the old function with the new function
+    object[functionName] = newFunction;
 
-    private static _ProxySplice<T>(observable: Observable<INotifyArrayChangeType<T>>, target: Array<T>, start: number, deleteNumber: number, ...added: Array<T>) {
-        const values = Array.prototype.splice.apply(target, [start, deleteNumber, added]);
-        observable.notifyObservers({ target, previousLength: target.length });
-        return values;
-    }
-
-    public static MakeObservableArray<T>(observable: Observable<INotifyArrayChangeType<T>>, initialArray: Nullable<Array<T>>) {
-        let returnObject;
-        if (initialArray && !Object.prototype.hasOwnProperty.call(initialArray, "isObserved")) {
-            const _proxyObject = {
-                set: (target: Array<T>, property: string | symbol, value: T) => ArrayTools._ProxySet(observable, target, property, value),
-                push: (target: Array<T>, ...values: Array<T>) => ArrayTools._ProxyPushOrUnshift("push", observable, target, ...values),
-                unshift: (target: Array<T>, ...values: Array<T>) => ArrayTools._ProxyPushOrUnshift("unshift", observable, target, ...values),
-                delete: (target: Array<T>, property: string | symbol) => ArrayTools._ProxyDelete(observable, target, property),
-                pop: (target: Array<T>) => ArrayTools._ProxyPopOrShift("pop", observable, target),
-                shift: (target: Array<T>) => ArrayTools._ProxyPopOrShift("shift", observable, target),
-                splice: (target: Array<T>, start: number, deleteNumber: number, ...added: Array<T>) => ArrayTools._ProxySplice(observable, target, start, deleteNumber, ...added),
-                isObserved: true,
-            };
-
-            returnObject = new Proxy(initialArray, _proxyObject);
-        } else {
-            returnObject = initialArray;
+    // Returns a function to disable the hook
+    return () => {
+        // Only unhook if the function is still hooked
+        const previous = newFunction.previous;
+        if (!previous) {
+            return;
         }
-        observable.notifyObservers({ target: returnObject });
-        return returnObject;
-    }
+
+        // Finds the ref to the next function in the chain
+        const next = newFunction.next;
+
+        // If in the middle of the chain, link the previous and next functions
+        if (next) {
+            previous.next = next;
+            next.previous = previous;
+        }
+        // If at the end of the chain, remove the reference to the previous function
+        // and restore the previous function
+        else {
+            previous.next = undefined;
+            object[functionName] = previous;
+        }
+
+        // Lose reference to the previous and next functions
+        newFunction.next = undefined;
+        newFunction.previous = undefined;
+    };
+}
+
+/**
+ * Defines the list of functions to proxy when observing an array.
+ * The scope is currently reduced to the common functions used in the render target render list and the scene cameras.
+ */
+const observedArrayFunctions = ["push", "splice", "pop", "shift", "unshift"];
+
+/**
+ * Observes an array and notifies the given observer when the array is modified.
+ * @param array Defines the array to observe
+ * @param callback Defines the function to call when the array is modified (in the limit of the observed array functions)
+ * @returns A function to call to stop observing the array
+ * @hidden
+ */
+export function _ObserveArray<T>(array: T[], callback: _ObserveCallback) {
+    // Observes all the required array functions and stores the unhook functions
+    const unObserveFunctions = observedArrayFunctions.map((name) => {
+        return _observeArrayfunction(array, name, callback);
+    });
+
+    // Returns a function that unhook all the observed functions
+    return () => {
+        unObserveFunctions.forEach((unObserveFunction) => {
+            unObserveFunction?.();
+        });
+    };
 }
