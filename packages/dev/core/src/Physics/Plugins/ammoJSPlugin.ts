@@ -1097,7 +1097,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Sets the physics body position/rotation from the babylon mesh's position/rotation
+     * Sets the mesh body position/rotation from the babylon impostor
      * @param impostor imposter containing the physics body and babylon object
      */
     public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
