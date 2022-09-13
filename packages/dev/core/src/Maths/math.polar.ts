@@ -93,8 +93,8 @@ export class Spherical {
 	 */
 	public toVector3ToRef(ref: DeepImmutable<Vector3>): Vector3{
 		let x = this.radius * Math.sin(this.theta) * Math.cos(this.phi);
-		let y = this.radius  * Math.sin(this.theta) * Math.sin(this.phi);
-		let z = this.radius * Math.cos(this.theta);
+		let y = this.radius * Math.cos(this.theta);
+		let z = this.radius  * Math.sin(this.theta) * Math.sin(this.phi);
 		ref.set(x, y, z);
 		return ref;
 	}

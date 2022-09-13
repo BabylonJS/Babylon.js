@@ -2756,37 +2756,6 @@ export class Vector3 {
         quat.toEulerAnglesToRef(ref);
     }
 
-	/**
-	 * Gets the pitch, yaw, roll needed to change direction from one vector to another
-	 * @param vector0 defines the first vector
-	 * @param vector1 defines the second vector
-	 * @param offset defines the amount to offset the output rotation
-	 * @param result the rotation (pitch, yaw, roll) to apply
-	 * @returns the updated result in the form (pitch, yaw, roll)
-	 * Output roll will always be 0 + offset.z
-	 */
-	public static PitchYawRollForDirectionChangeToRef(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, result: DeepImmutable<Vector3>): Vector3{
-		let diff: Vector3 = TmpVectors.Vector3[0];
-		vector1.subtractToRef(vector0, diff);
-		theta = Math.atan2(diff.x, diff.z) || 0,
-		phi = Math.atan2(diff.y, Math.sqrt(diff.x**2 + diff.z**2)) || 0;
-		result.set(phi, theta, 0);
-		return result;
-	}
- 
-	/**
-	 * Gets the pitch, yaw, roll needed to change direction from one vector to another
-	 * @param vector0 defines the first vector
-	 * @param vector1 defines the second vector
-	 * @param offset defines the amount to offset the output rotation
-	 * @returns the result as a vector in the form (pitch, yaw, roll)
-	 * Output roll will always be 0 + offset.z
-	 */
-	public static PitchYawRollForDirectionChange(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>): Vector3{
-		let rotation = TmpVectors.Vector3[0];
-		Vector3.PitchYawRollForDirectionChangeToRef(vector0, vector1, rotation);
-		return rotation;
-	}
 }
 
 /**
