@@ -237,3 +237,7 @@
     z-index: 3;
     font-size: 16px;
 }
+
+.collapsedHeader {
+    grid-template-columns: calc(100% - 37px) 30px 7px;
+}

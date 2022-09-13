@@ -27,16 +27,6 @@
     color: white;
     transform: scaleX(1.01) translateY(-0.5px);
     transform-origin: center;
-
-    &.constant {
-        border-color: #464348;
-        background: #464348;
-    }
-
-    &.inspector {
-        border-color: #66491b;
-        background: #66491b;
-    }
 }
 
 .headerIcon {
@@ -50,6 +40,7 @@
     pointer-events: none;
     width: 20px;
     display: grid;
+    margin-left: 5px;
 }
 
 .header {
@@ -57,9 +48,6 @@
     grid-column: 1;
     font-size: 16px;
     text-align: center;
-    margin-top: -1px;
-    margin-left: -1px;
-    margin-right: 20px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

@@ -375,6 +375,7 @@ export class GraphFrame {
         if (value) {
             this.element.classList.add(styles.collapsed);
             this.element.classList.remove(styles.expanded);
+            this._headerElement.classList.add(styles.collapsedHeader);
 
             this._moveFrame((this.width - this._collapsedWidth) / 2, 0);
 
@@ -384,6 +385,8 @@ export class GraphFrame {
         } else {
             this.element.classList.add(styles.expanded);
             this.element.classList.remove(styles.collapsed);
+            this._headerElement.classList.remove(styles.collapsedHeader);
+
             this._outputPortContainer.innerHTML = "";
             this._inputPortContainer.innerHTML = "";
 
