@@ -21,6 +21,17 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             expect(array.length).toEqual(2);
         });
 
+        it("should have updated values in callback", (done) => {
+            const array = new Array<number>();
+            array.push(1);
+            const listener = () => {
+                expect(array.length).toEqual(2);
+                done();
+            };
+            _ObserveArray(array, listener);
+            array.push(2);
+        });
+
         it("should be able to listen to shift", () => {
             const listener = jest.fn();
 
