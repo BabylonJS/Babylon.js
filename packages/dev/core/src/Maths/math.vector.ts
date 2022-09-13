@@ -2735,7 +2735,6 @@ export class Vector3 {
         Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
         quat.toEulerAnglesToRef(ref);
     }
-
 }
 
 /**
