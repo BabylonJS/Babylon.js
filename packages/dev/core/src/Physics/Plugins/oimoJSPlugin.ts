@@ -86,7 +86,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         impostor.physicsBody.applyImpulse(contactPoint.scale(this.world.invScale), force.scale(this.world.invScale * mass));
     }
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-        Logger.Warn("Oimo doesn't support applying force. Using impule instead.");
+        Logger.Warn("Oimo doesn't support applying force. Using impulse instead.");
         this.applyImpulse(impostor, force, contactPoint);
     }
     public generatePhysicsBody(impostor: PhysicsImpostor) {
