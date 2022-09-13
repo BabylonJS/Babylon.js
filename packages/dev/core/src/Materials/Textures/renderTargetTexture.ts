@@ -21,8 +21,7 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/re
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
 import { Engine } from "../../Engines/engine";
-import { ArrayTools } from "core/Misc/arrayTools";
-import type { INotifyArrayChangeType } from "core/Misc/arrayTools";
+import { _ObserveArray } from "core/Misc/arrayTools";
 
 declare type Material = import("../material").Material;
 
@@ -53,6 +52,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
     private _renderList: Nullable<Array<AbstractMesh>>;
+    private _unObserveRenderList: Nullable<() => void> = null;
+
     /**
      * Use this list to define the list of mesh you want to render.
      */
@@ -60,25 +61,26 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         return this._renderList;
     }
 
-    private _renderListHasChangedObservable = new Observable<INotifyArrayChangeType<AbstractMesh>>();
-    private _renderListHasChangedObserver: Nullable<Observer<INotifyArrayChangeType<AbstractMesh>>> = null;
-
-    private _startObservingRenderListEvents() {
-        this._renderListHasChangedObserver = this._renderListHasChangedObservable.add(({ target, previousLength }) => {
-            if (target && previousLength && ((target.length > 0 && previousLength === 0) || (target.length === 0 && previousLength > 0))) {
-                this.getScene()?.meshes.forEach((mesh) => {
-                    mesh._markSubMeshesAsLightDirty();
-                });
-            }
-        });
-    }
-
-    private _stopObservingRenderListEvents() {
-        this._renderListHasChangedObservable.remove(this._renderListHasChangedObserver);
-    }
-
     public set renderList(value: Nullable<Array<AbstractMesh>>) {
-        this._renderList = ArrayTools.MakeObservableArray(this._renderListHasChangedObservable, value);
+        if (this._unObserveRenderList) {
+            this._unObserveRenderList();
+            this._unObserveRenderList = null;
+        }
+
+        if (value) {
+            this._unObserveRenderList = _ObserveArray(value, this._renderListHasChanged);
+        }
+
+        this._renderList = value;
+    }
+
+    private _renderListHasChanged(_functionName: String, previousLength: number) {
+        const newLength = this._renderList ? this._renderList.length : 0;
+        if ((previousLength === 0 && newLength > 0) || newLength === 0) {
+            this.getScene()?.meshes.forEach((mesh) => {
+                mesh._markSubMeshesAsLightDirty();
+            });
+        }
     }
 
     /**
@@ -391,8 +393,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
 
         const engine = this.getScene()!.getEngine();
-
-        this._startObservingRenderListEvents();
 
         this._coordinatesMode = Texture.PROJECTION_MODE;
         this.renderList = new Array<AbstractMesh>();
@@ -1281,8 +1281,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this.onAfterUnbindObservable.clear();
         this.onBeforeBindObservable.clear();
         this.onBeforeRenderObservable.clear();
-
-        this._stopObservingRenderListEvents();
 
         if (this._postProcessManager) {
             this._postProcessManager.dispose();
