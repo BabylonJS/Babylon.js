@@ -72,8 +72,9 @@ function _observeArrayfunction(object: { [key: string]: any }, functionName: str
     // Creates a new function that calls the callback and the old function
     const newFunction = function () {
         const previousLength = object.length;
+        const returnValue = newFunction.previous.apply(object, arguments);
         callback(functionName, previousLength);
-        return newFunction.previous.apply(object, arguments);
+        return returnValue;
     } as any;
 
     // Doublishly links the new function and the old function
