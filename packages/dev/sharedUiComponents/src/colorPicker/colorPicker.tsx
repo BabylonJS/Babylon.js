@@ -142,7 +142,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     }
 
     public render() {
-        const colorHex = this.state.color.toHexString();
+        const color4 = Color4.FromColor3(this.state.color);
+        color4.a = this.state.alpha;
+        const colorHex = color4.toHexString();
         const hsv = this.state.color.toHSV();
         const colorRef = new Color3();
         Color3.HSVtoRGBToRef(hsv.r, 1, 1, colorRef);

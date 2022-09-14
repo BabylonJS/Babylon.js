@@ -322,6 +322,22 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onSelect={(value) => this.setState({ mode: value })}
                     />
+                    <CheckBoxLineComponent
+                        label="Dithering"
+                        target={imageProcessing}
+                        propertyName="ditheringEnabled"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        minimum={0}
+                        maximum={1}
+                        step={0.5 / 255.0}
+                        label="Dithering intensity"
+                        target={imageProcessing}
+                        propertyName="ditheringIntensity"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 {dummy !== null && (
                     <LineContainerComponent title="PHYSICS" closed={true} selection={this.props.globalState}>

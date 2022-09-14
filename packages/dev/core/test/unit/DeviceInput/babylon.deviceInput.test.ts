@@ -1,8 +1,8 @@
 import { DeviceSource, DeviceSourceManager, DeviceType, PointerInput } from "core/DeviceInput";
-import { DeviceEventFactory } from "core/DeviceInput/Helpers/eventFactory";
-import type { IDeviceInputSystem } from "core/DeviceInput/InputDevices/inputInterfaces";
-import { InternalDeviceSourceManager } from "core/DeviceInput/InputDevices/internalDeviceSourceManager";
-import { WebDeviceInputSystem } from "core/DeviceInput/InputDevices/webDeviceInputSystem";
+import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
+import type { IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
+import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
+import { WebDeviceInputSystem } from "core/DeviceInput/webDeviceInputSystem";
 import type { Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import type { IPointerEvent, IUIEvent } from "core/Events";
@@ -101,7 +101,7 @@ class TestDeviceInputSystem implements ITestDeviceInputSystem {
     }
 }
 
-jest.mock("core/DeviceInput/InputDevices/webDeviceInputSystem", () => {
+jest.mock("core/DeviceInput/webDeviceInputSystem", () => {
     return {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         WebDeviceInputSystem: jest

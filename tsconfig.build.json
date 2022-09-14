@@ -3,8 +3,8 @@
         "baseUrl": "packages",
         "importHelpers": true,
         "moduleResolution": "node",
-        "module": "es2020",
-        "target": "es2017", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard
+        "module": "ES2020",
+        "target": "es2021", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard
         "declaration": true,
         "sourceMap": true,
         "inlineSources": true,

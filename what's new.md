@@ -76,6 +76,7 @@
 - Added `CompatibilityOptions.UseOpenGLOrientationForUV` to define if the system should use OpenGL convention for UVs when creating geometry or loading .babylon files (false by default) ([Deltakosh](https://github.com/deltakosh))
 - Added RuntimeError and errorCodes for runtime errors. ([jp833](https://github.com/jp833))
 - Added `AutoReleaseWorkerPool` which will automatically terminate idle workers after a specified amount of time and use them in KTX2 and Draco decoders. ([bghgary](https://github.com/bghgary))
+- Added `metadata` support to `ReflectionProbe` class. ([julien-moreau](https://github.com/julien-moreau))
 
 ### Engine
 

@@ -25,6 +25,8 @@ interface IGridPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onFontsParsedObservable?: Observable<void>;
     globalState?: GlobalState;
+    onUpdateRequiredObservable?: Observable<void>;
+
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
@@ -405,6 +407,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                                 this.forceUpdate();
                                                 this._removingRow = false;
                                                 this._rowChild = false;
+                                                this.props.onUpdateRequiredObservable?.notifyObservers();
                                             }}
                                         />
                                         <CommandButtonComponent
@@ -522,6 +525,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                             this.forceUpdate();
                                             this._removingColumn = false;
                                             this._columnChild = false;
+                                            this.props.onUpdateRequiredObservable?.notifyObservers();
                                         }}
                                     />
                                     <CommandButtonComponent

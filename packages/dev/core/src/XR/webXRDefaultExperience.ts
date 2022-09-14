@@ -56,6 +56,14 @@ export class WebXRDefaultExperienceOptions {
      */
     public pointerSelectionOptions?: IWebXRControllerPointerSelectionOptions;
     /**
+     * optional configuration for near interaction
+     */
+    public nearInteractionOptions?: IWebXRNearInteractionOptions;
+    /**
+     * optional configuration for teleportation
+     */
+    public teleportationOptions?: IWebXRTeleportationOptions;
+    /**
      * optional configuration for the output canvas
      */
     public outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
@@ -185,6 +193,7 @@ export class WebXRDefaultExperience {
                                 floorMeshes: options.floorMeshes,
                                 xrInput: result.input,
                                 renderingGroupId: options.renderingGroupId,
+                                ...options.teleportationOptions,
                             }
                         );
                         result.teleportation.setSelectionFeature(result.pointerSelection);
@@ -202,6 +211,7 @@ export class WebXRDefaultExperience {
                             renderingGroupId: options.renderingGroupId,
                             useUtilityLayer: true,
                             enableNearInteractionOnAllControllers: true,
+                            ...options.nearInteractionOptions,
                         }
                     );
                 }

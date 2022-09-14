@@ -216,6 +216,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
@@ -1529,6 +1530,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             if (scene.texturesEnabled) {
+                defines.ALBEDODIRECTUV = 0;
+                defines.AMBIENTDIRECTUV = 0;
+                defines.OPACITYDIRECTUV = 0;
+                defines.EMISSIVEDIRECTUV = 0;
+                defines.REFLECTIVITYDIRECTUV = 0;
+                defines.MICROSURFACEMAPDIRECTUV = 0;
+                defines.METALLIC_REFLECTANCEDIRECTUV = 0;
+                defines.REFLECTANCEDIRECTUV = 0;
+                defines.BUMPDIRECTUV = 0;
+                defines.LIGHTMAPDIRECTUV = 0;
+
                 if (engine.getCaps().textureLOD) {
                     defines.LODBASEDMICROSFURACE = true;
                 }

@@ -32,8 +32,6 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import { Layer } from "core/Layers/layer";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import { CreateGround } from "core/Meshes/Builders/groundBuilder";
-import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
 
 import "core/Rendering/depthRendererSceneComponent";
@@ -288,13 +286,16 @@ export class PreviewManager {
             if (this._globalState.mode === NodeMaterialModes.Material) {
                 switch (this._globalState.previewType) {
                     case PreviewType.Box:
-                        SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
                         return;
                     case PreviewType.Sphere:
-                        this._meshes.push(CreateSphere("dummy-sphere", { segments: 32, diameter: 2 }, this._scene));
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb", this._scene).then(() => {
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareScene();
+                        });
                         break;
                     case PreviewType.Torus:
                         this._meshes.push(
@@ -310,20 +311,20 @@ export class PreviewManager {
                         );
                         break;
                     case PreviewType.Cylinder:
-                        SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCylinder.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
                         return;
                     case PreviewType.Plane: {
-                        const plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
-                        plane.scaling.y = -1;
-                        plane.rotation.x = Math.PI;
-                        this._meshes.push(plane);
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb", this._scene).then(() => {
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareScene();
+                        });
                         break;
                     }
                     case PreviewType.ShaderBall:
-                        SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "shaderBall.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });

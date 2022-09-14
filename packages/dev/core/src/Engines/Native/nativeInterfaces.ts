@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import type { IDeviceInputSystem } from "../../DeviceInput/InputDevices/inputInterfaces";
+import type { IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { ICanvas, IImage } from "../ICanvas";

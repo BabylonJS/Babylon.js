@@ -6,6 +6,9 @@
         "target": "es5",
         "outDir": "./dist",
         "rootDir": "./generated",
+        "paths": {
+            "core/*": ["lts/core/generated/*"],
+        }
     },
 
     "include": ["./generated/**/*"]
