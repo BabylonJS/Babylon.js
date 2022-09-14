@@ -29,10 +29,6 @@ import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
 
-
-
-
-
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
 }
@@ -49,13 +45,7 @@ const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
-    // private _startX: number
-    // private _endX: number
-    // private _startY: number
-    // private _endY: number
-    // private _mouseX: number;
-    // private _mouseY: number;
-    private _mouseDown: boolean
+    private _mouseDown: boolean;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
@@ -72,7 +62,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
-   // private _dragged: boolean;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
@@ -100,7 +89,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
     private _pasteDisabled = true;
-    //private _arc: ArcRotateCamera;
 
     public get guiSize() {
         return this._guiSize;
@@ -712,12 +700,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     onMove(evt: React.PointerEvent) {
-      
         const pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPoint != null && !this._panning) {
             this.props.globalState.selectedControls.forEach((element) => {
-               
                 if (pos) {
                     this._onMove(element, pos, this._mouseStartPoint!);
                 }
@@ -870,10 +856,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.synchronizeLiveGUI();
 
         new ArcRotateCamera("Camera", 0, 0, 0, Vector3.Zero(), this._scene);
-        
-        
-        
-       // arc.zoomToMouseLocation = true
 
         // This attaches the mouse controls
         this.addControls(this._scene);
@@ -981,7 +963,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }, KeyboardEventTypes.KEYDOWN);
 
-        scene.onBeforeRenderObservable.add(() => {    
+        scene.onBeforeRenderObservable.add(() => {
             if (this._panAndZoomContainer.scaleX !== this._zoomFactor) {
                 this._panAndZoomContainer.scaleX = this._zoomFactor;
                 this._panAndZoomContainer.scaleY = this._zoomFactor;
@@ -1045,29 +1027,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else if (event.detail) {
             delta = -event.detail;
         }
-        // const posX = event.pageX;
-        // const posY = event.pageY;
-        
-        
+
         this.zooming(1 + delta / 1000);
-        
     }
 
-    zoomDrag(event: React.MouseEvent){
-        //do we want this?
-        //this.props.globalState.tool = GUIEditorTool.ZOOM;
+    zoomDrag(event: React.MouseEvent) {
         let delta = 0;
         if (event.movementY < 0) {
             delta = -event.movementY;
-        } 
+        }
         if (event.movementY > 0) {
             delta = -event.movementY;
-        } 
-        // const posX = event.clientX;
-        // const posY = event.clientY;
+        }
+
         this.zooming(1 + delta / 1000);
     }
-   
+
     //Zoom to pointer position. Zoom amount determined by delta
     zooming(delta: number) {
         this._zoomFactor *= delta;
@@ -1087,43 +1062,34 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     render() {
-        
         let cursor = "default";
         if (this.props.globalState.tool === GUIEditorTool.PAN) {
             cursor = "grab";
         } else if (this.props.globalState.tool === GUIEditorTool.ZOOM) {
             cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
         }
-        //const draggedControl = 
-        //console.log(this.props.globalState.draggedControl);
         return (
             <canvas
                 id="workbench-canvas"
-            
-                
                 onPointerMove={(evt) => {
-                    if(this._mouseDown){
-                        this.zoomDrag(evt)
-                     }
-                   
+                    if (this._mouseDown) {
+                        this.zoomDrag(evt);
+                    }
+
                     if (this.props.globalState.guiTexture) {
                         this.onMove(evt);
                     }
-                    
+
                     this.props.globalState.onPointerMoveObservable.notifyObservers(evt);
                 }}
-                onPointerDown={(evt) => 
-                    { this.onDown(evt)
-                    if(this.props.globalState.selectedControls.length === 0){
-                        //do we want this? 
-                        //this.props.globalState.tool = GUIEditorTool.ZOOM;
+                onPointerDown={(evt) => {
+                    this.onDown(evt);
+                    if (this._controlsHit.length === 0) {
                         this._mouseDown = true;
-                        console.log(this._mouseDown)
-                    }
-                    else{
+                    } else {
                         this._mouseDown = false;
-                    } }
-                     }
+                    }
+                }}
                 onPointerUp={(evt) => {
                     this.onUp(evt);
                     this.props.globalState.onPointerUpObservable.notifyObservers(evt);
@@ -1133,7 +1099,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
                 style={{ cursor }}
-                
             ></canvas>
         );
     }
