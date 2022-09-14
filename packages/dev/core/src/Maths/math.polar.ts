@@ -26,8 +26,8 @@ export class Polar {
      * @returns the updated reference
      */
     public toVector2ToRef(ref: Vector2): Vector2 {
-        let x = this.radius * Math.cos(this.theta);
-        let y = this.radius * Math.sin(this.theta);
+        const x = this.radius * Math.cos(this.theta);
+        const y = this.radius * Math.sin(this.theta);
         ref.set(x, y);
         return ref;
     }
@@ -37,7 +37,7 @@ export class Polar {
      * @returns the rectangular coordinates
      */
     public toVector2(): Vector2 {
-        let ref = TmpVectors.Vector2[0];
+        const ref = TmpVectors.Vector2[0];
         return this.toVector2ToRef(ref);
     }
 
@@ -60,7 +60,7 @@ export class Polar {
      * @returns a Polar
      */
     public static FromVector2(v: Vector2): Polar {
-        let polar = new Polar(0, 0);
+        const polar = new Polar(0, 0);
         Polar.FromVector2ToRef(v, polar);
         return polar;
     }
@@ -91,9 +91,9 @@ export class Spherical {
      * @returns the updated Vector3
      */
     public toVector3ToRef(ref: DeepImmutable<Vector3>): Vector3 {
-        let x = this.radius * Math.sin(this.theta) * Math.cos(this.phi);
-        let y = this.radius * Math.cos(this.theta);
-        let z = this.radius * Math.sin(this.theta) * Math.sin(this.phi);
+        const x = this.radius * Math.sin(this.theta) * Math.cos(this.phi);
+        const y = this.radius * Math.cos(this.theta);
+        const z = this.radius * Math.sin(this.theta) * Math.sin(this.phi);
         ref.set(x, y, z);
         return ref;
     }
@@ -103,7 +103,7 @@ export class Spherical {
      * @returns the Vector3
      */
     public toVector3(): Vector3 {
-        let ref = TmpVectors.Vector3[0];
+        const ref = TmpVectors.Vector3[0];
         return this.toVector3ToRef(ref);
     }
 
@@ -126,7 +126,7 @@ export class Spherical {
      * @returns a new Spherical
      */
     public static FromVector3(vector: DeepImmutable<Vector3>): Spherical {
-        let spherical = new Spherical(0, 0, 0);
+        const spherical = new Spherical(0, 0, 0);
         Spherical.FromVector3ToRef(vector, spherical);
         return spherical;
     }
