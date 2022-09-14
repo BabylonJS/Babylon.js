@@ -40,7 +40,6 @@
     grid-column: 1;
     background: rgba(72, 72, 72, 1);
     color: white;
-    font-size: 24px;
     text-align: center;
     display: grid;
     grid-template-rows: 100%;
@@ -228,8 +227,17 @@
     }
 }
 
+.expanded {
+    font-size: 24px;
+}
+
 .collapsed {
     height: auto !important;
     width: 200px !important;
     z-index: 3;
+    font-size: 16px;
+}
+
+.collapsedHeader {
+    grid-template-columns: calc(100% - 37px) 30px 7px;
 }
