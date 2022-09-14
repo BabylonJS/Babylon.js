@@ -28,9 +28,6 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
-//import { CommonControlPropertyGridComponent } from "../components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent";
-
-
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -64,9 +61,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
-    private static _addedControls: string[] = [];
-    public static get addedControl(){
-        return this._addedControls
+    private static _addedFonts: string[] = [];
+    public static get addedFonts() {
+        return this._addedFonts;
     }
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
@@ -488,7 +485,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     async loadFromSnippet(snippetId: string) {
-        console.log("eheh")
         this.removeEditorTransformation();
         this.props.globalState.setSelection([]);
         if (this.props.globalState.liveGuiTexture) {
@@ -509,17 +505,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         this.props.globalState.guiTexture.rootContainer.getDescendants().forEach((guiElement) => {
-            console.log(guiElement.fontFamily)
-            WorkbenchComponent._addedControls.push(guiElement.fontFamily)
+            WorkbenchComponent._addedFonts.push(guiElement.fontFamily);
             this.addEditorBehavior(guiElement);
         });
-        
 
         this._isOverGUINode = [];
         this.props.globalState.setSelection([]);
         this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
+        this.props.globalState.onFontsParsedObservable.notifyObservers();
     }
-
 
     public updateNodeOutlines() {
         for (const guiControl of this._trueRootContainer.getDescendants()) {
@@ -748,10 +742,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     processSelection() {
         // if hit nothing, deselect all
+        if (this.props.globalState.usePrevSelected) {
+            this.props.globalState.usePrevSelected = false;
+            return;
+        }
         if (this._controlsHit.length === 0) {
             this.props.globalState.setSelection([]);
             return;
         }
+
         // if child of selected control -> select on double click
         for (const control of this._controlsHit) {
             if (this.props.globalState.selectedControls.includes(control.parent!)) {
@@ -1057,9 +1056,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             vec.z = 0;
         }
     }
-   
+
     render() {
-        
         let cursor = "default";
         if (this.props.globalState.tool === GUIEditorTool.PAN) {
             cursor = "grab";
@@ -1067,8 +1065,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             cursor = this.props.globalState.keys.isKeyDown("alt") ? "zoom-out" : "zoom-in";
         }
         return (
-          
-                <canvas
+            <canvas
                 id="workbench-canvas"
                 onPointerMove={(evt) => {
                     if (this.props.globalState.guiTexture) {
@@ -1085,12 +1082,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 onContextMenu={(evt) => evt.preventDefault()}
                 ref={this._rootContainer}
                 style={{ cursor }}
-                
             ></canvas>
-            
-            
-            
-            
         );
     }
 }

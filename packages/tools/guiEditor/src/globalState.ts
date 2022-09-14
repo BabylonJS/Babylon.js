@@ -58,6 +58,8 @@ export class GlobalState {
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     private _tool: GUIEditorTool = GUIEditorTool.SELECT;
+    private _usePrevSelected: boolean;
+
     onToolChangeObservable = new Observable<void>();
     public get tool(): GUIEditorTool {
         if (this._tool === GUIEditorTool.ZOOM) {
@@ -72,6 +74,12 @@ export class GlobalState {
         if (this._tool === newTool) return;
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
+    }
+    public get usePrevSelected() {
+        return this._usePrevSelected;
+    }
+    public set usePrevSelected(val: boolean) {
+        this._usePrevSelected = val;
     }
     onFitControlsToWindowObservable = new Observable<void>();
     onReframeWindowObservable = new Observable<void>();
@@ -89,7 +97,9 @@ export class GlobalState {
     onGizmoUpdateRequireObservable = new Observable<void>();
     onArtBoardUpdateRequiredObservable = new Observable<void>();
     onBackgroundColorChangeObservable = new Observable<void>();
+    onFontsParsedObservable = new Observable<void>();
     onPointerMoveObservable = new Observable<React.PointerEvent<HTMLCanvasElement>>();
+
     onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
@@ -182,6 +192,7 @@ export class GlobalState {
 
     public setSelection(controls: Control[]) {
         this.selectedControls = [...controls];
+
         this.onSelectionChangedObservable.notifyObservers();
     }
 

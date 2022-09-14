@@ -15,11 +15,14 @@ import checkboxIcon from "shared-ui-components/imgs/checkboxIconDark.svg";
 import scaleIcon from "shared-ui-components/imgs/scaleIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IRadioButtonPropertyGridComponentProps {
     radioButtons: RadioButton[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
@@ -36,6 +39,8 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                     lockObject={this.props.lockObject}
                     controls={radioButtons}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
                 />
                 <hr />
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
