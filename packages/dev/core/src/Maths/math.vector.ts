@@ -1664,8 +1664,8 @@ export class Vector3 {
     /**
      * Get angle between two vectors
      * Example Playground https://playground.babylonjs.com/#R1F8YU#86
-     * @param vector0 angle between vector0 and vector1
-     * @param vector1 angle between vector0 and vector1
+     * @param vector0 the starting point
+     * @param vector1 the ending point
      * @param normal direction of the normal
      * @returns the angle between vector0 and vector1
      */
