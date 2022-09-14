@@ -1111,7 +1111,8 @@ export class TransformNode extends Node {
                 TmpVectors.Matrix[7].setTranslation(translation);
 
                 // set localMatrix translation to be transformed against parent's world matrix.
-                this._localMatrix.setTranslation(Vector3.TransformCoordinates(this._position, parent.getWorldMatrix()));
+                Vector3.TransformNormalToRef(this._position, parent.getWorldMatrix(), translation);
+                this._localMatrix.setTranslation(translation);
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {
