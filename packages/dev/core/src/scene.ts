@@ -4657,7 +4657,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.activeCamera._activeMeshes.dispose();
             this.activeCamera = null;
         }
-        this.activeCameras = null;
+
         this._activeMeshes.dispose();
         this._renderingManager.dispose();
         this._processedMaterials.dispose();
@@ -4752,7 +4752,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._disposeList(this.transformNodes, (item) => item.dispose(true));
 
         // Release cameras
-        this._disposeList(this.cameras);
+        const cameras = this.cameras;
+        this.activeCameras = null;
+        this._disposeList(cameras);
 
         // Release materials
         if (this._defaultMaterial) {
