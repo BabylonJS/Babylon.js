@@ -131,4 +131,3 @@ export class Spherical {
         return spherical;
     }
 }
-
