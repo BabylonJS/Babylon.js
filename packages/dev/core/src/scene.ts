@@ -4657,6 +4657,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.activeCamera._activeMeshes.dispose();
             this.activeCamera = null;
         }
+        this.activeCameras = null;
         this._activeMeshes.dispose();
         this._renderingManager.dispose();
         this._processedMaterials.dispose();
