@@ -564,6 +564,8 @@ export class GraphFrame {
 
         this.element.appendChild(this._borderElement);
 
+        this.element.classList.add(styles.expanded);
+
         // add resizing side handles
 
         const rightHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
