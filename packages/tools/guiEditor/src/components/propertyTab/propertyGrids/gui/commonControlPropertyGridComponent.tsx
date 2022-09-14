@@ -74,7 +74,6 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
     private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
-    private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
@@ -176,6 +175,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 (control as any)[alignment] = value;
             }
         }
+        this.forceUpdate()
     }
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
