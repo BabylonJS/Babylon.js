@@ -39,6 +39,7 @@ import shadowColorIcon from "shared-ui-components/imgs/shadowColorIcon.svg";
 import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -68,10 +69,11 @@ interface ICommonControlPropertyGridComponentState {
     value: number;
 }
 
-type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize";
+type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
+    private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
     private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
@@ -604,6 +606,37 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <div className="ge-divider">
                             <IconComponent icon={descendantsOnlyPaddingIcon} label={"Makes padding affect only the descendants of this control"} />
                             <CheckBoxLineComponent label="ONLY PAD DESCENDANTS" target={proxy} propertyName="descendentsOnlyPadding" />
+                        </div>
+                        <hr className="ge" />
+                    </>
+                )}
+                {parent?.name === "root" && (
+                    <>
+                        <TextLineComponent label="LINK OFFSET" value=" " color="grey"></TextLineComponent>
+                        <div className="ge-divider double">
+                            <IconComponent icon={linkedMeshOffsetIcon} label={"Link offset"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="X"
+                                delayInput={true}
+                                value={getValue("_linkOffsetX")}
+                                onChange={(newValue) => this._checkAndUpdateValues("linkOffsetX", newValue)}
+                                unit={<UnitButton unit={getUnitString("_linkOffsetX")} onClick={(unit) => convertUnits(unit, "linkOffsetX")} />}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("linkOffsetX", amount)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="Y"
+                                delayInput={true}
+                                value={getValue("_linkOffsetY")}
+                                onChange={(newValue) => this._checkAndUpdateValues("linkOffsetY", newValue)}
+                                unit={<UnitButton unit={getUnitString("_linkOffsetY")} onClick={(unit) => convertUnits(unit, "linkOffsetY")} />}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("linkOffsetY", amount)}
+                            />
                         </div>
                         <hr className="ge" />
                     </>

@@ -456,6 +456,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 button.addControl(guiElement);
                                 this.props.globalState.select(guiElement);
                             }
+                       
                         }}
                         onFontsParsedObservable={this.props.globalState.onFontsParsedObservable}
                         globalState={this.props.globalState}

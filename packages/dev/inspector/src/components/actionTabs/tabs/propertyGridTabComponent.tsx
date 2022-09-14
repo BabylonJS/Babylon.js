@@ -102,6 +102,7 @@ import type { Sound } from "core/Audio/sound";
 import { SoundPropertyGridComponent } from "./propertyGrids/sounds/soundPropertyGridComponent";
 import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
 import type { EffectLayer } from "core/Layers/effectLayer";
+import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -667,6 +668,15 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const control = entity as Control;
                 return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
             }
+
+            return (
+                <EmptyPropertyGridComponent
+                    item={entity}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    globalState={this.props.globalState}
+                />
+            );
         }
 
         return null;

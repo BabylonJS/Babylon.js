@@ -5,11 +5,12 @@
         "outDir": "./dist",
         "rootDir": "../../../lts/materials/generated",
         "declaration": true,
-        "target": "es5",
         "importHelpers": true,
-        "plugins": [
-            { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/materials", "appendJS": true },
-        ]
+        "plugins": [{ "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/materials", "appendJS": true }],
+        "paths": {
+            "core/*": ["lts/core/dist/*"],
+            "materials/*": ["lts/materials/generated/*"]
+        }
     },
 
     "include": ["../../../lts/materials/generated/**/*"]

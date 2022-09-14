@@ -11,7 +11,7 @@ import type { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/
 import { CustomBlock } from "core/Materials/Node/Blocks/customBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { Nullable } from "core/types";
-import { MessageDialogComponent } from "./sharedComponents/messageDialog";
+import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { BlockTools } from "./blockTools";
 import { PreviewManager } from "./components/preview/previewManager";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
@@ -34,6 +34,8 @@ interface IGraphEditorProps {
 
 interface IGraphEditorState {
     showPreviewPopUp: boolean;
+    message: string;
+    isError: boolean;
 }
 
 interface IInternalPreviewAreaOptions extends IInspectorOptions {
@@ -126,6 +128,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.state = {
             showPreviewPopUp: false,
+            message: "",
+            isError: true,
         };
 
         this._graphCanvasRef = React.createRef();
@@ -206,6 +210,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 },
                 this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
             );
+        });
+
+        this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.add((message: string) => {
+            this.setState({ message: message, isError: true });
         });
     }
 
@@ -674,7 +682,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     <LogComponent globalState={this.props.globalState} />
                 </div>
-                <MessageDialogComponent globalState={this.props.globalState} />
+                <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
                 <div className="blocker">Node Material Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>

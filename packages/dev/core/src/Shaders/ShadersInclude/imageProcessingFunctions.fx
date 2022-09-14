@@ -168,5 +168,11 @@ vec4 applyImageProcessing(vec4 result) {
 	result.rgb = mix(vec3(luma), result.rgb, colorCurve.a);
 #endif
 
+#ifdef DITHER
+	float rand = getRand(gl_FragCoord.xy * vInverseScreenSize);
+	float dither = mix(-ditherIntensity, ditherIntensity, rand);
+	result.rgb = saturate(result.rgb + vec3(dither));
+#endif
+
 	return result;
 }

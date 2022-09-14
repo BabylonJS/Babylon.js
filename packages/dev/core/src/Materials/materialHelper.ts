@@ -552,7 +552,7 @@ export class MaterialHelper {
 
         let lightIndex = 0;
         const state = {
-            needNormals: false,
+            needNormals: defines._needNormals, // prevents overriding previous reflection or other needs for normals
             needRebuild: false,
             lightmapMode: false,
             shadowEnabled: false,

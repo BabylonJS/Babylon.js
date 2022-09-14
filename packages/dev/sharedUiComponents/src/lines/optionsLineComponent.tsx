@@ -70,6 +70,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
+        if (this.props.options !== nextProps.options) {
+            return true;
+        }
+
         return false;
     }
 

@@ -11,7 +11,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
@@ -19,9 +19,32 @@ import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
 
 /**
+ * Interface for axis scale gizmo
+ */
+export interface IAxisScaleGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** If the scaling operation should be done on all axis */
+    uniformScaling: boolean;
+    /** Custom sensitivity value for the drag strength */
+    sensitivity: number;
+    /** The magnitude of the drag strength (scaling factor) */
+    dragScale: number;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+}
+
+/**
  * Single axis scale gizmo
  */
-export class AxisScaleGizmo extends Gizmo {
+export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */

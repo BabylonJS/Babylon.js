@@ -7,6 +7,8 @@ attribute vec3 position;
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
+#include<clipPlaneVertexDeclaration>
+
 // Uniforms
 #include<instancesDeclaration>
 
@@ -59,11 +61,13 @@ void main(void)
 #include<bonesVertex>
 #include<bakedVertexAnimation>
 
+vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+
 #ifdef CUBEMAP
-	vPosition = finalWorld * vec4(positionUpdated, 1.0);
+	vPosition = worldPos;
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #else
-	vPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	vPosition = viewProjection * worldPos;
 	gl_Position = vPosition;
 #endif
 
@@ -97,4 +101,7 @@ void main(void)
 #ifdef VERTEXALPHA
     vColor = color;
 #endif
+
+#include<clipPlaneVertex>
+
 }

@@ -169,6 +169,8 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _waitingParentInstanceIndex: Nullable<string> = null;
     /** @hidden */
+    public _waitingParsedUniqueId: Nullable<number> = null;
+    /** @hidden */
     public _scene: Scene;
     /** @hidden */
     public _cache: any = {};

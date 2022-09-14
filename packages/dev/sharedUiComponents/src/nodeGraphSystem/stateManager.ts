@@ -37,5 +37,5 @@ export class StateManager {
 
     getEditorDataMap: () => { [key: number]: number };
 
-    createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => { data: INodeData; name: string };
+    createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => Nullable<{ data: INodeData; name: string }>;
 }
