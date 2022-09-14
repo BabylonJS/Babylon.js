@@ -66,6 +66,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
+        if (this.props.options !== nextProps.options) {
+            return true;
+        }
+
         return false;
     }
 
@@ -140,50 +144,33 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     render() {
-        if (this.state.addCustom) {
-            return (
-                <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
-                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
-                    <div className="label" title={this.props.label}>
-                        {this.props.label}
-                    </div>
-                    <div className="options">
+        return (
+            <div className={`listLine ${this.props.className ?? ""}`}>
+                {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
+                <div className="label" title={this.props.label}>
+                    {this.props.label}
+                </div>
+                <div className="options">
+                    {this.state.addCustom ? (
                         <input
                             type="text"
                             placeholder="Enter a custom font here"
-                            id="customFont"
                             onKeyDown={(event) => {
                                 event.key === "Enter" && this.props.addVal != undefined
-                                    ? (this.props.addVal(
-                                          { label: (event.target as HTMLInputElement).value, value: this.props.options.length + 1 },
-                                          Number(this.state.value)
-                                      ),
+                                    ? (this.props.addVal({ label: (event.target as HTMLInputElement).value, value: this.props.options.length + 1 }, Number(this.state.value)),
                                       this.updateCustomValue(),
                                       this.forceUpdate())
                                     : null;
                             }}
-                            onBlur={() => {
+                            onBlur={(event) => {
                                 this.props.addVal != undefined
-                                    ? (this.props.addVal(
-                                          { label: (document.getElementById("customFont") as HTMLInputElement).value, value: this.props.options.length + 1 },
-                                          Number(this.state.value)
-                                      ),
+                                    ? (this.props.addVal({ label: (event.target as HTMLInputElement).value, value: this.props.options.length + 1 }, Number(this.state.value)),
                                       this.updateCustomValue(),
                                       this.forceUpdate())
                                     : null;
                             }}
                         />
-                    </div>
-                </div>
-            );
-        } else {
-            return (
-                <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
-                    {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
-                    <div className="label" title={this.props.label}>
-                        {this.props.label}
-                    </div>
-                    <div className="options">
+                    ) : (
                         <select
                             onChange={(evt) => this.updateValue(evt.target.value)}
                             value={this.state.value === -1 || this.state.value === null || this.state.value === undefined ? 1 : this.state.value}
@@ -196,9 +183,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                                 );
                             })}
                         </select>
-                    </div>
+                    )}
                 </div>
-            );
-        }
+            </div>
+        );
     }
 }

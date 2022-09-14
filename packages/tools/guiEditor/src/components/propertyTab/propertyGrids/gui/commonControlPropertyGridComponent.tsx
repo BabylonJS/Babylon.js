@@ -52,18 +52,16 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { UnitButton } from "shared-ui-components/lines/unitButton";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 
-
-import {WorkbenchComponent} from "../../../../diagram/workbench"
-
-
-
+import { WorkbenchComponent } from "../../../../diagram/workbench";
+import type { GlobalState } from "../../../../globalState";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     hideDimensions?: boolean;
-    //globalState?: GlobalState
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
@@ -74,6 +72,7 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
+    private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
@@ -103,7 +102,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
             control.metadata._previousCenter = transformed;
         }
-
+        this._onFontsParsedObserver = this.props.onFontsParsedObservable?.add(() => {
+            this._checkFontsInLayout();
+        });
         this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
             const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
             for (const control of controls) {
@@ -127,10 +128,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
-    
-
     componentWillMount() {
-    
+        this._checkFontsInLayout();
+    }
+
+    private _checkFontsInLayout() {
         const correctFonts: IInspectableOptions[] = [];
         correctFonts.push({ label: "Custom Font", value: 0 });
         for (const font of this.state.fontFamilyOptions.values()) {
@@ -138,40 +140,24 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 correctFonts.push(font);
             }
         }
-        const correctLabels = correctFonts.map(element => element.label)
-    
+        const correctLabels = correctFonts.map((element) => element.label);
 
-        // console.log(correctFonts)
-        setTimeout(() => {
-            const moreFonts = WorkbenchComponent.addedControl
-            console.log("all de fonts", moreFonts[0])
-            console.log(JSON.stringify(moreFonts))
-         for(let i = 0; i < moreFonts.length; i++){
-            
-            
-            if(!correctLabels.includes(moreFonts[i]) && document.fonts.check(`12px "${moreFonts[i]}"`)) {
-                correctFonts.push({label: moreFonts[i], value: correctFonts.length + 1} );
-                correctLabels.push(moreFonts[i])
+        const moreFonts = WorkbenchComponent.addedFonts;
+
+        for (let i = 0; i < moreFonts.length; i++) {
+            if (!correctLabels.includes(moreFonts[i]) && document.fonts.check(`12px "${moreFonts[i]}"`)) {
+                correctFonts.push({ label: moreFonts[i], value: correctFonts.length + 1 });
+                correctLabels.push(moreFonts[i]);
+            } else if (!document.fonts.check(`12px "${moreFonts[i]}"`)) {
+                alert("The font " + moreFonts[i] + " is unable to load");
             }
-            else if(!document.fonts.check(`12px "${moreFonts[i]}"`)){
-                alert("The font " + moreFonts[i] + " is unable to load")
-            }
-            console.log("fontsss", correctFonts)
-            this.setState({
-                fontFamilyOptions: correctFonts,
-            });
-    
-            window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
         }
-          }, 500)
 
-          
-    
-       
+        this.setState({
+            fontFamilyOptions: correctFonts,
+        });
+        window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
     }
-
-
-    
 
     private _getTransformedReferenceCoordinate(control: Control) {
         const nodeMatrix = CoordinateHelper.GetNodeMatrix(control);
@@ -239,15 +225,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         if (newVal.label === "") {
             return;
         }
+        if (this.props.globalState) {
+            this.props.globalState.usePrevSelected = true;
+        }
+
         (async () => {
             await document.fonts.ready;
             let displayVal = false;
-            const fonts = JSON.parse(String(window.sessionStorage.getItem("fonts")));
+            const fonts = this.state.fontFamilyOptions;
             if (!(fonts.find((element: IInspectableOptions) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
-                alert("This font is already available");
+                setTimeout(() => {
+                    alert("This font is already available");
+                }, 100);
+
+                return;
             } else {
                 if (!document.fonts.check(`12px "${newVal.label}"`)) {
-                    alert("This font is not supported in the browser");
+                    //Settimeout used due to race conditions with other events
+                    setTimeout(() => {
+                        alert("This font is not supported in the browser");
+                    }, 100);
+
+                    return;
                 } else {
                     fonts.push(newVal);
                     this.setState({
@@ -269,11 +268,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     selectCustomVal() {
         const proxy = makeTargetsProxy(this.props.controls, this.props.onPropertyChangedObservable);
-        const fonts = JSON.parse(String(window.sessionStorage.getItem("fonts")));
+        const fonts = this.state.fontFamilyOptions;
 
-        proxy.fontFamily = fonts.at(fonts.length - 1).label;
+        proxy.fontFamily = fonts.at(fonts.length - 1)?.label ?? "";
 
         this.setState({ value: fonts.length });
+        window.sessionStorage.setItem("fonts", JSON.stringify(this.state.fontFamilyOptions));
     }
     keepPrevVal(prevVal: number) {
         const proxy = makeTargetsProxy(this.props.controls, this.props.onPropertyChangedObservable);
@@ -286,6 +286,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     componentWillUnmount() {
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
+        }
+        if (this._onFontsParsedObserver) {
+            this.props.onFontsParsedObservable?.remove(this._onFontsParsedObserver);
         }
     }
 
@@ -381,7 +384,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         const parent = controls[0].parent;
 
-        const fonts = JSON.parse(String(window.sessionStorage.getItem("fonts")));
+        const fonts = this.state.fontFamilyOptions;
 
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
