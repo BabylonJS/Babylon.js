@@ -86,6 +86,7 @@ export class GeometryBufferRenderer {
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
     private _enableReflectivity: boolean = false;
+    private _depthFormat: number;
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
@@ -318,12 +319,14 @@ export class GeometryBufferRenderer {
     /**
      * Creates a new G Buffer for the scene
      * @param scene The scene the buffer belongs to
-     * @param ratio How big is the buffer related to the main canvas.
+     * @param ratio How big is the buffer related to the main canvas (default: 1)
+     * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
      */
-    constructor(scene: Scene, ratio: number = 1) {
+    constructor(scene: Scene, ratio: number = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16) {
         this._scene = scene;
         this._ratio = ratio;
         this._useUbo = scene.getEngine().supportsUniformBuffers;
+        this._depthFormat = depthFormat;
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
@@ -698,7 +701,7 @@ export class GeometryBufferRenderer {
             { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio },
             count,
             this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: type },
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: type, depthTextureFormat: this._depthFormat },
             textureNames.concat("gBuffer_DepthBuffer")
         );
         if (!this.isSupported) {
