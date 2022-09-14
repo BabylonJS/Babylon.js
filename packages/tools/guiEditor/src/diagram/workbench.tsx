@@ -33,7 +33,7 @@ import { DataStorage } from "core/Misc/dataStorage";
 
 
 
->>>>>>> 00992ac6ec9007d8db69a309aabe4390b8adeaa7
+
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -64,6 +64,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _doubleClick: Nullable<Control> = null;
     public _liveGuiTextureRerender: boolean = true;
+    private _currLeft: number = 0;
+    private _currTop: number = 0;
     private _controlsHit: Control[] = [];
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;

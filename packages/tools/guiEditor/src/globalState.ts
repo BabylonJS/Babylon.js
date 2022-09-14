@@ -108,7 +108,6 @@ export class GlobalState {
     onArtBoardUpdateRequiredObservable = new Observable<void>();
     onBackgroundColorChangeObservable = new Observable<void>();
     onFontsParsedObservable = new Observable<void>();
-    onFontsParsedObservable = new Observable<void>();
     onPointerMoveObservable = new Observable<React.PointerEvent<HTMLCanvasElement>>();
 
     onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
