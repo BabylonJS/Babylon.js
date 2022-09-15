@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.22.1",
+    "fromTag": "5.23.0",
     "changelog": {
         "5.23.0": [
             {
@@ -314,6 +314,441 @@
                     "enhancement",
                     "audio"
                 ]
+            }
+        ],
+        "5.24.0": [
+            {
+                "pr": "12978",
+                "title": "Some fixes for NME CSS",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.modules.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12985",
+                "title": "Add maths polar export",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/index.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12983",
+                "title": "GeometryBufferRenderer: Allow setting the depth texture format",
+                "description": "See https://forum.babylonjs.com/t/postprocess-with-prepassrenderer-caused-msaa-not-work/33907/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRendererSceneComponent.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "12984",
+                "title": "Fix billboard translation with parenting",
+                "description": "Follow up with https://forum.babylonjs.com/t/billboardmode-rotation-bug/33908/4\r\n\r\nbillboard translation was not transformed by parent transform. ",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "12982",
+                "title": "Fix Array Observers",
+                "description": "Ref: https://github.com/BabylonJS/Babylon.js/pull/12905",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Misc/arrayTools.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.arrayTools.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "12942",
+                "title": "Add polar and spherical coordinate system support",
+                "description": "Also fixes a misspelling with the `Vector3.GetAngleBetweenVectors` jsdoc parameters",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.polar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12980",
+                "title": "Fix Typos in Physics",
+                "description": "Small typo and wrong comment.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/Plugins/oimoJSPlugin.ts"
+                ],
+                "tags": [
+                    "documentation"
+                ]
+            },
+            {
+                "pr": "12979",
+                "title": "If blob or data load the image directly, as no caching is needed.",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12975",
+                "title": "Add teleportationCircleMaterial to WebXR teleportation options",
+                "description": null,
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12976",
+                "title": "Add createRadialGradient to ICanvas",
+                "description": "Description borrowed from: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient",
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12974",
+                "title": "test(math.vector): add tests for GetAngleBetweenVectorsOnPlane function",
+                "description": "I generated 1000 variants of usage the GetAngleBetweenVectorsOnPlane function base on these values:\r\n```\r\nconst possibleValues = [\r\n        // negative values\r\n        Number.MIN_SAFE_INTEGER,\r\n        Number.MIN_SAFE_INTEGER / 2,\r\n        -Math.PI,\r\n        -0.0000000001,\r\n\r\n        0,\r\n\r\n        // positive values\r\n        0.0000000001,\r\n        Math.PI,\r\n        Number.MAX_SAFE_INTEGER / 2,\r\n        Number.MAX_SAFE_INTEGER,\r\n    ];\r\n```\r\n\r\nSo I got time comutation statistics that added to jsdoc.\r\n\r\nWhat do you think about unit tests like this? Or probably we should set just several examples without edge values (like max_safe_integer)?",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.get-angle-between-vectors-on-plane.test-cases.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12970",
+                "title": "Babylon eslint plugin",
+                "description": "This plugin checks for the existance of tsdoc in typescript files, and is ready to be extended.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/autoRotationBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/bouncingBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts",
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Cameras/gamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/Cameras/touchCamera.ts",
+                    "packages/dev/core/src/Cameras/universalCamera.ts",
+                    "packages/dev/core/src/Cameras/virtualJoysticksCamera.ts",
+                    "packages/dev/core/src/Culling/boundingBox.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Events/clipboardEvents.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/windowsMotionController.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Lights/directionalLight.ts",
+                    "packages/dev/core/src/Lights/hemisphericLight.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Lights/lightConstants.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/colorCurves.ts",
+                    "packages/dev/core/src/Materials/fresnelParameters.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Maths/math.functions.ts",
+                    "packages/dev/core/src/Maths/math.scalar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/cubemapToSphericalPolynomial.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/panoramaToCubemap.ts",
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/Misc/performanceMonitor.ts",
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts",
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/dev/core/src/Misc/stringDictionary.ts",
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Misc/videoRecorder.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Rendering/subSurfaceConfiguration.ts",
+                    "packages/dev/core/src/XR/motionController/webXRAbstractMotionController.ts",
+                    "packages/dev/core/src/XR/motionController/webXRControllerComponent.ts",
+                    "packages/dev/core/src/XR/motionController/webXRMotionControllerManager.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/loaders/src/OBJ/mtlFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.ts",
+                    "packages/dev/postProcesses/src/asciiArt/asciiArtPostProcess.ts",
+                    "packages/dev/postProcesses/src/digitalRain/digitalRainPostProcess.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
+                    "packages/lts/core/src/scene.ts",
+                    "packages/tools/eslintBabylonPlugin/package.json",
+                    "packages/tools/eslintBabylonPlugin/src/ConfigCache.ts",
+                    "packages/tools/eslintBabylonPlugin/src/Debug.ts",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts",
+                    "packages/tools/eslintBabylonPlugin/tsconfig.build.json",
+                    "packages/tools/eslintBabylonPlugin/tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12973",
+                "title": "Fix WebGPU for mobile support.",
+                "description": "https://twitter.com/Tojiro/status/1568341051160788993",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "12916",
+                "title": "OIT aliasing fixes",
+                "description": "* Implemented multisampling for DepthPeeling (works but has artifacts along triangle edges because we need to access multisampled depth in the shader, which cannot be done for now)\r\n* Made depth peeling compatible with post processes to be able to use FXAA post process",
+                "author": {
+                    "name": "CraigFeldspar",
+                    "url": "https://github.com/CraigFeldspar"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/oitFragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12972",
+                "title": "ts config for tests (older syntax) for older node.js",
+                "description": "Node 14 and under don't support the 2021 syntax we used when running tests.\nFrom now, when testing we compile to es5",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "jest.config.ts",
+                    "packages/dev/core/tsconfig.test.json",
+                    "tsconfig.test.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12971",
+                "title": "404 error trying to load “config.json” when using custom procedural texture with ShadersStore",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/customProceduralTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12969",
+                "title": "Giz misc",
+                "description": "Quick PR for https://forum.babylonjs.com/t/constrain-dragging-to-y-axis-for-boundingboxgizmo/33729",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "12966",
+                "title": "Freeze instance storage",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12964",
+                "title": "Better support for freeze in aggressive mode",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12952",
+                "title": "Minimize code in effect and pipeline context",
+                "description": "The idea here is to keep the typescript declarations of those functions (i.e. - they exist still), but use a proxy to catch missing functions and call the right function when the missing functions are called. \r\n\r\nThis will minimize the initial needed code when importing those classes.\r\n\r\nRegarding reusability - there might be 2-3 lines of code that are reusable, but the overhead of moving it out of the constructor context will cost more than the code written.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12963",
+                "title": "new options for aggressive mode",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "12960",
+                "title": "Introduce autoFixFaceOrientation feature to solidParticleSystem",
+                "description": "**What:**\r\nIntroduce an option to \"autofix face orientation\" in solid particle system\r\n\r\n**How**\r\nWhen there is a transformation which changes the orientation (for example scaling `(-1, 1, 1)`), the solid particle system will automatically flip all the faces of the particle affected by this transformation.\r\n\r\n**Why**\r\nI needed this functionality in my application, so I decided to make a PR and hope that it will get into the babylon itself :D\r\n\r\n**Example**\r\nhttps://playground.babylonjs.com/#GLZ1PX#714\r\nin this example, the cone on the right has flipped faces. Using the new flag will fix this issue. ",
+                "author": {
+                    "name": "Michalzr",
+                    "url": "https://github.com/Michalzr"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": []
             }
         ],
         "5.22.1": [
