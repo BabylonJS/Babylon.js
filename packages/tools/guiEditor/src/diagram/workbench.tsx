@@ -1033,10 +1033,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     zoomDrag(event: React.MouseEvent) {
         let delta = 0;
-        if (event.movementY < 0) {
-            delta = -event.movementY;
-        }
-        if (event.movementY > 0) {
+        if (event.movementY < 0 || event.movementY > 0) {
             delta = -event.movementY;
         }
 
