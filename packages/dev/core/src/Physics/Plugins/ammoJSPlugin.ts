@@ -60,6 +60,9 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpAmmoVectorRCB: any;
     private _raycastResult: PhysicsRaycastResult;
     private _tmpContactPoint = new Vector3();
+    private _tmpContactNormal = new Vector3();
+    private _tmpContactDistance: number;
+    private _tmpContactImpulse: number;
     private _tmpVec3 = new Vector3();
 
     private static readonly _DISABLE_COLLISION_FLAG = 4;
@@ -97,9 +100,15 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoConcreteContactResultCallback.addSingleResult = (contactPoint: any) => {
             contactPoint = this.bjsAMMO.wrapPointer(contactPoint, this.bjsAMMO.btManifoldPoint);
             const worldPoint = contactPoint.getPositionWorldOnA();
+            const worldNormal = contactPoint.m_normalWorldOnB;
             this._tmpContactPoint.x = worldPoint.x();
             this._tmpContactPoint.y = worldPoint.y();
             this._tmpContactPoint.z = worldPoint.z();
+            this._tmpContactNormal.x = worldNormal.x();
+            this._tmpContactNormal.y = worldNormal.y();
+            this._tmpContactNormal.z = worldNormal.z();
+            this._tmpContactImpulse = contactPoint.getAppliedImpulse();
+            this._tmpContactDistance = contactPoint.getDistance();
             this._tmpContactCallbackResult = true;
         };
 
@@ -242,8 +251,20 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                         for (const otherImpostor of collideCallback.otherImpostors) {
                             if (mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()) {
                                 if (this._isImpostorPairInContact(mainImpostor, otherImpostor)) {
-                                    mainImpostor.onCollide({ body: otherImpostor.physicsBody, point: this._tmpContactPoint });
-                                    otherImpostor.onCollide({ body: mainImpostor.physicsBody, point: this._tmpContactPoint });
+                                    mainImpostor.onCollide({
+                                        body: otherImpostor.physicsBody,
+                                        point: this._tmpContactPoint,
+                                        distance: this._tmpContactDistance,
+                                        impulse: this._tmpContactImpulse,
+                                        normal: this._tmpContactNormal,
+                                    });
+                                    otherImpostor.onCollide({
+                                        body: mainImpostor.physicsBody,
+                                        point: this._tmpContactPoint,
+                                        distance: this._tmpContactDistance,
+                                        impulse: this._tmpContactImpulse,
+                                        normal: this._tmpContactNormal,
+                                    });
                                 }
                             }
                         }
