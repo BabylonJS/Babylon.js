@@ -10,11 +10,14 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import type { GlobalState } from "../../../../globalState";
 
 interface IColorPickerPropertyGridComponentProps {
     colorPickers: ColorPicker[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
@@ -27,7 +30,12 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={colorPickers} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={colorPickers}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="COLOR PICKER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

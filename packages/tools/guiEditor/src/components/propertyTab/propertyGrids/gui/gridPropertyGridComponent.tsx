@@ -17,11 +17,14 @@ import addGridElementDark from "shared-ui-components/imgs/addGridElementDark.svg
 import cancelGridElementDark from "shared-ui-components/imgs/cancelGridElementDark.svg";
 import valueChangedGridDark from "shared-ui-components/imgs/valueChangedGridDark.svg";
 import deleteGridElementDark from "shared-ui-components/imgs/deleteGridElementDark.svg";
+import type { GlobalState } from "../../../../globalState";
 
 interface IGridPropertyGridComponentProps {
     grids: Grid[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
     onUpdateRequiredObservable?: Observable<void>;
 }
 
@@ -300,7 +303,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={grids} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={grids}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="GRID" value=" " color="grey"></TextLineComponent>
                 {this.renderRows()}
