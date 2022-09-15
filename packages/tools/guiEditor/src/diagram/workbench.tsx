@@ -30,11 +30,6 @@ import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { DataStorage } from "core/Misc/dataStorage";
 
-
-
-
-
-
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
 }
