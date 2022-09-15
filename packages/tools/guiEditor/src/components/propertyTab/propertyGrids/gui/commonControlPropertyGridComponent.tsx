@@ -175,7 +175,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 (control as any)[alignment] = value;
             }
         }
-        this.forceUpdate()
+        this.forceUpdate();
     }
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
@@ -237,7 +237,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             const fonts = this.state.fontFamilyOptions;
             if (!(fonts.find((element: IInspectableOptions) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
                 setTimeout(() => {
-                    alert("This font is already available");
+                    if (this.props.globalState) {
+                        this.props.globalState.hostWindow.alert("This font is already available");
+                    }
                 }, 100);
 
                 return;
@@ -245,7 +247,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 if (!document.fonts.check(`12px "${newVal.label}"`)) {
                     //Settimeout used due to race conditions with other events
                     setTimeout(() => {
-                        alert("This font is not supported in the browser");
+                        if (this.props.globalState) {
+                            alert("This font is not supported in the browser");
+                        }
                     }, 100);
 
                     return;
