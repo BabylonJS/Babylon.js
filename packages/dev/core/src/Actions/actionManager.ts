@@ -274,7 +274,7 @@ export class ActionManager extends AbstractActionManager {
         }
 
         this.actions.push(action);
-        this.getScene()._registeredActionManagers++;
+        this.getScene()._registeredActions++;
 
         if (ActionManager.Triggers[action.trigger]) {
             ActionManager.Triggers[action.trigger]++;
@@ -302,7 +302,7 @@ export class ActionManager extends AbstractActionManager {
                 delete ActionManager.Triggers[action.trigger];
             }
             action._actionManager = null;
-            this.getScene()._registeredActionManagers--;
+            this.getScene()._registeredActions--;
             return true;
         }
         return false;

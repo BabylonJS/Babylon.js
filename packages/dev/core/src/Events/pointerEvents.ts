@@ -1,7 +1,8 @@
 import type { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
 import type { PickingInfo } from "../Collisions/pickingInfo";
-import type { IMouseEvent } from "./deviceInputEvents";
+import type { IMouseEvent, IPointerEvent } from "./deviceInputEvents";
+import type { InputManager } from "../Inputs/scene.inputManager";
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -104,35 +105,31 @@ export class PointerInfoPre extends PointerInfoBase {
  * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
  */
 export class PointerInfo extends PointerInfoBase {
-    private _getPickInfo: () => Nullable<PickingInfo>;
+    private _pickInfo: Nullable<PickingInfo>;
+    private _inputManager: Nullable<InputManager>;
 
     /**
      * Defines the picking info associated to the info (if any)
      */
     public get pickInfo(): Nullable<PickingInfo> {
-        return this._getPickInfo();
+        if (this._inputManager) {
+            this._pickInfo = this._inputManager._pickMove((this.event as IPointerEvent).pointerId);
+            this._inputManager = null;
+        }
+
+        return this._pickInfo;
     }
     /**
      * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
      * @param type Defines the type of event (PointerEventTypes)
      * @param event Defines the related dom event
-     * @param pickInfo Defines the picking info associated to the info (if any)\
+     * @param pickInfo Defines the picking info associated to the info (if any)
+     * @param inputManager Defines the InputManager to use if there is no pickInfo
      */
-    constructor(type: number, event: IMouseEvent, pickInfo: Nullable<PickingInfo> | (() => Nullable<PickingInfo>)) {
+    constructor(type: number, event: IMouseEvent, pickInfo: Nullable<PickingInfo>, inputManager: Nullable<InputManager> = null) {
         super(type, event);
-
-        if (typeof pickInfo === "function") {
-            let info: Nullable<PickingInfo> = null;
-            this._getPickInfo = () => {
-                if (!info) {
-                    info = pickInfo();
-                }
-
-                return info;
-            };
-        } else {
-            this._getPickInfo = () => pickInfo;
-        }
+        this._pickInfo = pickInfo;
+        this._inputManager = inputManager;
     }
 }
 

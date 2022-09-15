@@ -4884,9 +4884,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return false;
     }
 
-    /** @hidden */
-    public _registeredActionManagers: number = 0;
-
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
      * @param y position on screen
