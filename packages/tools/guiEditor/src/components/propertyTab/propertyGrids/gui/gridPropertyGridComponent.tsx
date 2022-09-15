@@ -26,7 +26,6 @@ interface IGridPropertyGridComponentProps {
     onFontsParsedObservable?: Observable<void>;
     globalState?: GlobalState;
     onUpdateRequiredObservable?: Observable<void>;
-
 }
 
 export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
