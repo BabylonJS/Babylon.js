@@ -118,6 +118,7 @@ export class InputManager {
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
+    private _movePointerInfo: Nullable<PointerInfo> = null;
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -144,6 +145,12 @@ export class InputManager {
      * @returns Mesh that the pointer is pointer is hovering over
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
+        // If we have saved PointerInfo, checking is associated pickInfo, will trigger a new pick and call setPointerOverMesh implicitly
+        if (this._movePointerInfo && this._movePointerInfo.pickInfo) {
+            this._setRayOnPointerInfo(this._movePointerInfo);
+            this._movePointerInfo = null;
+        }
+
         return this._pointerOverMesh;
     }
 
@@ -223,18 +230,20 @@ export class InputManager {
             pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
         }
 
-        if (pickResult) {
-            const type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+        const type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
-            if (scene.onPointerMove) {
-                scene.onPointerMove(evt, pickResult, type);
-            }
+        if (scene.onPointerMove && pickResult) {
+            scene.onPointerMove(evt, pickResult, type);
+        }
 
-            if (scene.onPointerObservable.hasObservers()) {
-                const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
-                scene.onPointerObservable.notifyObservers(pi, type);
-            }
+        // Always generate a PointerInfo, event if we don't have a pickResult, save pointerInfo to use with getter for meshUnderPointer
+        const pi = pickResult ? new PointerInfo(type, evt, pickResult) : new PointerInfo(type, evt, null, this);
+        if (!pickResult) {
+            this._movePointerInfo = pi;
+        }
+        if (scene.onPointerObservable.hasObservers()) {
+            this._setRayOnPointerInfo(pi);
+            scene.onPointerObservable.notifyObservers(pi, type);
         }
     }
 
