@@ -230,7 +230,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
-        this._setRenderTarget(null);
+        this._currentTarget = this.defaultRT;
     }
 
     /**
