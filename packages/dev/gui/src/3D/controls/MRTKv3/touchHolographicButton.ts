@@ -1,39 +1,39 @@
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Control3D } from "./control3D";
+import type { Control3D } from "../control3D";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
-import type { Vector3WithInfo } from "../vector3WithInfo";
+import type { Vector3WithInfo } from "../../vector3WithInfo";
 
-import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
+import { AdvancedDynamicTexture } from "../../../2D/advancedDynamicTexture";
 import { Animation } from "core/Animations/animation";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { Control } from "../../2D/controls/control";
+import { Control } from "../../../2D/controls/control";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { DomManagement } from "core/Misc/domManagement";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
-import { Grid } from "../../2D/controls/grid";
-import { Image } from "../../2D/controls/image";
-import { MRDLBackglowMaterial } from "../materials/mrdl/mrdlBackglowMaterial";
-import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
-import { MRDLFrontplateMaterial } from "../materials/mrdl/mrdlFrontplateMaterial";
-import { MRDLInnerquadMaterial } from "../materials/mrdl/mrdlInnerquadMaterial";
-import { Rectangle } from "../../2D/controls/rectangle";
+import { Grid } from "../../../2D/controls/grid";
+import { Image } from "../../../2D/controls/image";
+import { MRDLBackglowMaterial } from "../../materials/mrdl/mrdlBackglowMaterial";
+import { MRDLBackplateMaterial } from "../../materials/mrdl/mrdlBackplateMaterial";
+import { MRDLFrontplateMaterial } from "../../materials/mrdl/mrdlFrontplateMaterial";
+import { MRDLInnerquadMaterial } from "../../materials/mrdl/mrdlInnerquadMaterial";
+import { Rectangle } from "../../../2D/controls/rectangle";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { StackPanel } from "../../2D/controls/stackPanel";
+import { StackPanel } from "../../../2D/controls/stackPanel";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { TextBlock } from "../../2D/controls/textBlock";
-import { TouchButton3D } from "./touchButton3D";
+import { TextBlock } from "../../../2D/controls/textBlock";
+import { TouchButton3D } from "../touchButton3D";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Class used to create the mrtkv3 button
  */
-export class TouchHolographicV3Button extends TouchButton3D {
+export class TouchHolographicButton extends TouchButton3D {
     /**
      * Base Url for the frontplate model.
      */
@@ -425,7 +425,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
     }
 
     protected _getTypeName(): string {
-        return "TouchHolographicV3Button";
+        return "TouchHolographicButton";
     }
 
     private _rebuildContent(): void {
@@ -550,7 +550,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        this.name = this.name ?? "TouchHolographicV3Button";
+        this.name = this.name ?? "TouchHolographicButton";
 
         const backPlateMesh = this._createBackPlate(scene);
         const collisionMesh = this._createFrontPlate(scene);
@@ -590,7 +590,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         backPlateMesh.visibility = 0;
         backPlateMesh.scaling.z = 0.2;
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.BACKPLATE_MODEL_BASE_URL, TouchHolographicV3Button.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.BACKPLATE_MODEL_BASE_URL, TouchHolographicButton.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
             const backPlateModel = result.meshes[1];
             backPlateModel.visibility = 0;
 
@@ -628,7 +628,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this._backPlateDepth - this._frontPlateDepth) / 2);
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.FRONTPLATE_MODEL_BASE_URL, TouchHolographicV3Button.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.FRONTPLATE_MODEL_BASE_URL, TouchHolographicButton.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
             const collisionPlate = CreateBox(
                 `${this.name}_collisionPlate`,
                 {
@@ -674,7 +674,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         innerQuadMesh.scaling.z = this._flatPlaneDepth;
         innerQuadMesh.position.z += this._backPlateDepth / 2 - this._flatPlaneDepth;
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.INNERQUAD_MODEL_BASE_URL, TouchHolographicV3Button.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.INNERQUAD_MODEL_BASE_URL, TouchHolographicButton.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
             const innerQuadModel = result.meshes[1];
             innerQuadModel.name = `${this.name}_innerQuad`;
             innerQuadModel.isPickable = false;
@@ -703,7 +703,7 @@ export class TouchHolographicV3Button extends TouchButton3D {
         backGlowMesh.scaling.z = this._flatPlaneDepth;
         backGlowMesh.position.z += this._backPlateDepth / 2 - this._flatPlaneDepth * 2;
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicV3Button.BACKGLOW_MODEL_BASE_URL, TouchHolographicV3Button.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.BACKGLOW_MODEL_BASE_URL, TouchHolographicButton.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
             const backGlowModel = result.meshes[1];
             backGlowModel.name = `${this.name}_backGlow`;
             backGlowModel.isPickable = false;

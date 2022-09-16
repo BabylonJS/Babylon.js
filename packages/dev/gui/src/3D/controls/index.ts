@@ -19,4 +19,7 @@ export * from "./touchMeshButton3D";
 export * from "./touchHolographicButton";
 export * from "./touchHolographicMenu";
 export * from "./volumeBasedPanel";
-export * from "./touchHolographicV3Button";
+
+// MRTKv3 Controls
+import { TouchHolographicButton } from "./MRTKv3/touchHolographicButton";
+export { TouchHolographicButton as TouchHolographicButtonV3 };
