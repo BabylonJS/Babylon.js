@@ -47,6 +47,7 @@ const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer ca
 const CONTROL_OFFSET = 10; //offset in pixels for when a control is added to editor
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
+    private _mouseDown: boolean;
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
     private _mouseStartPoint: Nullable<Vector2> = null;
@@ -894,6 +895,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.synchronizeLiveGUI();
 
         new ArcRotateCamera("Camera", 0, 0, 0, Vector3.Zero(), this._scene);
+
         // This attaches the mouse controls
         this.addControls(this._scene);
 
@@ -1044,6 +1046,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else if (event.detail) {
             delta = -event.detail;
         }
+
+        this.zooming(1 + delta / 1000);
+    }
+
+    zoomDrag(event: React.MouseEvent) {
+        let delta = 0;
+        if (event.movementY !== 0) {
+            delta = -event.movementY;
+        }
+
         this.zooming(1 + delta / 1000);
     }
 
@@ -1076,15 +1088,28 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             <canvas
                 id="workbench-canvas"
                 onPointerMove={(evt) => {
+                    if (this._mouseDown) {
+                        this.zoomDrag(evt);
+                    }
+
                     if (this.props.globalState.guiTexture) {
                         this.onMove(evt);
                     }
+
                     this.props.globalState.onPointerMoveObservable.notifyObservers(evt);
                 }}
-                onPointerDown={(evt) => this.onDown(evt)}
+                onPointerDown={(evt) => {
+                    this.onDown(evt);
+                    if (this._controlsHit.length === 0) {
+                        this._mouseDown = true;
+                    } else {
+                        this._mouseDown = false;
+                    }
+                }}
                 onPointerUp={(evt) => {
                     this.onUp(evt);
                     this.props.globalState.onPointerUpObservable.notifyObservers(evt);
+                    this._mouseDown = false;
                 }}
                 onWheel={(evt) => this.zoomWheel(evt)}
                 onContextMenu={(evt) => evt.preventDefault()}
