@@ -73,7 +73,7 @@ export class TouchCamera extends FreeCamera {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "TouchCamera";

@@ -388,7 +388,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * Calculates the lowest radius for the camera based on the bounding box of the mesh.
      * @param minimumWorld
      * @param maximumWorld
-     * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
+     * @returns The minimum distance from the primary mesh's center point at which the camera must be kept in order
      *		 to fully enclose the mesh in the viewing frustum.
      */
     protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number {

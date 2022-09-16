@@ -4,11 +4,14 @@ import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedE
 import type { Control } from "gui/2D/controls/control";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GlobalState } from "../../../../globalState";
 
 interface IControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class ControlPropertyGridComponent extends React.Component<IControlPropertyGridComponentProps> {
@@ -21,7 +24,13 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={controls} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={controls}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
             </div>
         );
     }

@@ -545,7 +545,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @return true if the node is ready
+     * @returns true if the node is ready
      */
     public isReady(completeCheck = false): boolean {
         return this._nodeDataStorage._isReady;
@@ -566,7 +566,7 @@ export class Node implements IBehaviorAware<Node> {
      * Is this node enabled?
      * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true
      * @param checkAncestors indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors
-     * @return whether this node (and its parent) is enabled
+     * @returns whether this node (and its parent) is enabled
      */
     public isEnabled(checkAncestors: boolean = true): boolean {
         if (checkAncestors === false) {
@@ -651,7 +651,7 @@ export class Node implements IBehaviorAware<Node> {
      * Will return all nodes that have this node as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all children nodes of all types
+     * @returns all children nodes of all types
      */
     public getDescendants<T extends Node>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
 
@@ -659,7 +659,7 @@ export class Node implements IBehaviorAware<Node> {
      * Will return all nodes that have this node as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all children nodes of all types
+     * @returns all children nodes of all types
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
 
@@ -667,7 +667,7 @@ export class Node implements IBehaviorAware<Node> {
      * Will return all nodes that have this node as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all children nodes of all types
+     * @returns all children nodes of all types
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
         const results = new Array<Node>();

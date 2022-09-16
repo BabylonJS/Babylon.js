@@ -59,12 +59,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _doubleClick: Nullable<Control> = null;
     public _liveGuiTextureRerender: boolean = true;
+    private _currLeft: number = 0;
+    private _currTop: number = 0;
     private _controlsHit: Control[] = [];
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
-    private _currLeft: number = 0;
-    private _currTop: number = 0;
+    private static _addedFonts: string[] = [];
+    public static get addedFonts() {
+        return this._addedFonts;
+    }
+
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
@@ -519,12 +524,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         this.props.globalState.guiTexture.rootContainer.getDescendants().forEach((guiElement) => {
+            WorkbenchComponent._addedFonts.push(guiElement.fontFamily);
             this.addEditorBehavior(guiElement);
         });
 
         this._isOverGUINode = [];
         this.props.globalState.setSelection([]);
         this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
+        this.props.globalState.onFontsParsedObservable.notifyObservers();
     }
 
     public updateNodeOutlines() {
@@ -758,10 +765,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     processSelection() {
         // if hit nothing, deselect all
+        if (this.props.globalState.usePrevSelected) {
+            this.props.globalState.usePrevSelected = false;
+            return;
+        }
         if (this._controlsHit.length === 0) {
             this.props.globalState.setSelection([]);
             return;
         }
+
         // if child of selected control -> select on double click
         for (const control of this._controlsHit) {
             if (this.props.globalState.selectedControls.includes(control.parent!)) {

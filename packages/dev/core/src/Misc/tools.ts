@@ -149,7 +149,7 @@ export class Tools {
      * @param a The lower value (returned when alpha = 0)
      * @param b The upper value (returned when alpha = 1)
      * @param alpha The interpolation-factor
-     * @return The mixed value
+     * @returns The mixed value
      */
     public static Mix(a: number, b: number, alpha: number): number {
         return a * (1 - alpha) + b * alpha;
@@ -621,7 +621,7 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
-     * @return a void promise
+     * @returns a void promise
      */
     public static async DumpFramebuffer(
         width: number,
@@ -739,7 +739,7 @@ export class Tools {
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
      * @param quality defines the quality of the result
-     * @return a promise that resolve to the final data
+     * @returns a promise that resolve to the final data
      */
     public static DumpDataAsync(
         width: number,
@@ -1024,7 +1024,7 @@ export class Tools {
      * Test if the given uri is a base64 string
      * @deprecated Please use FileTools.IsBase64DataUrl instead.
      * @param uri The uri to test
-     * @return True if the uri is a base64 string or false otherwise
+     * @returns True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
         return IsBase64DataUrl(uri);
@@ -1034,7 +1034,7 @@ export class Tools {
      * Decode the given base64 uri.
      * @deprecated Please use FileTools.DecodeBase64UrlToBinary instead.
      * @param uri The uri to decode
-     * @return The decoded base64 data.
+     * @returns The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
         return DecodeBase64UrlToBinary(uri);
@@ -1289,7 +1289,7 @@ export class Tools {
      * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator or implementing a method getClassName():string (in which case the module won't be specified).
      * @param object the object to get the class name from
      * @param isType defines if the object is actually a type
-     * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
+     * @returns a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
      * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention

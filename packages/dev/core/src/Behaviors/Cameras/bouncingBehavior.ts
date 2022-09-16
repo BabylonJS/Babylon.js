@@ -147,7 +147,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     /**
      * Checks if the camera radius is at the specified limit. Takes into account animation locks.
      * @param radiusLimit The limit to check against.
-     * @return Bool to indicate if at limit.
+     * @returns Bool to indicate if at limit.
      */
     private _isRadiusAtLimit(radiusLimit: Nullable<number>): boolean {
         if (!this._attachedCamera) {

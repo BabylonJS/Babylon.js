@@ -327,7 +327,7 @@ export class BoundingBox implements ICullable {
      * Tests if a bounding box defined with 8 vectors is entirely inside frustum planes
      * @param boundingVectors defines an array of 8 vectors representing a bounding box
      * @param frustumPlanes defines the frustum planes to test
-     * @return true if there is an inclusion
+     * @returns true if there is an inclusion
      */
     public static IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
         for (let p = 0; p < 6; ++p) {
@@ -345,7 +345,7 @@ export class BoundingBox implements ICullable {
      * Tests if a bounding box defined with 8 vectors intersects frustum planes
      * @param boundingVectors defines an array of 8 vectors representing a bounding box
      * @param frustumPlanes defines the frustum planes to test
-     * @return true if there is an intersection
+     * @returns true if there is an intersection
      */
     public static IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
         for (let p = 0; p < 6; ++p) {

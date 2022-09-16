@@ -75,8 +75,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 continue;
             }
 
-            mainImpostor.onCollide({ body: collidingImpostor.physicsBody, point: null });
-            collidingImpostor.onCollide({ body: mainImpostor.physicsBody, point: null });
+            mainImpostor.onCollide({ body: collidingImpostor.physicsBody, point: null, distance: 0, impulse: 0, normal: null });
+            collidingImpostor.onCollide({ body: mainImpostor.physicsBody, point: null, distance: 0, impulse: 0, normal: null });
             contact = contact.next;
         }
     }
@@ -86,7 +86,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         impostor.physicsBody.applyImpulse(contactPoint.scale(this.world.invScale), force.scale(this.world.invScale * mass));
     }
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-        Logger.Warn("Oimo doesn't support applying force. Using impule instead.");
+        Logger.Warn("Oimo doesn't support applying force. Using impulse instead.");
         this.applyImpulse(impostor, force, contactPoint);
     }
     public generatePhysicsBody(impostor: PhysicsImpostor) {
