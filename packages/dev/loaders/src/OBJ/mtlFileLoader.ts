@@ -196,7 +196,7 @@ export class MTLFileLoader {
      * @param rootUrl The root url to load from
      * @param value The value stored in the mtl
      * @param scene
-     * @return The Texture
+     * @returns The Texture
      */
     private static _GetTexture(rootUrl: string, value: string, scene: Scene): Nullable<Texture> {
         if (!value) {

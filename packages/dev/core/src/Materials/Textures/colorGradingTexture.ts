@@ -279,7 +279,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Parses a color grading texture serialized by Babylon.
      * @param parsedTexture The texture information being parsedTexture
      * @param scene The scene to load the texture in
-     * @return A color grading texture
+     * @returns A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
         let texture = null;

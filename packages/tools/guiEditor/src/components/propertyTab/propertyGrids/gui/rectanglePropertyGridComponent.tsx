@@ -13,11 +13,14 @@ import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IRectanglePropertyGridComponentProps {
     rectangles: Rectangle[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class RectanglePropertyGridComponent extends React.Component<IRectanglePropertyGridComponentProps> {
@@ -31,7 +34,13 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={rectangles}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">

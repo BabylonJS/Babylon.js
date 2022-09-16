@@ -178,7 +178,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @return {boolean} is it ready
+     * @returns {boolean} is it ready
      */
     public isReady(completeCheck = false): boolean {
         return this._sourceMesh.isReady(completeCheck, true);
@@ -453,17 +453,16 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Creates a new InstancedMesh from the current mesh.
-     * - name (string) : the cloned mesh name
-     * - newParent (optional Node) : the optional Node to parent the clone to.
-     * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
      *
      * Returns the clone.
-     * @param name
-     * @param newParent
-     * @param doNotCloneChildren
+     * @param name the cloned mesh name
+     * @param newParent the optional Node to parent the clone to.
+     * @param doNotCloneChildren if `true` the model children aren't cloned.
+     * @param newSourceMesh if set this mesh will be used as the source mesh instead of ths instance's one
+     * @returns the clone
      */
-    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): InstancedMesh {
-        const result = this._sourceMesh.createInstance(name);
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, newSourceMesh?: Mesh): InstancedMesh {
+        const result = (newSourceMesh || this._sourceMesh).createInstance(name);
 
         // Deep copy
         DeepCopier.DeepCopy(
@@ -551,6 +550,35 @@ export class InstancedMesh extends AbstractMesh {
 
         serializationObject.parentId = this._sourceMesh.uniqueId;
         serializationObject.parentInstanceIndex = this._indexInSourceMeshInstanceArray;
+    }
+
+    /**
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
+     * @param options.newSourcedMesh newSourcedMesh the new source mesh for the instance (or clone)
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+     * @returns an instance (or a clone) of the current node with its hierarchy
+     */
+    public instantiateHierarchy(
+        newParent: Nullable<TransformNode> = null,
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean); newSourcedMesh?: Mesh },
+        onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
+    ): Nullable<TransformNode> {
+        const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true, options && options.newSourcedMesh);
+
+        if (clone) {
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, clone);
+            }
+        }
+
+        for (const child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarchy(clone, options, onNewNodeCreated);
+        }
+
+        return clone;
     }
 }
 

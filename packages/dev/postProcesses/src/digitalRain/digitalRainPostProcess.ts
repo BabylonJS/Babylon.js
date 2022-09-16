@@ -92,7 +92,7 @@ export class DigitalRainFontTexture extends BaseTexture {
     /**
      * Gets the max char width of a font.
      * @param font the font to use, use the W3C CSS notation
-     * @return the max char width
+     * @returns the max char width
      */
     private _getFontWidth(font: string): number {
         const fontDraw = document.createElement("canvas");
@@ -107,7 +107,7 @@ export class DigitalRainFontTexture extends BaseTexture {
     /**
      * Gets the max char height of a font.
      * @param font the font to use, use the W3C CSS notation
-     * @return the max char height
+     * @returns the max char height
      */
     private _getFontHeight(font: string): { height: number; offset: number } {
         const fontDraw = document.createElement("canvas");
@@ -143,7 +143,7 @@ export class DigitalRainFontTexture extends BaseTexture {
 
     /**
      * Clones the current DigitalRainFontTexture.
-     * @return the clone of the texture.
+     * @returns the clone of the texture.
      */
     public clone(): DigitalRainFontTexture {
         return new DigitalRainFontTexture(this.name, this._font, this._text, this.getScene());
@@ -153,7 +153,7 @@ export class DigitalRainFontTexture extends BaseTexture {
      * Parses a json object representing the texture and returns an instance of it.
      * @param source the source JSON representation
      * @param scene the scene to create the texture for
-     * @return the parsed texture
+     * @returns the parsed texture
      */
     public static Parse(source: any, scene: Scene): DigitalRainFontTexture {
         const texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene), source, scene, null);

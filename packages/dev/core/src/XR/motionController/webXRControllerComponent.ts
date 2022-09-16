@@ -171,7 +171,7 @@ export class WebXRControllerComponent implements IDisposable {
 
     /**
      * Are there axes correlating to this component
-     * @return true is axes data is available
+     * @returns true is axes data is available
      */
     public isAxes(): boolean {
         return this._axesIndices.length !== 0;

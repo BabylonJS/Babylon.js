@@ -8,6 +8,8 @@ import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/partic
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import localStyles from "./textureDisplayManager.modules.scss";
+import commonStyles from "./common.modules.scss";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -35,21 +37,21 @@ export class TextureDisplayManager implements IDisplayManager {
         const textureBlock = block as TextureBlock | ReflectionTextureBlock | RefractionBlock | CurrentScreenBlock;
 
         if (!this._previewCanvas) {
-            contentArea.classList.add("texture-block");
+            contentArea.classList.add(commonStyles["texture-block"]);
             if (block instanceof TextureBlock) {
-                contentArea.classList.add("regular-texture-block");
+                contentArea.classList.add(localStyles["regular-texture-block"]);
             }
             if (block instanceof ReflectionTextureBlock || block instanceof ReflectionBlock) {
-                contentArea.classList.add("reflection-block");
+                contentArea.classList.add(localStyles["reflection-block"]);
             }
             if (block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
-                contentArea.classList.add("reduced-texture-block");
+                contentArea.classList.add(localStyles["reduced-texture-block"]);
             }
 
             this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
             this._previewImage = contentArea.ownerDocument!.createElement("img");
             contentArea.appendChild(this._previewImage);
-            this._previewImage.classList.add("empty");
+            this._previewImage.classList.add(commonStyles.empty);
         }
 
         if (textureBlock.texture) {
@@ -66,11 +68,11 @@ export class TextureDisplayManager implements IDisplayManager {
                 },
                 () => {
                     this._previewImage.src = this._previewCanvas.toDataURL("image/png");
-                    this._previewImage.classList.remove("empty");
+                    this._previewImage.classList.remove(commonStyles.empty);
                 }
             );
         } else {
-            this._previewImage.classList.add("empty");
+            this._previewImage.classList.add(commonStyles.empty);
         }
     }
 }

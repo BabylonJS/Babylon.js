@@ -28,6 +28,7 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
+import { DataStorage } from "core/Misc/dataStorage";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -43,6 +44,7 @@ const ARROW_KEY_MOVEMENT_SMALL = 1; // px
 const ARROW_KEY_MOVEMENT_LARGE = 5; // px
 
 const MAX_POINTER_TRAVEL_DISTANCE = 5; //px^2. determines how far the pointer can move to be treated as a drag vs. a click
+const CONTROL_OFFSET = 10; //offset in pixels for when a control is added to editor
 
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
@@ -57,13 +59,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _doubleClick: Nullable<Control> = null;
     public _liveGuiTextureRerender: boolean = true;
+    private _currLeft: number = 0;
+    private _currTop: number = 0;
     private _controlsHit: Control[] = [];
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
+    private static _addedFonts: string[] = [];
+    public static get addedFonts() {
+        return this._addedFonts;
+    }
+
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
     }
+
     private _panAndZoomContainer: Container;
     public get panAndZoomContainer() {
         return this._panAndZoomContainer;
@@ -279,7 +289,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             const obj = {};
             control.serialize(obj);
             controlList.push(obj);
+            this._currLeft = control.leftInPixels;
+            this._currTop = control.topInPixels;
         }
+
         copyFn(
             JSON.stringify({
                 GUIClipboard: true,
@@ -301,8 +314,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (const control of parsed.controls) {
                     newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
                 }
-                this.props.globalState.selectedControls[0].parent?.addControl(newSelection[0]);
-                this.props.globalState.setSelection(newSelection);
+
+                if (newSelection[0].parent?.typeName != "StackPanel") {
+                    this._currLeft += CONTROL_OFFSET;
+                    this._currTop += CONTROL_OFFSET;
+                }
+
+                newSelection[0].leftInPixels = this._currLeft;
+                newSelection[0].topInPixels = this._currTop;
+
+                const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
+                this.props.globalState.setSelection([newGuiNode]);
+
                 return true;
             }
         } catch {
@@ -501,12 +524,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         this.props.globalState.guiTexture.rootContainer.getDescendants().forEach((guiElement) => {
+            WorkbenchComponent._addedFonts.push(guiElement.fontFamily);
             this.addEditorBehavior(guiElement);
         });
 
         this._isOverGUINode = [];
         this.props.globalState.setSelection([]);
         this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
+        this.props.globalState.onFontsParsedObservable.notifyObservers();
     }
 
     public updateNodeOutlines() {
@@ -522,7 +547,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this.addEditorBehavior(guiElement);
         guiElement.getDescendants(true).forEach((desc) => this.addEditorBehavior(desc));
-        this.trueRootContainer.addControl(guiElement);
+        if (this.props.globalState.selectedControls.length != 0) {
+            this.props.globalState.selectedControls[0].parent?.addControl(guiElement);
+        } else {
+            this.trueRootContainer.addControl(guiElement);
+        }
         return guiElement;
     }
     private parent(dropLocationControl: Nullable<Control>) {
@@ -736,10 +765,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     processSelection() {
         // if hit nothing, deselect all
+        if (this.props.globalState.usePrevSelected) {
+            this.props.globalState.usePrevSelected = false;
+            return;
+        }
         if (this._controlsHit.length === 0) {
             this.props.globalState.setSelection([]);
             return;
         }
+
         // if child of selected control -> select on double click
         for (const control of this._controlsHit) {
             if (this.props.globalState.selectedControls.includes(control.parent!)) {
@@ -816,8 +850,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
-    public createGUICanvas() {
+    public createGUICanvas(embed?: boolean) {
         // Get the canvas element from the DOM.
+
         const canvas = this._rootContainer.current as HTMLCanvasElement;
         // Associate a Babylon Engine to it.
         this._engine = new Engine(canvas);
@@ -829,7 +864,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        this._guiSize = this._defaultGUISize;
+        if (embed) {
+            this.props.globalState.fromPG = true;
+            this._guiSize.width = DataStorage.ReadNumber("width", 1024);
+            this._guiSize.height = DataStorage.ReadNumber("height", 1024);
+        }
 
         this._panAndZoomContainer = new Container("panAndZoom");
         this._panAndZoomContainer.clipContent = false;

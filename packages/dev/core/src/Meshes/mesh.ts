@@ -9,6 +9,7 @@ import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "..
 import type { Nullable, FloatArray, IndicesArray } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
+import { ScenePerformancePriority } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { Engine } from "../Engines/engine";
@@ -741,7 +742,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         for (const child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarchy(instance, options, onNewNodeCreated);
+            // instancedMesh should have a different sourced mesh
+            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh") {
+                (child as InstancedMesh).instantiateHierarchy(
+                    instance,
+                    {
+                        doNotInstantiate: (options && options.doNotInstantiate) || false,
+                        newSourcedMesh: instance as Mesh,
+                    },
+                    onNewNodeCreated
+                );
+            } else {
+                child.instantiateHierarchy(instance, options, onNewNodeCreated);
+            }
         }
 
         return instance;
@@ -835,7 +848,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
      * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
      * @param mesh The mesh to be added as LOD level (can be null)
-     * @return This mesh (for chaining)
+     * @returns This mesh (for chaining)
      */
     public addLODLevel(distanceOrScreenCoverage: number, mesh: Nullable<Mesh>): Mesh {
         if (mesh && mesh._masterMesh) {
@@ -877,7 +890,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Remove a mesh from the LOD array
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param mesh defines the mesh to be removed
-     * @return This mesh (for chaining)
+     * @returns This mesh (for chaining)
      */
     public removeLODLevel(mesh: Mesh): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
@@ -899,7 +912,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param camera defines the camera to use to compute distance
      * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
-     * @return This mesh (for chaining)
+     * @returns This mesh (for chaining)
      */
     public getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
         const internalDataInfo = this._internalMeshDataInfo;
@@ -1823,6 +1836,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             batchCache.visibleInstances[subMeshId] !== null &&
             batchCache.visibleInstances[subMeshId] !== undefined;
         this._instanceDataStorage.previousBatch = batchCache;
+
         return batchCache;
     }
 
@@ -2352,6 +2366,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             oldCamera.maxZ = oldCameraMaxZ;
             scene.updateTransformMatrix(true);
         }
+
+        if (scene.performancePriority === ScenePerformancePriority.Aggressive && !instanceDataStorage.isFrozen) {
+            this._freeze();
+        }
+
         return this;
     }
 
@@ -4423,12 +4442,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
-     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
-     * @param disposeSource when true (default), dispose of the vertices from the source meshes
-     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
-     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
-     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @param meshes array of meshes with the vertices to merge. Entries cannot be empty meshes.
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes.
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true.
+     * @param meshSubclass (optional) can be set to a Mesh where the merged vertices will be inserted.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh into subMeshes.
+     * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
     public static MergeMeshes(
@@ -4444,12 +4463,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Merge the array of meshes into a single mesh for performance reasons.
-     * @param meshes defines he vertices source.  They should all be of the same material.  Entries can empty
-     * @param disposeSource when true (default), dispose of the vertices from the source meshes
-     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true
-     * @param meshSubclass when set, vertices inserted into this Mesh.  Meshes can then be merged into a Mesh sub-class.
-     * @param subdivideWithSubMeshes when true (false default), subdivide mesh to his subMesh array with meshes source.
-     * @param multiMultiMaterials when true (false default), subdivide mesh and accept multiple multi materials, ignores subdivideWithSubMeshes.
+     * @param meshes array of meshes with the vertices to merge. Entries cannot be empty meshes.
+     * @param disposeSource when true (default), dispose of the vertices from the source meshes.
+     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true.
+     * @param meshSubclass (optional) can be set to a Mesh where the merged vertices will be inserted.
+     * @param subdivideWithSubMeshes when true (false default), subdivide mesh into subMeshes.
+     * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
      * @returns a new mesh
      */
     public static MergeMeshesAsync(

@@ -39,6 +39,7 @@ import shadowColorIcon from "shared-ui-components/imgs/shadowColorIcon.svg";
 import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -50,21 +51,49 @@ import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnl
 import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
+
+import { WorkbenchComponent } from "../../../../diagram/workbench";
+import type { GlobalState } from "../../../../globalState";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     hideDimensions?: boolean;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
+}
+interface ICommonControlPropertyGridComponentState {
+    fontFamilyOptions: IInspectableOptions[];
+    value: number;
 }
 
-type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize";
+type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
 
-export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
+    private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+        this.state = {
+            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts")))
+                ? JSON.parse(String(window.sessionStorage.getItem("fonts")))
+                : [
+                      { label: "Custom Font", value: 0 },
+                      { label: "Arial", value: 1 },
+                      { label: "Verdana", value: 2 },
+                      { label: "Helvetica", value: 3 },
+                      { label: "Trebuchet MS", value: 4 },
+                      { label: "Times New Roman", value: 5 },
+                      { label: "Georgia", value: 6 },
+                      { label: "Garamond", value: 7 },
+                      { label: "Courier New", value: 8 },
+                      { label: "Brush Script MT", value: 9 },
+                  ],
+            value: 0,
+        };
 
         const controls = this.props.controls;
         for (const control of controls) {
@@ -74,7 +103,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
             control.metadata._previousCenter = transformed;
         }
-
+        this._onFontsParsedObserver = this.props.onFontsParsedObservable?.add(() => {
+            this._checkFontsInLayout();
+        });
         this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
             const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
             for (const control of controls) {
@@ -96,6 +127,37 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 }
             }
         });
+    }
+
+    componentWillMount() {
+        this._checkFontsInLayout();
+    }
+
+    private _checkFontsInLayout() {
+        const correctFonts: IInspectableOptions[] = [];
+        correctFonts.push({ label: "Custom Font", value: 0 });
+        for (const font of this.state.fontFamilyOptions.values()) {
+            if (document.fonts.check(`12px "${font.label}"`) && font.label != "Custom Font") {
+                correctFonts.push(font);
+            }
+        }
+        const correctLabels = correctFonts.map((element) => element.label);
+
+        const moreFonts = WorkbenchComponent.addedFonts;
+
+        for (let i = 0; i < moreFonts.length; i++) {
+            if (!correctLabels.includes(moreFonts[i]) && document.fonts.check(`12px "${moreFonts[i]}"`)) {
+                correctFonts.push({ label: moreFonts[i], value: correctFonts.length + 1 });
+                correctLabels.push(moreFonts[i]);
+            } else if (!document.fonts.check(`12px "${moreFonts[i]}"`)) {
+                alert("The font " + moreFonts[i] + " is unable to load");
+            }
+        }
+
+        this.setState({
+            fontFamilyOptions: correctFonts,
+        });
+        window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
@@ -161,9 +223,78 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
+    public addVal = (newVal: { label: string; value: number }, prevVal: number) => {
+        if (newVal.label === "") {
+            return;
+        }
+        if (this.props.globalState) {
+            this.props.globalState.usePrevSelected = true;
+        }
+
+        (async () => {
+            await document.fonts.ready;
+            let displayVal = false;
+            const fonts = this.state.fontFamilyOptions;
+            if (!(fonts.find((element: IInspectableOptions) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
+                setTimeout(() => {
+                    if (this.props.globalState) {
+                        this.props.globalState.hostWindow.alert("This font is already available");
+                    }
+                }, 100);
+
+                return;
+            } else {
+                if (!document.fonts.check(`12px "${newVal.label}"`)) {
+                    //Settimeout used due to race conditions with other events
+                    setTimeout(() => {
+                        if (this.props.globalState) {
+                            alert("This font is not supported in the browser");
+                        }
+                    }, 100);
+
+                    return;
+                } else {
+                    fonts.push(newVal);
+                    this.setState({
+                        fontFamilyOptions: [...fonts],
+                    });
+                    displayVal = true;
+                }
+            }
+
+            window.sessionStorage.setItem("fonts", JSON.stringify(this.state.fontFamilyOptions));
+
+            if (displayVal) {
+                this.selectCustomVal();
+            } else {
+                this.keepPrevVal(prevVal);
+            }
+        })();
+    };
+
+    selectCustomVal() {
+        const proxy = makeTargetsProxy(this.props.controls, this.props.onPropertyChangedObservable);
+        const fonts = this.state.fontFamilyOptions;
+
+        proxy.fontFamily = fonts.at(fonts.length - 1)?.label ?? "";
+
+        this.setState({ value: fonts.length });
+        window.sessionStorage.setItem("fonts", JSON.stringify(this.state.fontFamilyOptions));
+    }
+    keepPrevVal(prevVal: number) {
+        const proxy = makeTargetsProxy(this.props.controls, this.props.onPropertyChangedObservable);
+
+        proxy.fontFamily = this.state.fontFamilyOptions.filter(({ value }) => value === prevVal).map(({ label }) => label)[0];
+
+        this.setState({ value: prevVal });
+    }
+
     componentWillUnmount() {
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
+        }
+        if (this._onFontsParsedObserver) {
+            this.props.onFontsParsedObservable?.remove(this._onFontsParsedObserver);
         }
     }
 
@@ -258,6 +389,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             heightUnitsLocked = false;
 
         const parent = controls[0].parent;
+
+        const fonts = this.state.fontFamilyOptions;
+
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
                 verticalDisabled = true;
@@ -480,6 +614,37 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <hr className="ge" />
                     </>
                 )}
+                {parent?.name === "root" && (
+                    <>
+                        <TextLineComponent label="LINK OFFSET" value=" " color="grey"></TextLineComponent>
+                        <div className="ge-divider double">
+                            <IconComponent icon={linkedMeshOffsetIcon} label={"Link offset"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="X"
+                                delayInput={true}
+                                value={getValue("_linkOffsetX")}
+                                onChange={(newValue) => this._checkAndUpdateValues("linkOffsetX", newValue)}
+                                unit={<UnitButton unit={getUnitString("_linkOffsetX")} onClick={(unit) => convertUnits(unit, "linkOffsetX")} />}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("linkOffsetX", amount)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="Y"
+                                delayInput={true}
+                                value={getValue("_linkOffsetY")}
+                                onChange={(newValue) => this._checkAndUpdateValues("linkOffsetY", newValue)}
+                                unit={<UnitButton unit={getUnitString("_linkOffsetY")} onClick={(unit) => convertUnits(unit, "linkOffsetY")} />}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("linkOffsetY", amount)}
+                            />
+                        </div>
+                        <hr className="ge" />
+                    </>
+                )}
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />
@@ -563,7 +728,27 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" />
+
+                            <OptionsLineComponent
+                                label=""
+                                target={proxy}
+                                propertyName="fontFamily"
+                                valueProp={this.state.value}
+                                options={fonts}
+                                addVal={this.addVal}
+                                fromFontDropdown={true}
+                                onSelect={(newValue) => {
+                                    const fontFamily = this.state.fontFamilyOptions.filter(({ value }) => value === newValue).map(({ label }) => label);
+                                    proxy.fontFamily = fontFamily[0];
+                                }}
+                                extractValue={() => {
+                                    if (this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].label) {
+                                        return this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].value;
+                                    } else {
+                                        return -1;
+                                    }
+                                }}
+                            />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
@@ -576,6 +761,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 target={proxy}
                                 propertyName="fontStyle"
                                 options={fontStyleOptions}
+                                fromFontDropdown={false}
                                 onSelect={(newValue) => {
                                     proxy.fontStyle = ["", "italic", "oblique"][newValue as number];
                                 }}

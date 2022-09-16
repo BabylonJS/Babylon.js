@@ -12,11 +12,14 @@ import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IEllipsePropertyGridComponentProps {
     ellipses: Ellipse[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class EllipsePropertyGridComponent extends React.Component<IEllipsePropertyGridComponentProps> {
@@ -30,7 +33,13 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={ellipses}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
