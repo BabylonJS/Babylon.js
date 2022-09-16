@@ -244,10 +244,7 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     public get tooltipText() {
-        if (this._tooltipTextBlock) {
-            return this._tooltipTextBlock.text;
-        }
-        return null;
+        return this._tooltipTextBlock?.text || null;
     }
 
     /**
@@ -344,7 +341,7 @@ export class TouchHolographicButton extends TouchButton3D {
      * Sets whether the backplate is visible or hidden. Hiding the backplate is not recommended without some sort of replacement
      */
     public set isBackplateVisible(isVisible: boolean) {
-        if (this.mesh && !!this._backMaterial) {
+        if (this.mesh && this._backMaterial) {
             if (isVisible && !this._isBackplateVisible) {
                 this._backPlate.visibility = 1;
             } else if (!isVisible && this._isBackplateVisible) {
