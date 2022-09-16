@@ -28,21 +28,21 @@ export class Polar {
         return "Polar";
     }
 
-	/**
-	 * Converts the current polar to a string
-	 * @returns the current polar as a string
-	 */
-	public toString() {
-		return JSON.stringify(this);
-	}
+    /**
+     * Converts the current polar to a string
+     * @returns the current polar as a string
+     */
+    public toString() {
+        return JSON.stringify(this);
+    }
 
-	/**
-	 * Converts the current polar to an array
-	 * @reutrns the current polar as an array
-	 */
-	public asArray() {
-		return [this.radius, this.theta];
-	}
+    /**
+     * Converts the current polar to an array
+     * @reutrns the current polar as an array
+     */
+    public asArray() {
+        return [this.radius, this.theta];
+    }
 
     /**
      * Adds the current Polar and the given Polar and stores the result
@@ -277,27 +277,27 @@ export class Polar {
         return this;
     }
 
-	/**
-	 * Sets the values of the current polar
-	 * @param radius the new radius
-	 * @param theta the new theta
-	 * @returns the current polar
-	 */
-	public set(radius: number, theta: number){
-		this.radius = radius;
-		this.theta = theta;
-		return this;
-	}
+    /**
+     * Sets the values of the current polar
+     * @param radius the new radius
+     * @param theta the new theta
+     * @returns the current polar
+     */
+    public set(radius: number, theta: number) {
+        this.radius = radius;
+        this.theta = theta;
+        return this;
+    }
 
-	/**
-	 * Sets the values of the current polar
-	 * @param value the new values
-	 * @returns the current polar
-	 */
-	public setAll(value: number) {
-		this.set(value, value);
-		return this;
-	}
+    /**
+     * Sets the values of the current polar
+     * @param value the new values
+     * @returns the current polar
+     */
+    public setAll(value: number) {
+        this.set(value, value);
+        return this;
+    }
 
     /**
      * Gets the rectangular coordinates of the current Polar
@@ -344,14 +344,14 @@ export class Polar {
         return polar;
     }
 
-	/**
-	 * Converts an array of floats to a polar
-	 * @param array the array to convert
-	 * @returns the converted polar
-	 */
-	public static FromArray(array: number[]) {
-		return new Polar(array[0], array[1]);
-	}
+    /**
+     * Converts an array of floats to a polar
+     * @param array the array to convert
+     * @returns the converted polar
+     */
+    public static FromArray(array: number[]) {
+        return new Polar(array[0], array[1]);
+    }
 }
 
 /**
@@ -373,29 +373,29 @@ export class Spherical {
         this.phi = phi;
     }
 
-	/**
+    /**
      * Gets the class name
      * @returns the string "Spherical"
      */
-	 public getClassName() {
+    public getClassName() {
         return "Spherical";
     }
 
-	/**
-	 * Converts the current spherical to a string
-	 * @returns the current spherical as a string
-	 */
-	public toString() {
-		return JSON.stringify(this);
-	}
+    /**
+     * Converts the current spherical to a string
+     * @returns the current spherical as a string
+     */
+    public toString() {
+        return JSON.stringify(this);
+    }
 
-	/**
-	 * Converts the current spherical to an array
-	 * @reutrns the current spherical as an array
-	 */
-	public asArray() {
-		return [this.radius, this.theta, this.phi];
-	}
+    /**
+     * Converts the current spherical to an array
+     * @reutrns the current spherical as an array
+     */
+    public asArray() {
+        return [this.radius, this.theta, this.phi];
+    }
 
     /**
      * Adds the current Spherical and the given Spherical and stores the result
@@ -406,7 +406,7 @@ export class Spherical {
     public addToRef(spherical: Spherical, ref: Spherical) {
         ref.radius = this.radius + spherical.radius;
         ref.theta = this.theta + spherical.theta;
-		ref.phi = this.phi + spherical.phi;
+        ref.phi = this.phi + spherical.phi;
         return ref;
     }
 
@@ -441,7 +441,7 @@ export class Spherical {
     public addInPlaceFromFloats(radius: number, theta: number, phi: number) {
         this.radius += radius;
         this.theta += theta;
-		this.phi += phi;
+        this.phi += phi;
         return this;
     }
 
@@ -643,29 +643,29 @@ export class Spherical {
         return this;
     }
 
-	/**
-	 * Sets the values of the current spherical
-	 * @param radius the new radius
-	 * @param theta the new theta
-	 * @param phi the new phi
-	 * @returns the current spherical
-	 */
-	public set(radius: number, theta: number, phi: number){
-		this.radius = radius;
-		this.theta = theta;
-		this.phi = phi;
-		return this;
-	}
+    /**
+     * Sets the values of the current spherical
+     * @param radius the new radius
+     * @param theta the new theta
+     * @param phi the new phi
+     * @returns the current spherical
+     */
+    public set(radius: number, theta: number, phi: number) {
+        this.radius = radius;
+        this.theta = theta;
+        this.phi = phi;
+        return this;
+    }
 
-	/**
-	 * Sets the values of the current spherical
-	 * @param value the new values
-	 * @returns the current spherical
-	 */
-	public setAll(value: number) {
-		this.set(value, value, value);
-		return this;
-	}
+    /**
+     * Sets the values of the current spherical
+     * @param value the new values
+     * @returns the current spherical
+     */
+    public setAll(value: number) {
+        this.set(value, value, value);
+        return this;
+    }
 
     /**
      * Assigns the rectangular coordinates of the current Spherical to a Vector3
@@ -713,12 +713,12 @@ export class Spherical {
         return spherical;
     }
 
-	/**
-	 * Converts an array of floats to a spherical
-	 * @param array the array to convert
-	 * @returns the converted spherical
-	 */
-	 public static FromArray(array: number[]) {
-		return new Polar(array[0], array[1], array[2]);
-	}
+    /**
+     * Converts an array of floats to a spherical
+     * @param array the array to convert
+     * @returns the converted spherical
+     */
+    public static FromArray(array: number[]) {
+        return new Spherical(array[0], array[1], array[2]);
+    }
 }
