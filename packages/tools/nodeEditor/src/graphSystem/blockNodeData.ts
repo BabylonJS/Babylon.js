@@ -6,6 +6,7 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import triangle from "../imgs/triangle.svg";
 import square from "../imgs/square.svg";
+import styles from "./blockNodeData.modules.scss";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -64,12 +65,11 @@ export class BlockNodeData implements INodeData {
 
     public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
         if (this.data.getClassName() === "ElbowBlock") {
-            iconDiv.classList.remove("visible");
+            iconDiv.classList.add(styles.hidden);
             return;
         }
 
         if (this.data.target === NodeMaterialBlockTargets.Fragment) {
-            iconDiv.classList.add("visible");
             iconDiv.title = "In the fragment shader";
             img.src = square;
 
@@ -77,14 +77,13 @@ export class BlockNodeData implements INodeData {
         }
 
         if (this.data.target === NodeMaterialBlockTargets.Vertex) {
-            iconDiv.classList.add("visible");
             iconDiv.title = "In the vertex shader";
             img.src = triangle;
 
             return;
         }
 
-        iconDiv.classList.remove("visible");
+        iconDiv.classList.add(styles.hidden);
     }
 
     public constructor(public data: NodeMaterialBlock, nodeContainer: INodeContainer) {

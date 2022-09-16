@@ -1667,7 +1667,7 @@ export class Vector3 {
      * @param vector0 the starting point
      * @param vector1 the ending point
      * @param normal direction of the normal
-     * @return the angle between vector0 and vector1
+     * @returns the angle between vector0 and vector1
      */
     public static GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
         const v0: Vector3 = vector0.normalizeToRef(MathTmp.Vector3[1]);
@@ -1688,12 +1688,13 @@ export class Vector3 {
     /**
      * Get angle between two vectors projected on a plane
      * Example Playground https://playground.babylonjs.com/#R1F8YU#87
+     * Expectation compute time: 0.01 ms (median) and 0.02 ms (percentile 95%)
      * @param vector0 angle between vector0 and vector1
      * @param vector1 angle between vector0 and vector1
      * @param normal Normal of the projection plane
-     * @returns the angle between vector0 and vector1 projected on the plane with the specified normal
+     * @returns the angle in radians (float) between vector0 and vector1 projected on the plane with the specified normal
      */
-    public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3) {
+    public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
         MathTmp.Vector3[0].copyFrom(vector0);
         const v0 = MathTmp.Vector3[0];
         MathTmp.Vector3[1].copyFrom(vector1);
@@ -3397,7 +3398,7 @@ export class Vector4 {
      * Returns the distance (float) between the vectors "value1" and "value2".
      * @param value1 value to calulate the distance between
      * @param value2 value to calulate the distance between
-     * @return the distance between the two vectors
+     * @returns the distance between the two vectors
      */
     public static Distance(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
         return Math.sqrt(Vector4.DistanceSquared(value1, value2));
@@ -3406,7 +3407,7 @@ export class Vector4 {
      * Returns the squared distance (float) between the vectors "value1" and "value2".
      * @param value1 value to calulate the distance between
      * @param value2 value to calulate the distance between
-     * @return the distance between the two vectors squared
+     * @returns the distance between the two vectors squared
      */
     public static DistanceSquared(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
         const x = value1.x - value2.x;
@@ -3420,7 +3421,7 @@ export class Vector4 {
      * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
      * @param value1 value to calulate the center between
      * @param value2 value to calulate the center between
-     * @return the center between the two vectors
+     * @returns the center between the two vectors
      */
     public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
         return Vector4.CenterToRef(value1, value2, Vector4.Zero());
@@ -3678,7 +3679,7 @@ export class Quaternion {
     /**
      * Check if two quaternions are equals
      * @param otherQuaternion defines the second operand
-     * @return true if the current quaternion and the given one coordinates are strictly equals
+     * @returns true if the current quaternion and the given one coordinates are strictly equals
      */
     public equals(otherQuaternion: DeepImmutable<Quaternion>): boolean {
         return otherQuaternion && this._x === otherQuaternion._x && this._y === otherQuaternion._y && this._z === otherQuaternion._z && this._w === otherQuaternion._w;
@@ -5804,7 +5805,7 @@ export class Matrix {
     /**
      * Creates a new rotation matrix for "angle" radians around the X axis
      * @param angle defines the angle (in radians) to use
-     * @return the new matrix
+     * @returns the new matrix
      */
     public static RotationX(angle: number): Matrix {
         const result = new Matrix();
@@ -5839,7 +5840,7 @@ export class Matrix {
     /**
      * Creates a new rotation matrix for "angle" radians around the Y axis
      * @param angle defines the angle (in radians) to use
-     * @return the new matrix
+     * @returns the new matrix
      */
     public static RotationY(angle: number): Matrix {
         const result = new Matrix();
@@ -5863,7 +5864,7 @@ export class Matrix {
     /**
      * Creates a new rotation matrix for "angle" radians around the Z axis
      * @param angle defines the angle (in radians) to use
-     * @return the new matrix
+     * @returns the new matrix
      */
     public static RotationZ(angle: number): Matrix {
         const result = new Matrix();
@@ -5888,7 +5889,7 @@ export class Matrix {
      * Creates a new rotation matrix for "angle" radians around the given axis
      * @param axis defines the axis to use
      * @param angle defines the angle (in radians) to use
-     * @return the new matrix
+     * @returns the new matrix
      */
     public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Matrix {
         const result = new Matrix();

@@ -65,7 +65,7 @@ declare module "./mesh" {
 
         /**
          * Gets the list of world matrices
-         * @return an array containing all the world matrices from the thin instances
+         * @returns an array containing all the world matrices from the thin instances
          */
         thinInstanceGetWorldMatrices(): Matrix[];
 

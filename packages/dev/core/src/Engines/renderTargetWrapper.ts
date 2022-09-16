@@ -24,6 +24,7 @@ export class RenderTargetWrapper {
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
+    private _samples = 1;
 
     /** @hidden */
     public _attachments: Nullable<number[]> = null;
@@ -118,7 +119,7 @@ export class RenderTargetWrapper {
      * Gets the sample count of the render target
      */
     public get samples(): number {
-        return this.texture?.samples ?? 1;
+        return this._samples;
     }
 
     /**
@@ -133,9 +134,11 @@ export class RenderTargetWrapper {
             return value;
         }
 
-        return this._isMulti
+        const result = this._isMulti
             ? this._engine.updateMultipleRenderTargetTextureSampleCount(this, value, initializeBuffers)
             : this._engine.updateRenderTargetTextureSampleCount(this, value);
+        this._samples = value;
+        return result;
     }
 
     /**

@@ -27,7 +27,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
-import type { INotifyArrayChangeType } from "core/Misc/arrayTools";
 
 declare type Animation = import("../../../Animations/animation").Animation;
 
@@ -555,7 +554,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
     private _depthOfFieldSceneObserver: Nullable<Observer<Scene>> = null;
     private _activeCameraChangedObserver: Nullable<Observer<Scene>> = null;
-    private _activeCamerasChangedObserver: Nullable<Observer<INotifyArrayChangeType<Camera>>> = null;
+    private _activeCamerasChangedObserver: Nullable<Observer<Scene>> = null;
 
     private _buildPipeline() {
         if (!this._buildAllowed) {

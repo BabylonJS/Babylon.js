@@ -123,7 +123,7 @@ export interface IEdgesRenderer extends IDisposable {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
-     * @return true if ready, otherwise false.
+     * @returns true if ready, otherwise false.
      */
     isReady(): boolean;
 
@@ -912,7 +912,7 @@ export class EdgesRenderer implements IEdgesRenderer {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
-     * @return true if ready, otherwise false.
+     * @returns true if ready, otherwise false.
      */
     public isReady(): boolean {
         return this._lineShader.isReady(this._source, (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances);
