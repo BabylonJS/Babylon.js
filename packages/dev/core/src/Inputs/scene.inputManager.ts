@@ -1,4 +1,4 @@
-import type { Observable } from "../Misc/observable";
+import type { Observable, Observer } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import type { Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
@@ -12,6 +12,7 @@ import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnum
 import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
+import type { Engine } from "../Engines/engine";
 
 declare module "../scene" {
     interface Scene {
@@ -119,6 +120,8 @@ export class InputManager {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
+    private _frameAwarePickInfo: Nullable<PickingInfo> = null;
+    private _clearCachedPickInfo: Nullable<Observer<Engine>> = null;
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -277,10 +280,13 @@ export class InputManager {
 
     /**
      * @param pointerId Pointer Id to use as reference
-     * @param setMesh TODO
      * @hidden
      */
-    public _pickMove(pointerId: number, setMesh: boolean = true): Nullable<PickingInfo> {
+    public _pickMove(pointerId: number): Nullable<PickingInfo> {
+        if (this._frameAwarePickInfo) {
+            return this._frameAwarePickInfo;
+        }
+
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
@@ -291,10 +297,8 @@ export class InputManager {
             scene.pointerMoveTrianglePredicate
         );
 
-        if (setMesh) {
-            this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
-        }
-
+        this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
+        this._frameAwarePickInfo = pickResult;
         return pickResult;
     }
 
@@ -557,6 +561,13 @@ export class InputManager {
             this._alreadyAttachedTo = elementToAttachTo;
         }
         this._deviceSourceManager = new DeviceSourceManager(engine);
+
+        // Clear cached PickingInfo
+        this._clearCachedPickInfo = engine.onEndFrameObservable.add(() => {
+            if (this._frameAwarePickInfo) {
+                this._frameAwarePickInfo = null;
+            }
+        });
 
         // Because this is only called from _initClickEvent, which is called in _onPointerUp, we'll use the pointerUpPredicate for the pick call
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
@@ -986,6 +997,9 @@ export class InputManager {
 
             this._alreadyAttached = false;
             this._alreadyAttachedTo = null;
+            const engine = this._scene.getEngine();
+            engine.onEndFrameObservable.remove(this._clearCachedPickInfo);
+            this._clearCachedPickInfo = null;
         }
     }
 
