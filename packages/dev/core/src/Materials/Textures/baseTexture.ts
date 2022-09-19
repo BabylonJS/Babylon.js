@@ -104,6 +104,13 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     protected _coordinatesIndex = 0;
 
     /**
+     * Gets or sets a boolean indicating that the texture should try to reduce shader code if there is no UV manipulation.
+     * (ie. when texture.getTextureMatrix().isIdentityAs3x2() returns true)
+     */
+    @serialize()
+    public optimizeUVAllocation = true;
+
+    /**
      * Define the UV channel to use starting from 0 and defaulting to 0.
      * This is part of the texture as textures usually maps to one uv set.
      */
