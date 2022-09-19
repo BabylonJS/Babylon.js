@@ -90,7 +90,7 @@ export class LightConstants {
      * Sort function to order lights for rendering.
      * @param a First Light object to compare to second.
      * @param b Second Light object to compare first.
-     * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
+     * @returns -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
      */
     public static CompareLightsPriority(a: ISortableLight, b: ISortableLight): number {
         //shadow-casting lights have priority over non-shadow-casting lights

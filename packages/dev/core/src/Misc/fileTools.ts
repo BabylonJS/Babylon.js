@@ -244,23 +244,29 @@ export const LoadImage = (
     img.addEventListener("load", loadHandler);
     img.addEventListener("error", errorHandler);
 
+    const fromBlob = url.substring(0, 5) === "blob:";
+    const fromData = url.substring(0, 5) === "data:";
     const noOfflineSupport = () => {
-        LoadFile(
-            url,
-            (data, _, contentType) => {
-                const type = !mimeType && contentType ? contentType : mimeType;
-                const blob = new Blob([data], { type });
-                const url = URL.createObjectURL(blob);
-                usingObjectURL = true;
-                img.src = url;
-            },
-            undefined,
-            offlineProvider || undefined,
-            true,
-            (request, exception) => {
-                onErrorHandler(exception);
-            }
-        );
+        if (fromBlob || fromData) {
+            img.src = url;
+        } else {
+            LoadFile(
+                url,
+                (data, _, contentType) => {
+                    const type = !mimeType && contentType ? contentType : mimeType;
+                    const blob = new Blob([data], { type });
+                    const url = URL.createObjectURL(blob);
+                    usingObjectURL = true;
+                    img.src = url;
+                },
+                undefined,
+                offlineProvider || undefined,
+                true,
+                (request, exception) => {
+                    onErrorHandler(exception);
+                }
+            );
+        }
     };
 
     const loadFromOfflineSupport = () => {
@@ -269,7 +275,7 @@ export const LoadImage = (
         }
     };
 
-    if (url.substr(0, 5) !== "blob:" && url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
+    if (!fromBlob && !fromData && offlineProvider && offlineProvider.enableTexturesOffline) {
         offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
     } else {
         if (url.indexOf("file:") !== -1) {
@@ -666,7 +672,7 @@ export const IsFileURL = (): boolean => {
 /**
  * Test if the given uri is a valid base64 data url
  * @param uri The uri to test
- * @return True if the uri is a base64 data url or false otherwise
+ * @returns True if the uri is a base64 data url or false otherwise
  * @hidden
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
@@ -686,7 +692,7 @@ export const TestBase64DataUrl = (uri: string): { match: boolean; type: string }
 /**
  * Decode the given base64 uri.
  * @param uri The uri to decode
- * @return The decoded base64 data.
+ * @returns The decoded base64 data.
  * @hidden
  */
 export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
@@ -696,7 +702,7 @@ export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
 /**
  * Decode the given base64 uri into a UTF-8 encoded string.
  * @param uri The uri to decode
- * @return The decoded base64 data.
+ * @returns The decoded base64 data.
  * @hidden
  */
 export const DecodeBase64UrlToString = (uri: string): string => {

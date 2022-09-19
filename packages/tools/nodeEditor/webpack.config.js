@@ -38,9 +38,10 @@ module.exports = (env) => {
                 sideEffects: true,
                 tsOptions: {
                     compilerOptions: {
-                        "rootDir": "../../",
-                    }
-                }
+                        rootDir: "../../",
+                    },
+                },
+                mode: production ? "production" : "development",
             }),
         },
         devServer: {

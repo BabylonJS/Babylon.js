@@ -327,7 +327,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     /**
      * Returns all components of specific type
      * @param type the type to search for
-     * @return an array of components with this type
+     * @returns an array of components with this type
      */
     public getAllComponentsOfType(type: MotionControllerComponentType): WebXRControllerComponent[] {
         return this.getComponentIds()
@@ -355,7 +355,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     /**
      * Get the first component of specific type
      * @param type type of component to find
-     * @return a controller component or null if not found
+     * @returns a controller component or null if not found
      */
     public getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent> {
         return this.getAllComponentsOfType(type)[0] || null;

@@ -225,7 +225,7 @@ export class PhysicsImpostor {
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     /** @hidden */
     public _onPhysicsCollideCallbacks: Array<{
-        callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void;
+        callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void;
         otherImpostors: Array<PhysicsImpostor>;
     }> = [];
 
@@ -913,8 +913,11 @@ export class PhysicsImpostor {
      * @param e
      * @param e.body
      * @param e.point
+     * @param e.distance
+     * @param e.impulse
+     * @param e.normal
      */
-    public onCollide = (e: { body: any; point: Nullable<Vector3> }) => {
+    public onCollide = (e: { body: any; point: Nullable<Vector3>; distance: number; impulse: number; normal: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
             return;
         }
@@ -933,7 +936,7 @@ export class PhysicsImpostor {
                     return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
                 })
                 .forEach((obj) => {
-                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point);
+                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point, e.distance, e.impulse, e.normal);
                 });
         }
     };

@@ -2,6 +2,7 @@ import { Observable } from "../Misc/observable";
 import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene, IDisposable } from "../scene";
+import { ScenePerformancePriority } from "../scene";
 import type { Vector2 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
@@ -822,13 +823,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     constructor(name: string, scene: Nullable<Scene> = null) {
         super(name, scene, false);
 
-        this.getScene().addMesh(this);
+        scene = this.getScene();
+
+        scene.addMesh(this);
 
         this._resyncLightSources();
 
         // Mesh Uniform Buffer.
         this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name, !this.getScene().getEngine().isWebGPU);
         this._buildUniformLayout();
+
+        switch (scene.performancePriority) {
+            case ScenePerformancePriority.Aggressive:
+                this.doNotSyncBoundingInfo = true;
+            // eslint-disable-next-line no-fallthrough
+            case ScenePerformancePriority.Intermediate:
+                this.alwaysSelectAsActiveMesh = true;
+                this.isPickable = false;
+                break;
+        }
     }
 
     protected _buildUniformLayout(): void {
@@ -852,7 +865,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets the mesh uniform buffer.
-     * @return the uniform buffer of the mesh.
+     * @returns the uniform buffer of the mesh.
      */
     public getMeshUniformBuffer(): UniformBuffer {
         return this._uniformBuffer;

@@ -7,6 +7,8 @@ import type { GraphNode } from "./graphNode";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
+import commonStyles from "./common.modules.scss";
+import styles from "./nodeLink.modules.scss";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -34,9 +36,9 @@ export class NodeLink {
         this._isTargetCandidate = value;
 
         if (value) {
-            this._path.classList.add("target-candidate");
+            this._path.classList.add(styles["target-candidate"]);
         } else {
-            this._path.classList.remove("target-candidate");
+            this._path.classList.remove(styles["target-candidate"]);
         }
     }
 
@@ -48,11 +50,11 @@ export class NodeLink {
         this._isVisible = value;
 
         if (!value) {
-            this._path.classList.add("hidden");
-            this._selectionPath.classList.add("hidden");
+            this._path.classList.add(commonStyles["hidden"]);
+            this._selectionPath.classList.add(commonStyles["hidden"]);
         } else {
-            this._path.classList.remove("hidden");
-            this._selectionPath.classList.remove("hidden");
+            this._path.classList.remove(commonStyles["hidden"]);
+            this._selectionPath.classList.remove(commonStyles["hidden"]);
         }
 
         this.update();
@@ -123,13 +125,13 @@ export class NodeLink {
         // Create path
         this._path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         this._path.setAttribute("fill", "none");
-        this._path.classList.add("link");
+        this._path.classList.add(styles["link"]);
 
         svg.appendChild(this._path);
 
         this._selectionPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         this._selectionPath.setAttribute("fill", "none");
-        this._selectionPath.classList.add("selection-link");
+        this._selectionPath.classList.add(styles["selection-link"]);
 
         svg.appendChild(this._selectionPath);
 
@@ -143,11 +145,11 @@ export class NodeLink {
         this._onSelectionChangedObserver = this._graphCanvas.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
-                this._path.classList.add("selected");
-                this._selectionPath.classList.add("selected");
+                this._path.classList.add(styles["selected"]);
+                this._selectionPath.classList.add(styles["selected"]);
             } else {
-                this._path.classList.remove("selected");
-                this._selectionPath.classList.remove("selected");
+                this._path.classList.remove(styles["selected"]);
+                this._selectionPath.classList.remove(styles["selected"]);
             }
         });
     }

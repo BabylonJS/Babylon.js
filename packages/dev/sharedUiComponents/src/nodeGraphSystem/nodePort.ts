@@ -7,6 +7,8 @@ import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOpti
 import type { FrameNodePort } from "./frameNodePort";
 import type { IDisplayManager } from "./interfaces/displayManager";
 import type { IPortData } from "./interfaces/portData";
+import commonStyles from "./common.modules.scss";
+import localStyles from "./nodePort.modules.scss";
 
 export class NodePort {
     protected _element: HTMLDivElement;
@@ -99,7 +101,7 @@ export class NodePort {
 
     public constructor(portContainer: HTMLElement, public portData: IPortData, public node: GraphNode, stateManager: StateManager) {
         this._element = portContainer.ownerDocument!.createElement("div");
-        this._element.classList.add("port");
+        this._element.classList.add(commonStyles.port);
         portContainer.appendChild(this._element);
         this._stateManager = stateManager;
 
@@ -107,7 +109,7 @@ export class NodePort {
         this._element.appendChild(this._img);
 
         // determine if node name is editable
-        if (portContainer.children[0].className === "port-label") {
+        if (portContainer.children[0].className === commonStyles["port-label"]) {
             this._portLabelElement = portContainer.children[0];
         }
 
@@ -120,20 +122,20 @@ export class NodePort {
             const rect = this._element.getBoundingClientRect();
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
-                this._element.classList.remove("selected");
+                this._element.classList.remove(localStyles["selected"]);
                 return;
             }
 
-            this._element.classList.add("selected");
+            this._element.classList.add(localStyles["selected"]);
             this._stateManager.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
-                this._img.classList.add("selected");
+                this._img.classList.add(localStyles["selected"]);
             } else {
-                this._img.classList.remove("selected");
+                this._img.classList.remove(localStyles["selected"]);
             }
         });
 
@@ -151,13 +153,13 @@ export class NodePort {
     public static CreatePortElement(portData: IPortData, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, stateManager: StateManager) {
         const portContainer = root.ownerDocument!.createElement("div");
 
-        portContainer.classList.add("portLine");
+        portContainer.classList.add(commonStyles.portLine);
 
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(portData)) {
             const portLabel = root.ownerDocument!.createElement("div");
-            portLabel.classList.add("port-label");
+            portLabel.classList.add(commonStyles["port-label"]);
             portLabel.innerHTML = portData.name;
             portContainer.appendChild(portLabel);
         }
