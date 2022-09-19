@@ -300,13 +300,13 @@ export class VertexBuffer {
     }
 
     public set instanceDivisor(value: number) {
+        const isInstanced = value != 0;
         this._instanceDivisor = value;
-        if (value == 0) {
-            this._instanced = false;
-        } else {
-            this._instanced = true;
+
+        if (isInstanced !== this._instanced) {
+            this._instanced = isInstanced;
+            this._computeHashCode();
         }
-        this._computeHashCode();
     }
 
     /**
@@ -385,19 +385,19 @@ export class VertexBuffer {
         this._kind = kind;
 
         if (type == undefined) {
-            const data = this.getData();
+            const vertexData = this.getData();
             this.type = VertexBuffer.FLOAT;
-            if (data instanceof Int8Array) {
+            if (vertexData instanceof Int8Array) {
                 this.type = VertexBuffer.BYTE;
-            } else if (data instanceof Uint8Array) {
+            } else if (vertexData instanceof Uint8Array) {
                 this.type = VertexBuffer.UNSIGNED_BYTE;
-            } else if (data instanceof Int16Array) {
+            } else if (vertexData instanceof Int16Array) {
                 this.type = VertexBuffer.SHORT;
-            } else if (data instanceof Uint16Array) {
+            } else if (vertexData instanceof Uint16Array) {
                 this.type = VertexBuffer.UNSIGNED_SHORT;
-            } else if (data instanceof Int32Array) {
+            } else if (vertexData instanceof Int32Array) {
                 this.type = VertexBuffer.INT;
-            } else if (data instanceof Uint32Array) {
+            } else if (vertexData instanceof Uint32Array) {
                 this.type = VertexBuffer.UNSIGNED_INT;
             }
         } else {
