@@ -149,29 +149,29 @@ export class CloudPoint {
         if (!target.hasBoundingInfo) {
             return false;
         }
-        isSphere = isSphere ? isSphere : false;
+
+        if (!this._pcs.mesh) {
+            throw new Error("Point Cloud System doesnt contain the Mesh");
+        }
 
         if (isSphere) {
             return target.getBoundingInfo().boundingSphere.intersectsPoint(this.position.add(this._pcs.mesh.position));
-        } else {
-            let maxX = 0;
-            let minX = 0;
-            let maxY = 0;
-            let minY = 0;
-            let maxZ = 0;
-            let minZ = 0;
-            maxX = target.getBoundingInfo().boundingBox.maximumWorld.x;
-            minX = target.getBoundingInfo().boundingBox.minimumWorld.x;
-            maxY = target.getBoundingInfo().boundingBox.maximumWorld.y;
-            minY = target.getBoundingInfo().boundingBox.minimumWorld.y;
-            maxZ = target.getBoundingInfo().boundingBox.maximumWorld.z;
-            minZ = target.getBoundingInfo().boundingBox.minimumWorld.z;
-
-            const x = this.position.x + this._pcs.mesh.position.x;
-            const y = this.position.y + this._pcs.mesh.position.y;
-            const z = this.position.z + this._pcs.mesh.position.z;
-            return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
         }
+
+        const bbox = target.getBoundingInfo().boundingBox;
+
+        const maxX = bbox.maximumWorld.x;
+        const minX = bbox.minimumWorld.x;
+        const maxY = bbox.maximumWorld.y;
+        const minY = bbox.minimumWorld.y;
+        const maxZ = bbox.maximumWorld.z;
+        const minZ = bbox.minimumWorld.z;
+
+        const x = this.position.x + this._pcs.mesh.position.x;
+        const y = this.position.y + this._pcs.mesh.position.y;
+        const z = this.position.z + this._pcs.mesh.position.z;
+
+        return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
     }
 
     /**
