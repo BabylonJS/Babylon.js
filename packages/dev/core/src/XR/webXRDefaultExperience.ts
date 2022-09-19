@@ -48,21 +48,21 @@ export class WebXRDefaultExperienceOptions {
      */
     public ignoreNativeCameraTransformation?: boolean;
     /**
-     * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+     * Optional configuration for the XR input object
      */
-    public inputOptions?: IWebXRInputOptions;
+    public inputOptions?: Partial<IWebXRInputOptions>;
     /**
      * optional configuration for pointer selection
      */
-    public pointerSelectionOptions?: IWebXRControllerPointerSelectionOptions;
+    public pointerSelectionOptions?: Partial<IWebXRControllerPointerSelectionOptions>;
     /**
      * optional configuration for near interaction
      */
-    public nearInteractionOptions?: IWebXRNearInteractionOptions;
+    public nearInteractionOptions?: Partial<IWebXRNearInteractionOptions>;
     /**
      * optional configuration for teleportation
      */
-    public teleportationOptions?: IWebXRTeleportationOptions;
+    public teleportationOptions?: Partial<IWebXRTeleportationOptions>;
     /**
      * optional configuration for the output canvas
      */
@@ -70,7 +70,7 @@ export class WebXRDefaultExperienceOptions {
     /**
      * optional UI options. This can be used among other to change session mode and reference space type
      */
-    public uiOptions?: WebXREnterExitUIOptions;
+    public uiOptions?: Partial<WebXREnterExitUIOptions>;
     /**
      * When loading teleportation and pointer select, use stable versions instead of latest.
      */
@@ -85,7 +85,7 @@ export class WebXRDefaultExperienceOptions {
      * A list of optional features to init the session with
      * If set to true, all features we support will be added
      */
-    optionalFeatures?: boolean | string[];
+    public optionalFeatures?: boolean | string[];
 }
 
 /**
