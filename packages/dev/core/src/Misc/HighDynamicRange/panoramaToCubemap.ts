@@ -88,7 +88,7 @@ export class PanoramaToCubeMapTools {
      * @param inputWidth The width of the input panorama.
      * @param inputHeight The height of the input panorama.
      * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
-     * @return The cubemap data
+     * @returns The cubemap data
      */
     public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo {
         if (!float32Array) {

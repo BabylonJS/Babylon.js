@@ -5,7 +5,7 @@ import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import { Scene, ScenePerformancePriority } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -1198,6 +1198,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
+
+        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+            this.checkReadyOnlyOnce = true;
+        }
 
         return true;
     }

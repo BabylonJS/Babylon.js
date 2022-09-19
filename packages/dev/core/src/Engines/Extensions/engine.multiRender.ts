@@ -385,7 +385,8 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
     samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
     // Dispose previous render buffers
-    if (rtWrapper._depthStencilBuffer) {
+    const useDepthStencil = !!rtWrapper._depthStencilBuffer;
+    if (useDepthStencil) {
         gl.deleteRenderbuffer(rtWrapper._depthStencilBuffer);
         rtWrapper._depthStencilBuffer = null;
     }
@@ -393,14 +394,6 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
     if (rtWrapper._MSAAFramebuffer) {
         gl.deleteFramebuffer(rtWrapper._MSAAFramebuffer);
         rtWrapper._MSAAFramebuffer = null;
-    }
-
-    for (let i = 0; i < count; i++) {
-        const hardwareTexture = rtWrapper.textures![i]._hardwareTexture as Nullable<WebGLHardwareTexture>;
-        if (hardwareTexture?._MSAARenderBuffer) {
-            gl.deleteRenderbuffer(hardwareTexture._MSAARenderBuffer);
-            hardwareTexture._MSAARenderBuffer = null;
-        }
     }
 
     if (samples > 1 && gl.renderbufferStorageMultisample) {
@@ -420,14 +413,17 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
             const hardwareTexture = texture._hardwareTexture as WebGLHardwareTexture;
             const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
-            const colorRenderbuffer = this._createRenderBuffer(
-                texture.width,
-                texture.height,
-                samples,
-                -1 /* not used */,
-                this._getRGBAMultiSampleBufferFormat(texture.type),
-                attachment
-            );
+            const colorRenderbuffer = hardwareTexture._MSAARenderBuffer
+                ? this._updateRenderBuffer(
+                      hardwareTexture._MSAARenderBuffer,
+                      texture.width,
+                      texture.height,
+                      samples,
+                      -1 /* not used */,
+                      this._getRGBAMultiSampleBufferFormat(texture.type),
+                      attachment
+                  )
+                : this._createRenderBuffer(texture.width, texture.height, samples, -1 /* not used */, this._getRGBAMultiSampleBufferFormat(texture.type), attachment);
 
             if (!colorRenderbuffer) {
                 throw new Error("Unable to create multi sampled framebuffer");
@@ -445,13 +441,15 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         this._bindUnboundFramebuffer(rtWrapper._framebuffer);
     }
 
-    rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
-        rtWrapper._generateStencilBuffer,
-        rtWrapper._generateDepthBuffer,
-        rtWrapper.texture.width,
-        rtWrapper.texture.height,
-        samples
-    );
+    if (useDepthStencil) {
+        rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(
+            rtWrapper._generateStencilBuffer,
+            rtWrapper._generateDepthBuffer,
+            rtWrapper.texture.width,
+            rtWrapper.texture.height,
+            samples
+        );
+    }
 
     this._bindUnboundFramebuffer(null);
 

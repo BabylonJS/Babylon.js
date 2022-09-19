@@ -368,7 +368,7 @@ export class WindowsMotionController extends WebVRController {
      *
      * @param scene scene in which the meshes exist
      * @param meshes list of meshes that make up the controller model to process
-     * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+     * @returns structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
      */
     private _processModel(scene: Scene, meshes: AbstractMesh[]): Nullable<LoadedMeshInfo> {
         let loadedMeshInfo = null;

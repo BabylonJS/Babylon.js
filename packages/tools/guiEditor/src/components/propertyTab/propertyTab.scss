@@ -158,6 +158,7 @@
         transition: outline-color 0.2s;
         border: transparent;
         padding-left: 5px;
+
         &:focus {
             outline-width: 1px;
             outline-color: black;
@@ -979,6 +980,12 @@
                 width: 100%;
                 height: 25px;
                 border: transparent;
+            }
+
+            input {
+                width: 100%;
+                height: 24px;
+                color: #333333;
             }
         }
     }

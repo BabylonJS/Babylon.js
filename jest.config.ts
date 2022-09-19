@@ -11,6 +11,7 @@ const createProject = (type: string) => {
     const setupFileLocation = path.resolve(".", `jest.${type}.setup.ts`);
     const setupFilesAfterEnvLocation = path.resolve(".", `jest.${type}.setup.afterEnv.ts`);
     const tsConfigPath = path.resolve(".", "tsconfig.json");
+    const tsTestConfigPath = path.resolve(".", "tsconfig.test.json");
     const globalSetup = fs.existsSync(setupFileLocation) ? setupFileLocation : undefined;
     const setupFilesAfterEnv = fs.existsSync(setupFilesAfterEnvLocation) ? [setupFilesAfterEnvLocation] : undefined;
     const returnValue: Partial<Config.ProjectConfig> = {
@@ -25,7 +26,7 @@ const createProject = (type: string) => {
             "ts-jest": {
                 isolatedModules: true,
                 useESM: true,
-                tsconfig: fs.existsSync(tsConfigPath) ? tsConfigPath : path.resolve(__dirname, "tsconfig.json"),
+                tsconfig: fs.existsSync(tsTestConfigPath) ? tsTestConfigPath : fs.existsSync(tsConfigPath) ? tsConfigPath : path.resolve(__dirname, "tsconfig.json"),
             },
         },
         setupFilesAfterEnv: ["@alex_neo/jest-expect-message"],

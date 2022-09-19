@@ -220,7 +220,7 @@ export class CoordinateHelper {
         return new Vector2(x + engine.getRenderWidth() / 2, y + engine.getRenderHeight() / 2);
     }
 
-    public static MousePointerToRTTSpace(node: Control, x?: number, y?: number) {
+    public static MousePointerToRTTSpace(_node?: Control, x?: number, y?: number) {
         const scene = this.GlobalState.workbench._scene;
         const engine = scene.getEngine();
         return new Vector2((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY) - engine.getRenderHeight() / 2);

@@ -2,6 +2,7 @@
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
 import type { Scene } from "../../scene";
+import { ScenePerformancePriority } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
@@ -1348,6 +1349,10 @@ export class NodeMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
+        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+            this.checkReadyOnlyOnce = true;
+        }
+
         return true;
     }
 
@@ -1521,7 +1526,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Launch the node material editor
      * @param config Define the configuration of the editor
-     * @return a promise fulfilled when the node editor is visible
+     * @returns a promise fulfilled when the node editor is visible
      */
     public edit(config?: INodeMaterialEditorOptions): Promise<void> {
         return new Promise((resolve) => {

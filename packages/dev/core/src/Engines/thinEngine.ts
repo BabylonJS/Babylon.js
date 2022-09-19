@@ -200,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.22.1";
+        return "babylonjs@5.24.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.22.1";
+        return "5.24.0";
     }
 
     /**
@@ -733,7 +733,7 @@ export class ThinEngine {
      * Create a canvas. This method is overridden by other engines
      * @param width width
      * @param height height
-     * @return ICanvas interface
+     * @returns ICanvas interface
      */
     public createCanvas(width: number, height: number): ICanvas {
         return ThinEngine._CreateCanvas(width, height);
@@ -741,7 +741,7 @@ export class ThinEngine {
 
     /**
      * Create an image to use with canvas
-     * @return IImage interface
+     * @returns IImage interface
      */
     public createCanvasImage(): IImage {
         return document.createElement("img");
@@ -4847,6 +4847,20 @@ export class ThinEngine {
     ): Nullable<WebGLRenderbuffer> {
         const gl = this._gl;
         const renderBuffer = gl.createRenderbuffer();
+        return this._updateRenderBuffer(renderBuffer, width, height, samples, internalFormat, msInternalFormat, attachment, unbindBuffer);
+    }
+
+    public _updateRenderBuffer(
+        renderBuffer: Nullable<WebGLRenderbuffer>,
+        width: number,
+        height: number,
+        samples: number,
+        internalFormat: number,
+        msInternalFormat: number,
+        attachment: number,
+        unbindBuffer = true
+    ): Nullable<WebGLRenderbuffer> {
+        const gl = this._gl;
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
 
@@ -5858,7 +5872,7 @@ export class ThinEngine {
     /**
      * Find the next highest power of two.
      * @param x Number to start search from.
-     * @return Next highest power of two.
+     * @returns Next highest power of two.
      */
     public static CeilingPOT(x: number): number {
         x--;
@@ -5874,7 +5888,7 @@ export class ThinEngine {
     /**
      * Find the next lowest power of two.
      * @param x Number to start search from.
-     * @return Next lowest power of two.
+     * @returns Next lowest power of two.
      */
     public static FloorPOT(x: number): number {
         x = x | (x >> 1);
@@ -5888,7 +5902,7 @@ export class ThinEngine {
     /**
      * Find the nearest power of two.
      * @param x Number to start search from.
-     * @return Next nearest power of two.
+     * @returns Next nearest power of two.
      */
     public static NearestPOT(x: number): number {
         const c = ThinEngine.CeilingPOT(x);

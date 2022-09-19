@@ -56,7 +56,7 @@ export class HemisphericLight extends Light {
 
     /**
      * Returns the string "HemisphericLight".
-     * @return The class name
+     * @returns The class name
      */
     public getClassName(): string {
         return "HemisphericLight";
@@ -66,7 +66,7 @@ export class HemisphericLight extends Light {
      * Sets the HemisphericLight direction towards the passed target (Vector3).
      * Returns the updated direction.
      * @param target The target the direction should point to
-     * @return The computed direction
+     * @returns The computed direction
      */
     public setDirectionToTarget(target: Vector3): Vector3 {
         this.direction = Vector3.Normalize(target.subtract(Vector3.Zero()));
@@ -113,7 +113,7 @@ export class HemisphericLight extends Light {
 
     /**
      * Returns the integer 3.
-     * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+     * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
     public getTypeID(): number {
         return Light.LIGHTTYPEID_HEMISPHERICLIGHT;

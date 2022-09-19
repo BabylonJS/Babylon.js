@@ -535,7 +535,7 @@ export class ColorCurves {
 
     /**
      * Clones the current color curve instance.
-     * @return The cloned curves
+     * @returns The cloned curves
      */
     public clone(): ColorCurves {
         return SerializationHelper.Clone(() => new ColorCurves(), this);
@@ -543,7 +543,7 @@ export class ColorCurves {
 
     /**
      * Serializes the current color curve instance to a json representation.
-     * @return a JSON representation
+     * @returns a JSON representation
      */
     public serialize(): any {
         return SerializationHelper.Serialize(this);
@@ -552,7 +552,7 @@ export class ColorCurves {
     /**
      * Parses the color curve from a json representation.
      * @param source the JSON source to parse
-     * @return The parsed curves
+     * @returns The parsed curves
      */
     public static Parse(source: any): ColorCurves {
         return SerializationHelper.Parse(() => new ColorCurves(), source, null, null);
