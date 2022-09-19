@@ -301,11 +301,7 @@ export class VertexBuffer {
 
     public set instanceDivisor(value: number) {
         this._instanceDivisor = value;
-        if (value == 0) {
-            this._instanced = false;
-        } else {
-            this._instanced = true;
-        }
+        this._instanced = value != 0;
         this._computeHashCode();
     }
 
