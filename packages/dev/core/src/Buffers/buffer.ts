@@ -300,9 +300,13 @@ export class VertexBuffer {
     }
 
     public set instanceDivisor(value: number) {
+        const isInstanced = value != 0;
         this._instanceDivisor = value;
-        this._instanced = value != 0;
-        this._computeHashCode();
+
+        if (isInstanced !== this._instanced) {
+            this._instanced = isInstanced;
+            this._computeHashCode();
+        }
     }
 
     /**
