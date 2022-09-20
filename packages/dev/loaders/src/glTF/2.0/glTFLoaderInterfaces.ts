@@ -85,17 +85,9 @@ export interface IBufferView extends GLTF2.IBufferView, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IKHRLight extends GLTF2.IKHRLightsPunctual_Light {
-    /** @hidden */
-    _babylonLight: Light;
-}
-
-/**
- * Loader interface with additional members.
- */
 export interface ICamera extends GLTF2.ICamera, IArrayItem {
     /** @hidden */
-    _babylonCamera: Camera;
+    _babylonCamera?: Camera;
 }
 
 /**
@@ -249,4 +241,12 @@ export interface IGLTF extends GLTF2.IGLTF {
     scenes?: IScene[];
     skins?: ISkin[];
     textures?: ITexture[];
+}
+
+/**
+ * Loader interface with additional members.
+ */
+export interface IKHRLightsPunctual_Light extends GLTF2.IKHRLightsPunctual_Light, IArrayItem {
+    /** @hidden */
+    _babylonLight?: Light;
 }
