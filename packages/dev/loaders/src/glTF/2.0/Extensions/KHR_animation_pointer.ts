@@ -111,7 +111,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      */
-     public _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
+    public _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
         if (!pointer.startsWith("/")) {
             Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);
             return null;
@@ -148,7 +148,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
 
         return {
             target: gltfTargetNode,
-            properties: node
+            properties: node,
         };
     }
 }

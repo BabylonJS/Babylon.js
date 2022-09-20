@@ -6,27 +6,27 @@ import { Color3 } from "core/Maths/math.color";
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
     return Color3.FromArray(source, offset).scale(scale);
-};
+}
 
 function getAlpha(_target: any, source: Float32Array, offset: number, scale: number): number {
     return source[offset + 3] * scale;
-};
+}
 
 function getFloat(_target: any, source: Float32Array, offset: number, scale: number): number {
     return source[offset] * scale;
-};
+}
 
 function getMinusFloat(_target: any, source: Float32Array, offset: number, scale: number): number {
     return -source[offset] * scale;
-};
+}
 
 function getNextFloat(_target: any, source: Float32Array, offset: number, scale: number): number {
     return source[offset + 1] * scale;
-};
+}
 
 function getFloatBy2(_target: any, source: Float32Array, offset: number, scale: number): number {
     return source[offset] * scale * 2;
-};
+}
 
 function getTextureTransformTree(textureName: string) {
     return {
@@ -38,9 +38,7 @@ function getTextureTransformTree(textureName: string) {
             new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, `${textureName}.uOffset`, getFloat, () => 2),
             new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, `${textureName}.vOffset`, getNextFloat, () => 2),
         ],
-        rotation: [
-            new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, `${textureName}.wAng`, getMinusFloat, () => 1),
-        ],
+        rotation: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, `${textureName}.wAng`, getMinusFloat, () => 1)],
     };
 }
 
@@ -59,7 +57,13 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
 }
 
 class LightAnimationPropertyInfo extends AnimationPropertyInfo {
-    public buildAnimations(target: IKHRLightsPunctual_Light, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
+    public buildAnimations(
+        target: IKHRLightsPunctual_Light,
+        name: string,
+        fps: number,
+        keys: any[],
+        callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
+    ): void {
         callback(target._babylonLight!, this._buildAnimation(name, fps, keys));
     }
 }
@@ -83,23 +87,13 @@ const camerasTree = {
                 new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoBottom", getMinusFloat, () => 1),
                 new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoTop", getNextFloat, () => 1),
             ],
-            zfar: [
-                new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "maxZ", getFloat, () => 1)
-            ],
-            znear: [
-                new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "minZ", getFloat, () => 1)
-            ],
+            zfar: [new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "maxZ", getFloat, () => 1)],
+            znear: [new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "minZ", getFloat, () => 1)],
         },
         perspective: {
-            yfov: [
-                new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "fov", getFloat, () => 1)
-            ],
-            zfar: [
-                new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "maxZ", getFloat, () => 1)
-            ],
-            znear: [
-                new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "minZ", getFloat, () => 1)
-            ],
+            yfov: [new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "fov", getFloat, () => 1)],
+            zfar: [new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "maxZ", getFloat, () => 1)],
+            znear: [new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "minZ", getFloat, () => 1)],
         },
     },
 };
@@ -112,30 +106,20 @@ const materialsTree = {
                 new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "albedoColor", getColor3, () => 4),
                 new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "alpha", getAlpha, () => 4),
             ],
-            metallicFactor: [
-                new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "metallic", getFloat, () => 1),
-            ],
-            roughnessFactor: [
-                new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "roughness", getFloat, () => 1)
-            ],
+            metallicFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "metallic", getFloat, () => 1)],
+            roughnessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "roughness", getFloat, () => 1)],
             baseColorTexture: {
                 extensions: {
                     KHR_texture_transform: getTextureTransformTree("albedoTexture"),
                 },
             },
         },
-        emissiveFactor: [
-            new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3, () => 3),
-        ],
+        emissiveFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3, () => 3)],
         normalTexture: {
-            scale: [
-                new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "bumpTexture.level", getFloat, () => 1),
-            ],
+            scale: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "bumpTexture.level", getFloat, () => 1)],
         },
         occlusionTexture: {
-            strength: [
-                new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "ambientTextureStrength", getFloat, () => 1),
-            ],
+            strength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "ambientTextureStrength", getFloat, () => 1)],
             extensions: {
                 KHR_texture_transform: getTextureTransformTree("ambientTexture"),
             },
@@ -147,68 +131,36 @@ const materialsTree = {
         },
         extensions: {
             KHR_materials_ior: {
-                ior: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "indexOfRefraction", getFloat, () => 1)
-                ],
+                ior: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "indexOfRefraction", getFloat, () => 1)],
             },
             KHR_materials_clearcoat: {
-                clearcoatFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.intensity", getFloat, () => 1),
-                ],
-                clearcoatRoughnessFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.roughness", getFloat, () => 1)
-                ],
+                clearcoatFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.intensity", getFloat, () => 1)],
+                clearcoatRoughnessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.roughness", getFloat, () => 1)],
             },
             KHR_materials_sheen: {
-                sheenColorFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3)
-                ],
-                sheenRoughnessFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "sheen.roughness", getFloat, () => 1)
-                ],
+                sheenColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3)],
+                sheenRoughnessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "sheen.roughness", getFloat, () => 1)],
             },
             KHR_materials_specular: {
-                specularFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "metallicF0Factor", getFloat, () => 1)
-                ],
-                specularColorFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", getColor3, () => 3)
-                ],
+                specularFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "metallicF0Factor", getFloat, () => 1)],
+                specularColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", getColor3, () => 3)],
             },
             KHR_materials_emissive_strength: {
-                emissiveStrength: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "emissiveIntensity", getFloat, () => 1)
-                ],
+                emissiveStrength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "emissiveIntensity", getFloat, () => 1)],
             },
             KHR_materials_transmission: {
-                transmissionFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.refractionIntensity", getFloat, () => 1)
-                ],
+                transmissionFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.refractionIntensity", getFloat, () => 1)],
             },
             KHR_materials_volume: {
-                attenuationColor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", getColor3, () => 3)
-                ],
-                attenuationDistance: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance", getFloat, () => 1)
-                ],
-                thicknessFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness", getFloat, () => 1)
-                ],
+                attenuationColor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", getColor3, () => 3)],
+                attenuationDistance: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance", getFloat, () => 1)],
+                thicknessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness", getFloat, () => 1)],
             },
             KHR_materials_iridescence: {
-                iridescenceFactor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.intensity", getFloat, () => 1)
-                ],
-                iridescenceIor: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.indexOfRefraction", getFloat, () => 1)
-                ],
-                iridescenceThicknessMinimum: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness", getFloat, () => 1)
-                ],
-                iridescenceThicknessMaximum: [
-                    new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness", getFloat, () => 1)
-                ],
+                iridescenceFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.intensity", getFloat, () => 1)],
+                iridescenceIor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.indexOfRefraction", getFloat, () => 1)],
+                iridescenceThicknessMinimum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness", getFloat, () => 1)],
+                iridescenceThicknessMaximum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness", getFloat, () => 1)],
             },
         },
     },
@@ -219,22 +171,12 @@ const extensionsTree = {
         lights: {
             __array__: {
                 __target__: true,
-                color: [
-                    new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)
-                ],
-                intensity: [
-                    new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)
-                ],
-                range: [
-                    new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "range", getFloat, () => 1)
-                ],
+                color: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)],
+                intensity: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)],
+                range: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "range", getFloat, () => 1)],
                 spot: {
-                    innerConeAngle: [
-                        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", getFloatBy2, () => 1)
-                    ],
-                    outerConeAngle: [
-                        new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2, () => 1)
-                    ],
+                    innerConeAngle: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "innerAngle", getFloatBy2, () => 1)],
+                    outerConeAngle: [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2, () => 1)],
                 },
             },
         },
