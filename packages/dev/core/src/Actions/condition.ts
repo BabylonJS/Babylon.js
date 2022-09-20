@@ -76,7 +76,6 @@ export class Condition {
  * Defines specific conditional operators as extensions of Condition
  */
 export class ValueCondition extends Condition {
-
     private static _IsEqual = 0;
     private static _IsDifferent = 1;
     private static _IsGreater = 2;

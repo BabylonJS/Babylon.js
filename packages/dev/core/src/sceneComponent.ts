@@ -1,4 +1,3 @@
-
 import type { Scene } from "./scene";
 import type { SmartArrayNoDuplicate } from "./Misc/smartArray";
 import type { Nullable } from "./types";
