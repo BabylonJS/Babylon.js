@@ -81,26 +81,9 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
         this._wheel = (event) => {
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
-            if (event.deltaY !== undefined) {
-                // Most recent browsers versions have delta properties.
-                // Firefox >= v17  (Has WebGL >= v4)
-                // Chrome >=  v31  (Has WebGL >= v8)
-                // Edge >=    v12  (Has WebGl >= v12)
-                // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent
-                this._wheelDeltaX += (this.wheelPrecisionX * platformScale * event.deltaX) / this._normalize;
-                this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * event.deltaY) / this._normalize;
-                this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * event.deltaZ) / this._normalize;
-            } else if ((<any>event).wheelDeltaY !== undefined) {
-                // Unsure whether these catch anything more. Documentation
-                // online is contradictory.
-                this._wheelDeltaX += (this.wheelPrecisionX * platformScale * (<any>event).wheelDeltaX) / this._normalize;
-                this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * (<any>event).wheelDeltaY) / this._normalize;
-                this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * (<any>event).wheelDeltaZ) / this._normalize;
-            } else if ((<any>event).wheelDelta) {
-                // IE >= v9   (Has WebGL >= v11)
-                // Maybe others?
-                this._wheelDeltaY -= (this.wheelPrecisionY * (<any>event).wheelDelta) / this._normalize;
-            }
+            this._wheelDeltaX += (this.wheelPrecisionX * platformScale * event.deltaX) / this._normalize;
+            this._wheelDeltaY -= (this.wheelPrecisionY * platformScale * event.deltaY) / this._normalize;
+            this._wheelDeltaZ += (this.wheelPrecisionZ * platformScale * event.deltaZ) / this._normalize;
 
             if (event.preventDefault) {
                 if (!noPreventDefault) {

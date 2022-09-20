@@ -263,7 +263,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      * @param context 
      * @param pointer 
-     * @return 
+     * @returns 
      */
     private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationChannelTarget> {
         const sep = "/";

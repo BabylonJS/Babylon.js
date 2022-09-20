@@ -233,7 +233,7 @@ export class InputManager {
             pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
         }
 
-        const type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+        const type = evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
         if (scene.onPointerMove && pickResult) {
             scene.onPointerMove(evt, pickResult, type);
@@ -264,6 +264,7 @@ export class InputManager {
         const scene = this._scene;
         const pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
         if (pickResult) {
+            pi.originalPickingInfo = pickResult;
             pi.ray = pickResult.ray;
             if (pickResult.originMesh) {
                 pi.nearInteractionPickingInfo = pickResult;
@@ -403,7 +404,7 @@ export class InputManager {
             }
         } else {
             for (const step of scene._pointerDownStage) {
-                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt, false);
             }
         }
 
@@ -489,7 +490,7 @@ export class InputManager {
         } else {
             if (!clickInfo.ignore) {
                 for (const step of scene._pointerUpStage) {
-                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt, clickInfo.doubleClick);
                 }
             }
         }
@@ -726,7 +727,7 @@ export class InputManager {
                 this._checkPrePointerObservable(
                     null,
                     evt as IPointerEvent,
-                    evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE
+                    evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE
                 )
             ) {
                 return;

@@ -139,7 +139,7 @@ export class DirectionalLight extends ShadowLight {
 
     /**
      * Returns the string "DirectionalLight".
-     * @return The class name
+     * @returns The class name
      */
     public getClassName(): string {
         return "DirectionalLight";
@@ -147,7 +147,7 @@ export class DirectionalLight extends ShadowLight {
 
     /**
      * Returns the integer 1.
-     * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+     * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
     public getTypeID(): number {
         return Light.LIGHTTYPEID_DIRECTIONALLIGHT;

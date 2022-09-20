@@ -9,6 +9,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { Nullable, DataArray, IndicesArray } from "../types";
 import type { EngineCapabilities } from "./engineCapabilities";
+import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { DepthCullingState } from "../States/depthCullingState";
 import { StencilState } from "../States/stencilState";
@@ -45,15 +46,13 @@ import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOption
 import type { IStencilState } from "../States/IStencilState";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-
-declare type WebRequest = import("../Misc/webRequest").WebRequest;
-declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
-declare type Observer<T> = import("../Misc/observable").Observer<T>;
-declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
-declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type Texture = import("../Materials/Textures/texture").Texture;
-declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
-declare type WebGLRenderTargetWrapper = import("./WebGL/webGLRenderTargetWrapper").WebGLRenderTargetWrapper;
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
+import type { VideoTexture } from "../Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { WebRequest } from "../Misc/webRequest";
+import type { LoadFileError } from "../Misc/fileTools";
+import type { Texture } from "../Materials/Textures/texture";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -201,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.19.0";
+        return "babylonjs@5.24.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.19.0";
+        return "5.24.0";
     }
 
     /**
@@ -734,7 +733,7 @@ export class ThinEngine {
      * Create a canvas. This method is overridden by other engines
      * @param width width
      * @param height height
-     * @return ICanvas interface
+     * @returns ICanvas interface
      */
     public createCanvas(width: number, height: number): ICanvas {
         return ThinEngine._CreateCanvas(width, height);
@@ -742,7 +741,7 @@ export class ThinEngine {
 
     /**
      * Create an image to use with canvas
-     * @return IImage interface
+     * @returns IImage interface
      */
     public createCanvasImage(): IImage {
         return document.createElement("img");
@@ -4848,6 +4847,20 @@ export class ThinEngine {
     ): Nullable<WebGLRenderbuffer> {
         const gl = this._gl;
         const renderBuffer = gl.createRenderbuffer();
+        return this._updateRenderBuffer(renderBuffer, width, height, samples, internalFormat, msInternalFormat, attachment, unbindBuffer);
+    }
+
+    public _updateRenderBuffer(
+        renderBuffer: Nullable<WebGLRenderbuffer>,
+        width: number,
+        height: number,
+        samples: number,
+        internalFormat: number,
+        msInternalFormat: number,
+        attachment: number,
+        unbindBuffer = true
+    ): Nullable<WebGLRenderbuffer> {
+        const gl = this._gl;
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
 
@@ -5859,7 +5872,7 @@ export class ThinEngine {
     /**
      * Find the next highest power of two.
      * @param x Number to start search from.
-     * @return Next highest power of two.
+     * @returns Next highest power of two.
      */
     public static CeilingPOT(x: number): number {
         x--;
@@ -5875,7 +5888,7 @@ export class ThinEngine {
     /**
      * Find the next lowest power of two.
      * @param x Number to start search from.
-     * @return Next lowest power of two.
+     * @returns Next lowest power of two.
      */
     public static FloorPOT(x: number): number {
         x = x | (x >> 1);
@@ -5889,7 +5902,7 @@ export class ThinEngine {
     /**
      * Find the nearest power of two.
      * @param x Number to start search from.
-     * @return Next nearest power of two.
+     * @returns Next nearest power of two.
      */
     public static NearestPOT(x: number): number {
         const c = ThinEngine.CeilingPOT(x);

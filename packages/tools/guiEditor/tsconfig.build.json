@@ -4,7 +4,13 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "composite": true
+        "composite": true,
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "gui-editor/*": ["tools/guiEditor/src/*"]
+        }
     },
 
     "references": [
@@ -20,8 +26,5 @@
     ],
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
-    "exclude": [
-        "**/node_modules",
-        "**/dist",
-    ]
+    "exclude": ["**/node_modules", "**/dist"]
 }

@@ -735,11 +735,13 @@ export class Texture extends BaseTexture {
             return this._cachedTextureMatrix;
         }
 
-        // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
-        // will get different values (see MaterialHelper.PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
-        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-            return mat.hasTexture(this);
-        });
+        if (this.optimizeUVAllocation) {
+            // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
+            // will get different values (see MaterialHelper.PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
 
         return this._cachedTextureMatrix;
     }
@@ -938,7 +940,7 @@ export class Texture extends BaseTexture {
             return null;
         }
 
-        const onLoaded = () => {
+        const onLoaded = (texture: Texture | null) => {
             // Clear cache
             if (texture && texture._texture) {
                 texture._texture._cachedWrapU = null;
@@ -975,7 +977,7 @@ export class Texture extends BaseTexture {
                     const mirrorTexture = Texture._CreateMirror(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
-                    onLoaded();
+                    onLoaded(mirrorTexture);
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
                     let renderTargetTexture: Nullable<RenderTargetTexture> = null;
@@ -999,23 +1001,29 @@ export class Texture extends BaseTexture {
                         );
                         renderTargetTexture._waitingRenderList = parsedTexture.renderList;
                     }
-                    onLoaded();
+                    onLoaded(renderTargetTexture);
                     return renderTargetTexture;
                 } else {
                     let texture: Texture;
 
                     if (parsedTexture.base64String) {
+                        // name and url are the same to ensure caching happens from the actual base64 string
                         texture = Texture.CreateFromBase64String(
                             parsedTexture.base64String,
-                            parsedTexture.name,
+                            parsedTexture.base64String,
                             scene,
                             !generateMipMaps,
                             parsedTexture.invertY,
                             parsedTexture.samplingMode,
-                            onLoaded,
+                            () => {
+                                onLoaded(texture);
+                            },
                             parsedTexture._creationFlags ?? 0,
                             parsedTexture._useSRGBBuffer ?? false
                         );
+
+                        // prettier name to fit with the loaded data
+                        texture.name = parsedTexture.name;
                     } else {
                         let url: string;
                         if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
@@ -1027,7 +1035,9 @@ export class Texture extends BaseTexture {
                         if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
-                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
+                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, () => {
+                            onLoaded(texture);
+                        });
                     }
 
                     return texture;

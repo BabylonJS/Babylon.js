@@ -131,7 +131,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     return;
                 }
 
-                const srcElement = <HTMLElement>(evt.srcElement || evt.target);
+                const srcElement = <HTMLElement>evt.target;
 
                 if (t === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                     try {
@@ -211,7 +211,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 return;
             }
 
-            let offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+            let offsetX = evt.movementX;
             if (this.camera.getScene().useRightHandedSystem) {
                 offsetX *= -1;
             }
@@ -220,7 +220,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             }
             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
-            const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+            const offsetY = evt.movementY;
             this.camera.cameraRotation.x += offsetY / this.angularSensibility;
 
             this._previousPosition = null;

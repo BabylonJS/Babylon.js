@@ -62,7 +62,7 @@ export class PrePassRenderer {
     /**
      * Returns the index of a texture in the multi render target texture array.
      * @param type Texture type
-     * @return The index
+     * @returns The index
      */
     public getIndex(type: number): number {
         return this._textureIndices[type];
@@ -135,7 +135,7 @@ export class PrePassRenderer {
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
-     * @return the prepass render target for the rendering pass.
+     * @returns the prepass render target for the rendering pass.
      * If we are currently rendering a render target, it returns the PrePassRenderTarget
      * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
      */
@@ -153,8 +153,8 @@ export class PrePassRenderer {
             this._currentTarget = prePassRenderTarget;
         } else {
             this._currentTarget = this.defaultRT;
+            this._engine.currentRenderPassId = this._currentTarget.renderPassId;
         }
-        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**
@@ -418,6 +418,24 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Sets an intermediary texture between prepass and postprocesses. This texture
+     * will be used as input for post processes
+     * @param rt
+     * @returns true if there are postprocesses that will use this texture,
+     * false if there is no postprocesses - and the function has no effect
+     */
+    public setCustomOutput(rt: RenderTargetTexture) {
+        const firstPP = this._postProcessesSourceForThisPass[0];
+        if (!firstPP) {
+            return false;
+        }
+
+        firstPP.inputTexture = rt.renderTarget!;
+
+        return true;
+    }
+
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
@@ -491,7 +509,7 @@ export class PrePassRenderer {
      * If an effect has already been added, it won't add it twice and will return the configuration
      * already present.
      * @param cfg the effect configuration
-     * @return the effect configuration now used by the prepass
+     * @returns the effect configuration now used by the prepass
      */
     public addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration {
         // Do not add twice

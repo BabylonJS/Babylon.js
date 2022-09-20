@@ -225,6 +225,7 @@ export class OctreeBlock<T> {
      */
     public createInnerBlocks(): void {
         OctreeBlock._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
+        this.entries.splice(0);
     }
 
     /**

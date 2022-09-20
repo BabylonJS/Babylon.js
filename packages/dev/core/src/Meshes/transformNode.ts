@@ -727,6 +727,10 @@ export class TransformNode extends Node {
      * @returns this  node
      */
     public markAsDirty(property?: string): Node {
+        if (this._isDirty) {
+            return this;
+        }
+
         // We need to explicitly update the children
         // as the scene.evaluateActiveMeshes will not poll the transform nodes
         if (this._children) {
@@ -1105,6 +1109,10 @@ export class TransformNode extends Node {
                 TmpVectors.Matrix[7].decompose(scale, undefined, translation);
                 Matrix.ScalingToRef(scale.x, scale.y, scale.z, TmpVectors.Matrix[7]);
                 TmpVectors.Matrix[7].setTranslation(translation);
+
+                // set localMatrix translation to be transformed against parent's world matrix.
+                Vector3.TransformNormalToRef(this._position, parent.getWorldMatrix(), translation);
+                this._localMatrix.setTranslation(translation);
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {

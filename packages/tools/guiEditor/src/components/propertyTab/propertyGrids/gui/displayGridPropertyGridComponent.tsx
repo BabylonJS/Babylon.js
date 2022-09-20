@@ -18,11 +18,14 @@ import displayGridLine2Icon from "shared-ui-components/imgs/displayGridLine2Icon
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import type { GlobalState } from "../../../../globalState";
 
 interface IDisplayGridPropertyGridComponentProps {
     displayGrids: DisplayGrid[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGridPropertyGridComponentProps> {
@@ -36,7 +39,13 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={displayGrids} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={displayGrids}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="DISPLAY GRID" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">

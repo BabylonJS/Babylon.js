@@ -21,6 +21,7 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/re
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
 import { Engine } from "../../Engines/engine";
+import { _ObserveArray } from "core/Misc/arrayTools";
 
 declare type Material = import("../material").Material;
 
@@ -51,6 +52,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
     private _renderList: Nullable<Array<AbstractMesh>>;
+    private _unObserveRenderList: Nullable<() => void> = null;
+
     /**
      * Use this list to define the list of mesh you want to render.
      */
@@ -59,12 +62,26 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     public set renderList(value: Nullable<Array<AbstractMesh>>) {
-        this._renderList = value;
-
-        if (this._renderList) {
-            this._hookArray(this._renderList);
+        if (this._unObserveRenderList) {
+            this._unObserveRenderList();
+            this._unObserveRenderList = null;
         }
+
+        if (value) {
+            this._unObserveRenderList = _ObserveArray(value, this._renderListHasChanged);
+        }
+
+        this._renderList = value;
     }
+
+    private _renderListHasChanged = (_functionName: String, previousLength: number) => {
+        const newLength = this._renderList ? this._renderList.length : 0;
+        if ((previousLength === 0 && newLength > 0) || newLength === 0) {
+            this.getScene()?.meshes.forEach((mesh) => {
+                mesh._markSubMeshesAsLightDirty();
+            });
+        }
+    };
 
     /**
      * Use this function to overload the renderList array at rendering time.
@@ -76,41 +93,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * hold dummy elements!
      */
     public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
-
-    private _hookArray(array: AbstractMesh[]): void {
-        if ((array as any).hasBeenHooked) return;
-
-        const oldPush = array.push;
-        array.push = (...items: AbstractMesh[]) => {
-            const wasEmpty = array.length === 0;
-
-            const result = oldPush.apply(array, items);
-
-            if (wasEmpty) {
-                this.getScene()?.meshes.forEach((mesh) => {
-                    mesh._markSubMeshesAsLightDirty();
-                });
-            }
-
-            return result;
-        };
-
-        const oldSplice = array.splice;
-        array.splice = (index: number, deleteCount?: number, ...items: AbstractMesh[]) => {
-            deleteCount = deleteCount === undefined ? array.length : deleteCount;
-            const deleted = oldSplice.apply(array, [index, deleteCount, ...items]);
-
-            if (array.length === 0) {
-                this.getScene()?.meshes.forEach((mesh) => {
-                    mesh._markSubMeshesAsLightDirty();
-                });
-            }
-
-            return deleted;
-        };
-
-        (array as any).hasBeenHooked = true;
-    }
 
     /**
      * Define if particles should be rendered in your texture.
@@ -767,7 +749,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
     /**
      * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
-     * @return true if all required resources are ready
+     * @returns true if all required resources are ready
      */
     public isReadyForRendering(): boolean {
         return this._render(false, false, true);
