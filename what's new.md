@@ -88,7 +88,6 @@
 - Added support for cannon-es method `world.removeBody()`. Falls back to cannon method `remove()`. ([Faber](https://https://github.com/Faber-smythe))
 - Added support for ZOffset Unit as we currently only supported factor. ([Sebavan](https://github.com/sebavan/)
 - Added the option to force the state of sRGB Buffer support ([RaananW](https://github.com/RaananW))
-- Added support for the polar and spherical coordinate systems with `Polar` and `Spherical` ([dr-vortex](https://github.com/dr-vortex))
 
 ### Loaders
 
