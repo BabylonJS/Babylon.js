@@ -205,6 +205,8 @@ export class UtilityLayerRenderer implements IDisposable {
                         } else {
                             scenePick = new PickingInfo();
                         }
+                    } else if (scene !== this.utilityLayerScene && prePointerInfo.originalPickingInfo) {
+                        scenePick = prePointerInfo.originalPickingInfo;
                     } else {
                         let previousActiveCamera: Nullable<Camera> = null;
                         // If a camera is set for rendering with this layer
@@ -290,18 +292,20 @@ export class UtilityLayerRenderer implements IDisposable {
                             if (!prePointerInfo.skipOnPointerObservable) {
                                 prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
                             }
-                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && utilityScenePick.distance > originalScenePick.distance) {
+                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && utilityScenePick.distance >= originalScenePick.distance) {
                             // We have a pick in both scenes but main is closer than utility
 
                             // We touched an utility mesh present in the main scene
                             if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
                                 this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
                                 prePointerInfo.skipOnPointerObservable = true;
-                            } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
-                                if (this._lastPointerEvents[pointerEvent.pointerId]) {
-                                    // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
-                                    this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
-                                    delete this._lastPointerEvents[pointerEvent.pointerId];
+                            } else {
+                                if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
+                                    if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                        // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
+                                        this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
+                                        delete this._lastPointerEvents[pointerEvent.pointerId];
+                                    }
                                 }
                                 this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
                             }

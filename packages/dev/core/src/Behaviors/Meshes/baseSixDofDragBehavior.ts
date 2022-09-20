@@ -296,7 +296,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
             }
             const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-            const isXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr";
+            const isXRNearPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr-near";
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (
@@ -306,7 +306,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
                     pointerInfo.pickInfo.ray &&
-                    (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
+                    (!isXRNearPointer || pointerInfo.pickInfo.aimTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
                     if (!this.allowMultiPointer && this.currentDraggingPointerIds.length > 0) {
@@ -325,7 +325,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._ownerNode.computeWorldMatrix(true);
                     const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
-                    if (isXRPointer) {
+                    if (isXRNearPointer) {
                         this._dragging = pointerInfo.pickInfo.originMesh ? this._dragType.NEAR_DRAG : this._dragType.DRAG_WITH_CONTROLLER;
                         virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.aimTransform!.position);
                         if (this._dragging === this._dragType.NEAR_DRAG && pointerInfo.pickInfo.gripTransform) {
@@ -351,7 +351,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
                     virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
 
-                    if (isXRPointer) {
+                    if (isXRNearPointer) {
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
                     } else {
@@ -415,7 +415,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     }
 
                     this._ownerNode.computeWorldMatrix(true);
-                    if (!isXRPointer) {
+                    if (!isXRNearPointer) {
                         this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
                     } else {
                         this._pointerUpdateXR(pointerInfo.pickInfo.aimTransform!, pointerInfo.pickInfo.gripTransform, pointerId, zDragFactor);
