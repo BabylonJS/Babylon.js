@@ -78,7 +78,7 @@ export class NodeLink {
 
     public intersectsWith(rect: DOMRect) {
         const locatRect = this._path.getBoundingClientRect();
-        if (!(rect.left < locatRect.right && rect.right > locatRect.left && rect.top < locatRect.bottom && rect.bottom > locatRect.top)) {
+        if (rect.left > locatRect.right || rect.right < locatRect.left || rect.top > locatRect.bottom || rect.bottom < locatRect.top) {
             return false;
         }
 
