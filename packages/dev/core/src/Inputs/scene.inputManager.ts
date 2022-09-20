@@ -248,6 +248,7 @@ export class InputManager {
         const scene = this._scene;
         const pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
         if (pickResult) {
+            pi.originalPickingInfo = pickResult;
             pi.ray = pickResult.ray;
             if (pickResult.originMesh) {
                 pi.nearInteractionPickingInfo = pickResult;
