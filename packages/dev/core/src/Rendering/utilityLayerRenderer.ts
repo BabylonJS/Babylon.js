@@ -205,7 +205,7 @@ export class UtilityLayerRenderer implements IDisposable {
                         } else {
                             scenePick = new PickingInfo();
                         }
-                    } else if (prePointerInfo.originalPickingInfo) {
+                    } else if (scene !== this.utilityLayerScene && prePointerInfo.originalPickingInfo) {
                         scenePick = prePointerInfo.originalPickingInfo;
                     } else {
                         let previousActiveCamera: Nullable<Camera> = null;
