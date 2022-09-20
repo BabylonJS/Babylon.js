@@ -22,7 +22,7 @@ export interface WebXRSpectatorModeOption {
     /**
      * The index of rigCameras array in a WebXR camera.
      */
-    profferedCameraIndex?: number;
+    preferredCameraIndex?: number;
 }
 
 /**
@@ -240,22 +240,26 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param options giving WebXRSpectatorModeOption for specutator camera to setup when the spectator mode is enabled.
      */
     public enableSpectatorMode(options?: WebXRSpectatorModeOption): void {
-        this._spectatorMode = true;
-        this._switchSpectatorMode(options);
+        if (!this._spectatorMode) {
+            this._spectatorMode = true;
+            this._switchSpectatorMode(options);
+        }
     }
 
     /**
      * Disable spectator mode for desktop VR experiences.
      */
     public disableSpecatatorMode(): void {
-        this._spectatorMode = false;
-        this._switchSpectatorMode();
+        if (this._spectatorMode) {
+            this._spectatorMode = false;
+            this._switchSpectatorMode();
+        }
     }
 
     private _switchSpectatorMode(options?: WebXRSpectatorModeOption): void {
         const fps = options?.fps ? options.fps : 1000.0;
         const refreshRate = (1.0 / fps) * 1000.0;
-        const cameraIndex = options?.profferedCameraIndex ? options?.profferedCameraIndex : 0;
+        const cameraIndex = options?.preferredCameraIndex ? options?.preferredCameraIndex : 0;
 
         const updateSpectatorCamera = () => {
             if (this._spectatorCamera) {
@@ -268,6 +272,9 @@ export class WebXRExperienceHelper implements IDisposable {
             }
         };
         if (this._spectatorMode) {
+            if (cameraIndex >= this.camera.rigCameras.length) {
+                throw new Error("the preferred camera index is beyond the length of rig camera array.");
+            }
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {
                     this._spectatorCamera = new UniversalCamera("webxr-spectator", Vector3.Zero(), this._scene);
