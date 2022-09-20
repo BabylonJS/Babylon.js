@@ -2800,10 +2800,6 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(animation, "loadAnimation", (extension) => extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation));
     }
 
-    // private _extensionsLoadAnimationChannelTarget(context: string, channel: IAnimationChannel): Nullable<IAnimatable> {
-    //     return this._applyExtensions(channel, "loadAnimationChannelTarget", (extension) => extension._loadAnimationChannelTarget && extension._loadAnimationChannelTarget(context, channel));
-    // }
-
     private _extensionsLoadAnimationChannelAsync(
         context: string,
         animationContext: string,

@@ -158,15 +158,6 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      */
     loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
 
-    // /**
-    //  * @hidden
-    //  * Define this method to modify the default behavior when loading animation channel targets.
-    //  * @param context The context when loading the asset
-    //  * @param channel The glTF animation channel property
-    //  * @returns The animation channel target or null if not handled
-    //  */
-    //  _loadAnimationChannelTarget?(context: string, channel: IAnimationChannel): Nullable<IAnimatable>;
-
     /**
      * @hidden
      * Define this method to modify the default behvaior when loading animation channels.
