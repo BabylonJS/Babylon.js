@@ -78,8 +78,28 @@ export class NodeLink {
 
     public intersectsWith(rect: DOMRect) {
         const locatRect = this._path.getBoundingClientRect();
+        if (!(rect.left < locatRect.right && rect.right > locatRect.left && rect.top < locatRect.bottom && rect.bottom > locatRect.top)) {
+            return false;
+        }
 
-        return rect.left < locatRect.right && rect.right > locatRect.left && rect.top < locatRect.bottom && rect.bottom > locatRect.top;
+        const svg = this._graphCanvas.svgCanvas as any as SVGSVGElement;
+        const rootRect = svg.getBoundingClientRect();
+        
+        const left = rect.x - rootRect.x;
+        const top = rect.y - rootRect.y;
+        const right = left + rect.width;
+        const bottom = top + rect.height;
+
+        const sampleRate = 10; // Checking 10 times on the path should be enough
+
+        for (let index = 0; index < 1; index += 1 / sampleRate) {
+            const point = this._path.getPointAtLength(index * this._path.getTotalLength());
+            if (left < point.x && right > point.x && top < point.y && bottom > point.y) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public update(endX = 0, endY = 0, straight = false) {
