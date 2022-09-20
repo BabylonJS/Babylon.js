@@ -30,7 +30,7 @@ export class StorageBuffer {
         this._buffer = this._engine.createStorageBuffer(size, creationFlags);
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         this._create(this._bufferSize, this._creationFlags);
     }

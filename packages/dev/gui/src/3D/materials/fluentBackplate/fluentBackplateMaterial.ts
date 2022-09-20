@@ -23,7 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/fluentBackplate.fragment";
 import "./shaders/fluentBackplate.vertex";
 
-/** @hidden */
+/** @internal */
 class FluentBackplateMaterialDefines extends MaterialDefines {
     public BLOB_ENABLE = true;
     public BLOB_ENABLE_2 = true;
@@ -73,7 +73,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     @serialize()
     public absoluteSizes = false;
 
-    /** @hidden */
+    /** @internal */
     public _filterWidth = 1;
 
     /**
@@ -154,7 +154,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     @serialize()
     public blobFade2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _rate = 0.135;
 
     /**
@@ -169,10 +169,10 @@ export class FluentBackplateMaterial extends PushMaterial {
     @serialize()
     public highlightWidth = 0.25;
 
-    /** @hidden */
+    /** @internal */
     public _highlightTransform = new Vector4(1, 1, 0, 0);
 
-    /** @hidden */
+    /** @internal */
     public _highlight = 1;
 
     /**
@@ -187,7 +187,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     @serialize()
     public iridescenceEdgeIntensity = 1;
 
-    /** @hidden */
+    /** @internal */
     public _angle = -45;
 
     /**
@@ -196,13 +196,13 @@ export class FluentBackplateMaterial extends PushMaterial {
     @serialize()
     public fadeOut = 1;
 
-    /** @hidden */
+    /** @internal */
     public _reflected = true;
 
-    /** @hidden */
+    /** @internal */
     public _frequency = 1;
 
-    /** @hidden */
+    /** @internal */
     public _verticalOffset = 0;
 
     /**

@@ -16,21 +16,21 @@ export class GroundMesh extends Mesh {
 
     private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
 
-    /** @hidden */
+    /** @internal */
     public _subdivisionsX: number;
-    /** @hidden */
+    /** @internal */
     public _subdivisionsY: number;
-    /** @hidden */
+    /** @internal */
     public _width: number;
-    /** @hidden */
+    /** @internal */
     public _height: number;
-    /** @hidden */
+    /** @internal */
     public _minX: number;
-    /** @hidden */
+    /** @internal */
     public _maxX: number;
-    /** @hidden */
+    /** @internal */
     public _minZ: number;
-    /** @hidden */
+    /** @internal */
     public _maxZ: number;
 
     constructor(name: string, scene?: Scene) {

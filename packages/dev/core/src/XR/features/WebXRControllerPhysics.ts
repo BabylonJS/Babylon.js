@@ -179,7 +179,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     }
 
     /**
-     * @hidden
+     * @internal
      * enable debugging - will show console outputs and the impostor mesh
      */
     public _enablePhysicsDebug() {

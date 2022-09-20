@@ -7,13 +7,13 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
-/** @hidden */
+/** @internal */
 export interface IWebGPURenderPipelineStageDescriptor {
     vertexStage: GPUProgrammableStage;
     fragmentStage?: GPUProgrammableStage;
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
 
@@ -52,7 +52,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _name: string;
 
     constructor(shaderProcessingContext: WebGPUShaderProcessingContext, engine: WebGPUEngine) {
@@ -118,7 +118,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.shaderProcessingContext.attributeLocationsFromEffect = attributeLocationsFromEffect;
     }
 
-    /** @hidden */
+    /** @internal */
     /**
      * Build the uniform buffer used in the material.
      */

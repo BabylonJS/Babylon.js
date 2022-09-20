@@ -51,7 +51,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 
 /**
  * Utility interface for storing vertex attribute data
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 interface _IVertexAttributeData {
@@ -79,7 +79,7 @@ interface _IVertexAttributeData {
 }
 /**
  * Converts Babylon Scene into glTF 2.0.
- * @hidden
+ * @internal
  */
 export class _Exporter {
     /**
@@ -1194,9 +1194,7 @@ export class _Exporter {
     }
 
     /**
-     * @param glTFPrefix
-     * @param dispose
-     * @hidden
+     * @internal
      */
     public _generateGLBAsync(glTFPrefix: string, dispose = true): Promise<GLTFData> {
         return this._generateBinaryAsync().then((binaryBuffer) => {
@@ -2305,7 +2303,7 @@ export class _Exporter {
 }
 
 /**
- * @hidden
+ * @internal
  *
  * Stores glTF binary data.  If the array buffer byte length is exceeded, it doubles in size dynamically
  */

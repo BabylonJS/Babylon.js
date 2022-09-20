@@ -125,7 +125,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Hidden Functions
     /**
      * @param deviceSource - Source to add
-     * @hidden
+     * @internal
      */
     public _addDevice(deviceSource: DeviceSourceType): void {
         if (!this._devices[deviceSource.deviceType]) {
@@ -143,7 +143,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     /**
      * @param deviceType - DeviceType
      * @param deviceSlot - DeviceSlot
-     * @hidden
+     * @internal
      */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
         const deviceSource = this._devices[deviceType]?.[deviceSlot]; // Grab local reference to use before removing from devices
@@ -159,7 +159,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @param deviceType - DeviceType
      * @param deviceSlot - DeviceSlot
      * @param eventData - Event
-     * @hidden
+     * @internal
      */
     public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {
         this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData as IKeyboardEvent | IWheelEvent | IPointerEvent);

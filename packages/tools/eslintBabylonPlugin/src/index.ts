@@ -21,7 +21,7 @@ interface IPlugin {
     rules: { [x: string]: eslint.Rule.RuleModule };
 }
 
-const allowedTags: string[] = ["@hidden", "@since"];
+const allowedTags: string[] = ["@internal", "@since"];
 
 // const taskToMessageId = {
 //     "param-tag-missing-hyphen": "tsdoc-param-tag-missing-hyphen",
@@ -126,11 +126,11 @@ function walkCompilerAstAndFindComments(node: ts.Node, indent: string, notFoundC
                 if (node.kind === ts.SyntaxKind.GetAccessor || node.kind === ts.SyntaxKind.SetAccessor) {
                     getterSetterFound.push(identifier.escapedText.toString());
                 } else {
-                    // stop iterating anything with @hidden
+                    // stop iterating anything with @internal
                     const comment = comments[0];
                     // get the comment text
                     const commentTest = tsdoc.TextRange.fromStringRange(buffer, comment.pos, comment.end).toString();
-                    if (commentTest.includes("@hidden")) {
+                    if (commentTest.includes("@internal")) {
                         return;
                     }
                 }
@@ -285,7 +285,6 @@ const plugin: IPlugin = {
                         const tokens = sourceCode.getTokensBefore(node, {
                             filter: (token) => token.value === (node.key as ESTree.Identifier).name,
                         });
-                        console.log(tokens);
                         if (tokens.length) {
                             const hasComment = tokens.some((token) => {
                                 const node = sourceCode.getNodeByRangeIndex(token.range[0]);

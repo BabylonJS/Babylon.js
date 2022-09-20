@@ -71,7 +71,7 @@ export class RenderingManager {
     public static AUTOCLEAR = true;
 
     /**
-     * @hidden
+     * @internal
      */
     public _useSceneAutoClearSetup = false;
 
@@ -108,11 +108,7 @@ export class RenderingManager {
 
     /**
      * Renders the entire managed groups. This is used by the scene or the different render targets.
-     * @param customRenderFunction
-     * @param activeMeshes
-     * @param renderParticles
-     * @param renderSprites
-     * @hidden
+     * @internal
      */
     public render(
         customRenderFunction: Nullable<
@@ -179,7 +175,7 @@ export class RenderingManager {
 
     /**
      * Resets the different information of the group to prepare a new frame
-     * @hidden
+     * @internal
      */
     public reset(): void {
         for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
@@ -192,7 +188,7 @@ export class RenderingManager {
 
     /**
      * Dispose and release the group and its associated resources.
-     * @hidden
+     * @internal
      */
     public dispose(): void {
         this.freeRenderingGroups();

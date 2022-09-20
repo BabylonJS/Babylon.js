@@ -56,13 +56,13 @@ export class Skeleton implements IAnimatable {
     private _canUseTextureForBones = false;
     private _uniqueId = 0;
 
-    /** @hidden */
+    /** @internal */
     public _numBonesWithLinkedTransformNode = 0;
 
-    /** @hidden */
+    /** @internal */
     public _hasWaitingData: Nullable<boolean> = null;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -449,23 +449,21 @@ export class Skeleton implements IAnimatable {
         return skeleton;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAsDirty(): void {
         this._isDirty = true;
         this._absoluteTransformIsDirty = true;
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
         this._meshesWithPoseMatrix.push(mesh);
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
         const index = this._meshesWithPoseMatrix.indexOf(mesh);

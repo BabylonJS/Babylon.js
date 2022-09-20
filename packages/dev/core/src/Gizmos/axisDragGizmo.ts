@@ -62,11 +62,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     protected _dragging: boolean = false;
 
     /**
-     * @param scene
-     * @param material
-     * @param thickness
-     * @param isCollider
-     * @hidden
+     * @internal
      */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
         const arrow = new TransformNode("arrow", scene);
@@ -92,9 +88,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     }
 
     /**
-     * @param scene
-     * @param arrow
-     * @hidden
+     * @internal
      */
     public static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode {
         const instance = new TransformNode("arrow", scene);

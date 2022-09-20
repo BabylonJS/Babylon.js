@@ -89,9 +89,7 @@ export abstract class AbstractAssetTask {
 
     /**
      * Internal only
-     * @param message
-     * @param exception
-     * @hidden
+     * @internal
      */
     public _setErrorObject(message?: string, exception?: any) {
         if (this._errorObject) {

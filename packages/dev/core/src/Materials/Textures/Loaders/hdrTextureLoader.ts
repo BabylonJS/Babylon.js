@@ -6,7 +6,7 @@ import { Constants } from "../../../Engines/constants";
 
 /**
  * Implementation of the HDR Texture Loader.
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _HDRTextureLoader implements IInternalTextureLoader {

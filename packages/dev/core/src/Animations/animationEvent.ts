@@ -22,7 +22,7 @@ export class AnimationEvent {
         public onlyOnce?: boolean
     ) {}
 
-    /** @hidden */
+    /** @internal */
     public _clone(): AnimationEvent {
         return new AnimationEvent(this.frame, this.action, this.onlyOnce);
     }

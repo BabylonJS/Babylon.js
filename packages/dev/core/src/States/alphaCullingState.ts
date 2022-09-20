@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 
 /**
- * @hidden
+ * @internal
  **/
 export class AlphaState {
     public _blendFunctionParameters = new Array<Nullable<number>>(4);

@@ -154,7 +154,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     tsContent = tsContent.replace("##SHADERSTORE_PLACEHOLDER##", shaderStore);
     tsContent = tsContent.replace(
         "##EXPORT_PLACEHOLDER##",
-        `/** @hidden */
+        `/** @internal */
 export const ${shaderName} = { name, shader };`
     );
 

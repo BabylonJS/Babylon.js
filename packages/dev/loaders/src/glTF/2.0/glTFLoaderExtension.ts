@@ -53,7 +53,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadCameraAsync?(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
 
     /**
-     * @hidden
+     * @internal
      * Define this method to modify the default behavior when loading vertex data for mesh primitives.
      * @param context The context when loading the asset
      * @param primitive The glTF mesh primitive property
@@ -62,7 +62,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
 
     /**
-     * @hidden
+     * @internal
      * Define this method to modify the default behavior when loading data for mesh primitives.
      * @param context The context when loading the asset
      * @param name The mesh name when loading the asset
@@ -82,7 +82,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     ): Nullable<Promise<AbstractMesh>>;
 
     /**
-     * @hidden
+     * @internal
      * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
      * @param context The context when loading the asset
      * @param material The glTF material property
@@ -125,7 +125,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
 
     /**
-     * @hidden
+     * @internal
      * Define this method to modify the default behavior when loading textures.
      * @param context The context when loading the asset
      * @param texture The glTF texture property
@@ -143,7 +143,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
 
     /**
-     * @hidden
+     * @internal
      * Define this method to modify the default behavior when loading skins.
      * @param context The context when loading the asset
      * @param node The glTF node property
@@ -153,7 +153,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
 
     /**
-     * @hidden
+     * @internal
      * Define this method to modify the default behavior when loading uris.
      * @param context The context when loading the asset
      * @param property The glTF property associated with the uri

@@ -76,7 +76,7 @@ export class WebXRInputSource {
 
     /**
      * The last XRPose the was calculated on the current XRFrame
-     * @hidden
+     * @internal
      */
     public _lastXRPose?: XRPose;
 
