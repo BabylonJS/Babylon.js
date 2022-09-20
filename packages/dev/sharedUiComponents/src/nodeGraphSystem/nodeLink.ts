@@ -84,7 +84,7 @@ export class NodeLink {
 
         const svg = this._graphCanvas.svgCanvas as any as SVGSVGElement;
         const rootRect = svg.getBoundingClientRect();
-        
+
         const left = rect.x - rootRect.x;
         const top = rect.y - rootRect.y;
         const right = left + rect.width;
