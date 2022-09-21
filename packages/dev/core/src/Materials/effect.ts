@@ -879,15 +879,22 @@ export class Effect implements IDisposable {
             }
         }
         Logger.Error("Error: " + this._compilationError);
-        if (previousPipelineContext) {
-            this._pipelineContext = previousPipelineContext;
-            this._isReady = true;
+
+        const notifyErrors = () => {
             if (this.onError) {
                 this.onError(this, this._compilationError);
             }
             this.onErrorObservable.notifyObservers(this);
+        };
+
+        // In case a previous compilation was successful, we need to restore the previous pipeline context
+        if (previousPipelineContext) {
+            this._pipelineContext = previousPipelineContext;
+            this._isReady = true;
+            notifyErrors();
         }
 
+        // Lets try to compile fallbacks as long as we have some.
         if (fallbacks) {
             this._pipelineContext = null;
             if (fallbacks.hasMoreFallbacks) {
@@ -898,10 +905,7 @@ export class Effect implements IDisposable {
             } else {
                 // Sorry we did everything we can
                 this._allFallbacksProcessed = true;
-                if (this.onError) {
-                    this.onError(this, this._compilationError);
-                }
-                this.onErrorObservable.notifyObservers(this);
+                notifyErrors();
                 this.onErrorObservable.clear();
 
                 // Unbind mesh reference in fallbacks
@@ -911,6 +915,11 @@ export class Effect implements IDisposable {
             }
         } else {
             this._allFallbacksProcessed = true;
+
+            // In case of error, without any prior successful compilation, let s notify observers
+            if (!previousPipelineContext) {
+                notifyErrors();
+            }
         }
     }
 
