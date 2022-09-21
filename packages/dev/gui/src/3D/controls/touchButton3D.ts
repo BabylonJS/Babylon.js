@@ -193,10 +193,7 @@ export class TouchButton3D extends Button3D {
     }
 
     /**
-     * @param providedType
-     * @param nearMeshPosition
-     * @param activeInteractionCount
-     * @hidden
+     * @internal
      */
     public _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number {
         if (providedType === PointerEventTypes.POINTERDOWN || providedType === PointerEventTypes.POINTERMOVE) {

@@ -14,7 +14,7 @@ import { Color3 } from "core/Maths/math.color";
  * Class used to create a button in 3D
  */
 export class Button3D extends AbstractButton3D {
-    /** @hidden */
+    /** @internal */
     protected _currentMaterial: Material;
 
     /**

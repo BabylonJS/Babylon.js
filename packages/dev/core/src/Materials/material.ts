@@ -238,7 +238,7 @@ export class Material implements IAnimatable {
     @serialize()
     public uniqueId: number;
 
-    /** @hidden */
+    /** @internal */
     public _loadedUniqueId: string;
 
     /**
@@ -405,7 +405,7 @@ export class Material implements IAnimatable {
     public doNotSerialize = false;
 
     /**
-     * @hidden
+     * @internal
      */
     public _storeEffectOnSubMeshes = false;
 
@@ -697,19 +697,18 @@ export class Material implements IAnimatable {
     public readonly stencil = new MaterialStencilState();
 
     /**
-     * @hidden
+     * @internal
      * Stores the effects for the material
      */
     protected _materialContext: IMaterialContext | undefined;
 
     protected _drawWrapper: DrawWrapper;
-    /** @hidden */
+    /** @internal */
     public _getDrawWrapper(): DrawWrapper {
         return this._drawWrapper;
     }
     /**
-     * @param drawWrapper
-     * @hidden
+     * @internal
      */
     public _setDrawWrapper(drawWrapper: DrawWrapper) {
         this._drawWrapper = drawWrapper;
@@ -748,23 +747,23 @@ export class Material implements IAnimatable {
 
     /**
      * Stores the uniform buffer
-     * @hidden
+     * @internal
      */
     public _uniformBuffer: UniformBuffer;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSceneMaterialArray = -1;
 
-    /** @hidden */
+    /** @internal */
     public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
-    /** @hidden */
+    /** @internal */
     public _dirtyCallbacks: { [code: number]: () => void };
 
-    /** @hidden */
+    /** @internal */
     public _uniformBufferLayoutBuilt = false;
 
     protected _eventInfo: MaterialPluginCreated &
@@ -782,7 +781,7 @@ export class Material implements IAnimatable {
         MaterialPluginHasRenderTargetTextures &
         MaterialPluginHardBindForSubMesh = {} as any; // will be initialized before each event notification
 
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventGeneric: (
         id: number,
         info:
@@ -794,19 +793,19 @@ export class Material implements IAnimatable {
             | MaterialPluginPrepareEffect
             | MaterialPluginPrepareUniformBuffer
     ) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventPrepareDefinesBeforeAttributes: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void 0;
 
     /**
@@ -1074,9 +1073,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * @param effect
-     * @param overrideOrientation
-     * @hidden
+     * @internal
      */
     public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         const engine = this._scene.getEngine();
@@ -1696,9 +1693,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * @param mesh
-     * @param forceDisposeEffect
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {

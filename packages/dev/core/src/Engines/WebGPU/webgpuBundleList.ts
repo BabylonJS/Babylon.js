@@ -1,12 +1,12 @@
 import type { Nullable } from "../../types";
 
-/** @hidden */
+/** @internal */
 interface IWebGPURenderItem {
     run(renderPass: GPURenderPassEncoder): void;
     clone(): IWebGPURenderItem;
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderItemViewport implements IWebGPURenderItem {
     public x: number;
     public y: number;
@@ -29,7 +29,7 @@ export class WebGPURenderItemViewport implements IWebGPURenderItem {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderItemScissor implements IWebGPURenderItem {
     public constructor(public x: number, public y: number, public w: number, public h: number) {}
 
@@ -42,7 +42,7 @@ export class WebGPURenderItemScissor implements IWebGPURenderItem {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderItemStencilRef implements IWebGPURenderItem {
     public constructor(public ref: number) {}
 
@@ -55,7 +55,7 @@ export class WebGPURenderItemStencilRef implements IWebGPURenderItem {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
     public constructor(public color: Nullable<number>[]) {}
 
@@ -68,7 +68,7 @@ export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderItemBeginOcclusionQuery implements IWebGPURenderItem {
     public constructor(public query: number) {}
 
@@ -81,7 +81,7 @@ export class WebGPURenderItemBeginOcclusionQuery implements IWebGPURenderItem {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderItemEndOcclusionQuery implements IWebGPURenderItem {
     public constructor() {}
 
@@ -112,7 +112,7 @@ class WebGPURenderItemBundles implements IWebGPURenderItem {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUBundleList {
     private _device: GPUDevice;
     private _bundleEncoder: GPURenderBundleEncoder | undefined;

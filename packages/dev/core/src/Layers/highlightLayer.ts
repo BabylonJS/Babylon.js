@@ -774,7 +774,7 @@ export class HighlightLayer extends EffectLayer {
      * Free any resources and references associated to a mesh.
      * Internal use
      * @param mesh The mesh to free.
-     * @hidden
+     * @internal
      */
     public _disposeMesh(mesh: Mesh): void {
         this.removeMesh(mesh);

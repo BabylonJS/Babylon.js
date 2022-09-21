@@ -2,7 +2,7 @@
 import { DataReader } from "./Misc/dataReader";
 import { sourceTextureFormat } from "./transcoder";
 
-/** @hidden */
+/** @internal */
 export enum SupercompressionScheme {
     None = 0,
     BasisLZ = 1,
@@ -34,7 +34,7 @@ const enum DFDTransferFunction {
     sRGB = 2,
 }
 
-/** @hidden */
+/** @internal */
 export interface IKTX2_Header {
     vkFormat: number;
     typeSize: number;
@@ -53,7 +53,7 @@ export interface IKTX2_Header {
     sgdByteLength: number;
 }
 
-/** @hidden */
+/** @internal */
 export interface IKTX2_Level {
     byteOffset: number;
     byteLength: number;
@@ -70,7 +70,7 @@ interface IKTX2_Sample {
     sampleUpper: number;
 }
 
-/** @hidden */
+/** @internal */
 export interface IKTX2_DFD {
     vendorId: number;
     descriptorType: number;
@@ -91,7 +91,7 @@ export interface IKTX2_DFD {
     samples: Array<IKTX2_Sample>;
 }
 
-/** @hidden */
+/** @internal */
 export interface IKTX2_ImageDesc {
     imageFlags: number;
     rgbSliceByteOffset: number;
@@ -100,7 +100,7 @@ export interface IKTX2_ImageDesc {
     alphaSliceByteLength: number;
 }
 
-/** @hidden */
+/** @internal */
 export interface IKTX2_SupercompressionGlobalData {
     endpointCount?: number;
     selectorCount?: number;

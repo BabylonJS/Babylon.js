@@ -5,9 +5,9 @@ import { SubMesh } from "./subMesh";
 
 declare module "./subMesh" {
     export interface SubMesh {
-        /** @hidden */
+        /** @internal */
         _projectOnTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number;
-        /** @hidden */
+        /** @internal */
         _projectOnUnIndexedTrianglesToRef(vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number;
         /**
          * Projects a point on this submesh and stores the result in "ref"
@@ -23,13 +23,7 @@ declare module "./subMesh" {
 }
 
 /**
- * @param vector
- * @param positions
- * @param indices
- * @param step
- * @param checkStopper
- * @param ref
- * @hidden
+ * @internal
  */
 SubMesh.prototype._projectOnTrianglesToRef = function (vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number {
     // Triangles test
@@ -69,11 +63,7 @@ SubMesh.prototype._projectOnTrianglesToRef = function (vector: Vector3, position
 };
 
 /**
- * @param vector
- * @param positions
- * @param indices
- * @param ref
- * @hidden
+ * @internal
  */
 SubMesh.prototype._projectOnUnIndexedTrianglesToRef = function (vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number {
     // Triangles test

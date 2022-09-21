@@ -69,8 +69,7 @@ export class LensFlareSystem {
     private _isEnabled = true;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("LensFlareSystemSceneComponent");
@@ -178,8 +177,7 @@ export class LensFlareSystem {
     }
 
     /**
-     * @param globalViewport
-     * @hidden
+     * @internal
      */
     public computeEffectivePosition(globalViewport: Viewport): boolean {
         let position = this.getEmitterPosition();
@@ -217,7 +215,7 @@ export class LensFlareSystem {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _isVisible(): boolean {
         if (!this._isEnabled || !this._scene.activeCamera) {
             return false;
@@ -235,7 +233,7 @@ export class LensFlareSystem {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public render(): boolean {
         if (!this._scene.activeCamera) {

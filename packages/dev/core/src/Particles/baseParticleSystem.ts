@@ -278,7 +278,7 @@ export class BaseParticleSystem {
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
-    /** @hidden */
+    /** @internal */
     public _isAnimationSheetEnabled: boolean;
 
     /**
@@ -560,10 +560,10 @@ export class BaseParticleSystem {
      */
     public particleEmitterType: IParticleEmitterType;
 
-    /** @hidden */
+    /** @internal */
     public _isSubEmitter = false;
 
-    /** @hidden */
+    /** @internal */
     public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
      * Gets or sets the billboard mode to use when isBillboardBased = true.
@@ -582,7 +582,7 @@ export class BaseParticleSystem {
         this._reset();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isBillboardBased = true;
     /**
      * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
@@ -653,14 +653,11 @@ export class BaseParticleSystem {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     protected _reset() {}
 
     /**
-     * @param gradient
-     * @param gradients
-     * @param texture
-     * @hidden
+     * @internal
      */
     protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: Nullable<RawTexture>): BaseParticleSystem {
         if (!gradients) {

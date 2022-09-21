@@ -402,7 +402,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._blurVPostProcess.samples = this.textureSamples;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild() {
         super._rebuild();
     }

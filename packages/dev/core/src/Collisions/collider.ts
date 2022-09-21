@@ -67,7 +67,7 @@ const getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: 
     };
 })();
 
-/** @hidden */
+/** @internal */
 export class Collider {
     // Implementation of the "Improved Collision detection and Response" algorithm proposed by Kasper Fauerby
     // https://www.peroxide.dk/papers/collision/collision.pdf
@@ -102,22 +102,22 @@ export class Collider {
     private _slidePlaneNormal = Vector3.Zero();
     private _displacementVector = Vector3.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _radius = Vector3.One();
-    /** @hidden */
+    /** @internal */
     public _retry = 0;
     private _velocity: Vector3;
     private _basePoint: Vector3;
     private _epsilon: number;
-    /** @hidden */
+    /** @internal */
     public _velocityWorldLength: number;
-    /** @hidden */
+    /** @internal */
     public _basePointWorld = Vector3.Zero();
     private _velocityWorld = Vector3.Zero();
     private _normalizedVelocity = Vector3.Zero();
-    /** @hidden */
+    /** @internal */
     public _initialVelocity: Vector3;
-    /** @hidden */
+    /** @internal */
     public _initialPosition: Vector3;
     private _nearestDistance: number;
 
@@ -142,10 +142,7 @@ export class Collider {
 
     // Methods
     /**
-     * @param source
-     * @param dir
-     * @param e
-     * @hidden
+     * @internal
      */
     public _initialize(source: Vector3, dir: Vector3, e: number): void {
         this._velocity = dir;
@@ -168,12 +165,7 @@ export class Collider {
     }
 
     /**
-     * @param point
-     * @param pa
-     * @param pb
-     * @param pc
-     * @param n
-     * @hidden
+     * @internal
      */
     public _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean {
         pa.subtractToRef(point, this._tempVector);
@@ -198,11 +190,7 @@ export class Collider {
     }
 
     /**
-     * @param sphereCenter
-     * @param sphereRadius
-     * @param vecMin
-     * @param vecMax
-     * @hidden
+     * @internal
      */
     public _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean {
         const distance = Vector3.Distance(this._basePointWorld, sphereCenter);
@@ -221,14 +209,7 @@ export class Collider {
     }
 
     /**
-     * @param faceIndex
-     * @param trianglePlaneArray
-     * @param p1
-     * @param p2
-     * @param p3
-     * @param hasMaterial
-     * @param hostMesh
-     * @hidden
+     * @internal
      */
     public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void {
         let t0;
@@ -429,17 +410,7 @@ export class Collider {
     }
 
     /**
-     * @param trianglePlaneArray
-     * @param pts
-     * @param indices
-     * @param indexStart
-     * @param indexEnd
-     * @param decal
-     * @param hasMaterial
-     * @param hostMesh
-     * @param invertTriangles
-     * @param triangleStrip
-     * @hidden
+     * @internal
      */
     public _collide(
         trianglePlaneArray: Array<Plane>,
@@ -527,9 +498,7 @@ export class Collider {
     }
 
     /**
-     * @param pos
-     * @param vel
-     * @hidden
+     * @internal
      */
     public _getResponse(pos: Vector3, vel: Vector3): void {
         pos.addToRef(vel, this._destinationPoint);

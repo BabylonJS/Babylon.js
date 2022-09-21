@@ -104,9 +104,7 @@ export class Tags {
     }
 
     /**
-     * @param obj
-     * @param tag
-     * @hidden
+     * @internal
      */
     public static _AddTagTo(obj: any, tag: string): void {
         tag = tag.trim();
@@ -139,9 +137,7 @@ export class Tags {
     }
 
     /**
-     * @param obj
-     * @param tag
-     * @hidden
+     * @internal
      */
     public static _RemoveTagFrom(obj: any, tag: string): void {
         delete obj._tags[tag];

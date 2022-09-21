@@ -3,10 +3,10 @@ import { Engine } from "../engine";
 
 declare module "../../Engines/engine" {
     export interface Engine {
-        /** @hidden */
+        /** @internal */
         _excludedCompressedTextures: string[];
 
-        /** @hidden */
+        /** @internal */
         _textureFormatInUse: string;
 
         /**

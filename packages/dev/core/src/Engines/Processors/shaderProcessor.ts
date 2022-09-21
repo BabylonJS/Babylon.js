@@ -22,7 +22,7 @@ const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
 const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 
-/** @hidden */
+/** @internal */
 export class ShaderProcessor {
     public static Initialize(options: ProcessingOptions): void {
         if (options.processor && options.processor.initializeShaders) {
@@ -461,7 +461,7 @@ export class ShaderProcessor {
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @param onError callback called when the file fails to load
      * @returns a file request object
-     * @hidden
+     * @internal
      */
     public static _FileToolsLoadFile(
         url: string,

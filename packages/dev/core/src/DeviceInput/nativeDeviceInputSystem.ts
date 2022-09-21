@@ -6,7 +6,7 @@ import type { IDeviceInputSystem } from "./inputInterfaces";
 
 declare const _native: INative;
 
-/** @hidden */
+/** @internal */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
     private readonly _nativeInput: IDeviceInputSystem;
 

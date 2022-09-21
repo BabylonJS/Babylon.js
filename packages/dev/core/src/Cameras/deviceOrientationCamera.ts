@@ -84,7 +84,7 @@ export class DeviceOrientationCamera extends FreeCamera {
     }
 
     /**
-     * @hidden
+     * @internal
      * Checks and applies the current values of the inputs to the camera. (Internal use only)
      */
     public _checkInputs(): void {
