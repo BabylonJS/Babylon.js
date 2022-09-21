@@ -295,7 +295,7 @@ export class Vector2 {
     /**
      * Negate the current Vector2 and stores the result in the given vector "result" coordinates
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector2
+     * @returns the result
      */
     public negateToRef(result: Vector2): Vector2 {
         return result.copyFromFloats(this.x * -1, this.y * -1);
@@ -983,7 +983,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#6
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
@@ -1017,7 +1017,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#63
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
@@ -1042,7 +1042,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x - x, this._y - y, this._z - z);
@@ -1073,7 +1073,7 @@ export class Vector3 {
      * Negate the current Vector3 and stores the result in the given vector "result" coordinates
      * Example Playground https://playground.babylonjs.com/#R1F8YU#37
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public negateToRef(result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * -1, this._y * -1, this._z * -1);
@@ -1107,7 +1107,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#57
      * @param scale defines the multiplier factor
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public scaleToRef(scale: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * scale, this._y * scale, this._z * scale);
@@ -1118,7 +1118,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#9
      * @param q the unit quaternion representing the rotation
      * @param result the output vector
-     * @returns the current Vector3
+     * @returns the result
      */
     public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
         const ix = q.w * this.x + q.y * this.z - q.z * this.y;
@@ -1277,7 +1277,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#33
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * otherVector._x, this._y * otherVector._y, this._z * otherVector._z);
@@ -1310,7 +1310,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#18
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
@@ -2963,7 +2963,7 @@ export class Vector4 {
     /**
      * Negate the current Vector4 and stores the result in the given vector "result" coordinates
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector4
+     * @returns the result
      */
     public negateToRef(result: Vector4): Vector4 {
         return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
