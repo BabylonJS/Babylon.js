@@ -148,8 +148,8 @@ const plugin: IPlugin = {
         syntax: {
             meta: {
                 messages: {
-                    "error-loading-config-file": "Error loading TSDoc config file:\n{{details}}",
-                    "error-applying-config": "Error applying TSDoc configuration: {{details}}",
+                    "error-loading-config-file": "Issue loading TSDoc config file:\n{{details}}",
+                    "error-applying-config": "Issue applying TSDoc configuration: {{details}}",
                     ...tsdocMessageIds,
                 },
                 type: "problem",
@@ -260,7 +260,7 @@ const plugin: IPlugin = {
         available: {
             meta: {
                 messages: {
-                    "error-no-doc-found": "Error finding code doc for: {{name}}",
+                    "error-no-doc-found": "Issue finding code doc for: {{name}}",
                     ...tsdocMessageIds,
                 },
                 type: "problem",
