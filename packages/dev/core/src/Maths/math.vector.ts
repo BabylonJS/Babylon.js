@@ -1114,6 +1114,42 @@ export class Vector3 {
     }
 
     /**
+     * Creates a vector normal (perpendicular) to the current Vector3
+     * returns the vector normal
+     */
+    public getNormal(): Vector3 {
+        const ref: Vector3 = MathTmp.Vector3[0];
+        return this.getNormalToRef(ref);
+    }
+
+    /**
+     * Creates a vector normal (perpendicular) to the current Vector3 and stores the result in the given vector
+     * @param result defines the Vector3 object where to store the resultant normal
+     * returns the result
+     */
+    public getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
+        /**
+         * Calculates the spherical coordinates of the current vector
+         * so saves on memory rather than importing whole Spherical Class
+         */
+        const radius: number = this.length();
+        let theta: number = Math.acos(this.y / radius);
+        const phi = Math.atan2(this.z, this.x);
+        //makes angle 90 degs to current vector
+        if (theta > Math.PI / 2) {
+            theta -= Math.PI / 2;
+        } else {
+            theta += Math.PI / 2;
+        }
+        //Calculates resutant normal vector from spherical coordinate of perpendicular vector
+        const x = radius * Math.sin(theta) * Math.cos(phi);
+        const y = radius * Math.cos(theta);
+        const z = radius * Math.sin(theta) * Math.sin(phi);
+        result.set(x, y, z);
+        return result;
+    }
+
+    /**
      * Rotates the vector using the given unit quaternion and stores the new vector in result
      * Example Playground https://playground.babylonjs.com/#R1F8YU#9
      * @param q the unit quaternion representing the rotation
@@ -1659,6 +1695,30 @@ export class Vector3 {
         const s = d0 / (d0 - d1);
 
         return s;
+    }
+
+    /**
+     * Get rotation needed to to rotate from one Vector3 onto another Vector3
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @returns the rotation needed
+     */
+    public static RotationFromOnto(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>) {
+        const ref: Quaternion = Quaternion.Zero();
+        return Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref).toEulerAngles();
+    }
+
+    /**
+     * Get rotation needed to to rotate from one Vector3 onto another Vector3 and store in a result Vector3
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @param result the rotation needed
+     * @returns the result
+     */
+    public static RotationFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Vector3>) {
+        const ref: Quaternion = Quaternion.Zero();
+        result = Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref).toEulerAngles();
+        return result;
     }
 
     /**
@@ -4111,6 +4171,34 @@ export class Quaternion {
             result.y = (m23 + m32) / s;
             result.z = 0.25 * s;
         }
+    }
+
+    /**
+     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @returns the rotation quaternion needed
+     */
+    public static RotationQuaternionFromOnto(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>) {
+        const ref: Quaternion = Quaternion.Zero();
+        return Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref);
+    }
+
+    /**
+     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3 and stores in a result Quaternion
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @param result the rotation quaternion needed
+     * @returns the result
+     */
+    public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: Quaternion) {
+        const normal: Vector3 = Vector3.Cross(fromVector, toVector);
+        if (normal.equals(Vector3.Zero())) {
+            fromVector.getNormalToRef(normal);
+        }
+        const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
+        result = Quaternion.RotationAxis(normal, angle);
+        return result;
     }
 
     /**
