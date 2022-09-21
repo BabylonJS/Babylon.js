@@ -26,16 +26,16 @@ export class RenderTargetWrapper {
     private _textures: Nullable<InternalTexture[]> = null;
     private _samples = 1;
 
-    /** @hidden */
+    /** @internal */
     public _attachments: Nullable<number[]> = null;
-    /** @hidden */
+    /** @internal */
     public _generateStencilBuffer: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _generateDepthBuffer: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _depthStencilTexture: Nullable<InternalTexture>;
-    /** @hidden */
+    /** @internal */
     public _depthStencilTextureWithStencil: boolean = false;
 
     /**
@@ -224,7 +224,7 @@ export class RenderTargetWrapper {
 
     /**
      * Shares the depth buffer of this render target with another render target.
-     * @hidden
+     * @internal
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: RenderTargetWrapper): void {
@@ -239,8 +239,7 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * @param target
-     * @hidden
+     * @internal
      */
     public _swapAndDie(target: InternalTexture): void {
         if (this.texture) {
@@ -334,7 +333,7 @@ export class RenderTargetWrapper {
         this._depthStencilTexture = null;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         const rtw = this._cloneRenderTargetWrapper();
         if (!rtw) {

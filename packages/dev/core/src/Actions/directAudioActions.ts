@@ -20,7 +20,7 @@ export class PlaySoundAction extends Action {
         this._sound = sound;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**
@@ -65,7 +65,7 @@ export class StopSoundAction extends Action {
         this._sound = sound;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**

@@ -23,10 +23,10 @@ import "../Shaders/boundingBoxRenderer.vertex";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
 
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _forceShowBoundingBoxes: boolean;
 
         /**
@@ -67,7 +67,7 @@ Scene.prototype.getBoundingBoxRenderer = function (): BoundingBoxRenderer {
 
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _showBoundingBox: boolean;
 
         /**
@@ -141,7 +141,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public enabled = true;
 
     /**
-     * @hidden
+     * @internal
      */
     public renderList = new SmartArray<BoundingBox>(32);
 
@@ -270,7 +270,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public reset(): void {
         this.renderList.reset();

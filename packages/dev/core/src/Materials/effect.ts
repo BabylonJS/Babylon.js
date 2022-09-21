@@ -137,17 +137,17 @@ export class Effect implements IDisposable {
      */
     public onErrorObservable = new Observable<Effect>();
 
-    /** @hidden */
+    /** @internal */
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
-     * @hidden
+     * @internal
      * Specifies if the effect was previously ready
      */
     public _wasPreviouslyReady = false;
 
     /**
-     * @hidden
+     * @internal
      * Specifies if the effect was previously using instances
      */
     public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
@@ -165,17 +165,17 @@ export class Effect implements IDisposable {
         return this._onBindObservable;
     }
 
-    /** @hidden */
+    /** @internal */
     public _bonesComputationForcedToCPU = false;
-    /** @hidden */
+    /** @internal */
     public _uniformBuffersNames: { [key: string]: number } = {};
-    /** @hidden */
+    /** @internal */
     public _samplerList: string[];
-    /** @hidden */
+    /** @internal */
     public _multiTarget: boolean = false;
 
     private static _UniqueIdSeed = 0;
-    /** @hidden */
+    /** @internal */
     public _engine: Engine;
     private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
@@ -189,7 +189,7 @@ export class Effect implements IDisposable {
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
-     * @hidden
+     * @internal
      */
     public _key: string = "";
     private _indexParameters: any;
@@ -200,17 +200,17 @@ export class Effect implements IDisposable {
     private _shaderLanguage: ShaderLanguage;
     /**
      * Compiled shader to webGL program.
-     * @hidden
+     * @internal
      */
     public _pipelineContext: Nullable<IPipelineContext> = null;
-    /** @hidden */
+    /** @internal */
     public _vertexSourceCode: string = "";
-    /** @hidden */
+    /** @internal */
     public _fragmentSourceCode: string = "";
 
-    /** @hidden */
+    /** @internal */
     private _rawVertexSourceCode: string = "";
-    /** @hidden */
+    /** @internal */
     private _rawFragmentSourceCode: string = "";
 
     private static _BaseCache: { [key: number]: DataBuffer } = {};
@@ -692,7 +692,7 @@ export class Effect implements IDisposable {
      * @param fragmentSourceCode The source code for the fragment shader.
      * @param onCompiled Callback called when completed.
      * @param onError Callback called on error.
-     * @hidden
+     * @internal
      */
     public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) {
         this._isReady = false;
@@ -720,7 +720,7 @@ export class Effect implements IDisposable {
 
     /**
      * Prepares the effect
-     * @hidden
+     * @internal
      */
     public _prepareEffect() {
         const attributesNames = this._attributesNames;
@@ -934,7 +934,7 @@ export class Effect implements IDisposable {
      * Binds a texture to the engine to be used as output of the shader.
      * @param channel Name of the output variable.
      * @param texture Texture to bind.
-     * @hidden
+     * @internal
      */
     public _bindTexture(channel: string, texture: Nullable<InternalTexture>): void {
         this._engine._bindTexture(this._samplers[channel], texture, channel);

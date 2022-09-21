@@ -1,7 +1,7 @@
 import type { IStencilState } from "./IStencilState";
 
 /**
- * @hidden
+ * @internal
  **/
 export class StencilStateComposer {
     protected _isStencilTestDirty = false;

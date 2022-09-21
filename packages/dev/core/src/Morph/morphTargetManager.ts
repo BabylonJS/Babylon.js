@@ -37,10 +37,10 @@ export class MorphTargetManager implements IDisposable {
     private _canUseTextureForTargets = false;
     private _blockCounter = 0;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
-    /** @hidden */
+    /** @internal */
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
 
     /**
@@ -234,8 +234,7 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
-     * @param effect
-     * @hidden
+     * @internal
      */
     public _bind(effect: Effect) {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);

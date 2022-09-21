@@ -38,7 +38,7 @@ export class InputTextArea extends InputText {
      */
     public onLinesReadyObservable = new Observable<InputTextArea>();
 
-    /** @hidden */
+    /** @internal */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
     private _contextForBreakLines: ICanvasRenderingContext;
     private _clickedCoordinateX: Nullable<number>;
@@ -186,7 +186,7 @@ export class InputTextArea extends InputText {
      * @param code The ascii input number
      * @param key The key string representation
      * @param evt The keyboard event emits with input
-     * @hidden
+     * @internal
      */
     public alternativeProcessKey(code: string, key?: string, evt?: IKeyboardEvent) {
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
@@ -592,7 +592,7 @@ export class InputTextArea extends InputText {
      *
      * @param parentMeasure The parent measure
      * @param context The rendering canvas
-     * @hidden
+     * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (!this._fontOffset || this._wasDirty) {
@@ -668,7 +668,7 @@ export class InputTextArea extends InputText {
      *
      * @param parentMeasure The parent measure
      * @param context The rendering canvas
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
@@ -734,7 +734,7 @@ export class InputTextArea extends InputText {
      * Copy the text in the clipboard
      *
      * @param ev The clipboard event
-     * @hidden
+     * @internal
      */
     protected _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
@@ -749,7 +749,7 @@ export class InputTextArea extends InputText {
      * Cut the text and copy it in the clipboard
      *
      * @param ev The clipboard event
-     * @hidden
+     * @internal
      */
     protected _onCutText(ev: ClipboardEvent): void {
         if (!this._highlightedText) {
@@ -771,7 +771,7 @@ export class InputTextArea extends InputText {
      * Paste the copied text from the clipboard
      *
      * @param ev The clipboard event
-     * @hidden
+     * @internal
      */
     protected _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
@@ -1166,7 +1166,7 @@ export class InputTextArea extends InputText {
      * Update all values of cursor information based on cursorIndex value
      *
      * @param offset The index to take care of
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _updateValueFromCursorIndex(offset: number) {
@@ -1177,7 +1177,7 @@ export class InputTextArea extends InputText {
      * Select the word immediatly under the cursor on double click
      *
      * @param _evt Pointer informations of double click
-     * @hidden
+     * @internal
      */
     protected _processDblClick(_evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
@@ -1198,7 +1198,7 @@ export class InputTextArea extends InputText {
         this._markAsDirty();
     }
 
-    /** @hidden */
+    /** @internal */
     protected _selectAllText() {
         this._isTextHighlightOn = true;
         this._blinkIsEven = true;

@@ -2,10 +2,10 @@ import type { INative, INativeDataStream } from "./nativeInterfaces";
 
 declare const _native: INative;
 
-/** @hidden */
+/** @internal */
 export type NativeData = Uint32Array;
 
-/** @hidden */
+/** @internal */
 export class NativeDataStream {
     private readonly _uint32s: Uint32Array;
     private readonly _int32s: Int32Array;

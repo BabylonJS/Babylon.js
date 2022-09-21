@@ -91,15 +91,7 @@ export class Button extends Rectangle {
 
     // While being a container, the button behaves like a control.
     /**
-     * @param x
-     * @param y
-     * @param pi
-     * @param type
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
@@ -131,9 +123,7 @@ export class Button extends Rectangle {
     }
 
     /**
-     * @param target
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
         if (!super._onPointerEnter(target, pi)) {
@@ -148,10 +138,7 @@ export class Button extends Rectangle {
     }
 
     /**
-     * @param target
-     * @param pi
-     * @param force
-     * @hidden
+     * @internal
      */
     public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
         if (!this.isReadOnly && this.pointerOutAnimation) {
@@ -162,12 +149,7 @@ export class Button extends Rectangle {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
@@ -182,13 +164,7 @@ export class Button extends Rectangle {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param notifyClick
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
         if (!this.isReadOnly && this.pointerUpAnimation) {
@@ -214,9 +190,7 @@ export class Button extends Rectangle {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
