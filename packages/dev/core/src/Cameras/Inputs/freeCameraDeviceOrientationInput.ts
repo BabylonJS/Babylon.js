@@ -18,7 +18,7 @@ declare module "../../Cameras/freeCameraInputsManager" {
          * Add orientation input support to the input manager.
          * @returns the current input manager
          */
-        addDeviceOrientation(): FreeCameraInputsManager;
+        addDeviceOrientation(smoothFactor?: number): FreeCameraInputsManager;
     }
 }
 
@@ -26,9 +26,12 @@ declare module "../../Cameras/freeCameraInputsManager" {
  * Add orientation input support to the input manager.
  * @returns the current input manager
  */
-FreeCameraInputsManager.prototype.addDeviceOrientation = function (): FreeCameraInputsManager {
+FreeCameraInputsManager.prototype.addDeviceOrientation = function (smoothFactor?: number): FreeCameraInputsManager {
     if (!this._deviceOrientationInput) {
         this._deviceOrientationInput = new FreeCameraDeviceOrientationInput();
+        if(smoothFactor) {
+            this._deviceOrientationInput.setSmoothFactor(smoothFactor)
+        }
         this.add(this._deviceOrientationInput);
     }
 
@@ -47,6 +50,8 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
     private _constantTranform: Quaternion;
     private _screenQuaternion: Quaternion = new Quaternion();
+
+    private _smoothFactor: number = 0;
 
     private _alpha: number = 0;
     private _beta: number = 0;
@@ -172,9 +177,9 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     };
 
     private _deviceOrientation = (evt: DeviceOrientationEvent) => {
-        this._alpha = evt.alpha !== null ? evt.alpha : 0;
-        this._beta = evt.beta !== null ? evt.beta : 0;
-        this._gamma = evt.gamma !== null ? evt.gamma : 0;
+        this._alpha = evt.alpha !== null ? Tools.SmoothAngleChange(this._alpha, evt.alpha, this._smoothFactor) : 0;
+        this._beta = evt.beta !== null ? Tools.SmoothAngleChange(this._beta, evt.beta, this._smoothFactor) : 0;
+        this._gamma = evt.gamma !== null ? Tools.SmoothAngleChange(this._gamma, evt.gamma, this._smoothFactor) : 0;
         if (evt.alpha !== null) {
             this._onDeviceOrientationChangedObservable.notifyObservers();
         }
@@ -221,6 +226,14 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      */
     public getSimpleName(): string {
         return "deviceOrientation";
+    }
+
+    /**
+     * Set the smoothFactor for devive orientation sensors, to limit objects shaking
+     * From AR.js documentation, best value should be 0.9
+     */
+     public setSmoothFactor(smoothFactor=0.9): void {
+        this._smoothFactor = smoothFactor
     }
 }
 
