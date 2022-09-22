@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IAnimationTargetInfo } from "../glTFLoader";
@@ -17,6 +16,7 @@ const NAME = "KHR_animation_pointer";
  * [Specification PR](https://github.com/KhronosGroup/glTF/pull/2147)
  * !!! Experimental Extension Subject to Changes !!!
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_animation_pointer implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -45,7 +45,6 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     }
 
     /**
-     * @internal
      * Loads a glTF animation channel.
      * @param context The context when loading the asset
      * @param animationContext The context of the animation when loading the asset
@@ -90,6 +89,23 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
     }
 
+    /**
+     * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+     * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
+     * <rootNode> := "nodes" | "materials" | "meshes" | "cameras" | "extensions"
+     * <assetIndex> := <digit> | <name>
+     * <propertyPath> := <extensionPath> | <standardPath>
+     * <extensionPath> := "extensions"/<name>/<standardPath>
+     * <standardPath> := <name> | <name>/<standardPath>
+     * <name> := W+
+     * <digit> := D+
+     *
+     * Examples:
+     *  - "/nodes/0/rotation"
+     *  - "/materials/2/emissiveFactor"
+     *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
+     *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
+     */
     private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
         if (!pointer.startsWith("/")) {
             Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);

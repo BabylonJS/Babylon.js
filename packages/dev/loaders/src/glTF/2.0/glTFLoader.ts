@@ -96,6 +96,10 @@ interface IRegisteredExtension {
     factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
 }
 
+interface IWithMetadata {
+    metadata: any;
+}
+
 // https://stackoverflow.com/a/48218209
 function mergeDeep(...objects: any[]): any {
     const isObject = (obj: any) => obj && typeof obj === "object";
@@ -150,8 +154,12 @@ export class ArrayItem {
     }
 }
 
+/** @internal */
 export interface IAnimationTargetInfo {
+    /** @internal */
     target: any;
+
+    /** @internal */
     properties: Array<AnimationPropertyInfo>;
 }
 
@@ -2445,10 +2453,9 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
      * @param babylonObject the Babylon object with metadata
-     * @param babylonObject.metadata
      * @param pointer the JSON pointer
      */
-    public static AddPointerMetadata(babylonObject: { metadata: any }, pointer: string): void {
+    public static AddPointerMetadata(babylonObject: IWithMetadata, pointer: string): void {
         const metadata = (babylonObject.metadata = babylonObject.metadata || {});
         const gltf = (metadata.gltf = metadata.gltf || {});
         const pointers = (gltf.pointers = gltf.pointers || []);
