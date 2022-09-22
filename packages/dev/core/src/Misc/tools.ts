@@ -264,16 +264,18 @@ export class Tools {
      * Use trigonometric functions to avoid discontinuity (0/360, -180/180)
      * @param previousAngle defines last angle value, in degrees
      * @param newAngle defines new angle value, in degrees
-     * @param smoothFactor defines smoothing sensitivity; min 0: no smoothing, max 1: new data is ignored
+     * @param smoothFactor defines smoothing sensitivity; min 0: no smoothing, max 1: new data ignored
      * @returns the angle in degrees
      */
-     public static SmoothAngleChange(previousAngle: number, newAngle: number, smoothFactor=0.9): number {
-        const previousAngleRad = this.ToRadians(previousAngle)
-        const newAngleRad = this.ToRadians(newAngle)
-        return this.ToDegrees(Math.atan2(
-            (1 - smoothFactor) * Math.sin(newAngleRad) + smoothFactor * Math.sin(previousAngleRad),
-            (1 - smoothFactor) * Math.cos(newAngleRad) + smoothFactor * Math.cos(previousAngleRad)
-        ))
+    public static SmoothAngleChange(previousAngle: number, newAngle: number, smoothFactor = 0.9): number {
+        const previousAngleRad = this.ToRadians(previousAngle);
+        const newAngleRad = this.ToRadians(newAngle);
+        return this.ToDegrees(
+            Math.atan2(
+                (1 - smoothFactor) * Math.sin(newAngleRad) + smoothFactor * Math.sin(previousAngleRad),
+                (1 - smoothFactor) * Math.cos(newAngleRad) + smoothFactor * Math.cos(previousAngleRad)
+            )
+        );
     }
 
     /**
