@@ -3636,16 +3636,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._externalData.remove(key);
     }
 
-    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (
-            initialMesh.hasInstances ||
-            initialMesh.isAnInstance ||
-            this.dispatchAllSubMeshesOfActiveMeshes ||
-            this._skipFrustumClipping ||
-            mesh.alwaysSelectAsActiveMesh ||
-            mesh.subMeshes.length === 1 ||
-            subMesh.isInFrustum(this._frustumPlanes)
-        ) {
+    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh, forcePush: boolean): void {
+        if (forcePush || subMesh.isInFrustum(this._frustumPlanes)) {
             for (const step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3968,8 +3960,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        this.onAfterActiveMeshesEvaluationObservable.notifyObservers(this);
-
         // Particle systems
         if (this.particlesEnabled) {
             this.onBeforeParticlesRenderingObservable.notifyObservers(this);
@@ -4003,12 +3993,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
+        const forcePush =
+            sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
+
         if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
             for (let i = 0; i < len; i++) {
                 const subMesh = subMeshes.data[i];
-                this._evaluateSubMesh(subMesh, mesh, sourceMesh);
+                this._evaluateSubMesh(subMesh, mesh, sourceMesh, forcePush);
             }
         }
     }
