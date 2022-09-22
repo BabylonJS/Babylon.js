@@ -323,6 +323,19 @@ export class BaseParticleSystem {
         this._reset();
     }
 
+    private _useLogarithmicDepth: boolean = false;
+
+    /**
+     * Gets or sets a boolean enabling the use of logarithmic depth buffers, which is good for wide depth buffers.
+     */
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        this._useLogarithmicDepth = value && this.getScene()!.getEngine().getCaps().fragmentDepthSupported;
+    }
+
     /**
      * Get hosting scene
      * @returns the scene

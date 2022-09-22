@@ -1770,6 +1770,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             defines.push("#define ANIMATESHEET");
         }
 
+        if (this.useLogarithmicDepth) {
+            defines.push("#define LOGARITHMICDEPTH");
+        }
+
         if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
             defines.push("#define BLENDMULTIPLYMODE");
         }
@@ -2398,6 +2402,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;
         serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
         serializationObject.isAnimationSheetEnabled = particleSystem.isAnimationSheetEnabled;
+        serializationObject.useLogarithmicDepth = particleSystem.useLogarithmicDepth;
 
         const colorGradients = particleSystem.getColorGradients();
         if (colorGradients) {
@@ -2679,6 +2684,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (parsedParticleSystem.billboardMode !== undefined) {
             particleSystem.billboardMode = parsedParticleSystem.billboardMode;
+        }
+
+        if (parsedParticleSystem.useLogarithmicDepth !== undefined) {
+            particleSystem.useLogarithmicDepth = parsedParticleSystem.useLogarithmicDepth;
         }
 
         // Animations
