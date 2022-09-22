@@ -39,8 +39,13 @@ export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationSamplerData {
+    /** @internal */
     input: Float32Array;
+
+    /** @internal */
     interpolation: GLTF2.AnimationSamplerInterpolation;
+
+    /** @internal */
     output: Float32Array;
 }
 
@@ -56,7 +61,10 @@ export interface IAnimationSampler extends GLTF2.IAnimationSampler, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IAnimation extends GLTF2.IAnimation, IArrayItem {
+    /** @internal */
     channels: IAnimationChannel[];
+
+    /** @internal */
     samplers: IAnimationSampler[];
 
     /** @internal */
@@ -112,7 +120,10 @@ export interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionT
  * Loader interface with additional members.
  */
 export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetallicRoughness {
+    /** @internal */
     baseColorTexture?: ITextureInfo;
+
+    /** @internal */
     metallicRoughnessTexture?: ITextureInfo;
 }
 
@@ -120,9 +131,16 @@ export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetalli
  * Loader interface with additional members.
  */
 export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
+    /** @internal */
     pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
+
+    /** @internal */
     normalTexture?: IMaterialNormalTextureInfo;
+
+    /** @internal */
     occlusionTexture?: IMaterialOcclusionTextureInfo;
+
+    /** @internal */
     emissiveTexture?: ITextureInfo;
 
     /** @internal */
@@ -139,6 +157,7 @@ export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IMesh extends GLTF2.IMesh, IArrayItem {
+    /** @internal */
     primitives: IMeshPrimitive[];
 }
 
@@ -157,9 +176,7 @@ export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
  * Loader interface with additional members.
  */
 export interface INode extends GLTF2.INode, IArrayItem {
-    /**
-     * The parent glTF node.
-     */
+    /** @internal */
     parent?: INode;
 
     /** @internal */
@@ -178,9 +195,16 @@ export interface INode extends GLTF2.INode, IArrayItem {
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _ISamplerData {
+    /** @internal */
     noMipMaps: boolean;
+
+    /** @internal */
     samplingMode: number;
+
+    /** @internal */
     wrapU: number;
+
+    /** @internal */
     wrapV: number;
 }
 
@@ -228,24 +252,50 @@ export interface ITextureInfo extends GLTF2.ITextureInfo {
  * Loader interface with additional members.
  */
 export interface IGLTF extends GLTF2.IGLTF {
+    /** @internal */
     accessors?: IAccessor[];
+
+    /** @internal */
     animations?: IAnimation[];
+
+    /** @internal */
     buffers?: IBuffer[];
+
+    /** @internal */
     bufferViews?: IBufferView[];
+
+    /** @internal */
     cameras?: ICamera[];
+
+    /** @internal */
     images?: IImage[];
+
+    /** @internal */
     materials?: IMaterial[];
+
+    /** @internal */
     meshes?: IMesh[];
+
+    /** @internal */
     nodes?: INode[];
+
+    /** @internal */
     samplers?: ISampler[];
+
+    /** @internal */
     scenes?: IScene[];
+
+    /** @internal */
     skins?: ISkin[];
+
+    /** @internal */
     textures?: ITexture[];
 }
 
 /**
  * Loader interface with additional members.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface IKHRLightsPunctual_Light extends GLTF2.IKHRLightsPunctual_Light, IArrayItem {
     /** @hidden */
     _babylonLight?: Light;
