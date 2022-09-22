@@ -1,4 +1,7 @@
 precision highp float;
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
 
 uniform sampler2D diffuseSampler;
 
@@ -8,6 +11,8 @@ varying vec4 vColor;
 #include<clipPlaneFragmentDeclaration2> 
 
 #include<imageProcessingDeclaration>
+
+#include<logDepthDeclaration>
 
 #include<helperFunctions>
 
@@ -22,7 +27,9 @@ void main() {
 	#ifdef BLENDMULTIPLYMODE
 	    float alpha = vColor.a * textureColor.a;
 	    gl_FragColor.rgb = gl_FragColor.rgb * alpha + vec3(1.0) * (1.0 - alpha);
-	#endif	  
+	#endif	 
+	 
+	#include<logDepthFragment>
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.
