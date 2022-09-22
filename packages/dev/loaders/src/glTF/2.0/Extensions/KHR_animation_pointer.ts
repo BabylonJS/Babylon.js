@@ -1,11 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, IAnimationTargetInfo } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
+import type { IAnimationTargetInfo } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { IAnimation, IAnimationChannel, _IAnimationSamplerData } from "../glTFLoaderInterfaces";
-import { AnimationChannelTargetPath, IKHRAnimationPointer } from "babylonjs-gltf2interface";
+import type { IAnimation, IAnimationChannel } from "../glTFLoaderInterfaces";
+import type { IKHRAnimationPointer } from "babylonjs-gltf2interface";
+import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { Logger } from "core/Misc/logger";
 import { animationPointerTree } from "./KHR_animation_pointer.data";
 
@@ -44,7 +46,8 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     }
 
     /**
-     * @hidden Loads a glTF animation channel.
+     * @hidden
+     * Loads a glTF animation channel.
      * @param context The context when loading the asset
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property
@@ -88,30 +91,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
     }
 
-    /**
-     * @hidden
-     * Parse an animation pointer targeting a glTF property.
-     * @param gltf The object that represents the glTF JSON
-     * @param pointer The JSON pointer targeting a glTF property
-     * @returns An object with information about the animation target
-     *
-     * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
-     * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
-     * <rootNode> := "nodes" | "materials" | "meshes" | "cameras" | "extensions"
-     * <assetIndex> := <digit> | <name>
-     * <propertyPath> := <extensionPath> | <standardPath>
-     * <extensionPath> := "extensions"/<name>/<standardPath>
-     * <standardPath> := <name> | <name>/<standardPath>
-     * <name> := W+
-     * <digit> := D+
-     *
-     * Examples:
-     *  - "/nodes/0/rotation"
-     *  - "/materials/2/emissiveFactor"
-     *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
-     *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
-     */
-    public _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
+    private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
         if (!pointer.startsWith("/")) {
             Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);
             return null;
@@ -119,7 +99,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
 
         const parts = pointer.split("/");
 
-        // The first part will be empty string since pointer must start with a slash.
+        // Remove the first part since it will be empty string as pointers must start with a slash.
         parts.shift();
 
         let node: any = animationPointerTree;

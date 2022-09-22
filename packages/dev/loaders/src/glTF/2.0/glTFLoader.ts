@@ -6,6 +6,9 @@ import { Tools } from "core/Misc/tools";
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import type { Animation } from "core/Animations/animation";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimationKey } from "core/Animations/animationKey";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
@@ -24,8 +27,10 @@ import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import type { Scene } from "core/scene";
-import { AnimationChannelTargetPath, AnimationSamplerInterpolation, IProperty } from "babylonjs-gltf2interface";
+import type { IProperty } from "babylonjs-gltf2interface";
 import {
+    AnimationChannelTargetPath,
+    AnimationSamplerInterpolation,
     AccessorType,
     CameraType,
     AccessorComponentType,
@@ -68,9 +73,8 @@ import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { AnimationPropertyInfo, nodeAnimationData } from "./glTFLoaderAnimation";
-import { AnimationKeyInterpolation, IAnimationKey } from "core/Animations/animationKey";
+import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
+import { nodeAnimationData } from "./glTFLoaderAnimation";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -1636,6 +1640,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property
      * @param channel The glTF animation channel property
+     * @param targetInfo The glTF target and properties
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete
      */

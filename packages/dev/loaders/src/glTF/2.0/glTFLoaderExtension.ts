@@ -26,7 +26,7 @@ import type {
 } from "./glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import type { IProperty } from "babylonjs-gltf2interface";
-import { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimatable } from "core/Animations/animatable.interface";
 
 /**
  * Interface for a glTF loader extension.
