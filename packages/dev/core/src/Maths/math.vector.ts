@@ -1742,7 +1742,7 @@ export class Vector3 {
         target.subtractToRef(start, diff);
         const theta = Math.atan2(diff.x, diff.z) || 0,
             phi = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
-        return new BABYLON.Vector3(phi, theta, 0);
+        return new Vector3(phi, theta, 0);
     }
 
     /**
