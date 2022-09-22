@@ -5,6 +5,10 @@ import { Color3 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import type { Animation } from "core/Animations/animation";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimationKey } from "core/Animations/animationKey";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
@@ -25,9 +29,10 @@ import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Lo
 import type { Scene } from "core/scene";
 import type { IProperty } from "babylonjs-gltf2interface";
 import {
+    AnimationChannelTargetPath,
+    AnimationSamplerInterpolation,
     AccessorType,
     CameraType,
-    AnimationChannelTargetPath,
     AccessorComponentType,
     MaterialAlphaMode,
     TextureMinFilter,
@@ -53,8 +58,11 @@ import type {
     ITexture,
     IImage,
     IMeshPrimitive,
-    IArrayItem as IArrItem,
+    IArrayItem,
     _ISamplerData,
+    IAnimationChannel,
+    IAnimationSampler,
+    _IAnimationSamplerData,
 } from "./glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
@@ -65,6 +73,8 @@ import { Logger } from "core/Misc/logger";
 import type { Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
+import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
+import { nodeAnimationData } from "./glTFLoaderAnimation";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -84,38 +94,6 @@ interface ILoaderProperty extends IProperty {
 
 interface IRegisteredExtension {
     factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
-}
-
-/**
- * Helper class for working with arrays when loading the glTF asset
- */
-export class ArrayItem {
-    /**
-     * Gets an item from the given array.
-     * @param context The context when loading the asset
-     * @param array The array to get the item from
-     * @param index The index to the array
-     * @returns The array item
-     */
-    public static Get<T>(context: string, array: ArrayLike<T> | undefined, index: number | undefined): T {
-        if (!array || index == undefined || !array[index]) {
-            throw new Error(`${context}: Failed to find index (${index})`);
-        }
-
-        return array[index];
-    }
-
-    /**
-     * Assign an `index` field to each item of the given array.
-     * @param array The array of items
-     */
-    public static Assign(array?: IArrItem[]): void {
-        if (array) {
-            for (let index = 0; index < array.length; index++) {
-                array[index].index = index;
-            }
-        }
-    }
 }
 
 // https://stackoverflow.com/a/48218209
@@ -141,14 +119,46 @@ function mergeDeep(...objects: any[]): any {
 }
 
 /**
+ * Helper class for working with arrays when loading the glTF asset
+ */
+export class ArrayItem {
+    /**
+     * Gets an item from the given array.
+     * @param context The context when loading the asset
+     * @param array The array to get the item from
+     * @param index The index to the array
+     * @returns The array item
+     */
+    public static Get<T>(context: string, array: ArrayLike<T> | undefined, index: number | undefined): T {
+        if (!array || index == undefined || !array[index]) {
+            throw new Error(`${context}: Failed to find index (${index})`);
+        }
+
+        return array[index];
+    }
+
+    /**
+     * Assign an `index` field to each item of the given array.
+     * @param array The array of items
+     */
+    public static Assign(array?: IArrayItem[]): void {
+        if (array) {
+            for (let index = 0; index < array.length; index++) {
+                array[index].index = index;
+            }
+        }
+    }
+}
+
+export interface IAnimationTargetInfo {
+    target: any;
+    properties: Array<AnimationPropertyInfo>;
+}
+
+/**
  * The glTF 2.0 loader
  */
 export class GLTFLoader implements IGLTFLoader {
-    /** @internal */
-    // note : KHR_animation_pointer is used to load animation in ALL case, turning everything
-    // into pointer. This is the reason why this value is located here.
-    public static readonly _KHRAnimationPointerName = "KHR_animation_pointer";
-
     /** @internal */
     public readonly _completePromises = new Array<Promise<any>>();
 
@@ -1435,6 +1445,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonCamera._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
         babylonCamera.ignoreParentScaling = true;
+        camera._babylonCamera = babylonCamera;
 
         babylonCamera.rotation = new Vector3(0, Math.PI, 0);
 
@@ -1472,8 +1483,6 @@ export class GLTFLoader implements IGLTFLoader {
         GLTFLoader.AddPointerMetadata(babylonCamera, context);
         this._parent.onCameraLoadedObservable.notifyObservers(babylonCamera);
         assign(babylonCamera);
-        // register the camera to be used later.
-        camera._babylonCamera = babylonCamera;
 
         this.logClose();
 
@@ -1512,34 +1521,231 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
      */
     public loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup> {
-        // turn everything into pointer
-        for (const channel of animation.channels) {
-            if (channel.target.path == AnimationChannelTargetPath.POINTER) {
-                continue;
-            }
-            // decorate the channel with a KHR_animation_pointer extension.
-            channel.target.extensions = channel.target.extensions || {};
-            channel.target.extensions.KHR_animation_pointer = {
-                pointer: `/nodes/${channel.target.node}/${channel.target.path}`,
-            };
-            channel.target.path = AnimationChannelTargetPath.POINTER;
-            delete channel.target.node;
-            // ensure to declare extension used.
-            this._gltf.extensionsUsed = this._gltf.extensionsUsed || [];
-            if (this._gltf.extensionsUsed.indexOf(GLTFLoader._KHRAnimationPointerName) === -1) {
-                this._gltf.extensionsUsed.push(GLTFLoader._KHRAnimationPointerName);
-            }
+        const promise = this._extensionsLoadAnimationAsync(context, animation);
+        if (promise) {
+            return promise;
         }
 
-        // create the animation group to be passed to extension.
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
         const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
         babylonAnimationGroup._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
         animation._babylonAnimationGroup = babylonAnimationGroup;
 
-        const promise = this._extensionsLoadAnimationAsync(context, animation);
-        return promise ?? Promise.resolve(animation._babylonAnimationGroup);
+        const promises = new Array<Promise<any>>();
+
+        ArrayItem.Assign(animation.channels);
+        ArrayItem.Assign(animation.samplers);
+
+        for (const channel of animation.channels) {
+            promises.push(
+                this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
+                    babylonTarget.animations = babylonTarget.animations || [];
+                    babylonTarget.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
+                })
+            );
+        }
+
+        return Promise.all(promises).then(() => {
+            babylonAnimationGroup.normalize(0);
+            return babylonAnimationGroup;
+        });
+    }
+
+    /**
+     * @hidden
+     * Loads a glTF animation channel.
+     * @param context The context when loading the asset
+     * @param animationContext The context of the animation when loading the asset
+     * @param animation The glTF animation property
+     * @param channel The glTF animation channel property
+     * @param onLoad Called for each animation loaded
+     * @returns A void promise that resolves when the load is complete
+     */
+    public _loadAnimationChannelAsync(
+        context: string,
+        animationContext: string,
+        animation: IAnimation,
+        channel: IAnimationChannel,
+        onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
+    ): Promise<void> {
+        const promise = this._extensionsLoadAnimationChannelAsync(context, animationContext, animation, channel, onLoad);
+        if (promise) {
+            return promise;
+        }
+
+        if (channel.target.node == undefined) {
+            return Promise.resolve();
+        }
+
+        const targetNode = ArrayItem.Get(`${context}/target/node`, this._gltf.nodes, channel.target.node);
+
+        // Ignore animations that have no animation targets.
+        if (
+            (channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
+            (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonTransformNode)
+        ) {
+            return Promise.resolve();
+        }
+
+        let properties: Array<AnimationPropertyInfo>;
+        switch (channel.target.path) {
+            case AnimationChannelTargetPath.TRANSLATION: {
+                properties = nodeAnimationData.translation;
+                break;
+            }
+            case AnimationChannelTargetPath.ROTATION: {
+                properties = nodeAnimationData.rotation;
+                break;
+            }
+            case AnimationChannelTargetPath.SCALE: {
+                properties = nodeAnimationData.scale;
+                break;
+            }
+            case AnimationChannelTargetPath.WEIGHTS: {
+                properties = nodeAnimationData.weights;
+                break;
+            }
+            default: {
+                throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
+            }
+        }
+
+        const targetInfo: IAnimationTargetInfo = {
+            target: targetNode,
+            properties: properties,
+        };
+
+        return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+    }
+
+    /**
+     * @hidden
+     * Loads a glTF animation channel.
+     * @param context The context when loading the asset
+     * @param animationContext The context of the animation when loading the asset
+     * @param animation The glTF animation property
+     * @param channel The glTF animation channel property
+     * @param targetInfo The glTF target and properties
+     * @param onLoad Called for each animation loaded
+     * @returns A void promise that resolves when the load is complete
+     */
+    public _loadAnimationChannelFromTargetInfoAsync(
+        context: string,
+        animationContext: string,
+        animation: IAnimation,
+        channel: IAnimationChannel,
+        targetInfo: IAnimationTargetInfo,
+        onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
+    ): Promise<void> {
+        const fps = this.parent.targetFps;
+        const invfps = 1 / fps;
+
+        const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
+        return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
+            let numAnimations = 0;
+
+            // Extract the corresponding values from the read value.
+            // GLTF values may be dispatched to several Babylon properties.
+            // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
+            // - albedoColor as Color3(`r`, `g`, `b`)
+            // - alpha as `a`
+            for (const property of targetInfo.properties) {
+                const stride = property.getStride(targetInfo.target);
+                const input = data.input;
+                const output = data.output;
+                const keys = new Array<IAnimationKey>(input.length);
+                let outputOffset = 0;
+
+                switch (data.interpolation) {
+                    case AnimationSamplerInterpolation.STEP: {
+                        for (let index = 0; index < input.length; index++) {
+                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                            outputOffset += stride;
+
+                            keys[index] = {
+                                frame: input[index] * fps,
+                                value: value,
+                                interpolation: AnimationKeyInterpolation.STEP,
+                            };
+                        }
+                        break;
+                    }
+                    case AnimationSamplerInterpolation.CUBICSPLINE: {
+                        for (let index = 0; index < input.length; index++) {
+                            const inTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
+                            outputOffset += stride;
+                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                            outputOffset += stride;
+                            const outTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
+                            outputOffset += stride;
+
+                            keys[index] = {
+                                frame: input[index] * fps,
+                                inTangent: inTangent,
+                                value: value,
+                                outTangent: outTangent,
+                            };
+                        }
+                        break;
+                    }
+                    case AnimationSamplerInterpolation.LINEAR: {
+                        for (let index = 0; index < input.length; index++) {
+                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                            outputOffset += stride;
+
+                            keys[index] = {
+                                frame: input[index] * fps,
+                                value: value,
+                            };
+                        }
+                        break;
+                    }
+                }
+
+                if (outputOffset > 0) {
+                    const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
+                    property.buildAnimations(targetInfo.target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
+                        ++numAnimations;
+                        onLoad(babylonAnimatable, babylonAnimation);
+                    });
+                }
+            }
+        });
+    }
+
+    private _loadAnimationSamplerAsync(context: string, sampler: IAnimationSampler): Promise<_IAnimationSamplerData> {
+        if (sampler._data) {
+            return sampler._data;
+        }
+
+        const interpolation = sampler.interpolation || AnimationSamplerInterpolation.LINEAR;
+        switch (interpolation) {
+            case AnimationSamplerInterpolation.STEP:
+            case AnimationSamplerInterpolation.LINEAR:
+            case AnimationSamplerInterpolation.CUBICSPLINE: {
+                break;
+            }
+            default: {
+                throw new Error(`${context}/interpolation: Invalid value (${sampler.interpolation})`);
+            }
+        }
+
+        const inputAccessor = ArrayItem.Get(`${context}/input`, this._gltf.accessors, sampler.input);
+        const outputAccessor = ArrayItem.Get(`${context}/output`, this._gltf.accessors, sampler.output);
+        sampler._data = Promise.all([
+            this._loadFloatAccessorAsync(`/accessors/${inputAccessor.index}`, inputAccessor),
+            this._loadFloatAccessorAsync(`/accessors/${outputAccessor.index}`, outputAccessor),
+        ]).then(([inputData, outputData]) => {
+            return {
+                input: inputData,
+                interpolation: interpolation,
+                output: outputData,
+            };
+        });
+
+        return sampler._data;
     }
 
     /**
@@ -2566,6 +2772,20 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _extensionsLoadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
         return this._applyExtensions(animation, "loadAnimation", (extension) => extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation));
+    }
+
+    private _extensionsLoadAnimationChannelAsync(
+        context: string,
+        animationContext: string,
+        animation: IAnimation,
+        channel: IAnimationChannel,
+        onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
+    ): Nullable<Promise<void>> {
+        return this._applyExtensions(
+            animation,
+            "loadAnimationChannel",
+            (extension) => extension._loadAnimationChannelAsync && extension._loadAnimationChannelAsync(context, animationContext, animation, channel, onLoad)
+        );
     }
 
     private _extensionsLoadSkinAsync(context: string, node: INode, skin: ISkin): Nullable<Promise<void>> {
