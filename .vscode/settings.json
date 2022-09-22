@@ -20,4 +20,5 @@
 	"prettier.printWidth": 180,
 	"prettier.useTabs": false,
 	"prettier.singleQuote": false,
+	"files.insertFinalNewline": false,
 }
