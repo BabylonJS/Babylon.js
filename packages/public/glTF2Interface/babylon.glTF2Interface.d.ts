@@ -1101,7 +1101,6 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_emissive_strength extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @internal */
@@ -1147,7 +1146,6 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_variants extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @internal */
@@ -1170,7 +1168,6 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_texture_basisu extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @internal */
@@ -1201,7 +1198,6 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_xmp_json_ld extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @internal */
@@ -1214,6 +1210,17 @@ declare module BABYLON.GLTF2 {
     /** @internal */
     interface IKHRXmpJsonLd_Node {
         packet: number;
+    }
+
+
+    /**
+     * Interfaces from the KHR_animation_pointer extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRAnimationPointer {
+        pointer: string;
     }
 
     /**
