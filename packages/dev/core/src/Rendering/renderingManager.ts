@@ -87,7 +87,9 @@ export class RenderingManager {
 
     /**
      * Gets or sets a boolean indicating that the manager will not reset between frames.
-     * This means that if a mesh becomes invisible or transparent it will not be visible until this boolean is set to false again.s
+     * This means that if a mesh becomes invisible or transparent it will not be visible until this boolean is set to false again.
+     * By default, the rendering manager will dispatch all active meshes per frame (moving them to the transparent, opaque or alpha testing lists).
+     * By turning this property on, you will accelerate the rendering by keeping all these lists unchanged between frames.
      */
     public maintainStateBetweenFrames = false;
 
