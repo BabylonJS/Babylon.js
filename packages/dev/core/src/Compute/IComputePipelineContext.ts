@@ -11,10 +11,10 @@ export interface IComputePipelineContext {
      */
     isReady: boolean;
 
-    /** @hidden */
+    /** @internal */
     _name?: string;
 
-    /** @hidden */
+    /** @internal */
     _getComputeShaderCode(): string | null;
 
     /** Releases the resources associated with the pipeline. */

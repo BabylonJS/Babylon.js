@@ -58,7 +58,7 @@ const stencilOpToIndex: { [name: number]: number } = {
     0x8508: 7, // DECR_WRAP
 };
 
-/** @hidden */
+/** @internal */
 export abstract class WebGPUCacheRenderPipeline {
     public static NumCacheHitWithoutHash = 0;
     public static NumCacheHitWithHash = 0;

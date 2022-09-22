@@ -10,7 +10,7 @@ import { Tools } from "core/Misc/tools";
 const NAME = "KHR_materials_clearcoat";
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
@@ -33,7 +33,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
     public dispose() {}
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

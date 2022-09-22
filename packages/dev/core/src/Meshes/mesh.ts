@@ -45,7 +45,7 @@ declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysi
 declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
 
 /**
- * @hidden
+ * @internal
  **/
 export class _CreationDataStorage {
     public closePath?: boolean;
@@ -62,7 +62,7 @@ export class _CreationDataStorage {
 }
 
 /**
- * @hidden
+ * @internal
  **/
 class _InstanceDataStorage {
     public visibleInstances: any = {};
@@ -85,7 +85,7 @@ class _InstanceDataStorage {
 }
 
 /**
- * @hidden
+ * @internal
  **/
 export class _InstancesBatch {
     public mustReturn = false;
@@ -95,7 +95,7 @@ export class _InstancesBatch {
 }
 
 /**
- * @hidden
+ * @internal
  **/
 class _ThinInstanceDataStorage {
     public instancesCount: number = 0;
@@ -110,7 +110,7 @@ class _ThinInstanceDataStorage {
 }
 
 /**
- * @hidden
+ * @internal
  **/
 class _InternalMeshDataInfo {
     // Events
@@ -240,7 +240,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets the default side orientation.
      * @param orientation the orientation to value to attempt to get
      * @returns the default orientation
-     * @hidden
+     * @internal
      */
     public static _GetDefaultSideOrientation(orientation?: number): number {
         return orientation || Mesh.FRONTSIDE; // works as Mesh.FRONTSIDE is 0
@@ -385,7 +385,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public delayLoadingFile: string;
 
-    /** @hidden */
+    /** @internal */
     public _binaryInfo: any;
 
     /**
@@ -395,14 +395,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
     // Private
-    /** @hidden */
+    /** @internal */
     public _creationDataStorage: Nullable<_CreationDataStorage> = null;
 
-    /** @hidden */
+    /** @internal */
     public _geometry: Nullable<Geometry> = null;
-    /** @hidden */
+    /** @internal */
     public _delayInfo: Array<string>;
-    /** @hidden */
+    /** @internal */
     public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
     /**
@@ -418,17 +418,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._internalMeshDataInfo._forcedInstanceCount = count;
     }
 
-    /** @hidden */
+    /** @internal */
     public _instanceDataStorage = new _InstanceDataStorage();
 
-    /** @hidden */
+    /** @internal */
     public _thinInstanceDataStorage = new _ThinInstanceDataStorage();
 
-    /** @hidden */
+    /** @internal */
     public _shouldGenerateFlatShading: boolean = false;
 
     // Use by builder only to know what orientation were the mesh build in.
-    /** @hidden */
+    /** @internal */
     public _originalBuilderSideOrientation: number = Mesh.DEFAULTSIDE;
 
     /**
@@ -768,7 +768,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return "Mesh";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _isMesh() {
         return true;
     }
@@ -804,7 +804,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return ret;
     }
 
-    /** @hidden */
+    /** @internal */
     public _unBindEffect() {
         super._unBindEffect();
 
@@ -1280,7 +1280,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
-    /** @hidden */
+    /** @internal */
     public _preActivate(): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
         const sceneRenderId = this.getScene().getRenderId();
@@ -1294,8 +1294,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param renderId
-     * @hidden
+     * @internal
      */
     public _preActivateForIntermediateRendering(renderId: number): Mesh {
         if (this._instanceDataStorage.visibleInstances) {
@@ -1305,9 +1304,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param instance
-     * @param renderId
-     * @hidden
+     * @internal
      */
     public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
         if (!this._instanceDataStorage.visibleInstances) {
@@ -1341,7 +1338,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _postActivate(): void {
         if (this.edgesShareWithInstances && this.edgesRenderer && this.edgesRenderer.isEnabled && this._renderingGroup) {
             this._renderingGroup._edgesRenderers.pushNoDuplicate(this.edgesRenderer);
@@ -1367,8 +1364,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param force
-     * @hidden
+     * @internal
      */
     public _createGlobalSubMesh(force: boolean): Nullable<SubMesh> {
         const totalVertices = this.getTotalVertices();
@@ -1677,10 +1673,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param subMesh
-     * @param effect
-     * @param fillMode
-     * @hidden
+     * @internal
      */
     public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
         if (!this._geometry) {
@@ -1724,10 +1717,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param subMesh
-     * @param fillMode
-     * @param instancesCount
-     * @hidden
+     * @internal
      */
     public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
@@ -1795,9 +1785,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param subMeshId
-     * @param isReplacementMode
-     * @hidden
+     * @internal
      */
     public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
         if (this._instanceDataStorage.isFrozen) {
@@ -1841,12 +1829,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param subMesh
-     * @param fillMode
-     * @param batch
-     * @param effect
-     * @param engine
-     * @hidden
+     * @internal
      */
     public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
         const visibleInstances = batch.visibleInstances[subMesh._id];
@@ -2008,11 +1991,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param subMesh
-     * @param fillMode
-     * @param effect
-     * @param engine
-     * @hidden
+     * @internal
      */
     public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
         // Stats
@@ -2042,9 +2021,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param visibleInstances
-     * @param renderSelf
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
@@ -2052,15 +2029,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param renderingMesh
-     * @param subMesh
-     * @param effect
-     * @param fillMode
-     * @param batch
-     * @param hardwareInstancedRendering
-     * @param onBeforeDraw
-     * @param effectiveMaterial
-     * @hidden
+     * @internal
      */
     public _processRendering(
         renderingMesh: AbstractMesh,
@@ -2125,8 +2094,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param dispose
-     * @hidden
+     * @internal
      */
     public _rebuild(dispose = false): void {
         if (this._instanceDataStorage.instancesBuffer) {
@@ -2155,7 +2123,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         super._rebuild(dispose);
     }
 
-    /** @hidden */
+    /** @internal */
     public _freeze() {
         if (!this.subMeshes) {
             return;
@@ -2170,7 +2138,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._instanceDataStorage.isFrozen = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _unFreeze() {
         this._instanceDataStorage.isFrozen = false;
         this._instanceDataStorage.previousBatch = null;
@@ -2552,7 +2520,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return { skinned: true, valid: missingWeights === 0 && numberNotNormalized === 0 && numBadBoneIndices === 0, report: output };
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkDelayState(): Mesh {
         const scene = this.getScene();
         if (this._geometry) {
@@ -2725,7 +2693,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Cache
 
-    /** @hidden */
+    /** @internal */
     public get _positions(): Nullable<Vector3[]> {
         if (this._internalAbstractMeshDataInfo._positions) {
             return this._internalAbstractMeshDataInfo._positions;
@@ -2737,7 +2705,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return null;
     }
 
-    /** @hidden */
+    /** @internal */
     public _resetPointsArrayCache(): Mesh {
         if (this._geometry) {
             this._geometry._resetPointsArrayCache();
@@ -2745,7 +2713,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _generatePointsArray(): boolean {
         if (this._geometry) {
             return this._geometry._generatePointsArray();
@@ -2840,17 +2808,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
-    /** @hidden */
+    /** @internal */
     public _disposeInstanceSpecificData() {
         // Do nothing
     }
 
-    /** @hidden */
+    /** @internal */
     public _disposeThinInstanceSpecificData() {
         // Do nothing
     }
 
-    /** @hidden */
+    /** @internal */
     public _invalidateInstanceVertexArrayObject() {
         // Do nothing
     }
@@ -3452,9 +3420,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Instances
     /**
-     * @param name
-     * @param mesh
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention
     public static _instancedMeshFactory(name: string, mesh: Mesh): InstancedMesh {
@@ -3462,10 +3428,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param scene
-     * @param physicObject
-     * @param jsonObject
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _PhysicsImpostorParser(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
@@ -3761,7 +3724,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _syncGeometryWithMorphTargetManager() {
         if (!this.geometry) {
             return;
@@ -3830,9 +3793,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Statics
     /**
-     * @param parsedMesh
-     * @param scene
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _GroundMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -3840,9 +3801,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
-     * @param parsedMesh
-     * @param scene
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
@@ -3850,9 +3809,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
-     * @param parsedMesh
-     * @param scene
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -4662,8 +4619,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param instance
-     * @hidden
+     * @internal
      */
     public addInstance(instance: InstancedMesh) {
         instance._indexInSourceMeshInstanceArray = this.instances.length;
@@ -4671,8 +4627,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @param instance
-     * @hidden
+     * @internal
      */
     public removeInstance(instance: InstancedMesh) {
         // Remove from mesh
@@ -4689,7 +4644,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _shouldConvertRHS() {
         return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
     }

@@ -15,7 +15,7 @@ import type { TransformNode } from "../../Meshes/transformNode";
 //declare var require: any;
 declare let CANNON: any;
 
-/** @hidden */
+/** @internal */
 export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "CannonJSPlugin";

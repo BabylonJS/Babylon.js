@@ -102,11 +102,7 @@ export class SubEmitter {
     }
 
     /**
-     * @param system
-     * @param sceneOrEngine
-     * @param rootUrl
-     * @param doNotStart
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {

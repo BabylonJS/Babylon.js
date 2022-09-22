@@ -206,7 +206,7 @@ export class Layer {
         this._indexBuffer = engine.createIndexBuffer(indices);
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 

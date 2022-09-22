@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 
 /**
- * @hidden
+ * @internal
  **/
 export class DepthCullingState {
     protected _isDepthTestDirty = false;

@@ -109,7 +109,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
     /**
      * Enables/disables the behavior
-     * @hidden
+     * @internal
      */
     public _enabled = true;
 

@@ -55,7 +55,7 @@ export class Gamepad {
     private _leftStick: StickValues = { x: 0, y: 0 };
     private _rightStick: StickValues = { x: 0, y: 0 };
 
-    /** @hidden */
+    /** @internal */
     public _isConnected = true;
 
     private _leftStickAxisX: number;

@@ -62,13 +62,13 @@ export class BoundingBox implements ICullable {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
     /**
-     * @hidden
+     * @internal
      */
     public _tag: number;
 
-    /** @hidden */
+    /** @internal */
     public _drawWrapperFront: Nullable<DrawWrapper> = null;
-    /** @hidden */
+    /** @internal */
     public _drawWrapperBack: Nullable<DrawWrapper> = null;
 
     /**
@@ -148,8 +148,7 @@ export class BoundingBox implements ICullable {
     }
 
     /**
-     * @param world
-     * @hidden
+     * @internal
      */
     public _update(world: DeepImmutable<Matrix>): void {
         const minWorld = this.minimumWorld;
