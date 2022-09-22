@@ -26,9 +26,24 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
                 url: () => conf.baseUrl + "/test.html" + playground,
                 action: async (page) => {
                     await page.click("#start");
-                    await page.waitForNetworkIdle();
                     await page.evaluate(async () => {
-                        await (window as any).BABYLON.Engine.LastCreatedScene.whenReadyAsync()
+                        await new Promise<void>((resolve, reject) => {
+                            let att = 0;
+                            function checkScene() {
+                                if ((window as any).BABYLON.Engine.LastCreatedScene) {
+                                    console.log("resolved");
+                                    resolve();
+                                } else {
+                                    if (att++ === 12) {
+                                        return reject();
+                                    }
+                                    setTimeout(checkScene, 500);
+                                }
+                            }
+                            checkScene();
+                        });
+                        // console.log("waiting", (window as any).BABYLON.Engine.LastCreatedScene.isReady());
+                        await (window as any).BABYLON.Engine.LastCreatedScene.whenReadyAsync();
                     });
                 },
                 back: async (page) => {
