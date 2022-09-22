@@ -283,10 +283,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._performancePriority = value;
 
         switch (value) {
+            case ScenePerformancePriority.BackwardCompatible:
+                this.skipFrustumClipping = false;
+                this._renderingManager.maintainStateBetweenFrames = false;
+                this.skipPointerMovePicking = false;
+                this.autoClear = true;
+                break;
+            case ScenePerformancePriority.Intermediate:
+                this.skipFrustumClipping = false;
+                this._renderingManager.maintainStateBetweenFrames = false;
+                this.skipPointerMovePicking = true;
+                this.autoClear = false;
+                break;
             case ScenePerformancePriority.Aggressive:
                 this.skipFrustumClipping = true;
-            // eslint-disable-next-line no-fallthrough
-            case ScenePerformancePriority.Intermediate:
+                this._renderingManager.maintainStateBetweenFrames = true;
                 this.skipPointerMovePicking = true;
                 this.autoClear = false;
                 break;
@@ -1322,6 +1333,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
 
     private _renderingManager: RenderingManager;
+
+    /**
+     * Gets the scene's rendering manager
+     */
+    public get renderingManager() {
+        return this._renderingManager;
+    }
 
     /** @internal */
     public _activeAnimatables = new Array<Animatable>();

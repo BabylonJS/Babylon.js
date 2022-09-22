@@ -202,6 +202,9 @@ export class BaseParticleSystem {
      */
     public preventAutoStart: boolean = false;
 
+    /** @internal */
+    _wasDispatched = false;
+
     protected _rootUrl = "";
     private _noiseTexture: Nullable<ProceduralTexture>;
 
