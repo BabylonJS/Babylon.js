@@ -47,11 +47,12 @@ export class AccessibilityNodeItem extends AccessibilityItem {
      * If this entity is focusable (can be focused by tab key pressing).
      */
     public override get isFocusable(): boolean {
-        return true;
-        // if (this._isFocusable) {
-        //     return this._isFocusable;
-        // }
-        // return this.isActionable;
+        if (this._isFocusable) {
+            return this._isFocusable;
+        } else {
+            this._isFocusable = this.isActionable;
+        }
+        return this._isFocusable;
     }
 
     /**

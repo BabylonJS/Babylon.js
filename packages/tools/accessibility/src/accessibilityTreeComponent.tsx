@@ -32,7 +32,6 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
     }
 
     componentDidMount() {
-        console.log("componentDidMount");
         const scene = this.props.scene;
 
         // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
@@ -139,7 +138,6 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
     }
 
     componentWillUnmount() {
-        console.log("componentWillUnmount");
         this._observersMap.forEach((observer, observable) => {
             observable.remove(observer);
         });
@@ -163,7 +161,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
     }
 
     private _updateAccessibilityTreeItems(): AccessibilityItem[] {
-        // Nodes
+        // Get accessibility tree's root nodes
         const rootNodes = this.props.scene.rootNodes.slice(0);
         for (const mesh of this.props.scene.meshes) {
             // Adding nodes that are parented to a bone
@@ -172,7 +170,6 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             }
         }
 
-        // Get accessibility tree's root nodes
         const a11yTreeItems = this._getAccessibilityTreeItemsFromNodes(rootNodes);
         return a11yTreeItems;
     }
@@ -233,9 +230,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         if (node instanceof AbstractMesh) {
             const curMesh = node as AbstractMesh;
             const textures = curMesh.material?.getActiveTextures();
-            if (textures && textures[0] instanceof AdvancedDynamicTexture) {
-                isGUI = true;
-            }
+            isGUI = !!textures && textures[0] instanceof AdvancedDynamicTexture;
         }
         return isGUI;
     }
