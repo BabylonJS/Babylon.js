@@ -278,6 +278,9 @@ export interface IParticleSystem {
     /** Gets or sets a matrix to use to compute projection */
     defaultProjectionMatrix: Matrix;
 
+    /** @internal */
+    _wasDispatched: boolean;
+
     /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.
