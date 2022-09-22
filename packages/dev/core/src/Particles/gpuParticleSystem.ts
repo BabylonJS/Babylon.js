@@ -1306,6 +1306,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines.push("#define LOCAL");
         }
 
+        if (this.useLogarithmicDepth) {
+            defines.push("#define LOGARITHMICDEPTH");
+        }
+
         if (this._isBillboardBased) {
             defines.push("#define BILLBOARD");
 

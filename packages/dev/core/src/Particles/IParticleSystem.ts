@@ -229,6 +229,11 @@ export interface IParticleSystem {
      */
     billboardMode: number;
 
+    /**
+     * Gets or sets a boolean enabling the use of logarithmic depth buffers, which is good for wide depth buffers.
+     */
+    useLogarithmicDepth: boolean;
+
     /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
     limitVelocityDamping: number;
 
