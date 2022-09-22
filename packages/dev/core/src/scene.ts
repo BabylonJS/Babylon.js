@@ -3993,12 +3993,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        const forcePush =
+        let forcePush =
             sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
 
         if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
+            forcePush = forcePush || len === 1;
             for (let i = 0; i < len; i++) {
                 const subMesh = subMeshes.data[i];
                 this._evaluateSubMesh(subMesh, mesh, sourceMesh, forcePush);
