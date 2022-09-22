@@ -41,7 +41,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      */
     public onPointerMovedObservable = new Observable<{ offsetX: number; offsetY: number }>();
     /**
-     * @hidden
+     * @internal
      * If the camera should be rotated automatically based on pointer movement
      */
     public _allowCameraRotation = true;

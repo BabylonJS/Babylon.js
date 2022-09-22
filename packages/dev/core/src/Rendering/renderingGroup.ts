@@ -15,7 +15,7 @@ import type { Camera } from "../Cameras/camera";
  * This represents the object necessary to create a rendering group.
  * This is exclusively used and created by the rendering manager.
  * To modify the behavior, you use the available helpers in your scene or meshes.
- * @hidden
+ * @internal
  */
 export class RenderingGroup {
     private static _ZeroVector: DeepImmutable<Vector3> = Vector3.Zero();
@@ -35,10 +35,10 @@ export class RenderingGroup {
     private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
     private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
-    /** @hidden */
+    /** @internal */
     public _empty = true;
 
-    /** @hidden */
+    /** @internal */
     public _edgesRenderers = new SmartArrayNoDuplicate<IEdgesRenderer>(16);
 
     public onBeforeTransparentRendering: () => void;

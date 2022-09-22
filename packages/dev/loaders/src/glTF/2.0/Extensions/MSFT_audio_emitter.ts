@@ -58,22 +58,21 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     private _emitters: Array<ILoaderEmitter>;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
         (this._clips as any) = null;
         (this._emitters as any) = null;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
@@ -88,9 +87,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param scene
-     * @hidden
+     * @internal
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference>(context, scene, this.name, (extensionContext, extension) => {
@@ -119,10 +116,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param node
-     * @param assign
-     * @hidden
+     * @internal
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
@@ -160,9 +154,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param animation
-     * @hidden
+     * @internal
      */
     public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
         return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {

@@ -38,8 +38,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -52,7 +51,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         return this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
@@ -61,8 +60,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      * according to specification,
      * It is not allowed to animate a glTFid property, as it does change the structure of the glTF in general
      * It is not allowed to animate a name property in general.
-     * @param property
-     * @hidden
+     * @internal
      */
     public accept(property: string): boolean {
         return property != "name";
@@ -94,7 +92,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     }
 
     /**
-     * @hidden Loads a glTF animation channel.
+     * @internal Loads a glTF animation channel.
      * @param context The context when loading the asset
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property

@@ -79,7 +79,7 @@ export class VRCameraMetrics {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get leftHMatrix(): Matrix {
         const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
@@ -89,7 +89,7 @@ export class VRCameraMetrics {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get rightHMatrix(): Matrix {
         const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
@@ -99,14 +99,14 @@ export class VRCameraMetrics {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get leftPreViewMatrix(): Matrix {
         return Matrix.Translation(0.5 * this.interpupillaryDistance, 0, 0);
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get rightPreViewMatrix(): Matrix {
         return Matrix.Translation(-0.5 * this.interpupillaryDistance, 0, 0);

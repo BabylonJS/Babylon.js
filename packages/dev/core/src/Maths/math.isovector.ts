@@ -5,7 +5,7 @@ import { Vector3 } from "./math.vector";
  * Class representing an isovector a vector containing 2 INTEGER coordinates
  * x axis is horizontal
  * y axis is 60 deg counter clockwise from positive y axis
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _IsoVector {

@@ -231,7 +231,7 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
     "depth32float-stencil8": 38,
 };
 
-/** @hidden */
+/** @internal */
 export class WebGPUTextureHelper {
     private _device: GPUDevice;
     private _glslang: any;

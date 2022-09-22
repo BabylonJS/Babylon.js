@@ -13,7 +13,7 @@ const MAX_KEYCODES = 255;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
-/** @hidden */
+/** @internal */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     // Private Members
     private _inputs: Array<{ [deviceSlot: number]: Array<number> }> = [];

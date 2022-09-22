@@ -23,25 +23,22 @@
  * 2. An IterableIterator of void (since it only yields void).
  */
 type CoroutineBase<TStep, TReturn> = Iterator<TStep, TReturn, void> & IterableIterator<TStep>;
-/** @hidden */
+/** @internal */
 export type Coroutine<T> = CoroutineBase<void, T>;
-/** @hidden */
+/** @internal */
 export type AsyncCoroutine<T> = CoroutineBase<void | Promise<void>, T>;
 
 // A CoroutineStep<T> represents a single step of a coroutine, and is an IteratorResult as returned from Coroutine<T>.next().
-/** @hidden */
+/** @internal */
 export type CoroutineStep<T> = IteratorResult<void, T>;
 
 // A CoroutineScheduler<T> is responsible for scheduling the call to Coroutine<T>.next and invokes the success or error callback after next is called.
-/** @hidden */
+/** @internal */
 export type CoroutineScheduler<T> = (coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) => void;
 
 // The inline scheduler simply steps the coroutine synchronously. This is useful for running a coroutine synchronously, and also as a helper function for other schedulers.
 /**
- * @param coroutine
- * @param onStep
- * @param onError
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepResult: CoroutineStep<T>) => void, onError: (stepError: any) => void) {
@@ -67,8 +64,7 @@ export function inlineScheduler<T>(coroutine: AsyncCoroutine<T>, onStep: (stepRe
 // The yielding scheduler steps the coroutine synchronously until the specified time interval has elapsed, then yields control so other operations can be performed.
 // A single instance of a yielding scheduler could be shared across multiple coroutines to yield when their collective work exceeds the threshold.
 /**
- * @param yieldAfterMS
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function createYieldingScheduler<T>(yieldAfterMS = 25) {
@@ -91,12 +87,7 @@ export function createYieldingScheduler<T>(yieldAfterMS = 25) {
 
 // Runs the specified coroutine with the specified scheduler. The success or error callback will be invoked when the coroutine finishes.
 /**
- * @param coroutine
- * @param scheduler
- * @param onSuccess
- * @param onError
- * @param abortSignal
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function runCoroutine<T>(
@@ -146,9 +137,7 @@ export function runCoroutine<T>(
 
 // Runs the specified coroutine synchronously.
 /**
- * @param coroutine
- * @param abortSignal
- * @hidden
+ * @internal
  */
 export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: AbortSignal): T {
     // Run the coroutine with the inline scheduler, storing the returned value, or re-throwing the error (since the error callback will be called synchronously by the inline scheduler).
@@ -169,10 +158,7 @@ export function runCoroutineSync<T>(coroutine: Coroutine<T>, abortSignal?: Abort
 
 // Runs the specified coroutine asynchronously with the specified scheduler.
 /**
- * @param coroutine
- * @param scheduler
- * @param abortSignal
- * @hidden
+ * @internal
  */
 export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: CoroutineScheduler<T>, abortSignal?: AbortSignal): Promise<T> {
     // Run the coroutine with a yielding scheduler, resolving or rejecting the result promise when the coroutine finishes.
@@ -187,7 +173,7 @@ export function runCoroutineAsync<T>(coroutine: AsyncCoroutine<T>, scheduler: Co
  * @param coroutineFactory A function that returns a Coroutine<T>.
  * @param abortSignal
  * @returns A function that runs the coroutine synchronously.
- * @hidden
+ * @internal
  */
 export function makeSyncFunction<TParams extends unknown[], TReturn>(
     coroutineFactory: (...params: TParams) => Coroutine<TReturn>,
@@ -206,7 +192,7 @@ export function makeSyncFunction<TParams extends unknown[], TReturn>(
  * @param scheduler
  * @param abortSignal
  * @returns A function that runs the coroutine asynchronously.
- * @hidden
+ * @internal
  */
 export function makeAsyncFunction<TParams extends unknown[], TReturn>(
     coroutineFactory: (...params: TParams) => AsyncCoroutine<TReturn>,

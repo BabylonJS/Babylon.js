@@ -14,7 +14,7 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 const NAME = "EXT_lights_image_based";
 
 declare module "babylonjs-gltf2interface" {
-    /** @hidden */
+    /** @internal */
     interface IEXTLightsImageBased_LightImageBased {
         _babylonTexture?: BaseTexture;
         _loaded?: Promise<void>;
@@ -39,21 +39,20 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     private _lights?: IEXTLightsImageBased_LightImageBased[];
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
         delete this._lights;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
@@ -63,9 +62,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param scene
-     * @hidden
+     * @internal
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {

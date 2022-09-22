@@ -144,21 +144,21 @@ function mergeDeep(...objects: any[]): any {
  * The glTF 2.0 loader
  */
 export class GLTFLoader implements IGLTFLoader {
-    /** @hidden */
+    /** @internal */
     // note : KHR_animation_pointer is used to load animation in ALL case, turning everything
     // into pointer. This is the reason why this value is located here.
     public static readonly _KHRAnimationPointerName = "KHR_animation_pointer";
 
-    /** @hidden */
+    /** @internal */
     public readonly _completePromises = new Array<Promise<any>>();
 
-    /** @hidden */
+    /** @internal */
     public _assetContainer: Nullable<AssetContainer> = null;
 
     /** Storage */
     public _babylonLights: Light[] = [];
 
-    /** @hidden */
+    /** @internal */
     public _disableInstancedMesh = 0;
 
     private readonly _parent: GLTFFileLoader;
@@ -254,14 +254,13 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param parent
-     * @hidden
+     * @internal
      */
     constructor(parent: GLTFFileLoader) {
         this._parent = parent;
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose(): void {
         if (this._disposed) {
             return;
@@ -285,14 +284,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param meshesNames
-     * @param scene
-     * @param container
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public importMeshAsync(
         meshesNames: any,
@@ -346,12 +338,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
         return Promise.resolve().then(() => {
@@ -917,7 +904,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @hidden Define this method to modify the default behavior when loading data for mesh primitives.
+     * @internal Define this method to modify the default behavior when loading data for mesh primitives.
      * @param context The context when loading the asset
      * @param name The mesh name when loading the asset
      * @param node The glTF node when loading the asset
@@ -1695,9 +1682,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param context
-     * @param accessor
-     * @hidden
+     * @internal
      */
     public _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
@@ -1840,12 +1825,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMesh
-     * @param babylonDrawMode
-     * @param assign
-     * @hidden
+     * @internal
      */
     public _loadMaterialAsync(
         context: string,
@@ -2099,10 +2079,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param context
-     * @param texture
-     * @param assign
-     * @hidden
+     * @internal
      */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
@@ -2122,13 +2099,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param context
-     * @param sampler
-     * @param image
-     * @param assign
-     * @param textureLoaderOptions
-     * @param useSRGBBuffer
-     * @hidden
+     * @internal
      */
     public _createTextureAsync(
         context: string,
@@ -2410,9 +2381,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * @param context
-     * @param mode
-     * @hidden
+     * @internal
      */
     public static _GetDrawMode(context: string, mode: number | undefined): number {
         if (mode == undefined) {

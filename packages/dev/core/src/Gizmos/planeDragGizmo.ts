@@ -62,9 +62,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
     protected _dragging: boolean = false;
 
     /**
-     * @param scene
-     * @param material
-     * @hidden
+     * @internal
      */
     public static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode {
         const plane = new TransformNode("plane", scene);

@@ -279,10 +279,7 @@ export class VertexData {
     private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this));
 
     /**
-     * @param meshOrGeometry
-     * @param updatable
-     * @param isAsync
-     * @hidden
+     * @internal
      */
     public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
         if (this.positions) {
@@ -546,12 +543,7 @@ export class VertexData {
     }
 
     /**
-     * @param transform
-     * @param vertexDatas
-     * @param use32BitsIndices
-     * @param isAsync
-     * @param forceCloneIndices
-     * @hidden
+     * @internal
      */
     public *_mergeCoroutine(
         transform: Matrix | undefined,
@@ -1891,14 +1883,7 @@ export class VertexData {
     }
 
     /**
-     * @param sideOrientation
-     * @param positions
-     * @param indices
-     * @param normals
-     * @param uvs
-     * @param frontUVs
-     * @param backUVs
-     * @hidden
+     * @internal
      */
     public static _ComputeSides(
         sideOrientation: number,

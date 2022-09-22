@@ -11,7 +11,7 @@ import { Observable } from "../../Misc/observable";
 declare module "../../Cameras/freeCameraInputsManager" {
     export interface FreeCameraInputsManager {
         /**
-         * @hidden
+         * @internal
          */
         _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
         /**
@@ -96,7 +96,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _onDeviceOrientationChangedObservable = new Observable<void>();
     /**

@@ -129,7 +129,7 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
         return this._material;
     }
     /**
-     * @hidden
+     * @internal
      * Updates the gizmo to match the attached mesh's position/rotation
      */
 
