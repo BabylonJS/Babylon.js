@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
         /**

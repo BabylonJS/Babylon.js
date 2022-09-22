@@ -36,7 +36,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
     public dispose() {}
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

@@ -91,7 +91,7 @@ export class CubeTexture extends BaseTexture {
 
     private _noMipmap: boolean;
 
-    /** @hidden */
+    /** @internal */
     @serialize("files")
     public _files: Nullable<string[]> = null;
 

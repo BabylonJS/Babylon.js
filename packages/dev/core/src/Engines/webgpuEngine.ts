@@ -201,48 +201,48 @@ export class WebGPUEngine extends Engine {
     private readonly _uploadEncoderDescriptor = { label: "upload" };
     private readonly _renderEncoderDescriptor = { label: "render" };
     private readonly _renderTargetEncoderDescriptor = { label: "renderTarget" };
-    /** @hidden */
+    /** @internal */
     public readonly _clearDepthValue = 1;
-    /** @hidden */
+    /** @internal */
     public readonly _clearReverseDepthValue = 0;
-    /** @hidden */
+    /** @internal */
     public readonly _clearStencilValue = 0;
     private readonly _defaultSampleCount = 4; // Only supported value for now.
 
     // Engine Life Cycle
     private _canvas: HTMLCanvasElement;
-    /** @hidden */
+    /** @internal */
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
     private _tintWASM: Nullable<WebGPUTintWASM> = null;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
-    /** @hidden */
+    /** @internal */
     public _device: GPUDevice;
     private _deviceEnabledExtensions: GPUFeatureName[];
     private _context: GPUCanvasContext;
     private _swapChainTexture: GPUTexture;
     private _mainPassSampleCount: number;
-    /** @hidden */
+    /** @internal */
     public _textureHelper: WebGPUTextureHelper;
-    /** @hidden */
+    /** @internal */
     public _bufferManager: WebGPUBufferManager;
     private _clearQuad: WebGPUClearQuad;
-    /** @hidden */
+    /** @internal */
     public _cacheSampler: WebGPUCacheSampler;
-    /** @hidden */
+    /** @internal */
     public _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _cacheBindGroups: WebGPUCacheBindGroups;
     private _emptyVertexBuffer: VertexBuffer;
-    /** @hidden */
+    /** @internal */
     public _mrtAttachments: number[];
-    /** @hidden */
+    /** @internal */
     public _timestampQuery: WebGPUTimestampQuery;
-    /** @hidden */
+    /** @internal */
     public _occlusionQuery: WebGPUOcclusionQuery;
-    /** @hidden */
+    /** @internal */
     public _compiledComputeEffects: { [key: string]: ComputeEffect } = {};
-    /** @hidden */
+    /** @internal */
     public _counters: {
         numEnableEffects: number;
         numEnableDrawWrapper: number;
@@ -282,35 +282,35 @@ export class WebGPUEngine extends Engine {
     private _mainTextureExtends: GPUExtent3D;
     private _depthTextureFormat: GPUTextureFormat | undefined;
     private _colorFormat: GPUTextureFormat | null;
-    /** @hidden */
+    /** @internal */
     public _ubInvertY: WebGPUDataBuffer;
-    /** @hidden */
+    /** @internal */
     public _ubDontInvertY: WebGPUDataBuffer;
 
     // Frame Life Cycle (recreated each frame)
-    /** @hidden */
+    /** @internal */
     public _uploadEncoder: GPUCommandEncoder;
-    /** @hidden */
+    /** @internal */
     public _renderEncoder: GPUCommandEncoder;
-    /** @hidden */
+    /** @internal */
     public _renderTargetEncoder: GPUCommandEncoder;
 
     private _commandBuffers: GPUCommandBuffer[] = [null as any, null as any, null as any];
 
     // Frame Buffer Life Cycle (recreated for each render target pass)
-    /** @hidden */
+    /** @internal */
     public _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
-    /** @hidden */
+    /** @internal */
     public _mainRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
-    /** @hidden */
+    /** @internal */
     public _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
-    /** @hidden */
+    /** @internal */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
-    /** @hidden */
+    /** @internal */
     public _bundleList: WebGPUBundleList;
-    /** @hidden */
+    /** @internal */
     public _bundleListRenderTarget: WebGPUBundleList;
-    /** @hidden */
+    /** @internal */
     public _onAfterUnbindFrameBufferObservable = new Observable<WebGPUEngine>();
 
     // DrawCall Life Cycle
@@ -318,9 +318,9 @@ export class WebGPUEngine extends Engine {
     // protected _currentEffect: Nullable<Effect> = null;
     private _defaultDrawContext: WebGPUDrawContext;
     private _defaultMaterialContext: WebGPUMaterialContext;
-    /** @hidden */
+    /** @internal */
     public _currentDrawContext: WebGPUDrawContext;
-    /** @hidden */
+    /** @internal */
     public _currentMaterialContext: WebGPUMaterialContext;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
@@ -328,17 +328,17 @@ export class WebGPUEngine extends Engine {
     private _forceEnableEffect = false;
 
     // TODO WEBGPU remove those variables when code stabilized
-    /** @hidden */
+    /** @internal */
     public dbgShowShaderCode = false;
-    /** @hidden */
+    /** @internal */
     public dbgSanityChecks = true;
-    /** @hidden */
+    /** @internal */
     public dbgVerboseLogsForFirstFrames = false;
-    /** @hidden */
+    /** @internal */
     public dbgVerboseLogsNumFrames = 10;
-    /** @hidden */
+    /** @internal */
     public dbgLogIfNotDrawWrapper = true;
-    /** @hidden */
+    /** @internal */
     public dbgShowEmptyEnableEffectCalls = true;
 
     private _snapshotRendering: WebGPUSnapshotRendering;
@@ -493,7 +493,7 @@ export class WebGPUEngine extends Engine {
         this._compatibilityMode = mode;
     }
 
-    /** @hidden */
+    /** @internal */
     public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
     }
@@ -983,8 +983,7 @@ export class WebGPUEngine extends Engine {
     private _shaderProcessorWGSL: Nullable<IShaderProcessor>;
 
     /**
-     * @param shaderLanguage
-     * @hidden
+     * @internal
      */
     public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
         if (shaderLanguage === ShaderLanguage.WGSL) {
@@ -994,8 +993,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param shaderLanguage
-     * @hidden
+     * @internal
      */
     public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
         return new WebGPUShaderProcessingContext(shaderLanguage);
@@ -1005,7 +1003,7 @@ export class WebGPUEngine extends Engine {
     //                          Static Pipeline WebGPU States
     //------------------------------------------------------------------------------
 
-    /** @hidden */
+    /** @internal */
     public applyStates() {
         this._stencilStateComposer.apply();
         this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
@@ -1138,11 +1136,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @hidden
+     * @internal
      */
     public _viewport(x: number, y: number, width: number, height: number): void {
         this._viewportCached.x = x;
@@ -1246,8 +1240,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param renderPass
-     * @hidden
+     * @internal
      */
     public _applyStencilRef(renderPass: GPURenderPassEncoder): void {
         renderPass.setStencilReference(this._stencilStateComposer.funcRef ?? 0);
@@ -1444,9 +1437,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param data
-     * @param creationFlags
-     * @hidden
+     * @internal
      */
     public _createBuffer(data: DataArray | number, creationFlags: number): DataBuffer {
         let view: ArrayBufferView | number;
@@ -1483,14 +1474,14 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public bindBuffersDirectly(): void {
         throw "Not implemented on WebGPU";
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public updateAndBindInstancesBuffer(): void {
         throw "Not implemented on WebGPU";
@@ -1515,8 +1506,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param buffer
-     * @hidden
+     * @internal
      */
     public _releaseBuffer(buffer: DataBuffer): boolean {
         return this._bufferManager.releaseBuffer(buffer);
@@ -1664,14 +1654,14 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public createRawShaderProgram(): WebGLProgram {
         throw "Not available on WebGPU";
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public createShaderProgram(): WebGLProgram {
         throw "Not available on WebGPU";
@@ -1715,15 +1705,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param pipelineContext
-     * @param vertexSourceCode
-     * @param fragmentSourceCode
-     * @param createAsRaw
-     * @param rawVertexSourceCode
-     * @param rawFragmentSourceCode
-     * @param rebuildRebind
-     * @param defines
-     * @hidden
+     * @internal
      */
     public _preparePipelineContext(
         pipelineContext: IPipelineContext,
@@ -1843,8 +1825,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param effect
-     * @hidden
+     * @internal
      */
     public _releaseEffect(effect: Effect): void {
         if (this._compiledEffects[effect._key]) {
@@ -1885,14 +1866,13 @@ export class WebGPUEngine extends Engine {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _createHardwareTexture(): HardwareTextureWrapper {
         return new WebGPUHardwareTexture();
     }
 
     /**
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _releaseTexture(texture: InternalTexture): void {
         const index = this._internalTexturesCache.indexOf(texture);
@@ -1904,7 +1884,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _getRGBABufferInternalSizedFormat(): number {
         return Constants.TEXTUREFORMAT_RGBA;
@@ -1916,7 +1896,7 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Creates an internal texture without binding it to a framebuffer
-     * @hidden
+     * @internal
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
      * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
@@ -2207,10 +2187,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param name
-     * @param texture
-     * @param baseName
-     * @hidden
+     * @internal
      */
     public _setInternalTexture(name: string, texture: Nullable<InternalTexture | ExternalTexture>, baseName?: string): void {
         baseName = baseName ?? name;
@@ -2333,10 +2310,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param target
-     * @param internalTexture
-     * @param anisotropicFilteringLevel
-     * @hidden
+     * @internal
      */
     public _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number) {
         if (internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
@@ -2345,10 +2319,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param channel
-     * @param texture
-     * @param name
-     * @hidden
+     * @internal
      */
     public _bindTexture(channel: number, texture: InternalTexture, name: string): void {
         if (channel === undefined) {
@@ -2367,9 +2338,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param texture
-     * @param commandEncoder
-     * @hidden
+     * @internal
      */
     public _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
         const gpuHardwareTexture = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
@@ -2442,14 +2411,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param texture
-     * @param internalFormat
-     * @param width
-     * @param height
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadCompressedDataToTextureDirectly(
         texture: InternalTexture,
@@ -2473,13 +2435,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param texture
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @param babylonInternalFormat
-     * @param useTextureWidthAndHeight
-     * @hidden
+     * @internal
      */
     public _uploadDataToTextureDirectly(
         texture: InternalTexture,
@@ -2507,22 +2463,14 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param texture
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
         this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
     }
 
     /**
-     * @param texture
-     * @param image
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
@@ -2700,7 +2648,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _currentFrameBufferIsDefaultFrameBuffer() {
         return this._currentRenderTarget === null;
     }
@@ -2846,7 +2794,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
             const gpuWrapper = this._currentRenderTarget!.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
@@ -2884,7 +2832,7 @@ export class WebGPUEngine extends Engine {
         return this._currentRenderPass!;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getCurrentRenderPassIndex(): number {
         return this._currentRenderPass === null ? -1 : this._currentRenderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
     }
@@ -3164,8 +3112,7 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /**
-     * @param wrapper
-     * @hidden
+     * @internal
      */
     public _setColorFormat(wrapper: WebGPURenderPassWrapper): void {
         const format = wrapper.colorAttachmentGPUTextures[0]?.format ?? null;
@@ -3177,8 +3124,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param wrapper
-     * @hidden
+     * @internal
      */
     public _setDepthTextureFormat(wrapper: WebGPURenderPassWrapper): void {
         this._cacheRenderPipeline.setDepthStencilFormat(wrapper.depthTextureFormat);
@@ -3485,12 +3431,12 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /**
-     * @hidden
+     * @internal
      */
     public bindSamplers(): void {}
 
     /**
-     * @hidden
+     * @internal
      */
     public _bindTextureDirectly(): boolean {
         return false;
@@ -3505,9 +3451,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @param pipelineContext
-     * @param action
-     * @hidden
+     * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         // No parallel shader compilation.
@@ -3516,25 +3460,25 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _isRenderingStateCompiled(): boolean {
         // No parallel shader compilation.
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getUnpackAlignement(): number {
         return 1;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _unpackFlipY() {}
 
     /**
-     * @hidden
+     * @internal
      */
     public _bindUnboundFramebuffer() {
         throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
@@ -3543,119 +3487,119 @@ export class WebGPUEngine extends Engine {
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
 
     /**
-     * @hidden
+     * @internal
      */
     public _getSamplingParameters(): { min: number; mag: number } {
         throw "_getSamplingParameters is not available in WebGPU";
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public getUniforms(): Nullable<WebGLUniformLocation>[] {
         return [];
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setIntArray(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setIntArray2(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setIntArray3(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setIntArray4(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setArray(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setArray2(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setArray3(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setArray4(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setMatrices(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setMatrix3x3(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setMatrix2x2(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setFloat(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setFloat2(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setFloat3(): boolean {
         return false;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public setFloat4(): boolean {
         return false;

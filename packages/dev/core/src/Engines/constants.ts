@@ -620,7 +620,7 @@ export class Constants {
      * Prefixes used by the engine for sub mesh draw wrappers
      */
 
-    /** @hidden */
+    /** @internal */
     public static readonly RENDERPASS_MAIN = 0;
 
     /**

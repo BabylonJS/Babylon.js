@@ -23,7 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
 
-/** @hidden */
+/** @internal */
 class FluentButtonMaterialDefines extends MaterialDefines {
     public RELATIVE_WIDTH = true;
     public ENABLE_FADE = true;

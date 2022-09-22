@@ -1,7 +1,7 @@
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderTargetWrapper extends RenderTargetWrapper {
-    /** @hidden */
+    /** @internal */
     public _defaultAttachments: number[];
 }

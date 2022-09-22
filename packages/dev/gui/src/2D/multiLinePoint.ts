@@ -24,7 +24,7 @@ export class MultiLinePoint {
     private _controlObserver: Nullable<Observer<Control>>;
     private _meshObserver: Nullable<Observer<Camera>>;
 
-    /** @hidden */
+    /** @internal */
     public _point: Vector3;
 
     /**

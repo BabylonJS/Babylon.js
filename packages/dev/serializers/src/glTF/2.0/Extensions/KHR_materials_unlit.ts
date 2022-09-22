@@ -8,7 +8,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 const NAME = "KHR_materials_unlit";
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
@@ -25,7 +25,7 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
 
     constructor() {}
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

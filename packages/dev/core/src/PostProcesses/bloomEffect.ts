@@ -13,12 +13,12 @@ import type { Scene } from "../scene";
  */
 export class BloomEffect extends PostProcessRenderEffect {
     /**
-     * @hidden Internal
+     * @internal Internal
      */
     public _effects: Array<PostProcess> = [];
 
     /**
-     * @hidden Internal
+     * @internal Internal
      */
     public _downscale: ExtractHighlightsPostProcess;
     private _blurX: BlurPostProcess;
@@ -140,7 +140,7 @@ export class BloomEffect extends PostProcessRenderEffect {
     }
 
     /**
-     * @hidden Internal
+     * @internal Internal
      */
     public _updateEffects() {
         for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
@@ -151,7 +151,7 @@ export class BloomEffect extends PostProcessRenderEffect {
     /**
      * Internal
      * @returns if all the contained post processes are ready.
-     * @hidden
+     * @internal
      */
     public _isReady() {
         for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
