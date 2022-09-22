@@ -4191,14 +4191,14 @@ export class Quaternion {
      * @param result the rotation quaternion needed
      * @returns the result
      */
-    public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: Quaternion) {
-        const normal: Vector3 = Vector3.Cross(fromVector, toVector);
-        if (normal.equals(Vector3.Zero())) {
+    public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Quaternion>) {
+        const normal: Vector3 = TmpVectors.Vector3[0];
+        Vector3.CrossToRef(fromVector, toVector, normal);
+        if (normal.equals(Vector3.ZeroReadOnly())) {
             fromVector.getNormalToRef(normal);
         }
         const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
-        result = Quaternion.RotationAxis(normal, angle);
-        return result;
+        return Quaternion.RotationAxisToRef(normal, angle, result);
     }
 
     /**
