@@ -1717,6 +1717,35 @@ export class Vector3 {
     }
 
     /**
+     * Gets the angles between two vectors needed to change direction
+     * @param start the starting vector
+     * @param target the target vector
+     * @param ref the vector to store the result
+     * @returns the updated ref with the between the two vectors in the form (pitch, yaw, roll)
+     */
+    public static GetAnglesBetweenVectorsForDirectionChangeToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
+        const diff = TmpVectors.Vector3[0];
+        target.subtractToRef(start, diff);
+        ref.y = Math.atan2(diff.x, diff.z) || 0;
+        ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        return ref;
+    }
+
+    /**
+     * Gets the angles between two vectors needed to change direction
+     * @param start the starting vector
+     * @param target the target vector
+     * @returns the angles between the two vectors in the form (pitch, yaw, roll)
+     */
+    public static GetAnglesBetweenVectorsForDirectionChange(start: Vector3, target: Vector3): Vector3 {
+        const diff = TmpVectors.Vector3[0];
+        target.subtractToRef(start, diff);
+        const theta = Math.atan2(diff.x, diff.z) || 0,
+            phi = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        return new BABYLON.Vector3(phi, theta, 0);
+    }
+
+    /**
      * Slerp between two vectors. See also `SmoothToRef`
      * Slerp is a spherical linear interpolation
      * giving a slow in and out effect
