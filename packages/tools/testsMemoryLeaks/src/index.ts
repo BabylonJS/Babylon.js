@@ -26,6 +26,10 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
                 url: () => conf.baseUrl + "/test.html" + playground,
                 action: async (page) => {
                     await page.click("#start");
+                    await page.waitForNetworkIdle();
+                    await page.evaluate(async () => {
+                        await BABYLON!.Engine!.LastCreatedScene!.whenReadyAsync()
+                    });
                 },
                 back: async (page) => {
                     await page.click("#dispose");
