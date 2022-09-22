@@ -141,6 +141,8 @@ export class SubMesh implements ICullable {
     public _trianglePlanes: Plane[];
     /** @internal */
     public _lastColliderTransformMatrix: Nullable<Matrix> = null;
+    /** @internal */
+    public _wasDispatched = false;
 
     /** @internal */
     public _renderId = 0;
