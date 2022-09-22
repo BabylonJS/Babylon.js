@@ -4194,7 +4194,7 @@ export class Quaternion {
     public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Quaternion>) {
         const normal: Vector3 = TmpVectors.Vector3[0];
         Vector3.CrossToRef(fromVector, toVector, normal);
-        if (normal.equals(Vector3.ZeroReadOnly())) {
+        if (normal.equals(Vector3.ZeroReadOnly)) {
             fromVector.getNormalToRef(normal);
         }
         const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
