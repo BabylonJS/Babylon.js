@@ -68,9 +68,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _timeDelta = 0;
 
-    /** @hidden */
+    /** @internal */
     public _randomTexture: RawTexture;
-    /** @hidden */
+    /** @internal */
     public _randomTexture2: RawTexture;
 
     private _attributesStrideSize: number;
@@ -278,7 +278,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._customWrappers[blendMode]!.effect = effect;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _onBeforeDrawParticlesObservable: Nullable<Observable<Nullable<Effect>>> = null;
 
     /**
@@ -299,7 +299,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return "gpuRenderParticles";
     }
 
-    /** @hidden */
+    /** @internal */
     public _colorGradientsTexture: RawTexture;
 
     protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
@@ -385,15 +385,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _angularSpeedGradientsTexture: RawTexture;
-    /** @hidden */
+    /** @internal */
     public _sizeGradientsTexture: RawTexture;
-    /** @hidden */
+    /** @internal */
     public _velocityGradientsTexture: RawTexture;
-    /** @hidden */
+    /** @internal */
     public _limitVelocityGradientsTexture: RawTexture;
-    /** @hidden */
+    /** @internal */
     public _dragGradientsTexture: RawTexture;
 
     private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
@@ -1123,7 +1123,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._targetBuffer = this._buffer1;
     }
 
-    /** @hidden */
+    /** @internal */
     public _recreateUpdateEffect() {
         let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
 
@@ -1179,8 +1179,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * @param blendMode
-     * @hidden
+     * @internal
      */
     public _getWrapper(blendMode: number): DrawWrapper {
         const customWrapper = this._getCustomDrawWrapper(blendMode);
@@ -1218,11 +1217,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * @param hasColorGradients
-     * @param isAnimationSheetEnabled
-     * @param isBillboardBased
-     * @param isBillboardStretched
-     * @hidden
+     * @internal
      */
     public static _GetAttributeNamesOrOptions(hasColorGradients = false, isAnimationSheetEnabled = false, isBillboardBased = false, isBillboardStretched = false): string[] {
         const attributeNamesOrOptions = [VertexBuffer.PositionKind, "age", "life", "size", "angle"];
@@ -1249,8 +1244,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * @param isAnimationSheetEnabled
-     * @hidden
+     * @internal
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
         const effectCreationOption = [
@@ -1313,6 +1307,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this.isLocal) {
             defines.push("#define LOCAL");
+        }
+
+        if (this.useLogarithmicDepth) {
+            defines.push("#define LOGARITHMICDEPTH");
         }
 
         if (this._isBillboardBased) {

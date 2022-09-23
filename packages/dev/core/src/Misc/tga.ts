@@ -43,9 +43,7 @@ export function GetTGAHeader(data: Uint8Array): any {
 
 /**
  * Uploads TGA content to a Babylon Texture
- * @param texture
- * @param data
- * @hidden
+ * @internal
  */
 export function UploadContent(texture: InternalTexture, data: Uint8Array): void {
     // Not enough data to contain header ?
@@ -200,16 +198,7 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
 }
 
 /**
- * @param header
- * @param palettes
- * @param pixel_data
- * @param y_start
- * @param y_step
- * @param y_end
- * @param x_start
- * @param x_step
- * @param x_end
- * @hidden
+ * @internal
  */
 function _getImageData8bits(
     header: any,
@@ -247,16 +236,7 @@ function _getImageData8bits(
 }
 
 /**
- * @param header
- * @param palettes
- * @param pixel_data
- * @param y_start
- * @param y_step
- * @param y_end
- * @param x_start
- * @param x_step
- * @param x_end
- * @hidden
+ * @internal
  */
 function _getImageData16bits(
     header: any,
@@ -297,16 +277,7 @@ function _getImageData16bits(
 }
 
 /**
- * @param header
- * @param palettes
- * @param pixel_data
- * @param y_start
- * @param y_step
- * @param y_end
- * @param x_start
- * @param x_step
- * @param x_end
- * @hidden
+ * @internal
  */
 function _getImageData24bits(
     header: any,
@@ -341,16 +312,7 @@ function _getImageData24bits(
 }
 
 /**
- * @param header
- * @param palettes
- * @param pixel_data
- * @param y_start
- * @param y_step
- * @param y_end
- * @param x_start
- * @param x_step
- * @param x_end
- * @hidden
+ * @internal
  */
 function _getImageData32bits(
     header: any,
@@ -385,16 +347,7 @@ function _getImageData32bits(
 }
 
 /**
- * @param header
- * @param palettes
- * @param pixel_data
- * @param y_start
- * @param y_step
- * @param y_end
- * @param x_start
- * @param x_step
- * @param x_end
- * @hidden
+ * @internal
  */
 function _getImageDataGrey8bits(
     header: any,
@@ -431,16 +384,7 @@ function _getImageDataGrey8bits(
 }
 
 /**
- * @param header
- * @param palettes
- * @param pixel_data
- * @param y_start
- * @param y_step
- * @param y_end
- * @param x_start
- * @param x_step
- * @param x_end
- * @hidden
+ * @internal
  */
 function _getImageDataGrey16bits(
     header: any,
@@ -489,23 +433,23 @@ export const TGATools = {
 
     /**
      * Uploads TGA content to a Babylon Texture
-     * @hidden
+     * @internal
      */
     UploadContent,
 
-    /** @hidden */
+    /** @internal */
     _getImageData8bits,
 
-    /** @hidden */
+    /** @internal */
     _getImageData16bits,
-    /** @hidden */
+    /** @internal */
     _getImageData24bits,
 
-    /** @hidden */
+    /** @internal */
     _getImageData32bits,
 
-    /** @hidden */
+    /** @internal */
     _getImageDataGrey8bits,
-    /** @hidden */
+    /** @internal */
     _getImageDataGrey16bits,
 };

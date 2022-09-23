@@ -4,7 +4,7 @@ import type { IDrawContext } from "../IDrawContext";
 import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 
-/** @hidden */
+/** @internal */
 export class WebGPUDrawContext implements IDrawContext {
     private static _Counter = 0;
 

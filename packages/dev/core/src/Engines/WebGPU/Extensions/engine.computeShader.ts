@@ -11,7 +11,7 @@ import * as WebGPUConstants from "../webgpuConstants";
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
-        /** @hidden */
+        /** @internal */
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
     }
 }

@@ -4,7 +4,7 @@ import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 
-/** @hidden */
+/** @internal */
 export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     public static readonly AutoSamplerSuffix = "Sampler";
     public static readonly LeftOvertUBOName = "LeftOver";

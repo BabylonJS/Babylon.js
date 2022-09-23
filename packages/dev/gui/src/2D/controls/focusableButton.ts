@@ -32,7 +32,7 @@ export class FocusableButton extends Button implements IFocusableControl {
         this._unfocusedColor = this.color;
     }
 
-    /** @hidden */
+    /** @internal */
     public onBlur(): void {
         if (this._isFocused) {
             this._isFocused = false;
@@ -44,7 +44,7 @@ export class FocusableButton extends Button implements IFocusableControl {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public onFocus(): void {
         this._isFocused = true;
 
@@ -87,12 +87,7 @@ export class FocusableButton extends Button implements IFocusableControl {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!this.isReadOnly) {
@@ -103,7 +98,7 @@ export class FocusableButton extends Button implements IFocusableControl {
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
 
-    /** @hidden */
+    /** @internal */
     public displose() {
         super.dispose();
 

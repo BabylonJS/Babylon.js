@@ -6,7 +6,7 @@ import { _IsoVector } from "../Maths/math.isovector";
 /**
  * Class representing data for one face OAB of an equilateral icosahedron
  * When O is the isovector (0, 0), A is isovector (m, n)
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _PrimaryIsoTriangle {
@@ -389,9 +389,7 @@ export class _PrimaryIsoTriangle {
 
     //statics
     /**Creates a primary triangle
-     * @param m
-     * @param n
-     * @hidden
+     * @internal
      */
 
     public build(m: number, n: number) {
@@ -545,7 +543,7 @@ export class _PrimaryIsoTriangle {
 }
 
 /** Builds Polyhedron Data
- * @hidden
+ * @internal
  */
 
 export class PolyhedronData {
@@ -559,25 +557,23 @@ export class PolyhedronData {
  */
 export class GeodesicData extends PolyhedronData {
     /**
-     * @hidden
+     * @internal
      */
     public edgematch: (number | string)[][];
     /**
-     * @hidden
+     * @internal
      */
     public adjacentFaces: number[][];
     /**
-     * @hidden
+     * @internal
      */
     public sharedNodes: number;
     /**
-     * @hidden
+     * @internal
      */
     public poleNodes: number;
     /**
-     * @param face
-     * @param primTri
-     * @hidden
+     * @internal
      */
     public innerToData(face: number, primTri: _PrimaryIsoTriangle) {
         for (let i = 0; i < primTri.innerFacets.length; i++) {
@@ -585,9 +581,7 @@ export class GeodesicData extends PolyhedronData {
         }
     }
     /**
-     * @param faceNb
-     * @param primTri
-     * @hidden
+     * @internal
      */
     public mapABOBtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
         const fr = primTri.IDATA.edgematch[faceNb][0];
@@ -604,9 +598,7 @@ export class GeodesicData extends PolyhedronData {
         }
     }
     /**
-     * @param faceNb
-     * @param primTri
-     * @hidden
+     * @internal
      */
     public mapOBOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
         const fr = primTri.IDATA.edgematch[faceNb][0];
@@ -623,9 +615,7 @@ export class GeodesicData extends PolyhedronData {
         }
     }
     /**
-     * @param faceNb
-     * @param primTri
-     * @hidden
+     * @internal
      */
     public mapBAOAtoDATA(faceNb: number, primTri: _PrimaryIsoTriangle) {
         const fr = primTri.IDATA.edgematch[faceNb][2];
@@ -642,8 +632,7 @@ export class GeodesicData extends PolyhedronData {
         }
     }
     /**
-     * @param primTri
-     * @hidden
+     * @internal
      */
     public orderData(primTri: _PrimaryIsoTriangle) {
         const nearTo: number[][][] = [];
@@ -702,9 +691,7 @@ export class GeodesicData extends PolyhedronData {
     }
 
     /**
-     * @param m
-     * @param faces
-     * @hidden
+     * @internal
      */
     public setOrder(m: number, faces: number[]) {
         const adjVerts: number[] = [];
@@ -734,7 +721,7 @@ export class GeodesicData extends PolyhedronData {
         return dualFaces;
     }
     /**
-     * @hidden
+     * @internal
      */
     public toGoldbergPolyhedronData(): PolyhedronData {
         const goldbergPolyhedronData: PolyhedronData = new PolyhedronData("GeoDual", "Goldberg", [], []);
@@ -777,7 +764,7 @@ export class GeodesicData extends PolyhedronData {
     //statics
     /**Builds the data for a Geodesic Polyhedron from a primary triangle
      * @param primTri the primary triangle
-     * @hidden
+     * @internal
      */
 
     public static BuildGeodesicData(primTri: _PrimaryIsoTriangle) {

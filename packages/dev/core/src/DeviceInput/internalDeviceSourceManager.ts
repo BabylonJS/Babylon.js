@@ -17,12 +17,12 @@ declare const _native: INative;
 
 declare module "../Engines/engine" {
     interface Engine {
-        /** @hidden */
+        /** @internal */
         _deviceSourceManager?: InternalDeviceSourceManager;
     }
 }
 
-/** @hidden */
+/** @internal */
 export interface IObservableManager {
     onDeviceConnectedObservable: Observable<DeviceSourceType>;
     onDeviceDisconnectedObservable: Observable<DeviceSourceType>;
@@ -33,7 +33,7 @@ export interface IObservableManager {
     _removeDevice(deviceType: DeviceType, deviceSlot: number): void;
 }
 
-/** @hidden */
+/** @internal */
 export class InternalDeviceSourceManager implements IDisposable {
     // Public Members
     public readonly _deviceInputSystem: IDeviceInputSystem;

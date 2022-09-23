@@ -12,7 +12,7 @@ import type { Scene } from "core/scene";
 
 /**
  * Utils functions for GLTF
- * @hidden
+ * @internal
  * @deprecated
  */
 export class GLTFUtils {

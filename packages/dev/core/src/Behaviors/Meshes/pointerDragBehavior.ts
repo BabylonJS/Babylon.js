@@ -40,7 +40,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public dragButtons = [0, 1, 2];
     /**
-     * @hidden
+     * @internal
      */
     public _useAlternatePickedPointAboveMaxDragAngle = false;
     /**

@@ -42,7 +42,7 @@ import { EffectFallbacks } from "../effectFallbacks";
 
 /**
  * Background material defines definition.
- * @hidden Mainly internal Use
+ * @internal Mainly internal Use
  */
 class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     /**
