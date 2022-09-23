@@ -15,5 +15,10 @@
     },
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
+	},
+	"prettier.printWidth": 180,
+	"prettier.tabWidth": 4,
+	"prettier.useTabs": false,
+	"prettier.semi": true,
+	"prettier.singleQuote": false,
 }
