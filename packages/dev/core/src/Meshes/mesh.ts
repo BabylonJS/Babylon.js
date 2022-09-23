@@ -1860,7 +1860,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const renderSelf = batch.renderSelf[subMesh._id];
 
-        const needUpdateBuffer =
+        const needUpdateBuffer = true ||
             !instancesBuffer ||
             currentInstancesBufferSize !== instanceStorage.instancesBufferSize ||
             (this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousBuffer);
