@@ -1,0 +1,22 @@
+{
+    "name": "@tools/memory-leak-tests",
+    "version": "1.0.0",
+    "main": "dist/index",
+    "module": "dist/index",
+    "types": "dist/index",
+    "private": true,
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "compile": "tsc -b tsconfig.build.json",
+        "watch": "tsc -b tsconfig.build.json --watch",
+        "test": "npm run compile && node ./dist/index.js"
+    },
+    "sideEffects": true,
+    "dependencies": {
+        "memlab": "^1.1.28"
+    }
+}
