@@ -1114,20 +1114,12 @@ export class Vector3 {
     }
 
     /**
-     * Creates a vector normal (perpendicular) to the current Vector3
-     * returns the vector normal
-     */
-    public getNormal(): Vector3 {
-        const ref: Vector3 = MathTmp.Vector3[0];
-        return this.getNormalToRef(ref);
-    }
-
-    /**
      * Creates a vector normal (perpendicular) to the current Vector3 and stores the result in the given vector
      * @param result defines the Vector3 object where to store the resultant normal
      * returns the result
+     * @hidden
      */
-    public getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
+    public _getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
         /**
          * Calculates the spherical coordinates of the current vector
          * so saves on memory rather than importing whole Spherical Class
@@ -4195,7 +4187,7 @@ export class Quaternion {
         const normal: Vector3 = TmpVectors.Vector3[0];
         Vector3.CrossToRef(fromVector, toVector, normal);
         if (normal.equals(Vector3.ZeroReadOnly)) {
-            fromVector.getNormalToRef(normal);
+            fromVector._getNormalToRef(normal);
         }
         const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
         return Quaternion.RotationAxisToRef(normal, angle, result);
