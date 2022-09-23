@@ -1739,7 +1739,7 @@ export class Vector3 {
      */
     public static GetAnglesBetweenPointsForDirectionChange(start: Vector3, target: Vector3): Vector3 {
         const ref = Vector3.Zero();
-		return Vector3.GetAnglesBetweenPointsForDirectionChangeToRef(start, target, ref);
+        return Vector3.GetAnglesBetweenPointsForDirectionChangeToRef(start, target, ref);
     }
 
     /**
