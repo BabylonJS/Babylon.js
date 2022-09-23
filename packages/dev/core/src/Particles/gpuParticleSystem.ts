@@ -1252,7 +1252,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param isAnimationSheetEnabled
      * @hidden
      */
-    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
+    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
         const effectCreationOption = [
             "emitterWM",
             "worldOffset",
@@ -1272,6 +1272,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("sheetInfos");
+        }
+        if (useLogarithmicDepth) {
+            effectCreationOption.push("logarithmicDepthConstant");
         }
 
         return effectCreationOption;
@@ -1360,7 +1363,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             )
         );
 
-        uniforms.push(...GPUParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled));
+        uniforms.push(...GPUParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth));
 
         samplers.push("diffuseSampler", "colorGradientSampler");
 
@@ -1491,6 +1494,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             const invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);
+        }
+
+        // Log. depth
+        if (this.useLogarithmicDepth && this._scene) {
+            MaterialHelper.BindLogDepth(defines, effect, this._scene);
         }
 
         // image processing
