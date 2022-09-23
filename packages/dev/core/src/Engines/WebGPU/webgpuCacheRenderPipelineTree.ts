@@ -2,7 +2,7 @@ import type { VertexBuffer } from "../../Buffers/buffer";
 import type { Nullable } from "../../types";
 import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
-/** @hidden */
+/** @internal */
 class NodeState {
     public values: { [id: number]: NodeState };
     public pipeline: GPURenderPipeline;
@@ -25,7 +25,7 @@ class NodeState {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
     private static _Cache: NodeState = new NodeState();
 

@@ -750,12 +750,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 }
 
 /**
- * @param internalTexture
- * @param data
- * @param sphericalPolynomial
- * @param lodScale
- * @param lodOffset
- * @hidden
+ * @internal
  */
 export function _UpdateRGBDAsync(
     internalTexture: InternalTexture,

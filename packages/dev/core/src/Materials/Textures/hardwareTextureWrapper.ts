@@ -1,4 +1,4 @@
-/** @hidden */
+/** @internal */
 export interface HardwareTextureWrapper {
     underlyingResource: any;
 

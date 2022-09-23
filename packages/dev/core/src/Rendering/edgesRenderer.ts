@@ -22,7 +22,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _edgeRenderLineShader: Nullable<ShaderMaterial>;
     }
 }
@@ -313,7 +313,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._lineShader = EdgesRenderer._GetShader(this._source.getScene());
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         let buffer = this._buffers[VertexBuffer.PositionKind];
         if (buffer) {

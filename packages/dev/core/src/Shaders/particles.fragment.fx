@@ -1,4 +1,8 @@
-﻿// Samplers
+﻿#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+// Samplers
 varying vec2 vUV;
 varying vec4 vColor;
 uniform vec4 textureMask;
@@ -7,6 +11,7 @@ uniform sampler2D diffuseSampler;
 #include<clipPlaneFragmentDeclaration>
 
 #include<imageProcessingDeclaration>
+#include<logDepthDeclaration>
 
 #include<helperFunctions>
 
@@ -16,6 +21,7 @@ uniform sampler2D diffuseSampler;
 varying vec4 remapRanges;
 uniform sampler2D rampSampler;
 #endif
+
 
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
@@ -45,6 +51,8 @@ void main(void) {
 		float sourceAlpha = vColor.a * textureColor.a;
 		baseColor.rgb = baseColor.rgb * sourceAlpha + vec3(1.0) * (1.0 - sourceAlpha);
 	#endif
+
+	#include<logDepthFragment>
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.

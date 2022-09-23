@@ -184,16 +184,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Members
 
-    /** @hidden */
+    /** @internal */
     public _inputManager = new InputManager(this);
 
     /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
     public cameraToUseForPointers: Nullable<Camera> = null;
 
-    /** @hidden */
+    /** @internal */
     public readonly _isScene = true;
 
-    /** @hidden */
+    /** @internal */
     public _blockEntityCollection = false;
 
     /**
@@ -253,7 +253,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public environmentIntensity: number = 1;
 
-    /** @hidden */
+    /** @internal */
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
     /**
      * Default image processing configuration used either in the rendering
@@ -283,10 +283,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._performancePriority = value;
 
         switch (value) {
+            case ScenePerformancePriority.BackwardCompatible:
+                this.skipFrustumClipping = false;
+                this._renderingManager.maintainStateBetweenFrames = false;
+                this.skipPointerMovePicking = false;
+                this.autoClear = true;
+                break;
+            case ScenePerformancePriority.Intermediate:
+                this.skipFrustumClipping = false;
+                this._renderingManager.maintainStateBetweenFrames = false;
+                this.skipPointerMovePicking = true;
+                this.autoClear = false;
+                break;
             case ScenePerformancePriority.Aggressive:
                 this.skipFrustumClipping = true;
-            // eslint-disable-next-line no-fallthrough
-            case ScenePerformancePriority.Intermediate:
+                this._renderingManager.maintainStateBetweenFrames = true;
                 this.skipPointerMovePicking = true;
                 this.autoClear = false;
                 break;
@@ -730,7 +741,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Animations
 
-    /** @hidden */
+    /** @internal */
     public _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
     // Pointers
@@ -881,7 +892,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     // Mirror
-    /** @hidden */
+    /** @internal */
     public _mirroredCameraPosition: Nullable<Vector3>;
 
     // Keyboard
@@ -1079,7 +1090,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._activeCameras = cameras;
     }
 
-    /** @hidden */
+    /** @internal */
     public _activeCamera: Nullable<Camera>;
     /** Gets or sets the current active camera */
     public get activeCamera(): Nullable<Camera> {
@@ -1178,7 +1189,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _collisionCoordinator: ICollisionCoordinator;
 
-    /** @hidden */
+    /** @internal */
     public get collisionCoordinator(): ICollisionCoordinator {
         if (!this._collisionCoordinator) {
             this._collisionCoordinator = Scene.CollisionCoordinatorFactory();
@@ -1262,19 +1273,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Performance counters
     private _totalVertices = new PerfCounter();
-    /** @hidden */
+    /** @internal */
     public _activeIndices = new PerfCounter();
-    /** @hidden */
+    /** @internal */
     public _activeParticles = new PerfCounter();
-    /** @hidden */
+    /** @internal */
     public _activeBones = new PerfCounter();
 
     private _animationRatio: number;
 
-    /** @hidden */
+    /** @internal */
     public _animationTimeLast: number;
 
-    /** @hidden */
+    /** @internal */
     public _animationTime: number = 0;
 
     /**
@@ -1283,11 +1294,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public animationTimeScale: number = 1;
 
-    /** @hidden */
+    /** @internal */
     public _cachedMaterial: Nullable<Material>;
-    /** @hidden */
+    /** @internal */
     public _cachedEffect: Nullable<Effect>;
-    /** @hidden */
+    /** @internal */
     public _cachedVisibility: Nullable<number>;
 
     private _renderId = 0;
@@ -1299,11 +1310,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _viewUpdateFlag = -1;
     private _projectionUpdateFlag = -1;
 
-    /** @hidden */
+    /** @internal */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
     private _activeRequests = new Array<IFileRequest>();
 
-    /** @hidden */
+    /** @internal */
     public _pendingData = new Array();
     private _isDisposed = false;
 
@@ -1316,27 +1327,34 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _processedMaterials = new SmartArray<Material>(256);
     private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
     private _materialsRenderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
-    /** @hidden */
+    /** @internal */
     public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
     private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
     private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
 
     private _renderingManager: RenderingManager;
 
-    /** @hidden */
+    /**
+     * Gets the scene's rendering manager
+     */
+    public get renderingManager() {
+        return this._renderingManager;
+    }
+
+    /** @internal */
     public _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
 
-    /** @hidden */
+    /** @internal */
     public _viewMatrix: Matrix;
-    /** @hidden */
+    /** @internal */
     public _projectionMatrix: Matrix;
-    /** @hidden */
+    /** @internal */
     public _forcedViewPosition: Nullable<Vector3>;
 
-    /** @hidden */
+    /** @internal */
     public _frustumPlanes: Plane[];
     /**
      * Gets the list of frustum planes (built from the active camera)
@@ -1351,22 +1369,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public requireLightSorting = false;
 
-    /** @hidden */
+    /** @internal */
     public readonly useMaterialMeshMap: boolean;
-    /** @hidden */
+    /** @internal */
     public readonly useClonedMeshMap: boolean;
 
     private _externalData: StringDictionary<Object>;
     private _uid: Nullable<string>;
 
     /**
-     * @hidden
+     * @internal
      * Backing store of defined scene components.
      */
     public _components: ISceneComponent[] = [];
 
     /**
-     * @hidden
+     * @internal
      * Backing store of defined scene components.
      */
     public _serializableComponents: ISceneSerializableComponent[] = [];
@@ -1390,7 +1408,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @hidden
+     * @internal
      * Add a component to the scene.
      * Note that the ccomponent could be registered on th next frame if this is called after
      * the register component stage.
@@ -1407,7 +1425,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @hidden
+     * @internal
      * Gets a component from the scene.
      * @param name defines the name of the component to retrieve
      * @returns the component or null if not present
@@ -1422,112 +1440,112 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before camera updates.
      */
     public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before clear the canvas.
      */
     public _beforeClearStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before clear the canvas.
      */
     public _beforeRenderTargetClearStage = Stage.Create<RenderTargetStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions when collecting render targets for the frame.
      */
     public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening for one camera in the frame.
      */
     public _gatherActiveCameraRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the per mesh ready checks.
      */
     public _isReadyForMeshStage = Stage.Create<MeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before evaluate active mesh checks.
      */
     public _beforeEvaluateActiveMeshStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the evaluate sub mesh checks.
      */
     public _evaluateSubMeshStage = Stage.Create<EvaluateSubMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the active mesh stage.
      */
     public _preActiveMeshStage = Stage.Create<PreActiveMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the per camera render target step.
      */
     public _cameraDrawRenderTargetStage = Stage.Create<CameraStageFrameBufferAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before the active camera is drawing.
      */
     public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before a render target is drawing.
      */
     public _beforeRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before a rendering group is drawing.
      */
     public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before a mesh is drawing.
      */
     public _beforeRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after a mesh has been drawn.
      */
     public _afterRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after a rendering group has been drawn.
      */
     public _afterRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after the active camera has been drawn.
      */
     public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after a render target has been drawn.
      */
     public _afterRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after rendering all cameras and computing intersections.
      */
     public _afterRenderStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening when a pointer move event happens.
      */
     public _pointerMoveStage = Stage.Create<PointerMoveStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening when a pointer down event happens.
      */
     public _pointerDownStage = Stage.Create<PointerUpDownStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening when a pointer up event happens.
      */
     public _pointerUpStage = Stage.Create<PointerUpDownStageAction>();
@@ -1625,7 +1643,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     };
 
     /**
-     * @hidden
+     * @internal
      */
     public _getDefaultMeshCandidates(): ISmartArrayLike<AbstractMesh> {
         this._defaultMeshCandidates.data = this.meshes;
@@ -1639,8 +1657,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     };
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _getDefaultSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
         this._defaultSubMeshCandidates.data = mesh.subMeshes;
@@ -2167,8 +2184,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param checkRenderTargets
-     * @hidden
+     * @internal
      */
     public _checkIsReady(checkRenderTargets = false) {
         this._registerTransientComponents();
@@ -3638,16 +3654,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._externalData.remove(key);
     }
 
-    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (
-            initialMesh.hasInstances ||
-            initialMesh.isAnInstance ||
-            this.dispatchAllSubMeshesOfActiveMeshes ||
-            this._skipFrustumClipping ||
-            mesh.alwaysSelectAsActiveMesh ||
-            mesh.subMeshes.length === 1 ||
-            subMesh.isInFrustum(this._frustumPlanes)
-        ) {
+    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh, forcePush: boolean): void {
+        if (forcePush || subMesh.isInFrustum(this._frustumPlanes)) {
             for (const step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3743,7 +3751,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _isInIntermediateRendering(): boolean {
         return this._intermediateRendering;
     }
@@ -3768,7 +3776,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
-    /** @hidden */
+    /** @internal */
     public _activeMeshesFrozen = false;
     public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
@@ -3970,8 +3978,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        this.onAfterActiveMeshesEvaluationObservable.notifyObservers(this);
-
         // Particle systems
         if (this.particlesEnabled) {
             this.onBeforeParticlesRenderingObservable.notifyObservers(this);
@@ -4005,12 +4011,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
+        let forcePush = sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
+
         if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
+            forcePush = forcePush || len === 1;
             for (let i = 0; i < len; i++) {
                 const subMesh = subMeshes.data[i];
-                this._evaluateSubMesh(subMesh, mesh, sourceMesh);
+                this._evaluateSubMesh(subMesh, mesh, sourceMesh, forcePush);
             }
         }
     }
@@ -4072,13 +4081,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _allowPostProcessClearColor = true;
     /**
-     * @param camera
-     * @param rigParent
-     * @param bindFrameBuffer
-     * @hidden
+     * @internal
      */
     public _renderForCamera(camera: Camera, rigParent?: Camera, bindFrameBuffer = true): void {
         if (camera && camera._skipRendering) {
@@ -4300,8 +4306,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param step
-     * @hidden
+     * @internal
      */
     public _advancePhysicsEngineStep(step: number) {
         // Do nothing. Code will be replaced if physics engine component is referenced
@@ -4314,7 +4319,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._engine.getTimeStep();
     };
 
-    /** @hidden */
+    /** @internal */
     public _animate(): void {
         // Nothing to do as long as Animatable have not been imported.
     }
@@ -5043,7 +5048,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     // Misc.
-    /** @hidden */
+    /** @internal */
     public _rebuildGeometries(): void {
         for (const geometry of this.geometries) {
             geometry._rebuild();
@@ -5072,7 +5077,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuildTextures(): void {
         for (const texture of this.textures) {
             texture._rebuild();
@@ -5236,14 +5241,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param fileOrUrl
-     * @param onSuccess
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onError
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _loadFile(
         fileOrUrl: File | string,
@@ -5263,12 +5261,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param fileOrUrl
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _loadFileAsync(
         fileOrUrl: File | string,
@@ -5295,14 +5288,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param url
-     * @param onSuccess
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onError
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _requestFile(
         url: string,
@@ -5322,12 +5308,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param url
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _requestFileAsync(
         url: string,
@@ -5354,12 +5335,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param file
-     * @param onSuccess
-     * @param onProgress
-     * @param useArrayBuffer
-     * @param onError
-     * @hidden
+     * @internal
      */
     public _readFile(
         file: File,
@@ -5377,10 +5353,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param file
-     * @param onProgress
-     * @param useArrayBuffer
-     * @hidden
+     * @internal
      */
     public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {

@@ -28,7 +28,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _bindFrameBuffer() {
         if (!this._renderTarget) {

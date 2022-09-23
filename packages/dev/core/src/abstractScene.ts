@@ -196,7 +196,7 @@ export abstract class AbstractScene {
      */
     public textures = new Array<BaseTexture>();
 
-    /** @hidden */
+    /** @internal */
     protected _environmentTexture: Nullable<BaseTexture> = null;
     /**
      * Texture used in all pbr material as the reflection texture.
