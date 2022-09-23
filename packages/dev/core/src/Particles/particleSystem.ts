@@ -42,6 +42,7 @@ import type { ISize } from "../Maths/math.size";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 import { ThinMaterialHelper } from "../Materials/thinMaterialHelper";
+import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Engines/Extensions/engine.alpha";
 
@@ -1719,7 +1720,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param isAnimationSheetEnabled
      * @hidden
      */
-    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
+    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
         const effectCreationOption = [
             "invView",
             "view",
@@ -1737,6 +1738,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
+        }
+        if (useLogarithmicDepth) {
+            effectCreationOption.push("logarithmicDepthConstant");
         }
 
         return effectCreationOption;
@@ -1825,7 +1829,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             )
         );
 
-        uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled));
+        uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth));
 
         samplers.push("diffuseSampler", "rampSampler");
 
@@ -2090,6 +2094,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._engine.bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
         } else {
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+        }
+
+        // Log. depth
+        if (this.useLogarithmicDepth && this._scene) {
+            MaterialHelper.BindLogDepth(defines, effect, this._scene);
         }
 
         // image processing
