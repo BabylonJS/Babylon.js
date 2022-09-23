@@ -1,4 +1,4 @@
-import { run } from "@memlab/api";
+import { takeSnapshots, findLeaks } from "@memlab/api";
 import type { IScenario } from "@memlab/core";
 import { checkArgs, populateEnvironment } from "@dev/build-tools";
 
@@ -51,7 +51,7 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
                 },
             };
             console.log("Running scenario", scenario.url());
-            const { leaks } = await run({ scenario });
+            const leaks = await findLeaks(await takeSnapshots({ scenario }));
             if (leaks.length > 0) {
                 console.log(leaks);
                 throw new Error(leaks.length + " leak(s) found");
@@ -65,7 +65,7 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
                 console.log(message);
             } catch (error) {
                 console.log(error.message);
-                // throw (error);
+                throw (error);
             }
         }
     };
