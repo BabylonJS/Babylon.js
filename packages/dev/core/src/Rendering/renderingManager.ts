@@ -86,6 +86,14 @@ export class RenderingManager {
     private _renderingGroupInfo: Nullable<RenderingGroupInfo> = new RenderingGroupInfo();
 
     /**
+     * Gets or sets a boolean indicating that the manager will not reset between frames.
+     * This means that if a mesh becomes invisible or transparent it will not be visible until this boolean is set to false again.
+     * By default, the rendering manager will dispatch all active meshes per frame (moving them to the transparent, opaque or alpha testing lists).
+     * By turning this property on, you will accelerate the rendering by keeping all these lists unchanged between frames.
+     */
+    public maintainStateBetweenFrames = false;
+
+    /**
      * Instantiates a new rendering group for a particular scene
      * @param scene Defines the scene the groups belongs to
      */
@@ -95,6 +103,14 @@ export class RenderingManager {
         for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
             this._autoClearDepthStencil[i] = { autoClear: true, depth: true, stencil: true };
         }
+    }
+
+    public getRenderingGroup(id: number) {
+        const renderingGroupId = id || 0;
+
+        this._prepareRenderingGroup(renderingGroupId);
+
+        return this._renderingGroups[renderingGroupId];
     }
 
     private _clearDepthStencilBuffer(depth = true, stencil = true): void {
@@ -178,6 +194,10 @@ export class RenderingManager {
      * @internal
      */
     public reset(): void {
+        if (this.maintainStateBetweenFrames) {
+            return;
+        }
+
         for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
             const renderingGroup = this._renderingGroups[index];
             if (renderingGroup) {
@@ -225,11 +245,11 @@ export class RenderingManager {
      * @param spriteManager Define the sprite manager to render
      */
     public dispatchSprites(spriteManager: ISpriteManager) {
-        const renderingGroupId = spriteManager.renderingGroupId || 0;
-
-        this._prepareRenderingGroup(renderingGroupId);
-
-        this._renderingGroups[renderingGroupId].dispatchSprites(spriteManager);
+        if (this.maintainStateBetweenFrames && spriteManager._wasDispatched) {
+            return;
+        }
+        spriteManager._wasDispatched = true;
+        this.getRenderingGroup(spriteManager.renderingGroupId).dispatchSprites(spriteManager);
     }
 
     /**
@@ -237,11 +257,11 @@ export class RenderingManager {
      * @param particleSystem Define the particle system to render
      */
     public dispatchParticles(particleSystem: IParticleSystem) {
-        const renderingGroupId = particleSystem.renderingGroupId || 0;
-
-        this._prepareRenderingGroup(renderingGroupId);
-
-        this._renderingGroups[renderingGroupId].dispatchParticles(particleSystem);
+        if (this.maintainStateBetweenFrames && particleSystem._wasDispatched) {
+            return;
+        }
+        particleSystem._wasDispatched = true;
+        this.getRenderingGroup(particleSystem.renderingGroupId).dispatchParticles(particleSystem);
     }
 
     /**
@@ -254,11 +274,11 @@ export class RenderingManager {
         if (mesh === undefined) {
             mesh = subMesh.getMesh();
         }
-        const renderingGroupId = mesh.renderingGroupId || 0;
-
-        this._prepareRenderingGroup(renderingGroupId);
-
-        this._renderingGroups[renderingGroupId].dispatch(subMesh, mesh, material);
+        if (this.maintainStateBetweenFrames && subMesh._wasDispatched) {
+            return;
+        }
+        subMesh._wasDispatched = true;
+        this.getRenderingGroup(mesh.renderingGroupId).dispatch(subMesh, mesh, material);
     }
 
     /**

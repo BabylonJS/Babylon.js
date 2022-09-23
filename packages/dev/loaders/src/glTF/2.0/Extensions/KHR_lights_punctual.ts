@@ -10,7 +10,7 @@ import type { TransformNode } from "core/Meshes/transformNode";
 
 import type { IKHRLightsPunctual_LightReference } from "babylonjs-gltf2interface";
 import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
-import type { INode, IKHRLight } from "../glTFLoaderInterfaces";
+import type { INode, IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
@@ -32,7 +32,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
     /** hidden */
     private _loader: GLTFLoader;
-    private _lights?: IKHRLight[];
+    private _lights?: IKHRLightsPunctual_Light[];
 
     /**
      * @internal
@@ -54,6 +54,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
         if (extensions && extensions[this.name]) {
             const extension = extensions[this.name] as any;
             this._lights = extension.lights;
+            ArrayItem.Assign(this._lights);
         }
     }
 
@@ -94,6 +95,8 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
                 babylonLight._parentContainer = this._loader._assetContainer;
                 this._loader.babylonScene._blockEntityCollection = false;
+                light._babylonLight = babylonLight;
+
                 babylonLight.falloffType = Light.FALLOFF_GLTF;
                 babylonLight.diffuse = light.color ? Color3.FromArray(light.color) : Color3.White();
                 babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;
@@ -101,7 +104,6 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 babylonLight.parent = babylonMesh;
 
                 this._loader._babylonLights.push(babylonLight);
-                light._babylonLight = babylonLight;
 
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
 

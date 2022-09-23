@@ -1013,11 +1013,15 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if alpha blending is needed for the mesh
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
+        if (mesh.visibility < 1.0) {
+            return true;
+        }
+
+        if (this._disableAlphaBlending) {
             return false;
         }
 
-        return this.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha;
+        return mesh.hasVertexAlpha || this.needAlphaBlending();
     }
 
     /**
