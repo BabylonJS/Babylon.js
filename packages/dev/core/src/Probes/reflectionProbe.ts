@@ -74,7 +74,12 @@ export class ReflectionProbe {
     @serializeAsVector3()
     public position = Vector3.Zero();
 
-    /** @hidden */
+    /**
+     * Gets or sets an object used to store user defined information for the reflection probe.
+     */
+    public metadata: any = null;
+
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -318,6 +323,7 @@ export class ReflectionProbe {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this, this._renderTargetTexture.serialize());
         serializationObject.isReflectionProbe = true;
+        serializationObject.metadata = this.metadata;
 
         return serializationObject;
     }
@@ -351,6 +357,10 @@ export class ReflectionProbe {
 
         if (parsedReflectionProbe._attachedMesh) {
             reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
+        }
+
+        if (parsedReflectionProbe.metadata) {
+            reflectionProbe.metadata = parsedReflectionProbe.metadata;
         }
 
         return reflectionProbe;

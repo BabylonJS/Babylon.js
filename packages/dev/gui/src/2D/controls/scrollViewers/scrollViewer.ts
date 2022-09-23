@@ -13,6 +13,7 @@ import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { serialize } from "core/Misc/decorators";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -273,6 +274,7 @@ export class ScrollViewer extends Rectangle {
      * Gets or sets the mouse wheel precision
      * from 0 to 1 with a default value of 0.05
      * */
+    @serialize()
     public get wheelPrecision(): number {
         return this._wheelPrecision;
     }
@@ -294,6 +296,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Gets or sets the scroll bar container background color */
+    @serialize()
     public get scrollBackground(): string {
         return this._horizontalBarSpace.background;
     }
@@ -307,6 +310,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Gets or sets the bar color */
+    @serialize()
     public get barColor(): string {
         return this._barColor;
     }
@@ -369,6 +373,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Gets or sets the size of the bar */
+    @serialize()
     public get barSize(): number {
         return this._barSize;
     }
@@ -501,6 +506,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Gets or sets the bar background */
+    @serialize()
     public get barBackground(): string {
         return this._barBackground;
     }
@@ -586,7 +592,7 @@ export class ScrollViewer extends Rectangle {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     private _updateScroller(): void {
         const windowContentsWidth = this._window._currentMeasure.width;
         const windowContentsHeight = this._window._currentMeasure.height;
@@ -628,11 +634,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /**
-     * @param barControl
-     * @param barContainer
-     * @param isVertical
-     * @param rotation
-     * @hidden
+     * @internal
      */
     private _addBar(barControl: ScrollBar | ImageScrollBar, barContainer: Rectangle, isVertical: boolean, rotation: number) {
         barControl.paddingLeft = 0;
@@ -654,7 +656,7 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
-    /** @hidden */
+    /** @internal */
     private _attachWheel() {
         if (!this._host || this._onWheelObserver) {
             return;

@@ -15,7 +15,7 @@ import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 class _ClickInfo {
     private _singleClick = false;
@@ -220,7 +220,7 @@ export class InputManager {
         }
 
         if (pickResult) {
-            const type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+            const type = evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
             if (scene.onPointerMove) {
                 scene.onPointerMove(evt, pickResult, type);
@@ -248,6 +248,7 @@ export class InputManager {
         const scene = this._scene;
         const pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
         if (pickResult) {
+            pi.originalPickingInfo = pickResult;
             pi.ray = pickResult.ray;
             if (pickResult.originMesh) {
                 pi.nearInteractionPickingInfo = pickResult;
@@ -345,7 +346,7 @@ export class InputManager {
             }
         } else {
             for (const step of scene._pointerDownStage) {
-                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt, false);
             }
         }
 
@@ -365,8 +366,8 @@ export class InputManager {
     }
 
     /**
-     * @hidden
-     * @returns Boolean if delta for pointer exceeds drag movement threshold
+     * @internal
+     * @internals Boolean if delta for pointer exceeds drag movement threshold
      */
     public _isPointerSwiping(): boolean {
         return (
@@ -431,7 +432,7 @@ export class InputManager {
         } else {
             if (!clickInfo.ignore) {
                 for (const step of scene._pointerUpStage) {
-                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
+                    pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt, clickInfo.doubleClick);
                 }
             }
         }
@@ -660,7 +661,7 @@ export class InputManager {
                 this._checkPrePointerObservable(
                     null,
                     evt as IPointerEvent,
-                    evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE
+                    evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE
                 )
             ) {
                 return;
@@ -988,7 +989,7 @@ export class InputManager {
 
     /**
      * @param mesh - Mesh to invalidate
-     * @hidden
+     * @internal
      */
     public _invalidateMesh(mesh: AbstractMesh) {
         if (this._pointerOverMesh === mesh) {

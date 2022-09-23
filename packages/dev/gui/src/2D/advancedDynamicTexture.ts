@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import type { Matrix } from "core/Maths/math.vector";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Vector2, Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { PointerInfoPre, PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
 import { PointerEventTypes } from "core/Events/pointerEvents";
@@ -56,21 +56,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
-    /** @hidden */
+    /** @internal */
     public _rootContainer = new Container("root");
-    /** @hidden */
+    /** @internal */
     public _lastPickedControl: Control;
-    /** @hidden */
+    /** @internal */
     public _lastControlOver: { [pointerId: number]: Control } = {};
-    /** @hidden */
+    /** @internal */
     public _lastControlDown: { [pointerId: number]: Control } = {};
-    /** @hidden */
+    /** @internal */
     public _capturingControl: { [pointerId: number]: Control } = {};
-    /** @hidden */
+    /** @internal */
     public _shouldBlockPointer: boolean;
-    /** @hidden */
+    /** @internal */
     public _layerToDispose: Nullable<Layer>;
-    /** @hidden */
+    /** @internal */
     public _linkedControls = new Array<Control>();
     private _isFullscreen = false;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
@@ -85,14 +85,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
 
-    /** @hidden */
+    /** @internal */
+    public _capturedPointerIds = new Set<number>();
+
+    /** @internal */
     public _numLayoutCalls = 0;
     /** Gets the number of layout calls made the last time the ADT has been rendered */
     public get numLayoutCalls(): number {
         return this._numLayoutCalls;
     }
 
-    /** @hidden */
+    /** @internal */
     public _numRenderCalls = 0;
     /** Gets the number of render calls made the last time the ADT has been rendered */
     public get numRenderCalls(): number {
@@ -280,7 +283,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Will return all controls that are inside this texture
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all child controls
+     * @returns all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         return this._rootContainer.getDescendants(directDescendantsOnly, predicate);
@@ -298,7 +301,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Will return the first control with the given name
      * @param name defines the name to search for
-     * @return the first control found or null
+     * @returns the first control found or null
      */
     public getControlByName(name: string): Nullable<Control> {
         return this._getControlByKey("name", name);
@@ -610,7 +613,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
     }
-    /** @hidden */
+    /** @internal */
     public _getGlobalViewport(): Viewport {
         const size = this.getSize();
         const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
@@ -736,8 +739,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._invalidatedRectangle = null;
     }
     /**
-     * @param cursor
-     * @hidden
+     * @internal
      */
     public _changeCursor(cursor: string) {
         if (this._rootElement) {
@@ -746,9 +748,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
     /**
-     * @param control
-     * @param pointerId
-     * @hidden
+     * @internal
      */
     public _registerLastControlDown(control: Control, pointerId: number) {
         this._lastControlDown[pointerId] = control;
@@ -797,9 +797,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._manageFocus();
     }
     /**
-     * @param list
-     * @param control
-     * @hidden
+     * @internal
      */
     public _cleanControlAfterRemovalFromList(list: { [pointerId: number]: Control }, control: Control) {
         for (const pointerId in list) {
@@ -813,8 +811,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
     /**
-     * @param control
-     * @hidden
+     * @internal
      */
     public _cleanControlAfterRemoval(control: Control) {
         this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
@@ -887,6 +884,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         this._prePointerObserver = scene.onPrePointerObservable.add((pi) => {
             if (
+                scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId) &&
+                pi.type === PointerEventTypes.POINTERUP &&
+                !this._capturedPointerIds.has((pi.event as IPointerEvent).pointerId)
+            ) {
+                return;
+            }
+            if (
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
                 pi.type !== PointerEventTypes.POINTERDOWN &&
@@ -904,7 +908,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
                 }
             }
-
             this._translateToPicking(scene, tempViewport, pi);
         });
         this._attachPickingToSceneRender(scene, () => this._translateToPicking(scene, tempViewport, null), false);
@@ -913,8 +916,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * @param rawEvt
-     * @hidden
+     * @internal
      */
     private _onClipboardCopy = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
@@ -923,8 +925,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         evt.preventDefault();
     };
     /**
-     * @param rawEvt
-     * @hidden
+     * @internal
      */
     private _onClipboardCut = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
@@ -933,8 +934,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         evt.preventDefault();
     };
     /**
-     * @param rawEvt
-     * @hidden
+     * @internal
      */
     private _onClipboardPaste = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
@@ -957,6 +957,60 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         self.removeEventListener("copy", this._onClipboardCopy);
         self.removeEventListener("cut", this._onClipboardCut);
         self.removeEventListener("paste", this._onClipboardPaste);
+    }
+
+    /**
+     * Transform uvs from mesh space to texture space, taking the texture into account
+     * @param uv the uvs in mesh space
+     * @returns the uvs in texture space
+     */
+    private _transformUvs(uv: Vector2): Vector2 {
+        const textureMatrix = this.getTextureMatrix();
+        let result;
+        if (textureMatrix.isIdentityAs3x2()) {
+            result = uv;
+        } else {
+            const homogeneousTextureMatrix = TmpVectors.Matrix[0];
+
+            textureMatrix.getRowToRef(0, TmpVectors.Vector4[0]);
+            textureMatrix.getRowToRef(1, TmpVectors.Vector4[1]);
+            textureMatrix.getRowToRef(2, TmpVectors.Vector4[2]);
+
+            const r0 = TmpVectors.Vector4[0];
+            const r1 = TmpVectors.Vector4[1];
+            const r2 = TmpVectors.Vector4[2];
+
+            homogeneousTextureMatrix.setRowFromFloats(0, r0.x, r0.y, 0, 0);
+            homogeneousTextureMatrix.setRowFromFloats(1, r1.x, r1.y, 0, 0);
+            homogeneousTextureMatrix.setRowFromFloats(2, 0, 0, 1, 0);
+            homogeneousTextureMatrix.setRowFromFloats(3, r2.x, r2.y, 0, 1);
+
+            result = TmpVectors.Vector2[0];
+            Vector2.TransformToRef(uv, homogeneousTextureMatrix, result);
+        }
+
+        // In wrap and mirror mode, the texture coordinate for coordinates more than 1 is the fractional part of the coordinate
+        if (this.wrapU === Texture.WRAP_ADDRESSMODE || this.wrapU === Texture.MIRROR_ADDRESSMODE) {
+            if (result.x > 1) {
+                let fX = result.x - Math.trunc(result.x);
+                // In mirror mode, the sign of the texture coordinate depends on the integer part -
+                // odd integers means it is mirrored from the original coordinate
+                if (this.wrapU === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                    fX = 1 - fX;
+                }
+                result.x = fX;
+            }
+        }
+        if (this.wrapV === Texture.WRAP_ADDRESSMODE || this.wrapV === Texture.MIRROR_ADDRESSMODE) {
+            if (result.y > 1) {
+                let fY = result.y - Math.trunc(result.y);
+                if (this.wrapV === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                    fY = 1 - fY;
+                }
+                result.y = fY;
+            }
+        }
+        return result;
     }
     /**
      * Connect the texture to a hosting mesh to enable interactions
@@ -984,8 +1038,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
-                const uv = pi.pickInfo.getTextureCoordinates();
+                let uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
+                    uv = this._transformUvs(uv);
                     const size = this.getSize();
                     this._doPicking(
                         uv.x * size.width,
@@ -1038,8 +1093,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 const pointerId = this._defaultMousePointerId;
                 const pick = scene?.pick(scene.pointerX, scene.pointerY);
                 if (pick && pick.hit && pick.pickedMesh === mesh) {
-                    const uv = pick.getTextureCoordinates();
+                    let uv = pick.getTextureCoordinates();
                     if (uv) {
+                        uv = this._transformUvs(uv);
                         const size = this.getSize();
                         this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height, null, PointerEventTypes.POINTERMOVE, pointerId, 0);
                     }
@@ -1146,6 +1202,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 this.scaleTo(1920, 1080);
             }
         }
+    }
+
+    /**
+     * Clones the ADT
+     * @param newName defines the name of the new ADT
+     * @returns the clone of the ADT
+     */
+    public clone(newName?: string): AdvancedDynamicTexture {
+        const scene = this.getScene();
+
+        if (!scene) {
+            return this;
+        }
+
+        const data = this.serializeContent();
+        const clone = AdvancedDynamicTexture.CreateFullscreenUI(newName || "Clone of " + this.name, this.isForeground, scene, this.samplingMode);
+        clone.parseSerializedObject(data);
+
+        return clone;
     }
 
     /**

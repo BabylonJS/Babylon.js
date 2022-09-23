@@ -1,0 +1,8 @@
+.selected {
+    filter: brightness(2);
+}
+
+img.selected {
+    box-shadow: 0 0 0 2px;
+    border-radius: 50%;
+}

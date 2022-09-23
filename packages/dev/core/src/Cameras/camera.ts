@@ -30,9 +30,7 @@ declare type Ray = import("../Culling/ray").Ray;
  */
 export class Camera extends Node {
     /**
-     * @param name
-     * @param scene
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateDefaultParsedCamera = (name: string, scene: Scene): Camera => {
@@ -110,7 +108,7 @@ export class Camera extends Node {
      */
     public inputs: CameraInputsManager<Camera>;
 
-    /** @hidden */
+    /** @internal */
     @serializeAsVector3("position")
     public _position = Vector3.Zero();
 
@@ -389,29 +387,29 @@ export class Camera extends Node {
      */
     public renderPassId: number;
 
-    /** @hidden */
+    /** @internal */
     public _cameraRigParams: any;
-    /** @hidden */
+    /** @internal */
     public _rigCameras = new Array<Camera>();
-    /** @hidden */
+    /** @internal */
     public _rigPostProcess: Nullable<PostProcess>;
 
     protected _webvrViewMatrix = Matrix.Identity();
-    /** @hidden */
+    /** @internal */
     public _skipRendering = false;
 
-    /** @hidden */
+    /** @internal */
     public _projectionMatrix = new Matrix();
 
-    /** @hidden */
+    /** @internal */
     public _postProcesses = new Array<Nullable<PostProcess>>();
 
-    /** @hidden */
+    /** @internal */
     public _activeMeshes = new SmartArray<AbstractMesh>(256);
 
     protected _globalPosition = Vector3.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _computedViewMatrix = Matrix.Identity();
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
@@ -488,7 +486,7 @@ export class Camera extends Node {
         return "Camera";
     }
 
-    /** @hidden */
+    /** @internal */
     public readonly _isCamera = true;
 
     /**
@@ -543,7 +541,7 @@ export class Camera extends Node {
     /**
      * Is this camera ready to be used/rendered
      * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
-     * @return true if the camera is ready
+     * @returns true if the camera is ready
      */
     public isReady(completeCheck = false): boolean {
         if (completeCheck) {
@@ -556,7 +554,7 @@ export class Camera extends Node {
         return super.isReady(completeCheck);
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
 
@@ -580,8 +578,7 @@ export class Camera extends Node {
     }
 
     /**
-     * @param ignoreParentClass
-     * @hidden
+     * @internal
      */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
@@ -592,12 +589,12 @@ export class Camera extends Node {
         this._cache.upVector.copyFrom(this.upVector);
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronized(): boolean {
         return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronized()) {
             return false;
@@ -606,7 +603,7 @@ export class Camera extends Node {
         return this._cache.position.equals(this.position) && this._cache.upVector.equals(this.upVector) && this.isSynchronizedWithParent();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedProjectionMatrix(): boolean {
         let check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
 
@@ -681,12 +678,12 @@ export class Camera extends Node {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         this.onAfterCheckInputsObservable.notifyObservers(this);
     }
 
-    /** @hidden */
+    /** @internal */
     public get rigCameras(): Camera[] {
         return this._rigCameras;
     }
@@ -801,7 +798,7 @@ export class Camera extends Node {
         return this._worldMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getViewMatrix(): Matrix {
         return Matrix.Identity();
     }
@@ -1112,7 +1109,7 @@ export class Camera extends Node {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
-    /** @hidden */
+    /** @internal */
     public _isLeftCamera = false;
     /**
      * Gets the left camera of a rig setup in case of Rigged Camera
@@ -1121,7 +1118,7 @@ export class Camera extends Node {
         return this._isLeftCamera;
     }
 
-    /** @hidden */
+    /** @internal */
     public _isRightCamera = false;
     /**
      * Gets the right camera of a rig setup in case of Rigged Camera
@@ -1173,9 +1170,7 @@ export class Camera extends Node {
     }
 
     /**
-     * @param mode
-     * @param rigParams
-     * @hidden
+     * @internal
      */
     public setCameraRigMode(mode: number, rigParams: any): void {
         if (this.cameraRigMode === mode) {
@@ -1223,7 +1218,7 @@ export class Camera extends Node {
         // no-op
     }
 
-    /** @hidden */
+    /** @internal */
     public _getVRProjectionMatrix(): Matrix {
         Matrix.PerspectiveFovLHToRef(
             this._cameraRigParams.vrMetrics.aspectRatioFov,
@@ -1249,7 +1244,7 @@ export class Camera extends Node {
     /**
      * This function MUST be overwritten by the different WebVR cameras available.
      * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-     * @hidden
+     * @internal
      */
     public _getWebVRProjectionMatrix(): Matrix {
         return Matrix.Identity();
@@ -1258,16 +1253,14 @@ export class Camera extends Node {
     /**
      * This function MUST be overwritten by the different WebVR cameras available.
      * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-     * @hidden
+     * @internal
      */
     public _getWebVRViewMatrix(): Matrix {
         return Matrix.Identity();
     }
 
     /**
-     * @param name
-     * @param value
-     * @hidden
+     * @internal
      */
     public setCameraRigParameter(name: string, value: any) {
         if (!this._cameraRigParams) {
@@ -1282,9 +1275,7 @@ export class Camera extends Node {
 
     /**
      * needs to be overridden by children so sub has required properties to be copied
-     * @param name
-     * @param cameraIndex
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
@@ -1293,7 +1284,7 @@ export class Camera extends Node {
 
     /**
      * May need to be overridden by children
-     * @hidden
+     * @internal
      */
     public _updateRigCameras() {
         for (let i = 0; i < this._rigCameras.length; i++) {
@@ -1309,7 +1300,7 @@ export class Camera extends Node {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _setupInputs() {}
 
     /**
@@ -1362,7 +1353,7 @@ export class Camera extends Node {
     /**
      * Gets the direction of the camera relative to a given local axis.
      * @param localAxis Defines the reference axis to provide a relative direction.
-     * @return the direction
+     * @returns the direction
      */
     public getDirection(localAxis: Vector3): Vector3 {
         const result = Vector3.Zero();

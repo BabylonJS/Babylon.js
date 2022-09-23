@@ -213,7 +213,7 @@ export class PhysicsImpostor {
      */
     public static IDENTITY_QUATERNION = Quaternion.Identity();
 
-    /** @hidden */
+    /** @internal */
     public _pluginData: any = {};
 
     private _physicsEngine: Nullable<IPhysicsEngine>;
@@ -223,9 +223,9 @@ export class PhysicsImpostor {
 
     private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-    /** @hidden */
+    /** @internal */
     public _onPhysicsCollideCallbacks: Array<{
-        callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void;
+        callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void;
         otherImpostors: Array<PhysicsImpostor>;
     }> = [];
 
@@ -233,7 +233,7 @@ export class PhysicsImpostor {
     private _deltaRotation: Quaternion;
     private _deltaRotationConjugated: Quaternion;
 
-    /** @hidden */
+    /** @internal */
     public _isFromLine: boolean;
 
     //If set, this is this impostor's parent
@@ -415,12 +415,12 @@ export class PhysicsImpostor {
     public uniqueId: number;
 
     /**
-     * @hidden
+     * @internal
      */
     public soft: boolean = false;
 
     /**
-     * @hidden
+     * @internal
      */
     public segments: number = 0;
 
@@ -514,7 +514,7 @@ export class PhysicsImpostor {
      * It will create a new body - but only if this mesh has no parent.
      * If it has, this impostor will not be used other than to define the impostor
      * of the child mesh.
-     * @hidden
+     * @internal
      */
     public _init() {
         if (!this._physicsEngine) {
@@ -554,7 +554,7 @@ export class PhysicsImpostor {
 
     /**
      * Force a regeneration of this or the parent's impostor's body.
-     * Use under cautious - This will remove all joints already implemented.
+     * Use with caution - This will remove all previously-instantiated joints.
      */
     public forceUpdate() {
         this._init();
@@ -608,10 +608,10 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the object extend size
-     * @returns the object extend size
+     * Gets the object extents
+     * @returns the object extents
      */
-    public getObjectExtendSize(): Vector3 {
+    public getObjectExtents(): Vector3 {
         if (this.object.getBoundingInfo) {
             const q = this.object.rotationQuaternion;
             const scaling = this.object.scaling.clone();
@@ -671,7 +671,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Specifically change the body's mass option. Won't recreate the physics body object
+     * Specifically change the body's mass. Won't recreate the physics body object
      * @param mass The mass of the physics imposter
      */
     public setMass(mass: number) {
@@ -724,7 +724,6 @@ export class PhysicsImpostor {
      * Provide a function the will have two variables - the world object and the physics body object
      * @param func The function to execute with the physics plugin native code
      */
-
     public executeNativeFunction(func: (world: any, physicsBody: any) => void) {
         if (this._physicsEngine) {
             func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
@@ -789,7 +788,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Unregisters the physics imposter on contact
+     * Unregisters the physics imposter's collision callback
      * @param collideAgainst The physics object to collide against
      * @param func Callback to execute on collision
      */
@@ -894,8 +893,14 @@ export class PhysicsImpostor {
         }
         // take the position set and make it the absolute position of this object.
         this.object.setAbsolutePosition(this.object.position);
-        this._deltaRotation && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
-        this.object.translate(this._deltaPosition, 1);
+        if (this._deltaRotation) {
+            this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+            this._deltaPosition.applyRotationQuaternionToRef(this._deltaRotation, PhysicsImpostor._TmpVecs[0]);
+            this.object.translate(PhysicsImpostor._TmpVecs[0], 1);
+        } else {
+            this.object.translate(this._deltaPosition, 1);
+        }
+        this.object.computeWorldMatrix(true);
     };
 
     /**
@@ -908,8 +913,11 @@ export class PhysicsImpostor {
      * @param e
      * @param e.body
      * @param e.point
+     * @param e.distance
+     * @param e.impulse
+     * @param e.normal
      */
-    public onCollide = (e: { body: any; point: Nullable<Vector3> }) => {
+    public onCollide = (e: { body: any; point: Nullable<Vector3>; distance: number; impulse: number; normal: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
             return;
         }
@@ -928,7 +936,7 @@ export class PhysicsImpostor {
                     return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
                 })
                 .forEach((obj) => {
-                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point);
+                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point, e.distance, e.impulse, e.normal);
                 });
         }
     };

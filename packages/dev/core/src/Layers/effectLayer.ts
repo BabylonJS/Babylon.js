@@ -171,8 +171,7 @@ export abstract class EffectLayer {
     }
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("EffectLayerSceneComponent");
@@ -233,7 +232,7 @@ export abstract class EffectLayer {
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public abstract getEffectName(): string;
 
@@ -241,7 +240,7 @@ export abstract class EffectLayer {
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
@@ -499,7 +498,7 @@ export abstract class EffectLayer {
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
         const engine = this._scene.getEngine();
@@ -648,6 +647,27 @@ export abstract class EffectLayer {
             }
         }
 
+        // ClipPlanes
+        const scene = this._scene;
+        if (scene.clipPlane) {
+            defines.push("#define CLIPPLANE");
+        }
+        if (scene.clipPlane2) {
+            defines.push("#define CLIPPLANE2");
+        }
+        if (scene.clipPlane3) {
+            defines.push("#define CLIPPLANE3");
+        }
+        if (scene.clipPlane4) {
+            defines.push("#define CLIPPLANE4");
+        }
+        if (scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+        if (scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
+        }
+
         this._addCustomEffectDefines(defines);
 
         // Get correct effect
@@ -672,6 +692,12 @@ export abstract class EffectLayer {
                         "opacityIntensity",
                         "morphTargetTextureInfo",
                         "morphTargetTextureIndices",
+                        "vClipPlane",
+                        "vClipPlane2",
+                        "vClipPlane3",
+                        "vClipPlane4",
+                        "vClipPlane5",
+                        "vClipPlane6",
                     ],
                     ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
                     join,
@@ -956,6 +982,9 @@ export abstract class EffectLayer {
                 if (enableAlphaMode) {
                     engine.setAlphaMode(material.alphaMode);
                 }
+
+                // Clip planes
+                MaterialHelper.BindClipPlane(effect, scene);
             }
 
             // Draw
@@ -981,7 +1010,7 @@ export abstract class EffectLayer {
 
     /**
      * Rebuild the required buffers.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];

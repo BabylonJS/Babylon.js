@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderPassWrapper {
     public renderPassDescriptor: Nullable<GPURenderPassDescriptor>;
     public renderPass: Nullable<GPURenderPassEncoder>;

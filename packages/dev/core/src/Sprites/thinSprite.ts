@@ -55,13 +55,13 @@ export class ThinSprite {
         return Math.max(this._delay, 1);
     }
 
-    /** @hidden */
+    /** @internal */
     public _xOffset: number;
-    /** @hidden */
+    /** @internal */
     public _yOffset: number;
-    /** @hidden */
+    /** @internal */
     public _xSize: number;
-    /** @hidden */
+    /** @internal */
     public _ySize: number;
 
     private _animationStarted = false;
@@ -115,8 +115,7 @@ export class ThinSprite {
     }
 
     /**
-     * @param deltaTime
-     * @hidden
+     * @internal
      */
     public _animate(deltaTime: number): void {
         if (!this._animationStarted) {

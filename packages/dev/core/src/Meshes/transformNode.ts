@@ -144,9 +144,9 @@ export class TransformNode extends Node {
     public reIntegrateRotationIntoRotationQuaternion = false;
 
     // Cache
-    /** @hidden */
+    /** @internal */
     public _poseMatrix: Nullable<Matrix> = null;
-    /** @hidden */
+    /** @internal */
     public _localMatrix = Matrix.Zero();
 
     private _usePivotMatrix = false;
@@ -155,12 +155,12 @@ export class TransformNode extends Node {
     private _absoluteRotationQuaternion = Quaternion.Identity();
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
-    /** @hidden */
+    /** @internal */
     public _postMultiplyPivotMatrix = false;
 
     protected _isWorldMatrixFrozen = false;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSceneTransformNodesArray = -1;
 
     /**
@@ -296,7 +296,7 @@ export class TransformNode extends Node {
         return this._poseMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronized(): boolean {
         const cache = this._cache;
 
@@ -327,7 +327,7 @@ export class TransformNode extends Node {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
 
@@ -727,6 +727,10 @@ export class TransformNode extends Node {
      * @returns this  node
      */
     public markAsDirty(property?: string): Node {
+        if (this._isDirty) {
+            return this;
+        }
+
         // We need to explicitly update the children
         // as the scene.evaluateActiveMeshes will not poll the transform nodes
         if (this._children) {
@@ -801,8 +805,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * @param value
-     * @hidden
+     * @internal
      */
     public _updateNonUniformScalingState(value: boolean): boolean {
         if (this._nonUniformScaling === value) {
@@ -988,7 +991,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     protected _getEffectiveParent(): Nullable<Node> {
         return this.parent;
@@ -1105,6 +1108,10 @@ export class TransformNode extends Node {
                 TmpVectors.Matrix[7].decompose(scale, undefined, translation);
                 Matrix.ScalingToRef(scale.x, scale.y, scale.z, TmpVectors.Matrix[7]);
                 TmpVectors.Matrix[7].setTranslation(translation);
+
+                // set localMatrix translation to be transformed against parent's world matrix.
+                Vector3.TransformNormalToRef(this._position, parent.getWorldMatrix(), translation);
+                this._localMatrix.setTranslation(translation);
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {
@@ -1392,6 +1399,8 @@ export class TransformNode extends Node {
         }
 
         transformNode.setEnabled(parsedTransformNode.isEnabled);
+
+        transformNode._waitingParsedUniqueId = parsedTransformNode.uniqueId;
 
         // Parent
         if (parsedTransformNode.parentId !== undefined) {

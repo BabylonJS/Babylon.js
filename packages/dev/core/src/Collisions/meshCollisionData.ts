@@ -6,7 +6,7 @@ import type { Observer } from "../Misc/observable";
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _MeshCollisionData {

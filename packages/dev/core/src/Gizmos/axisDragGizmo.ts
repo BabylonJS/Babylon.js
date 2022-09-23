@@ -8,22 +8,40 @@ import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Scene } from "../scene";
 import type { PositionGizmo } from "./positionGizmo";
 import { Color3 } from "../Maths/math.color";
+
+/**
+ * Interface for axis drag gizmo
+ */
+export interface IAxisDragGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+}
+
 /**
  * Single axis drag gizmo
  */
-export class AxisDragGizmo extends Gizmo {
+export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -34,21 +52,17 @@ export class AxisDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<PositionGizmo> = null;
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<PositionGizmo> = null;
 
-    private _gizmoMesh: Mesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _dragging: boolean = false;
+    protected _gizmoMesh: Mesh;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _dragging: boolean = false;
 
     /**
-     * @param scene
-     * @param material
-     * @param thickness
-     * @param isCollider
-     * @hidden
+     * @internal
      */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
         const arrow = new TransformNode("arrow", scene);
@@ -74,9 +88,7 @@ export class AxisDragGizmo extends Gizmo {
     }
 
     /**
-     * @param scene
-     * @param arrow
-     * @hidden
+     * @internal
      */
     public static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode {
         const instance = new TransformNode("arrow", scene);

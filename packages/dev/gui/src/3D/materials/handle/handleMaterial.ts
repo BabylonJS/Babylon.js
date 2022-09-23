@@ -78,7 +78,7 @@ export class HandleMaterial extends ShaderMaterial {
     public dragScale: number = 0.55;
 
     /**
-     * @hidden
+     * @internal
      */
     public _positionOffset: Vector3 = Vector3.Zero();
 

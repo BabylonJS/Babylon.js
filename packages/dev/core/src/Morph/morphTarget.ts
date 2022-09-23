@@ -34,7 +34,7 @@ export class MorphTarget implements IAnimatable {
      */
     public onInfluenceChanged = new Observable<boolean>();
 
-    /** @hidden */
+    /** @internal */
     public _onDataLayoutChanged = new Observable<void>();
 
     /**

@@ -67,7 +67,7 @@ export class EventState {
  * Represent an Observer registered to a given Observable object.
  */
 export class Observer<T> {
-    /** @hidden */
+    /** @internal */
     public _willBeUnregistered = false;
     /**
      * Gets or sets a property defining that the observer as to be unregistered after the next notification
@@ -97,52 +97,6 @@ export class Observer<T> {
 }
 
 /**
- * Represent a list of observers registered to multiple Observables object.
- */
-export class MultiObserver<T> {
-    private _observers: Nullable<Observer<T>[]>;
-    private _observables: Nullable<Observable<T>[]>;
-
-    /**
-     * Release associated resources
-     */
-    public dispose(): void {
-        if (this._observers && this._observables) {
-            for (let index = 0; index < this._observers.length; index++) {
-                this._observables[index].remove(this._observers[index]);
-            }
-        }
-
-        this._observers = null;
-        this._observables = null;
-    }
-
-    /**
-     * Raise a callback when one of the observable will notify
-     * @param observables defines a list of observables to watch
-     * @param callback defines the callback to call on notification
-     * @param mask defines the mask used to filter notifications
-     * @param scope defines the current scope used to restore the JS context
-     * @returns the new MultiObserver
-     */
-    public static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask: number = -1, scope: any = null): MultiObserver<T> {
-        const result = new MultiObserver<T>();
-
-        result._observers = new Array<Observer<T>>();
-        result._observables = observables;
-
-        for (const observable of observables) {
-            const observer = observable.add(callback, mask, false, scope);
-            if (observer) {
-                result._observers.push(observer);
-            }
-        }
-
-        return result;
-    }
-}
-
-/**
  * The Observable class is a simple implementation of the Observable pattern.
  *
  * There's one slight particularity though: a given Observable can notify its observer using a particular mask value, only the Observers registered with this mask value will be notified.
@@ -153,7 +107,10 @@ export class MultiObserver<T> {
 export class Observable<T> {
     private _observers = new Array<Observer<T>>();
 
-    private _eventState: EventState;
+    /**
+     * @internal
+     */
+    public _eventState: EventState;
 
     private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
 
@@ -286,7 +243,10 @@ export class Observable<T> {
         return false;
     }
 
-    private _deferUnregister(observer: Observer<T>): void {
+    /**
+     * @internal
+     */
+    public _deferUnregister(observer: Observer<T>): void {
         observer.unregisterOnNextCall = false;
         observer._willBeUnregistered = true;
         setTimeout(() => {
@@ -376,68 +336,6 @@ export class Observable<T> {
     }
 
     /**
-     * Calling this will execute each callback, expecting it to be a promise or return a value.
-     * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
-     * This is useful when a chain of events (sometimes async events) is needed to initialize a certain object
-     * and it is crucial that all callbacks will be executed.
-     * The order of the callbacks is kept, callbacks are not executed parallel.
-     *
-     * @param eventData The data to be sent to each callback
-     * @param mask is used to filter observers defaults to -1
-     * @param target defines the callback target (see EventState)
-     * @param currentTarget defines he current object in the bubbling phase
-     * @param userInfo defines any user info to send to observers
-     * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
-     */
-    public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any, userInfo?: any): Promise<T> {
-        // create an empty promise
-        let p: Promise<any> = Promise.resolve(eventData);
-
-        // no observers? return this promise.
-        if (!this._observers.length) {
-            return p;
-        }
-
-        const state = this._eventState;
-        state.mask = mask;
-        state.target = target;
-        state.currentTarget = currentTarget;
-        state.skipNextObservers = false;
-        state.userInfo = userInfo;
-
-        // execute one callback after another (not using Promise.all, the order is important)
-        this._observers.forEach((obs) => {
-            if (state.skipNextObservers) {
-                return;
-            }
-            if (obs._willBeUnregistered) {
-                return;
-            }
-            if (obs.mask & mask) {
-                if (obs.scope) {
-                    p = p.then((lastReturnedValue) => {
-                        state.lastReturnValue = lastReturnedValue;
-                        return obs.callback.apply(obs.scope, [eventData, state]);
-                    });
-                } else {
-                    p = p.then((lastReturnedValue) => {
-                        state.lastReturnValue = lastReturnedValue;
-                        return obs.callback(eventData, state);
-                    });
-                }
-                if (obs.unregisterOnNextCall) {
-                    this._deferUnregister(obs);
-                }
-            }
-        });
-
-        // return the eventData
-        return p.then(() => {
-            return eventData;
-        });
-    }
-
-    /**
      * Notify a specific observer
      * @param observer defines the observer to notify
      * @param eventData defines the data to be sent to each callback
@@ -490,7 +388,7 @@ export class Observable<T> {
     /**
      * Does this observable handles observer registered with a given mask
      * @param mask defines the mask to be tested
-     * @return whether or not one observer registered with the given mask is handled
+     * @returns whether or not one observer registered with the given mask is handled
      **/
     public hasSpecificMask(mask: number = -1): boolean {
         for (const obs of this._observers) {

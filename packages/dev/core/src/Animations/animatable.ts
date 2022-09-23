@@ -373,8 +373,7 @@ export class Animatable {
     }
 
     /**
-     * @param delay
-     * @hidden
+     * @internal
      */
     public _animate(delay: number): boolean {
         if (this._paused) {
@@ -445,10 +444,10 @@ export class Animatable {
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindingsForMatrices(holder: {
             totalWeight: number;
             totalAdditiveWeight: number;
@@ -457,7 +456,7 @@ declare module "../scene" {
             originalValue: Matrix;
         }): any;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindingsForQuaternions(
             holder: {
                 totalWeight: number;
@@ -469,7 +468,7 @@ declare module "../scene" {
             refQuaternion: Quaternion
         ): Quaternion;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindings(): void;
 
         /**
@@ -952,10 +951,13 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
             const currentQuaternion = TmpVectors.Quaternion[1];
 
             runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
+
             currentScaling.scaleAndAddToRef(scale, finalScaling);
-            currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
+            currentQuaternion.scaleAndAddToRef(Quaternion.Dot(finalQuaternion, currentQuaternion) > 0 ? scale : -scale, finalQuaternion);
             currentPosition.scaleAndAddToRef(scale, finalPosition);
         }
+
+        finalQuaternion.normalize();
     }
 
     // Add up the additive animations
@@ -1085,7 +1087,9 @@ Scene.prototype._processLateAnimationBindings = function (): void {
             const holder = target._lateAnimationHolders[path];
             const originalAnimation: RuntimeAnimation = holder.animations[0];
             const originalValue = holder.originalValue;
-
+            if (originalValue === undefined || originalValue === null) {
+                continue;
+            }
             const matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
             let finalValue: any = target[path];

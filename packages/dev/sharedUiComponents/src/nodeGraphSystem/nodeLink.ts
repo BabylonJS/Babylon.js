@@ -7,6 +7,8 @@ import type { GraphNode } from "./graphNode";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import { RefreshNode } from "./tools";
+import commonStyles from "./common.modules.scss";
+import styles from "./nodeLink.modules.scss";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -18,8 +20,27 @@ export class NodeLink {
     private _selectionPath: SVGPathElement;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _isVisible = true;
+    private _isTargetCandidate = false;
 
     public onDisposedObservable = new Observable<NodeLink>();
+
+    public get isTargetCandidate() {
+        return this._isTargetCandidate;
+    }
+
+    public set isTargetCandidate(value: boolean) {
+        if (this._isTargetCandidate === value) {
+            return;
+        }
+
+        this._isTargetCandidate = value;
+
+        if (value) {
+            this._path.classList.add(styles["target-candidate"]);
+        } else {
+            this._path.classList.remove(styles["target-candidate"]);
+        }
+    }
 
     public get isVisible() {
         return this._isVisible;
@@ -29,11 +50,11 @@ export class NodeLink {
         this._isVisible = value;
 
         if (!value) {
-            this._path.classList.add("hidden");
-            this._selectionPath.classList.add("hidden");
+            this._path.classList.add(commonStyles["hidden"]);
+            this._selectionPath.classList.add(commonStyles["hidden"]);
         } else {
-            this._path.classList.remove("hidden");
-            this._selectionPath.classList.remove("hidden");
+            this._path.classList.remove(commonStyles["hidden"]);
+            this._selectionPath.classList.remove(commonStyles["hidden"]);
         }
 
         this.update();
@@ -53,6 +74,32 @@ export class NodeLink {
 
     public get nodeB() {
         return this._nodeB;
+    }
+
+    public intersectsWith(rect: DOMRect) {
+        const locatRect = this._path.getBoundingClientRect();
+        if (rect.left > locatRect.right || rect.right < locatRect.left || rect.top > locatRect.bottom || rect.bottom < locatRect.top) {
+            return false;
+        }
+
+        const svg = this._graphCanvas.svgCanvas as any as SVGSVGElement;
+        const rootRect = svg.getBoundingClientRect();
+
+        const left = rect.x - rootRect.x;
+        const top = rect.y - rootRect.y;
+        const right = left + rect.width;
+        const bottom = top + rect.height;
+
+        const sampleRate = 10; // Checking 10 times on the path should be enough
+
+        for (let index = 0; index < 1; index += 1 / sampleRate) {
+            const point = this._path.getPointAtLength(index * this._path.getTotalLength());
+            if (left < point.x && right > point.x && top < point.y && bottom > point.y) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public update(endX = 0, endY = 0, straight = false) {
@@ -98,13 +145,13 @@ export class NodeLink {
         // Create path
         this._path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         this._path.setAttribute("fill", "none");
-        this._path.classList.add("link");
+        this._path.classList.add(styles["link"]);
 
         svg.appendChild(this._path);
 
         this._selectionPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         this._selectionPath.setAttribute("fill", "none");
-        this._selectionPath.classList.add("selection-link");
+        this._selectionPath.classList.add(styles["selection-link"]);
 
         svg.appendChild(this._selectionPath);
 
@@ -118,11 +165,11 @@ export class NodeLink {
         this._onSelectionChangedObserver = this._graphCanvas.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection === this) {
-                this._path.classList.add("selected");
-                this._selectionPath.classList.add("selected");
+                this._path.classList.add(styles["selected"]);
+                this._selectionPath.classList.add(styles["selected"]);
             } else {
-                this._path.classList.remove("selected");
-                this._selectionPath.classList.remove("selected");
+                this._path.classList.remove(styles["selected"]);
+                this._selectionPath.classList.remove(styles["selected"]);
             }
         });
     }

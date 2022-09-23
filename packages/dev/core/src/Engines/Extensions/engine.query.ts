@@ -5,31 +5,31 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
 import type { Observer } from "../../Misc/observable";
 
-/** @hidden */
+/** @internal */
 export type OcclusionQuery = WebGLQuery | number;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _OcclusionDataStorage {
-    /** @hidden */
+    /** @internal */
     public occlusionInternalRetryCounter = 0;
 
-    /** @hidden */
+    /** @internal */
     public isOcclusionQueryInProgress = false;
 
-    /** @hidden */
+    /** @internal */
     public isOccluded = false;
 
-    /** @hidden */
+    /** @internal */
     public occlusionRetryCount = -1;
 
-    /** @hidden */
+    /** @internal */
     public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
 
-    /** @hidden */
+    /** @internal */
     public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
 
-    /** @hidden */
+    /** @internal */
     public forceRenderingWhenOccluded = false;
 }
 
@@ -37,14 +37,14 @@ declare module "../../Engines/engine" {
     export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @return the new query
+         * @returns the new query
          */
         createQuery(): OcclusionQuery;
 
         /**
          * Delete and release a webGL query
          * @param query defines the query to delete
-         * @return the current engine
+         * @returns the current engine
          */
         deleteQuery(query: OcclusionQuery): Engine;
 
@@ -105,38 +105,42 @@ declare module "../../Engines/engine" {
          */
         captureGPUFrameTime(value: boolean): void;
 
-        /** @hidden */
+        /** @internal */
         _currentNonTimestampToken: Nullable<_TimeToken>;
-        /** @hidden */
+        /** @internal */
         _captureGPUFrameTime: boolean;
-        /** @hidden */
+        /** @internal */
         _gpuFrameTimeToken: Nullable<_TimeToken>;
-        /** @hidden */
+        /** @internal */
         _gpuFrameTime: PerfCounter;
-        /** @hidden */
+        /** @internal */
         _onBeginFrameObserver: Nullable<Observer<Engine>>;
-        /** @hidden */
+        /** @internal */
         _onEndFrameObserver: Nullable<Observer<Engine>>;
 
-        /** @hidden */
+        /** @internal */
         _createTimeQuery(): WebGLQuery;
 
-        /** @hidden */
+        /** @internal */
         _deleteTimeQuery(query: WebGLQuery): void;
 
-        /** @hidden */
+        /** @internal */
         _getGlAlgorithmType(algorithmType: number): number;
 
-        /** @hidden */
+        /** @internal */
         _getTimeQueryResult(query: WebGLQuery): any;
 
-        /** @hidden */
+        /** @internal */
         _getTimeQueryAvailability(query: WebGLQuery): any;
     }
 }
 
 Engine.prototype.createQuery = function (): OcclusionQuery {
-    return this._gl.createQuery();
+    const query = this._gl.createQuery();
+    if (!query) {
+        throw new Error("Unable to create Occlusion Query");
+    }
+    return query;
 };
 
 Engine.prototype.deleteQuery = function (query: OcclusionQuery): Engine {
@@ -351,14 +355,14 @@ declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * Backing filed
-         * @hidden
+         * @internal
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         __occlusionDataStorage: _OcclusionDataStorage;
 
         /**
          * Access property
-         * @hidden
+         * @internal
          */
         _occlusionDataStorage: _OcclusionDataStorage;
 

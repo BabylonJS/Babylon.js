@@ -4,8 +4,7 @@ import { PassPostProcess } from "../../PostProcesses/passPostProcess";
 import { StereoscopicInterlacePostProcessI } from "../../PostProcesses/stereoscopicInterlacePostProcess";
 
 /**
- * @param camera
- * @hidden
+ * @internal
  */
 export function setStereoscopicRigMode(camera: Camera): void {
     const isStereoscopicHoriz =

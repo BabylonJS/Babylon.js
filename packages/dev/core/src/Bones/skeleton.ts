@@ -56,13 +56,13 @@ export class Skeleton implements IAnimatable {
     private _canUseTextureForBones = false;
     private _uniqueId = 0;
 
-    /** @hidden */
+    /** @internal */
     public _numBonesWithLinkedTransformNode = 0;
 
-    /** @hidden */
+    /** @internal */
     public _hasWaitingData: Nullable<boolean> = null;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -156,7 +156,7 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "Skeleton";
@@ -241,7 +241,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Get bone's index searching by name
      * @param name defines bone's name to search for
-     * @return the indice of the bone. Returns -1 if not found
+     * @returns the indice of the bone. Returns -1 if not found
      */
     public getBoneIndexByName(name: string): number {
         for (let boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
@@ -449,23 +449,21 @@ export class Skeleton implements IAnimatable {
         return skeleton;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAsDirty(): void {
         this._isDirty = true;
         this._absoluteTransformIsDirty = true;
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
         this._meshesWithPoseMatrix.push(mesh);
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
         const index = this._meshesWithPoseMatrix.indexOf(mesh);
@@ -510,9 +508,14 @@ export class Skeleton implements IAnimatable {
         if (this._numBonesWithLinkedTransformNode > 0) {
             for (const bone of this.bones) {
                 if (bone._linkedTransformNode) {
-                    // Computing the world matrix also computes the local matrix.
-                    bone._linkedTransformNode.computeWorldMatrix();
-                    bone._matrix = bone._linkedTransformNode._localMatrix;
+                    const node = bone._linkedTransformNode;
+                    bone.position = node.position;
+                    if (node.rotationQuaternion) {
+                        bone.rotationQuaternion = node.rotationQuaternion;
+                    } else {
+                        bone.rotation = node.rotation;
+                    }
+                    bone.scaling = node.scaling;
                 }
             }
         }

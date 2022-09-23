@@ -1,12 +1,12 @@
-import type { INative } from "../../Engines/Native/nativeInterfaces";
-import type { IUIEvent } from "../../Events/deviceInputEvents";
-import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType } from "./deviceEnums";
+import type { INative } from "../Engines/Native/nativeInterfaces";
+import type { IUIEvent } from "../Events/deviceInputEvents";
+import { DeviceEventFactory } from "./eventFactory";
+import { DeviceType } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
 declare const _native: INative;
 
-/** @hidden */
+/** @internal */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
     private readonly _nativeInput: IDeviceInputSystem;
 

@@ -178,6 +178,7 @@ export class NullEngine extends Engine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
+            supportSpriteInstancing: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -623,14 +624,13 @@ export class NullEngine extends Engine {
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
 
-    /** @hidden */
+    /** @internal */
     protected _createTexture(): WebGLTexture {
         return {};
     }
 
     /**
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _releaseTexture(texture: InternalTexture): void {}
 
@@ -697,10 +697,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * @param isMulti
-     * @param isCube
-     * @param size
-     * @hidden
+     * @internal
      */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number; height: number; layers?: number }): RenderTargetWrapper {
         const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
@@ -906,7 +903,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * @hidden
+     * @internal
      * Get the current error code of the webGL context
      * @returns the error code
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
@@ -915,14 +912,13 @@ export class NullEngine extends Engine {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getUnpackAlignement(): number {
         return 1;
     }
 
     /**
-     * @param value
-     * @hidden
+     * @internal
      */
     public _unpackFlipY(value: boolean) {}
 
@@ -944,9 +940,7 @@ export class NullEngine extends Engine {
     public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {}
 
     /**
-     * @param target
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
         if (this._boundTexturesCache[this._activeChannel] !== texture) {
@@ -957,9 +951,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * @param channel
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _bindTexture(channel: number, texture: InternalTexture): void {
         if (channel < 0) {
@@ -983,14 +975,7 @@ export class NullEngine extends Engine {
     public set loadingUIText(_: string) {}
 
     /**
-     * @param texture
-     * @param internalFormat
-     * @param width
-     * @param height
-     * @param data
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadCompressedDataToTextureDirectly(
         texture: InternalTexture,
@@ -1003,29 +988,17 @@ export class NullEngine extends Engine {
     ) {}
 
     /**
-     * @param texture
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
     /**
-     * @param texture
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
     /**
-     * @param texture
-     * @param image
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {}
 }

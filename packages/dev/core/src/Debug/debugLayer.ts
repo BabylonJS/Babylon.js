@@ -3,6 +3,7 @@ import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
+import type { IInspectable } from "../Misc/iInspectable";
 
 // declare INSPECTOR namespace for compilation issue
 declare let INSPECTOR: any;
@@ -35,6 +36,39 @@ export interface IExplorerExtensibilityGroup {
      * Gets the list of options added to a type
      */
     entries: IExplorerExtensibilityOption[];
+}
+
+/**
+ * Defines a new node that will be displayed as top level node in the explorer
+ */
+export interface IExplorerAdditionalChild {
+    /**
+     * Gets the name of the additional node
+     */
+    name: string;
+    /**
+     * Function used to return the class name of the child node
+     */
+    getClassName(): string;
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     */
+    inspectableCustomProperties: IInspectable[];
+}
+
+/**
+ * Defines a new node that will be displayed as top level node in the explorer
+ */
+export interface IExplorerAdditionalNode {
+    /**
+     * Gets the name of the additional node
+     */
+    name: string;
+    /**
+     * Function used to return the list of child entries
+     */
+    getContent(): IExplorerAdditionalChild[];
 }
 
 /**
@@ -78,6 +112,10 @@ export interface IInspectorOptions {
      */
     explorerExtensibility?: IExplorerExtensibilityGroup[];
     /**
+     * Optional list of additional top level nodes
+     */
+    additionalNodes?: IExplorerAdditionalNode[];
+    /**
      * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
      */
     inspectorURL?: string;
@@ -90,7 +128,7 @@ export interface IInspectorOptions {
 declare module "../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing field
          */
         _debugLayer: DebugLayer;
@@ -311,7 +349,7 @@ export class DebugLayer {
     /**
      * Launch the debugLayer.
      * @param config Define the configuration of the inspector
-     * @return a promise fulfilled when the debug layer is visible
+     * @returns a promise fulfilled when the debug layer is visible
      */
     public show(config?: IInspectorOptions): Promise<DebugLayer> {
         return new Promise((resolve) => {

@@ -71,7 +71,7 @@ export class KhronosTextureContainer2 {
             return;
         }
 
-        if (numWorkers && typeof Worker === "function") {
+        if (numWorkers && typeof Worker === "function" && typeof URL !== "undefined") {
             KhronosTextureContainer2._WorkerPoolPromise = new Promise((resolve) => {
                 const workerContent = `(${workerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
@@ -156,10 +156,7 @@ export class KhronosTextureContainer2 {
     }
 
     /**
-     * @param data
-     * @param internalTexture
-     * @param options
-     * @hidden
+     * @internal
      */
     public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void> {
         const caps = this._engine.getCaps();

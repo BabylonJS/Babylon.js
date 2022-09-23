@@ -26,7 +26,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
+    private _idbFactory = <IDBFactory>(typeof indexedDB !== "undefined" ? indexedDB : undefined);
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static _IsUASupportingBlobStorage = true;
@@ -288,8 +288,7 @@ export class Database implements IOfflineProvider {
 
             transaction.oncomplete = () => {
                 let blobTextureURL: string;
-                if (texture) {
-                    const URL = window.URL || window.webkitURL;
+                if (texture && typeof URL === "function") {
                     blobTextureURL = URL.createObjectURL(texture.data);
                     image.onerror = () => {
                         Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
@@ -324,8 +323,7 @@ export class Database implements IOfflineProvider {
             const generateBlobUrl = () => {
                 let blobTextureURL;
 
-                if (blob) {
-                    const URL = window.URL || window.webkitURL;
+                if (blob && typeof URL === "function") {
                     try {
                         blobTextureURL = URL.createObjectURL(blob);
                     } catch (ex) {
@@ -359,7 +357,7 @@ export class Database implements IOfflineProvider {
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    const srcElement = <any>(event.srcElement || event.target);
+                                    const srcElement = <any>event.target;
                                     const error = srcElement.error;
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
@@ -479,7 +477,7 @@ export class Database implements IOfflineProvider {
                 transaction.onabort = (event) => {
                     try {
                         //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                        const error = (<any>event.srcElement)["error"];
+                        const error = (<any>event.target)["error"];
                         if (error && error.name === "QuotaExceededError") {
                             this._hasReachedQuota = true;
                         }
@@ -623,7 +621,7 @@ export class Database implements IOfflineProvider {
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    const error = (<any>event.srcElement)["error"];
+                                    const error = (<any>event.target)["error"];
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }

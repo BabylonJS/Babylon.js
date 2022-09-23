@@ -32,7 +32,7 @@ export class Bone extends Node {
     public length: number;
 
     /**
-     * @hidden Internal only
+     * @internal Internal only
      * Set this value to map this bone to a different index in the transform matrices
      * Set this value to -1 to exclude the bone from the transform matrices
      */
@@ -53,19 +53,19 @@ export class Bone extends Node {
     private _needToDecompose = true;
     private _needToCompose = false;
 
-    /** @hidden */
+    /** @internal */
     public _linkedTransformNode: Nullable<TransformNode> = null;
 
-    /** @hidden */
+    /** @internal */
     public _waitingTransformNodeId: Nullable<string> = null;
 
-    /** @hidden */
+    /** @internal */
     get _matrix(): Matrix {
         this._compose();
         return this._localMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     set _matrix(value: Matrix) {
         this._needToCompose = false; // in case there was a pending compose
 
@@ -118,7 +118,7 @@ export class Bone extends Node {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "Bone";
@@ -417,9 +417,7 @@ export class Bone extends Node {
     }
 
     /**
-     * @param rootMatrix
-     * @param updateChildren
-     * @hidden
+     * @internal
      */
     public _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren = true): void {
         if (!rootMatrix) {
@@ -454,7 +452,7 @@ export class Bone extends Node {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAsDirtyAndCompose() {
         this.markAsDirty();
         this._needToCompose = true;

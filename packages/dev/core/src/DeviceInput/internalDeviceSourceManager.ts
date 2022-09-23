@@ -1,13 +1,13 @@
-import type { IDisposable } from "../../scene";
-import { DeviceType } from "./deviceEnums";
-import type { Observable } from "../../Misc/observable";
+import type { IDisposable } from "../scene";
+import { DeviceType } from "./InputDevices/deviceEnums";
+import type { Observable } from "../Misc/observable";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
 import { WebDeviceInputSystem } from "./webDeviceInputSystem";
-import { DeviceSource } from "./deviceSource";
-import type { INative } from "../../Engines/Native/nativeInterfaces";
-import type { Engine } from "../../Engines/engine";
-import type { IUIEvent } from "../../Events/deviceInputEvents";
+import { DeviceSource } from "./InputDevices/deviceSource";
+import type { INative } from "../Engines/Native/nativeInterfaces";
+import type { Engine } from "../Engines/engine";
+import type { IUIEvent } from "../Events/deviceInputEvents";
 
 type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
 
@@ -15,14 +15,14 @@ export type DeviceSourceType = Distribute<DeviceType>;
 
 declare const _native: INative;
 
-declare module "../../Engines/engine" {
+declare module "../Engines/engine" {
     interface Engine {
-        /** @hidden */
+        /** @internal */
         _deviceSourceManager?: InternalDeviceSourceManager;
     }
 }
 
-/** @hidden */
+/** @internal */
 export interface IObservableManager {
     onDeviceConnectedObservable: Observable<DeviceSourceType>;
     onDeviceDisconnectedObservable: Observable<DeviceSourceType>;
@@ -33,7 +33,7 @@ export interface IObservableManager {
     _removeDevice(deviceType: DeviceType, deviceSlot: number): void;
 }
 
-/** @hidden */
+/** @internal */
 export class InternalDeviceSourceManager implements IDisposable {
     // Public Members
     public readonly _deviceInputSystem: IDeviceInputSystem;

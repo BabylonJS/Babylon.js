@@ -11,6 +11,7 @@ export * from "./filesInput";
 export * from "./HighDynamicRange/index";
 export * from "./khronosTextureContainer";
 export * from "./observable";
+export * from "./observable.extensions";
 export * from "./performanceMonitor";
 export * from "./sceneOptimizer";
 export * from "./sceneSerializer";

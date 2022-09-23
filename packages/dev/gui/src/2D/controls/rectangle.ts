@@ -55,7 +55,7 @@ export class Rectangle extends Container {
         return "Rectangle";
     }
 
-    /** @hidden */
+    /** @internal */
     protected _computeAdditionnalOffsetX() {
         if (this._cornerRadius) {
             // Take in account the aliasing
@@ -64,7 +64,7 @@ export class Rectangle extends Container {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _computeAdditionnalOffsetY() {
         if (this._cornerRadius) {
             // Take in account the aliasing
@@ -137,18 +137,19 @@ export class Rectangle extends Container {
         const width = this._currentMeasure.width - offset * 2;
         const height = this._currentMeasure.height - offset * 2;
 
-        const radius = Math.min(height / 2 - 2, Math.min(width / 2 - 2, this._cornerRadius));
+        let radius = Math.min(height / 2, Math.min(width / 2, this._cornerRadius));
+        radius = Math.abs(radius);
 
         context.beginPath();
         context.moveTo(x + radius, y);
         context.lineTo(x + width - radius, y);
-        context.quadraticCurveTo(x + width, y, x + width, y + radius);
+        context.arc(x + width - radius, y + radius, radius, (3 * Math.PI) / 2, Math.PI * 2);
         context.lineTo(x + width, y + height - radius);
-        context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        context.arc(x + width - radius, y + height - radius, radius, 0, Math.PI / 2);
         context.lineTo(x + radius, y + height);
-        context.quadraticCurveTo(x, y + height, x, y + height - radius);
+        context.arc(x + radius, y + height - radius, radius, Math.PI / 2, Math.PI);
         context.lineTo(x, y + radius);
-        context.quadraticCurveTo(x, y, x + radius, y);
+        context.arc(x + radius, y + radius, radius, Math.PI, (3 * Math.PI) / 2);
         context.closePath();
     }
 

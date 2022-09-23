@@ -25,7 +25,7 @@ declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
  */
 export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
 
-/** @hidden */
+/** @internal */
 class _InternalNodeDataInfo {
     public _doNotSerialize = false;
     public _isDisposed = false;
@@ -44,13 +44,9 @@ export class Node implements IBehaviorAware<Node> {
     protected _isDirty = false;
 
     /**
-     * @param name
-     * @param from
-     * @param to
-     * @hidden
+     * @internal
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
+    public static _AnimationRangeFactory = (_name: string, _from: number, _to: number): AnimationRange => {
         throw _WarnImport("AnimationRange");
     };
 
@@ -161,7 +157,7 @@ export class Node implements IBehaviorAware<Node> {
         this._nodeDataStorage._doNotSerialize = value;
     }
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -175,31 +171,33 @@ export class Node implements IBehaviorAware<Node> {
      */
     public onReady: Nullable<(node: Node) => void> = null;
 
-    /** @hidden */
+    /** @internal */
     public _currentRenderId = -1;
     private _parentUpdateId = -1;
-    /** @hidden */
+    /** @internal */
     public _childUpdateId = -1;
 
-    /** @hidden */
+    /** @internal */
     public _waitingParentId: Nullable<string> = null;
-    /** @hidden */
+    /** @internal */
     public _waitingParentInstanceIndex: Nullable<string> = null;
-    /** @hidden */
+    /** @internal */
+    public _waitingParsedUniqueId: Nullable<number> = null;
+    /** @internal */
     public _scene: Scene;
-    /** @hidden */
+    /** @internal */
     public _cache: any = {};
 
     protected _parentNode: Nullable<Node> = null;
 
-    /** @hidden */
+    /** @internal */
     protected _children: Nullable<Node[]> = null;
 
-    /** @hidden */
+    /** @internal */
     public _worldMatrix = Matrix.Identity();
-    /** @hidden */
+    /** @internal */
     public _worldMatrixDeterminant = 0;
-    /** @hidden */
+    /** @internal */
     public _worldMatrixDeterminantIsDirty = true;
 
     /**
@@ -257,14 +255,13 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * @param serializationObject
-     * @hidden
+     * @internal
      */
     public _serializeAsParent(serializationObject: any): void {
         serializationObject.parentId = this.uniqueId;
     }
 
-    /** @hidden */
+    /** @internal */
     public _addToSceneRootNodes() {
         if (this._nodeDataStorage._sceneRootNodesIndex === -1) {
             this._nodeDataStorage._sceneRootNodesIndex = this._scene.rootNodes.length;
@@ -272,7 +269,7 @@ export class Node implements IBehaviorAware<Node> {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _removeFromSceneRootNodes() {
         if (this._nodeDataStorage._sceneRootNodesIndex !== -1) {
             const rootNodes = this._scene.rootNodes;
@@ -308,7 +305,7 @@ export class Node implements IBehaviorAware<Node> {
         return "Node";
     }
 
-    /** @hidden */
+    /** @internal */
     public readonly _isNode = true;
 
     /**
@@ -455,7 +452,7 @@ export class Node implements IBehaviorAware<Node> {
         return this._worldMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getWorldMatrixDeterminant(): number {
         if (this._worldMatrixDeterminantIsDirty) {
             this._worldMatrixDeterminantIsDirty = false;
@@ -474,15 +471,14 @@ export class Node implements IBehaviorAware<Node> {
 
     // override it in derived class if you add new variables to the cache
     // and call the parent class method
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         this._cache = {};
         this._cache.parent = undefined;
     }
 
     /**
-     * @param force
-     * @hidden
+     * @internal
      */
     public updateCache(force?: boolean): void {
         if (!force && this.isSynchronized()) {
@@ -495,12 +491,9 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * @param trigger
-     * @param initialCall
-     * @hidden
+     * @internal
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
+    public _getActionManagerForTrigger(trigger?: number, _initialCall = true): Nullable<AbstractActionManager> {
         if (!this.parent) {
             return null;
         }
@@ -511,26 +504,24 @@ export class Node implements IBehaviorAware<Node> {
     // override it in derived class if you add new variables to the cache
     // and call the parent class method if !ignoreParentClass
     /**
-     * @param ignoreParentClass
-     * @hidden
+     * @internal
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _updateCache(ignoreParentClass?: boolean): void {}
+    public _updateCache(_ignoreParentClass?: boolean): void {}
 
     // override it in derived class if you add new variables to the cache
-    /** @hidden */
+    /** @internal */
     public _isSynchronized(): boolean {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markSyncedWithParent() {
         if (this._parentNode) {
             this._parentUpdateId = this._parentNode._childUpdateId;
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public isSynchronizedWithParent(): boolean {
         if (!this._parentNode) {
             return true;
@@ -543,7 +534,7 @@ export class Node implements IBehaviorAware<Node> {
         return this._parentNode.isSynchronized();
     }
 
-    /** @hidden */
+    /** @internal */
     public isSynchronized(): boolean {
         if (this._cache.parent !== this._parentNode) {
             this._cache.parent = this._parentNode;
@@ -559,19 +550,19 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Is this node ready to be used/rendered
-     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @return true if the node is ready
+     * @param _completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true if the node is ready
      */
-    public isReady(completeCheck = false): boolean {
+    public isReady(_completeCheck = false): boolean {
         return this._nodeDataStorage._isReady;
     }
 
     /**
      * Flag the  node as dirty (Forcing it to update everything)
-     * @param property helps children apply precise "dirtyfication"
+     * @param _property helps children apply precise "dirtyfication"
      * @returns this node
      */
-    public markAsDirty(property?: string): Node {
+    public markAsDirty(_property?: string): Node {
         this._currentRenderId = Number.MAX_VALUE;
         this._isDirty = true;
         return this;
@@ -581,7 +572,7 @@ export class Node implements IBehaviorAware<Node> {
      * Is this node enabled?
      * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true
      * @param checkAncestors indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors
-     * @return whether this node (and its parent) is enabled
+     * @returns whether this node (and its parent) is enabled
      */
     public isEnabled(checkAncestors: boolean = true): boolean {
         if (checkAncestors === false) {
@@ -595,7 +586,7 @@ export class Node implements IBehaviorAware<Node> {
         return this._nodeDataStorage._isParentEnabled;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _syncParentEnabledState() {
         this._nodeDataStorage._isParentEnabled = this._parentNode ? this._parentNode.isEnabled() : true;
 
@@ -638,10 +629,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * @param results
-     * @param directDescendantsOnly
-     * @param predicate
-     * @hidden
+     * @internal
      */
     public _getDescendants(results: Node[], directDescendantsOnly: boolean = false, predicate?: (node: Node) => boolean): void {
         if (!this._children) {
@@ -665,7 +653,7 @@ export class Node implements IBehaviorAware<Node> {
      * Will return all nodes that have this node as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all children nodes of all types
+     * @returns all children nodes of all types
      */
     public getDescendants<T extends Node>(directDescendantsOnly?: boolean, predicate?: (node: Node) => node is T): T[];
 
@@ -673,7 +661,7 @@ export class Node implements IBehaviorAware<Node> {
      * Will return all nodes that have this node as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all children nodes of all types
+     * @returns all children nodes of all types
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[];
 
@@ -681,7 +669,7 @@ export class Node implements IBehaviorAware<Node> {
      * Will return all nodes that have this node as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all children nodes of all types
+     * @returns all children nodes of all types
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
         const results = new Array<Node>();
@@ -748,8 +736,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * @param state
-     * @hidden
+     * @internal
      */
     public _setReady(state: boolean): void {
         if (state === this._nodeDataStorage._isReady) {
@@ -878,10 +865,10 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Computes the world matrix of the node
-     * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+     * @param _force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
      * @returns the world matrix
      */
-    public computeWorldMatrix(force?: boolean): Matrix {
+    public computeWorldMatrix(_force?: boolean): Matrix {
         if (!this._worldMatrix) {
             this._worldMatrix = Matrix.Identity();
         }
@@ -930,9 +917,9 @@ export class Node implements IBehaviorAware<Node> {
      * Parse animation range data from a serialization object and store them into a given node
      * @param node defines where to store the animation ranges
      * @param parsedNode defines the serialization object to read data from
-     * @param scene defines the hosting scene
+     * @param _scene defines the hosting scene
      */
-    public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
+    public static ParseAnimationRanges(node: Node, parsedNode: any, _scene: Scene): void {
         if (parsedNode.ranges) {
             for (let index = 0; index < parsedNode.ranges.length; index++) {
                 const data = parsedNode.ranges[index];

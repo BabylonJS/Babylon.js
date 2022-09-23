@@ -19,7 +19,7 @@ import "./sky.fragment";
 import "./sky.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
-/** @hidden */
+/** @internal */
 class SkyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;

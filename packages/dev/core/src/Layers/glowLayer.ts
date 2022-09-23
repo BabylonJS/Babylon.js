@@ -31,7 +31,7 @@ declare module "../abstractScene" {
         /**
          * Return a the first highlight layer of the scene with a given name.
          * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null.
+         * @returns The highlight layer if found otherwise null.
          */
         getGlowLayerByName(name: string): Nullable<GlowLayer>;
     }
@@ -211,7 +211,7 @@ export class GlowLayer extends EffectLayer {
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public getEffectName(): string {
         return GlowLayer.EffectName;
@@ -386,7 +386,7 @@ export class GlowLayer extends EffectLayer {
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial();
@@ -604,7 +604,7 @@ export class GlowLayer extends EffectLayer {
      * Free any resources and references associated to a mesh.
      * Internal use
      * @param mesh The mesh to free.
-     * @hidden
+     * @internal
      */
     public _disposeMesh(mesh: Mesh): void {
         this.removeIncludedOnlyMesh(mesh);

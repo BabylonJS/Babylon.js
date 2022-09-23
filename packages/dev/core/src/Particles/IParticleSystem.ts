@@ -229,6 +229,11 @@ export interface IParticleSystem {
      */
     billboardMode: number;
 
+    /**
+     * Gets or sets a boolean enabling the use of logarithmic depth buffers, which is good for wide depth buffers.
+     */
+    useLogarithmicDepth: boolean;
+
     /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
     limitVelocityDamping: number;
 
@@ -272,6 +277,9 @@ export interface IParticleSystem {
 
     /** Gets or sets a matrix to use to compute projection */
     defaultProjectionMatrix: Matrix;
+
+    /** @internal */
+    _wasDispatched: boolean;
 
     /**
      * Gets the maximum number of particles active at the same time.
@@ -358,7 +366,7 @@ export interface IParticleSystem {
 
     /**
      * Is this system ready to be used/rendered
-     * @return true if the system is ready
+     * @returns true if the system is ready
      */
     isReady(): boolean;
     /**

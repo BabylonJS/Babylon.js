@@ -69,7 +69,7 @@ export class ReadFileError extends RuntimeError {
     }
 }
 /**
- * @hidden
+ * @internal
  */
 export const FileToolsOptions: {
     DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
@@ -119,8 +119,7 @@ const _CleanUrl = (url: string): string => {
  * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
  * @param url define the url we are trying
  * @param element define the dom element where to configure the cors policy
- * @param element.crossOrigin
- * @hidden
+ * @internal
  */
 export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: string | null }): void => {
     if (url && url.indexOf("data:") === 0) {
@@ -148,7 +147,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
  * @param mimeType optional mime type
  * @param imageBitmapOptions
  * @returns the HTMLImageElement of the loaded image
- * @hidden
+ * @internal
  */
 export const LoadImage = (
     input: string | ArrayBuffer | ArrayBufferView | Blob,
@@ -162,7 +161,7 @@ export const LoadImage = (
     let usingObjectURL = false;
 
     if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
-        if (typeof Blob !== "undefined") {
+        if (typeof Blob !== "undefined" && typeof URL !== "undefined") {
             url = URL.createObjectURL(new Blob([input], { type: mimeType }));
             usingObjectURL = true;
         } else {
@@ -244,8 +243,29 @@ export const LoadImage = (
     img.addEventListener("load", loadHandler);
     img.addEventListener("error", errorHandler);
 
+    const fromBlob = url.substring(0, 5) === "blob:";
+    const fromData = url.substring(0, 5) === "data:";
     const noOfflineSupport = () => {
-        img.src = url;
+        if (fromBlob || fromData) {
+            img.src = url;
+        } else {
+            LoadFile(
+                url,
+                (data, _, contentType) => {
+                    const type = !mimeType && contentType ? contentType : mimeType;
+                    const blob = new Blob([data], { type });
+                    const url = URL.createObjectURL(blob);
+                    usingObjectURL = true;
+                    img.src = url;
+                },
+                undefined,
+                offlineProvider || undefined,
+                true,
+                (request, exception) => {
+                    onErrorHandler(exception);
+                }
+            );
+        }
     };
 
     const loadFromOfflineSupport = () => {
@@ -254,12 +274,12 @@ export const LoadImage = (
         }
     };
 
-    if (url.substr(0, 5) !== "blob:" && url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
+    if (!fromBlob && !fromData && offlineProvider && offlineProvider.enableTexturesOffline) {
         offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
     } else {
         if (url.indexOf("file:") !== -1) {
             const textureName = decodeURIComponent(url.substring(5).toLowerCase());
-            if (FilesInputStore.FilesToLoad[textureName]) {
+            if (FilesInputStore.FilesToLoad[textureName] && typeof URL !== "undefined") {
                 try {
                     let blobURL;
                     try {
@@ -291,7 +311,7 @@ export const LoadImage = (
  * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
  * @param onError defines the callback to call when an error occurs
  * @returns a file request object
- * @hidden
+ * @internal
  */
 export const ReadFile = (
     file: File,
@@ -339,12 +359,12 @@ export const ReadFile = (
  * @param onError callback called when the file fails to load
  * @param onOpened
  * @returns a file request object
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
     fileOrUrl: File | string,
-    onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+    onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string>) => void,
     onProgress?: (ev: ProgressEvent) => void,
     offlineProvider?: IOfflineProvider,
     useArrayBuffer?: boolean,
@@ -380,14 +400,16 @@ export const LoadFile = (
     }
 
     // For a Base64 Data URL
-    if (IsBase64DataUrl(url)) {
+    const { match, type } = TestBase64DataUrl(url);
+    if (match) {
         const fileRequest: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
             abort: () => () => {},
         };
 
         try {
-            onSuccess(useArrayBuffer ? DecodeBase64UrlToBinary(url) : DecodeBase64UrlToString(url));
+            const data = useArrayBuffer ? DecodeBase64UrlToBinary(url) : DecodeBase64UrlToString(url);
+            onSuccess(data, undefined, type);
         } catch (error) {
             if (onError) {
                 onError(undefined, error);
@@ -406,7 +428,7 @@ export const LoadFile = (
     return RequestFile(
         url,
         (data, request) => {
-            onSuccess(data, request ? request.responseURL : undefined);
+            onSuccess(data, request?.responseURL, request?.getResponseHeader("content-type"));
         },
         onProgress,
         offlineProvider,
@@ -430,7 +452,7 @@ export const LoadFile = (
  * @param onError callback called when the file fails to load
  * @param onOpened callback called when the web request is opened
  * @returns a file request object
- * @hidden
+ * @internal
  */
 export const RequestFile = (
     url: string,
@@ -640,7 +662,7 @@ export const RequestFile = (
 /**
  * Checks if the loaded document was accessed via `file:`-Protocol.
  * @returns boolean
- * @hidden
+ * @internal
  */
 export const IsFileURL = (): boolean => {
     return typeof location !== "undefined" && location.protocol === "file:";
@@ -649,18 +671,28 @@ export const IsFileURL = (): boolean => {
 /**
  * Test if the given uri is a valid base64 data url
  * @param uri The uri to test
- * @return True if the uri is a base64 data url or false otherwise
- * @hidden
+ * @returns True if the uri is a base64 data url or false otherwise
+ * @internal
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
     return Base64DataUrlRegEx.test(uri);
 };
 
+export const TestBase64DataUrl = (uri: string): { match: boolean; type: string } => {
+    const results = Base64DataUrlRegEx.exec(uri);
+    if (results === null || results.length === 0) {
+        return { match: false, type: "" };
+    } else {
+        const type = results[0].replace("data:", "").replace("base64,", "");
+        return { match: true, type };
+    }
+};
+
 /**
  * Decode the given base64 uri.
  * @param uri The uri to decode
- * @return The decoded base64 data.
- * @hidden
+ * @returns The decoded base64 data.
+ * @internal
  */
 export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
     return DecodeBase64ToBinary(uri.split(",")[1]);
@@ -669,8 +701,8 @@ export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
 /**
  * Decode the given base64 uri into a UTF-8 encoded string.
  * @param uri The uri to decode
- * @return The decoded base64 data.
- * @hidden
+ * @returns The decoded base64 data.
+ * @internal
  */
 export const DecodeBase64UrlToString = (uri: string): string => {
     return DecodeBase64ToString(uri.split(",")[1]);
@@ -680,7 +712,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  * This will be executed automatically for UMD and es5.
  * If esm dev wants the side effects to execute they will have to run it manually
  * Once we build native modules those need to be exported.
- * @hidden
+ * @internal
  */
 const initSideEffects = () => {
     ThinEngine._FileToolsLoadImage = LoadImage;

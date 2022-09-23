@@ -35,11 +35,11 @@ export class InstancedMesh extends AbstractMesh {
     private _currentLOD: Mesh;
     private _billboardWorldMatrix: Matrix;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSourceMeshInstanceArray = -1;
-    /** @hidden */
+    /** @internal */
     public _distanceToCamera: number = 0;
-    /** @hidden */
+    /** @internal */
     public _previousWorldMatrix: Nullable<Matrix>;
 
     constructor(name: string, source: Mesh) {
@@ -178,7 +178,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @return {boolean} is it ready
+     * @returns {boolean} is it ready
      */
     public isReady(completeCheck = false): boolean {
         return this._sourceMesh.isReady(completeCheck, true);
@@ -317,7 +317,7 @@ export class InstancedMesh extends AbstractMesh {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _preActivate(): InstancedMesh {
         if (this._currentLOD) {
             this._currentLOD._preActivate();
@@ -326,9 +326,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param renderId
-     * @param intermediateRendering
-     * @hidden
+     * @internal
      */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
         super._activate(renderId, intermediateRendering);
@@ -362,7 +360,7 @@ export class InstancedMesh extends AbstractMesh {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _postActivate(): void {
         if (this._sourceMesh.edgesShareWithInstances && this._sourceMesh._edgesRenderer && this._sourceMesh._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
             // we are using the edge renderer of the source mesh
@@ -417,14 +415,13 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param renderId
-     * @hidden
+     * @internal
      */
     public _preActivateForIntermediateRendering(renderId: number): Mesh {
         return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
     }
 
-    /** @hidden */
+    /** @internal */
     public _syncSubMeshes(): InstancedMesh {
         this.releaseSubMeshes();
         if (this._sourceMesh.subMeshes) {
@@ -435,12 +432,12 @@ export class InstancedMesh extends AbstractMesh {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _generatePointsArray(): boolean {
         return this._sourceMesh._generatePointsArray();
     }
 
-    /** @hidden */
+    /** @internal */
     public _updateBoundingInfo(): AbstractMesh {
         if (this.hasBoundingInfo) {
             this.getBoundingInfo().update(this.worldMatrixFromCache);
@@ -453,17 +450,16 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Creates a new InstancedMesh from the current mesh.
-     * - name (string) : the cloned mesh name
-     * - newParent (optional Node) : the optional Node to parent the clone to.
-     * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
      *
      * Returns the clone.
-     * @param name
-     * @param newParent
-     * @param doNotCloneChildren
+     * @param name the cloned mesh name
+     * @param newParent the optional Node to parent the clone to.
+     * @param doNotCloneChildren if `true` the model children aren't cloned.
+     * @param newSourceMesh if set this mesh will be used as the source mesh instead of ths instance's one
+     * @returns the clone
      */
-    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): InstancedMesh {
-        const result = this._sourceMesh.createInstance(name);
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, newSourceMesh?: Mesh): InstancedMesh {
+        const result = (newSourceMesh || this._sourceMesh).createInstance(name);
 
         // Deep copy
         DeepCopier.DeepCopy(
@@ -543,14 +539,42 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param serializationObject
-     * @hidden
+     * @internal
      */
     public _serializeAsParent(serializationObject: any) {
         super._serializeAsParent(serializationObject);
 
         serializationObject.parentId = this._sourceMesh.uniqueId;
         serializationObject.parentInstanceIndex = this._indexInSourceMeshInstanceArray;
+    }
+
+    /**
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
+     * @param options.newSourcedMesh newSourcedMesh the new source mesh for the instance (or clone)
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+     * @returns an instance (or a clone) of the current node with its hierarchy
+     */
+    public instantiateHierarchy(
+        newParent: Nullable<TransformNode> = null,
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean); newSourcedMesh?: Mesh },
+        onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
+    ): Nullable<TransformNode> {
+        const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true, options && options.newSourcedMesh);
+
+        if (clone) {
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, clone);
+            }
+        }
+
+        for (const child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarchy(clone, options, onNewNodeCreated);
+        }
+
+        return clone;
     }
 }
 
@@ -574,7 +598,7 @@ declare module "./mesh" {
          */
         edgesShareWithInstances: boolean;
 
-        /** @hidden */
+        /** @internal */
         _userInstancedBuffersStorage: {
             data: { [key: string]: Float32Array };
             sizes: { [key: string]: number };

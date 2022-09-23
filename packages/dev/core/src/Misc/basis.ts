@@ -79,7 +79,7 @@ export class BasisTranscodeConfiguration {
 }
 
 /**
- * @hidden
+ * @internal
  * Enum of basis transcoder formats
  */
 enum BASIS_FORMATS {
@@ -170,6 +170,9 @@ const _CreateWorkerAsync = () => {
             } else {
                 Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL)
                     .then((wasmBinary) => {
+                        if (typeof URL !== "function") {
+                            return reject("Basis transcoder requires an environment with a URL constructor");
+                        }
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
                         _Worker = new Worker(workerBlobUrl);
 
@@ -230,6 +233,20 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
 };
 
 /**
+ * Binds a texture according to its underlying target.
+ * @param texture texture to bind
+ * @param engine the engine to bind the texture in
+ */
+const BindTexture = (texture: InternalTexture, engine: Engine): void => {
+    let target = engine._gl.TEXTURE_2D;
+    if (texture.isCube) {
+        target = engine._gl.TEXTURE_CUBE_MAP;
+    }
+
+    engine._bindTextureDirectly(target, texture, true);
+};
+
+/**
  * Loads a texture from the transcode result
  * @param texture texture load to
  * @param transcodeResult the result of transcoding the basis file to load from
@@ -239,7 +256,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
     for (let i = 0; i < transcodeResult.fileInfo.images.length; i++) {
         const rootImage = transcodeResult.fileInfo.images[i].levels[0];
         texture._invertVScale = texture.invertY;
-        if (transcodeResult.format === -1) {
+        if (transcodeResult.format === -1 || transcodeResult.format === BASIS_FORMATS.cTFRGB565) {
             // No compatable compressed format found, fallback to RGB
             texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
             texture.format = Constants.TEXTUREFORMAT_RGB;
@@ -254,13 +271,13 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 // Fallback requires aligned width/height
                 source.width = (rootImage.width + 3) & ~3;
                 source.height = (rootImage.height + 3) & ~3;
-                engine._bindTextureDirectly(engine._gl.TEXTURE_2D, source, true);
-                engine._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                BindTexture(source, engine);
+                engine._uploadDataToTextureDirectly(source, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
 
                 // Resize to power of two
                 engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
                     engine._releaseTexture(source);
-                    engine._bindTextureDirectly(engine._gl.TEXTURE_2D, texture, true);
+                    BindTexture(texture, engine);
                 });
             } else {
                 // Fallback is already inverted
@@ -269,24 +286,23 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 // Upload directly
                 texture.width = (rootImage.width + 3) & ~3;
                 texture.height = (rootImage.height + 3) & ~3;
-                engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                texture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;
+                BindTexture(texture, engine);
+                engine._uploadDataToTextureDirectly(texture, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
             }
         } else {
             texture.width = rootImage.width;
             texture.height = rootImage.height;
             texture.generateMipMaps = transcodeResult.fileInfo.images[i].levels.length > 1;
 
+            const format = BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine);
+            texture.format = format;
+
+            BindTexture(texture, engine);
+
             // Upload all mip levels in the file
             transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                engine._uploadCompressedDataToTextureDirectly(
-                    texture,
-                    BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine),
-                    level.width,
-                    level.height,
-                    level.transcodedPixels,
-                    i,
-                    index
-                );
+                engine._uploadCompressedDataToTextureDirectly(texture, format, level.width, level.height, level.transcodedPixels, i, index);
             });
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
@@ -526,7 +542,7 @@ function workerFunc(): void {
      * @param srcByteOffset offset for the start of src
      * @param  width aligned width of the image
      * @param  height aligned height of the image
-     * @return the converted pixels
+     * @returns the converted pixels
      */
     function ConvertDxtToRgb565(src: Uint8Array, srcByteOffset: number, width: number, height: number): Uint16Array {
         const c = new Uint16Array(4);

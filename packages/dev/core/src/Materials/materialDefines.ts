@@ -2,37 +2,37 @@
  * Manages the defines for the Material
  */
 export class MaterialDefines {
-    /** @hidden */
+    /** @internal */
     protected _keys: string[] = [];
     private _isDirty = true;
-    /** @hidden */
+    /** @internal */
     public _renderId: number;
 
-    /** @hidden */
+    /** @internal */
     public _areLightsDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areLightsDisposed = false;
-    /** @hidden */
+    /** @internal */
     public _areAttributesDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areTexturesDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areFresnelDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areMiscDirty = true;
-    /** @hidden */
+    /** @internal */
     public _arePrePassDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areImageProcessingDirty = true;
 
-    /** @hidden */
+    /** @internal */
     public _normals = false;
-    /** @hidden */
+    /** @internal */
     public _uvs = false;
 
-    /** @hidden */
+    /** @internal */
     public _needNormals = false;
-    /** @hidden */
+    /** @internal */
     public _needUVs = false;
 
     protected _externalProperties?: { [name: string]: { type: string; default: any } };

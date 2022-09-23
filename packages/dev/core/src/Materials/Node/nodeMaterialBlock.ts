@@ -29,18 +29,18 @@ export class NodeMaterialBlock {
     /** Gets or sets a boolean indicating that only one input can be connected at a time */
     public inputsAreExclusive = false;
 
-    /** @hidden */
+    /** @internal */
     public _codeVariableName = "";
 
-    /** @hidden */
+    /** @internal */
     public _inputs = new Array<NodeMaterialConnectionPoint>();
-    /** @hidden */
+    /** @internal */
     public _outputs = new Array<NodeMaterialConnectionPoint>();
 
-    /** @hidden */
+    /** @internal */
     public _preparationId: number;
 
-    /** @hidden */
+    /** @internal */
     public readonly _originalTargetIsNeutral: boolean;
 
     /**
@@ -678,9 +678,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * @param uniqueNames
-     * @param alreadyDumped
-     * @hidden
+     * @internal
      */
     public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         alreadyDumped.push(this);
@@ -743,8 +741,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * @param alreadyDumped
-     * @hidden
+     * @internal
      */
     public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = "";
@@ -821,10 +818,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * @param serializationObject
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {

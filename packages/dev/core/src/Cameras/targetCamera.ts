@@ -77,25 +77,25 @@ export class TargetCamera extends Camera {
     @serializeAsMeshReference("lockedTargetId")
     public lockedTarget: any = null;
 
-    /** @hidden */
+    /** @internal */
     public _currentTarget = Vector3.Zero();
-    /** @hidden */
+    /** @internal */
     public _initialFocalDistance = 1;
-    /** @hidden */
+    /** @internal */
     public _viewMatrix = Matrix.Zero();
-    /** @hidden */
+    /** @internal */
     public _camMatrix = Matrix.Zero();
-    /** @hidden */
+    /** @internal */
     public _cameraTransformMatrix = Matrix.Zero();
-    /** @hidden */
+    /** @internal */
     public _cameraRotationMatrix = Matrix.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _referencePoint = new Vector3(0, 0, 1);
-    /** @hidden */
+    /** @internal */
     public _transformedReferencePoint = Vector3.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _reset: () => void;
 
     private _defaultUp = Vector3.Up();
@@ -126,7 +126,7 @@ export class TargetCamera extends Camera {
         return this.globalPosition.add(direction);
     }
 
-    /** @hidden */
+    /** @internal */
     public _getLockedTargetPosition(): Nullable<Vector3> {
         if (!this.lockedTarget) {
             return null;
@@ -160,7 +160,7 @@ export class TargetCamera extends Camera {
     /**
      * Restored camera state. You must call storeState() first
      * @returns whether it was successful or not
-     * @hidden
+     * @internal
      */
     public _restoreStateValues(): boolean {
         if (!super._restoreStateValues()) {
@@ -180,7 +180,7 @@ export class TargetCamera extends Camera {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
         this._cache.lockedTarget = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -189,8 +189,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * @param ignoreParentClass
-     * @hidden
+     * @internal
      */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
@@ -215,7 +214,7 @@ export class TargetCamera extends Camera {
     }
 
     // Synchronized
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronizedViewMatrix()) {
             return false;
@@ -230,7 +229,7 @@ export class TargetCamera extends Camera {
     }
 
     // Methods
-    /** @hidden */
+    /** @internal */
     public _computeLocalCameraSpeed(): number {
         const engine = this.getEngine();
         return this.speed * Math.sqrt(engine.getDeltaTime() / (engine.getFps() * 100.0));
@@ -304,12 +303,12 @@ export class TargetCamera extends Camera {
         return this._currentTarget;
     }
 
-    /** @hidden */
+    /** @internal */
     public _decideIfNeedsToMove(): boolean {
         return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
     }
 
-    /** @hidden */
+    /** @internal */
     public _updatePosition(): void {
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
@@ -320,7 +319,7 @@ export class TargetCamera extends Camera {
         this.position.addInPlace(this.cameraDirection);
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
@@ -411,7 +410,7 @@ export class TargetCamera extends Camera {
 
     private _cachedRotationZ = 0;
     private _cachedQuaternionRotationZ = 0;
-    /** @hidden */
+    /** @internal */
     public _getViewMatrix(): Matrix {
         if (this.lockedTarget) {
             this.setTarget(this._getLockedTargetPosition()!);
@@ -486,9 +485,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * @param name
-     * @param cameraIndex
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
@@ -516,7 +513,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _updateRigCameras() {
         const camLeft = <TargetCamera>this._rigCameras[0];
@@ -572,7 +569,7 @@ export class TargetCamera extends Camera {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "TargetCamera";

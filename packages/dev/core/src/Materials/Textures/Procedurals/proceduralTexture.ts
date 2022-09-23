@@ -64,16 +64,16 @@ export class ProceduralTexture extends Texture {
      */
     public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _generateMipMaps: boolean;
 
     private _drawWrapper: DrawWrapper;
 
-    /** @hidden */
+    /** @internal */
     public _textures: { [key: string]: Texture } = {};
 
-    /** @hidden */
+    /** @internal */
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
@@ -198,8 +198,7 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * @param effect
-     * @hidden*
+     * @internal*
      */
     public _setEffect(effect: Effect) {
         this._drawWrapper.effect = effect;
@@ -243,7 +242,7 @@ export class ProceduralTexture extends Texture {
         this._indexBuffer = engine.createIndexBuffer(indices);
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
@@ -357,7 +356,7 @@ export class ProceduralTexture extends Texture {
         this.resetRefreshCounter();
     }
 
-    /** @hidden */
+    /** @internal */
     public _shouldRender(): boolean {
         if (!this.isEnabled || !this.isReady() || !this._texture) {
             if (this._texture) {
@@ -426,7 +425,7 @@ export class ProceduralTexture extends Texture {
      * Set a texture in the shader program used to render.
      * @param name Define the name of the uniform samplers as defined in the shader
      * @param texture Define the texture to bind to this sampler
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setTexture(name: string, texture: Texture): ProceduralTexture {
         if (this._samplers.indexOf(name) === -1) {
@@ -441,7 +440,7 @@ export class ProceduralTexture extends Texture {
      * Set a float in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setFloat(name: string, value: number): ProceduralTexture {
         this._checkUniform(name);
@@ -454,7 +453,7 @@ export class ProceduralTexture extends Texture {
      * Set a int in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setInt(name: string, value: number): ProceduralTexture {
         this._checkUniform(name);
@@ -467,7 +466,7 @@ export class ProceduralTexture extends Texture {
      * Set an array of floats in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setFloats(name: string, value: number[]): ProceduralTexture {
         this._checkUniform(name);
@@ -480,7 +479,7 @@ export class ProceduralTexture extends Texture {
      * Set a vec3 in the shader from a Color3.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setColor3(name: string, value: Color3): ProceduralTexture {
         this._checkUniform(name);
@@ -493,7 +492,7 @@ export class ProceduralTexture extends Texture {
      * Set a vec4 in the shader from a Color4.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setColor4(name: string, value: Color4): ProceduralTexture {
         this._checkUniform(name);
@@ -506,7 +505,7 @@ export class ProceduralTexture extends Texture {
      * Set a vec2 in the shader from a Vector2.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setVector2(name: string, value: Vector2): ProceduralTexture {
         this._checkUniform(name);
@@ -519,7 +518,7 @@ export class ProceduralTexture extends Texture {
      * Set a vec3 in the shader from a Vector3.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setVector3(name: string, value: Vector3): ProceduralTexture {
         this._checkUniform(name);
@@ -532,7 +531,7 @@ export class ProceduralTexture extends Texture {
      * Set a mat4 in the shader from a MAtrix.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the texture itself allowing "fluent" like uniform updates
+     * @returns the texture itself allowing "fluent" like uniform updates
      */
     public setMatrix(name: string, value: Matrix): ProceduralTexture {
         this._checkUniform(name);
@@ -614,6 +613,7 @@ export class ProceduralTexture extends Texture {
 
         engine._debugPushGroup?.(`procedural texture generation for ${this.name}`, 1);
 
+        const viewPort = engine.currentViewport;
         if (this.isCube) {
             for (let face = 0; face < 6; face++) {
                 engine.bindFramebuffer(this._rtWrapper, face, undefined, undefined, true);
@@ -646,8 +646,11 @@ export class ProceduralTexture extends Texture {
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
 
-        // Unbind
+        // Unbind and restore viewport
         engine.unBindFramebuffer(this._rtWrapper, this.isCube);
+        if (viewPort) {
+            engine.setViewport(viewPort);
+        }
 
         // Mipmaps
         if (this.isCube) {

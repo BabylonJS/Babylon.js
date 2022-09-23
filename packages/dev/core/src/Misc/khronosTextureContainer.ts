@@ -140,9 +140,7 @@ export class KhronosTextureContainer {
     /**
      * Uploads KTX content to a Babylon Texture.
      * It is assumed that the texture has already been created & is currently bound
-     * @param texture
-     * @param loadMipmaps
-     * @hidden
+     * @internal
      */
     public uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void {
         switch (this.loadType) {

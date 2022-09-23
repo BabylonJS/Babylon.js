@@ -3,7 +3,7 @@ import { transcodeTarget, sourceTextureFormat } from "./transcoder";
 import { WASMMemoryManager } from "./wasmMemoryManager";
 
 /**
- * @hidden
+ * @internal
  */
 export class TranscoderManager {
     public static _Transcoders: Array<typeof Transcoder> = [];

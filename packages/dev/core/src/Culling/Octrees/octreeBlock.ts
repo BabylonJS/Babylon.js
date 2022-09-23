@@ -225,18 +225,11 @@ export class OctreeBlock<T> {
      */
     public createInnerBlocks(): void {
         OctreeBlock._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
+        this.entries.splice(0);
     }
 
     /**
-     * @param worldMin
-     * @param worldMax
-     * @param entries
-     * @param maxBlockCapacity
-     * @param currentDepth
-     * @param maxDepth
-     * @param target
-     * @param creationFunc
-     * @hidden
+     * @internal
      */
     public static _CreateBlocks<T>(
         worldMin: Vector3,

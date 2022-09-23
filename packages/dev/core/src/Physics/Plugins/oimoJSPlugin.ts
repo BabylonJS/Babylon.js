@@ -12,7 +12,7 @@ import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 declare let OIMO: any;
 
-/** @hidden */
+/** @internal */
 export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "OimoJSPlugin";
@@ -75,8 +75,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 continue;
             }
 
-            mainImpostor.onCollide({ body: collidingImpostor.physicsBody, point: null });
-            collidingImpostor.onCollide({ body: mainImpostor.physicsBody, point: null });
+            mainImpostor.onCollide({ body: collidingImpostor.physicsBody, point: null, distance: 0, impulse: 0, normal: null });
+            collidingImpostor.onCollide({ body: mainImpostor.physicsBody, point: null, distance: 0, impulse: 0, normal: null });
             contact = contact.next;
         }
     }
@@ -86,7 +86,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         impostor.physicsBody.applyImpulse(contactPoint.scale(this.world.invScale), force.scale(this.world.invScale * mass));
     }
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-        Logger.Warn("Oimo doesn't support applying force. Using impule instead.");
+        Logger.Warn("Oimo doesn't support applying force. Using impulse instead.");
         this.applyImpulse(impostor, force, contactPoint);
     }
     public generatePhysicsBody(impostor: PhysicsImpostor) {
@@ -151,7 +151,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 i.object.computeWorldMatrix(true);
 
                 const rot = globalQuaternion.toEulerAngles();
-                const extendSize = i.getObjectExtendSize();
+                const impostorExtents = i.getObjectExtents();
 
                 // eslint-disable-next-line no-loss-of-precision
                 const radToDeg = 57.295779513082320876;
@@ -188,9 +188,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         Logger.Warn("No Particle support in OIMO.js. using SphereImpostor instead");
                     // eslint-disable-next-line no-fallthrough
                     case PhysicsImpostor.SphereImpostor: {
-                        const radiusX = extendSize.x;
-                        const radiusY = extendSize.y;
-                        const radiusZ = extendSize.z;
+                        const radiusX = impostorExtents.x;
+                        const radiusY = impostorExtents.y;
+                        const radiusZ = impostorExtents.z;
 
                         const size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
 
@@ -202,8 +202,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         break;
                     }
                     case PhysicsImpostor.CylinderImpostor: {
-                        const sizeX = checkWithEpsilon(extendSize.x) / 2;
-                        const sizeY = checkWithEpsilon(extendSize.y);
+                        const sizeX = checkWithEpsilon(impostorExtents.x) / 2;
+                        const sizeY = checkWithEpsilon(impostorExtents.y);
                         bodyConfig.type.push("cylinder");
                         bodyConfig.size.push(sizeX);
                         bodyConfig.size.push(sizeY);
@@ -214,9 +214,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                     case PhysicsImpostor.PlaneImpostor:
                     case PhysicsImpostor.BoxImpostor:
                     default: {
-                        const sizeX = checkWithEpsilon(extendSize.x);
-                        const sizeY = checkWithEpsilon(extendSize.y);
-                        const sizeZ = checkWithEpsilon(extendSize.z);
+                        const sizeX = checkWithEpsilon(impostorExtents.x);
+                        const sizeY = checkWithEpsilon(impostorExtents.y);
+                        const sizeZ = checkWithEpsilon(impostorExtents.z);
 
                         bodyConfig.type.push("box");
                         //if (i === impostor) {
@@ -252,7 +252,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public removePhysicsBody(impostor: PhysicsImpostor) {
         //impostor.physicsBody.dispose();
-        //Same as : (older oimo versions)
         this.world.removeRigidBody(impostor.physicsBody);
     }
 
@@ -344,7 +343,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 const pos = impostor.physicsBody.getPosition();
                 impostor.object.position.set(pos.x, pos.y, pos.z);
             }
-            //}
 
             if (impostor.object.rotationQuaternion) {
                 const quat = impostor.physicsBody.getQuaternion();

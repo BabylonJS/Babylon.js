@@ -47,7 +47,7 @@ export class MaterialHelper {
     public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
         defines._needUVs = true;
         defines[key] = true;
-        if (texture.getTextureMatrix().isIdentityAs3x2()) {
+        if (texture.optimizeUVAllocation && texture.getTextureMatrix().isIdentityAs3x2()) {
             defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
             defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
         } else {
@@ -552,7 +552,7 @@ export class MaterialHelper {
 
         let lightIndex = 0;
         const state = {
-            needNormals: false,
+            needNormals: defines._needNormals, // prevents overriding previous reflection or other needs for normals
             needRebuild: false,
             lightmapMode: false,
             shadowEnabled: false,
@@ -1016,7 +1016,7 @@ export class MaterialHelper {
      * @param scene The scene we are willing to render with logarithmic scale for
      */
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-        if (!defines || defines["LOGARITHMICDEPTH"]) {
+        if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
             const camera = <Camera>scene.activeCamera;
             if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
                 Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);

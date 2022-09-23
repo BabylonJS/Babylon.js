@@ -12,6 +12,20 @@ import { UniversalCamera } from "../Cameras/universalCamera";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 
 /**
+ * Options for setting up XR spectator camera.
+ */
+export interface WebXRSpectatorModeOption {
+    /**
+     * Expected refresh rate (frames per sec) for a spectator camera.
+     */
+    fps?: number;
+    /**
+     * The index of rigCameras array in a WebXR camera.
+     */
+    preferredCameraIndex?: number;
+}
+
+/**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
  * @see https://doc.babylonjs.com/how_to/webxr_experience_helpers
  */
@@ -22,6 +36,7 @@ export class WebXRExperienceHelper implements IDisposable {
     private _originalSceneAutoClear = true;
     private _supported = false;
     private _spectatorMode = false;
+    private _lastTimestamp = 0;
 
     /**
      * Camera used to render xr content
@@ -147,7 +162,7 @@ export class WebXRExperienceHelper implements IDisposable {
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this._scene.autoClear;
             this._nonVRCamera = this._scene.activeCamera;
-            this._attachedToElement = !!this._nonVRCamera?.inputs.attachedToElement;
+            this._attachedToElement = !!this._nonVRCamera?.inputs?.attachedToElement;
             this._nonVRCamera?.detachControl();
 
             this._scene.activeCamera = this.camera;
@@ -222,15 +237,44 @@ export class WebXRExperienceHelper implements IDisposable {
      * display the first rig camera's view on the desktop canvas.
      * Please note that this will degrade performance, as it requires another camera render.
      * It is also not recommended to enable this in devices like the quest, as it brings no benefit there.
+     * @param options giving WebXRSpectatorModeOption for specutator camera to setup when the spectator mode is enabled.
      */
-    public enableSpectatorMode(): void {
+    public enableSpectatorMode(options?: WebXRSpectatorModeOption): void {
         if (!this._spectatorMode) {
-            const updateSpectatorCamera = () => {
-                if (this._spectatorCamera) {
-                    this._spectatorCamera.position.copyFrom(this.camera.rigCameras[0].globalPosition);
-                    this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[0].absoluteRotation);
+            this._spectatorMode = true;
+            this._switchSpectatorMode(options);
+        }
+    }
+
+    /**
+     * Disable spectator mode for desktop VR experiences.
+     */
+    public disableSpecatatorMode(): void {
+        if (this._spectatorMode) {
+            this._spectatorMode = false;
+            this._switchSpectatorMode();
+        }
+    }
+
+    private _switchSpectatorMode(options?: WebXRSpectatorModeOption): void {
+        const fps = options?.fps ? options.fps : 1000.0;
+        const refreshRate = (1.0 / fps) * 1000.0;
+        const cameraIndex = options?.preferredCameraIndex ? options?.preferredCameraIndex : 0;
+
+        const updateSpectatorCamera = () => {
+            if (this._spectatorCamera) {
+                const delta = this.sessionManager.currentTimestamp - this._lastTimestamp;
+                if (delta >= refreshRate) {
+                    this._lastTimestamp = this.sessionManager.currentTimestamp;
+                    this._spectatorCamera.position.copyFrom(this.camera.rigCameras[cameraIndex].globalPosition);
+                    this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[cameraIndex].absoluteRotation);
                 }
-            };
+            }
+        };
+        if (this._spectatorMode) {
+            if (cameraIndex >= this.camera.rigCameras.length) {
+                throw new Error("the preferred camera index is beyond the length of rig camera array.");
+            }
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {
                     this._spectatorCamera = new UniversalCamera("webxr-spectator", Vector3.Zero(), this._scene);
@@ -248,9 +292,11 @@ export class WebXRExperienceHelper implements IDisposable {
                     this._scene.activeCameras = null;
                 }
             };
-            this._spectatorMode = true;
             this.onStateChangedObservable.add(onStateChanged);
             onStateChanged();
+        } else {
+            this.sessionManager.onXRFrameObservable.removeCallback(updateSpectatorCamera);
+            this._scene.activeCameras = [this.camera];
         }
     }
 

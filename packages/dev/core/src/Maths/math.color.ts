@@ -452,9 +452,9 @@ export class Color3 {
 
     /**
      * Converts Hue, saturation and value to a new Color3 (RGB)
-     * @param hue defines the hue
-     * @param saturation defines the saturation
-     * @param value defines the value
+     * @param hue defines the hue (value between 0 and 360)
+     * @param saturation defines the saturation (value between 0 and 1)
+     * @param value defines the value (value between 0 and 1)
      * @returns a new Color3 object
      */
     public static FromHSV(hue: number, saturation: number, value: number): Color3 {
@@ -1244,7 +1244,7 @@ export class Color4 {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class TmpColors {
     public static Color3: Color3[] = ArrayTools.BuildArray(3, Color3.Black);

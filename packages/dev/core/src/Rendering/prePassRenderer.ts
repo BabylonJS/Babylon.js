@@ -23,8 +23,7 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
  */
 export class PrePassRenderer {
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("PrePassRendererSceneComponent");
@@ -62,7 +61,7 @@ export class PrePassRenderer {
     /**
      * Returns the index of a texture in the multi render target texture array.
      * @param type Texture type
-     * @return The index
+     * @returns The index
      */
     public getIndex(type: number): number {
         return this._textureIndices[type];
@@ -135,7 +134,7 @@ export class PrePassRenderer {
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
-     * @return the prepass render target for the rendering pass.
+     * @returns the prepass render target for the rendering pass.
      * If we are currently rendering a render target, it returns the PrePassRenderTarget
      * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
      */
@@ -144,7 +143,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @hidden
+     * @internal
      * Managed by the scene component
      * @param prePassRenderTarget
      */
@@ -153,8 +152,8 @@ export class PrePassRenderer {
             this._currentTarget = prePassRenderTarget;
         } else {
             this._currentTarget = this.defaultRT;
+            this._engine.currentRenderPassId = this._currentTarget.renderPassId;
         }
-        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**
@@ -239,7 +238,7 @@ export class PrePassRenderer {
      * @param name Name of the `PrePassRenderTarget`
      * @param renderTargetTexture RenderTarget the `PrePassRenderTarget` will be attached to.
      * Can be `null` if the created `PrePassRenderTarget` is attached to the scene (default framebuffer).
-     * @hidden
+     * @internal
      */
     public _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>): PrePassRenderTarget {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene, {
@@ -384,10 +383,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @param camera
-     * @param faceIndex
-     * @param layer
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number) {
@@ -418,6 +414,24 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Sets an intermediary texture between prepass and postprocesses. This texture
+     * will be used as input for post processes
+     * @param rt
+     * @returns true if there are postprocesses that will use this texture,
+     * false if there is no postprocesses - and the function has no effect
+     */
+    public setCustomOutput(rt: RenderTargetTexture) {
+        const firstPP = this._postProcessesSourceForThisPass[0];
+        if (!firstPP) {
+            return false;
+        }
+
+        firstPP.inputTexture = rt.renderTarget!;
+
+        return true;
+    }
+
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
@@ -437,9 +451,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @param faceIndex
-     * @param layer
-     * @hidden
+     * @internal
      */
     public _afterDraw(faceIndex?: number, layer?: number) {
         if (this._enabled && this._currentTarget.enabled) {
@@ -450,7 +462,7 @@ export class PrePassRenderer {
 
     /**
      * Clears the current prepass render target (in the sense of settings pixels to the scene clear color value)
-     * @hidden
+     * @internal
      */
     public _clear() {
         if (this._enabled && this._currentTarget.enabled) {
@@ -491,7 +503,7 @@ export class PrePassRenderer {
      * If an effect has already been added, it won't add it twice and will return the configuration
      * already present.
      * @param cfg the effect configuration
-     * @return the effect configuration now used by the prepass
+     * @returns the effect configuration now used by the prepass
      */
     public addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration {
         // Do not add twice
@@ -630,8 +642,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @param prePassRenderTarget
-     * @hidden
+     * @internal
      */
     public _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget) {
         if (prePassRenderTarget._outputPostProcess) {

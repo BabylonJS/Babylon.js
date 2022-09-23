@@ -82,7 +82,7 @@ export class Sound {
      */
     public distanceModel: string = "linear";
     /**
-     * @hidden
+     * @internal
      * Back Compat
      **/
     public onended: () => any;
@@ -158,13 +158,12 @@ export class Sound {
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
-    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "MediaElement" = "Unknown";
+    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("AudioSceneComponent");
@@ -173,7 +172,7 @@ export class Sound {
     /**
      * Create a sound and attach it to a scene
      * @param name Name of your sound
-     * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+     * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams and AudioBuffers
      * @param scene defines the scene the sound belongs to
      * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
      * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
@@ -238,6 +237,8 @@ export class Sound {
                         this._urlType = "MediaElement";
                     } else if (urlOrArrayBuffer instanceof MediaStream) {
                         this._urlType = "MediaStream";
+                    } else if (urlOrArrayBuffer instanceof AudioBuffer) {
+                        this._urlType = "AudioBuffer";
                     } else if (Array.isArray(urlOrArrayBuffer)) {
                         this._urlType = "Array";
                     }
@@ -277,6 +278,9 @@ export class Sound {
                                 codecSupportedFound = true;
                                 this._soundLoaded(urlOrArrayBuffer);
                             }
+                            break;
+                        case "AudioBuffer":
+                            this._audioBufferLoaded(urlOrArrayBuffer);
                             break;
                         case "String":
                             urls.push(urlOrArrayBuffer);
@@ -443,6 +447,20 @@ export class Sound {
         return "Sound";
     }
 
+    private _audioBufferLoaded(buffer: AudioBuffer) {
+        if (!Engine.audioEngine?.audioContext) {
+            return;
+        }
+        this._audioBuffer = buffer;
+        this._isReadyToPlay = true;
+        if (this.autoplay) {
+            this.play(0, this._offset, this._length);
+        }
+        if (this._readyToPlayCallback) {
+            this._readyToPlayCallback();
+        }
+    }
+
     private _soundLoaded(audioData: ArrayBuffer) {
         if (!Engine.audioEngine?.audioContext) {
             return;
@@ -450,14 +468,7 @@ export class Sound {
         Engine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {
-                this._audioBuffer = buffer;
-                this._isReadyToPlay = true;
-                if (this.autoplay) {
-                    this.play(0, this._offset, this._length);
-                }
-                if (this._readyToPlayCallback) {
-                    this._readyToPlayCallback();
-                }
+                this._audioBufferLoaded(buffer);
             },
             (err: any) => {
                 Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err);
@@ -702,7 +713,7 @@ export class Sound {
         this._soundPanner.orientationZ.value = direction.z;
     }
 
-    /** @hidden */
+    /** @internal */
     public updateDistanceFromListener() {
         if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
             const distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);

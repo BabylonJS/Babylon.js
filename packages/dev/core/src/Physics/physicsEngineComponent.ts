@@ -17,9 +17,9 @@ import { PhysicsJoint } from "./physicsJoint";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
-        /** @hidden */
+        /** @internal */
         _physicsTimeAccumulator: number;
 
         /**
@@ -32,7 +32,7 @@ declare module "../scene" {
          * Enables physics to the current scene
          * @param gravity defines the scene's gravity for the physics engine. defaults to real earth gravity : (0, -9.81, 0)
          * @param plugin defines the physics engine to be used. defaults to CannonJS.
-         * @return a boolean indicating if the physics engine was initialized
+         * @returns a boolean indicating if the physics engine was initialized
          */
         enablePhysics(gravity?: Nullable<Vector3>, plugin?: IPhysicsEnginePlugin): boolean;
 
@@ -77,7 +77,7 @@ Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
  * Enables physics to the current scene
  * @param gravity defines the scene's gravity for the physics engine
  * @param plugin defines the physics engine to be used. defaults to CannonJS.
- * @return a boolean indicating if the physics engine was initialized
+ * @returns a boolean indicating if the physics engine was initialized
  */
 Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
     if (this._physicsEngine) {
@@ -135,8 +135,7 @@ Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
 };
 
 /**
- * @param step
- * @hidden
+ * @internal
  */
 Scene.prototype._advancePhysicsEngineStep = function (step: number) {
     if (this._physicsEngine) {
@@ -159,7 +158,7 @@ Scene.prototype._advancePhysicsEngineStep = function (step: number) {
 
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
-        /** @hidden */
+        /** @internal */
         _physicsImpostor: Nullable<PhysicsImpostor>;
 
         /**
@@ -194,7 +193,7 @@ declare module "../Meshes/abstractMesh" {
          */
         setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh;
 
-        /** @hidden */
+        /** @internal */
         _disposePhysicsObserver: Nullable<Observer<Node>>;
     }
 }

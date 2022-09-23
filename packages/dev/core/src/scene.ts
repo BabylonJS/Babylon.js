@@ -62,6 +62,7 @@ import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import type { IComputePressureData } from "./Misc/computePressure";
 import { ComputePressureObserverWrapper } from "./Misc/computePressure";
+import { _ObserveArray } from "./Misc/arrayTools";
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -128,6 +129,18 @@ export interface SceneOptions {
 }
 
 /**
+ * Define how the scene should favor performance over ease of use
+ */
+export enum ScenePerformancePriority {
+    /** Default mode. No change. Performance will be treated as less important than backward compatibility */
+    BackwardCompatible,
+    /** Some performance options will be turned on trying to strike a balance between perf and ease of use */
+    Intermediate,
+    /** Performance will be top priority */
+    Aggressive,
+}
+
+/**
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/scene
  */
@@ -171,16 +184,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Members
 
-    /** @hidden */
+    /** @internal */
     public _inputManager = new InputManager(this);
 
     /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
     public cameraToUseForPointers: Nullable<Camera> = null;
 
-    /** @hidden */
+    /** @internal */
     public readonly _isScene = true;
 
-    /** @hidden */
+    /** @internal */
     public _blockEntityCollection = false;
 
     /**
@@ -240,7 +253,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public environmentIntensity: number = 1;
 
-    /** @hidden */
+    /** @internal */
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
     /**
      * Default image processing configuration used either in the rendering
@@ -252,6 +265,43 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
+    }
+
+    private _performancePriority = ScenePerformancePriority.BackwardCompatible;
+    /**
+     * Gets or sets a value indicating how to treat performance relatively to ease of use and backward compatibility
+     */
+    public get performancePriority() {
+        return this._performancePriority;
+    }
+
+    public set performancePriority(value) {
+        if (value === this._performancePriority) {
+            return;
+        }
+
+        this._performancePriority = value;
+
+        switch (value) {
+            case ScenePerformancePriority.BackwardCompatible:
+                this.skipFrustumClipping = false;
+                this._renderingManager.maintainStateBetweenFrames = false;
+                this.skipPointerMovePicking = false;
+                this.autoClear = true;
+                break;
+            case ScenePerformancePriority.Intermediate:
+                this.skipFrustumClipping = false;
+                this._renderingManager.maintainStateBetweenFrames = false;
+                this.skipPointerMovePicking = true;
+                this.autoClear = false;
+                break;
+            case ScenePerformancePriority.Aggressive:
+                this.skipFrustumClipping = true;
+                this._renderingManager.maintainStateBetweenFrames = true;
+                this.skipPointerMovePicking = true;
+                this.autoClear = false;
+                break;
+        }
     }
 
     private _forceWireframe = false;
@@ -655,6 +705,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onActiveCameraChanged = new Observable<Scene>();
 
     /**
+     * An event triggered when the activeCameras property is updated
+     */
+    public onActiveCamerasChanged = new Observable<Scene>();
+
+    /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -686,7 +741,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Animations
 
-    /** @hidden */
+    /** @internal */
     public _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
     // Pointers
@@ -798,7 +853,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param effect The effect to be bound
      * @param variableName name of the shader variable that will hold the eye position
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @return the computed eye position
+     * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
         const eyePosition = this._forcedViewPosition
@@ -837,7 +892,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     // Mirror
-    /** @hidden */
+    /** @internal */
     public _mirroredCameraPosition: Nullable<Vector3>;
 
     // Keyboard
@@ -1012,10 +1067,30 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._lightsEnabled;
     }
 
-    /** All of the active cameras added to this scene. */
-    public activeCameras: Nullable<Camera[]> = new Array<Camera>();
+    private _activeCameras: Nullable<Camera[]>;
+    private _unObserveActiveCameras: Nullable<() => void> = null;
 
-    /** @hidden */
+    /** All of the active cameras added to this scene. */
+    public get activeCameras(): Nullable<Camera[]> {
+        return this._activeCameras;
+    }
+
+    public set activeCameras(cameras: Nullable<Camera[]>) {
+        if (this._unObserveActiveCameras) {
+            this._unObserveActiveCameras();
+            this._unObserveActiveCameras = null;
+        }
+
+        if (cameras) {
+            this._unObserveActiveCameras = _ObserveArray(cameras, () => {
+                this.onActiveCamerasChanged.notifyObservers(this);
+            });
+        }
+
+        this._activeCameras = cameras;
+    }
+
+    /** @internal */
     public _activeCamera: Nullable<Camera>;
     /** Gets or sets the current active camera */
     public get activeCamera(): Nullable<Camera> {
@@ -1114,7 +1189,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _collisionCoordinator: ICollisionCoordinator;
 
-    /** @hidden */
+    /** @internal */
     public get collisionCoordinator(): ICollisionCoordinator {
         if (!this._collisionCoordinator) {
             this._collisionCoordinator = Scene.CollisionCoordinatorFactory();
@@ -1198,19 +1273,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Performance counters
     private _totalVertices = new PerfCounter();
-    /** @hidden */
+    /** @internal */
     public _activeIndices = new PerfCounter();
-    /** @hidden */
+    /** @internal */
     public _activeParticles = new PerfCounter();
-    /** @hidden */
+    /** @internal */
     public _activeBones = new PerfCounter();
 
     private _animationRatio: number;
 
-    /** @hidden */
+    /** @internal */
     public _animationTimeLast: number;
 
-    /** @hidden */
+    /** @internal */
     public _animationTime: number = 0;
 
     /**
@@ -1219,11 +1294,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public animationTimeScale: number = 1;
 
-    /** @hidden */
+    /** @internal */
     public _cachedMaterial: Nullable<Material>;
-    /** @hidden */
+    /** @internal */
     public _cachedEffect: Nullable<Effect>;
-    /** @hidden */
+    /** @internal */
     public _cachedVisibility: Nullable<number>;
 
     private _renderId = 0;
@@ -1235,11 +1310,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _viewUpdateFlag = -1;
     private _projectionUpdateFlag = -1;
 
-    /** @hidden */
+    /** @internal */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
     private _activeRequests = new Array<IFileRequest>();
 
-    /** @hidden */
+    /** @internal */
     public _pendingData = new Array();
     private _isDisposed = false;
 
@@ -1252,27 +1327,34 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _processedMaterials = new SmartArray<Material>(256);
     private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
     private _materialsRenderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
-    /** @hidden */
+    /** @internal */
     public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
     private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
     private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
 
     private _renderingManager: RenderingManager;
 
-    /** @hidden */
+    /**
+     * Gets the scene's rendering manager
+     */
+    public get renderingManager() {
+        return this._renderingManager;
+    }
+
+    /** @internal */
     public _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
 
-    /** @hidden */
+    /** @internal */
     public _viewMatrix: Matrix;
-    /** @hidden */
+    /** @internal */
     public _projectionMatrix: Matrix;
-    /** @hidden */
+    /** @internal */
     public _forcedViewPosition: Nullable<Vector3>;
 
-    /** @hidden */
+    /** @internal */
     public _frustumPlanes: Plane[];
     /**
      * Gets the list of frustum planes (built from the active camera)
@@ -1287,22 +1369,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public requireLightSorting = false;
 
-    /** @hidden */
+    /** @internal */
     public readonly useMaterialMeshMap: boolean;
-    /** @hidden */
+    /** @internal */
     public readonly useClonedMeshMap: boolean;
 
     private _externalData: StringDictionary<Object>;
     private _uid: Nullable<string>;
 
     /**
-     * @hidden
+     * @internal
      * Backing store of defined scene components.
      */
     public _components: ISceneComponent[] = [];
 
     /**
-     * @hidden
+     * @internal
      * Backing store of defined scene components.
      */
     public _serializableComponents: ISceneSerializableComponent[] = [];
@@ -1326,7 +1408,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @hidden
+     * @internal
      * Add a component to the scene.
      * Note that the ccomponent could be registered on th next frame if this is called after
      * the register component stage.
@@ -1343,7 +1425,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @hidden
+     * @internal
      * Gets a component from the scene.
      * @param name defines the name of the component to retrieve
      * @returns the component or null if not present
@@ -1358,112 +1440,112 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before camera updates.
      */
     public _beforeCameraUpdateStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before clear the canvas.
      */
     public _beforeClearStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before clear the canvas.
      */
     public _beforeRenderTargetClearStage = Stage.Create<RenderTargetStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions when collecting render targets for the frame.
      */
     public _gatherRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening for one camera in the frame.
      */
     public _gatherActiveCameraRenderTargetsStage = Stage.Create<RenderTargetsStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the per mesh ready checks.
      */
     public _isReadyForMeshStage = Stage.Create<MeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening before evaluate active mesh checks.
      */
     public _beforeEvaluateActiveMeshStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the evaluate sub mesh checks.
      */
     public _evaluateSubMeshStage = Stage.Create<EvaluateSubMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the active mesh stage.
      */
     public _preActiveMeshStage = Stage.Create<PreActiveMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening during the per camera render target step.
      */
     public _cameraDrawRenderTargetStage = Stage.Create<CameraStageFrameBufferAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before the active camera is drawing.
      */
     public _beforeCameraDrawStage = Stage.Create<CameraStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before a render target is drawing.
      */
     public _beforeRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before a rendering group is drawing.
      */
     public _beforeRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just before a mesh is drawing.
      */
     public _beforeRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after a mesh has been drawn.
      */
     public _afterRenderingMeshStage = Stage.Create<RenderingMeshStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after a rendering group has been drawn.
      */
     public _afterRenderingGroupDrawStage = Stage.Create<RenderingGroupStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after the active camera has been drawn.
      */
     public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after a render target has been drawn.
      */
     public _afterRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening just after rendering all cameras and computing intersections.
      */
     public _afterRenderStage = Stage.Create<SimpleStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening when a pointer move event happens.
      */
     public _pointerMoveStage = Stage.Create<PointerMoveStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening when a pointer down event happens.
      */
     public _pointerDownStage = Stage.Create<PointerUpDownStageAction>();
     /**
-     * @hidden
+     * @internal
      * Defines the actions happening when a pointer up event happens.
      */
     public _pointerUpStage = Stage.Create<PointerUpDownStageAction>();
@@ -1480,6 +1562,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
+
+        this.activeCameras = new Array<Camera>();
 
         const fullOptions = {
             useGeometryUniqueIdsMap: true,
@@ -1541,7 +1625,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     cpuSpeedThresholds: [0.5],
                 }
             );
-            this._computePressureObserver.observe();
+            this._computePressureObserver.observe("cpu");
         }
     }
 
@@ -1559,7 +1643,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     };
 
     /**
-     * @hidden
+     * @internal
      */
     public _getDefaultMeshCandidates(): ISmartArrayLike<AbstractMesh> {
         this._defaultMeshCandidates.data = this.meshes;
@@ -1573,8 +1657,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     };
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _getDefaultSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
         this._defaultSubMeshCandidates.data = mesh.subMeshes;
@@ -1837,7 +1920,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
      * Delay loaded resources are not taking in account
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: true)
-     * @return true if all required resources are ready
+     * @returns true if all required resources are ready
      */
     public isReady(checkRenderTargets = true): boolean {
         if (this._isDisposed) {
@@ -2101,8 +2184,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param checkRenderTargets
-     * @hidden
+     * @internal
      */
     public _checkIsReady(checkRenderTargets = false) {
         this._registerTransientComponents();
@@ -2122,6 +2204,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._executeWhenReadyTimeoutId = setTimeout(() => {
+            // Ensure materials effects are checked outside render loops
+            this.incrementRenderId();
             this._checkIsReady(checkRenderTargets);
         }, 100);
     }
@@ -2767,7 +2851,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * sets the active camera of the scene using its Id
      * @param id defines the camera's Id
-     * @return the new active camera or null if none found.
+     * @returns the new active camera or null if none found.
      */
     public setActiveCameraById(id: string): Nullable<Camera> {
         const camera = this.getCameraById(id);
@@ -2799,7 +2883,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * get an animation group using its name
      * @param name defines the material's name
-     * @return the animation group or null if none found.
+     * @returns the animation group or null if none found.
      */
     public getAnimationGroupByName(name: string): Nullable<AnimationGroup> {
         for (let index = 0; index < this.animationGroups.length; index++) {
@@ -2814,7 +2898,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get a material using its unique id
      * @param uniqueId defines the material's unique id
-     * @return the material or null if none found.
+     * @returns the material or null if none found.
      */
     public getMaterialByUniqueID(uniqueId: number): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
@@ -2829,7 +2913,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * get a material using its id
      * @param id defines the material's Id
-     * @return the material or null if none found.
+     * @returns the material or null if none found.
      */
     public getMaterialById(id: string): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
@@ -2845,7 +2929,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets a the last added material using a given id
      * @param id defines the material's Id
      * @param allowMultiMaterials determines whether multimaterials should be considered
-     * @return the last material with the given id or null if none found.
+     * @returns the last material with the given id or null if none found.
      */
     public getLastMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
         for (let index = this.materials.length - 1; index >= 0; index--) {
@@ -2867,7 +2951,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a material using its name
      * @param name defines the material's name
-     * @return the material or null if none found.
+     * @returns the material or null if none found.
      */
     public getMaterialByName(name: string): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
@@ -2882,7 +2966,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get a texture using its unique id
      * @param uniqueId defines the texture's unique id
-     * @return the texture or null if none found.
+     * @returns the texture or null if none found.
      */
     public getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture> {
         for (let index = 0; index < this.textures.length; index++) {
@@ -2897,7 +2981,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a texture using its name
      * @param name defines the texture's name
-     * @return the texture or null if none found.
+     * @returns the texture or null if none found.
      */
     public getTextureByName(name: string): Nullable<BaseTexture> {
         for (let index = 0; index < this.textures.length; index++) {
@@ -2942,7 +3026,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a camera using its name
      * @param name defines the camera's name
-     * @return the camera or null if none found.
+     * @returns the camera or null if none found.
      */
     public getCameraByName(name: string): Nullable<Camera> {
         for (let index = 0; index < this.cameras.length; index++) {
@@ -2957,7 +3041,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a bone using its Id
      * @param id defines the bone's Id
-     * @return the bone or null if not found
+     * @returns the bone or null if not found
      */
     public getBoneById(id: string): Nullable<Bone> {
         for (let skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
@@ -2975,7 +3059,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a bone using its id
      * @param name defines the bone's name
-     * @return the bone or null if not found
+     * @returns the bone or null if not found
      */
     public getBoneByName(name: string): Nullable<Bone> {
         for (let skeletonIndex = 0; skeletonIndex < this.skeletons.length; skeletonIndex++) {
@@ -2993,7 +3077,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a light node using its name
      * @param name defines the the light's name
-     * @return the light or null if none found.
+     * @returns the light or null if none found.
      */
     public getLightByName(name: string): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
@@ -3008,7 +3092,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a light node using its Id
      * @param id defines the light's Id
-     * @return the light or null if none found.
+     * @returns the light or null if none found.
      */
     public getLightById(id: string): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
@@ -3023,7 +3107,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a light node using its scene-generated unique Id
      * @param uniqueId defines the light's unique Id
-     * @return the light or null if none found.
+     * @returns the light or null if none found.
      */
     public getLightByUniqueId(uniqueId: number): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
@@ -3038,7 +3122,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a particle system by Id
      * @param id defines the particle system Id
-     * @return the corresponding system or null if none found
+     * @returns the corresponding system or null if none found
      */
     public getParticleSystemById(id: string): Nullable<IParticleSystem> {
         for (let index = 0; index < this.particleSystems.length; index++) {
@@ -3053,7 +3137,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a geometry using its Id
      * @param id defines the geometry's Id
-     * @return the geometry or null if none found.
+     * @returns the geometry or null if none found.
      */
     public getGeometryById(id: string): Nullable<Geometry> {
         for (let index = 0; index < this.geometries.length; index++) {
@@ -3086,7 +3170,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Add a new geometry to this scene
      * @param geometry defines the geometry to be added to the scene.
      * @param force defines if the geometry must be pushed even if a geometry with this id already exists
-     * @return a boolean defining if the geometry was added or not
+     * @returns a boolean defining if the geometry was added or not
      */
     public pushGeometry(geometry: Geometry, force?: boolean): boolean {
         if (!force && this._getGeometryByUniqueId(geometry.uniqueId)) {
@@ -3103,7 +3187,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Removes an existing geometry
      * @param geometry defines the geometry to be removed from the scene
-     * @return a boolean defining if the geometry was removed or not
+     * @returns a boolean defining if the geometry was removed or not
      */
     public removeGeometry(geometry: Geometry): boolean {
         let index;
@@ -3125,9 +3209,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.geometries[index] = lastGeometry;
                 if (this._geometriesByUniqueId) {
                     this._geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                    this._geometriesByUniqueId[geometry.uniqueId] = undefined;
                 }
             }
+        }
+
+        if (this._geometriesByUniqueId) {
+            this._geometriesByUniqueId[geometry.uniqueId] = undefined;
         }
 
         this.geometries.pop();
@@ -3147,7 +3234,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the first added mesh found of a given Id
      * @param id defines the Id to search for
-     * @return the mesh found or null if not found at all
+     * @returns the mesh found or null if not found at all
      */
     public getMeshById(id: string): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
@@ -3173,7 +3260,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the first added transform node found of a given Id
      * @param id defines the Id to search for
-     * @return the found transform node or null if not found at all.
+     * @returns the found transform node or null if not found at all.
      */
     public getTransformNodeById(id: string): Nullable<TransformNode> {
         for (let index = 0; index < this.transformNodes.length; index++) {
@@ -3188,7 +3275,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a transform node with its auto-generated unique Id
      * @param uniqueId defines the unique Id to search for
-     * @return the found transform node or null if not found at all.
+     * @returns the found transform node or null if not found at all.
      */
     public getTransformNodeByUniqueId(uniqueId: number): Nullable<TransformNode> {
         for (let index = 0; index < this.transformNodes.length; index++) {
@@ -3214,7 +3301,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a mesh with its auto-generated unique Id
      * @param uniqueId defines the unique Id to search for
-     * @return the found mesh or null if not found at all.
+     * @returns the found mesh or null if not found at all.
      */
     public getMeshByUniqueId(uniqueId: number): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
@@ -3229,7 +3316,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added mesh using a given Id
      * @param id defines the Id to search for
-     * @return the found mesh or null if not found at all.
+     * @returns the found mesh or null if not found at all.
      */
     public getLastMeshById(id: string): Nullable<AbstractMesh> {
         for (let index = this.meshes.length - 1; index >= 0; index--) {
@@ -3244,7 +3331,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added node (Mesh, Camera, Light) using a given Id
      * @param id defines the Id to search for
-     * @return the found node or null if not found at all
+     * @returns the found node or null if not found at all
      */
     public getLastEntryById(id: string): Nullable<Node> {
         let index: number;
@@ -3278,7 +3365,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a node (Mesh, Camera, Light) using a given Id
      * @param id defines the Id to search for
-     * @return the found node or null if not found at all
+     * @returns the found node or null if not found at all
      */
     public getNodeById(id: string): Nullable<Node> {
         const mesh = this.getMeshById(id);
@@ -3312,7 +3399,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a node (Mesh, Camera, Light) using a given name
      * @param name defines the name to search for
-     * @return the found node or null if not found at all.
+     * @returns the found node or null if not found at all.
      */
     public getNodeByName(name: string): Nullable<Node> {
         const mesh = this.getMeshByName(name);
@@ -3346,7 +3433,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a mesh using a given name
      * @param name defines the name to search for
-     * @return the found mesh or null if not found at all.
+     * @returns the found mesh or null if not found at all.
      */
     public getMeshByName(name: string): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
@@ -3361,7 +3448,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a transform node using a given name
      * @param name defines the name to search for
-     * @return the found transform node or null if not found at all.
+     * @returns the found transform node or null if not found at all.
      */
     public getTransformNodeByName(name: string): Nullable<TransformNode> {
         for (let index = 0; index < this.transformNodes.length; index++) {
@@ -3376,7 +3463,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
      * @param id defines the Id to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getLastSkeletonById(id: string): Nullable<Skeleton> {
         for (let index = this.skeletons.length - 1; index >= 0; index--) {
@@ -3391,7 +3478,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given auto generated unique id
      * @param  uniqueId defines the unique id to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getSkeletonByUniqueId(uniqueId: number): Nullable<Skeleton> {
         for (let index = 0; index < this.skeletons.length; index++) {
@@ -3406,7 +3493,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given id (if many are found, this function will pick the first one)
      * @param id defines the id to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getSkeletonById(id: string): Nullable<Skeleton> {
         for (let index = 0; index < this.skeletons.length; index++) {
@@ -3421,7 +3508,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a skeleton using a given name
      * @param name defines the name to search for
-     * @return the found skeleton or null if not found at all.
+     * @returns the found skeleton or null if not found at all.
      */
     public getSkeletonByName(name: string): Nullable<Skeleton> {
         for (let index = 0; index < this.skeletons.length; index++) {
@@ -3436,7 +3523,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a morph target manager  using a given id (if many are found, this function will pick the last one)
      * @param id defines the id to search for
-     * @return the found morph target manager or null if not found at all.
+     * @returns the found morph target manager or null if not found at all.
      */
     public getMorphTargetManagerById(id: number): Nullable<MorphTargetManager> {
         for (let index = 0; index < this.morphTargetManagers.length; index++) {
@@ -3451,7 +3538,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a morph target using a given id (if many are found, this function will pick the first one)
      * @param id defines the id to search for
-     * @return the found morph target or null if not found at all.
+     * @returns the found morph target or null if not found at all.
      */
     public getMorphTargetById(id: string): Nullable<MorphTarget> {
         for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
@@ -3469,7 +3556,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a morph target using a given name (if many are found, this function will pick the first one)
      * @param name defines the name to search for
-     * @return the found morph target or null if not found at all.
+     * @returns the found morph target or null if not found at all.
      */
     public getMorphTargetByName(name: string): Nullable<MorphTarget> {
         for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
@@ -3487,7 +3574,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a post process using a given name (if many are found, this function will pick the first one)
      * @param name defines the name to search for
-     * @return the found post process or null if not found at all.
+     * @returns the found post process or null if not found at all.
      */
     public getPostProcessByName(name: string): Nullable<PostProcess> {
         for (let postProcessIndex = 0; postProcessIndex < this.postProcesses.length; ++postProcessIndex) {
@@ -3524,9 +3611,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
      * @param key the unique key that identifies the data
      * @param data the data object to associate to the key for this Engine instance
-     * @return true if no such key were already present and the data was added successfully, false otherwise
+     * @returns true if no such key were already present and the data was added successfully, false otherwise
      */
-    public addExternalData<T>(key: string, data: T): boolean {
+    public addExternalData<T extends Object>(key: string, data: T): boolean {
         if (!this._externalData) {
             this._externalData = new StringDictionary<Object>();
         }
@@ -3536,7 +3623,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get an externally attached data from its key
      * @param key the unique key that identifies the data
-     * @return the associated data, if present (can be null), or undefined if not present
+     * @returns the associated data, if present (can be null), or undefined if not present
      */
     public getExternalData<T>(key: string): Nullable<T> {
         if (!this._externalData) {
@@ -3549,9 +3636,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Get an externally attached data from its key, create it using a factory if it's not already present
      * @param key the unique key that identifies the data
      * @param factory the factory that will be called to create the instance if and only if it doesn't exists
-     * @return the associated data, can be null if the factory returned null.
+     * @returns the associated data, can be null if the factory returned null.
      */
-    public getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T {
+    public getOrAddExternalDataWithFactory<T extends Object>(key: string, factory: (k: string) => T): T {
         if (!this._externalData) {
             this._externalData = new StringDictionary<Object>();
         }
@@ -3561,22 +3648,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Remove an externally attached data from the Engine instance
      * @param key the unique key that identifies the data
-     * @return true if the data was successfully removed, false if it doesn't exist
+     * @returns true if the data was successfully removed, false if it doesn't exist
      */
     public removeExternalData(key: string): boolean {
         return this._externalData.remove(key);
     }
 
-    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (
-            initialMesh.hasInstances ||
-            initialMesh.isAnInstance ||
-            this.dispatchAllSubMeshesOfActiveMeshes ||
-            this._skipFrustumClipping ||
-            mesh.alwaysSelectAsActiveMesh ||
-            mesh.subMeshes.length === 1 ||
-            subMesh.isInFrustum(this._frustumPlanes)
-        ) {
+    private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh, forcePush: boolean): void {
+        if (forcePush || subMesh.isInFrustum(this._frustumPlanes)) {
             for (const step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3672,7 +3751,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _isInIntermediateRendering(): boolean {
         return this._intermediateRendering;
     }
@@ -3697,7 +3776,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
-    /** @hidden */
+    /** @internal */
     public _activeMeshesFrozen = false;
     public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
@@ -3899,8 +3978,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        this.onAfterActiveMeshesEvaluationObservable.notifyObservers(this);
-
         // Particle systems
         if (this.particlesEnabled) {
             this.onBeforeParticlesRenderingObservable.notifyObservers(this);
@@ -3934,12 +4011,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
+        let forcePush = sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
+
         if (mesh && mesh.subMeshes && mesh.subMeshes.length > 0) {
             const subMeshes = this.getActiveSubMeshCandidates(mesh);
             const len = subMeshes.length;
+            forcePush = forcePush || len === 1;
             for (let i = 0; i < len; i++) {
                 const subMesh = subMeshes.data[i];
-                this._evaluateSubMesh(subMesh, mesh, sourceMesh);
+                this._evaluateSubMesh(subMesh, mesh, sourceMesh, forcePush);
             }
         }
     }
@@ -4001,13 +4081,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _allowPostProcessClearColor = true;
     /**
-     * @param camera
-     * @param rigParent
-     * @param bindFrameBuffer
-     * @hidden
+     * @internal
      */
     public _renderForCamera(camera: Camera, rigParent?: Camera, bindFrameBuffer = true): void {
         if (camera && camera._skipRendering) {
@@ -4229,8 +4306,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param step
-     * @hidden
+     * @internal
      */
     public _advancePhysicsEngineStep(step: number) {
         // Do nothing. Code will be replaced if physics engine component is referenced
@@ -4243,7 +4319,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._engine.getTimeStep();
     };
 
-    /** @hidden */
+    /** @internal */
     public _animate(): void {
         // Nothing to do as long as Animatable have not been imported.
     }
@@ -4586,6 +4662,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.activeCamera._activeMeshes.dispose();
             this.activeCamera = null;
         }
+        this.activeCameras = null;
+
         this._activeMeshes.dispose();
         this._renderingManager.dispose();
         this._processedMaterials.dispose();
@@ -4655,7 +4733,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onActiveCameraChanged.clear();
         this.onComputePressureChanged.clear();
 
-        this._computePressureObserver?.unobserve();
+        this._computePressureObserver?.unobserve("cpu");
         this._computePressureObserver = undefined;
 
         this.detachControl();
@@ -4680,7 +4758,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._disposeList(this.transformNodes, (item) => item.dispose(true));
 
         // Release cameras
-        this._disposeList(this.cameras);
+        const cameras = this.cameras;
+        this._disposeList(cameras);
 
         // Release materials
         if (this._defaultMaterial) {
@@ -4946,7 +5025,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
@@ -4969,7 +5048,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     // Misc.
-    /** @hidden */
+    /** @internal */
     public _rebuildGeometries(): void {
         for (const geometry of this.geometries) {
             geometry._rebuild();
@@ -4998,7 +5077,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuildTextures(): void {
         for (const texture of this.textures) {
             texture._rebuild();
@@ -5162,14 +5241,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param fileOrUrl
-     * @param onSuccess
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onError
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _loadFile(
         fileOrUrl: File | string,
@@ -5189,12 +5261,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param fileOrUrl
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _loadFileAsync(
         fileOrUrl: File | string,
@@ -5221,14 +5288,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param url
-     * @param onSuccess
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onError
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _requestFile(
         url: string,
@@ -5248,12 +5308,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param url
-     * @param onProgress
-     * @param useOfflineSupport
-     * @param useArrayBuffer
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _requestFileAsync(
         url: string,
@@ -5280,12 +5335,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param file
-     * @param onSuccess
-     * @param onProgress
-     * @param useArrayBuffer
-     * @param onError
-     * @hidden
+     * @internal
      */
     public _readFile(
         file: File,
@@ -5303,10 +5353,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * @param file
-     * @param onProgress
-     * @param useArrayBuffer
-     * @hidden
+     * @internal
      */
     public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {

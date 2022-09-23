@@ -13,3 +13,4 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
 
 export * from "./utils";
 export * from "./visualizationUtils";
+export * from "./seleniumTestUtils";

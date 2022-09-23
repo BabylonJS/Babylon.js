@@ -12,6 +12,8 @@ import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
 import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
+import localStyles from "./graphNode.modules.scss";
+import commonStyles from "./common.modules.scss";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -24,6 +26,7 @@ export class GraphNode {
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
     private _comments: HTMLDivElement;
+    private _selectionBorder: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];
@@ -52,9 +55,9 @@ export class GraphNode {
         this._isVisible = value;
 
         if (!value) {
-            this._visual.classList.add("hidden");
+            this._visual.classList.add(commonStyles["hidden"]);
         } else {
-            this._visual.classList.remove("hidden");
+            this._visual.classList.remove(commonStyles["hidden"]);
             this._upateNodePortNames();
         }
 
@@ -168,7 +171,7 @@ export class GraphNode {
         this._isSelected = value;
 
         if (!value) {
-            this._visual.classList.remove("selected");
+            this._visual.classList.remove(localStyles["selected"]);
             const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
 
             if (indexInSelection > -1) {
@@ -185,11 +188,11 @@ export class GraphNode {
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {
             const { selection: node } = options || {};
             if (node === this) {
-                this._visual.classList.add("selected");
+                this._visual.classList.add(localStyles["selected"]);
             } else {
                 setTimeout(() => {
                     if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
-                        this._visual.classList.remove("selected");
+                        this._visual.classList.remove(localStyles["selected"]);
                     }
                 });
             }
@@ -310,10 +313,25 @@ export class GraphNode {
             this._displayManager.updatePreviewContent(this.content, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.content);
             const additionalClass = this._displayManager.getHeaderClass(this.content);
-            this._header.classList.value = "header";
-            this._headerContainer.classList.value = "header-container";
+            this._header.classList.value = localStyles.header;
+            this._headerContainer.classList.value = localStyles["header-container"];
             if (additionalClass) {
                 this._headerContainer.classList.add(additionalClass);
+            }
+            if (this._displayManager.updateFullVisualContent) {
+                this._displayManager.updateFullVisualContent(this.content, {
+                    visual: this._visual,
+                    header: this._header,
+                    headerContainer: this._headerContainer,
+                    headerIcon: this._headerIcon,
+                    headerIconImg: this._headerIconImg,
+                    comments: this._comments,
+                    connections: this._connections,
+                    inputsContainer: this._inputsContainer,
+                    outputsContainer: this._outputsContainer,
+                    content: this._content,
+                    selectionBorder: this._selectionBorder,
+                });
             }
         } else {
             this._header.innerHTML = this.content.name;
@@ -342,7 +360,7 @@ export class GraphNode {
 
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
-        if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
+        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG") {
             return;
         }
 
@@ -380,13 +398,46 @@ export class GraphNode {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._visual.releasePointerCapture(evt.pointerId);
+
+        if (!this._ownerCanvas._targetLinkCandidate) {
+            return;
+        }
+
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+        const availableNodeOutputs: Nullable<IPortData>[] = [];
+        const leftNode = this._ownerCanvas._targetLinkCandidate.nodeA;
+        const rightNode = this._ownerCanvas._targetLinkCandidate.nodeB!;
+
+        // Delete previous
+        this._ownerCanvas._targetLinkCandidate.dispose();
+        this._ownerCanvas._targetLinkCandidate = null;
+
+        // Get the ports
+        availableNodeInputs.push(...this.content.inputs.filter((i) => !i.isConnected));
+
+        availableNodeOutputs.push(...this.content.outputs);
+
+        inputs.push(...leftNode.content.outputs);
+
+        outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
+
+        // Reconnect
+        this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
+        this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
+
+        this._stateManager.onRebuildRequiredObservable.notifyObservers(false);
     }
 
     private _onMove(evt: PointerEvent) {
+        this._ownerCanvas._targetLinkCandidate = null;
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
 
+        // Move
         const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
@@ -402,6 +453,29 @@ export class GraphNode {
         this._mouseStartPointY = evt.clientY;
 
         evt.stopPropagation();
+
+        if (this._inputPorts.some((p) => p.portData.isConnected) || this._outputPorts.some((o) => o.portData.hasEndpoints)) {
+            return;
+        }
+
+        // Check wires that could be underneath
+        const rect = this._visual.getBoundingClientRect();
+        for (const link of this._ownerCanvas.links) {
+            if (link.portA.node === this || link.portB!.node === this) {
+                link.isTargetCandidate = false;
+                continue;
+            }
+            link.isTargetCandidate = link.intersectsWith(rect);
+
+            if (link.isTargetCandidate) {
+                if (this._ownerCanvas._targetLinkCandidate !== link) {
+                    if (this._ownerCanvas._targetLinkCandidate) {
+                        this._ownerCanvas._targetLinkCandidate.isTargetCandidate = false;
+                    }
+                    this._ownerCanvas._targetLinkCandidate = link;
+                }
+            }
+        }
     }
 
     public renderProperties(): Nullable<JSX.Element> {
@@ -429,51 +503,51 @@ export class GraphNode {
 
         // DOM
         this._visual = root.ownerDocument!.createElement("div");
-        this._visual.classList.add("visual");
+        this._visual.classList.add(localStyles.visual);
 
         this._visual.addEventListener("pointerdown", (evt) => this._onDown(evt));
         this._visual.addEventListener("pointerup", (evt) => this._onUp(evt));
         this._visual.addEventListener("pointermove", (evt) => this._onMove(evt));
 
         this._headerContainer = root.ownerDocument!.createElement("div");
-        this._headerContainer.classList.add("header-container");
+        this._headerContainer.classList.add(localStyles["header-container"]);
         this._visual.appendChild(this._headerContainer);
 
         this._header = root.ownerDocument!.createElement("div");
-        this._header.classList.add("header");
+        this._header.classList.add(localStyles.header);
         this._headerContainer.appendChild(this._header);
 
         this._headerIcon = root.ownerDocument!.createElement("div");
-        this._headerIcon.classList.add("headerIcon");
+        this._headerIcon.classList.add(localStyles.headerIcon);
         this._headerIconImg = root.ownerDocument!.createElement("img");
         this._headerIcon.appendChild(this._headerIconImg);
-        this._visual.appendChild(this._headerIcon);
+        this._headerContainer.appendChild(this._headerIcon);
 
-        const selectionBorder = root.ownerDocument!.createElement("div");
-        selectionBorder.classList.add("selection-border");
-        this._visual.appendChild(selectionBorder);
+        this._selectionBorder = root.ownerDocument!.createElement("div");
+        this._selectionBorder.classList.add("selection-border");
+        this._visual.appendChild(this._selectionBorder);
 
         this._connections = root.ownerDocument!.createElement("div");
-        this._connections.classList.add("connections");
+        this._connections.classList.add(localStyles.connections);
         this._visual.appendChild(this._connections);
 
         this._inputsContainer = root.ownerDocument!.createElement("div");
-        this._inputsContainer.classList.add("inputsContainer");
+        this._inputsContainer.classList.add(commonStyles.inputsContainer);
         this._connections.appendChild(this._inputsContainer);
 
         this._outputsContainer = root.ownerDocument!.createElement("div");
-        this._outputsContainer.classList.add("outputsContainer");
+        this._outputsContainer.classList.add(commonStyles.outputsContainer);
         this._connections.appendChild(this._outputsContainer);
 
         this._content = root.ownerDocument!.createElement("div");
-        this._content.classList.add("content");
+        this._content.classList.add(localStyles.content);
         this._visual.appendChild(this._content);
 
         root.appendChild(this._visual);
 
         // Comments
         this._comments = root.ownerDocument!.createElement("div");
-        this._comments.classList.add("comments");
+        this._comments.classList.add(localStyles.comments);
 
         this._visual.appendChild(this._comments);
 

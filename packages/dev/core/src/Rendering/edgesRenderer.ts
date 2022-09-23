@@ -22,7 +22,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _edgeRenderLineShader: Nullable<ShaderMaterial>;
     }
 }
@@ -123,7 +123,7 @@ export interface IEdgesRenderer extends IDisposable {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
-     * @return true if ready, otherwise false.
+     * @returns true if ready, otherwise false.
      */
     isReady(): boolean;
 
@@ -313,7 +313,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._lineShader = EdgesRenderer._GetShader(this._source.getScene());
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         let buffer = this._buffers[VertexBuffer.PositionKind];
         if (buffer) {
@@ -678,7 +678,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                 this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices, remapVertexIndices);
             }
 
-            (mustTesselate as any) = null;
+            mustTesselate.length = 0;
         }
 
         /**
@@ -912,7 +912,7 @@ export class EdgesRenderer implements IEdgesRenderer {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
-     * @return true if ready, otherwise false.
+     * @returns true if ready, otherwise false.
      */
     public isReady(): boolean {
         return this._lineShader.isReady(this._source, (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances);

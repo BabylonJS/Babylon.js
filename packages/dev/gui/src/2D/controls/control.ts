@@ -22,6 +22,7 @@ import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IAccessibilityTag } from "core/IAccessibilityTag";
+import type { IPointerEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Root class used for all 2D controls
@@ -36,61 +37,61 @@ export class Control {
     private _alpha = 1;
     private _alphaSet = false;
     private _zIndex = 0;
-    /** @hidden */
+    /** @internal */
     public _host: AdvancedDynamicTexture;
     /** Gets or sets the control parent */
     public parent: Nullable<Container>;
-    /** @hidden */
+    /** @internal */
     public _currentMeasure = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     public _tempPaddingMeasure = Measure.Empty();
     private _fontFamily = "Arial";
     private _fontStyle = "";
     private _fontWeight = "";
     private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
     private _font: string;
-    /** @hidden */
+    /** @internal */
     public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    /** @hidden */
+    /** @internal */
     public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    /** @hidden */
+    /** @internal */
     protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
     private _style: Nullable<Style> = null;
     private _styleObserver: Nullable<Observer<Style>>;
-    /** @hidden */
+    /** @internal */
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    /** @hidden */
+    /** @internal */
     protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    /** @hidden */
+    /** @internal */
     protected _isDirty = true;
-    /** @hidden */
+    /** @internal */
     protected _wasDirty = false;
-    /** @hidden */
+    /** @internal */
     public _tempParentMeasure = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     protected _cachedParentMeasure = Measure.Empty();
     private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
     private _paddingTop = new ValueAndUnit(0);
     private _paddingBottom = new ValueAndUnit(0);
-    /** @hidden */
+    /** @internal */
     public _left = new ValueAndUnit(0);
-    /** @hidden */
+    /** @internal */
     public _top = new ValueAndUnit(0);
     private _scaleX = 1.0;
     private _scaleY = 1.0;
     private _rotation = 0;
     private _transformCenterX = 0.5;
     private _transformCenterY = 0.5;
-    /** @hidden */
+    /** @internal */
     public _transformMatrix = Matrix2D.Identity();
-    /** @hidden */
+    /** @internal */
     protected _invertTransformMatrix = Matrix2D.Identity();
-    /** @hidden */
+    /** @internal */
     protected _transformedPosition = Vector2.Zero();
     private _isMatrixDirty = true;
     private _cachedOffsetX: number;
@@ -99,7 +100,7 @@ export class Control {
     private _isHighlighted = false;
     private _highlightColor = "#4affff";
     protected _highlightLineWidth = 2;
-    /** @hidden */
+    /** @internal */
     public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
     private _dummyVector2 = Vector2.Zero();
@@ -113,19 +114,19 @@ export class Control {
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
     protected _isReadOnly = false;
-    /** @hidden */
+    /** @internal */
     protected _rebuildLayout = false;
 
-    /** @hidden */
+    /** @internal */
     public _customData: any = {};
 
-    /** @hidden */
+    /** @internal */
     public _isClipped = false;
 
-    /** @hidden */
+    /** @internal */
     public _automaticSize = false;
 
-    /** @hidden */
+    /** @internal */
     public _tag: any;
 
     /**
@@ -267,9 +268,9 @@ export class Control {
     @serialize()
     public hoverCursor = "";
 
-    /** @hidden */
+    /** @internal */
     protected _linkOffsetX = new ValueAndUnit(0);
-    /** @hidden */
+    /** @internal */
     protected _linkOffsetY = new ValueAndUnit(0);
 
     // Properties
@@ -724,7 +725,7 @@ export class Control {
         this._resetFontCache();
     }
 
-    /** @hidden */
+    /** @internal */
     public get _isFontSizeInPercentage(): boolean {
         return this._fontSize.isPercentage;
     }
@@ -888,7 +889,7 @@ export class Control {
         this.paddingLeft = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingLeftInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -927,7 +928,7 @@ export class Control {
         this.paddingRight = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingRightInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -966,7 +967,7 @@ export class Control {
         this.paddingTop = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingTopInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -1005,7 +1006,7 @@ export class Control {
         this.paddingBottom = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingBottomInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -1228,7 +1229,7 @@ export class Control {
         public name?: string
     ) {}
 
-    /** @hidden */
+    /** @internal */
     protected _getTypeName(): string {
         return "Control";
     }
@@ -1265,7 +1266,7 @@ export class Control {
         this._markAllAsDirty();
     }
 
-    /** @hidden */
+    /** @internal */
     public _resetFontCache(): void {
         this._fontSet = true;
         this._markAsDirty();
@@ -1367,7 +1368,7 @@ export class Control {
      * Will return all controls that have this control as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all child controls
+     * @returns all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         const results = new Array<Control>();
@@ -1448,8 +1449,7 @@ export class Control {
     }
 
     /**
-     * @param projectedPosition
-     * @hidden
+     * @internal
      */
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
         const oldLeft = this._left.getValue(this._host);
@@ -1482,8 +1482,7 @@ export class Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetLeft(offset: number) {
         this._isDirty = true;
@@ -1491,29 +1490,26 @@ export class Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetTop(offset: number) {
         this._isDirty = true;
         this._currentMeasure.top += offset;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markMatrixAsDirty(): void {
         this._isMatrixDirty = true;
         this._flagDescendantsAsMatrixDirty();
     }
 
-    /** @hidden */
+    /** @internal */
     public _flagDescendantsAsMatrixDirty(): void {
         // No child
     }
 
     /**
-     * @param rect
-     * @param context
-     * @hidden
+     * @internal
      */
     public _intersectsRect(rect: Measure, context?: ICanvasRenderingContext) {
         // make sure we are transformed correctly before checking intersections. no-op if nothing is dirty.
@@ -1537,17 +1533,17 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _computeAdditionnalOffsetX() {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _computeAdditionnalOffsetY() {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected invalidateRect() {
         this._transform();
@@ -1581,8 +1577,7 @@ export class Control {
     }
 
     /**
-     * @param force
-     * @hidden
+     * @internal
      */
     public _markAsDirty(force = false): void {
         if (!this._isVisible && !force) {
@@ -1598,7 +1593,7 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAllAsDirty(): void {
         this._markAsDirty();
 
@@ -1608,8 +1603,7 @@ export class Control {
     }
 
     /**
-     * @param host
-     * @hidden
+     * @internal
      */
     public _link(host: AdvancedDynamicTexture): void {
         this._host = host;
@@ -1619,8 +1613,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _transform(context?: ICanvasRenderingContext): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
@@ -1657,8 +1650,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _renderHighlight(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
@@ -1674,16 +1666,14 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _applyStates(context: ICanvasRenderingContext): void {
         if (this._isFontSizeInPercentage) {
@@ -1715,9 +1705,7 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
@@ -1763,9 +1751,7 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._tempPaddingMeasure.copyFrom(parentMeasure);
@@ -1832,7 +1818,7 @@ export class Control {
         this._isClipped = false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _measure(): void {
         // Width / Height
         if (this._width.isPixel) {
@@ -1857,9 +1843,7 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         const width = this._currentMeasure.width;
@@ -1943,26 +1927,21 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _clipForChildren(context: ICanvasRenderingContext): void {
         // DO nothing
@@ -2010,9 +1989,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
@@ -2060,9 +2037,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
@@ -2105,15 +2080,7 @@ export class Control {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param pi
-     * @param type
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
@@ -2133,11 +2100,7 @@ export class Control {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: Nullable<PointerInfoBase>): void {
         const canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
@@ -2148,9 +2111,7 @@ export class Control {
     }
 
     /**
-     * @param target
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerEnter(target: Control, pi: Nullable<PointerInfoBase>): boolean {
         if (!this._isEnabled) {
@@ -2176,10 +2137,7 @@ export class Control {
     }
 
     /**
-     * @param target
-     * @param pi
-     * @param force
-     * @hidden
+     * @internal
      */
     public _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force = false): void {
         if (!force && (!this._isEnabled || target === this)) {
@@ -2199,12 +2157,7 @@ export class Control {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: Nullable<PointerInfoBase>): boolean {
         // Prevent pointerout to lose control context.
@@ -2225,17 +2178,15 @@ export class Control {
             this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
         }
 
+        if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
+            this._host._capturedPointerIds.add((pi.event as IPointerEvent).pointerId);
+        }
+
         return true;
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param notifyClick
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: Nullable<PointerInfoBase>): void {
         if (!this._isEnabled) {
@@ -2254,11 +2205,14 @@ export class Control {
         if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
         }
+
+        if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
+            this._host._capturedPointerIds.delete((pi.event as IPointerEvent).pointerId);
+        }
     }
 
     /**
-     * @param pointerId
-     * @hidden
+     * @internal
      */
     public _forcePointerUp(pointerId: Nullable<number> = null) {
         if (pointerId !== null) {
@@ -2271,9 +2225,7 @@ export class Control {
     }
 
     /**
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _onWheelScroll(deltaX?: number, deltaY?: number): void {
         if (!this._isEnabled) {
@@ -2286,19 +2238,11 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _onCanvasBlur(): void {}
 
     /**
-     * @param type
-     * @param x
-     * @param y
-     * @param pi
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processObservables(
         type: number,
@@ -2390,9 +2334,7 @@ export class Control {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         if (serializedObject.fontFamily) {
@@ -2489,8 +2431,7 @@ export class Control {
     private static _FontHeightSizes: { [key: string]: { ascent: number; height: number; descent: number } } = {};
 
     /**
-     * @param font
-     * @hidden
+     * @internal
      */
     public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
@@ -2528,12 +2469,7 @@ export class Control {
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param context
-     * @hidden
+     * @internal
      */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);

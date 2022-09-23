@@ -26,11 +26,14 @@ import highlightIcon from "shared-ui-components/imgs/highlightIcon.svg";
 import textPlaceholderIcon from "shared-ui-components/imgs/textPlaceholderIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IInputTextPropertyGridComponentProps {
     inputTexts: InputText[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
@@ -44,7 +47,13 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={inputTexts} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={inputTexts}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="INPUT TEXT" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

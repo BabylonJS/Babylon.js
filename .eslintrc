@@ -33,6 +33,40 @@
                 "tsconfigRootDir": "./",
                 "project": "./tsconfig.json"
             }
+        },
+        {
+            "files": ["packages/**/src/**/*.{ts,tsx}"],
+            "rules": {
+                // "babylonjs/existing": "error",
+                "babylonjs/available": [
+                    "warn",
+                    {
+                        "contexts": [
+                            "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            // "FunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            // "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            "MethodDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                        ]
+                    }
+                ],
+                "jsdoc/require-jsdoc": [
+                    "warn",
+                    {
+                        "contexts": [
+                            "TSInterfaceDeclaration",
+                            // "TSMethodSignature",
+                            "TSPropertySignature",
+                            "PropertyDefinition:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            "ArrowFunctionExpression:not([accessibility=\"private\"]):not([accessibility=\"protected\"])",
+                            "ClassDeclaration",
+                            "ClassExpression",
+                            "TSInterfaceDeclaration",
+                            "FunctionDeclaration:not([accessibility=\"private\"]):not([accessibility=\"protected\"])"
+                        ],
+                        "publicOnly": true
+                    }
+                ]
+            }
         }
     ],
     "env": {
@@ -45,7 +79,7 @@
         // "prettier", // add this if we want to use prettier error reporting
         "jest",
         // "@typescript-eslint"
-        "eslint-plugin-tsdoc",
+        "babylonjs",
         "jsdoc"
     ],
     "extends": [
@@ -62,6 +96,10 @@
         "react": {
             "pragma": "h",
             "createClass": ""
+        },
+        "jsdoc": {
+            "ignorePrivate": true,
+            "ignoreInternal" : true 
         }
     },
     "rules": {
@@ -186,10 +224,12 @@
         "template-tag-spacing": "error",
         "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["afterEach"] }],
         "jest/valid-expect": "off",
-        // "tsdoc/syntax": "error",
-        "jsdoc/check-param-names": "warn",
+        "babylonjs/syntax": "warn",
+        "jsdoc/check-param-names": ["warn", { "checkRestProperty": false }],
         "jsdoc/check-property-names": "error",
-        "jsdoc/require-param": "error",
+        "jsdoc/require-param": ["error", { "checkDestructured": false, "checkRestProperty": false, "contexts":[
+            // {"comment":"JsdocBlock:has(JsdocTag[tag=\"hidden\"])"}
+        ]}],
         "jsdoc/require-param-name": "error",
         // "jsdoc/require-returns": "warn",
         // "jsdoc/require-returns-check": "error",

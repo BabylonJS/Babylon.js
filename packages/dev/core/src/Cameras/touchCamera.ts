@@ -73,13 +73,13 @@ export class TouchCamera extends FreeCamera {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "TouchCamera";
     }
 
-    /** @hidden */
+    /** @internal */
     public _setupInputs() {
         const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];

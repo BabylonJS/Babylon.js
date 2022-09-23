@@ -275,7 +275,7 @@ export class WindowsMotionController extends WebVRController {
      * Moves the axis on the controller mesh based on its current state
      * @param axis the index of the axis
      * @param axisValue the value of the axis which determines the meshes new position
-     * @hidden
+     * @internal
      */
     protected _lerpAxisTransform(axis: number, axisValue: number) {
         if (!this._loadedMeshInfo) {
@@ -368,7 +368,7 @@ export class WindowsMotionController extends WebVRController {
      *
      * @param scene scene in which the meshes exist
      * @param meshes list of meshes that make up the controller model to process
-     * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+     * @returns structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
      */
     private _processModel(scene: Scene, meshes: AbstractMesh[]): Nullable<LoadedMeshInfo> {
         let loadedMeshInfo = null;

@@ -55,7 +55,7 @@ declare module "../abstractScene" {
 declare module "../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing field
          */
         _mainSoundTrack: SoundTrack;
@@ -73,7 +73,7 @@ declare module "../scene" {
         /**
          * Gets a sound using a given name
          * @param name defines the name to search for
-         * @return the found sound or null if not found at all.
+         * @returns the found sound or null if not found at all.
          */
         getSoundByName(name: string): Nullable<Sound>;
 

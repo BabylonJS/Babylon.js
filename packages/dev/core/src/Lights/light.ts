@@ -315,27 +315,27 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Shadow generator associated to the light.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _shadowGenerator: Nullable<IShadowGenerator>;
 
     /**
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _excludedMeshesIds = new Array<string>();
 
     /**
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _includedOnlyMeshesIds = new Array<string>();
 
     /**
      * The current light uniform buffer.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
 
-    /** @hidden */
+    /** @internal */
     public _renderId: number;
 
     private _lastUseSpecular: boolean;
@@ -446,7 +446,7 @@ export abstract class Light extends Node implements ISortableLight {
         return "Light";
     }
 
-    /** @hidden */
+    /** @internal */
     public readonly _isLight = true;
 
     /**
@@ -465,7 +465,7 @@ export abstract class Light extends Node implements ISortableLight {
         return ret;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _syncParentEnabledState() {
         super._syncParentEnabledState();
         if (!this.isDisposed()) {
@@ -485,7 +485,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Returns the Light associated shadow generator if any.
-     * @return the associated shadow generator.
+     * @returns the associated shadow generator.
      */
     public getShadowGenerator(): Nullable<IShadowGenerator> {
         return this._shadowGenerator;
@@ -502,7 +502,7 @@ export abstract class Light extends Node implements ISortableLight {
     /**
      * Specifies if the light will affect the passed mesh.
      * @param mesh The mesh to test against the light
-     * @return true the mesh is affected otherwise, false.
+     * @returns true the mesh is affected otherwise, false.
      */
     public canAffectMesh(mesh: AbstractMesh): boolean {
         if (!mesh) {
@@ -788,7 +788,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Forces the meshes to update their light related information in their rendering used effects
-     * @hidden Internal Use Only
+     * @internal Internal Use Only
      */
     public _markMeshesAsLightDirty() {
         for (const mesh of this.getScene().meshes) {
@@ -868,7 +868,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Reorder the light in the scene according to their defined priority.
-     * @hidden Internal Use Only
+     * @internal Internal Use Only
      */
     public _reorderLightsInScene(): void {
         const scene = this.getScene();

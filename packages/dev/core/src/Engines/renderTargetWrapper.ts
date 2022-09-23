@@ -24,17 +24,18 @@ export class RenderTargetWrapper {
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
+    private _samples = 1;
 
-    /** @hidden */
+    /** @internal */
     public _attachments: Nullable<number[]> = null;
-    /** @hidden */
+    /** @internal */
     public _generateStencilBuffer: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _generateDepthBuffer: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _depthStencilTexture: Nullable<InternalTexture>;
-    /** @hidden */
+    /** @internal */
     public _depthStencilTextureWithStencil: boolean = false;
 
     /**
@@ -118,7 +119,7 @@ export class RenderTargetWrapper {
      * Gets the sample count of the render target
      */
     public get samples(): number {
-        return this.texture?.samples ?? 1;
+        return this._samples;
     }
 
     /**
@@ -133,9 +134,11 @@ export class RenderTargetWrapper {
             return value;
         }
 
-        return this._isMulti
+        const result = this._isMulti
             ? this._engine.updateMultipleRenderTargetTextureSampleCount(this, value, initializeBuffers)
             : this._engine.updateRenderTargetTextureSampleCount(this, value);
+        this._samples = value;
+        return result;
     }
 
     /**
@@ -221,7 +224,7 @@ export class RenderTargetWrapper {
 
     /**
      * Shares the depth buffer of this render target with another render target.
-     * @hidden
+     * @internal
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: RenderTargetWrapper): void {
@@ -236,8 +239,7 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * @param target
-     * @hidden
+     * @internal
      */
     public _swapAndDie(target: InternalTexture): void {
         if (this.texture) {
@@ -331,7 +333,7 @@ export class RenderTargetWrapper {
         this._depthStencilTexture = null;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         const rtw = this._cloneRenderTargetWrapper();
         if (!rtw) {

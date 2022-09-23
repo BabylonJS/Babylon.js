@@ -5,7 +5,7 @@ import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { ThinEngine } from "../thinEngine";
 
-/** @hidden */
+/** @internal */
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     private _context: WebGLRenderingContext;
 
@@ -51,7 +51,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
     /**
      * Shares the depth buffer of this render target with another render target.
-     * @hidden
+     * @internal
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: WebGLRenderTargetWrapper): void {
@@ -59,7 +59,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         const gl = this._context;
         const depthbuffer = this._depthStencilBuffer;
-        const framebuffer = renderTarget._framebuffer;
+        const framebuffer = renderTarget._MSAAFramebuffer || renderTarget._framebuffer;
 
         if (renderTarget._depthStencilBuffer) {
             gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);

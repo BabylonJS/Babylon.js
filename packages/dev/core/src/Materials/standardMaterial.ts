@@ -5,7 +5,7 @@ import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
 
 import type { Nullable } from "../types";
-import { Scene } from "../scene";
+import { Scene, ScenePerformancePriority } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -41,7 +41,7 @@ import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-/** @hidden */
+/** @internal */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
@@ -175,6 +175,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public MULTIVIEW = false;
@@ -183,12 +184,12 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
 
     /**
      * If the reflection texture on this material is in linear color space
-     * @hidden
+     * @internal
      */
     public IS_REFLECTION_LINEAR = false;
     /**
      * If the refraction texture on this material is in linear color space
-     * @hidden
+     * @internal
      */
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;
@@ -931,6 +932,14 @@ export class StandardMaterial extends PushMaterial {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
+                defines.DIFFUSEDIRECTUV = 0;
+                defines.BUMPDIRECTUV = 0;
+                defines.AMBIENTDIRECTUV = 0;
+                defines.OPACITYDIRECTUV = 0;
+                defines.EMISSIVEDIRECTUV = 0;
+                defines.SPECULARDIRECTUV = 0;
+                defines.LIGHTMAPDIRECTUV = 0;
+
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -1451,6 +1460,10 @@ export class StandardMaterial extends PushMaterial {
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+
+        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+            this.checkReadyOnlyOnce = true;
+        }
 
         return true;
     }

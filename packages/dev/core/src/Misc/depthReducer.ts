@@ -61,11 +61,7 @@ export class DepthReducer extends MinMaxReducer {
     }
 
     /**
-     * @param sourceTexture
-     * @param depthRedux
-     * @param type
-     * @param forceFullscreenViewport
-     * @hidden
+     * @internal
      */
     public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         super.setSourceTexture(sourceTexture, depthRedux, type, forceFullscreenViewport);

@@ -91,7 +91,7 @@ export class CubeTexture extends BaseTexture {
 
     private _noMipmap: boolean;
 
-    /** @hidden */
+    /** @internal */
     @serialize("files")
     public _files: Nullable<string[]> = null;
 
@@ -137,7 +137,7 @@ export class CubeTexture extends BaseTexture {
      * @param scene defines the scene the texture is attached to
      * @param forcedExtension defines the extension of the file if different from the url
      * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
-     * @return the prefiltered texture
+     * @returns the prefiltered texture
      */
     public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
         const oldValue = scene.useDelayedTextureLoading;
@@ -168,7 +168,7 @@ export class CubeTexture extends BaseTexture {
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @param loaderOptions options to be passed to the loader
      * @param useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false)
-     * @return the cube texture
+     * @returns the cube texture
      */
     constructor(
         rootUrl: string,
@@ -255,6 +255,7 @@ export class CubeTexture extends BaseTexture {
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
         const isDDS = extension.indexOf(".dds") === 0;
         const isEnv = extension.indexOf(".env") === 0;
+        const isBasis = extension.indexOf(".basis") === 0;
 
         if (isEnv) {
             this.gammaSpace = false;
@@ -272,7 +273,7 @@ export class CubeTexture extends BaseTexture {
         if (files) {
             this._files = files;
         } else {
-            if (!isEnv && !isDDS && !extensions) {
+            if (!isBasis && !isEnv && !isDDS && !extensions) {
                 extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
             }
 

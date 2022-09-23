@@ -1,11 +1,11 @@
-import type { Engine } from "../../Engines/engine";
-import type { IUIEvent } from "../../Events/deviceInputEvents";
-import { DomManagement } from "../../Misc/domManagement";
-import type { Observer } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
-import type { Nullable } from "../../types";
-import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType, PointerInput } from "./deviceEnums";
+import type { Engine } from "../Engines/engine";
+import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
+import { DomManagement } from "../Misc/domManagement";
+import type { Observer } from "../Misc/observable";
+import { Tools } from "../Misc/tools";
+import type { Nullable } from "../types";
+import { DeviceEventFactory } from "./eventFactory";
+import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -13,7 +13,7 @@ const MAX_KEYCODES = 255;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
-/** @hidden */
+/** @internal */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     // Private Members
     private _inputs: Array<{ [deviceSlot: number]: Array<number> }> = [];
@@ -420,11 +420,18 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
+                const deviceEvent = evt as IPointerEvent;
+                deviceEvent.inputIndex = PointerInput.Move;
+
+                if (evt.movementX === undefined) {
+                    evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || evt.clientX - pointer[PointerInput.Horizontal];
+                }
+                if (evt.movementY === undefined) {
+                    evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || evt.clientY - pointer[PointerInput.Vertical];
+                }
+
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
-
-                const deviceEvent = evt as IUIEvent;
-                deviceEvent.inputIndex = PointerInput.Move;
 
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
@@ -513,6 +520,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
+                    if (evt.movementX === undefined) {
+                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || evt.clientX - pointer[PointerInput.Horizontal];
+                    }
+                    if (evt.movementY === undefined) {
+                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || evt.clientY - pointer[PointerInput.Vertical];
+                    }
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
             }
@@ -543,6 +556,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
+                    if (evt.movementX === undefined) {
+                        evt.movementX = evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || evt.clientX - pointer[PointerInput.Horizontal];
+                    }
+                    if (evt.movementY === undefined) {
+                        evt.movementY = evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || evt.clientY - pointer[PointerInput.Vertical];
+                    }
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
 

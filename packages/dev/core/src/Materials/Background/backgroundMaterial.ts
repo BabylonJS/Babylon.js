@@ -13,6 +13,7 @@ import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import type { Nullable, int, float } from "../../types";
 import type { Scene } from "../../scene";
+import { ScenePerformancePriority } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -41,7 +42,7 @@ import { EffectFallbacks } from "../effectFallbacks";
 
 /**
  * Background material defines definition.
- * @hidden Mainly internal Use
+ * @internal Mainly internal Use
  */
 class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     /**
@@ -133,6 +134,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
@@ -724,6 +726,7 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.OPACITYFRESNEL = this._opacityFresnel;
                 } else {
                     defines.DIFFUSE = false;
+                    defines.DIFFUSEDIRECTUV = 0;
                     defines.DIFFUSEHASALPHA = false;
                     defines.GAMMADIFFUSE = false;
                     defines.OPACITYFRESNEL = false;
@@ -968,6 +971,10 @@ export class BackgroundMaterial extends PushMaterial {
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+
+        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+            this.checkReadyOnlyOnce = true;
+        }
 
         return true;
     }

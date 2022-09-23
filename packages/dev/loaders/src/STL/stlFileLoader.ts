@@ -14,14 +14,14 @@ import type { Scene } from "core/scene";
  * This is a babylon scene loader plugin.
  */
 export class STLFileLoader implements ISceneLoaderPlugin {
-    /** @hidden */
+    /** @internal */
     public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
 
-    /** @hidden */
+    /** @internal */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
-    /** @hidden */
+    /** @internal */
     public normalPattern = /normal[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
-    /** @hidden */
+    /** @internal */
     public vertexPattern = /vertex[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
 
     /**
@@ -61,7 +61,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             if (this._isBinary(data)) {
                 // binary .stl
                 const babylonMesh = new Mesh("stlmesh", scene);
-                this._parseBinary(babylonMesh, data);
+                this._parseBinary(babylonMesh, data, scene.useRightHandedSystem);
                 if (meshes) {
                     meshes.push(babylonMesh);
                 }
@@ -106,7 +106,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             meshName = meshName || "stlmesh";
 
             const babylonMesh = new Mesh(meshName, scene);
-            this._parseASCII(babylonMesh, matches[2]);
+            this._parseASCII(babylonMesh, matches[2], scene.useRightHandedSystem);
             if (meshes) {
                 meshes.push(babylonMesh);
             }
@@ -170,7 +170,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         return false;
     }
 
-    private _parseBinary(mesh: Mesh, data: ArrayBuffer) {
+    private _parseBinary(mesh: Mesh, data: ArrayBuffer, rightHanded: boolean) {
         const reader = new DataView(data);
         const faces = reader.getUint32(80, true);
 
@@ -213,9 +213,17 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
                 offset += 3;
             }
-            indices[indicesCount] = indicesCount++;
-            indices[indicesCount] = indicesCount++;
-            indices[indicesCount] = indicesCount++;
+
+            if (rightHanded) {
+                indices[indicesCount] = indicesCount;
+                indices[indicesCount + 1] = indicesCount + 2;
+                indices[indicesCount + 2] = indicesCount + 1;
+                indicesCount += 3;
+            } else {
+                indices[indicesCount] = indicesCount++;
+                indices[indicesCount] = indicesCount++;
+                indices[indicesCount] = indicesCount++;
+            }
         }
 
         mesh.setVerticesData(VertexBuffer.PositionKind, positions);
@@ -224,7 +232,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         mesh.computeWorldMatrix(true);
     }
 
-    private _parseASCII(mesh: Mesh, solidData: string) {
+    private _parseASCII(mesh: Mesh, solidData: string, rightHanded: boolean) {
         const positions = [];
         const normals = [];
         const indices = [];
@@ -255,7 +263,12 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                     normals.push(normal[0], normal[2], normal[1]);
                 }
             }
-            indices.push(indicesCount++, indicesCount++, indicesCount++);
+            if (rightHanded) {
+                indices.push(indicesCount, indicesCount + 2, indicesCount + 1);
+                indicesCount += 3;
+            } else {
+                indices.push(indicesCount++, indicesCount++, indicesCount++);
+            }
             this.vertexPattern.lastIndex = 0;
         }
 

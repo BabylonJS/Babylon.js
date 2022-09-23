@@ -4,8 +4,8 @@ import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { DeviceSource } from "./deviceSource";
-import type { IObservableManager, DeviceSourceType } from "./internalDeviceSourceManager";
-import { InternalDeviceSourceManager } from "./internalDeviceSourceManager";
+import type { IObservableManager, DeviceSourceType } from "../internalDeviceSourceManager";
+import { InternalDeviceSourceManager } from "../internalDeviceSourceManager";
 import type { IDisposable } from "../../scene";
 import type { ThinEngine } from "../../Engines/thinEngine";
 import type { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
@@ -125,7 +125,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Hidden Functions
     /**
      * @param deviceSource - Source to add
-     * @hidden
+     * @internal
      */
     public _addDevice(deviceSource: DeviceSourceType): void {
         if (!this._devices[deviceSource.deviceType]) {
@@ -143,7 +143,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     /**
      * @param deviceType - DeviceType
      * @param deviceSlot - DeviceSlot
-     * @hidden
+     * @internal
      */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
         const deviceSource = this._devices[deviceType]?.[deviceSlot]; // Grab local reference to use before removing from devices
@@ -159,7 +159,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @param deviceType - DeviceType
      * @param deviceSlot - DeviceSlot
      * @param eventData - Event
-     * @hidden
+     * @internal
      */
     public _onInputChanged<T extends DeviceType>(deviceType: T, deviceSlot: number, eventData: IUIEvent): void {
         this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData as IKeyboardEvent | IWheelEvent | IPointerEvent);

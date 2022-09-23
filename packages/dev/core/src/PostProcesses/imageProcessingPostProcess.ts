@@ -322,6 +322,32 @@ export class ImageProcessingPostProcess extends PostProcess {
         this.imageProcessingConfiguration.vignetteEnabled = value;
     }
 
+    /**
+     * Gets intensity of the dithering effect.
+     */
+    public get ditheringIntensity(): number {
+        return this.imageProcessingConfiguration.ditheringIntensity;
+    }
+    /**
+     * Sets intensity of the dithering effect.
+     */
+    public set ditheringIntensity(value: number) {
+        this.imageProcessingConfiguration.ditheringIntensity = value;
+    }
+
+    /**
+     * Gets whether the dithering effect is enabled.
+     */
+    public get ditheringEnabled(): boolean {
+        return this.imageProcessingConfiguration.ditheringEnabled;
+    }
+    /**
+     * Sets whether the dithering effect is enabled.
+     */
+    public set ditheringEnabled(value: boolean) {
+        this.imageProcessingConfiguration.ditheringEnabled = value;
+    }
+
     @serialize()
     private _fromLinearSpace = true;
     /**
@@ -359,6 +385,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         FROMLINEARSPACE: false,
         SAMPLER3DGREENDEPTH: false,
         SAMPLER3DBGRMAP: false,
+        DITHER: false,
         IMAGEPROCESSINGPOSTPROCESS: false,
         EXPOSURE: false,
         SKIPFINALCOLORCLAMP: false,
@@ -403,7 +430,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;

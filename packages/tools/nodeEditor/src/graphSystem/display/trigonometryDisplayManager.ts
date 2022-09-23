@@ -3,6 +3,7 @@ import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryB
 import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import styles from "./trigonometryDisplayManager.modules.scss";
 
 export class TrigonometryDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -24,7 +25,7 @@ export class TrigonometryDisplayManager implements IDisplayManager {
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         const trigonometryBlock = nodeData.data as TrigonometryBlock;
 
-        contentArea.classList.add("trigonometry-block");
+        contentArea.classList.add(styles["trigonometry-block"]);
         contentArea.innerHTML = TrigonometryBlockOperations[trigonometryBlock.operation];
     }
 }

@@ -14,7 +14,7 @@ declare type RenderTargetTexture = import("./Materials/Textures/renderTargetText
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
- * @hidden
+ * @internal
  */
 export class SceneComponentConstants {
     public static readonly NAME_EFFECTLAYER = "EffectLayer";
@@ -219,11 +219,17 @@ export type PointerMoveStageAction = (
 /**
  * Strong typing of a pointer up/down action.
  */
-export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
+export type PointerUpDownStageAction = (
+    unTranslatedPointerX: number,
+    unTranslatedPointerY: number,
+    pickResult: Nullable<PickingInfo>,
+    evt: IPointerEvent,
+    doubleClick: boolean
+) => Nullable<PickingInfo>;
 
 /**
  * Representation of a stage in the scene (Basically a list of ordered steps)
- * @hidden
+ * @internal
  */
 export class Stage<T extends Function> extends Array<{ index: number; component: ISceneComponent; action: T }> {
     /**

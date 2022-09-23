@@ -23,7 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/mrdlBackplate.fragment";
 import "./shaders/mrdlBackplate.vertex";
 
-/** @hidden */
+/** @internal */
 class MRDLBackplateMaterialDefines extends MaterialDefines {
     /*
         "IRIDESCENCE_ENABLE", "SMOOTH_EDGES"
@@ -67,7 +67,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     @serialize()
     public absoluteSizes = false;
 
-    /** @hidden */
+    /** @internal */
     public _filterWidth = 1;
 
     /**
@@ -106,7 +106,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     @serialize()
     public radiusBottomRight = 1.0;
 
-    /** @hidden */
+    /** @internal */
     public _rate = 0;
 
     /**
@@ -121,10 +121,10 @@ export class MRDLBackplateMaterial extends PushMaterial {
     @serialize()
     public highlightWidth = 0;
 
-    /** @hidden */
+    /** @internal */
     public _highlightTransform = new Vector4(1, 1, 0, 0);
 
-    /** @hidden */
+    /** @internal */
     public _highlight = 1;
 
     /**
@@ -145,7 +145,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     @serialize()
     public iridescenceTint = new Color4(1, 1, 1, 1);
 
-    /** @hidden */
+    /** @internal */
     public _angle = -45;
 
     /**
@@ -154,13 +154,13 @@ export class MRDLBackplateMaterial extends PushMaterial {
     @serialize()
     public fadeOut = 1;
 
-    /** @hidden */
+    /** @internal */
     public _reflected = true;
 
-    /** @hidden */
+    /** @internal */
     public _frequency = 1;
 
-    /** @hidden */
+    /** @internal */
     public _verticalOffset = 0;
 
     /**

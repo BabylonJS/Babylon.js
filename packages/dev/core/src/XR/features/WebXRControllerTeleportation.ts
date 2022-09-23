@@ -63,6 +63,10 @@ export interface IWebXRTeleportationOptions {
          * Override the default material of the torus and arrow
          */
         torusArrowMaterial?: Material;
+        /**
+         * Override the default material of the Landing Zone
+         */
+        teleportationCircleMaterial?: Material;
     };
     /**
      * A list of meshes to use as floor meshes.
@@ -697,25 +701,31 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             : this._xrSessionManager.scene;
         const teleportationTarget = CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
-        const length = 512;
-        const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
-        dynamicTexture.hasAlpha = true;
-        const context = dynamicTexture.getContext();
-        const centerX = length / 2;
-        const centerY = length / 2;
-        const radius = 200;
-        context.beginPath();
-        context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
-        context.fill();
-        context.lineWidth = 10;
-        context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
-        context.stroke();
-        context.closePath();
-        dynamicTexture.update();
-        const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
-        teleportationCircleMaterial.diffuseTexture = dynamicTexture;
-        teleportationTarget.material = teleportationCircleMaterial;
+
+        if (this._options.defaultTargetMeshOptions.teleportationCircleMaterial) {
+            teleportationTarget.material = this._options.defaultTargetMeshOptions.teleportationCircleMaterial;
+        } else {
+            const length = 512;
+            const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
+            dynamicTexture.hasAlpha = true;
+            const context = dynamicTexture.getContext();
+            const centerX = length / 2;
+            const centerY = length / 2;
+            const radius = 200;
+            context.beginPath();
+            context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
+            context.fill();
+            context.lineWidth = 10;
+            context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
+            context.stroke();
+            context.closePath();
+            dynamicTexture.update();
+            const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
+            teleportationCircleMaterial.diffuseTexture = dynamicTexture;
+            teleportationTarget.material = teleportationCircleMaterial;
+        }
+
         const torus = CreateTorus(
             "torusTeleportation",
             {

@@ -13,6 +13,7 @@ export class ScrollBar extends BaseSlider {
     private _background = "black";
     private _borderColor = "white";
     private _tempMeasure = new Measure(0, 0, 0, 0);
+    private _invertScrollDirection = false;
 
     /** Gets or sets border color */
     @serialize()
@@ -42,6 +43,16 @@ export class ScrollBar extends BaseSlider {
 
         this._background = value;
         this._markAsDirty();
+    }
+
+    /** Inverts the scrolling direction (default: false) */
+    @serialize()
+    public get invertScrollDirection() {
+        return this._invertScrollDirection;
+    }
+
+    public set invertScrollDirection(invert: boolean) {
+        this._invertScrollDirection = invert;
     }
 
     /**
@@ -104,9 +115,7 @@ export class ScrollBar extends BaseSlider {
     private _originY: number;
 
     /**
-     * @param x
-     * @param y
-     * @hidden
+     * @internal
      */
     protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
@@ -114,6 +123,8 @@ export class ScrollBar extends BaseSlider {
             x = this._transformedPosition.x;
             y = this._transformedPosition.y;
         }
+
+        const sign = this._invertScrollDirection ? -1 : 1;
 
         if (this._first) {
             this._first = false;
@@ -143,7 +154,7 @@ export class ScrollBar extends BaseSlider {
             delta = (x - this._originX) / (this._currentMeasure.width - this._effectiveThumbThickness);
         }
 
-        this.value += delta * (this.maximum - this.minimum);
+        this.value += sign * delta * (this.maximum - this.minimum);
 
         this._originX = x;
         this._originY = y;

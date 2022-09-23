@@ -202,6 +202,9 @@ export class BaseParticleSystem {
      */
     public preventAutoStart: boolean = false;
 
+    /** @internal */
+    _wasDispatched = false;
+
     protected _rootUrl = "";
     private _noiseTexture: Nullable<ProceduralTexture>;
 
@@ -278,7 +281,7 @@ export class BaseParticleSystem {
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
-    /** @hidden */
+    /** @internal */
     public _isAnimationSheetEnabled: boolean;
 
     /**
@@ -321,6 +324,19 @@ export class BaseParticleSystem {
         this._isAnimationSheetEnabled = value;
 
         this._reset();
+    }
+
+    private _useLogarithmicDepth: boolean = false;
+
+    /**
+     * Gets or sets a boolean enabling the use of logarithmic depth buffers, which is good for wide depth buffers.
+     */
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        this._useLogarithmicDepth = value && this.getScene()!.getEngine().getCaps().fragmentDepthSupported;
     }
 
     /**
@@ -560,10 +576,10 @@ export class BaseParticleSystem {
      */
     public particleEmitterType: IParticleEmitterType;
 
-    /** @hidden */
+    /** @internal */
     public _isSubEmitter = false;
 
-    /** @hidden */
+    /** @internal */
     public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
      * Gets or sets the billboard mode to use when isBillboardBased = true.
@@ -582,7 +598,7 @@ export class BaseParticleSystem {
         this._reset();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isBillboardBased = true;
     /**
      * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
@@ -653,14 +669,11 @@ export class BaseParticleSystem {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     protected _reset() {}
 
     /**
-     * @param gradient
-     * @param gradients
-     * @param texture
-     * @hidden
+     * @internal
      */
     protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: Nullable<RawTexture>): BaseParticleSystem {
         if (!gradients) {

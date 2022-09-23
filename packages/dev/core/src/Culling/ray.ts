@@ -357,7 +357,7 @@ export class Ray {
      * @param sega the first point of the segment to test the intersection against
      * @param segb the second point of the segment to test the intersection against
      * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-     * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+     * @returns the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
      */
     intersectionSegment(sega: DeepImmutable<Vector3>, segb: DeepImmutable<Vector3>, threshold: number): number {
         const o = this.origin;
@@ -634,16 +634,16 @@ export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, r
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _tempPickingRay: Nullable<Ray>;
 
-        /** @hidden */
+        /** @internal */
         _cachedRayForTransform: Ray;
 
-        /** @hidden */
+        /** @internal */
         _pickWithRayInverseMatrix: Matrix;
 
-        /** @hidden */
+        /** @internal */
         _internalPick(
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
             predicate?: (mesh: AbstractMesh) => boolean,
@@ -652,14 +652,14 @@ declare module "../scene" {
             trianglePredicate?: TrianglePickingPredicate
         ): Nullable<PickingInfo>;
 
-        /** @hidden */
+        /** @internal */
         _internalMultiPick(
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
             predicate?: (mesh: AbstractMesh) => boolean,
             trianglePredicate?: TrianglePickingPredicate
         ): Nullable<PickingInfo[]>;
 
-        /** @hidden */
+        /** @internal */
         _internalPickForMesh(
             pickingInfo: Nullable<PickingInfo>,
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,

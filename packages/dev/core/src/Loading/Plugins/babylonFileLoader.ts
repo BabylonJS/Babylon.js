@@ -31,7 +31,7 @@ import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
 export var _BabylonLoaderRegistered = true;
 
@@ -544,6 +544,10 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         }
 
+        scene.geometries.forEach((g) => {
+            g._loadedUniqueId = "";
+        });
+
         AbstractScene.Parse(parsedData, scene, container, rootUrl);
 
         // Actions (scene) Done last as it can access other objects.
@@ -618,16 +622,19 @@ SceneLoader.RegisterPlugin({
             }
 
             const hierarchyIds = new Array<number>();
+            const parsedIdToNodeMap = new Map<number, Node>();
 
             // Transform nodes (the overall idea is to load all of them as this is super fast and then get rid of the ones we don't need)
             const loadedTransformNodes = [];
             if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
                 for (let index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
-                    const parsedTransformNode = parsedData.transformNodes[index];
-                    loadedTransformNodes.push(TransformNode.Parse(parsedTransformNode, scene, rootUrl));
+                    const parsedJSONTransformNode = parsedData.transformNodes[index];
+                    const parsedTransformNode = TransformNode.Parse(parsedJSONTransformNode, scene, rootUrl);
+                    loadedTransformNodes.push(parsedTransformNode);
+                    parsedIdToNodeMap.set(parsedTransformNode._waitingParsedUniqueId!, parsedTransformNode);
+                    parsedTransformNode._waitingParsedUniqueId = null;
                 }
             }
-
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 const loadedSkeletonsIds = [];
                 const loadedMaterialsIds: string[] = [];
@@ -765,6 +772,8 @@ SceneLoader.RegisterPlugin({
 
                         const mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                         meshes.push(mesh);
+                        parsedIdToNodeMap.set(mesh._waitingParsedUniqueId!, mesh);
+                        mesh._waitingParsedUniqueId = null;
                         log += "\n\tMesh " + mesh.toString(fullDetails);
                     }
                 }
@@ -789,7 +798,10 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.transformNodes.length; index < cache; index++) {
                     const transformNode = scene.transformNodes[index];
                     if (transformNode._waitingParentId !== null) {
-                        const parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        let parent = parsedIdToNodeMap.get(parseInt(transformNode._waitingParentId)) || null;
+                        if (parent === null) {
+                            parent = scene.getLastEntryById(transformNode._waitingParentId);
+                        }
                         let parentNode = parent;
                         if (transformNode._waitingParentInstanceIndex) {
                             parentNode = (parent as Mesh).instances[parseInt(transformNode._waitingParentInstanceIndex)];
@@ -803,7 +815,10 @@ SceneLoader.RegisterPlugin({
                 for (let index = 0, cache = scene.meshes.length; index < cache; index++) {
                     currentMesh = scene.meshes[index];
                     if (currentMesh._waitingParentId) {
-                        const parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        let parent = parsedIdToNodeMap.get(parseInt(currentMesh._waitingParentId)) || null;
+                        if (parent === null) {
+                            parent = scene.getLastEntryById(currentMesh._waitingParentId);
+                        }
                         let parentNode = parent;
                         if (currentMesh._waitingParentInstanceIndex) {
                             parentNode = (parent as Mesh).instances[parseInt(currentMesh._waitingParentInstanceIndex)];

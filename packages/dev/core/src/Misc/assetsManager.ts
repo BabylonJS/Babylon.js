@@ -1,5 +1,6 @@
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { TransformNode } from "../Meshes/transformNode";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
 import { SceneLoader } from "../Loading/sceneLoader";
@@ -88,9 +89,7 @@ export abstract class AbstractAssetTask {
 
     /**
      * Internal only
-     * @param message
-     * @param exception
-     * @hidden
+     * @internal
      */
     public _setErrorObject(message?: string, exception?: any) {
         if (this._errorObject) {
@@ -229,6 +228,10 @@ export class ContainerAssetTask extends AbstractAssetTask {
      */
     public loadedContainer: AssetContainer;
     /**
+     * Gets the list of loaded transforms
+     */
+    public loadedTransformNodes: Array<TransformNode>;
+    /**
      * Gets the list of loaded meshes
      */
     public loadedMeshes: Array<AbstractMesh>;
@@ -297,6 +300,7 @@ export class ContainerAssetTask extends AbstractAssetTask {
             (container: AssetContainer) => {
                 this.loadedContainer = container;
                 this.loadedMeshes = container.meshes;
+                this.loadedTransformNodes = container.transformNodes;
                 this.loadedParticleSystems = container.particleSystems;
                 this.loadedSkeletons = container.skeletons;
                 this.loadedAnimationGroups = container.animationGroups;
@@ -314,6 +318,10 @@ export class ContainerAssetTask extends AbstractAssetTask {
  * Define a task used by AssetsManager to load meshes
  */
 export class MeshAssetTask extends AbstractAssetTask {
+    /**
+     * Gets the list of loaded transforms
+     */
+    public loadedTransformNodes: Array<TransformNode>;
     /**
      * Gets the list of loaded meshes
      */
@@ -381,8 +389,9 @@ export class MeshAssetTask extends AbstractAssetTask {
             this.rootUrl,
             this.sceneFilename,
             scene,
-            (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => {
+            (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[], transformNodes: TransformNode[]) => {
                 this.loadedMeshes = meshes;
+                this.loadedTransformNodes = transformNodes;
                 this.loadedParticleSystems = particleSystems;
                 this.loadedSkeletons = skeletons;
                 this.loadedAnimationGroups = animationGroups;
@@ -1209,7 +1218,7 @@ export class AssetsManager {
 
     /**
      * Reset the AssetsManager and remove all tasks
-     * @return the current instance of the AssetsManager
+     * @returns the current instance of the AssetsManager
      */
     public reset(): AssetsManager {
         this._isLoading = false;
@@ -1219,7 +1228,7 @@ export class AssetsManager {
 
     /**
      * Start the loading process
-     * @return the current instance of the AssetsManager
+     * @returns the current instance of the AssetsManager
      */
     public load(): AssetsManager {
         if (this._isLoading) {
@@ -1254,7 +1263,7 @@ export class AssetsManager {
 
     /**
      * Start the loading process as an async operation
-     * @return a promise returning the list of failed tasks
+     * @returns a promise returning the list of failed tasks
      */
     public loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {

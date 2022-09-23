@@ -73,7 +73,9 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * The name of the node's TRS property to modify, or the weights of the Morph Targets it instantiates
+     * The name of the node's TRS property to modify,
+     * or the weights of the Morph Targets it instantiates,
+     * or pointer is use of KHR_animation_pointer extension
      */
     const enum AnimationChannelTargetPath {
         /**
@@ -92,6 +94,10 @@ declare module BABYLON.GLTF2 {
          * Weights
          */
         WEIGHTS = "weights",
+        /**
+         * Pointer
+         */
+        POINTER = "pointer",
     }
 
     /**
@@ -393,7 +399,7 @@ declare module BABYLON.GLTF2 {
         /**
          * The index of the node to target
          */
-        node: number;
+        node?: number;
         /**
          * The name of the node's TRS property to modify, or the weights of the Morph Targets it instantiates
          */
@@ -942,7 +948,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * The glTF validator object
-     * @ignore
+     * @internal
      */
     interface IGLTFValidator {
         validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
@@ -953,12 +959,12 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_lights_image_based extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IEXTLightsImageBased_LightReferenceImageBased {
         light: number;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IEXTLightsImageBased_LightImageBased extends IChildRootProperty {
         intensity: number;
         rotation: number[];
@@ -967,7 +973,7 @@ declare module BABYLON.GLTF2 {
         irradianceCoefficients: number[][];
     }
 
-    /** @hidden */
+    /** @internal */
     interface IEXTLightsImageBased {
         lights: IEXTLightsImageBased_LightImageBased[];
     }
@@ -977,7 +983,7 @@ declare module BABYLON.GLTF2 {
      * !!! Experimental Extension Subject to Changes !!!
      */
 
-    /** @hidden */
+    /** @internal */
     interface IEXTMeshGpuInstancing {
         mesh?: number;
         attributes: { [name: string]: number };
@@ -987,7 +993,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_draco_mesh_compression extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRDracoMeshCompression {
         bufferView: number;
         attributes: { [name: string]: number };
@@ -997,19 +1003,19 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_lights_punctual extension
      */
 
-    /** @hidden */
+    /** @internal */
     const enum KHRLightsPunctual_LightType {
         DIRECTIONAL = "directional",
         POINT = "point",
         SPOT = "spot",
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRLightsPunctual_LightReference {
         light: number;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRLightsPunctual_Light extends IChildRootProperty {
         type: KHRLightsPunctual_LightType;
         color?: number[];
@@ -1021,17 +1027,17 @@ declare module BABYLON.GLTF2 {
         };
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRLightsPunctual {
         lights: IKHRLightsPunctual_Light[];
     }
 
-    /** @hidden */
+    /** @internal */
     interface IMaterialExtension {
         hasTextures?(): boolean;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsClearcoat extends IMaterialExtension {
         clearcoatFactor?: number;
         clearcoatTexture?: ITextureInfo;
@@ -1040,7 +1046,7 @@ declare module BABYLON.GLTF2 {
         clearcoatNormalTexture?: IMaterialNormalTextureInfo;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsIridescence extends IMaterialExtension {
         iridescenceFactor?: number;
         iridescenceIor?: number;
@@ -1054,7 +1060,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_materials_ior extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsIor extends IMaterialExtension {
         ior?: number;
     }
@@ -1063,7 +1069,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_materials_volume extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsVolume extends IMaterialExtension {
         thicknessFactor?: number;
         thicknessTexture?: ITextureInfo;
@@ -1075,7 +1081,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_materials_specular extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsSpecular extends IMaterialExtension {
         specularFactor?: number;
         specularColorFactor?: number[];
@@ -1087,7 +1093,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_materials_transmission extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsTransmission extends IMaterialExtension {
         transmissionFactor?: number;
         transmissionTexture?: ITextureInfo;
@@ -1095,10 +1101,9 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_emissive_strength extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsEmissiveStrength extends IMaterialExtension {
         emissiveStrength: number;
     }
@@ -1107,7 +1112,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_materials_pbrSpecularGlossiness extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsPbrSpecularGlossiness extends IMaterialExtension {
         diffuseFactor: number[];
         diffuseTexture: ITextureInfo;
@@ -1120,7 +1125,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_materials_sheen extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsSheen extends IMaterialExtension {
         sheenColorFactor?: number[];
         sheenColorTexture?: ITextureInfo;
@@ -1133,7 +1138,7 @@ declare module BABYLON.GLTF2 {
      * !!! Experimental Extension Subject to Changes !!!
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialsTranslucency extends IMaterialExtension {
         translucencyFactor?: number;
         translucencyTexture?: ITextureInfo;
@@ -1141,10 +1146,9 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_variants extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialVariants_Mapping extends IProperty {
         mappings: Array<{
             variants: number[];
@@ -1152,22 +1156,21 @@ declare module BABYLON.GLTF2 {
         }>;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialVariants_Variant extends IProperty {
         name: string;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRMaterialVariants_Variants extends IChildRootProperty {
         variants: Array<IKHRMaterialVariants_Variant>;
     }
 
     /**
      * Interfaces from the KHR_texture_basisu extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRTextureBasisU {
         source: number;
     }
@@ -1176,7 +1179,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_texture_webp extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IEXTTextureWebP {
         source: number;
     }
@@ -1185,7 +1188,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the KHR_texture_transform extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRTextureTransform {
         offset?: number[];
         rotation?: number;
@@ -1195,44 +1198,54 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_xmp_json_ld extension
-     * !!! Experimental Extension Subject to Changes !!!
      */
 
-    /** @hidden */
+    /** @internal */
     interface IKHRXmpJsonLd_Gltf {
         packets: Array<{
             [key: string]: unknown;
         }>;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IKHRXmpJsonLd_Node {
         packet: number;
+    }
+
+
+    /**
+     * Interfaces from the KHR_animation_pointer extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRAnimationPointer {
+        pointer: string;
     }
 
     /**
      * Interfaces from the MSFT_audio_emitter extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IMSFTAudioEmitter_ClipReference {
         clip: number;
         weight?: number;
     }
 
-    /** @hidden */
+    /** @internal */
     interface IMSFTAudioEmitter_EmittersReference {
         emitters: number[];
     }
 
-    /** @hidden */
+    /** @internal */
     const enum IMSFTAudioEmitter_DistanceModel {
         linear = "linear",
         inverse = "inverse",
         exponential = "exponential",
     }
 
-    /** @hidden */
+    /** @internal */
     interface IMSFTAudioEmitter_Emitter {
         name?: string;
         distanceModel?: IMSFTAudioEmitter_DistanceModel;
@@ -1246,26 +1259,26 @@ declare module BABYLON.GLTF2 {
         clips: IMSFTAudioEmitter_ClipReference[];
     }
 
-    /** @hidden */
+    /** @internal */
     const enum IMSFTAudioEmitter_AudioMimeType {
         WAV = "audio/wav",
     }
 
-    /** @hidden */
+    /** @internal */
     interface IMSFTAudioEmitter_Clip extends IProperty {
         uri?: string;
         bufferView?: number;
         mimeType?: IMSFTAudioEmitter_AudioMimeType;
     }
 
-    /** @hidden */
+    /** @internal */
     const enum IMSFTAudioEmitter_AnimationEventAction {
         play = "play",
         pause = "pause",
         stop = "stop",
     }
 
-    /** @hidden */
+    /** @internal */
     interface IMSFTAudioEmitter_AnimationEvent {
         action: IMSFTAudioEmitter_AnimationEventAction;
         emitter: number;
@@ -1277,7 +1290,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the MSFT_lod extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IMSFTLOD {
         ids: number[];
     }
@@ -1286,7 +1299,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_meshopt_compression extension
      */
 
-    /** @hidden */
+    /** @internal */
     interface IEXTMeshoptCompression {
         buffer: number;
         byteOffset?: number;

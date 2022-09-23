@@ -19,7 +19,7 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 
 /**
- * @hidden
+ * @internal
  * Interface to store animation data.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -47,7 +47,7 @@ export interface _IAnimationData {
 }
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationInfo {
@@ -66,7 +66,7 @@ export interface _IAnimationInfo {
 }
 
 /**
- * @hidden
+ * @internal
  * Enum for handling in tangent and out tangent.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -82,7 +82,7 @@ enum _TangentType {
 }
 
 /**
- * @hidden
+ * @internal
  * Utility class for generating glTF animation data from BabylonJS.
  */
 export class _GLTFAnimation {
@@ -480,6 +480,8 @@ export class _GLTFAnimation {
                                 }
                             }
                         }
+                    } else {
+                        // this is the place for the KHR_animation_pointer.
                     }
                 }
                 morphAnimationMeshes.forEach((mesh) => {

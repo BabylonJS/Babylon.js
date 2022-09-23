@@ -94,7 +94,7 @@ export class RuntimeAnimation {
      */
     private _currentValue: Nullable<any> = null;
 
-    /** @hidden */
+    /** @internal */
     public _animationState: _IAnimationState;
 
     /**
@@ -180,7 +180,7 @@ export class RuntimeAnimation {
         return this._host && this._host.isAdditive;
     }
 
-    /** @hidden */
+    /** @internal */
     public _onLoop: () => void;
 
     /**
@@ -466,8 +466,7 @@ export class RuntimeAnimation {
     }
 
     /**
-     * @param newSpeedRatio
-     * @hidden Internal use only
+     * @internal Internal use only
      */
     public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
         const newRatio = (this._previousDelay * (this._animation.framePerSecond * newSpeedRatio)) / 1000.0;
@@ -608,21 +607,21 @@ export class RuntimeAnimation {
             }
         }
 
-        // Reset events if looping
         const events = this._events;
 
+        // Reset event/state if looping
         if ((speedRatio > 0 && this.currentFrame > currentFrame) || (speedRatio < 0 && this.currentFrame < currentFrame)) {
             this._onLoop();
 
             // Need to reset animation events
-            if (events.length) {
-                for (let index = 0; index < events.length; index++) {
-                    if (!events[index].onlyOnce) {
-                        // reset event, the animation is looping
-                        events[index].isDone = false;
-                    }
+            for (let index = 0; index < events.length; index++) {
+                if (!events[index].onlyOnce) {
+                    // reset event, the animation is looping
+                    events[index].isDone = false;
                 }
             }
+
+            this._animationState.key = speedRatio > 0 ? 0 : animation.getKeys().length - 1;
         }
         this._currentFrame = currentFrame;
         this._animationState.repeatCount = range === 0 ? 0 : (ratio / range) >> 0;

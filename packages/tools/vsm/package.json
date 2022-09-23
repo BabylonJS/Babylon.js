@@ -1,0 +1,49 @@
+{
+    "name": "@tools/visual-state-manager",
+    "private": true,
+    "version": "1.0.0",
+    "files": [
+        "dist"
+    ],
+    "types": "dist/index.d.ts",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "build:declaration": "build-tools -c pud --config ./config.json",
+        "build:deployment": "npm run clean && webpack --env mode=production",
+        "compile": "tsc -b tsconfig.build.json --verbose",
+        "postcompile": "build-tools -c pa",
+        "serve": "webpack serve",
+        "serve:prod": "webpack serve --env mode=production",
+        "serve:https": "webpack serve --env mode=development --server-type https --host ::",
+        "serve:dev": "webpack serve --env mode=development --env watch=all",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo"
+    },
+    "dependencies": {
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "1.0.0",
+        "@dev/core": "1.0.0",
+        "@dev/gui": "1.0.0",
+        "@dev/shared-ui-components": "1.0.0",
+        "@svgr/webpack": "^6.2.0",
+        "@types/dagre": "^0.7.47",
+        "@types/react": "^17.0.30",
+        "@types/react-dom": "^17.0.10",
+        "copy-webpack-plugin": "^11.0.0",
+        "css-loader": "^6.4.0",
+        "rimraf": "^3.0.2",
+        "sass-loader": "^13.0.0",
+        "split.js": "^1.6.5",
+        "style-loader": "^3.3.0",
+        "typescript": "^4.4.4",
+        "url-loader": "^4.1.1",
+        "webpack": "^5.73.0",
+        "webpack-cli": "^4.10.0",
+        "webpack-merge": "^5.8.0"
+    },
+    "sideEffects": true
+}

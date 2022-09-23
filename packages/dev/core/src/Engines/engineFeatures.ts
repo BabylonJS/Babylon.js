@@ -1,4 +1,4 @@
-/** @hidden */
+/** @internal */
 export interface EngineFeatures {
     /** Force using Bitmap when Bitmap or HTMLImageElement can be used */
     forceBitmapOverHTMLImageElement: boolean;
@@ -66,6 +66,9 @@ export interface EngineFeatures {
     /**  Indicates that the engine supports render passes */
     supportRenderPasses: boolean;
 
-    /** @hidden */
+    /**  Indicates that the engine supports sprite instancing */
+    supportSpriteInstancing: boolean;
+
+    /** @internal */
     _collectUbosUpdatedInFrame: boolean;
 }

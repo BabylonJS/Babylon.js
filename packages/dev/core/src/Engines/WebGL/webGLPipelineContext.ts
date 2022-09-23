@@ -4,7 +4,25 @@ import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { ThinEngine } from "../thinEngine";
 
-/** @hidden */
+const floatNCache: string[] = [
+    "Int2",
+    "Int",
+    "Int3",
+    "Int4",
+    "Vector2",
+    "Vector3",
+    "Vector4",
+    "Float2",
+    "Float",
+    "Float3",
+    "Float4",
+    "Quaternion",
+    "Color3",
+    "Color4",
+    "DirectColor4",
+];
+
+/** @internal */
 export class WebGLPipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
@@ -22,6 +40,52 @@ export class WebGLPipelineContext implements IPipelineContext {
     public fragmentCompilationError: Nullable<string> = null;
     public programLinkError: Nullable<string> = null;
     public programValidationError: Nullable<string> = null;
+
+    constructor() {
+        const args: any[] = [];
+        const prepareArray = function (this: WebGLPipelineContext) {
+            args.length = 0;
+            Array.prototype.push.apply(args, arguments);
+            args[0] = this._uniforms[args[0]];
+        };
+        const proxyFunction: (functionName: string) => ((/*uniformName: string, ...payload: any[]*/) => void) | undefined = (functionName: string) => {
+            const cacheFunction = floatNCache.includes(functionName.substring(3)) && "FloatN";
+            if (cacheFunction) {
+                const cacheFunc = this[`_cache${cacheFunction}` as Partial<keyof WebGLPipelineContext>];
+                return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
+                    const func = this.engine[functionName as keyof ThinEngine];
+                    prepareArray.apply(this, arguments);
+                    if ((cacheFunc as Function).apply(this, arguments)) {
+                        if (!func.apply(this.engine, args)) {
+                            this._valueCache[arguments[0]] = null;
+                        }
+                    }
+                };
+            } else {
+                return function (this: WebGLPipelineContext /*uniformName: string, ...payload: any[]*/) {
+                    const func = this.engine[functionName as keyof ThinEngine];
+                    prepareArray.apply(this, arguments);
+                    if (arguments[1] !== undefined) {
+                        this._valueCache[arguments[0]] = null;
+                        func.apply(this.engine, args);
+                    }
+                };
+            }
+        };
+        ["Int?", "IntArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
+            const name = `set${functionName}`;
+            if (this[name as keyof this]) {
+                return;
+            }
+            if (name.endsWith("?")) {
+                ["", 2, 3, 4].forEach((n) => {
+                    this[(name.slice(0, -1) + n) as keyof this] = this[(name.slice(0, -1) + n) as keyof this] || proxyFunction(name.slice(0, -1) + n)!.bind(this);
+                });
+            } else {
+                this[name as keyof this] = this[name as keyof this] || proxyFunction(name)!.bind(this);
+            }
+        });
+    }
 
     public get isAsync() {
         return this.isParallelCompiled;
@@ -93,9 +157,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * @param uniformName
-     * @param matrix
-     * @hidden
+     * @internal
      */
     public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
         const cache = this._valueCache[uniformName];
@@ -110,99 +172,49 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * @param uniformName
-     * @param x
-     * @param y
-     * @hidden
+     * @internal
+     */
+    public _cacheFloatN(_uniformName: string, _x: number, _y?: number, _z?: number, _w?: number): boolean {
+        /**
+         * arguments will be used to abstract the cache function.
+         * arguments[0] is the uniform name. the rest are numbers.
+         */
+        let cache: number[] = this._valueCache[arguments[0]];
+        if (!cache || cache.length !== arguments.length - 1) {
+            cache = Array.prototype.slice.call(arguments, 1);
+            this._valueCache[arguments[0]] = cache;
+            return true;
+        }
+
+        let changed = false;
+        for (let i = 0; i < cache.length; ++i) {
+            if (cache[i] !== arguments[i + 1]) {
+                cache[i] = arguments[i + 1];
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * @internal
      */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache || cache.length !== 2) {
-            cache = [x, y];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-
-        return changed;
+        return this._cacheFloatN(uniformName, x, y);
     }
 
     /**
-     * @param uniformName
-     * @param x
-     * @param y
-     * @param z
-     * @hidden
+     * @internal
      */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache || cache.length !== 3) {
-            cache = [x, y, z];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-        if (cache[2] !== z) {
-            cache[2] = z;
-            changed = true;
-        }
-
-        return changed;
+        return this._cacheFloatN(uniformName, x, y, z);
     }
 
     /**
-     * @param uniformName
-     * @param x
-     * @param y
-     * @param z
-     * @param w
-     * @hidden
+     * @internal
      */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache || cache.length !== 4) {
-            cache = [x, y, z, w];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-        if (cache[2] !== z) {
-            cache[2] = z;
-            changed = true;
-        }
-        if (cache[3] !== w) {
-            cache[3] = w;
-            changed = true;
-        }
-
-        return changed;
+        return this._cacheFloatN(uniformName, x, y, z, w);
     }
 
     /**
@@ -210,16 +222,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
-    public setInt(uniformName: string, value: number): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === value) {
-            return;
-        }
-
-        if (this.engine.setInt(this._uniforms[uniformName], value)) {
-            this._valueCache[uniformName] = value;
-        }
-    }
+    public setInt: (uniformName: string, value: number) => void;
 
     /**
      * Sets a int2 on a uniform variable.
@@ -227,13 +230,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param x First int in int2.
      * @param y Second int in int2.
      */
-    public setInt2(uniformName: string, x: number, y: number): void {
-        if (this._cacheFloat2(uniformName, x, y)) {
-            if (!this.engine.setInt2(this._uniforms[uniformName], x, y)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
+    public setInt2: (uniformName: string, x: number, y: number) => void;
 
     /**
      * Sets a int3 on a uniform variable.
@@ -242,13 +239,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param y Second int in int3.
      * @param z Third int in int3.
      */
-    public setInt3(uniformName: string, x: number, y: number, z: number): void {
-        if (this._cacheFloat3(uniformName, x, y, z)) {
-            if (!this.engine.setInt3(this._uniforms[uniformName], x, y, z)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
+    public setInt3: (uniformName: string, x: number, y: number, z: number) => void;
 
     /**
      * Sets a int4 on a uniform variable.
@@ -258,73 +249,49 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param z Third int in int4.
      * @param w Fourth int in int4.
      */
-    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
-        if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            if (!this.engine.setInt4(this._uniforms[uniformName], x, y, z, w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
+    public setInt4: (uniformName: string, x: number, y: number, z: number, w: number) => void;
 
     /**
      * Sets an int array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setIntArray(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray(this._uniforms[uniformName], array);
-    }
+    public setIntArray: (uniformName: string, array: Int32Array) => void;
 
     /**
      * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setIntArray2(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray2(this._uniforms[uniformName], array);
-    }
+    public setIntArray2: (uniformName: string, array: Int32Array) => void;
 
     /**
      * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setIntArray3(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray3(this._uniforms[uniformName], array);
-    }
+    public setIntArray3: (uniformName: string, array: Int32Array) => void;
 
     /**
      * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setIntArray4(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray4(this._uniforms[uniformName], array);
-    }
+    public setIntArray4: (uniformName: string, array: Int32Array) => void;
 
     /**
      * Sets an array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setArray(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray(this._uniforms[uniformName], array);
-    }
+    public setArray: (uniformName: string, array: number[]) => void;
 
     /**
      * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setArray2(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray2(this._uniforms[uniformName], array);
-    }
+    public setArray2: (uniformName: string, array: number[]) => void;
 
     /**
      * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
@@ -332,34 +299,21 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setArray3(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray3(this._uniforms[uniformName], array);
-    }
+    public setArray3: (uniformName: string, array: number[]) => void;
 
     /**
      * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    public setArray4(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray4(this._uniforms[uniformName], array);
-    }
+    public setArray4: (uniformName: string, array: number[]) => void;
 
     /**
      * Sets matrices on a uniform variable.
      * @param uniformName Name of the variable.
      * @param matrices matrices to be set.
      */
-    public setMatrices(uniformName: string, matrices: Float32Array): void {
-        if (!matrices) {
-            return;
-        }
-
-        this._valueCache[uniformName] = null;
-        this.engine.setMatrices(this._uniforms[uniformName], matrices);
-    }
+    public setMatrices: (uniformName: string, matrices: Float32Array) => void;
 
     /**
      * Sets matrix on a uniform variable.
@@ -379,20 +333,14 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
-    public setMatrix3x3(uniformName: string, matrix: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setMatrix3x3(this._uniforms[uniformName], matrix);
-    }
+    public setMatrix3x3: (uniformName: string, matrix: Float32Array) => void;
 
     /**
      * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
-    public setMatrix2x2(uniformName: string, matrix: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setMatrix2x2(this._uniforms[uniformName], matrix);
-    }
+    public setMatrix2x2: (uniformName: string, matrix: Float32Array) => void;
 
     /**
      * Sets a float on a uniform variable.
@@ -400,16 +348,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param value value to be set.
      * @returns this effect.
      */
-    public setFloat(uniformName: string, value: number): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === value) {
-            return;
-        }
-
-        if (this.engine.setFloat(this._uniforms[uniformName], value)) {
-            this._valueCache[uniformName] = value;
-        }
-    }
+    public setFloat: (uniformName: string, value: number) => void;
 
     /**
      * Sets a Vector2 on a uniform variable.
@@ -417,11 +356,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param vector2 vector2 to be set.
      */
     public setVector2(uniformName: string, vector2: IVector2Like): void {
-        if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-            if (!this.engine.setFloat2(this._uniforms[uniformName], vector2.x, vector2.y)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat2(uniformName, vector2.x, vector2.y);
     }
 
     /**
@@ -430,13 +365,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param x First float in float2.
      * @param y Second float in float2.
      */
-    public setFloat2(uniformName: string, x: number, y: number): void {
-        if (this._cacheFloat2(uniformName, x, y)) {
-            if (!this.engine.setFloat2(this._uniforms[uniformName], x, y)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
+    public setFloat2: (uniformName: string, x: number, y: number) => void;
 
     /**
      * Sets a Vector3 on a uniform variable.
@@ -444,11 +373,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param vector3 Value to be set.
      */
     public setVector3(uniformName: string, vector3: IVector3Like): void {
-        if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-            if (!this.engine.setFloat3(this._uniforms[uniformName], vector3.x, vector3.y, vector3.z)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat3(uniformName, vector3.x, vector3.y, vector3.z);
     }
 
     /**
@@ -458,13 +383,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param y Second float in float3.
      * @param z Third float in float3.
      */
-    public setFloat3(uniformName: string, x: number, y: number, z: number): void {
-        if (this._cacheFloat3(uniformName, x, y, z)) {
-            if (!this.engine.setFloat3(this._uniforms[uniformName], x, y, z)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
+    public setFloat3: (uniformName: string, x: number, y: number, z: number) => void;
 
     /**
      * Sets a Vector4 on a uniform variable.
@@ -472,11 +391,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param vector4 Value to be set.
      */
     public setVector4(uniformName: string, vector4: IVector4Like): void {
-        if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
     }
 
     /**
@@ -485,11 +400,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param quaternion Value to be set.
      */
     public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
-        if (this._cacheFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName], quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w);
     }
 
     /**
@@ -501,13 +412,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param w Fourth float in float4.
      * @returns this effect.
      */
-    public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
-        if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName], x, y, z, w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
+    public setFloat4: (uniformName: string, x: number, y: number, z: number, w: number) => void;
 
     /**
      * Sets a Color3 on a uniform variable.
@@ -515,11 +420,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param color3 Value to be set.
      */
     public setColor3(uniformName: string, color3: IColor3Like): void {
-        if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            if (!this.engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat3(uniformName, color3.r, color3.g, color3.b);
     }
 
     /**
@@ -529,11 +430,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param alpha Alpha value to be set.
      */
     public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
-        if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName], color3.r, color3.g, color3.b, alpha)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
     }
 
     /**
@@ -542,11 +439,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param color4 defines the value to be set
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): void {
-        if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
+        this.setFloat4(uniformName, color4.r, color4.g, color4.b, color4.a);
     }
 
     public _getVertexShaderCode(): string | null {

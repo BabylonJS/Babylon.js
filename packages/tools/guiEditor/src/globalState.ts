@@ -49,6 +49,7 @@ export class GlobalState {
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
     public keys: KeyboardManager;
+    private _fromPG: boolean;
     /** DO NOT USE: in the process of removing */
     public blockKeyboardEvents = false;
     onOutlineChangedObservable = new Observable<void>();
@@ -58,11 +59,14 @@ export class GlobalState {
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     private _tool: GUIEditorTool = GUIEditorTool.SELECT;
+    private _usePrevSelected: boolean;
+
+    private _prevTool: GUIEditorTool = this._tool;
     onToolChangeObservable = new Observable<void>();
     public get tool(): GUIEditorTool {
         if (this._tool === GUIEditorTool.ZOOM) {
             return GUIEditorTool.ZOOM;
-        } else if (this._tool === GUIEditorTool.PAN || this.keys.isKeyDown("space")) {
+        } else if (this._tool === GUIEditorTool.PAN) {
             return GUIEditorTool.PAN;
         } else {
             return GUIEditorTool.SELECT;
@@ -70,8 +74,22 @@ export class GlobalState {
     }
     public set tool(newTool: GUIEditorTool) {
         if (this._tool === newTool) return;
+        this._prevTool = this._tool;
         this._tool = newTool;
         this.onToolChangeObservable.notifyObservers();
+    }
+    public get usePrevSelected() {
+        return this._usePrevSelected;
+    }
+    public set usePrevSelected(val: boolean) {
+        this._usePrevSelected = val;
+    }
+
+    public restorePreviousTool() {
+        if (this._tool !== this._prevTool) {
+            this._tool = this._prevTool;
+            this.onToolChangeObservable.notifyObservers();
+        }
     }
     onFitControlsToWindowObservable = new Observable<void>();
     onReframeWindowObservable = new Observable<void>();
@@ -89,7 +107,9 @@ export class GlobalState {
     onGizmoUpdateRequireObservable = new Observable<void>();
     onArtBoardUpdateRequiredObservable = new Observable<void>();
     onBackgroundColorChangeObservable = new Observable<void>();
+    onFontsParsedObservable = new Observable<void>();
     onPointerMoveObservable = new Observable<React.PointerEvent<HTMLCanvasElement>>();
+
     onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
@@ -149,6 +169,12 @@ export class GlobalState {
     public get backgroundColor() {
         return this._backgroundColor;
     }
+    public get fromPG() {
+        return this._fromPG;
+    }
+    public set fromPG(value: boolean) {
+        this._fromPG = value;
+    }
 
     public set backgroundColor(value: Color3) {
         this._backgroundColor = value;
@@ -182,6 +208,7 @@ export class GlobalState {
 
     public setSelection(controls: Control[]) {
         this.selectedControls = [...controls];
+
         this.onSelectionChangedObservable.notifyObservers();
     }
 
