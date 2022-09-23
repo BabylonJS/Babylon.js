@@ -105,17 +105,19 @@ export class RenderingManager {
 
         // Restore wasDispatched flags when switching to maintainStateBetweenFrames to false
         if (!this._maintainStateBetweenFrames) {
-            for (let mesh of this._scene.meshes) {
-                for (let subMesh of mesh.subMeshes) {
-                    subMesh._wasDispatched = false;
+            for (const mesh of this._scene.meshes) {
+                if (mesh.subMeshes) {
+                    for (let subMesh of mesh.subMeshes) {
+                        subMesh._wasDispatched = false;
+                    }
                 }
             }
 
-            for (let spriteManager of this._scene.spriteManagers) {
+            for (const spriteManager of this._scene.spriteManagers) {
                 spriteManager._wasDispatched = false;
             }
 
-            for (let particleSystem of this._scene.particleSystems) {
+            for (const particleSystem of this._scene.particleSystems) {
                 particleSystem._wasDispatched = false;
             }
         }
