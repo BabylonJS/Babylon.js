@@ -184,7 +184,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         const onTransitionEnd = () => {
-            if(this._loadingTextDiv) {
+            if (this._loadingTextDiv) {
                 this._loadingTextDiv.remove();
                 this._loadingTextDiv = null;
             }
