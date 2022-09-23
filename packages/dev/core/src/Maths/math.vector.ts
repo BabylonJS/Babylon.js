@@ -1723,7 +1723,7 @@ export class Vector3 {
      * @param ref the vector3 to store the result
      * @returns the updated ref with the angles between the two points in the form (pitch, yaw, roll)
      */
-    public static GetAnglesBetweenPointsForDirectionChangeToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
+    public static PitchYawRollToMoveBetweenPointsToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
         const diff = TmpVectors.Vector3[0];
         target.subtractToRef(start, diff);
         ref.y = Math.atan2(diff.x, diff.z) || 0;
@@ -1737,9 +1737,9 @@ export class Vector3 {
      * @param target the target vector
      * @returns the angles between the two points in the form (pitch, yaw, roll)
      */
-    public static GetAnglesBetweenPointsForDirectionChange(start: Vector3, target: Vector3): Vector3 {
+    public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
         const ref = Vector3.Zero();
-        return Vector3.GetAnglesBetweenPointsForDirectionChangeToRef(start, target, ref);
+        return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
     }
 
     /**
