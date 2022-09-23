@@ -14,7 +14,7 @@ import { RegisterClass } from "../Misc/typeStore";
  */
 export class MultiMaterial extends Material {
     private _subMaterials: Nullable<Material>[];
-    /** @hidden */
+    /** @internal */
     public _waitingSubMaterialsUniqueIds: string[] = [];
 
     /**

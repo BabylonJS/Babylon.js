@@ -18,7 +18,7 @@ declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialAnisotropicDefines extends MaterialDefines {
     public ANISOTROPIC = false;
@@ -62,10 +62,10 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();

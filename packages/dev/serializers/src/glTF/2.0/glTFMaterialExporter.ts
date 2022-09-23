@@ -32,7 +32,7 @@ declare type PBRMaterial = import("core/Materials/PBR/pbrMaterial").PBRMaterial;
 
 /**
  * Interface for storing specular glossiness factors
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 interface _IPBRSpecularGlossiness {
@@ -52,7 +52,7 @@ interface _IPBRSpecularGlossiness {
 
 /**
  * Interface for storing metallic roughness factors
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 interface _IPBRMetallicRoughness {
@@ -80,7 +80,7 @@ interface _IPBRMetallicRoughness {
 
 /**
  * Utility methods for working with glTF material conversion properties.  This class should only be used internally
- * @hidden
+ * @internal
  */
 export class _GLTFMaterialExporter {
     /**

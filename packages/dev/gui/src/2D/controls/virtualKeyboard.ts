@@ -325,9 +325,7 @@ export class VirtualKeyboard extends StackPanel {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);

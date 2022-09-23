@@ -156,7 +156,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
     }
 
     /**
-     * @hidden
+     * @internal
      * Updates the gizmo to match the attached mesh's position/rotation
      */
     protected _update() {

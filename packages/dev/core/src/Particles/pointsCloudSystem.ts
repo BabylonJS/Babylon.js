@@ -57,14 +57,14 @@ export class PointsCloudSystem implements IDisposable {
     /**
      * The PCS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are available.
      */
-    public mesh: Mesh;
+    public mesh?: Mesh;
     /**
      * This empty object is intended to store some PCS specific or temporary values in order to lower the Garbage Collector activity.
      * Please read :
      */
     public vars: any = {};
     /**
-     * @hidden
+     * @internal
      */
     public _size: number; //size of each point particle
 
@@ -145,8 +145,7 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     /**
-     * @param material
-     * @hidden
+     * @internal
      */
     private _buildMesh(material?: Material): Promise<Mesh> {
         if (this.nbParticles === 0) {
@@ -765,7 +764,7 @@ export class PointsCloudSystem implements IDisposable {
         Matrix.IdentityToRef(rotMatrix);
         let idx = 0; // current index of the particle
 
-        if (this.mesh.isFacetDataEnabled) {
+        if (this.mesh?.isFacetDataEnabled) {
             this._computeBoundingBox = true;
         }
 
@@ -773,7 +772,7 @@ export class PointsCloudSystem implements IDisposable {
         if (this._computeBoundingBox) {
             if (start != 0 || end != this.nbParticles - 1) {
                 // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
-                const boundingInfo = this.mesh.getBoundingInfo();
+                const boundingInfo = this.mesh?.getBoundingInfo();
                 if (boundingInfo) {
                     minimum.copyFrom(boundingInfo.minimum);
                     maximum.copyFrom(boundingInfo.maximum);
@@ -907,21 +906,23 @@ export class PointsCloudSystem implements IDisposable {
         }
 
         // if the VBO must be updated
-        if (update) {
-            if (this._computeParticleColor) {
-                mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+        if (mesh) {
+            if (update) {
+                if (this._computeParticleColor) {
+                    mesh.updateVerticesData(VertexBuffer.ColorKind, colors32, false, false);
+                }
+                if (this._computeParticleTexture) {
+                    mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
+                }
+                mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
             }
-            if (this._computeParticleTexture) {
-                mesh.updateVerticesData(VertexBuffer.UVKind, uvs32, false, false);
-            }
-            mesh.updateVerticesData(VertexBuffer.PositionKind, positions32, false, false);
-        }
 
-        if (this._computeBoundingBox) {
-            if (mesh.hasBoundingInfo) {
-                mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
-            } else {
-                mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
+            if (this._computeBoundingBox) {
+                if (mesh.hasBoundingInfo) {
+                    mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
+                } else {
+                    mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
+                }
             }
         }
         this.afterUpdateParticles(start, end, update);
@@ -932,7 +933,7 @@ export class PointsCloudSystem implements IDisposable {
      * Disposes the PCS.
      */
     public dispose(): void {
-        this.mesh.dispose();
+        this.mesh?.dispose();
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;
@@ -953,7 +954,7 @@ export class PointsCloudSystem implements IDisposable {
      */
     public refreshVisibleSize(): PointsCloudSystem {
         if (!this._isVisibilityBoxLocked) {
-            this.mesh.refreshBoundingInfo();
+            this.mesh?.refreshBoundingInfo();
         }
         return this;
     }
@@ -965,6 +966,10 @@ export class PointsCloudSystem implements IDisposable {
      * doc :
      */
     public setVisibilityBox(size: number): void {
+        if (!this.mesh) {
+            return;
+        }
+
         const vis = size / 2;
         this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
@@ -982,6 +987,10 @@ export class PointsCloudSystem implements IDisposable {
      * doc :
      */
     public set isAlwaysVisible(val: boolean) {
+        if (!this.mesh) {
+            return;
+        }
+
         this._alwaysVisible = val;
         this.mesh.alwaysSelectAsActiveMesh = val;
     }

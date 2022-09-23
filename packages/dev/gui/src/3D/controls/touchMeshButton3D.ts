@@ -9,7 +9,7 @@ import { TouchButton3D } from "./touchButton3D";
  * @since 5.0.0
  */
 export class TouchMeshButton3D extends TouchButton3D {
-    /** @hidden */
+    /** @internal */
     protected _currentMesh: Mesh;
 
     /**

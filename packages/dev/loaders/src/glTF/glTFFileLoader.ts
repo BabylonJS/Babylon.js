@@ -136,7 +136,7 @@ export enum GLTFLoaderState {
     COMPLETE,
 }
 
-/** @hidden */
+/** @internal */
 export interface IGLTFLoader extends IDisposable {
     importMeshAsync: (
         meshesNames: any,
@@ -154,10 +154,10 @@ export interface IGLTFLoader extends IDisposable {
  * File loader for loading glTF files into a scene.
  */
 export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-    /** @hidden */
+    /** @internal */
     public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
-    /** @hidden */
+    /** @internal */
     public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
     // --------------
@@ -189,14 +189,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
      * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
      * Defaults to true.
-     * @hidden
+     * @internal
      */
     public static IncrementalLoading = true;
 
     /**
      * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
      * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
-     * @hidden
+     * @internal
      */
     public static HomogeneousCoordinates = false;
 
@@ -519,7 +519,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public name = "gltf";
 
-    /** @hidden */
+    /** @internal */
     public extensions: ISceneLoaderPluginExtensions = {
         ".gltf": { isBinary: false },
         ".glb": { isBinary: true },
@@ -557,13 +557,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param fileOrUrl
-     * @param onSuccess
-     * @param onProgress
-     * @param useArrayBuffer
-     * @param onError
-     * @hidden
+     * @internal
      */
     public loadFile(
         scene: Scene,
@@ -657,13 +651,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param meshesNames
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public importMeshAsync(
         meshesNames: any,
@@ -684,12 +672,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
         return Promise.resolve().then(() => {
@@ -703,12 +686,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
         return Promise.resolve().then(() => {
@@ -752,8 +730,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param data
-     * @hidden
+     * @internal
      */
     public canDirectLoad(data: string): boolean {
         return (
@@ -766,9 +743,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param data
-     * @hidden
+     * @internal
      */
     public directLoad(scene: Scene, data: string): Promise<any> {
         if (
@@ -800,7 +775,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
-    /** @hidden */
+    /** @internal */
     public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
         return new GLTFFileLoader();
     }
@@ -833,8 +808,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param state
-     * @hidden
+     * @internal
      */
     public _setState(state: GLTFLoaderState): void {
         if (this._state === state) {
@@ -847,13 +821,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param fileOrUrl
-     * @param onSuccess
-     * @param useArrayBuffer
-     * @param onError
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _loadFile(
         scene: Scene,
@@ -1146,19 +1114,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     private _logIndentLevel = 0;
     private _loggingEnabled = false;
 
-    /** @hidden */
+    /** @internal */
     public _log = this._logDisabled;
 
     /**
-     * @param message
-     * @hidden
+     * @internal
      */
     public _logOpen(message: string): void {
         this._log(message);
         this._logIndentLevel++;
     }
 
-    /** @hidden */
+    /** @internal */
     public _logClose(): void {
         --this._logIndentLevel;
     }
@@ -1172,10 +1139,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     private _capturePerformanceCounters = false;
 
-    /** @hidden */
+    /** @internal */
     public _startPerformanceCounter = this._startPerformanceCounterDisabled;
 
-    /** @hidden */
+    /** @internal */
     public _endPerformanceCounter = this._endPerformanceCounterDisabled;
 
     private _startPerformanceCounterEnabled(counterName: string): void {

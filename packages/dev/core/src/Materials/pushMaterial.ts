@@ -8,7 +8,7 @@ import type { Effect } from "../Materials/effect";
 import type { SubMesh } from "../Meshes/subMesh";
 /**
  * Base class of materials working in push mode in babylon JS
- * @hidden
+ * @internal
  */
 export class PushMaterial extends Material {
     protected _activeEffect: Effect;

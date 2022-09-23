@@ -12,7 +12,7 @@ import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
 declare let OIMO: any;
 
-/** @hidden */
+/** @internal */
 export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "OimoJSPlugin";

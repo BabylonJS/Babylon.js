@@ -41,7 +41,7 @@ import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-/** @hidden */
+/** @internal */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
@@ -184,12 +184,12 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
 
     /**
      * If the reflection texture on this material is in linear color space
-     * @hidden
+     * @internal
      */
     public IS_REFLECTION_LINEAR = false;
     /**
      * If the refraction texture on this material is in linear color space
-     * @hidden
+     * @internal
      */
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;

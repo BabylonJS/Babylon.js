@@ -15,7 +15,7 @@ import "../Shaders/outline.vertex";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _outlineRenderer: OutlineRenderer;
 
         /**
@@ -39,7 +39,7 @@ Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {
 
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _renderOutline: boolean;
         /**
          * Gets or sets a boolean indicating if the outline must be rendered as well
@@ -47,7 +47,7 @@ declare module "../Meshes/abstractMesh" {
          */
         renderOutline: boolean;
 
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _renderOverlay: boolean;
         /**
          * Gets or sets a boolean indicating if the overlay must be rendered as well
