@@ -65,7 +65,7 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
                 console.log(message);
             } catch (error) {
                 console.log(error.message);
-                throw (error);
+                throw error;
             }
         }
     };
