@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>BabylonServer</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+            }
+
+            #wrapper {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                overflow: hidden;
+            }
+
+            canvas {
+                width: 100%;
+                height: 100%;
+            }
+
+            #inspector {
+                width: 25%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="wrapper">
+            <canvas id="babylon-canvas"></canvas>
+            <!-- <div id="inspector"></div> -->
+        </div>
+        <button id="start">Start</button>
+        <button id="dispose">Dispose</button>
+        <script src="babylon.js"></script>
+        <script src="gui/babylon.gui.min.js"></script>
+        <script src="inspector/babylon.inspector.bundle.js"></script>
+        <script src="nodeEditor/babylon.nodeEditor.js"></script>
+        <script src="guiEditor/babylon.guiEditor.js"></script>
+        <script src="materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="loaders/babylonjs.loaders.min.js"></script>
+        <script src="serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"></script>
+        <script src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"></script>
+        <script>
+            const startButton = document.getElementById("start");
+            const disposeButton = document.getElementById("dispose");
+            startButton.onclick = () => {
+                const scriptTag = document.createElement("script");
+                scriptTag.src = "sceneJs.js";
+                document.body.append(scriptTag)
+            }
+            disposeButton.onclick = () => {
+                BABYLON.Engine.LastCreatedEngine.dispose();
+            }
+        </script>
+    </body>
+</html>

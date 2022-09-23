@@ -77,7 +77,7 @@
         "test": "jest --runInBand",
         "test:unit": "jest --selectProjects=unit",
         "test:visualization": "jest --selectProjects=visualization --runInBand",
-        "test:integration": "jest --selectProjects=integration --runInBand",
+        "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
         "test:performance": "jest --selectProjects=performance --runInBand",
         "test:interactions": "jest --selectProjects=interactions --runInBand",
         "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
