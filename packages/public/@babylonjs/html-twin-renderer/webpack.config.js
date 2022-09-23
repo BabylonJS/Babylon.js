@@ -5,7 +5,6 @@ module.exports = (env) => {
         mode: env.production ? "production" : "development",
         devPackageName: "html-twin-renderer",
         devPackageAliasPath: `../../../tools/accessibility/dist`,
-        // namespace: "HTMLTWINRENDERER",
         es6Mode: true,
         maxMode: true,
     });
