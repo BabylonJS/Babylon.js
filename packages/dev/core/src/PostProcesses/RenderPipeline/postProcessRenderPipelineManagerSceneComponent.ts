@@ -5,7 +5,7 @@ import { Scene } from "../../scene";
 
 declare module "../../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _postProcessRenderPipelineManager: PostProcessRenderPipelineManager;
 
         /**

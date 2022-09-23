@@ -809,16 +809,16 @@ export class Vector3 {
     private static _LeftReadOnly = Vector3.Left() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
-    /** @hidden */
+    /** @internal */
     public _x: number;
 
-    /** @hidden */
+    /** @internal */
     public _y: number;
 
-    /** @hidden */
+    /** @internal */
     public _z: number;
 
-    /** @hidden */
+    /** @internal */
     public _isDirty = true;
 
     /** Gets or sets the x coordinate */
@@ -2355,10 +2355,7 @@ export class Vector3 {
     }
 
     /**
-     * @param source
-     * @param matrix
-     * @param result
-     * @hidden
+     * @internal
      */
     public static _UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
         Vector3.TransformCoordinatesToRef(source, matrix, result);
@@ -3553,19 +3550,19 @@ export class Vector4 {
  * @see https://doc.babylonjs.com/features/position,_rotation,_scaling
  */
 export class Quaternion {
-    /** @hidden */
+    /** @internal */
     public _x: number;
 
-    /** @hidden */
+    /** @internal */
     public _y: number;
 
-    /** @hidden */
+    /** @internal */
     public _z: number;
 
-    /** @hidden */
+    /** @internal */
     public _w: number;
 
-    /** @hidden */
+    /** @internal */
     public _isDirty = true;
 
     /** Gets or sets the x coordinate */
@@ -6910,7 +6907,7 @@ export class Matrix {
 }
 
 /**
- * @hidden
+ * @internal
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
@@ -6920,7 +6917,7 @@ class MathTmp {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class TmpVectors {
     public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough

@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 
 /**
- * @hidden
+ * @internal
  */
 export class IntersectionInfo {
     public faceId = 0;

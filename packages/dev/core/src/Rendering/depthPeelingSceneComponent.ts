@@ -11,14 +11,14 @@ declare module "../scene" {
          * The depth peeling renderer
          */
         depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
 
         /**
          * Flag to indicate if we want to use order independent transparency, despite the performance hit
          */
         useOrderIndependentTransparency: boolean;
-        /** @hidden */
+        /** @internal */
         _useOrderIndependentTransparency: boolean;
     }
 }

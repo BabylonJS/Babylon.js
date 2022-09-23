@@ -11,9 +11,9 @@ export class Style implements IDisposable {
     private _fontFamily = "Arial";
     private _fontStyle = "";
     private _fontWeight = "";
-    /** @hidden */
+    /** @internal */
     public _host: AdvancedDynamicTexture;
-    /** @hidden */
+    /** @internal */
     public _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
 
     /**

@@ -7,7 +7,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _simplificationQueue: SimplificationQueue;
 
         /**

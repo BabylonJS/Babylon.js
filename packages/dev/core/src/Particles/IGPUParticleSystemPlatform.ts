@@ -5,7 +5,7 @@ import type { Effect } from "../Materials/effect";
 import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import type { DataArray } from "../types";
 
-/** @hidden */
+/** @internal */
 export interface IGPUParticleSystemPlatform {
     alignDataInBuffer: boolean;
 

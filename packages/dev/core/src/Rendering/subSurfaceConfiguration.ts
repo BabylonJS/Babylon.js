@@ -13,8 +13,7 @@ import { Constants } from "../Engines/constants";
  */
 export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("SubSurfaceSceneComponent");
@@ -164,8 +163,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     }
 
     /**
-     * @param color
-     * @hidden
+     * @internal
      * https://zero-radiance.github.io/post/sampling-diffusion/
      *
      * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.

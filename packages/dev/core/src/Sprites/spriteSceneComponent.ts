@@ -14,13 +14,13 @@ import type { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _pointerOverSprite: Nullable<Sprite>;
 
-        /** @hidden */
+        /** @internal */
         _pickedDownSprite: Nullable<Sprite>;
 
-        /** @hidden */
+        /** @internal */
         _tempSpritePickingRay: Nullable<Ray>;
 
         /**
@@ -41,7 +41,7 @@ declare module "../scene" {
          */
         onAfterSpritesRenderingObservable: Observable<Scene>;
 
-        /** @hidden */
+        /** @internal */
         _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
 
         /** Launch a ray to try to pick a sprite in the scene
@@ -63,7 +63,7 @@ declare module "../scene" {
          */
         pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
 
-        /** @hidden */
+        /** @internal */
         _internalMultiPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
 
         /** Launch a ray to try to pick sprites in the scene
@@ -266,7 +266,7 @@ export class SpriteSceneComponent implements ISceneComponent {
      */
     public scene: Scene;
 
-    /** @hidden */
+    /** @internal */
     private _spritePredicate: (sprite: Sprite) => boolean;
 
     /**

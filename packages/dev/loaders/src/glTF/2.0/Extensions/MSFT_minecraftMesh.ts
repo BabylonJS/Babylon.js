@@ -9,7 +9,7 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "MSFT_minecraftMesh";
 
-/** @hidden */
+/** @internal */
 export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     public readonly name = NAME;
     public enabled: boolean;

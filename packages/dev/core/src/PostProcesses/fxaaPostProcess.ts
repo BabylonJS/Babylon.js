@@ -61,11 +61,7 @@ export class FxaaPostProcess extends PostProcess {
     }
 
     /**
-     * @param parsedPostProcess
-     * @param targetCamera
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(

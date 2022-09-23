@@ -44,7 +44,7 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
 declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGroup;
 declare type IEdgesRendererOptions = import("../Rendering/edgesRenderer").IEdgesRendererOptions;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 class _FacetDataStorage {
     // facetData private properties
@@ -80,7 +80,7 @@ class _FacetDataStorage {
 }
 
 /**
- * @hidden
+ * @internal
  **/
 // eslint-disable-next-line @typescript-eslint/naming-convention
 class _InternalAbstractMeshDataInfo {
@@ -196,10 +196,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     // Internal data
-    /** @hidden */
+    /** @internal */
     public _internalAbstractMeshDataInfo = new _InternalAbstractMeshDataInfo();
 
-    /** @hidden */
+    /** @internal */
     public _waitingMaterialId: Nullable<string> = null;
 
     /**
@@ -316,12 +316,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsAttributesDirty();
     }
 
-    /** @hidden */
+    /** @internal */
     public _syncGeometryWithMorphTargetManager(): void {}
 
     /**
-     * @param value
-     * @hidden
+     * @internal
      */
     public _updateNonUniformScalingState(value: boolean): boolean {
         if (!super._updateNonUniformScalingState(value)) {
@@ -371,10 +370,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public definedFacingForward = true;
 
-    /** @hidden */
+    /** @internal */
     public _occlusionQuery: Nullable<WebGLQuery | number> = null;
 
-    /** @hidden */
+    /** @internal */
     public _renderingGroup: Nullable<RenderingGroup> = null;
 
     /**
@@ -722,14 +721,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @see https://www.babylonjs-playground.com/#10OJSG#13
      */
     public edgesColor = new Color4(1, 0, 0, 1);
-    /** @hidden */
+    /** @internal */
     public _edgesRenderer: Nullable<IEdgesRenderer> = null;
 
-    /** @hidden */
+    /** @internal */
     public _masterMesh: Nullable<AbstractMesh> = null;
     protected _boundingInfo: Nullable<BoundingInfo> = null;
     protected _boundingInfoIsDirty = true;
-    /** @hidden */
+    /** @internal */
     public _renderId = 0;
 
     /**
@@ -738,13 +737,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public subMeshes: SubMesh[];
 
-    /** @hidden */
+    /** @internal */
     public _intersectionsInProgress = new Array<AbstractMesh>();
 
-    /** @hidden */
+    /** @internal */
     public _unIndexed = false;
 
-    /** @hidden */
+    /** @internal */
     public _lightSources = new Array<Light>();
 
     /** Gets the list of lights affecting that mesh */
@@ -752,13 +751,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this._lightSources;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _positions(): Nullable<Vector3[]> {
         return null;
     }
 
     // Loading properties
-    /** @hidden */
+    /** @internal */
     public _waitingData: {
         lods: Nullable<any>;
         actions: Nullable<any>;
@@ -769,10 +768,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         freezeWorldMatrix: null,
     };
 
-    /** @hidden */
+    /** @internal */
     public _bonesTransformMatrices: Nullable<Float32Array> = null;
 
-    /** @hidden */
+    /** @internal */
     public _transformMatrixTexture: Nullable<RawTexture> = null;
 
     /**
@@ -809,7 +808,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * The current mesh uniform buffer.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
 
@@ -900,7 +899,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @hidden
+     * @internal
      */
     protected _getEffectiveParent(): Nullable<Node> {
         if (this._masterMesh && this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
@@ -911,9 +910,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param trigger
-     * @param initialCall
-     * @hidden
+     * @internal
      */
     public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
         if (this.actionManager && (initialCall || this.actionManager.isRecursive)) {
@@ -934,8 +931,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param dispose
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _rebuild(dispose = false): void {
@@ -954,7 +950,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _resyncLightSources(): void {
         this._lightSources.length = 0;
 
@@ -972,8 +968,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param light
-     * @hidden
+     * @internal
      */
     public _resyncLightSource(light: Light): void {
         const isIn = light.isEnabled() && light.canAffectMesh(this);
@@ -996,7 +991,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsLightDirty(removed);
     }
 
-    /** @hidden */
+    /** @internal */
     public _unBindEffect() {
         for (const subMesh of this.subMeshes) {
             subMesh.setEffect(null);
@@ -1004,9 +999,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param light
-     * @param dispose
-     * @hidden
+     * @internal
      */
     public _removeLightSource(light: Light, dispose: boolean): void {
         const index = this._lightSources.indexOf(light);
@@ -1036,19 +1029,18 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param dispose
-     * @hidden
+     * @internal
      */
     public _markSubMeshesAsLightDirty(dispose: boolean = false) {
         this._markSubMeshesAsDirty((defines) => defines.markAsLightDirty(dispose));
     }
 
-    /** @hidden */
+    /** @internal */
     public _markSubMeshesAsAttributesDirty() {
         this._markSubMeshesAsDirty((defines) => defines.markAsAttributesDirty());
     }
 
-    /** @hidden */
+    /** @internal */
     public _markSubMeshesAsMiscDirty() {
         this._markSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
     }
@@ -1277,20 +1269,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         );
     }
 
-    /** @hidden */
+    /** @internal */
     public _preActivate(): void {}
 
     /**
-     * @param renderId
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _preActivateForIntermediateRendering(renderId: number): void {}
 
     /**
-     * @param renderId
-     * @param intermediateRendering
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
@@ -1298,17 +1287,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _postActivate(): void {
         // Do nothing
     }
 
-    /** @hidden */
+    /** @internal */
     public _freeze() {
         // Do nothing
     }
 
-    /** @hidden */
+    /** @internal */
     public _unFreeze() {
         // Do nothing
     }
@@ -1325,7 +1314,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return super.getWorldMatrix();
     }
 
-    /** @hidden */
+    /** @internal */
     public _getWorldMatrixDeterminant(): number {
         if (this._masterMesh) {
             return this._masterMesh._getWorldMatrixDeterminant();
@@ -1434,9 +1423,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param data
-     * @param bias
-     * @hidden
+     * @internal
      */
     public _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void {
         if (data) {
@@ -1570,9 +1557,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param applySkeleton
-     * @param applyMorph
-     * @hidden
+     * @internal
      */
     public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
         let data = this.getVerticesData(VertexBuffer.PositionKind);
@@ -1597,7 +1582,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return data;
     }
 
-    /** @hidden */
+    /** @internal */
     public _updateBoundingInfo(): AbstractMesh {
         if (this._boundingInfo) {
             this._boundingInfo.update(this.worldMatrixFromCache);
@@ -1609,8 +1594,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param matrix
-     * @hidden
+     * @internal
      */
     public _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh {
         if (!this.subMeshes) {
@@ -1626,7 +1610,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _afterComputeWorldMatrix(): void {
         if (this.doNotSyncBoundingInfo) {
             return;
@@ -1761,10 +1745,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     // Collisions
     /**
-     * @param subMesh
-     * @param transformMatrix
-     * @param collider
-     * @hidden
+     * @internal
      */
     public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
         this._generatePointsArray();
@@ -1802,9 +1783,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * @param collider
-     * @param transformMatrix
-     * @hidden
+     * @internal
      */
     public _processCollisionsForSubMeshes(collider: Collider, transformMatrix: Matrix): AbstractMesh {
         const subMeshes = this._scene.getCollidingSubMeshCandidates(this, collider);
@@ -1823,14 +1802,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _shouldConvertRHS() {
         return false;
     }
 
     /**
-     * @param collider
-     * @hidden
+     * @internal
      */
     public _checkCollision(collider: Collider): AbstractMesh {
         // Bounding box test
@@ -1848,7 +1826,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     // Picking
-    /** @hidden */
+    /** @internal */
     public _generatePointsArray(): boolean {
         return false;
     }
@@ -2168,7 +2146,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     // Facet data
-    /** @hidden */
+    /** @internal */
     private _initFacetData(): AbstractMesh {
         const data = this._internalAbstractMeshDataInfo._facetData;
         if (!data.facetNormals) {
@@ -2585,7 +2563,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkOcclusionQuery(): boolean {
         // Will be replaced by correct code if Occlusion queries are referenced
         return false;

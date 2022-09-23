@@ -16,7 +16,7 @@ import { RegisterClass } from "../Misc/typeStore";
 
 import "../ShadersWGSL/gpuUpdateParticles.compute";
 
-/** @hidden */
+/** @internal */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     private _parent: GPUParticleSystem;
     private _engine: ThinEngine;
