@@ -1717,13 +1717,13 @@ export class Vector3 {
     }
 
     /**
-     * Gets the angles between two vectors needed to change direction
-     * @param start the starting vector
-     * @param target the target vector
-     * @param ref the vector to store the result
-     * @returns the updated ref with the between the two vectors in the form (pitch, yaw, roll)
+     * Gets the angles between two points needed to face the target from the start
+     * @param start the starting point
+     * @param target the target point
+     * @param ref the vector3 to store the result
+     * @returns the updated ref with the angles between the two points in the form (pitch, yaw, roll)
      */
-    public static GetAnglesBetweenVectorsForDirectionChangeToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
+    public static GetAnglesBetweenPointsForDirectionChangeToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
         const diff = TmpVectors.Vector3[0];
         target.subtractToRef(start, diff);
         ref.y = Math.atan2(diff.x, diff.z) || 0;
@@ -1732,17 +1732,14 @@ export class Vector3 {
     }
 
     /**
-     * Gets the angles between two vectors needed to change direction
+     * Gets the angles between two points needed to face the target from the start
      * @param start the starting vector
      * @param target the target vector
-     * @returns the angles between the two vectors in the form (pitch, yaw, roll)
+     * @returns the angles between the two points in the form (pitch, yaw, roll)
      */
-    public static GetAnglesBetweenVectorsForDirectionChange(start: Vector3, target: Vector3): Vector3 {
-        const diff = TmpVectors.Vector3[0];
-        target.subtractToRef(start, diff);
-        const theta = Math.atan2(diff.x, diff.z) || 0,
-            phi = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
-        return new Vector3(phi, theta, 0);
+    public static GetAnglesBetweenPointsForDirectionChange(start: Vector3, target: Vector3): Vector3 {
+        const ref = Vector3.Zero();
+		return Vector3.GetAnglesBetweenPointsForDirectionChangeToRef(start, target, ref);
     }
 
     /**
