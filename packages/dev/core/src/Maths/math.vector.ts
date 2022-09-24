@@ -1690,30 +1690,6 @@ export class Vector3 {
     }
 
     /**
-     * Get rotation needed to to rotate from one Vector3 onto another Vector3
-     * @param fromVector the starting vector
-     * @param toVector the ending vector
-     * @returns the rotation needed
-     */
-    public static RotationFromOnto(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>) {
-        const ref: Quaternion = Quaternion.Zero();
-        return Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref).toEulerAngles();
-    }
-
-    /**
-     * Get rotation needed to to rotate from one Vector3 onto another Vector3 and store in a result Vector3
-     * @param fromVector the starting vector
-     * @param toVector the ending vector
-     * @param result the rotation needed
-     * @returns the result
-     */
-    public static RotationFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Vector3>) {
-        const ref: Quaternion = Quaternion.Zero();
-        result = Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref).toEulerAngles();
-        return result;
-    }
-
-    /**
      * Get angle between two vectors
      * Example Playground https://playground.babylonjs.com/#R1F8YU#86
      * @param vector0 the starting point
