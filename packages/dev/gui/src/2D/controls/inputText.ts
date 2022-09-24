@@ -55,7 +55,7 @@ export class InputText extends Control implements IFocusableControl {
     protected _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
     protected _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
 
-    /** @hidden */
+    /** @internal */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
@@ -367,7 +367,7 @@ export class InputText extends Control implements IFocusableControl {
         this.isPointerBlocker = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public onBlur(): void {
         this._isFocused = false;
         this._scrollLeft = null;
@@ -387,7 +387,7 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public onFocus(): void {
         if (!this._isEnabled) {
             return;
@@ -480,10 +480,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /**
-     * @param keyCode
-     * @param key
-     * @param evt
-     * @hidden
+     * @internal
      */
     public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
         if (this.isReadOnly) {
@@ -758,8 +755,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     protected _updateValueFromCursorIndex(offset: number) {
         //update the cursor
@@ -784,8 +780,7 @@ export class InputText extends Control implements IFocusableControl {
         this._markAsDirty();
     }
     /**
-     * @param evt
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _processDblClick(evt: PointerInfo) {
@@ -807,7 +802,7 @@ export class InputText extends Control implements IFocusableControl {
         this._cursorIndex = -1;
         this._markAsDirty();
     }
-    /** @hidden */
+    /** @internal */
     protected _selectAllText() {
         this._blinkIsEven = true;
         this._isTextHighlightOn = true;
@@ -831,8 +826,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /**
-     * @param ev
-     * @hidden
+     * @internal
      */
     protected _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
@@ -843,8 +837,7 @@ export class InputText extends Control implements IFocusableControl {
         this._host.clipboardData = this._highlightedText;
     }
     /**
-     * @param ev
-     * @hidden
+     * @internal
      */
     protected _onCutText(ev: ClipboardEvent): void {
         if (!this._highlightedText) {
@@ -863,8 +856,7 @@ export class InputText extends Control implements IFocusableControl {
         this._highlightedText = "";
     }
     /**
-     * @param ev
-     * @hidden
+     * @internal
      */
     protected _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";

@@ -14,7 +14,7 @@ declare type Collider = import("../../Collisions/collider").Collider;
 declare module "../../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing Filed
          */
         _selectionOctree: Octree<AbstractMesh>;
@@ -66,7 +66,7 @@ Object.defineProperty(Scene.prototype, "selectionOctree", {
 declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
-         * @hidden
+         * @internal
          * Backing Field
          */
         _submeshesOctree: Octree<SubMesh>;

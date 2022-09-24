@@ -8,7 +8,7 @@ import type { ThinEngine } from "../thinEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-/** @hidden */
+/** @internal */
 export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];

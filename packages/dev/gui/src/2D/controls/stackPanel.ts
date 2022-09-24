@@ -115,9 +115,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         for (const child of this._children) {
@@ -241,9 +239,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         this._manualWidth = serializedObject.manualWidth;

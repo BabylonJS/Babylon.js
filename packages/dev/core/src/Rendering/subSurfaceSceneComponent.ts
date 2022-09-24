@@ -22,7 +22,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: an
 
 declare module "../abstractScene" {
     export interface AbstractScene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
 
         /**

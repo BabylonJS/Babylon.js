@@ -11,7 +11,7 @@ import { ArcRotateCameraGamepadInput } from "../Cameras/Inputs/arcRotateCameraGa
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _gamepadManager: Nullable<GamepadManager>;
 
         /**

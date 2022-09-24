@@ -8,7 +8,7 @@ import { DataBuffer } from "./dataBuffer";
 export class Buffer {
     private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
-    /** @hidden */
+    /** @internal */
     public _data: Nullable<DataArray>;
     private _updatable: boolean;
     private _instanced: boolean;
@@ -170,7 +170,7 @@ export class Buffer {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         this._buffer = null;
         this.create(this._data);
@@ -213,7 +213,7 @@ export class Buffer {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _increaseReferences() {
         if (!this._buffer) {
             return;
@@ -247,9 +247,9 @@ export class Buffer {
 export class VertexBuffer {
     private static _Counter = 0;
 
-    /** @hidden */
+    /** @internal */
     public _buffer: Buffer;
-    /** @hidden */
+    /** @internal */
     public _validOffsetRange: boolean; // used internally by the engine
     private _kind: string;
     private _size: number;
@@ -435,7 +435,7 @@ export class VertexBuffer {
             (this.byteStride << 12);
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         if (!this._buffer) {
             return;

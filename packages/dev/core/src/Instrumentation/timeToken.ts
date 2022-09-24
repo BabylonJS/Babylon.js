@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 /**
- * @hidden
+ * @internal
  **/
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _TimeToken {

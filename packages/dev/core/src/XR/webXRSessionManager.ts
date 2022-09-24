@@ -365,8 +365,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     }
 
     /**
-     * @param baseLayerWrapper
-     * @hidden
+     * @internal
      */
     public _setBaseLayerWrapper(baseLayerWrapper: Nullable<WebXRLayerWrapper>): void {
         if (this.isNative) {

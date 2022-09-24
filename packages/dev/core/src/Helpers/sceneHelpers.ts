@@ -23,7 +23,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import type { WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
 import { WebXRDefaultExperience } from "../XR/webXRDefaultExperience";
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line no-var
 export var _forceSceneHelpersToBundle = true;
 

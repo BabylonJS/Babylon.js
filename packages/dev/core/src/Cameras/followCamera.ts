@@ -191,7 +191,7 @@ export class FollowCamera extends TargetCamera {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         this.inputs.checkInputs();
         this._checkLimits();
@@ -292,7 +292,7 @@ export class ArcFollowCamera extends TargetCamera {
         this.setTarget(targetPosition);
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         super._checkInputs();
         this._follow();

@@ -3,7 +3,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Class containing a set of static utilities functions for managing Pivots
- * @hidden
+ * @internal
  */
 export class PivotTools {
     // Stores the state of the pivot cache (_oldPivotPoint, _pivotTranslation)
@@ -14,8 +14,7 @@ export class PivotTools {
     private static _PivotTmpVector = new Vector3();
     private static _PivotPostMultiplyPivotMatrix = false;
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public static _RemoveAndStorePivotPoint(mesh: TransformNode) {
         if (mesh && PivotTools._PivotCached === 0) {
@@ -34,8 +33,7 @@ export class PivotTools {
         PivotTools._PivotCached++;
     }
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public static _RestorePivotPoint(mesh: TransformNode) {
         if (mesh && !PivotTools._OldPivotPoint.equalsToFloats(0, 0, 0) && PivotTools._PivotCached === 1) {

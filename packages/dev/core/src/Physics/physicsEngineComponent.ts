@@ -17,9 +17,9 @@ import { PhysicsJoint } from "./physicsJoint";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
-        /** @hidden */
+        /** @internal */
         _physicsTimeAccumulator: number;
 
         /**
@@ -135,8 +135,7 @@ Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
 };
 
 /**
- * @param step
- * @hidden
+ * @internal
  */
 Scene.prototype._advancePhysicsEngineStep = function (step: number) {
     if (this._physicsEngine) {
@@ -159,7 +158,7 @@ Scene.prototype._advancePhysicsEngineStep = function (step: number) {
 
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
-        /** @hidden */
+        /** @internal */
         _physicsImpostor: Nullable<PhysicsImpostor>;
 
         /**
@@ -194,7 +193,7 @@ declare module "../Meshes/abstractMesh" {
          */
         setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh;
 
-        /** @hidden */
+        /** @internal */
         _disposePhysicsObserver: Nullable<Observer<Node>>;
     }
 }

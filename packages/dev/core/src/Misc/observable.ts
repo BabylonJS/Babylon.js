@@ -67,7 +67,7 @@ export class EventState {
  * Represent an Observer registered to a given Observable object.
  */
 export class Observer<T> {
-    /** @hidden */
+    /** @internal */
     public _willBeUnregistered = false;
     /**
      * Gets or sets a property defining that the observer as to be unregistered after the next notification
@@ -108,7 +108,7 @@ export class Observable<T> {
     private _observers = new Array<Observer<T>>();
 
     /**
-     * @hidden
+     * @internal
      */
     public _eventState: EventState;
 
@@ -244,8 +244,7 @@ export class Observable<T> {
     }
 
     /**
-     * @param observer
-     * @hidden
+     * @internal
      */
     public _deferUnregister(observer: Observer<T>): void {
         observer.unregisterOnNextCall = false;
