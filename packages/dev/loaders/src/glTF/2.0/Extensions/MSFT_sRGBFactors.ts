@@ -9,7 +9,7 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "MSFT_sRGBFactors";
 
-/** @hidden */
+/** @internal */
 export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     public readonly name = NAME;
     public enabled: boolean;

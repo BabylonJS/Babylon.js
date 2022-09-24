@@ -249,9 +249,7 @@ export class ImageScrollBar extends BaseSlider {
     private _originY: number;
 
     /**
-     * @param x
-     * @param y
-     * @hidden
+     * @internal
      */
     protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {

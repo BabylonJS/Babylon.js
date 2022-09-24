@@ -2,7 +2,7 @@ import { sourceTextureFormat, transcodeTarget } from "../transcoder";
 import { LiteTranscoder } from "./liteTranscoder";
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class LiteTranscoder_UASTC_ASTC extends LiteTranscoder {

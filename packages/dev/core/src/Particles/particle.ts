@@ -78,70 +78,70 @@ export class Particle {
      */
     public remapData: Vector4;
 
-    /** @hidden */
+    /** @internal */
     public _randomCellOffset?: number;
 
-    /** @hidden */
+    /** @internal */
     public _initialDirection: Nullable<Vector3>;
 
-    /** @hidden */
+    /** @internal */
     public _attachedSubEmitters: Nullable<Array<SubEmitter>> = null;
 
-    /** @hidden */
+    /** @internal */
     public _initialStartSpriteCellID: number;
-    /** @hidden */
+    /** @internal */
     public _initialEndSpriteCellID: number;
-    /** @hidden */
+    /** @internal */
     public _initialSpriteCellLoop: boolean;
 
-    /** @hidden */
+    /** @internal */
     public _currentColorGradient: Nullable<ColorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentColor1 = new Color4(0, 0, 0, 0);
-    /** @hidden */
+    /** @internal */
     public _currentColor2 = new Color4(0, 0, 0, 0);
 
-    /** @hidden */
+    /** @internal */
     public _currentSizeGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentSize1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentSize2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _currentAngularSpeedGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentAngularSpeed1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentAngularSpeed2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _currentVelocityGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentVelocity1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentVelocity2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _currentLimitVelocityGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentLimitVelocity1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentLimitVelocity2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _currentDragGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentDrag1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentDrag2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _randomNoiseCoordinates1: Vector3;
-    /** @hidden */
+    /** @internal */
     public _randomNoiseCoordinates2: Vector3;
 
-    /** @hidden */
+    /** @internal */
     public _localPosition?: Vector3;
 
     /**
@@ -198,8 +198,7 @@ export class Particle {
     }
 
     /**
-     * @param subEmitter
-     * @hidden
+     * @internal
      */
     public _inheritParticleInfoToSubEmitter(subEmitter: SubEmitter) {
         if ((<AbstractMesh>subEmitter.particleSystem.emitter).position) {
@@ -219,7 +218,7 @@ export class Particle {
         subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(TmpVectors.Vector3[0]);
     }
 
-    /** @hidden */
+    /** @internal */
     public _inheritParticleInfoToSubEmitters() {
         if (this._attachedSubEmitters && this._attachedSubEmitters.length > 0) {
             this._attachedSubEmitters.forEach((subEmitter) => {
@@ -228,7 +227,7 @@ export class Particle {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _reset() {
         this.age = 0;
         this.id = Particle._Count++;

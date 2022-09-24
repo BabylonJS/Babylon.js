@@ -2,7 +2,7 @@ import type { IComputePipelineContext } from "../../Compute/IComputePipelineCont
 import type { Nullable } from "../../types";
 import type { WebGPUEngine } from "../webgpuEngine";
 
-/** @hidden */
+/** @internal */
 export class WebGPUComputePipelineContext implements IComputePipelineContext {
     public engine: WebGPUEngine;
 
@@ -27,7 +27,7 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _name: string;
 
     constructor(engine: WebGPUEngine) {

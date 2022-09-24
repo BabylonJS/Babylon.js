@@ -79,14 +79,14 @@ export class HolographicSlate extends ContentDisplay3D {
         return this._defaultBehavior;
     }
 
-    /** @hidden */
+    /** @internal */
     public _gizmo: SlateGizmo;
 
     protected _titleBar: Mesh;
     protected _titleBarTitle: Mesh;
     protected _contentPlate: Mesh;
     protected _backPlate: Mesh;
-    /** @hidden */
+    /** @internal */
     public _followButton: TouchHolographicButton;
     protected _closeButton: TouchHolographicButton;
     protected _contentScaleRatio = 1;
@@ -205,7 +205,7 @@ export class HolographicSlate extends ContentDisplay3D {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _positionElements() {
         const followButton = this._followButton;
@@ -272,7 +272,7 @@ export class HolographicSlate extends ContentDisplay3D {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _updatePivot() {
         if (!this.mesh) {
@@ -430,8 +430,7 @@ export class HolographicSlate extends ContentDisplay3D {
     }
 
     /**
-     * @param scene
-     * @hidden*
+     * @internal*
      */
     public _prepareNode(scene: Scene): void {
         super._prepareNode(scene);

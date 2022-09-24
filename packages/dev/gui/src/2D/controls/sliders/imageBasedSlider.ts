@@ -187,9 +187,7 @@ export class ImageBasedSlider extends BaseSlider {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);

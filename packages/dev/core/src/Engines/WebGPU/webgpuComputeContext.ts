@@ -10,7 +10,7 @@ import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
-/** @hidden */
+/** @internal */
 export class WebGPUComputeContext implements IComputeContext {
     private static _Counter = 0;
 

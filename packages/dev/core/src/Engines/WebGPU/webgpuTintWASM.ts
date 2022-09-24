@@ -21,7 +21,7 @@ export interface TwgslOptions {
     wasmPath?: string;
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUTintWASM {
     // Default twgsl options.
     private static readonly _TWgslDefaultOptions: TwgslOptions = {

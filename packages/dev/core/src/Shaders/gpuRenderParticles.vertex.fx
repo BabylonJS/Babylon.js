@@ -35,6 +35,7 @@ uniform mat4 invView;
 #endif
 
 #include<clipPlaneVertexDeclaration2>
+#include<logDepthDeclaration>
 
 #ifdef COLORGRADIENTS
 uniform sampler2D colorGradientSampler;
@@ -170,4 +171,5 @@ void main() {
     vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
+	#include<logDepthVertex>
 }

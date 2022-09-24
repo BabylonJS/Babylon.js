@@ -13,11 +13,11 @@ import type { Nullable } from "../types";
  */
 export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     /**
-     * @hidden
+     * @internal
      */
     public _mouseInput: Nullable<FreeCameraMouseInput> = null;
     /**
-     * @hidden
+     * @internal
      */
     public _mouseWheelInput: Nullable<FreeCameraMouseWheelInput> = null;
     /**

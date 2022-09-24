@@ -373,8 +373,7 @@ export class Animatable {
     }
 
     /**
-     * @param delay
-     * @hidden
+     * @internal
      */
     public _animate(delay: number): boolean {
         if (this._paused) {
@@ -445,10 +444,10 @@ export class Animatable {
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindingsForMatrices(holder: {
             totalWeight: number;
             totalAdditiveWeight: number;
@@ -457,7 +456,7 @@ declare module "../scene" {
             originalValue: Matrix;
         }): any;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindingsForQuaternions(
             holder: {
                 totalWeight: number;
@@ -469,7 +468,7 @@ declare module "../scene" {
             refQuaternion: Quaternion
         ): Quaternion;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindings(): void;
 
         /**
