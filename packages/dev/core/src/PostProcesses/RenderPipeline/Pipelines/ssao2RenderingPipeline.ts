@@ -427,7 +427,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _hemisphereSample_uniform(u: number, v: number): Vector3 {
         const phi = v * 2.0 * Math.PI;
         // rejecting samples that are close to tangent plane to avoid z-fighting artifacts
-        const cosTheta = 1.0 - (u * 0.85 + 0.15);
+        const cosTheta = 1.0 - u * 0.85;
         const sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
         return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta);
     }
