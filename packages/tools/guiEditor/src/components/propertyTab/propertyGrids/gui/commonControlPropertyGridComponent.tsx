@@ -737,6 +737,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 options={fonts}
                                 addVal={this.addVal}
                                 fromFontDropdown={true}
+                                fallbackValue={1}
                                 onSelect={(newValue) => {
                                     const fontFamily = this.state.fontFamilyOptions.filter(({ value }) => value === newValue).map(({ label }) => label);
                                     proxy.fontFamily = fontFamily[0];

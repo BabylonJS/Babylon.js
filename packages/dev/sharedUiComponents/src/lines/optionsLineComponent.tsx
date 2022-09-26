@@ -26,6 +26,7 @@ export interface IOptionsLineComponentProps {
     defaultIfNull?: number;
     fromFontDropdown?: boolean;
     valueProp?: number;
+    fallbackValue?: number;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string; addCustom: boolean }> {
@@ -46,6 +47,11 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     constructor(props: IOptionsLineComponentProps) {
+        // Initialize default props
+        props = {
+            fallbackValue: -1,
+            ...props,
+        };
         super(props);
 
         this.state = { value: this._remapValueIn(this._getValue(props)), addCustom: false };
@@ -173,7 +179,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                     ) : (
                         <select
                             onChange={(evt) => this.updateValue(evt.target.value)}
-                            value={this.state.value === -1 || this.state.value === null || this.state.value === undefined ? 1 : this.state.value}
+                            value={this.state.value === null || this.state.value === undefined ? this.props.fallbackValue : this.state.value}
                         >
                             {this.props.options.map((option, i) => {
                                 return (
