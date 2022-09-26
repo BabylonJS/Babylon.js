@@ -49,8 +49,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     constructor(props: IOptionsLineComponentProps) {
         // Initialize default props
         props = {
-            ...props,
             fallbackValue: -1,
+            ...props,
         };
         super(props);
 
