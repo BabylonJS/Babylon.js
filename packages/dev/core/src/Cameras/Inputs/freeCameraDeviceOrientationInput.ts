@@ -16,7 +16,7 @@ declare module "../../Cameras/freeCameraInputsManager" {
         _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
         /**
          * Add orientation input support to the input manager.
-         * @param {number} [smoothFactor] deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
+         * @param smoothFactor deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
          * @returns the current input manager
          */
         addDeviceOrientation(smoothFactor?: number): FreeCameraInputsManager;
@@ -25,7 +25,7 @@ declare module "../../Cameras/freeCameraInputsManager" {
 
 /**
  * Add orientation input support to the input manager.
- * @param {number} [smoothFactor] deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
+ * @param smoothFactor deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
  * @returns the current input manager
  */
 FreeCameraInputsManager.prototype.addDeviceOrientation = function (smoothFactor?: number): FreeCameraInputsManager {
@@ -57,7 +57,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     private _beta: number = 0;
     private _gamma: number = 0;
 
-    // alpha+beta+gamma smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
+    /** alpha+beta+gamma smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing */
     public smoothFactor: number = 0;
 
     /**
