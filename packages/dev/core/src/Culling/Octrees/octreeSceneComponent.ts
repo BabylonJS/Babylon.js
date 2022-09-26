@@ -182,11 +182,7 @@ export class OctreeSceneComponent {
      * @returns the list of active meshes
      */
     public getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh> {
-        if (this.scene._selectionOctree) {
-            const selection = this.scene._selectionOctree.select(this.scene.frustumPlanes);
-            return selection;
-        }
-        return this.scene._getDefaultMeshCandidates();
+        return this.scene._selectionOctree?.select(this.scene.frustumPlanes) || this.scene._getDefaultMeshCandidates();
     }
 
     /**
