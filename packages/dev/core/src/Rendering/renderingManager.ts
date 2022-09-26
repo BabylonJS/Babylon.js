@@ -85,13 +85,43 @@ export class RenderingManager {
     private _customTransparentSortCompareFn: { [id: number]: Nullable<(a: SubMesh, b: SubMesh) => number> } = {};
     private _renderingGroupInfo: Nullable<RenderingGroupInfo> = new RenderingGroupInfo();
 
+    private _maintainStateBetweenFrames = false;
     /**
      * Gets or sets a boolean indicating that the manager will not reset between frames.
      * This means that if a mesh becomes invisible or transparent it will not be visible until this boolean is set to false again.
      * By default, the rendering manager will dispatch all active meshes per frame (moving them to the transparent, opaque or alpha testing lists).
      * By turning this property on, you will accelerate the rendering by keeping all these lists unchanged between frames.
      */
-    public maintainStateBetweenFrames = false;
+    public get maintainStateBetweenFrames() {
+        return this._maintainStateBetweenFrames;
+    }
+
+    public set maintainStateBetweenFrames(value: boolean) {
+        if (value === this._maintainStateBetweenFrames) {
+            return;
+        }
+
+        this._maintainStateBetweenFrames = value;
+
+        // Restore wasDispatched flags when switching to maintainStateBetweenFrames to false
+        if (!this._maintainStateBetweenFrames) {
+            for (const mesh of this._scene.meshes) {
+                if (mesh.subMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
+                        subMesh._wasDispatched = false;
+                    }
+                }
+            }
+
+            for (const spriteManager of this._scene.spriteManagers) {
+                spriteManager._wasDispatched = false;
+            }
+
+            for (const particleSystem of this._scene.particleSystems) {
+                particleSystem._wasDispatched = false;
+            }
+        }
+    }
 
     /**
      * Instantiates a new rendering group for a particular scene
