@@ -107,7 +107,7 @@ export class RenderingManager {
         if (!this._maintainStateBetweenFrames) {
             for (const mesh of this._scene.meshes) {
                 if (mesh.subMeshes) {
-                    for (let subMesh of mesh.subMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
                         subMesh._wasDispatched = false;
                     }
                 }
