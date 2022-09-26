@@ -40,7 +40,7 @@ void albedoOpacityBlock(
         surfaceAlbedo *= albedoInfos.y;
     #endif
 
-    #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+    #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         surfaceAlbedo *= vColor.rgb;
     #endif
 
@@ -62,7 +62,7 @@ void albedoOpacityBlock(
         alpha *= vOpacityInfos.y;
     #endif
 
-    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         alpha *= vColor.a;
     #endif
 
