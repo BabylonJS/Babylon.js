@@ -177,12 +177,6 @@ export class MaterialHelper {
             changed = true;
         }
 
-        // ensure defines.INSTANCESCOLOR is not out of sync with instances
-        if (defines["INSTANCESCOLOR"] && !defines["INSTANCES"]) {
-            defines["INSTANCESCOLOR"] = false;
-            changed = true;
-        }
-
         if (defines["THIN_INSTANCES"] !== useThinInstances) {
             defines["THIN_INSTANCES"] = useThinInstances;
             changed = true;
