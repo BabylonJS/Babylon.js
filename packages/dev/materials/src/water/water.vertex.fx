@@ -43,7 +43,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 

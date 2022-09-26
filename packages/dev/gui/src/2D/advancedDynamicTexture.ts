@@ -56,21 +56,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
-    /** @hidden */
+    /** @internal */
     public _rootContainer = new Container("root");
-    /** @hidden */
+    /** @internal */
     public _lastPickedControl: Control;
-    /** @hidden */
+    /** @internal */
     public _lastControlOver: { [pointerId: number]: Control } = {};
-    /** @hidden */
+    /** @internal */
     public _lastControlDown: { [pointerId: number]: Control } = {};
-    /** @hidden */
+    /** @internal */
     public _capturingControl: { [pointerId: number]: Control } = {};
-    /** @hidden */
+    /** @internal */
     public _shouldBlockPointer: boolean;
-    /** @hidden */
+    /** @internal */
     public _layerToDispose: Nullable<Layer>;
-    /** @hidden */
+    /** @internal */
     public _linkedControls = new Array<Control>();
     private _isFullscreen = false;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
@@ -85,17 +85,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
 
-    /** @hidden */
+    /** @internal */
     public _capturedPointerIds = new Set<number>();
 
-    /** @hidden */
+    /** @internal */
     public _numLayoutCalls = 0;
     /** Gets the number of layout calls made the last time the ADT has been rendered */
     public get numLayoutCalls(): number {
         return this._numLayoutCalls;
     }
 
-    /** @hidden */
+    /** @internal */
     public _numRenderCalls = 0;
     /** Gets the number of render calls made the last time the ADT has been rendered */
     public get numRenderCalls(): number {
@@ -613,7 +613,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this.invalidateRect(0, 0, textureSize.width - 1, textureSize.height - 1);
     }
-    /** @hidden */
+    /** @internal */
     public _getGlobalViewport(): Viewport {
         const size = this.getSize();
         const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
@@ -739,8 +739,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._invalidatedRectangle = null;
     }
     /**
-     * @param cursor
-     * @hidden
+     * @internal
      */
     public _changeCursor(cursor: string) {
         if (this._rootElement) {
@@ -749,9 +748,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
     /**
-     * @param control
-     * @param pointerId
-     * @hidden
+     * @internal
      */
     public _registerLastControlDown(control: Control, pointerId: number) {
         this._lastControlDown[pointerId] = control;
@@ -800,9 +797,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._manageFocus();
     }
     /**
-     * @param list
-     * @param control
-     * @hidden
+     * @internal
      */
     public _cleanControlAfterRemovalFromList(list: { [pointerId: number]: Control }, control: Control) {
         for (const pointerId in list) {
@@ -816,8 +811,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
     }
     /**
-     * @param control
-     * @hidden
+     * @internal
      */
     public _cleanControlAfterRemoval(control: Control) {
         this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
@@ -922,8 +916,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * @param rawEvt
-     * @hidden
+     * @internal
      */
     private _onClipboardCopy = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
@@ -932,8 +925,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         evt.preventDefault();
     };
     /**
-     * @param rawEvt
-     * @hidden
+     * @internal
      */
     private _onClipboardCut = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
@@ -942,8 +934,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         evt.preventDefault();
     };
     /**
-     * @param rawEvt
-     * @hidden
+     * @internal
      */
     private _onClipboardPaste = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;

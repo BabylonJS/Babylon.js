@@ -23,7 +23,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 
@@ -148,7 +148,7 @@ void main(void) {
 
 #include<depthPrePass>
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	baseColor.rgb *= vColor.rgb;
 #endif
 
@@ -308,7 +308,7 @@ vec4 reflectionColor = vec4(0., 0., 0., 1.);
 
 #endif
 
-#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
+#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	alpha *= vColor.a;
 #endif
 

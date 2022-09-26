@@ -58,7 +58,7 @@ const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<
     texture_external: null,
 };
 
-/** @hidden */
+/** @internal */
 export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     protected _attributesWGSL: string[];
     protected _attributesDeclWGSL: string[];

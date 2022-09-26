@@ -1,17 +1,16 @@
-/** @hidden */
+/** @internal */
 export class PerformanceConfigurator {
-    /** @hidden */
+    /** @internal */
     public static MatrixUse64Bits = false;
-    /** @hidden */
+    /** @internal */
     public static MatrixTrackPrecisionChange = true;
-    /** @hidden */
+    /** @internal */
     public static MatrixCurrentType: any = Float32Array;
-    /** @hidden */
+    /** @internal */
     public static MatrixTrackedMatrices: Array<any> | null = [];
 
     /**
-     * @param use64bits
-     * @hidden
+     * @internal
      */
     public static SetMatrixPrecision(use64bits: boolean) {
         PerformanceConfigurator.MatrixTrackPrecisionChange = false;

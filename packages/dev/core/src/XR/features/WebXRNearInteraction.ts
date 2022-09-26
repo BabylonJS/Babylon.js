@@ -614,7 +614,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const controllerData = this._controllers[xrController.uniqueId];
         const pointerEventInit: PointerEventInit = {
             pointerId: controllerData.id,
-            pointerType: "xr",
+            pointerType: "xr-near",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (
@@ -766,7 +766,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // Fire a pointerup
             const pointerEventInit: PointerEventInit = {
                 pointerId: controllerData.id,
-                pointerType: "xr",
+                pointerType: "xr-near",
             };
             this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
         });

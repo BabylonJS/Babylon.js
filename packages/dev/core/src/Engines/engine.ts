@@ -292,7 +292,7 @@ export class Engine extends ThinEngine {
         return EngineStore.LastCreatedScene;
     }
 
-    /** @hidden */
+    /** @internal */
     /**
      * Engine abstraction for loading and creating an image bitmap from a given source string.
      * @param imageSource source to load the image from.
@@ -405,7 +405,7 @@ export class Engine extends ThinEngine {
      */
     public scenes = new Array<Scene>();
 
-    /** @hidden */
+    /** @internal */
     public _virtualScenes = new Array<Scene>();
 
     /**
@@ -511,7 +511,7 @@ export class Engine extends ThinEngine {
     private _fps = 60;
     private _deltaTime = 0;
 
-    /** @hidden */
+    /** @internal */
     public _drawCalls = new PerfCounter();
 
     /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
@@ -1116,8 +1116,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param numDrawCalls
-     * @hidden
+     * @internal
      */
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls.addCount(numDrawCalls, false);
@@ -1132,22 +1131,20 @@ export class Engine extends ThinEngine {
         throw _WarnImport("WebVRCamera");
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepareVRComponent() {
         // Do nothing as the engine side effect will overload it
     }
 
     /**
-     * @param canvas
-     * @param document
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
         // Do nothing as the engine side effect will overload it
     }
 
-    /** @hidden */
+    /** @internal */
     public _submitVRFrame() {
         // Do nothing as the engine side effect will overload it
     }
@@ -1168,16 +1165,13 @@ export class Engine extends ThinEngine {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _requestVRFrame() {
         // Do nothing as the engine side effect will overload it
     }
 
     /**
-     * @param url
-     * @param offlineProvider
-     * @param useArrayBuffer
-     * @hidden
+     * @internal
      */
     public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
@@ -1295,7 +1289,7 @@ export class Engine extends ThinEngine {
         super._rebuildBuffers();
     }
 
-    /** @hidden */
+    /** @internal */
     public _renderFrame() {
         for (let index = 0; index < this._activeRenderLoops.length; index++) {
             const renderFunction = this._activeRenderLoops[index];
@@ -1344,7 +1338,7 @@ export class Engine extends ThinEngine {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _renderViews() {
         return false;
     }
@@ -1539,16 +1533,14 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _releaseTexture(texture: InternalTexture): void {
         super._releaseTexture(texture);
     }
 
     /**
-     * @param rtWrapper
-     * @hidden
+     * @internal
      */
     public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
         super._releaseRenderTargetWrapper(rtWrapper);
@@ -1630,7 +1622,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @hidden
+     * @internal
      * Rescales a texture
      * @param source input texture
      * @param destination destination texture
@@ -1725,11 +1717,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param texture
-     * @param image
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
         const gl = this._gl;
@@ -1848,14 +1836,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param w
-     * @param h
-     * @param format
-     * @param type
-     * @param outputBuffer
-     * @hidden
+     * @internal
      */
     public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
         if (this._webGLVersion < 2) {

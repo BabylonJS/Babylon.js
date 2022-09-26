@@ -1,7 +1,7 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 
-/** @hidden */
+/** @internal */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
     public shaderLanguage = ShaderLanguage.GLSL;
 

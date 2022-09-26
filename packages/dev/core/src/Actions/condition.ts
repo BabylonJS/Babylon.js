@@ -9,19 +9,17 @@ declare type ActionManager = import("./actionManager").ActionManager;
 export class Condition {
     /**
      * Internal only - manager for action
-     * @hidden
+     * @internal
      */
     public _actionManager: ActionManager;
 
     /**
-     * Internal only
-     * @hidden
+     * @internal
      */
     public _evaluationId: number;
 
     /**
-     * Internal only
-     * @hidden
+     * @internal
      */
     public _currentResult: boolean;
 
@@ -42,19 +40,14 @@ export class Condition {
     }
 
     /**
-     * Internal only
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getProperty(propertyPath: string): string {
         return this._actionManager._getProperty(propertyPath);
     }
 
     /**
-     * Internal only
-     * @param target
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
         return this._actionManager._getEffectiveTarget(target, propertyPath);
@@ -67,9 +60,7 @@ export class Condition {
     public serialize(): any {}
 
     /**
-     * Internal only
-     * @param serializedCondition
-     * @hidden
+     * @internal
      */
     protected _serialize(serializedCondition: any): any {
         return {
@@ -85,28 +76,9 @@ export class Condition {
  * Defines specific conditional operators as extensions of Condition
  */
 export class ValueCondition extends Condition {
-    /**
-     * Internal only
-     * @hidden
-     */
     private static _IsEqual = 0;
-
-    /**
-     * Internal only
-     * @hidden
-     */
     private static _IsDifferent = 1;
-
-    /**
-     * Internal only
-     * @hidden
-     */
     private static _IsGreater = 2;
-
-    /**
-     * Internal only
-     * @hidden
-     */
     private static _IsLesser = 3;
 
     /**
@@ -139,26 +111,12 @@ export class ValueCondition extends Condition {
 
     /**
      * Internal only The action manager for the condition
-     * @hidden
+     * @internal
      */
     public _actionManager: ActionManager;
 
-    /**
-     * Internal only
-     * @hidden
-     */
     private _target: any;
-
-    /**
-     * Internal only
-     * @hidden
-     */
     private _effectiveTarget: any;
-
-    /**
-     * Internal only
-     * @hidden
-     */
     private _property: string;
 
     /**
@@ -255,7 +213,7 @@ export class ValueCondition extends Condition {
 export class PredicateCondition extends Condition {
     /**
      * Internal only - manager for action
-     * @hidden
+     * @internal
      */
     public _actionManager: ActionManager;
 
@@ -286,14 +244,10 @@ export class PredicateCondition extends Condition {
 export class StateCondition extends Condition {
     /**
      * Internal only - manager for action
-     * @hidden
+     * @internal
      */
     public _actionManager: ActionManager;
 
-    /**
-     * Internal only
-     * @hidden
-     */
     private _target: any;
 
     /**

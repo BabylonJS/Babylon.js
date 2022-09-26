@@ -5,7 +5,7 @@ import { Engine } from "../Engines/engine";
 import { Collider } from "./collider";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 
-/** @hidden */
+/** @internal */
 export interface ICollisionCoordinator {
     createCollider(): Collider;
     getNewPosition(
@@ -20,7 +20,7 @@ export interface ICollisionCoordinator {
     init(scene: Scene): void;
 }
 
-/** @hidden */
+/** @internal */
 export class DefaultCollisionCoordinator implements ICollisionCoordinator {
     private _scene: Scene;
 

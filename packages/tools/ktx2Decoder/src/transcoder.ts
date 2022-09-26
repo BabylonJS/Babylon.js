@@ -4,7 +4,7 @@ import type { WASMMemoryManager } from "./wasmMemoryManager";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "./ktx2FileReader";
 
 /**
- * @hidden
+ * @internal
  */
 export enum sourceTextureFormat {
     ETC1S,
@@ -12,7 +12,7 @@ export enum sourceTextureFormat {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export enum transcodeTarget {
     ASTC_4x4_RGBA,
@@ -27,7 +27,7 @@ export enum transcodeTarget {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class Transcoder {
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {

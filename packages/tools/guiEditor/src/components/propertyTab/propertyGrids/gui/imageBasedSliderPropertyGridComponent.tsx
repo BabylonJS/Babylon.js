@@ -13,11 +13,14 @@ import thumbImageLinkIcon from "shared-ui-components/imgs/thumbImageLinkIcon.svg
 import valueBarImageLinkIcon from "shared-ui-components/imgs/valueBarImageLinkIcon.svg";
 import sliderBackgroundImageIcon from "shared-ui-components/imgs/sliderBackgroundImageIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import type { GlobalState } from "../../../../globalState";
 
 interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSliders: ImageBasedSlider[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class ImageBasedSliderPropertyGridComponent extends React.Component<IImageBasedSliderPropertyGridComponentProps> {
@@ -34,6 +37,8 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     lockObject={this.props.lockObject}
                     controls={imageBasedSliders}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
                 />
                 <hr />
                 <TextLineComponent label="IMAGE LINKS" value=" " color="grey"></TextLineComponent>

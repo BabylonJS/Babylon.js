@@ -79,7 +79,7 @@ export class InterpolateValueAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);

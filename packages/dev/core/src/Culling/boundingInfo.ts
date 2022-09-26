@@ -226,8 +226,7 @@ export class BoundingInfo implements ICullable {
         return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
     }
     /**
-     * @param collider
-     * @hidden
+     * @internal
      */
     public _checkCollision(collider: Collider): boolean {
         return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);

@@ -6,7 +6,7 @@ import type { Vector4, Quaternion } from "core/Maths/math.vector";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**
- * @hidden
+ * @internal
  */
 export class _GLTFUtilities {
     /**

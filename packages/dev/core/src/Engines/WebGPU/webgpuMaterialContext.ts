@@ -6,20 +6,20 @@ import { Constants } from "../constants";
 import type { IMaterialContext } from "../IMaterialContext";
 import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 
-/** @hidden */
+/** @internal */
 interface IWebGPUMaterialContextSamplerCache {
     sampler: Nullable<TextureSampler>;
     hashCode: number;
 }
 
-/** @hidden */
+/** @internal */
 interface IWebGPUMaterialContextTextureCache {
     texture: Nullable<InternalTexture | ExternalTexture>;
     isFloatTexture: boolean;
     isExternalTexture: boolean;
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUMaterialContext implements IMaterialContext {
     private static _Counter = 0;
 

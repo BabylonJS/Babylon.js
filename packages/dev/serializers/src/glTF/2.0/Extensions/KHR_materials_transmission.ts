@@ -31,7 +31,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
     public dispose() {}
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

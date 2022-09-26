@@ -11,11 +11,14 @@ import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineCo
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
+import type { GlobalState } from "../../../../globalState";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlocks: TextBlock[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
@@ -46,7 +49,13 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={textBlocks} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={textBlocks}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="TEXTBLOCK" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

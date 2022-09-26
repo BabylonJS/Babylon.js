@@ -34,14 +34,26 @@ uniform vec2 vTangentSpaceParams;
 #endif
 
 #if defined(REFLECTIVITY)
-varying vec2 vReflectivityUV;
-varying vec2 vAlbedoUV;
-uniform sampler2D reflectivitySampler;
-uniform sampler2D albedoSampler;
-uniform vec3 reflectivityColor;
-uniform vec3 albedoColor;
-uniform float metallic;
-uniform float glossiness;
+    #if defined(ORMTEXTURE) || defined(SPECULARGLOSSINESSTEXTURE) || defined(REFLECTIVITYTEXTURE)
+        uniform sampler2D reflectivitySampler;
+        varying vec2 vReflectivityUV;
+    #endif
+    #ifdef ALBEDOTEXTURE
+        varying vec2 vAlbedoUV;
+        uniform sampler2D albedoSampler;
+    #endif
+    #ifdef REFLECTIVITYCOLOR
+        uniform vec3 reflectivityColor;
+    #endif
+    #ifdef ALBEDOCOLOR
+        uniform vec3 albedoColor;
+    #endif
+    #ifdef METALLIC
+        uniform float metallic;
+    #endif
+    #ifdef ROUGHNESS
+        uniform float glossiness;
+    #endif
 #endif
 
 #ifdef ALPHATEST

@@ -34,7 +34,7 @@ export interface IAction {
 
     /**
      * Internal only - executes current action event
-     * @hidden
+     * @internal
      */
     _executeCurrent(evt?: ActionEvent): void;
 
@@ -47,13 +47,13 @@ export interface IAction {
 
     /**
      * Internal only
-     * @hidden
+     * @internal
      */
     _prepare(): void;
 
     /**
      * Internal only - manager for action
-     * @hidden
+     * @internal
      */
     _actionManager: Nullable<AbstractActionManager>;
 
@@ -78,7 +78,7 @@ export class Action implements IAction {
 
     /**
      * Internal only - manager for action
-     * @hidden
+     * @internal
      */
     public _actionManager: ActionManager;
 
@@ -117,7 +117,7 @@ export class Action implements IAction {
 
     /**
      * Internal only
-     * @hidden
+     * @internal
      */
     public _prepare(): void {}
 
@@ -139,7 +139,7 @@ export class Action implements IAction {
 
     /**
      * Internal only - Returns if the current condition allows to run the action
-     * @hidden
+     * @internal
      */
     public _evaluateConditionForCurrentFrame(): boolean {
         const condition = this._condition;
@@ -160,8 +160,7 @@ export class Action implements IAction {
 
     /**
      * Internal only - executes current action event
-     * @param evt
-     * @hidden
+     * @internal
      */
     public _executeCurrent(evt?: ActionEvent): void {
         const isConditionValid = this._evaluateConditionForCurrentFrame();
@@ -214,18 +213,14 @@ export class Action implements IAction {
 
     /**
      * Internal only
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getProperty(propertyPath: string): string {
         return this._actionManager._getProperty(propertyPath);
     }
 
     /**
-     * Internal only
-     * @param target
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
         return this._actionManager._getEffectiveTarget(target, propertyPath);
@@ -241,9 +236,7 @@ export class Action implements IAction {
 
     /**
      * Internal only called by serialize
-     * @param serializedAction
-     * @param parent
-     * @hidden
+     * @internal
      */
     protected _serialize(serializedAction: any, parent?: any): any {
         const serializationObject: any = {
@@ -277,8 +270,7 @@ export class Action implements IAction {
 
     /**
      * Internal only
-     * @param value
-     * @hidden
+     * @internal
      */
     public static _SerializeValueAsString = (value: any): string => {
         if (typeof value === "number") {
@@ -308,8 +300,7 @@ export class Action implements IAction {
 
     /**
      * Internal only
-     * @param target
-     * @hidden
+     * @internal
      */
     public static _GetTargetProperty = (target: Scene | Node) => {
         return {
