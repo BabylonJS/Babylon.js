@@ -1717,11 +1717,11 @@ export class Vector3 {
     }
 
     /**
-     * Gets the angles between two points needed to face the target from the start
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point and stores it in the ref Vector3
      * @param start the starting point
      * @param target the target point
      * @param ref the vector3 to store the result
-     * @returns the updated ref with the angles between the two points in the form (pitch, yaw, roll)
+     * @returns ref in the form (pitch, yaw, 0)
      */
     public static PitchYawRollToMoveBetweenPointsToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
         const diff = TmpVectors.Vector3[0];
@@ -1731,14 +1731,14 @@ export class Vector3 {
         return ref;
     }
 
-    /**
-     * Gets the angles between two points needed to face the target from the start
-     * @param start the starting vector
-     * @param target the target vector
-     * @returns the angles between the two points in the form (pitch, yaw, roll)
+ 	/**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point
+     * @param start the starting point
+     * @param target the target point
+     * @returns the rotation in the form (pitch, yaw, 0)
      */
     public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
-        const ref = Vector3.Zero();
+        const ref = TmpVectors.Vector3[0];
         return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
     }
 
