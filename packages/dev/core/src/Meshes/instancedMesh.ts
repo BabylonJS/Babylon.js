@@ -659,8 +659,8 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     this._markSubMeshesAsAttributesDirty();
 };
 
-Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedMesh[], renderSelf: boolean) {
-    const instanceCount = visibleInstances.length;
+Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<InstancedMesh[]>, renderSelf: boolean) {
+    const instanceCount = visibleInstances ? visibleInstances.length : 0;
 
     for (const kind in this.instancedBuffers) {
         let size = this._userInstancedBuffersStorage.sizes[kind];
@@ -701,7 +701,7 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
         }
 
         for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
-            const instance = visibleInstances[instanceIndex]!;
+            const instance = visibleInstances![instanceIndex]!;
 
             const value = instance.instancedBuffers[kind];
 
