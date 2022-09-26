@@ -1731,7 +1731,7 @@ export class Vector3 {
         return ref;
     }
 
- 	/**
+    /**
      * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point
      * @param start the starting point
      * @param target the target point
