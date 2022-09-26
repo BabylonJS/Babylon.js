@@ -1745,6 +1745,32 @@ export class Vector3 {
     }
 
     /**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point and stores it in the ref Vector3
+     * @param start the starting point
+     * @param target the target point
+     * @param ref the vector3 to store the result
+     * @returns ref in the form (pitch, yaw, 0)
+     */
+    public static PitchYawRollToMoveBetweenPointsToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
+        const diff = TmpVectors.Vector3[0];
+        target.subtractToRef(start, diff);
+        ref.y = Math.atan2(diff.x, diff.z) || 0;
+        ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        return ref;
+    }
+
+    /**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point
+     * @param start the starting point
+     * @param target the target point
+     * @returns the rotation in the form (pitch, yaw, 0)
+     */
+    public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
+        const ref = TmpVectors.Vector3[0];
+        return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
+    }
+
+    /**
      * Slerp between two vectors. See also `SmoothToRef`
      * Slerp is a spherical linear interpolation
      * giving a slow in and out effect
