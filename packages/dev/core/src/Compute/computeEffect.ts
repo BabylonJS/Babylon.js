@@ -81,7 +81,7 @@ export class ComputeEffect {
     public onBindObservable = new Observable<ComputeEffect>();
 
     /**
-     * @hidden
+     * @internal
      * Specifies if the effect was previously ready
      */
     public _wasPreviouslyReady = false;
@@ -89,12 +89,12 @@ export class ComputeEffect {
     private _engine: Engine;
     private _isReady = false;
     private _compilationError = "";
-    /** @hidden */
+    /** @internal */
     public _key: string = "";
     private _computeSourceCodeOverride: string = "";
-    /** @hidden */
+    /** @internal */
     public _pipelineContext: Nullable<IComputePipelineContext> = null;
-    /** @hidden */
+    /** @internal */
     public _computeSourceCode: string = "";
     private _rawComputeSourceCode: string = "";
     private _entryPoint: string;
@@ -337,7 +337,7 @@ export class ComputeEffect {
 
     /**
      * Prepares the effect
-     * @hidden
+     * @internal
      */
     public _prepareEffect() {
         const defines = this.defines;

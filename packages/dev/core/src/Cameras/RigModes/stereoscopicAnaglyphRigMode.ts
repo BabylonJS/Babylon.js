@@ -3,8 +3,7 @@ import { PassPostProcess } from "../../PostProcesses/passPostProcess";
 import { AnaglyphPostProcess } from "../../PostProcesses/anaglyphPostProcess";
 
 /**
- * @param camera
- * @hidden
+ * @internal
  */
 export function setStereoscopicAnaglyphRigMode(camera: Camera) {
     camera._rigCameras[0]._rigPostProcess = new PassPostProcess(camera.name + "_passthru", 1.0, camera._rigCameras[0]);

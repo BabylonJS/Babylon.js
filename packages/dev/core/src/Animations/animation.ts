@@ -21,7 +21,7 @@ declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _IAnimationState {
@@ -71,7 +71,7 @@ export class Animation {
     private _easingFunction: Nullable<IEasingFunction> = null;
 
     /**
-     * @hidden Internal use only
+     * @internal Internal use only
      */
     public _runtimeAnimations = new Array<RuntimeAnimation>();
 
@@ -96,15 +96,7 @@ export class Animation {
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
     /**
-     * @param name
-     * @param targetProperty
-     * @param framePerSecond
-     * @param totalFrame
-     * @param from
-     * @param to
-     * @param loopMode
-     * @param easingFunction
-     * @hidden Internal use
+     * @internal Internal use
      */
     public static _PrepareAnimation(
         name: string,
@@ -891,8 +883,7 @@ export class Animation {
     }
 
     /**
-     * @param value
-     * @hidden Internal use only
+     * @internal Internal use only
      */
     public _getKeyValue(value: any): any {
         if (typeof value === "function") {
@@ -916,9 +907,7 @@ export class Animation {
     }
 
     /**
-     * @param currentFrame
-     * @param state
-     * @hidden Internal use only
+     * @internal Internal use only
      */
     public _interpolate(currentFrame: number, state: _IAnimationState): any {
         if (state.loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && state.repeatCount > 0) {
@@ -1288,10 +1277,7 @@ export class Animation {
     public static readonly ANIMATIONLOOPMODE_CONSTANT = 2;
 
     /**
-     * @param left
-     * @param right
-     * @param amount
-     * @hidden
+     * @internal
      */
     public static _UniversalLerp(left: any, right: any, amount: number): any {
         const constructor = left.constructor;

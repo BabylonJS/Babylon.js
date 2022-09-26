@@ -24,10 +24,10 @@ export interface IArrayItem {
  * Loader interface with additional members.
  */
 export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: Promise<ArrayBufferView>;
 
-    /** @hidden */
+    /** @internal */
     _babylonVertexBuffer?: { [kind: string]: Promise<VertexBuffer> };
 }
 
@@ -36,11 +36,16 @@ export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
  */
 export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {}
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _IAnimationSamplerData {
+    /** @internal */
     input: Float32Array;
+
+    /** @internal */
     interpolation: GLTF2.AnimationSamplerInterpolation;
+
+    /** @internal */
     output: Float32Array;
 }
 
@@ -48,7 +53,7 @@ export interface _IAnimationSamplerData {
  * Loader interface with additional members.
  */
 export interface IAnimationSampler extends GLTF2.IAnimationSampler, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: Promise<_IAnimationSamplerData>;
 }
 
@@ -56,10 +61,13 @@ export interface IAnimationSampler extends GLTF2.IAnimationSampler, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IAnimation extends GLTF2.IAnimation, IArrayItem {
+    /** @internal */
     channels: IAnimationChannel[];
+
+    /** @internal */
     samplers: IAnimationSampler[];
 
-    /** @hidden */
+    /** @internal */
     _babylonAnimationGroup?: AnimationGroup;
 }
 
@@ -67,7 +75,7 @@ export interface IAnimation extends GLTF2.IAnimation, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IBuffer extends GLTF2.IBuffer, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: Promise<ArrayBufferView>;
 }
 
@@ -75,34 +83,26 @@ export interface IBuffer extends GLTF2.IBuffer, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IBufferView extends GLTF2.IBufferView, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: Promise<ArrayBufferView>;
 
-    /** @hidden */
+    /** @internal */
     _babylonBuffer?: Promise<Buffer>;
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IKHRLight extends GLTF2.IKHRLightsPunctual_Light {
-    /** @hidden */
-    _babylonLight: Light;
-}
-
-/**
- * Loader interface with additional members.
- */
 export interface ICamera extends GLTF2.ICamera, IArrayItem {
-    /** @hidden */
-    _babylonCamera: Camera;
+    /** @internal */
+    _babylonCamera?: Camera;
 }
 
 /**
  * Loader interface with additional members.
  */
 export interface IImage extends GLTF2.IImage, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: Promise<ArrayBufferView>;
 }
 
@@ -120,7 +120,10 @@ export interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionT
  * Loader interface with additional members.
  */
 export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetallicRoughness {
+    /** @internal */
     baseColorTexture?: ITextureInfo;
+
+    /** @internal */
     metallicRoughnessTexture?: ITextureInfo;
 }
 
@@ -128,12 +131,19 @@ export interface IMaterialPbrMetallicRoughness extends GLTF2.IMaterialPbrMetalli
  * Loader interface with additional members.
  */
 export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
+    /** @internal */
     pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;
+
+    /** @internal */
     normalTexture?: IMaterialNormalTextureInfo;
+
+    /** @internal */
     occlusionTexture?: IMaterialOcclusionTextureInfo;
+
+    /** @internal */
     emissiveTexture?: ITextureInfo;
 
-    /** @hidden */
+    /** @internal */
     _data?: {
         [babylonDrawMode: number]: {
             babylonMaterial: Material;
@@ -147,6 +157,7 @@ export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IMesh extends GLTF2.IMesh, IArrayItem {
+    /** @internal */
     primitives: IMeshPrimitive[];
 }
 
@@ -154,7 +165,7 @@ export interface IMesh extends GLTF2.IMesh, IArrayItem {
  * Loader interface with additional members.
  */
 export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _instanceData?: {
         babylonSourceMesh: Mesh;
         promise: Promise<any>;
@@ -165,30 +176,35 @@ export interface IMeshPrimitive extends GLTF2.IMeshPrimitive, IArrayItem {
  * Loader interface with additional members.
  */
 export interface INode extends GLTF2.INode, IArrayItem {
-    /**
-     * The parent glTF node.
-     */
+    /** @internal */
     parent?: INode;
 
-    /** @hidden */
+    /** @internal */
     _babylonTransformNode?: TransformNode;
 
-    /** @hidden */
+    /** @internal */
     _babylonTransformNodeForSkin?: TransformNode;
 
-    /** @hidden */
+    /** @internal */
     _primitiveBabylonMeshes?: AbstractMesh[];
 
-    /** @hidden */
+    /** @internal */
     _numMorphTargets?: number;
 }
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _ISamplerData {
+    /** @internal */
     noMipMaps: boolean;
+
+    /** @internal */
     samplingMode: number;
+
+    /** @internal */
     wrapU: number;
+
+    /** @internal */
     wrapV: number;
 }
 
@@ -196,7 +212,7 @@ export interface _ISamplerData {
  * Loader interface with additional members.
  */
 export interface ISampler extends GLTF2.ISampler, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: _ISamplerData;
 }
 
@@ -209,7 +225,7 @@ export interface IScene extends GLTF2.IScene, IArrayItem {}
  * Loader interface with additional members.
  */
 export interface ISkin extends GLTF2.ISkin, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _data?: {
         babylonSkeleton: Skeleton;
         promise: Promise<void>;
@@ -220,7 +236,7 @@ export interface ISkin extends GLTF2.ISkin, IArrayItem {
  * Loader interface with additional members.
  */
 export interface ITexture extends GLTF2.ITexture, IArrayItem {
-    /** @hidden */
+    /** @internal */
     _textureInfo: ITextureInfo;
 }
 
@@ -236,17 +252,51 @@ export interface ITextureInfo extends GLTF2.ITextureInfo {
  * Loader interface with additional members.
  */
 export interface IGLTF extends GLTF2.IGLTF {
+    /** @internal */
     accessors?: IAccessor[];
+
+    /** @internal */
     animations?: IAnimation[];
+
+    /** @internal */
     buffers?: IBuffer[];
+
+    /** @internal */
     bufferViews?: IBufferView[];
+
+    /** @internal */
     cameras?: ICamera[];
+
+    /** @internal */
     images?: IImage[];
+
+    /** @internal */
     materials?: IMaterial[];
+
+    /** @internal */
     meshes?: IMesh[];
+
+    /** @internal */
     nodes?: INode[];
+
+    /** @internal */
     samplers?: ISampler[];
+
+    /** @internal */
     scenes?: IScene[];
+
+    /** @internal */
     skins?: ISkin[];
+
+    /** @internal */
     textures?: ITexture[];
+}
+
+/**
+ * Loader interface with additional members.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface IKHRLightsPunctual_Light extends GLTF2.IKHRLightsPunctual_Light, IArrayItem {
+    /** @hidden */
+    _babylonLight?: Light;
 }

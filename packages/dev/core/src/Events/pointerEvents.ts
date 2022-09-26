@@ -76,6 +76,11 @@ export class PointerInfoPre extends PointerInfoBase {
     public nearInteractionPickingInfo: Nullable<PickingInfo>;
 
     /**
+     * The original picking info that was used to trigger the pointer event
+     */
+    public originalPickingInfo: Nullable<PickingInfo> = null;
+
+    /**
      * Defines the local position of the pointer on the canvas.
      */
     public localPosition: Vector2;

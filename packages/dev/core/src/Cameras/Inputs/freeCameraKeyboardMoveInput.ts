@@ -215,7 +215,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
         return "FreeCameraKeyboardMoveInput";
     }
 
-    /** @hidden */
+    /** @internal */
     public _onLostFocus(): void {
         this._keys.length = 0;
     }

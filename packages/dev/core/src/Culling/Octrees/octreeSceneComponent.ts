@@ -14,7 +14,7 @@ declare type Collider = import("../../Collisions/collider").Collider;
 declare module "../../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing Filed
          */
         _selectionOctree: Octree<AbstractMesh>;
@@ -66,7 +66,7 @@ Object.defineProperty(Scene.prototype, "selectionOctree", {
 declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
-         * @hidden
+         * @internal
          * Backing Field
          */
         _submeshesOctree: Octree<SubMesh>;
@@ -182,11 +182,7 @@ export class OctreeSceneComponent {
      * @returns the list of active meshes
      */
     public getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh> {
-        if (this.scene._selectionOctree) {
-            const selection = this.scene._selectionOctree.select(this.scene.frustumPlanes);
-            return selection;
-        }
-        return this.scene._getDefaultMeshCandidates();
+        return this.scene._selectionOctree?.select(this.scene.frustumPlanes) || this.scene._getDefaultMeshCandidates();
     }
 
     /**

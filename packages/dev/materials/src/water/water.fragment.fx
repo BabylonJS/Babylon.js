@@ -19,7 +19,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 
@@ -111,7 +111,7 @@ void main(void) {
 	vec3 bumpColor = vec3(1.0);
 #endif
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
     baseColor.rgb *= vColor.rgb;
 #endif
 
@@ -179,7 +179,7 @@ void main(void) {
 
     vec3 finalDiffuse = clamp(baseColor.rgb, 0.0, 1.0);
 
-    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         alpha *= vColor.a;
     #endif
 
@@ -232,7 +232,7 @@ void main(void) {
     vec3 finalDiffuse = clamp(baseColor.rgb, 0.0, 1.0);
 
 
-    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         alpha *= vColor.a;
     #endif
 

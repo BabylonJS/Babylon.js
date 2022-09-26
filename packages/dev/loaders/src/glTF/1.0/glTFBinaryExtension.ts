@@ -21,7 +21,7 @@ interface IGLTFBinaryExtensionImage {
 }
 
 /**
- * @hidden
+ * @internal
  * @deprecated
  */
 export class GLTFBinaryExtension extends GLTFLoaderExtension {

@@ -1,7 +1,7 @@
 declare function postMessage(message: any, transfer?: any[]): void;
 
 /**
- * @hidden
+ * @internal
  */
 export class WASMMemoryManager {
     public static LoadBinariesFromCurrentThread = true;

@@ -34,7 +34,7 @@ export class SwitchBooleanAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
@@ -147,7 +147,7 @@ export class SetValueAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
@@ -219,7 +219,7 @@ export class IncrementValueAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
@@ -299,7 +299,7 @@ export class PlayAnimationAction extends Action {
         this._target = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**
@@ -349,7 +349,7 @@ export class StopAnimationAction extends Action {
         this._target = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**
@@ -439,7 +439,7 @@ export class CombineAction extends Action {
         this.enableChildrenConditions = enableChildrenConditions;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         for (let index = 0; index < this.children.length; index++) {
             this.children[index]._actionManager = this._actionManager;
@@ -533,7 +533,7 @@ export class SetParentAction extends Action {
         this._parent = parent;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**

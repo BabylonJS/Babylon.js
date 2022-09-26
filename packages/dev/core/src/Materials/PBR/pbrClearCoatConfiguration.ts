@@ -18,7 +18,7 @@ declare type Scene = import("../../scene").Scene;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialClearCoatDefines extends MaterialDefines {
     public CLEARCOAT = false;
@@ -48,7 +48,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
      * The default fits with a polyurethane material.
-     * @hidden
+     * @internal
      */
     public static readonly _DefaultIndexOfRefraction = 1.5;
 
@@ -167,10 +167,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public tintTexture: Nullable<BaseTexture> = null;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();

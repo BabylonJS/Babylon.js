@@ -101,8 +101,7 @@ export class Checkbox extends Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext): void {
         context.save();
@@ -151,12 +150,7 @@ export class Checkbox extends Control {
     // Events
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {

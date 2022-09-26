@@ -26,7 +26,7 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
 
     public dispose() {}
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

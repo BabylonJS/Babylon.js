@@ -121,7 +121,7 @@ export class PostProcessRenderPipelineManager {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         for (const renderPipelineName in this._renderPipelines) {
             if (Object.prototype.hasOwnProperty.call(this._renderPipelines, renderPipelineName)) {

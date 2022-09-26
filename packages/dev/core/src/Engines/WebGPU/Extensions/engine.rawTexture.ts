@@ -403,11 +403,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function (
 };
 
 /**
- * @param rgbData
- * @param width
- * @param height
- * @param textureType
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {

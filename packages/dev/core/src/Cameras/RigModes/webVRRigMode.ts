@@ -3,9 +3,7 @@ import { Matrix } from "../../Maths/math.vector";
 import { Viewport } from "../../Maths/math.viewport";
 
 /**
- * @param camera
- * @param rigParams
- * @hidden
+ * @internal
  */
 export function setWebVRRigMode(camera: Camera, rigParams: any) {
     if (rigParams.vrDisplay) {
