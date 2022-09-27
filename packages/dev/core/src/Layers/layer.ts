@@ -35,6 +35,20 @@ export class Layer {
      */
     public isBackground: boolean;
 
+    private _applyPostProcess: boolean = true;
+    /**
+     * If scene post processes should affect this Layer.
+     * Is always true if the layer is a foreground
+     * layer (this.isBackground === false), as in the case
+     * it will always be drawn before post processes.
+     */
+    public set applyPostProcess(value: boolean) {
+        this._applyPostProcess = value;
+    }
+    public get applyPostProcess(): boolean {
+        return this.isBackground || this._applyPostProcess;
+    }
+
     /**
      * Define the color of the layer (instead of texture).
      */
