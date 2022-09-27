@@ -1,6 +1,10 @@
-import { takeSnapshots, findLeaks } from "@memlab/api";
+import { findLeaks } from "@memlab/api";
+import { MemLabConfig } from "@memlab/core";
 import type { IScenario } from "@memlab/core";
 import { checkArgs, populateEnvironment } from "@dev/build-tools";
+import type { RunOptions } from "memlab";
+import { BrowserInteractionResultReader, testInBrowser } from "memlab";
+import { TestPlanner } from "@memlab/e2e";
 
 const playgrounds: string[] = ["#2FDQT5#1508", "#T90MQ4#14", "#8EDB5N#2", "#YACNQS#2", "#SLV8LW#3"];
 
@@ -17,6 +21,31 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
         ...overrideConfig,
     };
 };
+
+function getConfigFromRunOptions(options: RunOptions): MemLabConfig {
+    let config = MemLabConfig.getInstance();
+    // if (options.workDir) {
+    //   fileManager.initDirs(config, {workDir: options.workDir});
+    // } else {
+    config = MemLabConfig.resetConfigWithTranscientDir();
+    // }
+    config.isFullRun = !!options.snapshotForEachStep;
+    config.oversizeObjectAsLeak = true;
+    config.oversizeThreshold = 50000;
+    return config;
+}
+/**
+ *
+ */
+export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<BrowserInteractionResultReader> {
+    const config = getConfigFromRunOptions(options);
+    config.externalCookiesFile = options.cookiesFile;
+    config.scenario = options.scenario;
+    const testPlanner = new TestPlanner();
+    const { evalInBrowserAfterInitLoad } = options;
+    await testInBrowser({ testPlanner, config, evalInBrowserAfterInitLoad });
+    return BrowserInteractionResultReader.from(config.workDir);
+}
 
 (async function () {
     const conf = getGlobalConfig();
@@ -49,11 +78,33 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
                 back: async (page) => {
                     await page.click("#dispose");
                 },
+                leakFilter: (node, _snapshot, _leakedNodeIds) => {
+                    if (node.retainedSize < 35000) {
+                        return false;
+                    }
+                    if (node.pathEdge?.type === "internal" || node.pathEdge?.type === "hidden") {
+                        return false;
+                    }
+                    if (
+                        (!node.name && node.type === "object") ||
+                        node.name === "Object" ||
+                        node.type === "hidden" ||
+                        node.type.includes("system ") ||
+                        node.name.includes("system ")
+                    ) {
+                        return false;
+                    }
+                    // custom cases
+                    if (node.name === "WebGL2RenderingContext") {
+                        return false;
+                    }
+                    return true;
+                },
             };
             console.log("Running scenario", scenario.url());
-            const leaks = await findLeaks(await takeSnapshots({ scenario }));
+            const leaks = await findLeaks(await takeSnapshotsLocal({ scenario }));
             if (leaks.length > 0) {
-                console.log(leaks);
+                // console.log(leaks);
                 throw new Error(leaks.length + " leak(s) found");
             }
         };
