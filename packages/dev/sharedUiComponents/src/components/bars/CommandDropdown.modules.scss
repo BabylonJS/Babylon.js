@@ -1,3 +1,7 @@
+* {
+    font-family: "acumin-pro-condensed";
+}
+
 .commandDropdownBlocker {
     position: absolute;
     top: 0;
@@ -59,133 +63,6 @@
     &.toRight {
         width: 120px;
     }
-
-    .command-dropdown-label {
-        color: white;
-        padding: 5px;
-        padding-left: 7px;
-        height: 35px;
-        font-size: 18px;
-        display: grid;
-        align-items: center;
-        cursor: pointer;
-        user-select: none;
-        grid-template-columns: 1fr 20px;
-        grid-template-rows: 100%;
-        position: relative;
-
-        &.active {
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        &:hover {
-            background: var(--selectionGrey);
-            .sub-items {
-                display: block;
-            }
-        }
-
-        .command-dropdown-label-text {
-            font-size: 12px;
-            grid-column: 1;
-            grid-row: 1;
-        }
-
-        .command-dropdown-label-check {
-            grid-column: 2;
-            grid-row: 1;
-        }
-
-        .command-dropdown-arrow {
-            grid-column: 2;
-            grid-row: 1;
-            font-size: 20px;
-            font-weight: bold;
-            padding-bottom: 10px;
-            padding-left: 4px;
-        }
-
-        .sub-items {
-            position: absolute;
-            left: 200px;
-            top: 0;
-            width: 150px;
-            display: none;
-
-            &.background-js {
-                background: #bfabff;
-                .sub-item {
-                    &:hover {
-                        background-color: #333333;
-                        color: white;
-                    }
-                }
-            }
-
-            &.background-ts {
-                background: #333333;
-                .sub-item {
-                    &:hover {
-                        background-color: #333333;
-                        color: white;
-                    }
-                }
-            }
-
-            .sub-item {
-                color: white;
-                padding: 5px;
-                padding-left: 10px;
-                height: 35px;
-                display: grid;
-
-                &.checked {
-                    background: white;
-                    color: black;
-                }
-            }
-        }
-    }
-
-    .buttonLine {
-        color: white;
-        padding: 5px;
-        padding-left: 7px;
-        height: 35px;
-        font-size: 18px;
-        display: grid;
-        align-items: center;
-        cursor: pointer;
-        user-select: none;
-        grid-template-columns: 1fr 20px;
-        grid-template-rows: 100%;
-        position: relative;
-        font-size: 12px;
-        grid-column: 1;
-        grid-row: 1;
-        input[type="file"] {
-            display: none;
-        }
-
-        &.active {
-            font-weight: bold;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        &:hover {
-            background: var(--selectionGrey);
-            .sub-items {
-                display: block;
-            }
-            cursor: pointer;
-        }
-
-        .file-upload {
-            cursor: pointer;
-        }
-    }
 }
 
 .commandDropdownLabel {
@@ -219,6 +96,7 @@
     font-size: 12px;
     grid-column: 1;
     grid-row: 1;
+    font-weight: 600;
 }
 
 .commandDropdownLabelCheck {
