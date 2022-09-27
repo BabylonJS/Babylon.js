@@ -1131,6 +1131,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 scene.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex);
             }
 
+            for (const step of scene._afterRenderTargetPostProcessStage) {
+                step.action(this, faceIndex, layer);
+            }
+
             if (this._texture) {
                 this._texture.generateMipMaps = saveGenerateMipMaps;
             }
