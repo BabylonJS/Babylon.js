@@ -14,7 +14,17 @@ import betaFlag from "../../imgs/betaFlag.svg";
 
 import style from "./CommandBar.modules.scss";
 
-export interface ICommandBarComponentProps {}
+export interface ICommandBarComponentProps {
+    onSaveButtonClicked?: () => void;
+    onSaveToSnippetButtonClicked?: () => void;
+    onLoadFromSnippetButtonClicked?: () => void;
+    onHelpButtonClicked?: () => void;
+    onGiveFeedbackButtonClicked?: () => void;
+    onSelectButtonClicked?: () => void;
+    onPanButtonClicked?: () => void;
+    onZoomButtonClicked?: () => void;
+    onFitButtonClicked?: () => void;
+}
 
 export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) => {
     return (
@@ -31,7 +41,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                             {
                                 label: "Save",
                                 onClick: () => {
-                                    //this.props.globalState.onSaveObservable.notifyObservers();
+                                    props.onSaveButtonClicked && props.onSaveButtonClicked();
                                 },
                             },
                             {
@@ -41,25 +51,25 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                             {
                                 label: "Save to snippet",
                                 onClick: () => {
-                                    //this.props.globalState.onSnippetSaveObservable.notifyObservers();
+                                    props.onSaveToSnippetButtonClicked && props.onSaveToSnippetButtonClicked();
                                 },
                             },
                             {
                                 label: "Load from snippet",
                                 onClick: () => {
-                                    //this.props.globalState.onSnippetLoadObservable.notifyObservers();
+                                    props.onLoadFromSnippetButtonClicked && props.onLoadFromSnippetButtonClicked();
                                 },
                             },
                             {
                                 label: "Help",
                                 onClick: () => {
-                                    //window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
+                                    props.onHelpButtonClicked && props.onHelpButtonClicked();
                                 },
                             },
                             {
                                 label: "Give feedback",
                                 onClick: () => {
-                                    //window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-beta/28943", "_blank");
+                                    props.onGiveFeedbackButtonClicked && props.onGiveFeedbackButtonClicked();
                                 },
                             },
                         ]}
@@ -70,7 +80,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         shortcut="S"
                         isActive={false}
                         onClick={() => {
-                            //this.props.globalState.tool = GUIEditorTool.SELECT;
+                            props.onSelectButtonClicked && props.onSelectButtonClicked();
                         }}
                     />
                     <CommandButtonComponent
@@ -79,7 +89,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         shortcut="P"
                         isActive={false}
                         onClick={() => {
-                            //this.props.globalState.tool = GUIEditorTool.PAN;
+                            props.onPanButtonClicked && props.onPanButtonClicked();
                         }}
                     />
                     <CommandButtonComponent
@@ -88,7 +98,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         icon={zoomIcon}
                         isActive={false}
                         onClick={() => {
-                            //this.props.globalState.tool = GUIEditorTool.ZOOM;
+                            props.onZoomButtonClicked && props.onZoomButtonClicked();
                         }}
                     />
                 </div>
@@ -99,7 +109,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         icon={canvasFitIcon}
                         isActive={false}
                         onClick={() => {
-                            //this.props.globalState.onFitControlsToWindowObservable.notifyObservers();
+                            props.onFitButtonClicked && props.onFitButtonClicked();
                         }}
                     />
                 </div>
