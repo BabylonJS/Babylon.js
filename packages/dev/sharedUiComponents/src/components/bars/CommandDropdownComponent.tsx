@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../lines/FileButtonLineComponent";
 import { JoinClassNames } from "../classNames";
 
 import style from "./CommandDropdown.modules.scss";

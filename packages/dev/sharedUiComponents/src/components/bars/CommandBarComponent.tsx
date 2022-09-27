@@ -4,7 +4,7 @@ import { CommandButtonComponent } from "./CommandButtonComponent";
 import { CommandDropdownComponent } from "./CommandDropdownComponent";
 // import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 
-import hamburgerIcon from "../../imgs/hamburger.svg";
+import hamburgerIcon from "../../imgs/hamburgerIcon.svg";
 import pointerIcon from "../../imgs/pointerIcon.svg";
 import handIcon from "../../imgs/handIcon.svg";
 import zoomIcon from "../../imgs/zoomIcon.svg";
@@ -108,7 +108,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                 </div>
             </div>
             <div className={style.commandsRight}>
-                <img src={betaFlag} className="beta-flag" draggable={false} />
+                <img src={betaFlag} className={style.betaFlag} draggable={false} />
             </div>
         </div>
     );
