@@ -25,6 +25,16 @@ module.exports = {
         });
 
         config.module.rules.push({
+            test: /\.tsx?$/,
+            loader: "ts-loader",
+            exclude: /node_modules/,
+            sideEffects: true,
+            options: {
+                configFile: "tsconfig.build.json",
+            },
+        });
+
+        config.module.rules.push({
             test: /\.scss$/,
             use: [
                 "style-loader",
