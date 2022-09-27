@@ -1,7 +1,8 @@
 import * as React from "react";
-import { CommandButtonComponent } from "./commandButtonComponent";
-import { CommandDropdownComponent } from "./commandDropdownComponent";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { JoinClassNames } from "../classNames";
+import { CommandButtonComponent } from "./CommandButtonComponent";
+import { CommandDropdownComponent } from "./CommandDropdownComponent";
+// import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 
 import hamburgerIcon from "../../imgs/hamburger.svg";
 import pointerIcon from "../../imgs/pointerIcon.svg";
@@ -11,15 +12,15 @@ import logoIcon from "../../imgs/babylonLogo.svg";
 import canvasFitIcon from "../../imgs/canvasFitIcon.svg";
 import betaFlag from "../../imgs/betaFlag.svg";
 
-import "./commandBar.scss";
+import style from "./CommandBar.modules.scss";
 
-interface ICommandBarComponentProps {}
+export interface ICommandBarComponentProps {}
 
 export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) => {
     return (
-        <div className={"ge-commands"}>
-            <div className="commands-left">
-                <div className="divider">
+        <div className={style.commandBar}>
+            <div className={style.commandsLeft}>
+                <div className={style.divider}>
                     <img src={logoIcon} color="white" className={"active"} draggable={false} />
                     <CommandDropdownComponent
                         //globalState={this.props.globalState}
@@ -67,7 +68,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         tooltip="Select"
                         icon={pointerIcon}
                         shortcut="S"
-                        isActive={true}
+                        isActive={false}
                         onClick={() => {
                             //this.props.globalState.tool = GUIEditorTool.SELECT;
                         }}
@@ -76,7 +77,7 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         tooltip="Pan"
                         icon={handIcon}
                         shortcut="P"
-                        isActive={true}
+                        isActive={false}
                         onClick={() => {
                             //this.props.globalState.tool = GUIEditorTool.PAN;
                         }}
@@ -85,13 +86,13 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         tooltip="Zoom"
                         shortcut="Z"
                         icon={zoomIcon}
-                        isActive={true}
+                        isActive={false}
                         onClick={() => {
                             //this.props.globalState.tool = GUIEditorTool.ZOOM;
                         }}
                     />
                 </div>
-                <div className="divider">
+                <div className={style.divider}>
                     <CommandButtonComponent
                         tooltip="Fit to Window"
                         shortcut="F"
@@ -102,11 +103,11 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                         }}
                     />
                 </div>
-                <div className="divider padded">
-                    <ColorLineComponent lockObject={{ lock: false }} label={"Artboard:"} target={{}} propertyName="backgroundColor" disableAlpha={true} />
+                <div className={JoinClassNames(style, "divider", "padded")}>
+                    {/* <ColorLineComponent lockObject={{ lock: false }} label={"Artboard:"} target={{}} propertyName="backgroundColor" disableAlpha={true} /> */}
                 </div>
             </div>
-            <div className="commands-right">
+            <div className={style.commandsRight}>
                 <img src={betaFlag} className="beta-flag" draggable={false} />
             </div>
         </div>
