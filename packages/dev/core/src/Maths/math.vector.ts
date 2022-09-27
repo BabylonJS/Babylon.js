@@ -1756,6 +1756,7 @@ export class Vector3 {
         target.subtractToRef(start, diff);
         ref.y = Math.atan2(diff.x, diff.z) || 0;
         ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        ref.z = 0;
         return ref;
     }
 
